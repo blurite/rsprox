@@ -1,5 +1,12 @@
 [versions]
 kotlin = "1.9.23"
+netty = "4.1.109.Final"
+
+[libraries]
+netty-bom = { module = "io.netty:netty-bom", version.ref = "netty" }
+netty-buffer = { module = "io.netty:netty-buffer" }
+netty-transport = { module = "io.netty:netty-transport" }
+netty-handler = { module = "io.netty:netty-handler" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
