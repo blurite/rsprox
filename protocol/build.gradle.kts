@@ -5,9 +5,7 @@ dependencies {
     implementation(rootProject.libs.netty.handler)
     implementation(rootProject.libs.rsprot.buffer)
     implementation(rootProject.libs.rsprot.compression)
-    implementation(rootProject.libs.rsprot.crypto)
     implementation(rootProject.libs.rsprot.protocol)
     implementation(platform(rootProject.libs.log4j.bom))
     implementation(rootProject.libs.bundles.log4j)
-    implementation(rootProject.libs.bundles.bouncycastle)
 }
