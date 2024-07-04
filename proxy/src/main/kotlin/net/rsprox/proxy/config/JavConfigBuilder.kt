@@ -20,6 +20,21 @@ public class JavConfigBuilder(
         return this
     }
 
+    public fun replaceProperty(
+        name: String,
+        value: Any,
+    ): JavConfigBuilder {
+        val prefix = "$name="
+        val index = builder.indexOf(prefix)
+        if (index == -1) {
+            throw IllegalArgumentException("Jav config does not support property $name")
+        }
+        val lineBreakIndex = builder.indexOf('\n', index)
+        val endIndex = if (lineBreakIndex == -1) builder.lastIndex else lineBreakIndex
+        builder.setRange(index, endIndex, prefix + value)
+        return this
+    }
+
     public fun build(): JavConfig {
         return JavConfig(builder.toString())
     }
