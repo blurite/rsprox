@@ -11,6 +11,7 @@ netty-bom = { module = "io.netty:netty-bom", version.ref = "netty" }
 netty-buffer = { module = "io.netty:netty-buffer" }
 netty-transport = { module = "io.netty:netty-transport" }
 netty-handler = { module = "io.netty:netty-handler" }
+netty-codec-http = { module = "io.netty:netty-codec-http" }
 rsprot-buffer = { module = "net.rsprot:buffer", version.ref = "rsprot" }
 rsprot-compression = { module = "net.rsprot:compression", version.ref = "rsprot" }
 rsprot-crypto = { module = "net.rsprot:crypto", version.ref = "rsprot" }

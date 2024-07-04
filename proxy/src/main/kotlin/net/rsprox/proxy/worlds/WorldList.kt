@@ -21,7 +21,7 @@ public data class WorldList(
         for (world in worlds) {
             buffer.p2(world.id)
             buffer.p4(world.properties)
-            buffer.pjstr(world.host)
+            buffer.pjstr(world.localHostAddress.toString())
             buffer.pjstr(world.activity)
             buffer.p1(world.location)
             buffer.p2(world.population)
@@ -35,6 +35,12 @@ public data class WorldList(
     public fun getWorld(address: LocalHostAddress): World? {
         return worlds.firstOrNull { world ->
             world.localHostAddress == address
+        }
+    }
+
+    public fun getTargetWorld(address: String): World? {
+        return worlds.firstOrNull { world ->
+            world.host == address
         }
     }
 
@@ -75,7 +81,7 @@ public data class WorldList(
                 Byte.SIZE_BYTES +
                 Short.SIZE_BYTES +
                 Short.SIZE_BYTES +
-                world.host.length +
+                world.localHostAddress.toString().length +
                 world.activity.length
         }
     }

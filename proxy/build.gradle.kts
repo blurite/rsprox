@@ -3,6 +3,7 @@ dependencies {
     implementation(rootProject.libs.netty.buffer)
     implementation(rootProject.libs.netty.transport)
     implementation(rootProject.libs.netty.handler)
+    implementation(rootProject.libs.netty.codec.http)
     implementation(rootProject.libs.rsprot.buffer)
     implementation(rootProject.libs.rsprot.compression)
     implementation(rootProject.libs.rsprot.crypto)
