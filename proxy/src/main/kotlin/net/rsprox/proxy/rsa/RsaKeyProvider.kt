@@ -1,20 +1,22 @@
 package net.rsprox.proxy.rsa
 
+import com.github.michaelbull.logging.InlineLogger
+import net.rsprox.proxy.configuration.CONFIGURATION_PATH
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
 import java.nio.file.Files
-import java.nio.file.Path
-import kotlin.io.path.Path
 
-private val RSA_PATH: Path = Path(System.getProperty("user.home"), ".rsprox")
-private val RSA_FILE = RSA_PATH.resolve("key.rsa")
+private val RSA_FILE = CONFIGURATION_PATH.resolve("key.rsa")
+private val logger = InlineLogger()
 
 internal fun readOrGenerateRsaKey(): RSAPrivateCrtKeyParameters {
     return if (Files.exists(RSA_FILE)) {
-        Rsa.readPrivateKey(RSA_FILE)
+        val key = Rsa.readPrivateKey(RSA_FILE)
+        logger.debug { "RSA key loaded from $RSA_FILE" }
+        key
     } else {
-        Files.createDirectories(RSA_PATH)
         val (_, private) = Rsa.generateKeyPair(Rsa.CLIENT_KEY_LENGTH)
         Rsa.writePrivateKey(RSA_FILE, private)
+        logger.debug { "RSA key generated to $RSA_FILE" }
         private
     }
 }
