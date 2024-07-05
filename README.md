@@ -1,6 +1,6 @@
 # RSProx
 
-[![GitHub Actions][actions-badge]][actions] [![MIT license][mit-badge]][mit] 
+[![GitHub Actions][actions-badge]][actions] [![MIT license][mit-badge]][mit]
 
 ## Introduction
 RSProx is a locally hosted proxy server intended to act as a middleman between the clients and servers in Old School RuneScape.
@@ -38,6 +38,9 @@ Below is a small task list showing a rough breakdown of what the tool will consi
   - [ ] Plugin system for decoders, with each revision acting as its own plugin
   - [ ] Revision 223 (initial revision)
 - [ ] Transcriber
+- [ ] Launchers
+  - [ ] Proxy launcher/updater
+  - [ ] RuneLite launcher (necessary to avoid detection)
 
 [actions-badge]: https://github.com/blurite/rsprox/actions/workflows/ci.yml/badge.svg
 [actions]: https://github.com/blurite/rsprox/actions
