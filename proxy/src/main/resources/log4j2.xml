@@ -13,5 +13,6 @@
 		<Root level="debug">
 			<AppenderRef level="all" ref="Console"/>
 		</Root>
+		<logger name="io.netty" level="info"/>
 	</Loggers>
 </Configuration>
