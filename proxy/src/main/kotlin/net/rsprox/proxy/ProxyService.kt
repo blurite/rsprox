@@ -22,7 +22,6 @@ import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
 import java.math.BigInteger
 import java.net.URL
 import java.nio.file.Files
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.readText
 import kotlin.properties.Delegates
@@ -201,20 +200,6 @@ public class ProxyService(
             }
             exitProcess(-1)
         }
-    }
-
-    public fun shutdown() {
-        if (!this::serverBootstrap.isInitialized) {
-            throw IllegalStateException("Bootstrap pool not initialized.")
-        }
-        val config = this.serverBootstrap.config()
-        val future =
-            CompletableFuture.allOf(
-                config.group().shutdownGracefully().asCompletableFuture(),
-                config.childGroup().shutdownGracefully().asCompletableFuture(),
-            )
-        val timeoutSeconds = properties.getProperty(BIND_TIMEOUT_SECONDS).toLong()
-        future.orTimeout(timeoutSeconds, TimeUnit.SECONDS).join()
     }
 
     public companion object {
