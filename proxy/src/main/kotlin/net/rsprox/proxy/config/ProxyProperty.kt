@@ -1,4 +1,4 @@
-package net.rsprox.proxy.configuration
+package net.rsprox.proxy.config
 
 @Suppress("unused")
 internal class ProxyProperty<T>(

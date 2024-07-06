@@ -15,7 +15,7 @@ import io.netty.handler.codec.http.HttpResponseEncoder
 import net.rsprox.proxy.client.ClientLoginInitializer
 import net.rsprox.proxy.config.JavConfig
 import net.rsprox.proxy.http.HttpServerHandler
-import net.rsprox.proxy.server.ServerRelayHandler
+import net.rsprox.proxy.server.ServerConnectionInitializer
 import net.rsprox.proxy.worlds.WorldListProvider
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
 import java.math.BigInteger
@@ -45,7 +45,7 @@ public class BootstrapFactory(
             .childHandler(ClientLoginInitializer(this, worldListProvider, rsa, originalModulus))
     }
 
-    public fun createClientBootstrap(serverChannel: Channel): Bootstrap {
+    public fun createClientBootstrap(): Bootstrap {
         return Bootstrap()
             .group(NioEventLoopGroup())
             .channel(NioSocketChannel::class.java)
@@ -55,7 +55,7 @@ public class BootstrapFactory(
             .option(ChannelOption.SO_RCVBUF, SOCKET_BUFFER_CAPACITY)
             .option(ChannelOption.SO_SNDBUF, SOCKET_BUFFER_CAPACITY)
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, CONNECT_TIMEOUT_MILLIS)
-            .handler(ServerRelayHandler(serverChannel))
+            .handler(ServerConnectionInitializer())
     }
 
     public fun createWorldListHttpServer(

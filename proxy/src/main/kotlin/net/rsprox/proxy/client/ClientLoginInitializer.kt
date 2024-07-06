@@ -4,8 +4,11 @@ import com.github.michaelbull.logging.InlineLogger
 import io.netty.channel.Channel
 import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelInitializer
+import net.rsprox.proxy.attributes.BINARY_HEADER_BUILDER
+import net.rsprox.proxy.attributes.WORLD_ATTRIBUTE
+import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.bootstrap.BootstrapFactory
-import net.rsprox.proxy.server.ServerRelayHandler
+import net.rsprox.proxy.channel.setAutoRead
 import net.rsprox.proxy.worlds.LocalHostAddress
 import net.rsprox.proxy.worlds.WorldListProvider
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
@@ -26,7 +29,7 @@ public class ClientLoginInitializer(
             worldList.getWorld(localHostAddress)
                 ?: throw IllegalStateException("Connection $clientChannel is missing a linked world: $worldList")
         logger.info { "Establishing a new connection to ${world.localHostAddress} @ ${world.activity}" }
-        val clientBootstrap = bootstrapFactory.createClientBootstrap(clientChannel)
+        val clientBootstrap = bootstrapFactory.createClientBootstrap()
         logger.info { "Connecting to ${world.host}@$SERVER_PORT -- $localHostAddress, $world" }
         val future = clientBootstrap.connect(world.host, SERVER_PORT).sync()
         val serverChannel = future.channel()
@@ -47,9 +50,19 @@ public class ClientLoginInitializer(
                     ClientLoginDecoder(),
                     ClientLoginHandler(serverChannel, rsa, originalModulus),
                 )
-                serverChannel.pipeline().addLast(ServerRelayHandler(clientChannel))
-                clientChannel.config().isAutoRead = true
-                serverChannel.config().isAutoRead = true
+                val builder = BinaryHeader.Builder()
+                // TODO: Client name must be passed on from the patcher eventually
+                builder.clientName("Deobfuscated Java Client")
+                builder.headerVersion(BinaryHeader.HEADER_VERSION)
+                val timestamp = System.currentTimeMillis()
+                builder.timestamp(timestamp)
+                builder.world(world)
+                clientChannel.attr(WORLD_ATTRIBUTE).set(world)
+                serverChannel.attr(WORLD_ATTRIBUTE).set(world)
+                clientChannel.attr(BINARY_HEADER_BUILDER).set(builder)
+                serverChannel.attr(BINARY_HEADER_BUILDER).set(builder)
+                clientChannel.setAutoRead()
+                serverChannel.setAutoRead()
             },
         )
     }

@@ -1,7 +1,7 @@
 package net.rsprox.proxy.rsa
 
 import com.github.michaelbull.logging.InlineLogger
-import net.rsprox.proxy.configuration.CONFIGURATION_PATH
+import net.rsprox.proxy.config.CONFIGURATION_PATH
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
 import java.nio.file.Files
 

@@ -1,4 +1,4 @@
-package net.rsprox.proxy.configuration
+package net.rsprox.proxy.config
 
 internal sealed interface PropertyType<T>
 

@@ -1,4 +1,4 @@
-package net.rsprox.proxy.configuration
+package net.rsprox.proxy.config
 
 import java.nio.file.Path
 import kotlin.io.path.Path

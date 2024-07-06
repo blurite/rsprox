@@ -1,12 +1,12 @@
-package net.rsprox.proxy.configuration
+package net.rsprox.proxy.config
 
-import net.rsprox.proxy.configuration.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
-import net.rsprox.proxy.configuration.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
-import net.rsprox.proxy.configuration.ProxyProperty.Companion.JAV_CONFIG_URL
-import net.rsprox.proxy.configuration.ProxyProperty.Companion.PROXY_HTTP_PORT
-import net.rsprox.proxy.configuration.ProxyProperty.Companion.PROXY_PORT
-import net.rsprox.proxy.configuration.ProxyProperty.Companion.WORLDLIST_ENDPOINT
-import net.rsprox.proxy.configuration.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
+import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
+import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
+import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_URL
+import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_HTTP_PORT
+import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT
+import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
+import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
 import java.nio.charset.Charset
 import java.nio.file.Path
 import java.util.Properties
