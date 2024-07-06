@@ -23,7 +23,7 @@ Below is a small task list showing a rough breakdown of what the tool will consi
 - [ ] World-hop host address injection
 - [x] Login re-encoding & obtaining ISAAC Seed
 - [x] HTTP Server (worldlist.ws, jav_config.ws)
-- [ ] Binary header building
+- [x] Binary header building
 - [ ] Binary blob reader/writer
 - [ ] Privacy concerns
   - [ ] Bank Pin erasure
