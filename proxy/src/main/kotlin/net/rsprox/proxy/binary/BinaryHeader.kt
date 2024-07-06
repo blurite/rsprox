@@ -19,7 +19,7 @@ public data class BinaryHeader(
     public val worldHost: String,
     public val worldActivity: String,
     public val localPlayerIndex: Int,
-    public val accountHash: Long,
+    public val accountHash: ByteArray,
     public val clientName: String,
     public val isaacSeed: IntArray,
     public val js5MasterIndex: ByteArray,
@@ -38,7 +38,8 @@ public data class BinaryHeader(
         buffer.pjstr(worldHost)
         buffer.pjstr(worldActivity)
         buffer.p2(localPlayerIndex)
-        buffer.p8(accountHash)
+        buffer.p2(accountHash.size)
+        buffer.pdata(accountHash)
         buffer.pjstr(clientName)
         for (value in isaacSeed) {
             buffer.p4(value)
@@ -66,7 +67,7 @@ public data class BinaryHeader(
         if (worldHost != other.worldHost) return false
         if (worldActivity != other.worldActivity) return false
         if (localPlayerIndex != other.localPlayerIndex) return false
-        if (accountHash != other.accountHash) return false
+        if (!accountHash.contentEquals(other.accountHash)) return false
         if (clientName != other.clientName) return false
         if (!isaacSeed.contentEquals(other.isaacSeed)) return false
         if (!js5MasterIndex.contentEquals(other.js5MasterIndex)) return false
@@ -87,11 +88,32 @@ public data class BinaryHeader(
         result = 31 * result + worldHost.hashCode()
         result = 31 * result + worldActivity.hashCode()
         result = 31 * result + localPlayerIndex
-        result = 31 * result + accountHash.hashCode()
+        result = 31 * result + accountHash.contentHashCode()
         result = 31 * result + clientName.hashCode()
         result = 31 * result + isaacSeed.contentHashCode()
         result = 31 * result + js5MasterIndex.contentHashCode()
         return result
+    }
+
+    override fun toString(): String {
+        return "BinaryHeader(" +
+            "headerVersion=$headerVersion, " +
+            "revision=$revision, " +
+            "subRevision=$subRevision, " +
+            "clientType=$clientType, " +
+            "platformType=$platformType, " +
+            "timestamp=$timestamp, " +
+            "worldId=$worldId, " +
+            "worldFlags=$worldFlags, " +
+            "worldLocation=$worldLocation, " +
+            "worldHost='$worldHost', " +
+            "worldActivity='$worldActivity', " +
+            "localPlayerIndex=$localPlayerIndex, " +
+            "accountHash=${accountHash.contentToString()}, " +
+            "clientName='$clientName', " +
+            "isaacSeed=${isaacSeed.contentToString()}, " +
+            "js5MasterIndex=${js5MasterIndex.contentToString()}" +
+            ")"
     }
 
     public class Builder {
@@ -103,7 +125,7 @@ public data class BinaryHeader(
         private var timestamp: Long = -1
         private var world: World? = null
         private var localPlayerIndex: Int = -1
-        private var accountHash: Long = -1
+        private var accountHash: ByteArray? = null
         private var clientName: String? = null
         private var isaacSeed: IntArray? = null
         private var js5MasterIndex: ByteArray? = null
@@ -148,7 +170,7 @@ public data class BinaryHeader(
             return this
         }
 
-        public fun accountHash(value: Long): Builder {
+        public fun accountHash(value: ByteArray): Builder {
             this.accountHash = value
             return this
         }
@@ -159,7 +181,7 @@ public data class BinaryHeader(
         }
 
         public fun isaacSeed(value: IntArray): Builder {
-            this.isaacSeed = value
+            this.isaacSeed = value.copyOf()
             return this
         }
 
@@ -176,7 +198,8 @@ public data class BinaryHeader(
             check(platformType != -1) { "Platform type uninitialized" }
             check(timestamp != -1L) { "Login timestamp uninitialized" }
             check(localPlayerIndex != -1) { "Local player index uninitialized" }
-            check(accountHash != -1L) { "Account hash uninitialized" }
+            val accountHash = this.accountHash
+            check(accountHash != null) { "Account hash uninitialized" }
             val world = this.world
             checkNotNull(world) { "World uninitialized" }
             val clientName = this.clientName
@@ -207,6 +230,8 @@ public data class BinaryHeader(
     }
 
     public companion object {
+        public const val HEADER_VERSION: Int = 1
+
         public fun decode(buffer: JagByteBuf): BinaryHeader {
             val headerVersion = buffer.g4()
             val revision = buffer.g4()
@@ -220,7 +245,9 @@ public data class BinaryHeader(
             val worldHost = buffer.gjstr()
             val worldActivity = buffer.gjstr()
             val localPlayerIndex = buffer.g2()
-            val accountHash = buffer.g8()
+            val accountHashSize = buffer.g2()
+            val accountHash = ByteArray(accountHashSize)
+            buffer.gdata(accountHash)
             val clientName = buffer.gjstr()
             val isaacSeed =
                 IntArray(4) {
