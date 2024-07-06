@@ -22,6 +22,7 @@ public data class BinaryHeader(
     public val accountHash: ByteArray,
     public val clientName: String,
     public val isaacSeed: IntArray,
+    public val twoFactorCodeUsed: Boolean,
     public val js5MasterIndex: ByteArray,
 ) {
     public fun encode(allocator: ByteBufAllocator): JagByteBuf {
@@ -44,6 +45,7 @@ public data class BinaryHeader(
         for (value in isaacSeed) {
             buffer.p4(value)
         }
+        buffer.pboolean(twoFactorCodeUsed)
         buffer.p4(js5MasterIndex.size)
         buffer.pdata(js5MasterIndex)
         return buffer
@@ -70,6 +72,7 @@ public data class BinaryHeader(
         if (!accountHash.contentEquals(other.accountHash)) return false
         if (clientName != other.clientName) return false
         if (!isaacSeed.contentEquals(other.isaacSeed)) return false
+        if (twoFactorCodeUsed != other.twoFactorCodeUsed) return false
         if (!js5MasterIndex.contentEquals(other.js5MasterIndex)) return false
 
         return true
@@ -91,6 +94,7 @@ public data class BinaryHeader(
         result = 31 * result + accountHash.contentHashCode()
         result = 31 * result + clientName.hashCode()
         result = 31 * result + isaacSeed.contentHashCode()
+        result = 31 * result + twoFactorCodeUsed.hashCode()
         result = 31 * result + js5MasterIndex.contentHashCode()
         return result
     }
@@ -112,6 +116,7 @@ public data class BinaryHeader(
             "accountHash=${accountHash.contentToString()}, " +
             "clientName='$clientName', " +
             "isaacSeed=${isaacSeed.contentToString()}, " +
+            "twoFactorCodeUsed=$twoFactorCodeUsed, " +
             "js5MasterIndex=${js5MasterIndex.contentToString()}" +
             ")"
     }
@@ -128,6 +133,7 @@ public data class BinaryHeader(
         private var accountHash: ByteArray? = null
         private var clientName: String? = null
         private var isaacSeed: IntArray? = null
+        private var twoFactorCodeUsed: Boolean? = null
         private var js5MasterIndex: ByteArray? = null
 
         public fun headerVersion(value: Int): Builder {
@@ -185,6 +191,11 @@ public data class BinaryHeader(
             return this
         }
 
+        public fun twoFactorCodeUsed(value: Boolean): Builder {
+            this.twoFactorCodeUsed = value
+            return this
+        }
+
         public fun js5MasterIndex(value: ByteArray): Builder {
             this.js5MasterIndex = value
             return this
@@ -206,6 +217,8 @@ public data class BinaryHeader(
             checkNotNull(clientName) { "Client name uninitialized" }
             val isaacSeed = this.isaacSeed
             checkNotNull(isaacSeed) { "ISAAC seed uninitialized" }
+            val twoFactorCodeUsed = this.twoFactorCodeUsed
+            checkNotNull(twoFactorCodeUsed) { "Two factor authentication code status uninitialized" }
             val js5MasterIndex = this.js5MasterIndex
             checkNotNull(js5MasterIndex) { "JS5 Master Index uninitialized" }
             return BinaryHeader(
@@ -224,6 +237,7 @@ public data class BinaryHeader(
                 accountHash,
                 clientName,
                 isaacSeed,
+                twoFactorCodeUsed,
                 js5MasterIndex,
             )
         }
@@ -253,6 +267,7 @@ public data class BinaryHeader(
                 IntArray(4) {
                     buffer.g4()
                 }
+            val twoFactorCodeUsed = buffer.gboolean()
             val js5MasterIndexLength = buffer.g4()
             val js5MasterIndex = ByteArray(js5MasterIndexLength)
             buffer.gdata(js5MasterIndex)
@@ -272,6 +287,7 @@ public data class BinaryHeader(
                 accountHash,
                 clientName,
                 isaacSeed,
+                twoFactorCodeUsed,
                 js5MasterIndex,
             )
         }
