@@ -7,6 +7,7 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import net.rsprot.buffer.extensions.p1
 import net.rsprot.buffer.extensions.p2
+import net.rsprot.buffer.extensions.pjstr
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.crypto.cipher.IsaacRandom
 import net.rsprot.crypto.cipher.StreamCipherPair
@@ -121,11 +122,22 @@ public class ClientLoginHandler(
         val headerSize = 4 + 4 + 1 + 1 + 1
 
         val originalRsaSize = buffer.g2()
+        if (!buffer.isReadable(originalRsaSize)) {
+            invalidRsa(ctx)
+        }
         val rsaSlice = buffer.buffer.readSlice(originalRsaSize)
         val xteaBlock = buffer.buffer.copy()
-        val decryptedRsaBuffer = rsaSlice.rsa(rsa).toJagByteBuf()
+        val decryptedRsaBuffer =
+            try {
+                rsaSlice.rsa(rsa).toJagByteBuf()
+            } catch (t: Throwable) {
+                invalidRsa(ctx)
+            }
         val rsaStart = decryptedRsaBuffer.readerIndex()
-        decryptedRsaBuffer.skipRead(1)
+        val rsaCheck = decryptedRsaBuffer.g1()
+        if (rsaCheck != 1) {
+            invalidRsa(ctx)
+        }
         val encodeSeed =
             IntArray(4) {
                 decryptedRsaBuffer.g4()
@@ -157,6 +169,29 @@ public class ClientLoginHandler(
         msg.replacePayload(encoded)
         // For now just switch back to relay when it comes to packets
         switchToRelay(ctx)
+    }
+
+    private fun invalidRsa(ctx: ChannelHandlerContext): Nothing {
+        // In the case of RSA failure, it implies the client was patched with a different RSA key
+        // than what the proxy has loaded up. This can happen if someone deletes the cached proxy
+        // key in their user.home/.rsprox directory.
+        // In this case, we just drop the connection to the server and write a custom login response
+        // to the client indicating what went wrong.
+        serverChannel.close()
+        val customResponseBuffer = Unpooled.buffer()
+        customResponseBuffer.p1(LoginServerProtId.DISALLOWED_BY_SCRIPT)
+        val index = customResponseBuffer.writerIndex()
+        customResponseBuffer.p2(0)
+        customResponseBuffer.pjstr("RSA out of date!")
+        customResponseBuffer.pjstr("Re-open the client via the proxy.")
+        customResponseBuffer.pjstr("Connection to the server has been killed.")
+        val end = customResponseBuffer.writerIndex()
+        val length = end - index - 2
+        customResponseBuffer.writerIndex(index)
+        customResponseBuffer.p2(length)
+        customResponseBuffer.writerIndex(end)
+        ctx.channel().writeAndFlush(customResponseBuffer).await()
+        throw IllegalStateException("Invalid RSA")
     }
 
     private fun switchToRelay(ctx: ChannelHandlerContext) {
