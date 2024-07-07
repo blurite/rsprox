@@ -1,9 +1,11 @@
 package net.rsprox.proxy.client
 
 import com.github.michaelbull.logging.InlineLogger
+import io.netty.buffer.Unpooled
 import io.netty.channel.Channel
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
+import net.rsprot.buffer.extensions.p1
 import net.rsprot.buffer.extensions.p2
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.crypto.cipher.IsaacRandom
@@ -18,6 +20,7 @@ import net.rsprox.proxy.channel.replace
 import net.rsprox.proxy.js5.Js5MasterIndexArchive
 import net.rsprox.proxy.rsa.Rsa
 import net.rsprox.proxy.rsa.rsa
+import net.rsprox.proxy.server.LoginServerProtId
 import net.rsprox.proxy.server.ServerGameLoginDecoder
 import net.rsprox.proxy.server.ServerJs5LoginHandler
 import net.rsprox.proxy.server.ServerLoginDecoder
@@ -100,6 +103,18 @@ public class ClientLoginHandler(
         builder.clientType(clientType)
         builder.platformType(platformType)
         val masterIndex = Js5MasterIndexArchive.getJs5MasterIndex(ctx.channel().getWorld())
+        if (masterIndex == null) {
+            // If we can't find a JS5 master index associated to a world,
+            // the proxy was likely restarted while the client was kept at login screen.
+            // In order to get around it, we just tell the client that the server requested a reload
+            // This just reboots the client and forces it to open a JS5 connection to the server,
+            // which gets us the JS5 file that we need for our log.
+            val forcedReloadBuffer = Unpooled.buffer()
+            forcedReloadBuffer.p1(LoginServerProtId.OUT_OF_DATE_RELOAD)
+            ctx.channel().writeAndFlush(forcedReloadBuffer)
+            serverChannel.close()
+            return
+        }
         builder.js5MasterIndex(masterIndex)
 
         // The header^ will just naively be copied over

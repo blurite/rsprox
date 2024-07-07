@@ -16,11 +16,9 @@ public data object Js5MasterIndexArchive {
     private val logger = InlineLogger()
     private val archive: MutableMap<WorldUid, ByteArray> = mutableMapOf()
 
-    public fun getJs5MasterIndex(world: World): ByteArray {
+    public fun getJs5MasterIndex(world: World): ByteArray? {
         val uid = getWorldUid(world)
-        return requireNotNull(archive[uid]) {
-            "World $uid has not initialized the JS5 master index yet."
-        }
+        return archive[uid]
     }
 
     public fun setJs5MasterIndex(
