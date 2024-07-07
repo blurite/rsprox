@@ -1,6 +1,7 @@
 package net.rsprox.proxy.server
 
 import io.netty.buffer.ByteBuf
+import io.netty.buffer.Unpooled
 import io.netty.channel.Channel
 import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelFutureListener
@@ -8,6 +9,10 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ByteToMessageDecoder
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.buffer.extensions.toJagByteBuf
+import net.rsprox.proxy.attributes.BINARY_BLOB
+import net.rsprox.proxy.attributes.BINARY_HEADER_BUILDER
+import net.rsprox.proxy.binary.BinaryBlob
+import net.rsprox.proxy.binary.BinaryStream
 import net.rsprox.proxy.channel.getBinaryHeaderBuilder
 import net.rsprox.proxy.channel.getServerToClientStreamCipher
 import net.rsprox.proxy.channel.remove
@@ -205,7 +210,19 @@ public class ServerGameLoginDecoder(
             builder.twoFactorCodeUsed(authenticator == 1)
             builder.localPlayerIndex(localPlayerIndex)
             builder.accountHash(userUid.hash)
-            // TODO: Build and attach to session
+            val timestamp = System.currentTimeMillis()
+            builder.timestamp(timestamp)
+            val nanoTimestamp = System.nanoTime()
+            val header = builder.build()
+            val stream = BinaryStream(Unpooled.buffer(1_000_000), nanoTimestamp)
+            val blob = BinaryBlob(header, stream)
+            val serverChannel = ctx.channel()
+            // Remove the binary header builder, nothing should be trying to update it from here on out
+            serverChannel.attr(BINARY_HEADER_BUILDER).set(null)
+            clientChannel.attr(BINARY_HEADER_BUILDER).set(null)
+            // Set the binary blob in place, this will periodically flush & save on disk
+            serverChannel.attr(BINARY_BLOB).set(blob)
+            clientChannel.attr(BINARY_BLOB).set(blob)
             writeToClient {
                 p1(authenticator)
                 p4(encryptedAuthenticatorCode)

@@ -54,8 +54,6 @@ public class ClientLoginInitializer(
                 // TODO: Client name must be passed on from the patcher eventually
                 builder.clientName("Deobfuscated Java Client")
                 builder.headerVersion(BinaryHeader.HEADER_VERSION)
-                val timestamp = System.currentTimeMillis()
-                builder.timestamp(timestamp)
                 builder.world(world)
                 clientChannel.attr(WORLD_ATTRIBUTE).set(world)
                 serverChannel.attr(WORLD_ATTRIBUTE).set(world)

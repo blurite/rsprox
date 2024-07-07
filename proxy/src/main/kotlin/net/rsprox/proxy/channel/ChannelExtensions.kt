@@ -5,9 +5,11 @@ import io.netty.channel.ChannelHandler
 import io.netty.channel.ChannelPipeline
 import net.rsprot.crypto.cipher.StreamCipher
 import net.rsprot.crypto.cipher.StreamCipherPair
+import net.rsprox.proxy.attributes.BINARY_BLOB
 import net.rsprox.proxy.attributes.BINARY_HEADER_BUILDER
 import net.rsprox.proxy.attributes.STREAM_CIPHER_PAIR
 import net.rsprox.proxy.attributes.WORLD_ATTRIBUTE
+import net.rsprox.proxy.binary.BinaryBlob
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.worlds.World
 
@@ -53,4 +55,9 @@ public fun Channel.getClientToServerStreamCipher(): StreamCipher {
 
 public fun Channel.getServerToClientStreamCipher(): StreamCipher {
     return getStreamCipherPair().encoderCipher
+}
+
+public fun Channel.getBinaryBlob(): BinaryBlob {
+    return attr(BINARY_BLOB).get()
+        ?: throw IllegalStateException("Binary blob not assigned to $this")
 }
