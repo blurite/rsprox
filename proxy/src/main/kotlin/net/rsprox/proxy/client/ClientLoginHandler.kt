@@ -142,7 +142,6 @@ public class ClientLoginHandler(
             IntArray(4) {
                 decryptedRsaBuffer.g4()
             }
-        builder.isaacSeed(encodeSeed)
         val decodeSeed =
             IntArray(encodeSeed.size) {
                 encodeSeed[it] + 50

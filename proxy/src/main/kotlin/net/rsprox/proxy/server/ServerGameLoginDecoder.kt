@@ -207,7 +207,6 @@ public class ServerGameLoginDecoder(
             val userHash = input.g8()
             val userUid = UserUid(userId, userHash)
             val builder = ctx.channel().getBinaryHeaderBuilder()
-            builder.twoFactorCodeUsed(authenticator == 1)
             builder.localPlayerIndex(localPlayerIndex)
             builder.accountHash(userUid.hash)
             val timestamp = System.currentTimeMillis()
