@@ -14,7 +14,7 @@ public class ClientGameHandler(
         ctx: ChannelHandlerContext,
         msg: ClientPacket<GameClientProt>,
     ) {
-        ctx.channel().getBinaryBlob().append(StreamDirection.ClientToServer, msg.encode(ctx.alloc(), mod = false))
         serverChannel.writeAndFlush(msg.encode(ctx.alloc()))
+        ctx.channel().getBinaryBlob().append(StreamDirection.ClientToServer, msg.encode(ctx.alloc(), mod = false))
     }
 }

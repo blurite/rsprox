@@ -11,6 +11,7 @@ import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.bootstrap.BootstrapFactory
 import net.rsprox.proxy.channel.setAutoRead
 import net.rsprox.proxy.client.prot.LoginClientProtProvider
+import net.rsprox.proxy.util.ChannelConnectionHandler
 import net.rsprox.proxy.worlds.LocalHostAddress
 import net.rsprox.proxy.worlds.WorldListProvider
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
@@ -33,7 +34,16 @@ public class ClientLoginInitializer(
         logger.info { "Establishing a new connection to ${world.localHostAddress} @ ${world.activity}" }
         val clientBootstrap = bootstrapFactory.createClientBootstrap()
         logger.info { "Connecting to ${world.host}@$SERVER_PORT -- $localHostAddress, $world" }
-        val future = clientBootstrap.connect(world.host, SERVER_PORT).sync()
+        val future =
+            try {
+                clientBootstrap.connect(world.host, SERVER_PORT).sync()
+            } catch (t: Throwable) {
+                logger.error(t) {
+                    "Unable to connect to /${world.host}:$SERVER_PORT"
+                }
+                clientChannel.close()
+                return
+            }
         val serverChannel = future.channel()
         future.addListener(
             ChannelFutureListener { connectFuture ->
@@ -52,6 +62,8 @@ public class ClientLoginInitializer(
                     ClientGenericDecoder(NopStreamCipher, LoginClientProtProvider),
                     ClientLoginHandler(serverChannel, rsa, originalModulus),
                 )
+                clientChannel.pipeline().addLast(ChannelConnectionHandler(serverChannel))
+                serverChannel.pipeline().addLast(ChannelConnectionHandler(clientChannel))
                 val builder = BinaryHeader.Builder()
                 // TODO: Client name must be passed on from the patcher eventually
                 builder.clientName("Deobfuscated Java Client")
