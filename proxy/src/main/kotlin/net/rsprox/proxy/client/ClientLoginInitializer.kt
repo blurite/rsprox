@@ -61,7 +61,7 @@ public class ClientLoginInitializer(
                 }
                 clientChannel.pipeline().addLast(
                     ClientGenericDecoder(NopStreamCipher, LoginClientProtProvider),
-                    ClientLoginHandler(serverChannel, rsa, originalModulus, binaryWriteInterval),
+                    ClientLoginHandler(serverChannel, rsa, originalModulus, binaryWriteInterval, worldListProvider),
                 )
                 clientChannel.pipeline().addLast(ChannelConnectionHandler(serverChannel))
                 serverChannel.pipeline().addLast(ChannelConnectionHandler(clientChannel))

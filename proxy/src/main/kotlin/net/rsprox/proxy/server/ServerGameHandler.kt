@@ -5,6 +5,8 @@ import io.netty.channel.Channel
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import net.rsprot.buffer.extensions.gjstr
+import net.rsprot.buffer.extensions.p2
+import net.rsprot.buffer.extensions.p4
 import net.rsprot.buffer.extensions.pjstr
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.protocol.util.CombinedId
@@ -15,9 +17,11 @@ import net.rsprox.proxy.channel.getBinaryBlob
 import net.rsprox.proxy.channel.getServerToClientStreamCipher
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.server.prot.GameServerProt
+import net.rsprox.proxy.worlds.WorldListProvider
 
 public class ServerGameHandler(
     private val clientChannel: Channel,
+    private val worldListProvider: WorldListProvider,
 ) : SimpleChannelInboundHandler<ServerPacket<GameServerProt>>() {
     private var bankPinComponent: CombinedId? = null
 
@@ -25,12 +29,36 @@ public class ServerGameHandler(
         ctx: ChannelHandlerContext,
         msg: ServerPacket<GameServerProt>,
     ) {
-        clientChannel.writeAndFlush(msg.encode(ctx.alloc()))
+        clientChannel.writeAndFlush(redirectTraffic(ctx, msg).encode(ctx.alloc()))
         eraseSensitiveContents(ctx, msg)
         ctx.channel().getBinaryBlob().append(
             StreamDirection.ServerToClient,
             msg.encode(ctx.alloc(), mod = false),
         )
+    }
+
+    private fun redirectTraffic(
+        ctx: ChannelHandlerContext,
+        msg: ServerPacket<GameServerProt>,
+    ): ServerPacket<GameServerProt> {
+        if (msg.prot != GameServerProt.LOGOUT_TRANSFER) {
+            return msg
+        }
+        val buf = msg.payload.toJagByteBuf()
+        val host = buf.gjstr()
+        val id = buf.g2()
+        val properties = buf.g4()
+        val world =
+            checkNotNull(worldListProvider.get().getTargetWorld(host)) {
+                "Unable to find world at host address $host, id $id, properties $properties"
+            }
+        val encoded = ctx.alloc().buffer()
+        // Redirect the world to one of our local hosts
+        encoded.pjstr(world.localHostAddress.toString())
+        encoded.p2(id)
+        encoded.p4(properties)
+        // Make a clean copy here as we don't want to modify the logged host
+        return msg.copy(encoded)
     }
 
     private fun eraseSensitiveContents(

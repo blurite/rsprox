@@ -18,10 +18,12 @@ import net.rsprox.proxy.channel.getServerToClientStreamCipher
 import net.rsprox.proxy.channel.replace
 import net.rsprox.proxy.server.prot.GameServerProtProvider
 import net.rsprox.proxy.util.UserUid
+import net.rsprox.proxy.worlds.WorldListProvider
 
 public class ServerGameLoginDecoder(
     private val clientChannel: Channel,
     private val binaryWriteInterval: Int,
+    private val worldListProvider: WorldListProvider,
 ) : ByteToMessageDecoder() {
     private enum class State {
         AWAITING_GAME_CONNECTION_REPLY,
@@ -243,7 +245,7 @@ public class ServerGameLoginDecoder(
                     GameServerProtProvider,
                 ),
             )
-            pipeline.replace<ServerRelayHandler>(ServerGameHandler(clientChannel))
+            pipeline.replace<ServerRelayHandler>(ServerGameHandler(clientChannel, worldListProvider))
         }
     }
 

@@ -5,6 +5,7 @@ import io.netty.buffer.ByteBufAllocator
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.protocol.Prot
 
+@Suppress("DuplicatedCode")
 public class ServerPacket<out T : Prot>(
     public val prot: T,
     private val cipherMod1: Int,
@@ -13,9 +14,16 @@ public class ServerPacket<out T : Prot>(
 ) {
     public val payload: ByteBuf
         get() = _payload
-    private var _start: Int = payload.readerIndex()
-    public val start: Int
-        get() = _start
+    private var start: Int = payload.readerIndex()
+
+    public fun copy(payload: ByteBuf): ServerPacket<T> {
+        return ServerPacket(
+            prot,
+            cipherMod1,
+            cipherMod2,
+            payload,
+        )
+    }
 
     public fun encode(
         allocator: ByteBufAllocator,
@@ -49,7 +57,7 @@ public class ServerPacket<out T : Prot>(
         val old = this._payload
         try {
             this._payload = buf
-            this._start = buf.readerIndex()
+            this.start = buf.readerIndex()
         } finally {
             old.release()
         }

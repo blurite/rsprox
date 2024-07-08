@@ -31,6 +31,7 @@ import net.rsprox.proxy.server.ServerJs5LoginHandler
 import net.rsprox.proxy.server.ServerRelayHandler
 import net.rsprox.proxy.server.prot.LoginServerProtId
 import net.rsprox.proxy.server.prot.LoginServerProtProvider
+import net.rsprox.proxy.worlds.WorldListProvider
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
 import java.math.BigInteger
 
@@ -39,6 +40,7 @@ public class ClientLoginHandler(
     private val rsa: RSAPrivateCrtKeyParameters,
     private val originalModulus: BigInteger,
     private val binaryWriteInterval: Int,
+    private val worldListProvider: WorldListProvider,
 ) : SimpleChannelInboundHandler<ClientPacket<LoginClientProt>>() {
     override fun channelRead0(
         ctx: ChannelHandlerContext,
@@ -221,7 +223,7 @@ public class ClientLoginHandler(
 
     private fun switchServerToGameLoginDecoding(ctx: ChannelHandlerContext) {
         val pipeline = serverChannel.pipeline()
-        pipeline.addLastWithName(ServerGameLoginDecoder(ctx.channel(), binaryWriteInterval))
+        pipeline.addLastWithName(ServerGameLoginDecoder(ctx.channel(), binaryWriteInterval, worldListProvider))
         pipeline.addLastWithName(ServerRelayHandler(ctx.channel()))
     }
 
