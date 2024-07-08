@@ -20,7 +20,7 @@ Below is a small task list showing a rough breakdown of what the tool will consi
   - [ ] RuneLite Forks
   - [ ] HDOS
 - [x] World identification via localhost address
-- [ ] World-hop host address injection
+- [x] World-hop host address injection
 - [x] Login re-encoding & obtaining ISAAC Seed
 - [x] HTTP Server (worldlist.ws, jav_config.ws)
 - [x] Binary header building
