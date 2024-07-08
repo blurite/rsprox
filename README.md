@@ -25,8 +25,8 @@ Below is a small task list showing a rough breakdown of what the tool will consi
 - [x] HTTP Server (worldlist.ws, jav_config.ws)
 - [x] Binary header building
 - [x] Binary blob reader/writer
-- [ ] Privacy concerns
-  - [ ] Bank Pin erasure
+- [x] Privacy concerns
+  - [x] Bank Pin erasure
   - [x] Private message content erasure
   - [x] Login tokens in URL open packets
 - [ ] Graphical User Interface (Proxy tool)
