@@ -11,3 +11,4 @@ public val STREAM_CIPHER_PAIR: AttributeKey<StreamCipherPair> = AttributeKey.new
 public val BINARY_HEADER_BUILDER: AttributeKey<BinaryHeader.Builder> =
     AttributeKey.newInstance("binary_header_builder")
 public val BINARY_BLOB: AttributeKey<BinaryBlob> = AttributeKey.newInstance("binary_blob")
+public val INCOMING_BANK_PIN: AttributeKey<Boolean> = AttributeKey.newInstance("incoming_bank_pin")

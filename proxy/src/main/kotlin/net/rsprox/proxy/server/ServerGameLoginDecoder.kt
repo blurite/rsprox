@@ -116,7 +116,7 @@ public class ServerGameLoginDecoder(
                 }
                 else -> {
                     // login error
-                    throw IllegalStateException("Client disconnceted (${this.stateValue})")
+                    throw IllegalStateException("Client disconnected (${this.stateValue})")
                 }
             }
         }
