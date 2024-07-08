@@ -14,6 +14,7 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_HTTP_PORT
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
 import net.rsprox.proxy.futures.asCompletableFuture
+import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
 import net.rsprox.proxy.worlds.DynamicWorldListProvider
 import net.rsprox.proxy.worlds.World
@@ -39,6 +40,7 @@ public class ProxyService(
         logger.info { "Starting proxy service" }
         createConfigurationDirectories()
         loadProperties()
+        HuffmanProvider.load()
         val rsa = loadRsa()
         val factory = BootstrapFactory(allocator)
         val javConfig = loadJavConfig()
