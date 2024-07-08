@@ -24,10 +24,10 @@ Below is a small task list showing a rough breakdown of what the tool will consi
 - [x] Login re-encoding & obtaining ISAAC Seed
 - [x] HTTP Server (worldlist.ws, jav_config.ws)
 - [x] Binary header building
-- [ ] Binary blob reader/writer
+- [x] Binary blob reader/writer
 - [ ] Privacy concerns
   - [ ] Bank Pin erasure
-  - [ ] Private message content erasure
+  - [x] Private message content erasure
 - [ ] Graphical User Interface (Proxy tool)
 - [ ] Graphical User Interface (Live Transcriber)
 - [ ] Public archive
