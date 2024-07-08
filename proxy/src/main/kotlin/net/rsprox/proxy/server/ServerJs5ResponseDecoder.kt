@@ -39,6 +39,20 @@ public class ServerJs5ResponseDecoder : ByteToMessageDecoder() {
             this.group = input.g2()
             this.compression = input.g1()
             this.size = input.g4()
+            // If what we got from the client doesn't begin with the master index,
+            // the client likely opened a new JS5 connection that no longer requires it
+            // as it has already been obtained previously.
+            // In these cases, just switch over to naive relaying.
+            if (this.archive != 0xFF || this.group != 0xFF) {
+                val buffer = ctx.alloc().buffer(8)
+                buffer.p1(this.archive)
+                buffer.p2(this.group)
+                buffer.p1(this.compression)
+                buffer.p4(this.size)
+                out += buffer
+                ctx.pipeline().remove<ServerJs5ResponseDecoder>()
+                return
+            }
             state = State.Payload
             logger.debug {
                 "Js5 group response: archive ${this.archive}, group ${this.group}, compression ${this.compression}"
@@ -47,13 +61,6 @@ public class ServerJs5ResponseDecoder : ByteToMessageDecoder() {
         if (state == State.Payload) {
             if (!input.isReadable(size)) {
                 return
-            }
-            // We only accept master index response
-            // This should always be transmitted first without exceptions
-            // After we get the value, this decoder is dropped and all future messages
-            // Will simply be passed along to the client
-            check(this.archive == 255 && this.group == 255) {
-                "Invalid first response from server: ${this.archive}, ${this.group}"
             }
             val buffer = ctx.alloc().buffer(8 + size)
             buffer.p1(this.archive)
