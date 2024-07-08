@@ -15,6 +15,7 @@ import net.rsprot.crypto.rsa.decipherRsa
 import net.rsprox.proxy.attributes.STREAM_CIPHER_PAIR
 import net.rsprox.proxy.channel.addLastWithName
 import net.rsprox.proxy.channel.getBinaryHeaderBuilder
+import net.rsprox.proxy.channel.getClientToServerStreamCipher
 import net.rsprox.proxy.channel.getWorld
 import net.rsprox.proxy.channel.remove
 import net.rsprox.proxy.channel.replace
@@ -33,10 +34,10 @@ public class ClientLoginHandler(
     private val serverChannel: Channel,
     private val rsa: RSAPrivateCrtKeyParameters,
     private val originalModulus: BigInteger,
-) : SimpleChannelInboundHandler<WrappedIncomingMessage>(WrappedIncomingMessage::class.java) {
+) : SimpleChannelInboundHandler<WrappedIncomingMessage<LoginClientProt>>() {
     override fun channelRead0(
         ctx: ChannelHandlerContext,
-        msg: WrappedIncomingMessage,
+        msg: WrappedIncomingMessage<LoginClientProt>,
     ) {
         when (msg.prot) {
             LoginClientProt.INIT_GAME_CONNECTION -> {
@@ -49,7 +50,7 @@ public class ClientLoginHandler(
                 logger.debug {
                     "Init JS5 remote connection"
                 }
-                switchToRelay(ctx)
+                switchClientToRelay(ctx)
                 switchServerToJs5LoginDecoding(ctx)
             }
             LoginClientProt.GAMELOGIN -> {
@@ -81,7 +82,7 @@ public class ClientLoginHandler(
             }
             LoginClientProt.SSL_WEB_CONNECTION -> {
                 logger.debug { "SSL Web connection received, switching to relay" }
-                switchToRelay(ctx)
+                switchClientToGameDecoding(ctx)
             }
         }
         serverChannel.writeAndFlush(msg.encode(ctx.alloc()))
@@ -89,7 +90,7 @@ public class ClientLoginHandler(
 
     private fun handleLogin(
         ctx: ChannelHandlerContext,
-        msg: WrappedIncomingMessage,
+        msg: WrappedIncomingMessage<LoginClientProt>,
     ) {
         val builder = ctx.channel().getBinaryHeaderBuilder()
         val buffer = msg.payload.toJagByteBuf()
@@ -166,8 +167,8 @@ public class ClientLoginHandler(
         encoded.writeBytes(xteaBlock)
         // Swap out the original login packet with the new one
         msg.replacePayload(encoded)
-        // For now just switch back to relay when it comes to packets
-        switchToRelay(ctx)
+        // Begin decoding game packets now.
+        switchClientToGameDecoding(ctx)
     }
 
     private fun invalidRsa(ctx: ChannelHandlerContext): Nothing {
@@ -193,9 +194,16 @@ public class ClientLoginHandler(
         throw IllegalStateException("Invalid RSA")
     }
 
-    private fun switchToRelay(ctx: ChannelHandlerContext) {
+    private fun switchClientToGameDecoding(ctx: ChannelHandlerContext) {
+        val cipher = ctx.channel().getClientToServerStreamCipher()
         val clientPipeline = ctx.channel().pipeline()
-        clientPipeline.remove<ClientLoginDecoder>()
+        clientPipeline.replace<ClientDecoder<*>>(ClientDecoder(cipher, GameClientProtProvider))
+        clientPipeline.replace<ClientLoginHandler>(ClientGameHandler(serverChannel))
+    }
+
+    private fun switchClientToRelay(ctx: ChannelHandlerContext) {
+        val clientPipeline = ctx.channel().pipeline()
+        clientPipeline.remove<ClientDecoder<*>>()
         clientPipeline.replace<ClientLoginHandler>(ClientRelayHandler(serverChannel))
     }
 

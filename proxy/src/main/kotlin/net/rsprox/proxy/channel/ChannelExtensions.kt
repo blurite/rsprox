@@ -50,11 +50,11 @@ public fun Channel.getStreamCipherPair(): StreamCipherPair {
 }
 
 public fun Channel.getClientToServerStreamCipher(): StreamCipher {
-    return getStreamCipherPair().decodeCipher
+    return getStreamCipherPair().encoderCipher
 }
 
 public fun Channel.getServerToClientStreamCipher(): StreamCipher {
-    return getStreamCipherPair().encoderCipher
+    return getStreamCipherPair().decodeCipher
 }
 
 public fun Channel.getBinaryBlob(): BinaryBlob {

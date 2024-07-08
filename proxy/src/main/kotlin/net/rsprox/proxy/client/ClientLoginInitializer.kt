@@ -4,6 +4,7 @@ import com.github.michaelbull.logging.InlineLogger
 import io.netty.channel.Channel
 import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelInitializer
+import net.rsprot.crypto.cipher.NopStreamCipher
 import net.rsprox.proxy.attributes.BINARY_HEADER_BUILDER
 import net.rsprox.proxy.attributes.WORLD_ATTRIBUTE
 import net.rsprox.proxy.binary.BinaryHeader
@@ -47,7 +48,7 @@ public class ClientLoginInitializer(
                     "Successfully connected to server ${world.host}/$SERVER_PORT via $clientChannel"
                 }
                 clientChannel.pipeline().addLast(
-                    ClientLoginDecoder(),
+                    ClientDecoder(NopStreamCipher, LoginClientProtProvider),
                     ClientLoginHandler(serverChannel, rsa, originalModulus),
                 )
                 val builder = BinaryHeader.Builder()

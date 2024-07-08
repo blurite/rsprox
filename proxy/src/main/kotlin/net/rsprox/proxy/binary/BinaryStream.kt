@@ -28,7 +28,11 @@ public class BinaryStream(
         val delta = min(MAX_31BIT_INT, millisecondDelta).toInt()
         val bitpacked = directionOpcode or (delta shl 1)
         this.buffer.pVarInt(bitpacked)
-        this.buffer.pdata(packet)
+        try {
+            this.buffer.pdata(packet)
+        } finally {
+            packet.release()
+        }
     }
 
     private companion object {
