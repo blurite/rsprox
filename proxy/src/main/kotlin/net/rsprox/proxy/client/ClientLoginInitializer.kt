@@ -49,7 +49,7 @@ public class ClientLoginInitializer(
                     "Successfully connected to server ${world.host}/$SERVER_PORT via $clientChannel"
                 }
                 clientChannel.pipeline().addLast(
-                    ClientDecoder(NopStreamCipher, LoginClientProtProvider),
+                    ClientGenericDecoder(NopStreamCipher, LoginClientProtProvider),
                     ClientLoginHandler(serverChannel, rsa, originalModulus),
                 )
                 val builder = BinaryHeader.Builder()

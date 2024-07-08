@@ -8,11 +8,12 @@ import net.rsprot.buffer.extensions.g2
 import net.rsprot.crypto.cipher.StreamCipher
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.Prot
-import net.rsprox.proxy.client.prot.ClientProtProvider
+import net.rsprox.proxy.util.Packet
+import net.rsprox.proxy.util.ProtProvider
 
-public class ClientDecoder<out T : ClientProt>(
+public class ClientGenericDecoder<out T : ClientProt>(
     private val cipher: StreamCipher,
-    private val protProvider: ClientProtProvider<T>,
+    private val protProvider: ProtProvider<T>,
 ) : ByteToMessageDecoder() {
     private enum class State {
         READ_OPCODE,
@@ -76,7 +77,7 @@ public class ClientDecoder<out T : ClientProt>(
             }
             val payload = input.readSlice(length)
             out +=
-                WrappedIncomingMessage(
+                Packet(
                     this.prot,
                     this.cipherMod,
                     payload.retainedSlice(),

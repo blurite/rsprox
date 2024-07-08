@@ -10,6 +10,7 @@ import net.rsprot.buffer.extensions.p2
 import net.rsprot.buffer.extensions.pjstr
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.crypto.cipher.IsaacRandom
+import net.rsprot.crypto.cipher.NopStreamCipher
 import net.rsprot.crypto.cipher.StreamCipherPair
 import net.rsprot.crypto.rsa.decipherRsa
 import net.rsprox.proxy.attributes.STREAM_CIPHER_PAIR
@@ -24,11 +25,13 @@ import net.rsprox.proxy.client.prot.LoginClientProt
 import net.rsprox.proxy.js5.Js5MasterIndexArchive
 import net.rsprox.proxy.rsa.Rsa
 import net.rsprox.proxy.rsa.rsa
-import net.rsprox.proxy.server.LoginServerProtId
 import net.rsprox.proxy.server.ServerGameLoginDecoder
+import net.rsprox.proxy.server.ServerGenericDecoder
 import net.rsprox.proxy.server.ServerJs5LoginHandler
-import net.rsprox.proxy.server.ServerLoginDecoder
 import net.rsprox.proxy.server.ServerRelayHandler
+import net.rsprox.proxy.server.prot.LoginServerProtId
+import net.rsprox.proxy.server.prot.LoginServerProtProvider
+import net.rsprox.proxy.util.Packet
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
 import java.math.BigInteger
 
@@ -36,10 +39,10 @@ public class ClientLoginHandler(
     private val serverChannel: Channel,
     private val rsa: RSAPrivateCrtKeyParameters,
     private val originalModulus: BigInteger,
-) : SimpleChannelInboundHandler<WrappedIncomingMessage<LoginClientProt>>() {
+) : SimpleChannelInboundHandler<Packet<LoginClientProt>>() {
     override fun channelRead0(
         ctx: ChannelHandlerContext,
-        msg: WrappedIncomingMessage<LoginClientProt>,
+        msg: Packet<LoginClientProt>,
     ) {
         when (msg.prot) {
             LoginClientProt.INIT_GAME_CONNECTION -> {
@@ -92,7 +95,7 @@ public class ClientLoginHandler(
 
     private fun handleLogin(
         ctx: ChannelHandlerContext,
-        msg: WrappedIncomingMessage<LoginClientProt>,
+        msg: Packet<LoginClientProt>,
     ) {
         val builder = ctx.channel().getBinaryHeaderBuilder()
         val buffer = msg.payload.toJagByteBuf()
@@ -155,6 +158,7 @@ public class ClientLoginHandler(
         val decodingCipher = IsaacRandom(decodeSeed)
         val pair = StreamCipherPair(encodingCipher, decodingCipher)
         ctx.channel().attr(STREAM_CIPHER_PAIR).set(pair)
+        serverChannel.attr(STREAM_CIPHER_PAIR).set(pair)
         val encoded = ctx.alloc().buffer(msg.payload.readableBytes())
         encoded.writeBytes(msg.payload, msg.start, headerSize)
         decryptedRsaBuffer.readerIndex(rsaStart)
@@ -199,19 +203,19 @@ public class ClientLoginHandler(
     private fun switchClientToGameDecoding(ctx: ChannelHandlerContext) {
         val cipher = ctx.channel().getClientToServerStreamCipher()
         val clientPipeline = ctx.channel().pipeline()
-        clientPipeline.replace<ClientDecoder<*>>(ClientDecoder(cipher, GameClientProtProvider))
+        clientPipeline.replace<ClientGenericDecoder<*>>(ClientGenericDecoder(cipher, GameClientProtProvider))
         clientPipeline.replace<ClientLoginHandler>(ClientGameHandler(serverChannel))
     }
 
     private fun switchClientToRelay(ctx: ChannelHandlerContext) {
         val clientPipeline = ctx.channel().pipeline()
-        clientPipeline.remove<ClientDecoder<*>>()
+        clientPipeline.remove<ClientGenericDecoder<*>>()
         clientPipeline.replace<ClientLoginHandler>(ClientRelayHandler(serverChannel))
     }
 
     private fun switchServerToJs5LoginDecoding(ctx: ChannelHandlerContext) {
         val pipeline = serverChannel.pipeline()
-        pipeline.addLastWithName(ServerLoginDecoder())
+        pipeline.addLastWithName(ServerGenericDecoder(NopStreamCipher, LoginServerProtProvider))
         pipeline.addLastWithName(ServerJs5LoginHandler(ctx.channel()))
     }
 

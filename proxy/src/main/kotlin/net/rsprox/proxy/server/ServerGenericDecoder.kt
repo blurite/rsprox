@@ -5,9 +5,16 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ByteToMessageDecoder
 import net.rsprot.buffer.extensions.g1
 import net.rsprot.buffer.extensions.g2
+import net.rsprot.crypto.cipher.StreamCipher
 import net.rsprot.protocol.Prot
+import net.rsprot.protocol.ServerProt
+import net.rsprox.proxy.util.Packet
+import net.rsprox.proxy.util.ProtProvider
 
-public class ServerLoginDecoder : ByteToMessageDecoder() {
+public class ServerGenericDecoder<out T : ServerProt>(
+    private val cipher: StreamCipher,
+    private val protProvider: ProtProvider<T>,
+) : ByteToMessageDecoder() {
     private enum class State {
         READ_OPCODE,
         READ_LENGTH,
@@ -15,9 +22,10 @@ public class ServerLoginDecoder : ByteToMessageDecoder() {
     }
 
     private var state: State = State.READ_OPCODE
+    private var cipherMod: Int = -1
     private var opcode: Int = -1
     private var length: Int = 0
-    private lateinit var prot: LoginServerProt
+    private lateinit var prot: T
 
     override fun decode(
         ctx: ChannelHandlerContext,
@@ -28,8 +36,9 @@ public class ServerLoginDecoder : ByteToMessageDecoder() {
             if (!input.isReadable) {
                 return
             }
-            this.opcode = input.g1()
-            this.prot = LoginServerProt.entries.first { it.opcode == this.opcode }
+            this.cipherMod = cipher.nextInt()
+            this.opcode = (input.g1() - cipherMod) and 0xFF
+            this.prot = protProvider[opcode]
             this.length = this.prot.size
             state =
                 if (this.length >= 0) {
@@ -68,8 +77,9 @@ public class ServerLoginDecoder : ByteToMessageDecoder() {
             }
             val payload = input.readSlice(length)
             out +=
-                WrappedOutgoingMessage(
+                Packet(
                     this.prot,
+                    this.cipherMod,
                     payload.retainedSlice(),
                 )
             state = State.READ_OPCODE

@@ -5,13 +5,15 @@ import io.netty.channel.Channel
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import net.rsprox.proxy.channel.replace
+import net.rsprox.proxy.server.prot.LoginServerProt
+import net.rsprox.proxy.util.Packet
 
 public class ServerJs5LoginHandler(
     private val clientChannel: Channel,
-) : SimpleChannelInboundHandler<WrappedOutgoingMessage>(WrappedOutgoingMessage::class.java) {
+) : SimpleChannelInboundHandler<Packet<LoginServerProt>>() {
     override fun channelRead0(
         ctx: ChannelHandlerContext,
-        msg: WrappedOutgoingMessage,
+        msg: Packet<LoginServerProt>,
     ) {
         val response = msg.prot
         if (response != LoginServerProt.SUCCESSFUL) {
@@ -23,7 +25,7 @@ public class ServerJs5LoginHandler(
         logger.debug { "Js5 login successful, switching to response decoding" }
         clientChannel.writeAndFlush(msg.encode(ctx.alloc()))
         val pipeline = ctx.channel().pipeline()
-        pipeline.replace<ServerLoginDecoder>(ServerJs5ResponseDecoder())
+        pipeline.replace<ServerGenericDecoder<*>>(ServerJs5ResponseDecoder())
         pipeline.replace<ServerJs5LoginHandler>(ServerRelayHandler(clientChannel))
     }
 

@@ -1,4 +1,4 @@
-package net.rsprox.proxy.server
+package net.rsprox.proxy.server.prot
 
 @Suppress("SpellCheckingInspection")
 internal object GameServerProtId {

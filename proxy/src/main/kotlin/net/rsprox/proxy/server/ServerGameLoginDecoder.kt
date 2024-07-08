@@ -15,7 +15,8 @@ import net.rsprox.proxy.binary.BinaryBlob
 import net.rsprox.proxy.binary.BinaryStream
 import net.rsprox.proxy.channel.getBinaryHeaderBuilder
 import net.rsprox.proxy.channel.getServerToClientStreamCipher
-import net.rsprox.proxy.channel.remove
+import net.rsprox.proxy.channel.replace
+import net.rsprox.proxy.server.prot.GameServerProtProvider
 import net.rsprox.proxy.util.UserUid
 
 public class ServerGameLoginDecoder(
@@ -234,8 +235,13 @@ public class ServerGameLoginDecoder(
                 p8(userHash)
             }
             val pipeline = ctx.pipeline()
-            // Just stick to relaying the messages now
-            pipeline.remove<ServerGameLoginDecoder>()
+            pipeline.replace<ServerGameLoginDecoder>(
+                ServerGenericDecoder(
+                    serverChannel.getServerToClientStreamCipher(),
+                    GameServerProtProvider,
+                ),
+            )
+            pipeline.replace<ServerRelayHandler>(ServerGameHandler(clientChannel))
         }
     }
 

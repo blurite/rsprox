@@ -1,4 +1,4 @@
-package net.rsprox.proxy.server
+package net.rsprox.proxy.server.prot
 
 internal object LoginServerProtId {
     /**
