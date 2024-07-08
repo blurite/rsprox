@@ -31,7 +31,6 @@ import net.rsprox.proxy.server.ServerJs5LoginHandler
 import net.rsprox.proxy.server.ServerRelayHandler
 import net.rsprox.proxy.server.prot.LoginServerProtId
 import net.rsprox.proxy.server.prot.LoginServerProtProvider
-import net.rsprox.proxy.util.Packet
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
 import java.math.BigInteger
 
@@ -39,10 +38,10 @@ public class ClientLoginHandler(
     private val serverChannel: Channel,
     private val rsa: RSAPrivateCrtKeyParameters,
     private val originalModulus: BigInteger,
-) : SimpleChannelInboundHandler<Packet<LoginClientProt>>() {
+) : SimpleChannelInboundHandler<ClientPacket<LoginClientProt>>() {
     override fun channelRead0(
         ctx: ChannelHandlerContext,
-        msg: Packet<LoginClientProt>,
+        msg: ClientPacket<LoginClientProt>,
     ) {
         when (msg.prot) {
             LoginClientProt.INIT_GAME_CONNECTION -> {
@@ -95,7 +94,7 @@ public class ClientLoginHandler(
 
     private fun handleLogin(
         ctx: ChannelHandlerContext,
-        msg: Packet<LoginClientProt>,
+        msg: ClientPacket<LoginClientProt>,
     ) {
         val builder = ctx.channel().getBinaryHeaderBuilder()
         val buffer = msg.payload.toJagByteBuf()

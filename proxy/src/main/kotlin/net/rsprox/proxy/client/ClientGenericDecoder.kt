@@ -8,7 +8,6 @@ import net.rsprot.buffer.extensions.g2
 import net.rsprot.crypto.cipher.StreamCipher
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.Prot
-import net.rsprox.proxy.util.Packet
 import net.rsprox.proxy.util.ProtProvider
 
 public class ClientGenericDecoder<out T : ClientProt>(
@@ -77,7 +76,7 @@ public class ClientGenericDecoder<out T : ClientProt>(
             }
             val payload = input.readSlice(length)
             out +=
-                Packet(
+                ClientPacket(
                     this.prot,
                     this.cipherMod,
                     payload.retainedSlice(),

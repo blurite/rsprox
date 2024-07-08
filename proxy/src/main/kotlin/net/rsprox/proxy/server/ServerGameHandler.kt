@@ -6,14 +6,13 @@ import io.netty.channel.SimpleChannelInboundHandler
 import net.rsprox.proxy.binary.StreamDirection
 import net.rsprox.proxy.channel.getBinaryBlob
 import net.rsprox.proxy.server.prot.GameServerProt
-import net.rsprox.proxy.util.Packet
 
 public class ServerGameHandler(
     private val serverChannel: Channel,
-) : SimpleChannelInboundHandler<Packet<GameServerProt>>() {
+) : SimpleChannelInboundHandler<ServerPacket<GameServerProt>>() {
     override fun channelRead0(
         ctx: ChannelHandlerContext,
-        msg: Packet<GameServerProt>,
+        msg: ServerPacket<GameServerProt>,
     ) {
         ctx.channel().getBinaryBlob().append(StreamDirection.ServerToClient, msg.encode(ctx.alloc(), mod = false))
         serverChannel.writeAndFlush(msg.encode(ctx.alloc()))

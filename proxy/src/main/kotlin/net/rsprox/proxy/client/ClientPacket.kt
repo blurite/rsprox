@@ -1,11 +1,11 @@
-package net.rsprox.proxy.util
+package net.rsprox.proxy.client
 
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufAllocator
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.protocol.Prot
 
-public class Packet<out T : Prot>(
+public class ClientPacket<out T : Prot>(
     public val prot: T,
     private val cipherMod: Int,
     private var _payload: ByteBuf,

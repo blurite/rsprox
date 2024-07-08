@@ -6,14 +6,13 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import net.rsprox.proxy.channel.replace
 import net.rsprox.proxy.server.prot.LoginServerProt
-import net.rsprox.proxy.util.Packet
 
 public class ServerJs5LoginHandler(
     private val clientChannel: Channel,
-) : SimpleChannelInboundHandler<Packet<LoginServerProt>>() {
+) : SimpleChannelInboundHandler<ServerPacket<LoginServerProt>>() {
     override fun channelRead0(
         ctx: ChannelHandlerContext,
-        msg: Packet<LoginServerProt>,
+        msg: ServerPacket<LoginServerProt>,
     ) {
         val response = msg.prot
         if (response != LoginServerProt.SUCCESSFUL) {
