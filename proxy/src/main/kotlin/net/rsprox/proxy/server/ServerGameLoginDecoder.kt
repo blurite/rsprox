@@ -105,7 +105,7 @@ public class ServerGameLoginDecoder(
                     state = State.TOKENS_READ_LENGTH
                 }
                 23 -> {
-                    return closeSession(ctx)
+                    throw IllegalStateException("Client disconnected (23)")
                 }
                 29 -> {
                     state = State.DISALLOWED_READ_LENGTH
@@ -115,7 +115,7 @@ public class ServerGameLoginDecoder(
                 }
                 else -> {
                     // login error
-                    return closeSession(ctx)
+                    throw IllegalStateException("Client disconnceted (${this.stateValue})")
                 }
             }
         }
@@ -154,8 +154,9 @@ public class ServerGameLoginDecoder(
                 pjstr(mes1)
                 pjstr(mes2)
                 pjstr(mes3)
-            }
-            return closeSession(ctx)
+            }.addListener(ChannelFutureListener.CLOSE)
+                .await()
+            return
         }
         if (state == State.POW_READ_LENGTH) {
             if (!input.isReadable(2)) return
@@ -182,7 +183,7 @@ public class ServerGameLoginDecoder(
                 p1(stateValue)
             }
             if (stateValue != 37) {
-                return closeSession(ctx)
+                throw IllegalStateException("Invalid ok login data size: $stateValue")
             }
             state = State.LOGIN_OK_READ_DATA
         }
@@ -242,21 +243,6 @@ public class ServerGameLoginDecoder(
                 ),
             )
             pipeline.replace<ServerRelayHandler>(ServerGameHandler(clientChannel))
-        }
-    }
-
-    private fun closeSession(ctx: ChannelHandlerContext) {
-        closeChannel(ctx.channel())
-        closeChannel(clientChannel)
-    }
-
-    private fun closeChannel(channel: Channel) {
-        if (channel.eventLoop().inEventLoop()) {
-            channel.close()
-        } else {
-            channel.eventLoop().submit {
-                channel.closeFuture()
-            }
         }
     }
 
