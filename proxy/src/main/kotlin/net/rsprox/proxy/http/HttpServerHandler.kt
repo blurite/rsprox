@@ -20,6 +20,7 @@ import io.netty.handler.codec.http.LastHttpContent
 import io.netty.util.CharsetUtil
 import net.rsprox.proxy.config.JavConfig
 import net.rsprox.proxy.worlds.WorldListProvider
+import java.io.IOException
 
 public class HttpServerHandler(
     private val worldListProvider: WorldListProvider,
@@ -51,7 +52,9 @@ public class HttpServerHandler(
     }
 
     private fun writeResponse(ctx: ChannelHandlerContext) {
-        ctx.write(DefaultFullHttpResponse(HTTP_1_1, CONTINUE, Unpooled.EMPTY_BUFFER))
+        ctx
+            .write(DefaultFullHttpResponse(HTTP_1_1, CONTINUE, Unpooled.EMPTY_BUFFER))
+            .addListener(ChannelFutureListener.CLOSE)
     }
 
     private fun writeResponse(
@@ -87,6 +90,10 @@ public class HttpServerHandler(
         ctx: ChannelHandlerContext,
         cause: Throwable,
     ) {
+        // Ignore IO exceptions
+        if (cause is IOException) {
+            return
+        }
         logger.error(cause) {
             "Exception in HTTP server"
         }
