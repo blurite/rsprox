@@ -1,4 +1,4 @@
-package net.rsprox.proxy.client
+package net.rsprox.proxy.client.prot
 
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.Prot

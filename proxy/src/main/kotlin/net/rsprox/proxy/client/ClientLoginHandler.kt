@@ -19,6 +19,8 @@ import net.rsprox.proxy.channel.getClientToServerStreamCipher
 import net.rsprox.proxy.channel.getWorld
 import net.rsprox.proxy.channel.remove
 import net.rsprox.proxy.channel.replace
+import net.rsprox.proxy.client.prot.GameClientProtProvider
+import net.rsprox.proxy.client.prot.LoginClientProt
 import net.rsprox.proxy.js5.Js5MasterIndexArchive
 import net.rsprox.proxy.rsa.Rsa
 import net.rsprox.proxy.rsa.rsa

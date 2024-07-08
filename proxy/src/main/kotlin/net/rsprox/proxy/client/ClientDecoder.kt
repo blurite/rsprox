@@ -8,10 +8,11 @@ import net.rsprot.buffer.extensions.g2
 import net.rsprot.crypto.cipher.StreamCipher
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.Prot
+import net.rsprox.proxy.client.prot.ClientProtProvider
 
 public class ClientDecoder<out T : ClientProt>(
     private val cipher: StreamCipher,
-    private val protProvider: ProtProvider<T>,
+    private val protProvider: ClientProtProvider<T>,
 ) : ByteToMessageDecoder() {
     private enum class State {
         READ_OPCODE,

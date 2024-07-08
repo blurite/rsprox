@@ -10,6 +10,7 @@ import net.rsprox.proxy.attributes.WORLD_ATTRIBUTE
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.bootstrap.BootstrapFactory
 import net.rsprox.proxy.channel.setAutoRead
+import net.rsprox.proxy.client.prot.LoginClientProtProvider
 import net.rsprox.proxy.worlds.LocalHostAddress
 import net.rsprox.proxy.worlds.WorldListProvider
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters

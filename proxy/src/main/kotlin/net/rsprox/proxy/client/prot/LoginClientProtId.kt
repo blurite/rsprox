@@ -1,4 +1,4 @@
-package net.rsprox.proxy.client
+package net.rsprox.proxy.client.prot
 
 internal object LoginClientProtId {
     const val INIT_GAME_CONNECTION = 14

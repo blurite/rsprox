@@ -5,6 +5,7 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import net.rsprox.proxy.binary.StreamDirection
 import net.rsprox.proxy.channel.getBinaryBlob
+import net.rsprox.proxy.client.prot.GameClientProt
 
 public class ClientGameHandler(
     private val serverChannel: Channel,

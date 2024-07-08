@@ -1,6 +1,6 @@
 @file:Suppress("SpellCheckingInspection")
 
-package net.rsprox.proxy.client
+package net.rsprox.proxy.client.prot
 
 internal object GameClientProtId {
     const val RESUME_PAUSEBUTTON = 0
