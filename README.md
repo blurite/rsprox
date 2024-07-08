@@ -28,6 +28,7 @@ Below is a small task list showing a rough breakdown of what the tool will consi
 - [ ] Privacy concerns
   - [ ] Bank Pin erasure
   - [x] Private message content erasure
+  - [x] Login tokens in URL open packets
 - [ ] Graphical User Interface (Proxy tool)
 - [ ] Graphical User Interface (Live Transcriber)
 - [ ] Public archive
