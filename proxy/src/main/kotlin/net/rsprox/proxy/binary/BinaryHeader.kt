@@ -4,6 +4,9 @@ import io.netty.buffer.ByteBufAllocator
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprox.proxy.worlds.World
+import java.text.SimpleDateFormat
+import java.util.Date
+import kotlin.math.min
 
 @Suppress("DuplicatedCode")
 public data class BinaryHeader(
@@ -43,6 +46,15 @@ public data class BinaryHeader(
         buffer.p4(js5MasterIndex.size)
         buffer.pdata(js5MasterIndex)
         return buffer
+    }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    public fun fileName(): String {
+        val date = Date(timestamp)
+        val formattedDate = FILE_NAME_DATE_FORMATTER.format(date)
+        val hexHash = accountHash.toHexString(HexFormat.Default)
+        val shortHash = hexHash.substring(0, min(7, hexHash.length))
+        return "$formattedDate - $shortHash.$BINARY_EXTENSION"
     }
 
     override fun equals(other: Any?): Boolean {
@@ -214,7 +226,9 @@ public data class BinaryHeader(
     }
 
     public companion object {
+        private const val BINARY_EXTENSION: String = "bin"
         public const val HEADER_VERSION: Int = 1
+        private val FILE_NAME_DATE_FORMATTER = SimpleDateFormat("yyyy-MM-dd HH-mm-ss")
 
         public fun decode(buffer: JagByteBuf): BinaryHeader {
             val headerVersion = buffer.g4()

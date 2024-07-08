@@ -1,5 +1,6 @@
 package net.rsprox.proxy.config
 
+import net.rsprox.proxy.config.ProxyProperty.Companion.BINARY_WRITE_INTERVAL_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_URL
@@ -67,6 +68,7 @@ internal value class ProxyProperties private constructor(
             properties.setValue(JAV_CONFIG_URL, "https://oldschool.runescape.com/jav_config.ws")
             properties.setValue(BIND_TIMEOUT_SECONDS, 30)
             properties.setValue(WORLDLIST_REFRESH_SECONDS, 5)
+            properties.setValue(BINARY_WRITE_INTERVAL_SECONDS, 5 * 60)
             return properties
         }
     }

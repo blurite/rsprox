@@ -38,6 +38,7 @@ public class ClientLoginHandler(
     private val serverChannel: Channel,
     private val rsa: RSAPrivateCrtKeyParameters,
     private val originalModulus: BigInteger,
+    private val binaryWriteInterval: Int,
 ) : SimpleChannelInboundHandler<ClientPacket<LoginClientProt>>() {
     override fun channelRead0(
         ctx: ChannelHandlerContext,
@@ -220,7 +221,7 @@ public class ClientLoginHandler(
 
     private fun switchServerToGameLoginDecoding(ctx: ChannelHandlerContext) {
         val pipeline = serverChannel.pipeline()
-        pipeline.addLastWithName(ServerGameLoginDecoder(ctx.channel()))
+        pipeline.addLastWithName(ServerGameLoginDecoder(ctx.channel(), binaryWriteInterval))
         pipeline.addLastWithName(ServerRelayHandler(ctx.channel()))
     }
 

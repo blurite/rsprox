@@ -31,6 +31,7 @@ public class BootstrapFactory(
         worldListProvider: WorldListProvider,
         rsa: RSAPrivateCrtKeyParameters,
         originalModulus: BigInteger,
+        binaryWriteInterval: Int,
     ): ServerBootstrap {
         return ServerBootstrap()
             .group(group(PARENT_GROUP_THREADS), group(CHILD_GROUP_THREADS))
@@ -42,7 +43,15 @@ public class BootstrapFactory(
             .childOption(ChannelOption.SO_RCVBUF, SOCKET_BUFFER_CAPACITY)
             .childOption(ChannelOption.SO_SNDBUF, SOCKET_BUFFER_CAPACITY)
             .childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, CONNECT_TIMEOUT_MILLIS)
-            .childHandler(ClientLoginInitializer(this, worldListProvider, rsa, originalModulus))
+            .childHandler(
+                ClientLoginInitializer(
+                    this,
+                    worldListProvider,
+                    rsa,
+                    originalModulus,
+                    binaryWriteInterval,
+                ),
+            )
     }
 
     public fun createClientBootstrap(): Bootstrap {

@@ -24,6 +24,7 @@ public class ClientLoginInitializer(
     private val worldListProvider: WorldListProvider,
     private val rsa: RSAPrivateCrtKeyParameters,
     private val originalModulus: BigInteger,
+    private val binaryWriteInterval: Int,
 ) : ChannelInitializer<Channel>() {
     override fun initChannel(clientChannel: Channel) {
         val localHostAddress = getLocalHostAddress(clientChannel)
@@ -60,7 +61,7 @@ public class ClientLoginInitializer(
                 }
                 clientChannel.pipeline().addLast(
                     ClientGenericDecoder(NopStreamCipher, LoginClientProtProvider),
-                    ClientLoginHandler(serverChannel, rsa, originalModulus),
+                    ClientLoginHandler(serverChannel, rsa, originalModulus, binaryWriteInterval),
                 )
                 clientChannel.pipeline().addLast(ChannelConnectionHandler(serverChannel))
                 serverChannel.pipeline().addLast(ChannelConnectionHandler(clientChannel))

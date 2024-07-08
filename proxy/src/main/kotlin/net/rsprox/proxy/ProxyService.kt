@@ -5,9 +5,11 @@ import io.netty.bootstrap.ServerBootstrap
 import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.UnpooledByteBufAllocator
 import net.rsprox.proxy.bootstrap.BootstrapFactory
+import net.rsprox.proxy.config.BINARY_PATH
 import net.rsprox.proxy.config.CONFIGURATION_PATH
 import net.rsprox.proxy.config.JavConfig
 import net.rsprox.proxy.config.ProxyProperties
+import net.rsprox.proxy.config.ProxyProperty.Companion.BINARY_WRITE_INTERVAL_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_URL
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_HTTP_PORT
@@ -23,6 +25,7 @@ import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
 import java.math.BigInteger
 import java.net.URL
 import java.nio.file.Files
+import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.readText
 import kotlin.properties.Delegates
@@ -38,7 +41,8 @@ public class ProxyService(
 
     public fun start() {
         logger.info { "Starting proxy service" }
-        createConfigurationDirectories()
+        createConfigurationDirectories(CONFIGURATION_PATH)
+        createConfigurationDirectories(BINARY_PATH)
         loadProperties()
         HuffmanProvider.load()
         val rsa = loadRsa()
@@ -55,9 +59,9 @@ public class ProxyService(
         launchProxyServer(factory, worldListProvider, rsa, originalModulus)
     }
 
-    private fun createConfigurationDirectories() {
-        runCatching("Unable to create configuration directory: $CONFIGURATION_PATH") {
-            Files.createDirectories(CONFIGURATION_PATH)
+    private fun createConfigurationDirectories(path: Path) {
+        runCatching("Unable to create configuration directory: $path") {
+            Files.createDirectories(path)
         }
     }
 
@@ -170,6 +174,7 @@ public class ProxyService(
                     worldListProvider,
                     rsa,
                     originalModulus,
+                    properties.getProperty(BINARY_WRITE_INTERVAL_SECONDS),
                 )
             val port = properties.getProperty(PROXY_PORT)
             val timeoutSeconds = properties.getProperty(BIND_TIMEOUT_SECONDS).toLong()

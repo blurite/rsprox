@@ -4,6 +4,7 @@ import com.github.michaelbull.logging.InlineLogger
 import io.netty.channel.Channel
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInboundHandlerAdapter
+import net.rsprox.proxy.attributes.BINARY_BLOB
 import java.io.IOException
 
 public class ChannelConnectionHandler(
@@ -13,6 +14,7 @@ public class ChannelConnectionHandler(
         if (targetChannel.isActive) {
             targetChannel.close()
         }
+        targetChannel.attr(BINARY_BLOB).get()?.close()
     }
 
     @Deprecated("Deprecated in Java")

@@ -13,5 +13,6 @@ internal class ProxyProperty<T>(
         val JAV_CONFIG_URL = ProxyProperty("url.javconfig", StringProperty)
         val BIND_TIMEOUT_SECONDS = ProxyProperty("bind.timeout.seconds", IntProperty)
         val WORLDLIST_REFRESH_SECONDS = ProxyProperty("worldlist.refresh.seconds", IntProperty)
+        val BINARY_WRITE_INTERVAL_SECONDS = ProxyProperty("binary.write.interval.seconds", IntProperty)
     }
 }

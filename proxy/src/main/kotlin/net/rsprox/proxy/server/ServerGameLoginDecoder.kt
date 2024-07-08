@@ -21,6 +21,7 @@ import net.rsprox.proxy.util.UserUid
 
 public class ServerGameLoginDecoder(
     private val clientChannel: Channel,
+    private val binaryWriteInterval: Int,
 ) : ByteToMessageDecoder() {
     private enum class State {
         AWAITING_GAME_CONNECTION_REPLY,
@@ -216,7 +217,7 @@ public class ServerGameLoginDecoder(
             val nanoTimestamp = System.nanoTime()
             val header = builder.build()
             val stream = BinaryStream(Unpooled.buffer(1_000_000), nanoTimestamp)
-            val blob = BinaryBlob(header, stream)
+            val blob = BinaryBlob(header, stream, binaryWriteInterval)
             val serverChannel = ctx.channel()
             // Remove the binary header builder, nothing should be trying to update it from here on out
             serverChannel.attr(BINARY_HEADER_BUILDER).set(null)
