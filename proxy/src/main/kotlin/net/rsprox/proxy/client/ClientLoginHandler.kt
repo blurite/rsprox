@@ -16,11 +16,9 @@ import net.rsprot.crypto.rsa.decipherRsa
 import net.rsprox.proxy.attributes.STREAM_CIPHER_PAIR
 import net.rsprox.proxy.channel.addLastWithName
 import net.rsprox.proxy.channel.getBinaryHeaderBuilder
-import net.rsprox.proxy.channel.getClientToServerStreamCipher
 import net.rsprox.proxy.channel.getWorld
 import net.rsprox.proxy.channel.remove
 import net.rsprox.proxy.channel.replace
-import net.rsprox.proxy.client.prot.GameClientProtProvider
 import net.rsprox.proxy.client.prot.LoginClientProt
 import net.rsprox.proxy.js5.Js5MasterIndexArchive
 import net.rsprox.proxy.rsa.Rsa
@@ -89,7 +87,7 @@ public class ClientLoginHandler(
             }
             LoginClientProt.SSL_WEB_CONNECTION -> {
                 logger.debug { "SSL Web connection received, switching to relay" }
-                switchClientToGameDecoding(ctx)
+                switchClientToRelay(ctx)
             }
         }
         serverChannel.writeAndFlush(msg.encode(ctx.alloc()))
@@ -175,8 +173,8 @@ public class ClientLoginHandler(
         encoded.writeBytes(xteaBlock)
         // Swap out the original login packet with the new one
         msg.replacePayload(encoded)
-        // Begin decoding game packets now.
-        switchClientToGameDecoding(ctx)
+        // Relay packets for now, server will swap over to decoding once it's time
+        switchClientToRelay(ctx)
     }
 
     private fun invalidRsa(ctx: ChannelHandlerContext): Nothing {
@@ -200,13 +198,6 @@ public class ClientLoginHandler(
         customResponseBuffer.writerIndex(end)
         ctx.channel().writeAndFlush(customResponseBuffer).await()
         throw IllegalStateException("Invalid RSA")
-    }
-
-    private fun switchClientToGameDecoding(ctx: ChannelHandlerContext) {
-        val cipher = ctx.channel().getClientToServerStreamCipher()
-        val clientPipeline = ctx.channel().pipeline()
-        clientPipeline.replace<ClientGenericDecoder<*>>(ClientGenericDecoder(cipher, GameClientProtProvider))
-        clientPipeline.replace<ClientLoginHandler>(ClientGameHandler(serverChannel))
     }
 
     private fun switchClientToRelay(ctx: ChannelHandlerContext) {

@@ -14,8 +14,14 @@ import net.rsprox.proxy.attributes.BINARY_HEADER_BUILDER
 import net.rsprox.proxy.binary.BinaryBlob
 import net.rsprox.proxy.binary.BinaryStream
 import net.rsprox.proxy.channel.getBinaryHeaderBuilder
+import net.rsprox.proxy.channel.getClientToServerStreamCipher
 import net.rsprox.proxy.channel.getServerToClientStreamCipher
+import net.rsprox.proxy.channel.remove
 import net.rsprox.proxy.channel.replace
+import net.rsprox.proxy.client.ClientGameHandler
+import net.rsprox.proxy.client.ClientGenericDecoder
+import net.rsprox.proxy.client.ClientRelayHandler
+import net.rsprox.proxy.client.prot.GameClientProtProvider
 import net.rsprox.proxy.server.prot.GameServerProtProvider
 import net.rsprox.proxy.util.UserUid
 import net.rsprox.proxy.worlds.WorldListProvider
@@ -116,9 +122,19 @@ public class ServerGameLoginDecoder(
                 69 -> {
                     state = State.POW_READ_LENGTH
                 }
+                56, 57 -> {
+                    // 2FA stuff, a new connection is made once it is entered anyway
+                    ctx.close()
+                    return
+                }
+                3 -> {
+                    // Invalid username or password
+                    ctx.close()
+                    return
+                }
                 else -> {
                     // login error
-                    throw IllegalStateException("Client disconnected (${this.stateValue})")
+                    throw IllegalStateException("Client disconnected (opcode: ${this.stateValue})")
                 }
             }
         }
@@ -246,7 +262,18 @@ public class ServerGameLoginDecoder(
                 ),
             )
             pipeline.replace<ServerRelayHandler>(ServerGameHandler(clientChannel, worldListProvider))
+            switchClientToGameDecoding(ctx)
         }
+    }
+
+    private fun switchClientToGameDecoding(ctx: ChannelHandlerContext) {
+        val cipher = ctx.channel().getClientToServerStreamCipher()
+        val clientPipeline = clientChannel.pipeline()
+        //         clientPipeline.remove<ClientGenericDecoder<*>>()
+        //        clientPipeline.replace<ClientLoginHandler>(ClientRelayHandler(serverChannel))
+        clientPipeline.remove<ClientRelayHandler>()
+        clientPipeline.addLast(ClientGenericDecoder(cipher, GameClientProtProvider))
+        clientPipeline.addLast(ClientGameHandler(ctx.channel()))
     }
 
     private inline fun writeToClient(function: JagByteBuf.() -> Unit): ChannelFuture {
