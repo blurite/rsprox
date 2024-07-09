@@ -15,7 +15,6 @@ import net.rsprox.proxy.util.ChannelConnectionHandler
 import net.rsprox.proxy.worlds.LocalHostAddress
 import net.rsprox.proxy.worlds.WorldListProvider
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
-import java.math.BigInteger
 import java.net.Inet4Address
 import java.net.InetSocketAddress
 
@@ -23,7 +22,6 @@ public class ClientLoginInitializer(
     private val bootstrapFactory: BootstrapFactory,
     private val worldListProvider: WorldListProvider,
     private val rsa: RSAPrivateCrtKeyParameters,
-    private val originalModulus: BigInteger,
     private val binaryWriteInterval: Int,
 ) : ChannelInitializer<Channel>() {
     override fun initChannel(clientChannel: Channel) {
@@ -61,7 +59,7 @@ public class ClientLoginInitializer(
                 }
                 clientChannel.pipeline().addLast(
                     ClientGenericDecoder(NopStreamCipher, LoginClientProtProvider),
-                    ClientLoginHandler(serverChannel, rsa, originalModulus, binaryWriteInterval, worldListProvider),
+                    ClientLoginHandler(serverChannel, rsa, binaryWriteInterval, worldListProvider),
                 )
                 clientChannel.pipeline().addLast(ChannelConnectionHandler(serverChannel))
                 serverChannel.pipeline().addLast(ChannelConnectionHandler(clientChannel))

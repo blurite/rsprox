@@ -20,6 +20,7 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_HTTP_PORT
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
+import net.rsprox.proxy.config.patchedRsaModulus
 import net.rsprox.proxy.downloader.NativeClientDownloader
 import net.rsprox.proxy.futures.asCompletableFuture
 import net.rsprox.proxy.huffman.HuffmanProvider
@@ -70,23 +71,34 @@ public class ProxyService(
         val worldListProvider = loadWorldListProvider(javConfig.getWorldListUrl())
         val replacementWorld = findCodebaseReplacementWorld(javConfig, worldListProvider)
         val updatedJavConfig = rebuildJavConfig(javConfig, replacementWorld)
-        val port = properties.getProperty(PROXY_PORT)
-        val webPort = properties.getProperty(PROXY_HTTP_PORT)
-        val javConfigEndpoint = properties.getProperty(JAV_CONFIG_ENDPOINT)
-        val worldlistEndpoint = properties.getProperty(WORLDLIST_ENDPOINT)
 
         val os = getOperatingSystem()
         logger.debug { "Proxy launched on $os" }
         if (os == OperatingSystem.UNIX || os == OperatingSystem.SOLARIS) {
             throw IllegalStateException("Operating system not supported for native: $os")
         }
+
+        launchHttpServer(factory, worldListProvider, updatedJavConfig)
+        launchProxyServer(factory, worldListProvider, rsa)
+
+        // Immediately launch the corresponding native client
+        launchNativeClient(os, rsa)
+    }
+
+    private fun launchNativeClient(
+        os: OperatingSystem,
+        rsa: RSAPrivateCrtKeyParameters,
+    ) {
+        val port = properties.getProperty(PROXY_PORT)
+        val webPort = properties.getProperty(PROXY_HTTP_PORT)
+        val javConfigEndpoint = properties.getProperty(JAV_CONFIG_ENDPOINT)
+        val worldlistEndpoint = properties.getProperty(WORLDLIST_ENDPOINT)
         val nativeClientType =
             when (os) {
                 OperatingSystem.WINDOWS -> NativeClientType.WIN
                 OperatingSystem.MAC -> NativeClientType.MAC
                 else -> throw IllegalStateException()
             }
-
         val binary = NativeClientDownloader.download(nativeClientType)
         val extension = if (binary.extension.isNotEmpty()) ".${binary.extension}" else ""
         val patched = binary.parent.resolve("${binary.nameWithoutExtension}-patched$extension")
@@ -107,8 +119,13 @@ public class ProxyService(
             "Failed to patch"
         }
         val originalModulus = BigInteger(result.oldModulus, 16)
-        launchHttpServer(factory, worldListProvider, updatedJavConfig)
-        launchProxyServer(factory, worldListProvider, rsa, originalModulus)
+        val patchedModulus = patchedRsaModulus
+        if (patchedModulus != null) {
+            check(patchedModulus == originalModulus) {
+                "Unable to launch client due to different modulus being used. Reboot proxy."
+            }
+        }
+        patchedRsaModulus = originalModulus
         launchExecutable(result.outputPath, os)
     }
 
@@ -275,14 +292,12 @@ public class ProxyService(
         factory: BootstrapFactory,
         worldListProvider: WorldListProvider,
         rsa: RSAPrivateCrtKeyParameters,
-        originalModulus: BigInteger,
     ) {
         runCatching("Failure to launch HTTP server") {
             val serverBootstrap =
                 factory.createServerBootStrap(
                     worldListProvider,
                     rsa,
-                    originalModulus,
                     properties.getProperty(BINARY_WRITE_INTERVAL_SECONDS),
                 )
             val port = properties.getProperty(PROXY_PORT)

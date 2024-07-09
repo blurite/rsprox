@@ -20,6 +20,7 @@ import net.rsprox.proxy.channel.getWorld
 import net.rsprox.proxy.channel.remove
 import net.rsprox.proxy.channel.replace
 import net.rsprox.proxy.client.prot.LoginClientProt
+import net.rsprox.proxy.config.patchedRsaModulus
 import net.rsprox.proxy.js5.Js5MasterIndexArchive
 import net.rsprox.proxy.rsa.Rsa
 import net.rsprox.proxy.rsa.rsa
@@ -31,12 +32,10 @@ import net.rsprox.proxy.server.prot.LoginServerProtId
 import net.rsprox.proxy.server.prot.LoginServerProtProvider
 import net.rsprox.proxy.worlds.WorldListProvider
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
-import java.math.BigInteger
 
 public class ClientLoginHandler(
     private val serverChannel: Channel,
     private val rsa: RSAPrivateCrtKeyParameters,
-    private val originalModulus: BigInteger,
     private val binaryWriteInterval: Int,
     private val worldListProvider: WorldListProvider,
 ) : SimpleChannelInboundHandler<ClientPacket<LoginClientProt>>() {
@@ -162,10 +161,14 @@ public class ClientLoginHandler(
         val encoded = ctx.alloc().buffer(msg.payload.readableBytes())
         encoded.writeBytes(msg.payload, msg.start, headerSize)
         decryptedRsaBuffer.readerIndex(rsaStart)
+        val modulus =
+            checkNotNull(patchedRsaModulus) {
+                "Patched RSA modulus has not been assigned yet!"
+            }
         val encrypted =
             decryptedRsaBuffer.buffer.decipherRsa(
                 Rsa.PUBLIC_EXPONENT,
-                originalModulus,
+                modulus,
                 decryptedRsaBuffer.readableBytes(),
             )
         encoded.p2(encrypted.readableBytes())

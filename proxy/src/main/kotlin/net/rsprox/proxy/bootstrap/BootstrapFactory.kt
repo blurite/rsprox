@@ -19,7 +19,6 @@ import net.rsprox.proxy.http.HttpServerHandler
 import net.rsprox.proxy.server.ServerConnectionInitializer
 import net.rsprox.proxy.worlds.WorldListProvider
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
-import java.math.BigInteger
 
 public class BootstrapFactory(
     private val allocator: ByteBufAllocator,
@@ -32,7 +31,6 @@ public class BootstrapFactory(
     public fun createServerBootStrap(
         worldListProvider: WorldListProvider,
         rsa: RSAPrivateCrtKeyParameters,
-        originalModulus: BigInteger,
         binaryWriteInterval: Int,
     ): ServerBootstrap {
         return ServerBootstrap()
@@ -50,7 +48,6 @@ public class BootstrapFactory(
                     this,
                     worldListProvider,
                     rsa,
-                    originalModulus,
                     binaryWriteInterval,
                 ),
             )
