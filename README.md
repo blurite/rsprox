@@ -15,7 +15,8 @@ A technical breakdown of the processes involved can be found in [issues/RSProx](
 Below is a small task list showing a rough breakdown of what the tool will consist of, and how far the progress is at any given moment.
 
 - [ ] Patch Tool
-  - [ ] C++
+  - [x] Native (Win)
+  - [ ] Native (Mac)
   - [ ] RuneLite
   - [ ] RuneLite Forks
   - [ ] HDOS
