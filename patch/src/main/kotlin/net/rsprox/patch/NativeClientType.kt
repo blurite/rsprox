@@ -1,4 +1,4 @@
-package net.rsprox.proxy.downloader
+package net.rsprox.patch
 
 public enum class NativeClientType(
     public val systemShortName: String,

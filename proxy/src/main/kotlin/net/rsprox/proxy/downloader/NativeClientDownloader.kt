@@ -1,6 +1,7 @@
 package net.rsprox.proxy.downloader
 
 import com.github.michaelbull.logging.InlineLogger
+import net.rsprox.patch.NativeClientType
 import net.rsprox.proxy.config.CLIENTS_DIRECTORY
 import java.nio.ByteBuffer
 import java.nio.file.Files

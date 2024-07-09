@@ -1,19 +1,21 @@
 package net.rsprox.patch.native
 
 import com.github.michaelbull.logging.InlineLogger
+import net.rsprox.patch.NativeClientType
 import net.rsprox.patch.PatchResult
 import net.rsprox.patch.Patcher
 import java.nio.file.LinkOption
 import java.nio.file.Path
 import kotlin.io.path.isRegularFile
 
-public class NativePatcher : Patcher {
+public class NativePatcher : Patcher<NativeClientType> {
     override fun patch(
         path: Path,
         rsa: String,
         javConfigUrl: String,
         worldListUrl: String,
         port: Int,
+        metadata: NativeClientType,
     ): PatchResult {
         if (!path.isRegularFile(LinkOption.NOFOLLOW_LINKS)) {
             throw IllegalArgumentException("Path $path does not point to a file.")
@@ -21,11 +23,18 @@ public class NativePatcher : Patcher {
         logger.debug { "Attempting to patch $path" }
         val bytes = path.toFile().readBytes()
         val result = patchModulus(bytes, rsa)
-        patchLocalhost(bytes)
+        when (metadata) {
+            NativeClientType.WIN -> {
+                patchLocalhost(bytes)
+                patchJs5Port(bytes, port)
+                patchGamePort(bytes, port)
+            }
+            NativeClientType.MAC -> {
+                patchMacPort(bytes, port)
+            }
+        }
         patchJavConfig(bytes, javConfigUrl)
         patchWorldList(bytes, worldListUrl)
-        patchJs5Port(bytes, port)
-        patchGamePort(bytes, port)
         logger.debug { "Successfully patched $path" }
         path.toFile().writeBytes(bytes)
         return PatchResult.Success(
@@ -47,6 +56,14 @@ public class NativePatcher : Patcher {
         port: Int,
     ) {
         bytes.patchPort(0xB8, port)
+        logger.debug { "Replaced game port 43594 with $port" }
+    }
+
+    private fun patchMacPort(
+        bytes: ByteArray,
+        port: Int,
+    ) {
+        bytes.patchPort(0xBE, port)
         logger.debug { "Replaced game port 43594 with $port" }
     }
 
