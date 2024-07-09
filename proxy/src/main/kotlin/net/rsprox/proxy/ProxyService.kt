@@ -90,7 +90,6 @@ public class ProxyService(
             "Failed to patch"
         }
         val originalModulus = BigInteger(result.oldModulus, 16)
-        // val originalModulus = loadOriginalModulus()
         launchHttpServer(factory, worldListProvider, updatedJavConfig)
         launchProxyServer(factory, worldListProvider, rsa, originalModulus)
     }
@@ -255,13 +254,6 @@ public class ProxyService(
         }
     }
 
-    private fun loadOriginalModulus(): BigInteger {
-        return runCatching("Unable to locate base original modulus file") {
-            val text = ORIGINAL_MODULUS_FILE.readText(Charsets.UTF_8)
-            BigInteger(text, 16)
-        }
-    }
-
     private inline fun <T> runCatching(
         errorMessage: String,
         block: () -> T,
@@ -279,7 +271,6 @@ public class ProxyService(
     public companion object {
         private val logger = InlineLogger()
         private val PROPERTIES_FILE = CONFIGURATION_PATH.resolve("proxy.properties")
-        private val ORIGINAL_MODULUS_FILE = CONFIGURATION_PATH.resolve("original_modulus.txt")
     }
 }
 
