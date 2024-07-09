@@ -1,7 +1,7 @@
 package net.rsprox.proxy.config
 
-internal sealed interface PropertyType<T>
+public sealed interface PropertyType<T>
 
-internal data object IntProperty : PropertyType<Int>
+public data object IntProperty : PropertyType<Int>
 
-internal data object StringProperty : PropertyType<String>
+public data object StringProperty : PropertyType<String>

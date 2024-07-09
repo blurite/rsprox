@@ -4,19 +4,26 @@ import com.github.michaelbull.logging.InlineLogger
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.UnpooledByteBufAllocator
+import net.rsprox.patch.PatchResult
+import net.rsprox.patch.cpp.NativePatcher
 import net.rsprox.proxy.bootstrap.BootstrapFactory
 import net.rsprox.proxy.config.BINARY_PATH
+import net.rsprox.proxy.config.CLIENTS_DIRECTORY
 import net.rsprox.proxy.config.CONFIGURATION_PATH
 import net.rsprox.proxy.config.JavConfig
 import net.rsprox.proxy.config.ProxyProperties
 import net.rsprox.proxy.config.ProxyProperty.Companion.BINARY_WRITE_INTERVAL_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
-import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_URL
+import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_HTTP_PORT
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT
+import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
+import net.rsprox.proxy.downloader.NativeClientDownloader
+import net.rsprox.proxy.downloader.NativeClientType
 import net.rsprox.proxy.futures.asCompletableFuture
 import net.rsprox.proxy.huffman.HuffmanProvider
+import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
 import net.rsprox.proxy.worlds.DynamicWorldListProvider
 import net.rsprox.proxy.worlds.World
@@ -25,8 +32,14 @@ import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
 import java.math.BigInteger
 import java.net.URL
 import java.nio.file.Files
+import java.nio.file.LinkOption
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
+import kotlin.io.path.Path
+import kotlin.io.path.copyTo
+import kotlin.io.path.extension
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.readText
 import kotlin.properties.Delegates
 import kotlin.system.exitProcess
@@ -43,20 +56,69 @@ public class ProxyService(
         logger.info { "Starting proxy service" }
         createConfigurationDirectories(CONFIGURATION_PATH)
         createConfigurationDirectories(BINARY_PATH)
+        createConfigurationDirectories(CLIENTS_DIRECTORY)
         loadProperties()
         HuffmanProvider.load()
+        val preferredCppWorld = parsePreferredCppWorld()
         val rsa = loadRsa()
-        val factory = BootstrapFactory(allocator)
-        val javConfig = loadJavConfig()
+        val factory = BootstrapFactory(allocator, properties)
+        val javConfig = loadJavConfig(preferredCppWorld)
         val worldListProvider = loadWorldListProvider(javConfig.getWorldListUrl())
         val replacementWorld = findCodebaseReplacementWorld(javConfig, worldListProvider)
         val updatedJavConfig = rebuildJavConfig(javConfig, replacementWorld)
-        // The original modulus should be obtained during the patching process in the future
-        // For testing purposes, since we lack a patcher, we just manually load it from
-        // a file for the time being.
-        val originalModulus = loadOriginalModulus()
+        val port = properties.getProperty(PROXY_PORT)
+        val webPort = properties.getProperty(PROXY_HTTP_PORT)
+        val javConfigEndpoint = properties.getProperty(JAV_CONFIG_ENDPOINT)
+        val worldlistEndpoint = properties.getProperty(WORLDLIST_ENDPOINT)
+
+        val binary = NativeClientDownloader.download(NativeClientType.WIN)
+        val extension = if (binary.extension.isNotEmpty()) ".${binary.extension}" else ""
+        val patched = binary.parent.resolve("${binary.nameWithoutExtension}-patched$extension")
+        binary.copyTo(patched, overwrite = true)
+
+        // For now, directly just download, patch and launch the C++ client
+        val patcher = NativePatcher()
+        val result =
+            patcher.patch(
+                patched,
+                rsa.publicKey.modulus.toString(16),
+                "http://127.0.0.1:$webPort/$javConfigEndpoint",
+                "http://127.0.0.1:$webPort/$worldlistEndpoint",
+                port,
+            )
+        check(result is PatchResult.Success) {
+            "Failed to patch"
+        }
+        val originalModulus = BigInteger(result.oldModulus, 16)
+        // val originalModulus = loadOriginalModulus()
         launchHttpServer(factory, worldListProvider, updatedJavConfig)
         launchProxyServer(factory, worldListProvider, rsa, originalModulus)
+    }
+
+    private fun parsePreferredCppWorld(): Int? {
+        val path =
+            Path(
+                System.getProperty("user.home"),
+                "AppData",
+                "Local",
+                "Jagex",
+                "Old School Runescape",
+                "preferences_client.dat",
+            )
+        if (!path.isRegularFile(LinkOption.NOFOLLOW_LINKS)) {
+            return null
+        }
+        val text = path.readText(Charsets.UTF_8)
+        val preferredWorld =
+            text
+                .lineSequence()
+                .firstOrNull { line -> line.startsWith("LastWorldId ") }
+                ?.substring(12)
+                ?.toIntOrNull()
+        if (preferredWorld != null) {
+            logger.debug { "Loaded preferred C++ world: $preferredWorld" }
+        }
+        return preferredWorld
     }
 
     private fun createConfigurationDirectories(path: Path) {
@@ -81,11 +143,16 @@ public class ProxyService(
         }
     }
 
-    private fun loadJavConfig(): JavConfig {
-        val javConfigUrl = properties.getProperty(JAV_CONFIG_URL)
-        return runCatching("Failed to load jav_config.ws from $javConfigUrl") {
-            val config = JavConfig(URL(javConfigUrl))
-            logger.debug { "Jav config loaded from $javConfigUrl" }
+    private fun loadJavConfig(preferredWorldId: Int?): JavConfig {
+        val url =
+            if (preferredWorldId == null) {
+                "https://oldschool.runescape.com/jav_config.ws"
+            } else {
+                "https://oldschool${preferredWorldId - 300}.runescape.com/jav_config.ws"
+            }
+        return runCatching("Failed to load jav_config.ws from $url") {
+            val config = JavConfig(URL(url))
+            logger.debug { "Jav config loaded from $url" }
             config
         }
     }

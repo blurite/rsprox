@@ -19,12 +19,15 @@ import io.netty.handler.codec.http.HttpVersion.HTTP_1_1
 import io.netty.handler.codec.http.LastHttpContent
 import io.netty.util.CharsetUtil
 import net.rsprox.proxy.config.JavConfig
+import net.rsprox.proxy.config.ProxyProperties
+import net.rsprox.proxy.config.ProxyProperty
 import net.rsprox.proxy.worlds.WorldListProvider
 import java.io.IOException
 
 public class HttpServerHandler(
     private val worldListProvider: WorldListProvider,
     private val javConfig: JavConfig,
+    private val properties: ProxyProperties,
 ) : SimpleChannelInboundHandler<HttpObject>() {
     private lateinit var request: HttpRequest
     private val responseData: StringBuilder = StringBuilder()
@@ -67,9 +70,9 @@ public class HttpServerHandler(
             DefaultFullHttpResponse(
                 HTTP_1_1,
                 if (trailer.decoderResult().isSuccess) OK else BAD_REQUEST,
-                Unpooled.copiedBuffer(responseData.toString(), CharsetUtil.UTF_8),
+                Unpooled.copiedBuffer(responseData.toString(), CharsetUtil.ISO_8859_1),
             )
-        httpResponse.headers()[HttpHeaderNames.CONTENT_TYPE] = "text/plain; charset=UTF-8"
+        httpResponse.headers()[HttpHeaderNames.CONTENT_TYPE] = "text/plain; charset=ISO-8859-1"
         if (keepAlive) {
             httpResponse.headers().setInt(
                 HttpHeaderNames.CONTENT_LENGTH,
@@ -101,16 +104,16 @@ public class HttpServerHandler(
 
     private fun buildResponse(request: HttpRequest): StringBuilder {
         return when (val uri = request.uri()) {
-            "/worldlist.ws" -> {
+            "/${properties.getProperty(ProxyProperty.WORLDLIST_ENDPOINT)}" -> {
                 val response = StringBuilder()
                 val worldListBuffer = worldListProvider.get().encode(ByteBufAllocator.DEFAULT)
                 val bytes = ByteArray(worldListBuffer.readableBytes())
                 worldListBuffer.gdata(bytes)
-                response.append(String(bytes, Charsets.UTF_8))
+                response.append(String(bytes, Charsets.ISO_8859_1))
             }
 
-            "/jav_config.ws" -> {
-                StringBuilder(javConfig.toString())
+            "/${properties.getProperty(ProxyProperty.JAV_CONFIG_ENDPOINT)}" -> {
+                StringBuilder(javConfig.toString().encodeToByteArray().toString(Charsets.ISO_8859_1))
             }
 
             else -> {

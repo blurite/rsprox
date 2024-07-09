@@ -3,7 +3,6 @@ package net.rsprox.proxy.config
 import net.rsprox.proxy.config.ProxyProperty.Companion.BINARY_WRITE_INTERVAL_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
-import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_URL
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_HTTP_PORT
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
@@ -15,21 +14,21 @@ import kotlin.io.path.exists
 import kotlin.io.path.readText
 
 @JvmInline
-internal value class ProxyProperties private constructor(
+public value class ProxyProperties private constructor(
     @PublishedApi
     internal val properties: Properties,
 ) {
-    constructor(path: Path) : this(loadFromPath(path))
+    public constructor(path: Path) : this(loadFromPath(path))
 
-    fun <T> getProperty(property: ProxyProperty<T>): T {
+    public fun <T> getProperty(property: ProxyProperty<T>): T {
         return properties.getValue(property)
     }
 
-    fun entryPairList(): List<Pair<Any, Any>> {
+    public fun entryPairList(): List<Pair<Any, Any>> {
         return properties.toList()
     }
 
-    companion object {
+    private companion object {
         private val DEFAULT_PROPERTIES_CHARSET: Charset = Charsets.ISO_8859_1
 
         private fun loadFromPath(path: Path): Properties {
@@ -65,7 +64,6 @@ internal value class ProxyProperties private constructor(
             properties.setValue(PROXY_HTTP_PORT, 43596)
             properties.setValue(WORLDLIST_ENDPOINT, "worldlist.ws")
             properties.setValue(JAV_CONFIG_ENDPOINT, "javconfig.ws")
-            properties.setValue(JAV_CONFIG_URL, "https://oldschool.runescape.com/jav_config.ws")
             properties.setValue(BIND_TIMEOUT_SECONDS, 30)
             properties.setValue(WORLDLIST_REFRESH_SECONDS, 5)
             properties.setValue(BINARY_WRITE_INTERVAL_SECONDS, 5 * 60)

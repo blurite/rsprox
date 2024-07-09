@@ -54,6 +54,10 @@ public data class WorldList(
         private fun parseWorlds(url: URL): List<World> {
             val bytes = url.readBytes()
             val buffer = Unpooled.wrappedBuffer(bytes).toJagByteBuf()
+            return decode(buffer)
+        }
+
+        private fun decode(buffer: JagByteBuf): List<World> {
             val payloadSize = buffer.g4()
             val count = buffer.g2()
             val worldList =

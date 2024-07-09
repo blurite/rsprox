@@ -14,6 +14,7 @@ import io.netty.handler.codec.http.HttpRequestDecoder
 import io.netty.handler.codec.http.HttpResponseEncoder
 import net.rsprox.proxy.client.ClientLoginInitializer
 import net.rsprox.proxy.config.JavConfig
+import net.rsprox.proxy.config.ProxyProperties
 import net.rsprox.proxy.http.HttpServerHandler
 import net.rsprox.proxy.server.ServerConnectionInitializer
 import net.rsprox.proxy.worlds.WorldListProvider
@@ -22,6 +23,7 @@ import java.math.BigInteger
 
 public class BootstrapFactory(
     private val allocator: ByteBufAllocator,
+    private val properties: ProxyProperties,
 ) {
     private fun group(numThreads: Int): EventLoopGroup {
         return NioEventLoopGroup(numThreads)
@@ -82,7 +84,7 @@ public class BootstrapFactory(
                         val pipeline = ch.pipeline()
                         pipeline.addLast(HttpRequestDecoder())
                         pipeline.addLast(HttpResponseEncoder())
-                        pipeline.addLast(HttpServerHandler(worldListProvider, javConfig))
+                        pipeline.addLast(HttpServerHandler(worldListProvider, javConfig, properties))
                     }
                 },
             )
