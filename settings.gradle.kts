@@ -16,9 +16,11 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 include(
     "proxy",
     "protocol",
+    "patch",
 )
 
 includeSubprojects(":protocol")
+includeSubprojects(":patch")
 
 fun includeSubprojects(projectName: String) {
     val projectPath = project(projectName).projectDir.toPath()

@@ -11,4 +11,8 @@ dependencies {
     implementation(platform(rootProject.libs.log4j.bom))
     implementation(rootProject.libs.bundles.log4j)
     implementation(rootProject.libs.bundles.bouncycastle)
+    implementation(rootProject.libs.java.jwt)
+    implementation(rootProject.libs.bundles.jackson)
+    implementation(projects.patch)
+    implementation(projects.patch.patchNative)
 }
