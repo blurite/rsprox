@@ -10,7 +10,7 @@ public data object HuffmanProvider {
 
     public fun load() {
         try {
-            createHuffmanCodec()
+            this.huffman = createHuffmanCodec()
         } catch (t: Throwable) {
             logger.error(t) {
                 "Unable to create huffman codec"
