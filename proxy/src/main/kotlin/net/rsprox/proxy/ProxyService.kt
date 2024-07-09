@@ -36,6 +36,7 @@ import java.nio.file.LinkOption
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.Path
+import kotlin.io.path.absolutePathString
 import kotlin.io.path.copyTo
 import kotlin.io.path.extension
 import kotlin.io.path.isRegularFile
@@ -92,6 +93,14 @@ public class ProxyService(
         val originalModulus = BigInteger(result.oldModulus, 16)
         launchHttpServer(factory, worldListProvider, updatedJavConfig)
         launchProxyServer(factory, worldListProvider, rsa, originalModulus)
+        launchExecutable(result.outputPath)
+    }
+
+    private fun launchExecutable(path: Path) {
+        val directory = path.parent.toFile()
+        val absolutePath = path.absolutePathString()
+        Runtime.getRuntime().exec(absolutePath, null, directory)
+        logger.debug { "Launched $path" }
     }
 
     private fun parsePreferredCppWorld(): Int? {
