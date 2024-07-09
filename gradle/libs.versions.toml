@@ -5,6 +5,8 @@ rsprot = "1.0.0-ALPHA-20240629"
 inlinelogger = "1.0.6"
 log4j = "2.23.1"
 bouncycastle = "1.70"
+java-jwt = "4.4.0"
+jackson = "2.17.2"
 
 [libraries]
 netty-bom = { module = "io.netty:netty-bom", version.ref = "netty" }
@@ -23,6 +25,10 @@ log4j-slf4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl" }
 inline-logger = { module = "com.michael-bull.kotlin-inline-logger:kotlin-inline-logger", version.ref = "inlinelogger" }
 bouncycastle-pkix = { module = "org.bouncycastle:bcpkix-jdk15on", version.ref = "bouncycastle" }
 bouncycastle-provider = { module = "org.bouncycastle:bcprov-jdk15on", version.ref = "bouncycastle" }
+java-jwt = { module = "com.auth0:java-jwt", version.ref = "java-jwt" }
+jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
+jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
+jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
@@ -30,3 +36,4 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 [bundles]
 log4j = ["log4j-core", "log4j-api", "log4j-slf4j-impl", "inline-logger"]
 bouncycastle = ["bouncycastle-pkix", "bouncycastle-provider"]
+jackson = ["jackson-annotations", "jackson-dataformat-yaml", "jackson-module-kotlin"]
