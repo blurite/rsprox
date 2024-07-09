@@ -5,7 +5,7 @@ import io.netty.bootstrap.ServerBootstrap
 import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.UnpooledByteBufAllocator
 import net.rsprox.patch.PatchResult
-import net.rsprox.patch.cpp.NativePatcher
+import net.rsprox.patch.native.NativePatcher
 import net.rsprox.proxy.bootstrap.BootstrapFactory
 import net.rsprox.proxy.config.BINARY_PATH
 import net.rsprox.proxy.config.CLIENTS_DIRECTORY

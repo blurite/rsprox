@@ -1,4 +1,4 @@
-package net.rsprox.patch.cpp
+package net.rsprox.patch.native
 
 import com.github.michaelbull.logging.InlineLogger
 import net.rsprox.patch.PatchResult
