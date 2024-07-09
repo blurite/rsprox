@@ -24,6 +24,7 @@ import net.rsprox.proxy.config.patchedRsaModulus
 import net.rsprox.proxy.downloader.NativeClientDownloader
 import net.rsprox.proxy.futures.asCompletableFuture
 import net.rsprox.proxy.huffman.HuffmanProvider
+import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
 import net.rsprox.proxy.util.OperatingSystem
@@ -53,6 +54,7 @@ import kotlin.time.measureTime
 public class ProxyService(
     private val allocator: ByteBufAllocator,
 ) {
+    private val pluginLoader: PluginLoader = PluginLoader()
     private lateinit var serverBootstrap: ServerBootstrap
     private lateinit var httpServerBootstrap: ServerBootstrap
     private var properties: ProxyProperties by Delegates.notNull()
@@ -80,6 +82,9 @@ public class ProxyService(
 
         launchHttpServer(factory, worldListProvider, updatedJavConfig)
         launchProxyServer(factory, worldListProvider, rsa)
+
+        // Only load osrs plugins for now, we don't currently intend on supporting other types
+        pluginLoader.loadPlugins("osrs")
 
         // Immediately launch the corresponding native client
         launchNativeClient(os, rsa)
