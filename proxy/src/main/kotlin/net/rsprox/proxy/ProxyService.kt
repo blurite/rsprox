@@ -4,6 +4,7 @@ import com.github.michaelbull.logging.InlineLogger
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.UnpooledByteBufAllocator
+import net.rsprox.patch.NativeClientType
 import net.rsprox.patch.PatchResult
 import net.rsprox.patch.native.NativePatcher
 import net.rsprox.proxy.bootstrap.BootstrapFactory
@@ -20,15 +21,17 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
 import net.rsprox.proxy.downloader.NativeClientDownloader
-import net.rsprox.proxy.downloader.NativeClientType
 import net.rsprox.proxy.futures.asCompletableFuture
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
+import net.rsprox.proxy.util.OperatingSystem
+import net.rsprox.proxy.util.getOperatingSystem
 import net.rsprox.proxy.worlds.DynamicWorldListProvider
 import net.rsprox.proxy.worlds.World
 import net.rsprox.proxy.worlds.WorldListProvider
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
+import java.io.File
 import java.math.BigInteger
 import java.net.URL
 import java.nio.file.Files
@@ -72,7 +75,19 @@ public class ProxyService(
         val javConfigEndpoint = properties.getProperty(JAV_CONFIG_ENDPOINT)
         val worldlistEndpoint = properties.getProperty(WORLDLIST_ENDPOINT)
 
-        val binary = NativeClientDownloader.download(NativeClientType.WIN)
+        val os = getOperatingSystem()
+        logger.debug { "Proxy launched on $os" }
+        if (os == OperatingSystem.UNIX || os == OperatingSystem.SOLARIS) {
+            throw IllegalStateException("Operating system not supported for native: $os")
+        }
+        val nativeClientType =
+            when (os) {
+                OperatingSystem.WINDOWS -> NativeClientType.WIN
+                OperatingSystem.MAC -> NativeClientType.MAC
+                else -> throw IllegalStateException()
+            }
+
+        val binary = NativeClientDownloader.download(nativeClientType)
         val extension = if (binary.extension.isNotEmpty()) ".${binary.extension}" else ""
         val patched = binary.parent.resolve("${binary.nameWithoutExtension}-patched$extension")
         binary.copyTo(patched, overwrite = true)
@@ -86,6 +101,7 @@ public class ProxyService(
                 "http://127.0.0.1:$webPort/$javConfigEndpoint",
                 "http://127.0.0.1:$webPort/$worldlistEndpoint",
                 port,
+                nativeClientType,
             )
         check(result is PatchResult.Success) {
             "Failed to patch"
@@ -93,14 +109,32 @@ public class ProxyService(
         val originalModulus = BigInteger(result.oldModulus, 16)
         launchHttpServer(factory, worldListProvider, updatedJavConfig)
         launchProxyServer(factory, worldListProvider, rsa, originalModulus)
-        launchExecutable(result.outputPath)
+        launchExecutable(result.outputPath, os)
     }
 
-    private fun launchExecutable(path: Path) {
-        val directory = path.parent.toFile()
-        val absolutePath = path.absolutePathString()
-        Runtime.getRuntime().exec(absolutePath, null, directory)
-        logger.debug { "Launched $path" }
+    private fun launchExecutable(
+        path: Path,
+        operatingSystem: OperatingSystem,
+    ) {
+        when (operatingSystem) {
+            OperatingSystem.WINDOWS -> {
+                val directory = path.parent.toFile()
+                val absolutePath = path.absolutePathString()
+                Runtime.getRuntime().exec(absolutePath, null, directory)
+                logger.debug { "Launched $path" }
+            }
+            OperatingSystem.MAC -> {
+                // The patched file is at /.rsprox/clients/osclient.app/Contents/MacOS/osclient-patched
+                // We need to however execute the /.rsprox/clients/osclient.app "file"
+                val rootDirection = path.parent.parent.parent
+                val absolutePath = "${File.separator}${rootDirection.absolutePathString()}"
+                logger.debug { "Attempting to execute command 'open $absolutePath'" }
+                Runtime.getRuntime().exec("open $absolutePath")
+                logger.debug { "Launched $path" }
+            }
+            OperatingSystem.UNIX -> throw IllegalStateException("Unix not supported yet.")
+            OperatingSystem.SOLARIS -> throw IllegalStateException("Solaris not supported yet.")
+        }
     }
 
     private fun parsePreferredCppWorld(): Int? {
