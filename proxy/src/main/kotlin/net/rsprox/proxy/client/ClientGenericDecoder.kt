@@ -8,7 +8,7 @@ import net.rsprot.buffer.extensions.g2
 import net.rsprot.crypto.cipher.StreamCipher
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.Prot
-import net.rsprox.proxy.util.ProtProvider
+import net.rsprox.protocol.ProtProvider
 
 public class ClientGenericDecoder<out T : ClientProt>(
     private val cipher: StreamCipher,

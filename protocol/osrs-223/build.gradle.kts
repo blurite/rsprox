@@ -8,4 +8,5 @@ dependencies {
     implementation(rootProject.libs.rsprot.protocol)
     implementation(platform(rootProject.libs.log4j.bom))
     implementation(rootProject.libs.bundles.log4j)
+    implementation(projects.protocol)
 }

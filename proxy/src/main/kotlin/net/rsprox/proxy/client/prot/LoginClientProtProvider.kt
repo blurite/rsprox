@@ -1,6 +1,6 @@
 package net.rsprox.proxy.client.prot
 
-import net.rsprox.proxy.util.ProtProvider
+import net.rsprox.protocol.ProtProvider
 
 public data object LoginClientProtProvider : ProtProvider<LoginClientProt> {
     override fun get(opcode: Int): LoginClientProt {

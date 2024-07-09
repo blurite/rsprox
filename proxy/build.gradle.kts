@@ -15,4 +15,5 @@ dependencies {
     implementation(rootProject.libs.bundles.jackson)
     implementation(projects.patch)
     implementation(projects.patch.patchNative)
+    implementation(projects.protocol)
 }

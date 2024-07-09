@@ -10,7 +10,7 @@ import net.rsprot.buffer.extensions.pdata
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.Prot
 import net.rsprot.protocol.ServerProt
-import net.rsprox.proxy.util.ProtProvider
+import net.rsprox.protocol.ProtProvider
 import kotlin.math.max
 import kotlin.math.min
 

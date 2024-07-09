@@ -37,3 +37,14 @@ allprojects {
 subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 }
+
+// fixes some weird error with "Entry classpath.index is a duplicate but no duplicate handling strategy has been set"
+// see https://github.com/gradle/gradle/issues/17236
+gradle.taskGraph.whenReady {
+    val duplicateTasks =
+        allTasks
+            .filter { it.hasProperty("duplicatesStrategy") }
+    for (task in duplicateTasks) {
+        task.setProperty("duplicatesStrategy", "EXCLUDE")
+    }
+}
