@@ -16,7 +16,7 @@ Below is a small task list showing a rough breakdown of what the tool will consi
 
 - [ ] Patch Tool
   - [x] Native (Win)
-  - [ ] Native (Mac)
+  - [x] Native (Mac)
   - [ ] RuneLite
   - [ ] RuneLite Forks
   - [ ] HDOS
@@ -37,8 +37,9 @@ Below is a small task list showing a rough breakdown of what the tool will consi
   - [ ] Indexing of binary files
   - [ ] Ability to download any binary blobs
 - [ ] Decoders
-  - [ ] Plugin system for decoders, with each revision acting as its own plugin
-  - [ ] Revision 223 (initial revision)
+  - [x] Plugin system for decoders, with each revision acting as its own plugin
+  - [x] Revision 223 (client decoders)
+  - [ ] Revision 223 (server decoders)
 - [ ] Transcriber
 - [ ] Launchers
   - [ ] Proxy launcher/updater
