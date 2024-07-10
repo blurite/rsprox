@@ -22,6 +22,13 @@ public class ClanSettingsFull private constructor(
     public val clanType: Int
         get() = _clanType.toInt()
 
+    override fun toString(): String {
+        return "ClanSettingsFull(" +
+            "update=$update, " +
+            "clanType=$clanType" +
+            ")"
+    }
+
     public sealed interface ClanSettingsFullUpdate
 
     /**

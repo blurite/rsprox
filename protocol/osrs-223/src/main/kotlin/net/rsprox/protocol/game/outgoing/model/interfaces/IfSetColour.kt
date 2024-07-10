@@ -32,6 +32,15 @@ public class IfSetColour private constructor(
         ),
     )
 
+    public constructor(
+        interfaceId: Int,
+        componentId: Int,
+        colour15BitPacked: Int,
+    ) : this(
+        CombinedId(interfaceId, componentId),
+        Rs15BitColour(colour15BitPacked.toUShort()),
+    )
+
     /**
      * A secondary constructor to build a colour from [Color].
      * This can be useful to avoid manual colour conversions,

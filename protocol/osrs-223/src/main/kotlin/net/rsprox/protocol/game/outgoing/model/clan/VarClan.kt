@@ -55,6 +55,43 @@ public class VarClan private constructor(
     public sealed interface VarClanData
 
     /**
+     * Unknown var clan data is instantiated when we are decoding the
+     * packet from the client's perspective. The client relies on the cache
+     * in order to determine the type of the varclan to decode.
+     * As we do not have access to the cache at this time, we simply store
+     * the raw bytes that make up the value. As such, the decoding logic
+     * is passed along to the transcriber, which could be made to use the
+     * cache in order to figure out the type at hand.
+     *
+     * It is technically possible to try and infer the type, but it is not
+     * reliable, as strings could be of any structure and overlap with
+     * what is identified as integers or longs.
+     *
+     * @property data the payload of the packet, to be decoded by the transcriber
+     * when sufficient information is available.
+     */
+    public class UnknownVarClanData(
+        public val data: ByteArray,
+    ) : VarClanData {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as UnknownVarClanData
+
+            return data.contentEquals(other.data)
+        }
+
+        override fun hashCode(): Int {
+            return data.contentHashCode()
+        }
+
+        override fun toString(): String {
+            return "UnknownVarClanData(data=${data.contentToString()})"
+        }
+    }
+
+    /**
      * Var clan int data is used to transmit a 32-bit integer as a varclan
      * value.
      * @property value the 32-bit integer value for this varclan.

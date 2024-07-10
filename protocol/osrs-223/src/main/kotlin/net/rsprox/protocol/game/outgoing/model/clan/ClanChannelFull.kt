@@ -25,6 +25,13 @@ public class ClanChannelFull private constructor(
     public val clanType: Int
         get() = _clanType.toInt()
 
+    override fun toString(): String {
+        return "ClanChannelFull(" +
+            "update=$update, " +
+            "clanType=$clanType" +
+            ")"
+    }
+
     public sealed interface ClanChannelFullUpdate
 
     /**
