@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.misc.player
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Message game packet is used to send a normal game message in
@@ -65,7 +63,7 @@ public class MessageGame private constructor(
     private val _type: UShort,
     public val name: String?,
     public val message: String,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         type: Int,
         name: String,
@@ -87,8 +85,6 @@ public class MessageGame private constructor(
 
     public val type: Int
         get() = _type.toInt()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.HIGH_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

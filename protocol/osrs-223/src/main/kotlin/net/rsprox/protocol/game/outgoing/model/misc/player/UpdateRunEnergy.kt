@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.misc.player
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Update runenergy packet is used to modify the player's current
@@ -11,10 +9,7 @@ import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
  */
 public class UpdateRunEnergy(
     public val runenergy: Int,
-) : OutgoingGameMessage {
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
-
+) : IncomingServerGameMessage {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.misc.client
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Reset anims message is used to reset the currently playing
@@ -10,7 +8,4 @@ import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
  * base animations (e.g. standing, walking).
  * It is unclear what the purpose of this packet actually is.
  */
-public data object ResetAnims : OutgoingGameMessage {
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
-}
+public data object ResetAnims : IncomingServerGameMessage

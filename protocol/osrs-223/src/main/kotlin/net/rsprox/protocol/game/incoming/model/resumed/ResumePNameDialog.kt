@@ -2,7 +2,7 @@ package net.rsprox.protocol.game.incoming.model.resumed
 
 import net.rsprot.protocol.ClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
-import net.rsprox.protocol.game.incoming.GameClientProtCategory
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * Name dialogs are sent whenever a player enters the name of a player

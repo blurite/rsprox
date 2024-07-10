@@ -1,9 +1,7 @@
 package net.rsprox.protocol.game.outgoing.model.zone.payload
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.ZoneProt
 import net.rsprox.protocol.common.OldSchoolZoneProt
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingZoneProt
 import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInZone
 
 /**
@@ -56,7 +54,7 @@ public class MapProjAnim private constructor(
     private val coordInZone: CoordInZone,
     private val _deltaX: Byte,
     private val _deltaZ: Byte,
-) : ZoneProt {
+) : IncomingZoneProt {
     public constructor(
         id: Int,
         startHeight: Int,
@@ -117,8 +115,6 @@ public class MapProjAnim private constructor(
 
     public val coordInZonePacked: Int
         get() = coordInZone.packed.toInt()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.HIGH_PRIORITY_PROT
     override val protId: Int = OldSchoolZoneProt.MAP_PROJANIM
 
     override fun equals(other: Any?): Boolean {

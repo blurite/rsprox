@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.sound
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Midi song packets are used to play songs through the music player.
@@ -23,7 +21,7 @@ public class MidiSong private constructor(
     private val _fadeOutSpeed: UShort,
     private val _fadeInDelay: UShort,
     private val _fadeInSpeed: UShort,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         id: Int,
         fadeOutDelay: Int,
@@ -48,8 +46,6 @@ public class MidiSong private constructor(
         get() = _fadeInDelay.toInt()
     public val fadeInSpeed: Int
         get() = _fadeInSpeed.toInt()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

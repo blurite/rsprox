@@ -2,7 +2,7 @@ package net.rsprox.protocol.game.incoming.model.messaging
 
 import net.rsprot.protocol.ClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
-import net.rsprox.protocol.game.incoming.GameClientProtCategory
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * Message public events are sent when the player talks in public.

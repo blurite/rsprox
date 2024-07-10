@@ -1,9 +1,7 @@
 package net.rsprox.protocol.game.outgoing.model.interfaces
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
 import net.rsprot.protocol.util.CombinedId
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * If clear-inv messaged are used to clear all objs on any if-1 type
@@ -14,7 +12,7 @@ import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
  */
 public class IfClearInv private constructor(
     public val combinedId: CombinedId,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         interfaceId: Int,
         componentId: Int,
@@ -26,8 +24,6 @@ public class IfClearInv private constructor(
         get() = combinedId.interfaceId
     public val componentId: Int
         get() = combinedId.componentId
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

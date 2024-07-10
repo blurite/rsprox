@@ -2,7 +2,7 @@ package net.rsprox.protocol.game.incoming.model.misc.user
 
 import net.rsprot.protocol.ClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
-import net.rsprox.protocol.game.incoming.GameClientProtCategory
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * Set chat filter settings is sent when the player changes either their

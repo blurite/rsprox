@@ -1,9 +1,7 @@
 package net.rsprox.protocol.game.outgoing.model.interfaces
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
 import net.rsprot.protocol.util.CombinedId
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Sets an object on an interface component.
@@ -17,7 +15,7 @@ public class IfSetObject private constructor(
     public val combinedId: CombinedId,
     private val _obj: UShort,
     private val _count: UShort,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         interfaceId: Int,
         componentId: Int,
@@ -37,8 +35,6 @@ public class IfSetObject private constructor(
         get() = _obj.toInt()
     public val count: Int
         get() = _count.toInt()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

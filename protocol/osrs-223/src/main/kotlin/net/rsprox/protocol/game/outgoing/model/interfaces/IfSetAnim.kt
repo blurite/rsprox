@@ -1,10 +1,8 @@
 package net.rsprox.protocol.game.outgoing.model.interfaces
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
 import net.rsprot.protocol.message.toIntOrMinusOne
 import net.rsprot.protocol.util.CombinedId
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * If set-anim is used to make a model animate on a component.
@@ -15,7 +13,7 @@ import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
 public class IfSetAnim private constructor(
     public val combinedId: CombinedId,
     private val _anim: UShort,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         interfaceId: Int,
         componentId: Int,
@@ -31,8 +29,6 @@ public class IfSetAnim private constructor(
         get() = combinedId.componentId
     public val anim: Int
         get() = _anim.toIntOrMinusOne()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

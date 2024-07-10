@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.camera
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 import net.rsprox.protocol.game.outgoing.model.camera.util.CameraEaseFunction
 import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildArea
 
@@ -29,7 +27,7 @@ public class CamMoveToEased private constructor(
     private val _duration: UShort,
     public val maintainFixedAltitude: Boolean,
     private val _function: UByte,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         xInBuildArea: Int,
         zInBuildArea: Int,
@@ -55,8 +53,6 @@ public class CamMoveToEased private constructor(
         get() = _duration.toInt()
     public val function: CameraEaseFunction
         get() = CameraEaseFunction[_function.toInt()]
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

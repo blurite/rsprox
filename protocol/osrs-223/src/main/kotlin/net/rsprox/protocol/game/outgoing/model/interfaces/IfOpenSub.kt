@@ -1,10 +1,8 @@
 package net.rsprox.protocol.game.outgoing.model.interfaces
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
 import net.rsprot.protocol.message.toIntOrMinusOne
 import net.rsprot.protocol.util.CombinedId
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * If open-sub messages are used to open non-root interfaces
@@ -33,7 +31,7 @@ public class IfOpenSub(
     public val destinationCombinedId: CombinedId,
     private val _interfaceId: UShort,
     private val _type: UByte,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         destinationInterfaceId: Int,
         destinationComponentId: Int,
@@ -53,8 +51,6 @@ public class IfOpenSub(
         get() = _interfaceId.toIntOrMinusOne()
     public val type: Int
         get() = _type.toInt()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

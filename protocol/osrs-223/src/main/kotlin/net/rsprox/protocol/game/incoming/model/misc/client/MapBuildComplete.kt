@@ -2,7 +2,7 @@ package net.rsprox.protocol.game.incoming.model.misc.client
 
 import net.rsprot.protocol.ClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
-import net.rsprox.protocol.game.incoming.GameClientProtCategory
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * Map build complete is sent when the client finishes building map after

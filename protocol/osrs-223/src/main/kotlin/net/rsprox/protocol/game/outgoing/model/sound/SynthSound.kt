@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.sound
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Synth sound is used to play a short sound effect locally for the given player.
@@ -14,7 +12,7 @@ public class SynthSound private constructor(
     private val _id: UShort,
     private val _loops: UByte,
     private val _delay: UShort,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         id: Int,
         loops: Int,
@@ -31,8 +29,6 @@ public class SynthSound private constructor(
         get() = _loops.toInt()
     public val delay: Int
         get() = _delay.toInt()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

@@ -1,11 +1,11 @@
-// package net.rsprox.protocol.game.incoming.model.misc.client
+package net.rsprox.protocol.game.incoming.model.misc.client // package net.rsprox.protocol.game.incoming.model.misc.client
 //
 // import io.netty.buffer.ByteBuf
 // import net.rsprot.buffer.extensions.checkCRC32
 // import net.rsprot.buffer.extensions.toJagByteBuf
 // import net.rsprot.protocol.ClientProtCategory
 // import net.rsprot.protocol.message.IncomingGameMessage
-// import net.rsprox.protocol.game.incoming.GameClientProtCategory
+// import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 // import net.rsprox.protocol.game.outgoing.misc.client.ReflectionChecker
 // import java.io.IOException
 // import java.io.InvalidClassException

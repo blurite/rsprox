@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.varp
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Varp small messages are used to send a varp to the client that
@@ -15,7 +13,7 @@ import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
 public class VarpSmall private constructor(
     private val _id: UShort,
     private val _value: Byte,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         id: Int,
         value: Int,
@@ -28,8 +26,6 @@ public class VarpSmall private constructor(
         get() = _id.toInt()
     public val value: Int
         get() = _value.toInt()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.HIGH_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

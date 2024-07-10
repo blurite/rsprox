@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.misc.player
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Chat filter settings packed is used to set the public and
@@ -27,7 +25,7 @@ import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
 public class ChatFilterSettings private constructor(
     private val _publicChatFilter: UByte,
     private val _tradeChatFilter: UByte,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         publicChatFilter: Int,
         tradeChatFilter: Int,
@@ -40,8 +38,6 @@ public class ChatFilterSettings private constructor(
         get() = _publicChatFilter.toInt()
     public val tradeChatFilter: Int
         get() = _tradeChatFilter.toInt()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.HIGH_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

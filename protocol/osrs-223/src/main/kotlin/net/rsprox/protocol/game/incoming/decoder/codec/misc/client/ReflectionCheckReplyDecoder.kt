@@ -1,4 +1,4 @@
-// package net.rsprox.protocol.game.incoming.decoder.codec.misc.client
+package net.rsprox.protocol.game.incoming.decoder.codec.misc.client // package net.rsprox.protocol.game.incoming.decoder.codec.misc.client
 //
 // import net.rsprot.buffer.JagByteBuf
 // import net.rsprot.protocol.ClientProt

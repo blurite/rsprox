@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.misc.player
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Run clientscript packet is used to execute a clientscript in the client
@@ -16,7 +14,7 @@ import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
  * @property values the list of int or string values to be sent to the
  * client script.
  */
-public class RunClientScript : OutgoingGameMessage {
+public class RunClientScript : IncomingServerGameMessage {
     public val id: Int
     public val types: CharArray
     public val values: List<Any>
@@ -60,9 +58,6 @@ public class RunClientScript : OutgoingGameMessage {
                 }
             }
     }
-
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.camera
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Oculus sync is used to re-synchronize the orb of oculus
@@ -17,10 +15,7 @@ import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
  */
 public class OculusSync(
     public val value: Int,
-) : OutgoingGameMessage {
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
-
+) : IncomingServerGameMessage {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

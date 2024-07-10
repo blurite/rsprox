@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.specific
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildArea
 
 /**
@@ -74,7 +72,7 @@ public class ProjAnimSpecific private constructor(
     private val coordInBuildArea: CoordInBuildArea,
     private val _deltaX: Byte,
     private val _deltaZ: Byte,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         id: Int,
         startHeight: Int,
@@ -168,8 +166,6 @@ public class ProjAnimSpecific private constructor(
 
     public val coordInBuildAreaPacked: Int
         get() = coordInBuildArea.packedMedium
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

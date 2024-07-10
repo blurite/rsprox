@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.misc.client
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Update reboot timer is used to start the shut-down timer
@@ -16,10 +14,7 @@ import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
  */
 public class UpdateRebootTimer(
     public val gameCycles: Int,
-) : OutgoingGameMessage {
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
-
+) : IncomingServerGameMessage {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

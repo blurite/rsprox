@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.clan
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Clan settings delta updates are used to modify a sub-set of this clan's settings.
@@ -18,7 +16,7 @@ public class ClanSettingsDelta private constructor(
     public val owner: Long,
     public val updateNum: Int,
     public val updates: List<ClanSettingsDeltaUpdate>,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         clanType: Int,
         owner: Long,
@@ -33,8 +31,6 @@ public class ClanSettingsDelta private constructor(
 
     public val clanType: Int
         get() = _clanType.toInt()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.HIGH_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

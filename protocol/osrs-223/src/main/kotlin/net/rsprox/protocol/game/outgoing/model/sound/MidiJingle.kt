@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.sound
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Midi jingle packet is used to play a short midi song, typically when
@@ -18,7 +16,7 @@ import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
 public class MidiJingle private constructor(
     private val _id: UShort,
     public val lengthInMillis: Int,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         id: Int,
     ) : this(
@@ -36,8 +34,6 @@ public class MidiJingle private constructor(
 
     public val id: Int
         get() = _id.toInt()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

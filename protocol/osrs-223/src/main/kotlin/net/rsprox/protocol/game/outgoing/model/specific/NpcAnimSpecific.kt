@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.specific
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Npc anim specifics are used to play an animation on a NPC for a specific player,
@@ -15,7 +13,7 @@ public class NpcAnimSpecific private constructor(
     private val _index: UShort,
     private val _id: UShort,
     private val _delay: UByte,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         index: Int,
         id: Int,
@@ -32,8 +30,6 @@ public class NpcAnimSpecific private constructor(
         get() = _id.toInt()
     public val delay: Int
         get() = _delay.toInt()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

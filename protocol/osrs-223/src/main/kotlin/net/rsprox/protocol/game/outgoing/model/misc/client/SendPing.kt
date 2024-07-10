@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.misc.client
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Send ping packet is used to request a ping response from the client.
@@ -17,10 +15,7 @@ import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
 public class SendPing(
     public val value1: Int,
     public val value2: Int,
-) : OutgoingGameMessage {
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
-
+) : IncomingServerGameMessage {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

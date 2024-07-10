@@ -2,7 +2,7 @@ package net.rsprox.protocol.game.incoming.model.clan
 
 import net.rsprot.protocol.ClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
-import net.rsprox.protocol.game.incoming.GameClientProtCategory
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * Clan channel requests are made whenever the server sends a clanchannel

@@ -1,4 +1,4 @@
-package net.rsprox.protocol.game.incoming
+package net.rsprox.protocol.game.incoming.model
 
 import net.rsprot.protocol.ClientProtCategory
 

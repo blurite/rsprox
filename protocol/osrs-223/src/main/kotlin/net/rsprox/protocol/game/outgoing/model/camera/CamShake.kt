@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.camera
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Cam shake packet is used to make the camera shake around.
@@ -41,7 +39,7 @@ public class CamShake private constructor(
     private val _randomAmount: UByte,
     private val _sineAmount: UByte,
     private val _sineFrequency: UByte,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         type: Int,
         randomAmount: Int,
@@ -62,8 +60,6 @@ public class CamShake private constructor(
         get() = _sineAmount.toInt()
     public val sineFrequency: Int
         get() = _sineFrequency.toInt()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

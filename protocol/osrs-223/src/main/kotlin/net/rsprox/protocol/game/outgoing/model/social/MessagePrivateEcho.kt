@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.social
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Message private echo is used to show the messages
@@ -15,10 +13,7 @@ import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
 public class MessagePrivateEcho(
     public val recipient: String,
     public val message: String,
-) : OutgoingGameMessage {
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
-
+) : IncomingServerGameMessage {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.misc.client
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Hide player ops packet is used to hide the right-click menu of all players across the game.
@@ -10,10 +8,7 @@ import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
  */
 public class HidePlayerOps(
     public val hidden: Boolean,
-) : OutgoingGameMessage {
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.HIGH_PRIORITY_PROT
-
+) : IncomingServerGameMessage {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

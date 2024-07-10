@@ -2,7 +2,7 @@ package net.rsprox.protocol.game.incoming.model.misc.client
 
 import net.rsprot.protocol.ClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
-import net.rsprox.protocol.game.incoming.GameClientProtCategory
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * Timings are sent as part of the first packets during login,

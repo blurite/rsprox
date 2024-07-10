@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.misc.client
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Server tick end packets are used by the C++ client
@@ -10,7 +8,4 @@ import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
  * visible ground item's timers. Without it, all ground
  * items' timers will remain frozen once dropped.
  */
-public data object ServerTickEnd : OutgoingGameMessage {
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
-}
+public data object ServerTickEnd : IncomingServerGameMessage

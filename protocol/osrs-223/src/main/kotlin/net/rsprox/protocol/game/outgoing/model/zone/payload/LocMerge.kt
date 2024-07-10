@@ -1,9 +1,7 @@
 package net.rsprox.protocol.game.outgoing.model.zone.payload
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.ZoneProt
 import net.rsprox.protocol.common.OldSchoolZoneProt
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingZoneProt
 import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInZone
 import net.rsprox.protocol.game.outgoing.model.zone.payload.util.LocProperties
 
@@ -46,7 +44,7 @@ public class LocMerge private constructor(
     private val _minZ: Byte,
     private val _maxX: Byte,
     private val _maxZ: Byte,
-) : ZoneProt {
+) : IncomingZoneProt {
     public constructor(
         index: Int,
         id: Int,
@@ -103,8 +101,6 @@ public class LocMerge private constructor(
     public val locPropertiesPacked: Int
         get() = locProperties.packed.toInt()
 
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.HIGH_PRIORITY_PROT
     override val protId: Int = OldSchoolZoneProt.LOC_MERGE
 
     override fun equals(other: Any?): Boolean {

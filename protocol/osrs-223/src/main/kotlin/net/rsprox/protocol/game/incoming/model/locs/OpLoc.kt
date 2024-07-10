@@ -2,7 +2,7 @@ package net.rsprox.protocol.game.incoming.model.locs
 
 import net.rsprot.protocol.ClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
-import net.rsprox.protocol.game.incoming.GameClientProtCategory
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * OpLoc messages are fired when a player clicks one of the five (excluding oploc6)

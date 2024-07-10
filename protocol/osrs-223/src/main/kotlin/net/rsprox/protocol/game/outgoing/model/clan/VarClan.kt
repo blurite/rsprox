@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.clan
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Var clans are used to transmit a variable of a clan to the user.
@@ -17,7 +15,7 @@ import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
 public class VarClan private constructor(
     private val _id: UShort,
     public val value: VarClanData,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         id: Int,
         value: VarClanData,
@@ -28,8 +26,6 @@ public class VarClan private constructor(
 
     public val id: Int
         get() = _id.toInt()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.HIGH_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

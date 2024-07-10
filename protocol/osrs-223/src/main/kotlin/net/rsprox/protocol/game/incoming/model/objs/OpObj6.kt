@@ -2,7 +2,7 @@ package net.rsprox.protocol.game.incoming.model.objs
 
 import net.rsprot.protocol.ClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
-import net.rsprox.protocol.game.incoming.GameClientProtCategory
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * OpObj6 messages are fired whenever a player examines an obj on the ground.

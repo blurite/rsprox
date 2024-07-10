@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.sound
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Midi swap packet allows one to hot-swap a song mid-playing with a different one
@@ -20,7 +18,7 @@ public class MidiSwap private constructor(
     private val _fadeOutSpeed: UShort,
     private val _fadeInDelay: UShort,
     private val _fadeInSpeed: UShort,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         fadeOutDelay: Int,
         fadeOutSpeed: Int,
@@ -41,8 +39,6 @@ public class MidiSwap private constructor(
         get() = _fadeInDelay.toInt()
     public val fadeInSpeed: Int
         get() = _fadeInSpeed.toInt()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

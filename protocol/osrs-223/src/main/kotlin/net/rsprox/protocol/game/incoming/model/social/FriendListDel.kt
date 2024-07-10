@@ -2,7 +2,7 @@ package net.rsprox.protocol.game.incoming.model.social
 
 import net.rsprot.protocol.ClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
-import net.rsprox.protocol.game.incoming.GameClientProtCategory
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * Friend list deletion messages are sent whenever the player

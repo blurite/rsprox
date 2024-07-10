@@ -2,7 +2,7 @@ package net.rsprox.protocol.game.incoming.model.friendchat
 
 import net.rsprot.protocol.ClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
-import net.rsprox.protocol.game.incoming.GameClientProtCategory
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * Friend chat join-leave message is sent when the player joins or leaves

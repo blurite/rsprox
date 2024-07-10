@@ -1,9 +1,7 @@
 package net.rsprox.protocol.game.outgoing.model.interfaces
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
 import net.rsprot.protocol.util.CombinedId
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * If set-player-model basecolour packet is used to set the ident kit colour
@@ -19,7 +17,7 @@ public class IfSetPlayerModelBaseColour private constructor(
     public val combinedId: CombinedId,
     private val _index: UByte,
     private val _colour: UByte,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         interfaceId: Int,
         componentId: Int,
@@ -39,8 +37,6 @@ public class IfSetPlayerModelBaseColour private constructor(
         get() = _index.toInt()
     public val colour: Int
         get() = _colour.toInt()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

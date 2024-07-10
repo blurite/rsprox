@@ -1,9 +1,7 @@
 package net.rsprox.protocol.game.outgoing.model.zone.payload
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.ZoneProt
 import net.rsprox.protocol.common.OldSchoolZoneProt
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingZoneProt
 import net.rsprox.protocol.game.outgoing.model.util.OpFlags
 import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInZone
 
@@ -23,7 +21,7 @@ public class ObjOpFilter private constructor(
     private val _id: UShort,
     public val opFlags: OpFlags,
     private val coordInZone: CoordInZone,
-) : ZoneProt {
+) : IncomingZoneProt {
     public constructor(
         id: Int,
         opFlags: OpFlags,
@@ -44,8 +42,6 @@ public class ObjOpFilter private constructor(
 
     public val coordInZonePacked: Int
         get() = coordInZone.packed.toInt()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.HIGH_PRIORITY_PROT
     override val protId: Int = OldSchoolZoneProt.OBJ_OPFILTER
 
     override fun equals(other: Any?): Boolean {

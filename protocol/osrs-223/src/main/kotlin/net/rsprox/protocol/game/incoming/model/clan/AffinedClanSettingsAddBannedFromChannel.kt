@@ -2,7 +2,7 @@ package net.rsprox.protocol.game.incoming.model.clan
 
 import net.rsprot.protocol.ClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
-import net.rsprox.protocol.game.incoming.GameClientProtCategory
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * Clan ban messages are sent when a player with sufficient rank

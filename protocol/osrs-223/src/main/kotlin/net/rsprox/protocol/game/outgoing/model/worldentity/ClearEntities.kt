@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.worldentity
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Clear entities packet is used to clear any NPCs and world entities from the currently
@@ -10,7 +8,4 @@ import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
  * This packet will not clear out any players, so the player info related to that world must
  * still be used to transfer players over.
  */
-public data object ClearEntities : OutgoingGameMessage {
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.HIGH_PRIORITY_PROT
-}
+public data object ClearEntities : IncomingServerGameMessage

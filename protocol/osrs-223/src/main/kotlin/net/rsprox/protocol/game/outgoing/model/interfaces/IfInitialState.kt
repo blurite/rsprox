@@ -1,10 +1,8 @@
 package net.rsprox.protocol.game.outgoing.model.interfaces
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
 import net.rsprot.protocol.message.toIntOrMinusOne
 import net.rsprot.protocol.util.CombinedId
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * If initial state is a way to compress sending initial interfaces
@@ -20,7 +18,7 @@ public class IfInitialState private constructor(
     private val _topLevelInterface: UShort,
     public val subInterfaces: List<SubInterfaceMessage>,
     public val events: List<InterfaceEventsMessage>,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         topLevelInterface: Int,
         subInterfaces: List<SubInterfaceMessage>,
@@ -33,8 +31,6 @@ public class IfInitialState private constructor(
 
     public val topLevelInterface: Int
         get() = _topLevelInterface.toIntOrMinusOne()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

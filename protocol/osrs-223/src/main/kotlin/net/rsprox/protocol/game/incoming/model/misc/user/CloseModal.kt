@@ -2,7 +2,7 @@ package net.rsprox.protocol.game.incoming.model.misc.user
 
 import net.rsprot.protocol.ClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
-import net.rsprox.protocol.game.incoming.GameClientProtCategory
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * Close modal messages are sent when the player clicks on the 'x' button

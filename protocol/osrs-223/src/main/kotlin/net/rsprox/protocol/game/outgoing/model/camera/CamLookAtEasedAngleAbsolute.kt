@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.camera
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 import net.rsprox.protocol.game.outgoing.model.camera.util.CameraEaseFunction
 
 /**
@@ -28,7 +26,7 @@ public class CamLookAtEasedAngleAbsolute private constructor(
     private val _yAngle: Short,
     private val _duration: UShort,
     private val _function: UByte,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         xAngle: Int,
         yAngle: Int,
@@ -49,8 +47,6 @@ public class CamLookAtEasedAngleAbsolute private constructor(
         get() = _duration.toInt()
     public val function: CameraEaseFunction
         get() = CameraEaseFunction[_function.toInt()]
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

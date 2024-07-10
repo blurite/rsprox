@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.clan
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Clan channel full packets are used to update
@@ -15,7 +13,7 @@ import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
 public class ClanChannelFull private constructor(
     private val _clanType: Byte,
     public val update: ClanChannelFullUpdate,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         clanType: Int,
         update: ClanChannelFullUpdate,
@@ -26,8 +24,6 @@ public class ClanChannelFull private constructor(
 
     public val clanType: Int
         get() = _clanType.toInt()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.HIGH_PRIORITY_PROT
 
     public sealed interface ClanChannelFullUpdate
 

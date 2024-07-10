@@ -1,9 +1,7 @@
 package net.rsprox.protocol.game.outgoing.model.interfaces
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
 import net.rsprot.protocol.util.CombinedId
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * If move-sub messages are used to move a sub-level interface from
@@ -21,7 +19,7 @@ import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
 public class IfMoveSub private constructor(
     public val sourceCombinedId: CombinedId,
     public val destinationCombinedId: CombinedId,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         sourceInterfaceId: Int,
         sourceComponentId: Int,
@@ -40,8 +38,6 @@ public class IfMoveSub private constructor(
         get() = destinationCombinedId.interfaceId
     public val destinationComponentId: Int
         get() = destinationCombinedId.componentId
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

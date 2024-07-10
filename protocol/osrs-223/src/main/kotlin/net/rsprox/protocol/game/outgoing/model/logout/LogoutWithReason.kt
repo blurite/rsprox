@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.logout
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Logout with reason, much like [Logout], is used to
@@ -22,10 +20,7 @@ import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
  */
 public class LogoutWithReason(
     public val reason: Int,
-) : OutgoingGameMessage {
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.HIGH_PRIORITY_PROT
-
+) : IncomingServerGameMessage {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

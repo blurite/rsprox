@@ -1,9 +1,7 @@
 package net.rsprox.protocol.game.outgoing.model.zone.header
 
 import io.netty.buffer.ByteBuf
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Update zone partial-enclosed is used to send a batch of updates for a given
@@ -27,7 +25,7 @@ public class UpdateZonePartialEnclosed private constructor(
     private val _zoneZ: UByte,
     private val _level: UByte,
     public val payload: ByteBuf,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         zoneX: Int,
         zoneZ: Int,
@@ -46,8 +44,6 @@ public class UpdateZonePartialEnclosed private constructor(
         get() = _zoneZ.toInt()
     public val level: Int
         get() = _level.toInt()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.HIGH_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

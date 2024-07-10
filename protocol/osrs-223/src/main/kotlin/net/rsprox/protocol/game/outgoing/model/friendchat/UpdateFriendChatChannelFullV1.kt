@@ -1,9 +1,7 @@
 package net.rsprox.protocol.game.outgoing.model.friendchat
 
 import net.rsprot.compression.Base37
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Update friendchat channel full V1 is used to send full channel updates
@@ -23,7 +21,7 @@ public class UpdateFriendChatChannelFullV1 private constructor(
     private val _kickRank: Byte,
     override val entries: List<FriendChatEntry>,
 ) : UpdateFriendChatChannelFull(),
-    OutgoingGameMessage {
+    IncomingServerGameMessage {
     public constructor(
         channelOwner: String,
         channelName: String,
@@ -44,8 +42,6 @@ public class UpdateFriendChatChannelFullV1 private constructor(
         get() = Base37.decode(channelNameBase37)
     override val kickRank: Int
         get() = _kickRank.toInt()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

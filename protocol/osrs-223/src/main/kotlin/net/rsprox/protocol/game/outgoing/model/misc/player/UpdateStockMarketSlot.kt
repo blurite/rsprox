@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.misc.player
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Update stockmarket slot packet is used to set up
@@ -14,7 +12,7 @@ import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
 public class UpdateStockMarketSlot private constructor(
     private val _slot: UByte,
     public val update: StockMarketUpdateType,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         slot: Int,
         update: StockMarketUpdateType,
@@ -25,8 +23,6 @@ public class UpdateStockMarketSlot private constructor(
 
     public val slot: Int
         get() = _slot.toInt()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

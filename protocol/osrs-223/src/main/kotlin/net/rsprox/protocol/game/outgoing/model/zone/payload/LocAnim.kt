@@ -1,9 +1,7 @@
 package net.rsprox.protocol.game.outgoing.model.zone.payload
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.ZoneProt
 import net.rsprox.protocol.common.OldSchoolZoneProt
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingZoneProt
 import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInZone
 import net.rsprox.protocol.game.outgoing.model.zone.payload.util.LocProperties
 
@@ -21,7 +19,7 @@ public class LocAnim private constructor(
     private val _id: UShort,
     private val coordInZone: CoordInZone,
     private val locProperties: LocProperties,
-) : ZoneProt {
+) : IncomingZoneProt {
     public constructor(
         id: Int,
         xInZone: Int,
@@ -49,8 +47,6 @@ public class LocAnim private constructor(
         get() = coordInZone.packed.toInt()
     public val locPropertiesPacked: Int
         get() = locProperties.packed.toInt()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.HIGH_PRIORITY_PROT
 
     override val protId: Int = OldSchoolZoneProt.LOC_ANIM
 

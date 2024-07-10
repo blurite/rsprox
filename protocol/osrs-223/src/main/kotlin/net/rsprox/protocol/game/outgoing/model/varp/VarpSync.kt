@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.varp
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * The varp sync packet is used to synchronize the client's cache
@@ -13,7 +11,4 @@ import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
  * This packet provides a means to sync the modified variant up
  * with what the server has sent.
  */
-public data object VarpSync : OutgoingGameMessage {
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.HIGH_PRIORITY_PROT
-}
+public data object VarpSync : IncomingServerGameMessage

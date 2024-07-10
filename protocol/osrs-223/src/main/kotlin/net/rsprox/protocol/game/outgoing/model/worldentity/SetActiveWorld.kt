@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.worldentity
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Set active world packet is used to set the currently active world in the client,
@@ -13,10 +11,7 @@ import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
  */
 public class SetActiveWorld(
     public val worldType: WorldType,
-) : OutgoingGameMessage {
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.HIGH_PRIORITY_PROT
-
+) : IncomingServerGameMessage {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

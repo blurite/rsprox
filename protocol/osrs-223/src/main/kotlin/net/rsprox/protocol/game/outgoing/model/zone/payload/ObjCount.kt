@@ -1,9 +1,7 @@
 package net.rsprox.protocol.game.outgoing.model.zone.payload
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.ZoneProt
 import net.rsprox.protocol.common.OldSchoolZoneProt
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingZoneProt
 import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInZone
 
 /**
@@ -25,7 +23,7 @@ public class ObjCount private constructor(
     public val oldQuantity: Int,
     public val newQuantity: Int,
     private val coordInZone: CoordInZone,
-) : ZoneProt {
+) : IncomingZoneProt {
     public constructor(
         id: Int,
         oldQuantity: Int,
@@ -48,8 +46,6 @@ public class ObjCount private constructor(
 
     public val coordInZonePacked: Int
         get() = coordInZone.packed.toInt()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.HIGH_PRIORITY_PROT
     override val protId: Int = OldSchoolZoneProt.OBJ_COUNT
 
     override fun equals(other: Any?): Boolean {

@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.camera
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Cam smooth reset is used to smoothly reset camera back to the
@@ -22,7 +20,7 @@ public class CamSmoothReset private constructor(
     private val _cameraMoveProportionalSpeed: UByte,
     private val _cameraLookConstantSpeed: UByte,
     private val _cameraLookProportionalSpeed: UByte,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         cameraMoveConstantSpeed: Int,
         cameraMoveProportionalSpeed: Int,
@@ -43,8 +41,6 @@ public class CamSmoothReset private constructor(
         get() = _cameraLookConstantSpeed.toInt()
     public val cameraLookProportionalSpeed: Int
         get() = _cameraLookProportionalSpeed.toInt()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.LOW_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

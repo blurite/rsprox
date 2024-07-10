@@ -1,8 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.zone.header
 
-import net.rsprot.protocol.ServerProtCategory
-import net.rsprot.protocol.message.OutgoingGameMessage
-import net.rsprox.protocol.game.outgoing.model.GameServerProtCategory
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
  * Update zone full-follows packets are used to clear a zone (8x8x1 tiles space)
@@ -28,7 +26,7 @@ public class UpdateZoneFullFollows private constructor(
     private val _zoneX: UByte,
     private val _zoneZ: UByte,
     private val _level: UByte,
-) : OutgoingGameMessage {
+) : IncomingServerGameMessage {
     public constructor(
         zoneX: Int,
         zoneZ: Int,
@@ -45,8 +43,6 @@ public class UpdateZoneFullFollows private constructor(
         get() = _zoneZ.toInt()
     public val level: Int
         get() = _level.toInt()
-    override val category: ServerProtCategory
-        get() = GameServerProtCategory.HIGH_PRIORITY_PROT
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
