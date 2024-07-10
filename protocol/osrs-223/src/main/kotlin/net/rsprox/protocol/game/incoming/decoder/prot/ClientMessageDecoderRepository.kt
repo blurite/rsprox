@@ -88,7 +88,7 @@ import net.rsprox.protocol.game.incoming.decoder.codec.social.FriendListDelDecod
 import net.rsprox.protocol.game.incoming.decoder.codec.social.IgnoreListAddDecoder
 import net.rsprox.protocol.game.incoming.decoder.codec.social.IgnoreListDelDecoder
 
-public object DesktopGameMessageDecoderRepository {
+public object ClientMessageDecoderRepository {
     @ExperimentalStdlibApi
     public fun build(): MessageDecoderRepository<GameClientProt> {
         val protRepository = ProtRepository.of<GameClientProt>()

@@ -9,7 +9,6 @@ import net.rsprot.buffer.extensions.pVarInt
 import net.rsprot.buffer.extensions.pdata
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.Prot
-import net.rsprot.protocol.ServerProt
 import net.rsprox.protocol.ProtProvider
 import kotlin.math.max
 import kotlin.math.min
@@ -50,7 +49,7 @@ public class BinaryStream(
     public fun toBinaryPacketSequence(
         header: BinaryHeader,
         clientProtProvider: ProtProvider<ClientProt>,
-        serverProtProvider: ProtProvider<ServerProt>,
+        serverProtProvider: ProtProvider<ClientProt>,
     ): Sequence<BinaryPacket> {
         var timeMillis = header.timestamp
         return sequence {

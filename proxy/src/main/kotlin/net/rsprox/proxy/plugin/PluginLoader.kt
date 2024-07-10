@@ -2,9 +2,9 @@ package net.rsprox.proxy.plugin
 
 import com.github.michaelbull.logging.InlineLogger
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.ServerProt
 import net.rsprox.protocol.ClientPacketDecoder
 import net.rsprox.protocol.ProtProvider
+import net.rsprox.protocol.ServerPacketDecoder
 import net.rsprox.proxy.config.PLUGINS_DIRECTORY
 import java.io.File
 import java.net.URLClassLoader
@@ -44,16 +44,27 @@ public class PluginLoader {
                 arrayOf(file.toURI().toURL()),
                 this::class.java.classLoader,
             )
-        val classToLoad =
+        val clientPacketDecoderService =
             Class.forName(
                 "net.rsprox.protocol.ClientPacketDecoderService",
                 true,
                 loader,
             )
         val clientPacketDecoder =
-            classToLoad
+            clientPacketDecoderService
                 .getDeclaredConstructor()
                 .newInstance() as ClientPacketDecoder
+
+        val serverPacketDecoderService =
+            Class.forName(
+                "net.rsprox.protocol.ServerPacketDecoderService",
+                true,
+                loader,
+            )
+        val serverPacketDecoder =
+            serverPacketDecoderService
+                .getDeclaredConstructor()
+                .newInstance() as ServerPacketDecoder
 
         @Suppress("UNCHECKED_CAST")
         val clientProtProvider =
@@ -71,10 +82,11 @@ public class PluginLoader {
                     "net.rsprox.protocol.GameServerProtProvider",
                     true,
                     loader,
-                ).kotlin.objectInstance as ProtProvider<ServerProt>
+                ).kotlin.objectInstance as ProtProvider<ClientProt>
         val decoderPlugin =
             DecoderPlugin(
                 clientPacketDecoder,
+                serverPacketDecoder,
                 clientProtProvider,
                 serverProtProvider,
             )
