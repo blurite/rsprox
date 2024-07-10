@@ -1,4 +1,4 @@
-package net.rsprox.protocol.game.outgoing.prot
+package net.rsprox.protocol.game.outgoing.decoder.prot
 
 import net.rsprot.protocol.Prot
 import net.rsprot.protocol.ServerProt

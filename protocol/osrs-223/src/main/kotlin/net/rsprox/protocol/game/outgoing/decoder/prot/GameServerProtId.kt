@@ -1,4 +1,4 @@
-package net.rsprox.protocol.game.outgoing.prot
+package net.rsprox.protocol.game.outgoing.decoder.prot
 
 internal object GameServerProtId {
     const val REFLECTION_CHECKER = 0

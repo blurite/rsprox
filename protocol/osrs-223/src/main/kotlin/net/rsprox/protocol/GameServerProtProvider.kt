@@ -1,6 +1,6 @@
 package net.rsprox.protocol
 
-import net.rsprox.protocol.game.outgoing.prot.GameServerProt
+import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 
 public data object GameServerProtProvider : ProtProvider<GameServerProt> {
     override fun get(opcode: Int): GameServerProt {
