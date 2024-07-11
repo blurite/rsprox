@@ -71,6 +71,7 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.HidePlayerOps
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.HintArrowDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.HiscoreReplyDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.MinimapToggleDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.ReflectionCheckerDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.ResetAnimsDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.SendPingDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.ServerTickEndDecoder
@@ -214,6 +215,7 @@ public object ServerMessageDecoderRepository {
                 bind(HintArrowDecoder())
                 bind(HiscoreReplyDecoder())
                 bind(MinimapToggleDecoder())
+                bind(ReflectionCheckerDecoder())
                 bind(ResetAnimsDecoder())
                 bind(SendPingDecoder())
                 bind(ServerTickEndDecoder())

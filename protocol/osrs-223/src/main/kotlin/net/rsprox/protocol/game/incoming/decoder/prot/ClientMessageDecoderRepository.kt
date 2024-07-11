@@ -38,6 +38,7 @@ import net.rsprox.protocol.game.incoming.decoder.codec.misc.client.IdleDecoder
 import net.rsprox.protocol.game.incoming.decoder.codec.misc.client.MapBuildCompleteDecoder
 import net.rsprox.protocol.game.incoming.decoder.codec.misc.client.MembershipPromotionEligibilityDecoder
 import net.rsprox.protocol.game.incoming.decoder.codec.misc.client.NoTimeoutDecoder
+import net.rsprox.protocol.game.incoming.decoder.codec.misc.client.ReflectionCheckReplyDecoder
 // import net.rsprox.protocol.game.incoming.decoder.codec.misc.client.ReflectionCheckReplyDecoder
 import net.rsprox.protocol.game.incoming.decoder.codec.misc.client.SendPingReplyDecoder
 import net.rsprox.protocol.game.incoming.decoder.codec.misc.client.SoundJingleEndDecoder
@@ -195,7 +196,7 @@ public object ClientMessageDecoderRepository {
                 bind(TimingsDecoder())
                 bind(SendPingReplyDecoder())
                 bind(DetectModifiedClientDecoder())
-                // bind(ReflectionCheckReplyDecoder())
+                bind(ReflectionCheckReplyDecoder())
                 bind(NoTimeoutDecoder())
                 bind(IdleDecoder())
                 bind(MapBuildCompleteDecoder())

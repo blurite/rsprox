@@ -17,7 +17,7 @@ public class DecodingSession(
                 plugin.gameClientProtProvider,
                 plugin.gameServerProtProvider,
             )
-        val session = Session(blob.header.localPlayerIndex)
+        val session = Session(blob.header.localPlayerIndex, mutableMapOf())
         return stream.mapNotNull { binaryPacket ->
             try {
                 val packet =
