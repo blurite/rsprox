@@ -17,8 +17,19 @@ public data object Js5MasterIndexArchive {
     private val archive: MutableMap<WorldUid, ByteArray> = mutableMapOf()
 
     public fun getJs5MasterIndex(world: World): ByteArray? {
+        if (archive.isEmpty()) {
+            return null
+        }
         val uid = getWorldUid(world)
-        return archive[uid]
+        val existing = archive[uid]
+        if (existing != null) {
+            return existing
+        }
+        val distinct = archive.values.distinct()
+        if (distinct.size != 1) {
+            return null
+        }
+        return distinct.single()
     }
 
     public fun setJs5MasterIndex(
