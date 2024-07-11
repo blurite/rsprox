@@ -1,4 +1,4 @@
-package net.rsprox.protocol.game.incoming.decoder.codec.misc.client // package net.rsprox.protocol.game.incoming.decoder.codec.misc.client
+// package net.rsprox.protocol.game.incoming.decoder.codec.misc.client
 //
 // import net.rsprot.buffer.JagByteBuf
 // import net.rsprot.protocol.ClientProt
@@ -9,7 +9,7 @@ package net.rsprox.protocol.game.incoming.decoder.codec.misc.client // package n
 // import net.rsprox.protocol.game.incoming.model.misc.client.ReflectionCheckReply
 //
 // @Consistent
-// public class ReflectionCheckReplyDecoder : MessageDecoder<ReflectionCheckReply> {
+// public class ReflectionCheckReplyDecoder : ProxyMessageDecoder<ReflectionCheckReply> {
 //    override val prot: ClientProt = GameClientProt.REFLECTION_CHECK_REPLY
 //
 //    override fun decode(

@@ -1,6 +1,6 @@
 package net.rsprox.proxy.binary
 
 public enum class StreamDirection {
-    ClientToServer,
-    ServerToClient,
+    CLIENT_TO_SERVER,
+    SERVER_TO_CLIENT,
 }

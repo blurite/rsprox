@@ -3,19 +3,19 @@ package net.rsprox.protocol.game.outgoing.decoder.codec.misc.client
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.crypto.crc.CyclicRedundancyCheck
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.message.codec.MessageDecoder
 import net.rsprot.protocol.metadata.Consistent
-import net.rsprot.protocol.tools.MessageDecodingTools
+import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.misc.client.UpdateUid192
+import net.rsprox.protocol.session.Session
 
 @Consistent
-public class UpdateUid192Decoder : MessageDecoder<UpdateUid192> {
+public class UpdateUid192Decoder : ProxyMessageDecoder<UpdateUid192> {
     override val prot: ClientProt = GameServerProt.UPDATE_UID192
 
     override fun decode(
         buffer: JagByteBuf,
-        tools: MessageDecodingTools,
+        session: Session,
     ): UpdateUid192 {
         val data = ByteArray(24)
         buffer.gdata(data)

@@ -2,17 +2,17 @@ package net.rsprox.protocol.game.incoming.decoder.codec.events
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.message.codec.MessageDecoder
-import net.rsprot.protocol.tools.MessageDecodingTools
+import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.incoming.decoder.prot.GameClientProt
 import net.rsprox.protocol.game.incoming.model.events.EventKeyboard
+import net.rsprox.protocol.session.Session
 
-public class EventKeyboardDecoder : MessageDecoder<EventKeyboard> {
+public class EventKeyboardDecoder : ProxyMessageDecoder<EventKeyboard> {
     override val prot: ClientProt = GameClientProt.EVENT_KEYBOARD
 
     override fun decode(
         buffer: JagByteBuf,
-        tools: MessageDecodingTools,
+        session: Session,
     ): EventKeyboard {
         val count = buffer.readableBytes() / 4
         val keys = ByteArray(count)

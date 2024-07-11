@@ -1,30 +1,30 @@
 package net.rsprox.protocol.game.outgoing.decoder.codec.clan
 
 import net.rsprot.buffer.JagByteBuf
+import net.rsprot.compression.HuffmanCodec
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.message.codec.MessageDecoder
 import net.rsprot.protocol.metadata.Consistent
-import net.rsprot.protocol.tools.MessageDecodingTools
+import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.clan.MessageClanChannel
+import net.rsprox.protocol.session.Session
 
 @Consistent
-public class MessageClanChannelDecoder : MessageDecoder<MessageClanChannel> {
+public class MessageClanChannelDecoder(
+    private val huffmanCodec: HuffmanCodec,
+) : ProxyMessageDecoder<MessageClanChannel> {
     override val prot: ClientProt = GameServerProt.MESSAGE_CLANCHANNEL
 
     override fun decode(
         buffer: JagByteBuf,
-        tools: MessageDecodingTools,
+        session: Session,
     ): MessageClanChannel {
         val clanType = buffer.g1()
         val name = buffer.gjstr()
         val worldId = buffer.g2()
         val worldMessageCounter = buffer.g3()
         val chatCrownType = buffer.g1()
-        val message =
-            tools.huffmanCodec
-                .provide()
-                .decode(buffer)
+        val message = huffmanCodec.decode(buffer)
         return MessageClanChannel(
             clanType,
             name,

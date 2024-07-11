@@ -1,20 +1,23 @@
 package net.rsprox.protocol.game.incoming.decoder.codec.messaging
 
 import net.rsprot.buffer.JagByteBuf
+import net.rsprot.compression.HuffmanCodec
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.message.codec.MessageDecoder
 import net.rsprot.protocol.metadata.Consistent
-import net.rsprot.protocol.tools.MessageDecodingTools
+import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.incoming.decoder.prot.GameClientProt
 import net.rsprox.protocol.game.incoming.model.messaging.MessagePublic
+import net.rsprox.protocol.session.Session
 
 @Consistent
-public class MessagePublicDecoder : MessageDecoder<MessagePublic> {
+public class MessagePublicDecoder(
+    private val huffman: HuffmanCodec,
+) : ProxyMessageDecoder<MessagePublic> {
     override val prot: ClientProt = GameClientProt.MESSAGE_PUBLIC
 
     override fun decode(
         buffer: JagByteBuf,
-        tools: MessageDecodingTools,
+        session: Session,
     ): MessagePublic {
         val type = buffer.g1()
         val colour = buffer.g1()
@@ -27,7 +30,6 @@ public class MessagePublicDecoder : MessageDecoder<MessagePublic> {
             } else {
                 null
             }
-        val huffman = tools.huffmanCodec.provide()
         val message = huffman.decode(buffer)
         val clanType =
             if (type == CLAN_MAIN_CHANNEL_TYPE) {

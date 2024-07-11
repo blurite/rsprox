@@ -2,19 +2,19 @@ package net.rsprox.protocol.game.incoming.decoder.codec.misc.client
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.message.codec.MessageDecoder
 import net.rsprot.protocol.metadata.Consistent
-import net.rsprot.protocol.tools.MessageDecodingTools
+import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.incoming.decoder.prot.GameClientProt
 import net.rsprox.protocol.game.incoming.model.misc.client.Timings
+import net.rsprox.protocol.session.Session
 
 @Consistent
-public class TimingsDecoder : MessageDecoder<Timings> {
+public class TimingsDecoder : ProxyMessageDecoder<Timings> {
     override val prot: ClientProt = GameClientProt.TIMINGS
 
     override fun decode(
         buffer: JagByteBuf,
-        tools: MessageDecodingTools,
+        session: Session,
     ): Timings {
         val connectionLostDuration = buffer.g2()
         val loginDuration = buffer.g2()

@@ -2,19 +2,19 @@ package net.rsprox.protocol.game.outgoing.decoder.codec.sound
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.message.codec.MessageDecoder
 import net.rsprot.protocol.metadata.Consistent
-import net.rsprot.protocol.tools.MessageDecodingTools
+import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.sound.SynthSound
+import net.rsprox.protocol.session.Session
 
 @Consistent
-public class SynthSoundDecoder : MessageDecoder<SynthSound> {
+public class SynthSoundDecoder : ProxyMessageDecoder<SynthSound> {
     override val prot: ClientProt = GameServerProt.SYNTH_SOUND
 
     override fun decode(
         buffer: JagByteBuf,
-        tools: MessageDecodingTools,
+        session: Session,
     ): SynthSound {
         val id = buffer.g2()
         val loops = buffer.g1()

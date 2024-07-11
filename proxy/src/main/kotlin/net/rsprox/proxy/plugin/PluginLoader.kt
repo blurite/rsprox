@@ -1,11 +1,13 @@
 package net.rsprox.proxy.plugin
 
 import com.github.michaelbull.logging.InlineLogger
+import net.rsprot.compression.HuffmanCodec
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ClientPacketDecoder
 import net.rsprox.protocol.ProtProvider
 import net.rsprox.protocol.ServerPacketDecoder
 import net.rsprox.proxy.config.PLUGINS_DIRECTORY
+import net.rsprox.proxy.huffman.HuffmanProvider
 import java.io.File
 import java.net.URLClassLoader
 
@@ -50,10 +52,11 @@ public class PluginLoader {
                 true,
                 loader,
             )
+        val huffmanCodec = HuffmanProvider.get()
         val clientPacketDecoder =
             clientPacketDecoderService
-                .getDeclaredConstructor()
-                .newInstance() as ClientPacketDecoder
+                .getDeclaredConstructor(HuffmanCodec::class.java)
+                .newInstance(huffmanCodec) as ClientPacketDecoder
 
         val serverPacketDecoderService =
             Class.forName(
@@ -63,8 +66,8 @@ public class PluginLoader {
             )
         val serverPacketDecoder =
             serverPacketDecoderService
-                .getDeclaredConstructor()
-                .newInstance() as ServerPacketDecoder
+                .getDeclaredConstructor(HuffmanCodec::class.java)
+                .newInstance(huffmanCodec) as ServerPacketDecoder
 
         @Suppress("UNCHECKED_CAST")
         val clientProtProvider =

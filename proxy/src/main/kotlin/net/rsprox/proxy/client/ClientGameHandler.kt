@@ -18,7 +18,7 @@ public class ClientGameHandler(
     ) {
         serverChannel.writeAndFlush(msg.encode(ctx.alloc()))
         eraseSensitiveContents(ctx, msg)
-        ctx.channel().getBinaryBlob().append(StreamDirection.ClientToServer, msg.encode(ctx.alloc(), mod = false))
+        ctx.channel().getBinaryBlob().append(StreamDirection.CLIENT_TO_SERVER, msg.encode(ctx.alloc(), mod = false))
     }
 
     private fun eraseSensitiveContents(

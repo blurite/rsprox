@@ -2,18 +2,18 @@ package net.rsprox.protocol.game.incoming.decoder.codec.objs
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.message.codec.MessageDecoder
-import net.rsprot.protocol.tools.MessageDecodingTools
 import net.rsprot.protocol.util.gCombinedId
+import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.incoming.decoder.prot.GameClientProt
 import net.rsprox.protocol.game.incoming.model.objs.OpObjT
+import net.rsprox.protocol.session.Session
 
-public class OpObjTDecoder : MessageDecoder<OpObjT> {
+public class OpObjTDecoder : ProxyMessageDecoder<OpObjT> {
     override val prot: ClientProt = GameClientProt.OPOBJT
 
     override fun decode(
         buffer: JagByteBuf,
-        tools: MessageDecodingTools,
+        session: Session,
     ): OpObjT {
         val id = buffer.g2Alt3()
         val z = buffer.g2()

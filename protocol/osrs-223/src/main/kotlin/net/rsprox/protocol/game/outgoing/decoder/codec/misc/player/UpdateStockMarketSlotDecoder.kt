@@ -2,19 +2,19 @@ package net.rsprox.protocol.game.outgoing.decoder.codec.misc.player
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.message.codec.MessageDecoder
 import net.rsprot.protocol.metadata.Consistent
-import net.rsprot.protocol.tools.MessageDecodingTools
+import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStockMarketSlot
+import net.rsprox.protocol.session.Session
 
 @Consistent
-public class UpdateStockMarketSlotDecoder : MessageDecoder<UpdateStockMarketSlot> {
+public class UpdateStockMarketSlotDecoder : ProxyMessageDecoder<UpdateStockMarketSlot> {
     override val prot: ClientProt = GameServerProt.UPDATE_STOCKMARKET_SLOT
 
     override fun decode(
         buffer: JagByteBuf,
-        tools: MessageDecodingTools,
+        session: Session,
     ): UpdateStockMarketSlot {
         val slot = buffer.g1()
         return when (val status = buffer.g1()) {

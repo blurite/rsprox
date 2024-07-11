@@ -2,20 +2,20 @@ package net.rsprox.protocol.game.outgoing.decoder.codec.inv
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.message.codec.MessageDecoder
 import net.rsprot.protocol.metadata.Consistent
-import net.rsprot.protocol.tools.MessageDecodingTools
 import net.rsprot.protocol.util.gCombinedId
+import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvPartial
+import net.rsprox.protocol.session.Session
 
 @Consistent
-public class UpdateInvPartialDecoder : MessageDecoder<UpdateInvPartial> {
+public class UpdateInvPartialDecoder : ProxyMessageDecoder<UpdateInvPartial> {
     override val prot: ClientProt = GameServerProt.UPDATE_INV_PARTIAL
 
     override fun decode(
         buffer: JagByteBuf,
-        tools: MessageDecodingTools,
+        session: Session,
     ): UpdateInvPartial {
         val combinedId = buffer.gCombinedId()
         val inventoryId = buffer.g2()

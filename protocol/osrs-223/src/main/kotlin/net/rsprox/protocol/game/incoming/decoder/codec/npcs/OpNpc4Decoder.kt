@@ -2,17 +2,17 @@ package net.rsprox.protocol.game.incoming.decoder.codec.npcs
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.message.codec.MessageDecoder
-import net.rsprot.protocol.tools.MessageDecodingTools
+import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.incoming.decoder.prot.GameClientProt
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpc
+import net.rsprox.protocol.session.Session
 
-public class OpNpc4Decoder : MessageDecoder<OpNpc> {
+public class OpNpc4Decoder : ProxyMessageDecoder<OpNpc> {
     override val prot: ClientProt = GameClientProt.OPNPC4
 
     override fun decode(
         buffer: JagByteBuf,
-        tools: MessageDecodingTools,
+        session: Session,
     ): OpNpc {
         val controlKey = buffer.g1Alt1() == 1
         val index = buffer.g2Alt1()

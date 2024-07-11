@@ -1,8 +1,9 @@
 package net.rsprox.protocol.game.incoming.decoder.prot
 
+import net.rsprot.compression.HuffmanCodec
 import net.rsprot.protocol.ProtRepository
-import net.rsprot.protocol.message.codec.incoming.MessageDecoderRepository
-import net.rsprot.protocol.message.codec.incoming.MessageDecoderRepositoryBuilder
+import net.rsprox.protocol.MessageDecoderRepository
+import net.rsprox.protocol.MessageDecoderRepositoryBuilder
 import net.rsprox.protocol.game.incoming.decoder.codec.buttons.If1ButtonDecoder
 import net.rsprox.protocol.game.incoming.decoder.codec.buttons.If3ButtonDecoder
 import net.rsprox.protocol.game.incoming.decoder.codec.buttons.IfButtonDDecoder
@@ -90,7 +91,7 @@ import net.rsprox.protocol.game.incoming.decoder.codec.social.IgnoreListDelDecod
 
 public object ClientMessageDecoderRepository {
     @ExperimentalStdlibApi
-    public fun build(): MessageDecoderRepository<GameClientProt> {
+    public fun build(huffmanCodec: HuffmanCodec): MessageDecoderRepository<GameClientProt> {
         val protRepository = ProtRepository.of<GameClientProt>()
         val builder =
             MessageDecoderRepositoryBuilder(
@@ -174,8 +175,8 @@ public object ClientMessageDecoderRepository {
                 bind(IgnoreListAddDecoder())
                 bind(IgnoreListDelDecoder())
 
-                bind(MessagePublicDecoder())
-                bind(MessagePrivateDecoder())
+                bind(MessagePublicDecoder(huffmanCodec))
+                bind(MessagePrivateDecoder(huffmanCodec))
 
                 bind(MoveGameClickDecoder())
                 bind(MoveMinimapClickDecoder())

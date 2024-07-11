@@ -2,30 +2,30 @@ package net.rsprox.protocol.game.outgoing.decoder.codec.friendchat
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.compression.Base37
+import net.rsprot.compression.HuffmanCodec
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.message.codec.MessageDecoder
 import net.rsprot.protocol.metadata.Consistent
-import net.rsprot.protocol.tools.MessageDecodingTools
+import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.friendchat.MessageFriendChannel
+import net.rsprox.protocol.session.Session
 
 @Consistent
-public class MessageFriendChannelDecoder : MessageDecoder<MessageFriendChannel> {
+public class MessageFriendChannelDecoder(
+    private val huffmanCodec: HuffmanCodec,
+) : ProxyMessageDecoder<MessageFriendChannel> {
     override val prot: ClientProt = GameServerProt.MESSAGE_FRIENDCHANNEL
 
     override fun decode(
         buffer: JagByteBuf,
-        tools: MessageDecodingTools,
+        session: Session,
     ): MessageFriendChannel {
         val sender = buffer.gjstr()
         val channelName = Base37.decodeWithCase(buffer.g8())
         val worldId = buffer.g2()
         val worldMessageCounter = buffer.g3()
         val chatCrownType = buffer.g1()
-        val message =
-            tools.huffmanCodec
-                .provide()
-                .decode(buffer)
+        val message = huffmanCodec.decode(buffer)
         return MessageFriendChannel(
             sender,
             channelName,

@@ -2,19 +2,19 @@ package net.rsprox.protocol.game.outgoing.decoder.codec.friendchat
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.message.codec.MessageDecoder
 import net.rsprot.protocol.metadata.Consistent
-import net.rsprot.protocol.tools.MessageDecodingTools
+import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelSingleUser
+import net.rsprox.protocol.session.Session
 
 @Consistent
-public class UpdateFriendChatChannelSingleUserDecoder : MessageDecoder<UpdateFriendChatChannelSingleUser> {
+public class UpdateFriendChatChannelSingleUserDecoder : ProxyMessageDecoder<UpdateFriendChatChannelSingleUser> {
     override val prot: ClientProt = GameServerProt.UPDATE_FRIENDCHAT_CHANNEL_SINGLEUSER
 
     override fun decode(
         buffer: JagByteBuf,
-        tools: MessageDecodingTools,
+        session: Session,
     ): UpdateFriendChatChannelSingleUser {
         val name = buffer.gjstr()
         val worldId = buffer.g2()

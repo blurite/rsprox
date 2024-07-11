@@ -32,7 +32,7 @@ public class ServerGameHandler(
         clientChannel.writeAndFlush(redirectTraffic(ctx, msg).encode(ctx.alloc()))
         eraseSensitiveContents(ctx, msg)
         ctx.channel().getBinaryBlob().append(
-            StreamDirection.ServerToClient,
+            StreamDirection.SERVER_TO_CLIENT,
             msg.encode(ctx.alloc(), mod = false),
         )
     }

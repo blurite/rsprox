@@ -2,18 +2,18 @@ package net.rsprox.protocol.game.incoming.decoder.codec.misc.user
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.message.codec.MessageDecoder
-import net.rsprot.protocol.tools.MessageDecodingTools
 import net.rsprot.protocol.util.gCombinedIdAlt1
+import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.incoming.decoder.prot.GameClientProt
 import net.rsprox.protocol.game.incoming.model.misc.user.IfCrmViewClick
+import net.rsprox.protocol.session.Session
 
-public class IfCrmViewClickDecoder : MessageDecoder<IfCrmViewClick> {
+public class IfCrmViewClickDecoder : ProxyMessageDecoder<IfCrmViewClick> {
     override val prot: ClientProt = GameClientProt.IF_CRMVIEW_CLICK
 
     override fun decode(
         buffer: JagByteBuf,
-        tools: MessageDecodingTools,
+        session: Session,
     ): IfCrmViewClick {
         val combinedId = buffer.gCombinedIdAlt1()
         val sub = buffer.g2Alt1()

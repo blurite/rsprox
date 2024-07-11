@@ -2,17 +2,17 @@ package net.rsprox.protocol.game.incoming.decoder.codec.misc.client
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.message.codec.MessageDecoder
-import net.rsprot.protocol.tools.MessageDecodingTools
+import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.incoming.decoder.prot.GameClientProt
 import net.rsprox.protocol.game.incoming.model.misc.client.SendPingReply
+import net.rsprox.protocol.session.Session
 
-public class SendPingReplyDecoder : MessageDecoder<SendPingReply> {
+public class SendPingReplyDecoder : ProxyMessageDecoder<SendPingReply> {
     override val prot: ClientProt = GameClientProt.SEND_PING_REPLY
 
     override fun decode(
         buffer: JagByteBuf,
-        tools: MessageDecodingTools,
+        session: Session,
     ): SendPingReply {
         val gcPercentTime = buffer.g1Alt3()
         val value1 = buffer.g4Alt1()

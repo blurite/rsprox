@@ -2,18 +2,18 @@ package net.rsprox.protocol.game.outgoing.decoder.codec.interfaces
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.message.codec.MessageDecoder
-import net.rsprot.protocol.tools.MessageDecodingTools
 import net.rsprot.protocol.util.gCombinedIdAlt1
+import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetRotateSpeed
+import net.rsprox.protocol.session.Session
 
-public class IfSetRotateSpeedDecoder : MessageDecoder<IfSetRotateSpeed> {
+public class IfSetRotateSpeedDecoder : ProxyMessageDecoder<IfSetRotateSpeed> {
     override val prot: ClientProt = GameServerProt.IF_SETROTATESPEED
 
     override fun decode(
         buffer: JagByteBuf,
-        tools: MessageDecodingTools,
+        session: Session,
     ): IfSetRotateSpeed {
         val ySpeed = buffer.g2Alt1()
         val xSpeed = buffer.g2Alt2()

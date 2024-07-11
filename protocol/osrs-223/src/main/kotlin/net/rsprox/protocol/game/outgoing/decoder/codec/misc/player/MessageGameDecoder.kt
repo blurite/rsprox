@@ -2,19 +2,19 @@ package net.rsprox.protocol.game.outgoing.decoder.codec.misc.player
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.message.codec.MessageDecoder
 import net.rsprot.protocol.metadata.Consistent
-import net.rsprot.protocol.tools.MessageDecodingTools
+import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.misc.player.MessageGame
+import net.rsprox.protocol.session.Session
 
 @Consistent
-public class MessageGameDecoder : MessageDecoder<MessageGame> {
+public class MessageGameDecoder : ProxyMessageDecoder<MessageGame> {
     override val prot: ClientProt = GameServerProt.MESSAGE_GAME
 
     override fun decode(
         buffer: JagByteBuf,
-        tools: MessageDecodingTools,
+        session: Session,
     ): MessageGame {
         val type = buffer.gSmart1or2()
         val name =

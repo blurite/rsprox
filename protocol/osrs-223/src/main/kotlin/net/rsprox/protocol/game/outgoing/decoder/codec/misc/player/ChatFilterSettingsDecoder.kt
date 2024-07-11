@@ -2,17 +2,17 @@ package net.rsprox.protocol.game.outgoing.decoder.codec.misc.player
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.message.codec.MessageDecoder
-import net.rsprot.protocol.tools.MessageDecodingTools
+import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettings
+import net.rsprox.protocol.session.Session
 
-public class ChatFilterSettingsDecoder : MessageDecoder<ChatFilterSettings> {
+public class ChatFilterSettingsDecoder : ProxyMessageDecoder<ChatFilterSettings> {
     override val prot: ClientProt = GameServerProt.CHAT_FILTER_SETTINGS
 
     override fun decode(
         buffer: JagByteBuf,
-        tools: MessageDecodingTools,
+        session: Session,
     ): ChatFilterSettings {
         val tradeChatFilter = buffer.g1Alt3()
         val publicChatFilter = buffer.g1()

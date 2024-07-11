@@ -2,17 +2,17 @@ package net.rsprox.protocol.game.outgoing.decoder.codec.sound
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.message.codec.MessageDecoder
-import net.rsprot.protocol.tools.MessageDecodingTools
+import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongWithSecondary
+import net.rsprox.protocol.session.Session
 
-public class MidiSongWithSecondaryDecoder : MessageDecoder<MidiSongWithSecondary> {
+public class MidiSongWithSecondaryDecoder : ProxyMessageDecoder<MidiSongWithSecondary> {
     override val prot: ClientProt = GameServerProt.MIDI_SONG_WITHSECONDARY
 
     override fun decode(
         buffer: JagByteBuf,
-        tools: MessageDecodingTools,
+        session: Session,
     ): MidiSongWithSecondary {
         val fadeOutDelay = buffer.g2()
         val secondaryId = buffer.g2Alt2()

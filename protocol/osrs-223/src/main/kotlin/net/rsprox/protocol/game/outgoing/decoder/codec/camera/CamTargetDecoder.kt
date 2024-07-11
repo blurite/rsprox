@@ -2,19 +2,19 @@ package net.rsprox.protocol.game.outgoing.decoder.codec.camera
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.message.codec.MessageDecoder
 import net.rsprot.protocol.metadata.Consistent
-import net.rsprot.protocol.tools.MessageDecodingTools
+import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.camera.CamTarget
+import net.rsprox.protocol.session.Session
 
 @Consistent
-public class CamTargetDecoder : MessageDecoder<CamTarget> {
+public class CamTargetDecoder : ProxyMessageDecoder<CamTarget> {
     override val prot: ClientProt = GameServerProt.CAM_TARGET
 
     override fun decode(
         buffer: JagByteBuf,
-        tools: MessageDecodingTools,
+        session: Session,
     ): CamTarget {
         val type = buffer.g1()
         val index = buffer.g2()

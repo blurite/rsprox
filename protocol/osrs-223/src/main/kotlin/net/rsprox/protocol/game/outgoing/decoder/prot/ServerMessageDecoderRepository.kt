@@ -1,8 +1,9 @@
 package net.rsprox.protocol.game.outgoing.decoder.prot
 
+import net.rsprot.compression.HuffmanCodec
 import net.rsprot.protocol.ProtRepository
-import net.rsprot.protocol.message.codec.incoming.MessageDecoderRepository
-import net.rsprot.protocol.message.codec.incoming.MessageDecoderRepositoryBuilder
+import net.rsprox.protocol.MessageDecoderRepository
+import net.rsprox.protocol.MessageDecoderRepositoryBuilder
 import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamLookAtDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamLookAtEasedAngleAbsoluteDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamLookAtEasedAngleRelativeDecoder
@@ -60,6 +61,7 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.inv.UpdateInvStopTransmit
 import net.rsprox.protocol.game.outgoing.decoder.codec.logout.LogoutDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.logout.LogoutTransferDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.logout.LogoutWithReasonDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.map.StaticRebuildDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.HeatmapToggleDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.HideLocOpsDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.HideNpcOpsDecoder
@@ -106,7 +108,7 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.varp.VarpSyncDecoder
 
 public object ServerMessageDecoderRepository {
     @ExperimentalStdlibApi
-    public fun build(): MessageDecoderRepository<GameServerProt> {
+    public fun build(huffmanCodec: HuffmanCodec): MessageDecoderRepository<GameServerProt> {
         val protRepository = ProtRepository.of<GameServerProt>()
         val builder =
             MessageDecoderRepositoryBuilder(
@@ -131,13 +133,13 @@ public object ServerMessageDecoderRepository {
                 bind(ClanChannelFullDecoder())
                 bind(ClanSettingsDeltaDecoder())
                 bind(ClanSettingsFullDecoder())
-                bind(MessageClanChannelDecoder())
-                bind(MessageClanChannelSystemDecoder())
+                bind(MessageClanChannelDecoder(huffmanCodec))
+                bind(MessageClanChannelSystemDecoder(huffmanCodec))
                 bind(VarClanDisableDecoder())
                 bind(VarClanEnableDecoder())
                 bind(VarClanDecoder())
 
-                bind(MessageFriendChannelDecoder())
+                bind(MessageFriendChannelDecoder(huffmanCodec))
                 bind(UpdateFriendChatChannelFullV1Decoder())
                 bind(UpdateFriendChatChannelFullV2Decoder())
                 bind(UpdateFriendChatChannelSingleUserDecoder())
@@ -175,6 +177,8 @@ public object ServerMessageDecoderRepository {
                 bind(LogoutTransferDecoder())
                 bind(LogoutWithReasonDecoder())
 
+                bind(StaticRebuildDecoder())
+
                 bind(HeatmapToggleDecoder())
                 bind(HideLocOpsDecoder())
                 bind(HideNpcOpsDecoder())
@@ -205,8 +209,8 @@ public object ServerMessageDecoderRepository {
                 bind(UpdateTradingPostDecoder())
 
                 bind(FriendListLoadedDecoder())
-                bind(MessagePrivateEchoDecoder())
-                bind(MessagePrivateDecoder())
+                bind(MessagePrivateEchoDecoder(huffmanCodec))
+                bind(MessagePrivateDecoder(huffmanCodec))
                 bind(UpdateFriendListDecoder())
                 bind(UpdateIgnoreListDecoder())
 

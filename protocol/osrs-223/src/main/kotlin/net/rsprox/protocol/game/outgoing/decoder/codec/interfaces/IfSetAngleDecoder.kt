@@ -2,18 +2,18 @@ package net.rsprox.protocol.game.outgoing.decoder.codec.interfaces
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.message.codec.MessageDecoder
-import net.rsprot.protocol.tools.MessageDecodingTools
 import net.rsprot.protocol.util.gCombinedId
+import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetAngle
+import net.rsprox.protocol.session.Session
 
-public class IfSetAngleDecoder : MessageDecoder<IfSetAngle> {
+public class IfSetAngleDecoder : ProxyMessageDecoder<IfSetAngle> {
     override val prot: ClientProt = GameServerProt.IF_SETANGLE
 
     override fun decode(
         buffer: JagByteBuf,
-        tools: MessageDecodingTools,
+        session: Session,
     ): IfSetAngle {
         val combinedId = buffer.gCombinedId()
         val angleX = buffer.g2Alt3()

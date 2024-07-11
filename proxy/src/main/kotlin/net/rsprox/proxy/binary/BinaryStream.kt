@@ -22,7 +22,7 @@ public class BinaryStream(
         direction: StreamDirection,
         packet: ByteBuf,
     ) {
-        val directionOpcode = if (direction == StreamDirection.ServerToClient) 1 else 0
+        val directionOpcode = if (direction == StreamDirection.SERVER_TO_CLIENT) 1 else 0
         val previousPacketNanoTime = this.nanoTime
         val currentPacketNanoTime = System.nanoTime()
         this.nanoTime = currentPacketNanoTime
@@ -57,15 +57,15 @@ public class BinaryStream(
                 val packed = buffer.gVarInt()
                 val direction =
                     if (packed and 0x1 == 1) {
-                        StreamDirection.ServerToClient
+                        StreamDirection.SERVER_TO_CLIENT
                     } else {
-                        StreamDirection.ClientToServer
+                        StreamDirection.CLIENT_TO_SERVER
                     }
                 val timeDelta = packed ushr 1
                 timeMillis += timeDelta
                 val opcode = decodeOpcode(buffer, direction)
                 val provider =
-                    if (direction == StreamDirection.ClientToServer) {
+                    if (direction == StreamDirection.CLIENT_TO_SERVER) {
                         clientProtProvider
                     } else {
                         serverProtProvider
@@ -90,7 +90,7 @@ public class BinaryStream(
         buffer: ByteBuf,
         direction: StreamDirection,
     ): Int {
-        return if (direction == StreamDirection.ClientToServer) {
+        return if (direction == StreamDirection.CLIENT_TO_SERVER) {
             buffer.g1()
         } else {
             val p1 = buffer.g1()

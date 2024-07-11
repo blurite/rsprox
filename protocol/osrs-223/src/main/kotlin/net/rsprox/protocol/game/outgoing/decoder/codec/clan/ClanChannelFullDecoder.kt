@@ -3,19 +3,19 @@ package net.rsprox.protocol.game.outgoing.decoder.codec.clan
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.compression.Base37
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.message.codec.MessageDecoder
 import net.rsprot.protocol.metadata.Consistent
-import net.rsprot.protocol.tools.MessageDecodingTools
+import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelFull
+import net.rsprox.protocol.session.Session
 
 @Consistent
-public class ClanChannelFullDecoder : MessageDecoder<ClanChannelFull> {
+public class ClanChannelFullDecoder : ProxyMessageDecoder<ClanChannelFull> {
     override val prot: ClientProt = GameServerProt.CLANCHANNEL_FULL
 
     override fun decode(
         buffer: JagByteBuf,
-        tools: MessageDecodingTools,
+        session: Session,
     ): ClanChannelFull {
         val clanType = buffer.g1()
         if (!buffer.isReadable) {
