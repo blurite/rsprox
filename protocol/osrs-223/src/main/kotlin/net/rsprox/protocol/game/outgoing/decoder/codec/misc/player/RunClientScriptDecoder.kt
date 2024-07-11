@@ -17,16 +17,14 @@ public class RunClientScriptDecoder : ProxyMessageDecoder<RunClientScript> {
         session: Session,
     ): RunClientScript {
         val types = buffer.gjstr()
-        val arguments =
-            buildList {
-                for (char in types) {
-                    if (char == 's') {
-                        add(buffer.gjstr())
-                    } else {
-                        add(buffer.g4())
-                    }
-                }
+        val arguments = ArrayDeque<Any>()
+        for (char in types.reversed()) {
+            if (char == 's') {
+                arguments.addFirst(buffer.gjstr())
+            } else {
+                arguments.addFirst(buffer.g4())
             }
+        }
         val id = buffer.g4()
         return RunClientScript(
             id,
