@@ -2,6 +2,7 @@ package net.rsprox.proxy.plugin
 
 import com.github.michaelbull.logging.InlineLogger
 import net.rsprot.buffer.extensions.toJagByteBuf
+import net.rsprox.protocol.session.AttributeMap
 import net.rsprox.protocol.session.Session
 import net.rsprox.proxy.binary.BinaryBlob
 import net.rsprox.proxy.binary.StreamDirection
@@ -17,7 +18,7 @@ public class DecodingSession(
                 plugin.gameClientProtProvider,
                 plugin.gameServerProtProvider,
             )
-        val session = Session(blob.header.localPlayerIndex, mutableMapOf())
+        val session = Session(blob.header.localPlayerIndex, AttributeMap())
         return stream.mapNotNull { binaryPacket ->
             try {
                 val packet =
