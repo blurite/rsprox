@@ -16,6 +16,7 @@ Below is a small task list showing a rough breakdown of what the tool will consi
 
 - [ ] Patch Tool
   - [x] Native (Win)
+    - [x] Supports Unix via `wine`
   - [x] Native (Mac)
   - [ ] RuneLite
   - [ ] RuneLite Forks

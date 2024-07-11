@@ -34,6 +34,7 @@ import net.rsprox.proxy.worlds.World
 import net.rsprox.proxy.worlds.WorldListProvider
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
 import java.io.File
+import java.io.IOException
 import java.math.BigInteger
 import java.net.URL
 import java.nio.file.Files
@@ -71,7 +72,7 @@ public class ProxyService(
 
         val os = getOperatingSystem()
         logger.debug { "Proxy launched on $os" }
-        if (os == OperatingSystem.UNIX || os == OperatingSystem.SOLARIS) {
+        if (os == OperatingSystem.SOLARIS) {
             throw IllegalStateException("Operating system not supported for native: $os")
         }
 
@@ -95,7 +96,7 @@ public class ProxyService(
         val worldlistEndpoint = properties.getProperty(WORLDLIST_ENDPOINT)
         val nativeClientType =
             when (os) {
-                OperatingSystem.WINDOWS -> NativeClientType.WIN
+                OperatingSystem.WINDOWS, OperatingSystem.UNIX -> NativeClientType.WIN
                 OperatingSystem.MAC -> NativeClientType.MAC
                 else -> throw IllegalStateException()
             }
@@ -149,7 +150,16 @@ public class ProxyService(
                 Runtime.getRuntime().exec("open $absolutePath")
                 logger.debug { "Launched $path" }
             }
-            OperatingSystem.UNIX -> throw IllegalStateException("Unix not supported yet.")
+            OperatingSystem.UNIX -> {
+                try {
+                    val directory = path.parent.toFile()
+                    val absolutePath = path.absolutePathString()
+                    Runtime.getRuntime().exec("wine $absolutePath", null, directory)
+                    logger.debug { "Launched $path" }
+                } catch (e: IOException) {
+                    throw RuntimeException("wine is required to run the enhanced client on unix", e)
+                }
+            }
             OperatingSystem.SOLARIS -> throw IllegalStateException("Solaris not supported yet.")
         }
     }
