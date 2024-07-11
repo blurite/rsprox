@@ -9,6 +9,7 @@ import net.rsprox.protocol.game.incoming.decoder.prot.GameClientProt
 import net.rsprox.protocol.game.incoming.model.misc.client.ReflectionCheckReply
 import net.rsprox.protocol.reflection.ReflectionCheck
 import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.session.getReflectionChecks
 import java.io.IOException
 import java.io.InvalidClassException
 import java.io.OptionalDataException
@@ -24,7 +25,7 @@ public class ReflectionCheckReplyDecoder : ProxyMessageDecoder<ReflectionCheckRe
         session: Session,
     ): ReflectionCheckReply {
         val id = buffer.g4()
-        val checks = session.reflectionChecks.remove(id)
+        val checks = session.getReflectionChecks().remove(id)
         checkNotNull(checks) {
             "Unable to link reflection check reply to request: $id"
         }

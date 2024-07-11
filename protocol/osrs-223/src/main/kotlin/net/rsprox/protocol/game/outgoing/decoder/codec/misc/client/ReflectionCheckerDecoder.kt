@@ -8,6 +8,7 @@ import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.misc.client.ReflectionChecker
 import net.rsprox.protocol.reflection.ReflectionCheck
 import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.session.getReflectionChecks
 
 @Suppress("DuplicatedCode")
 @Consistent
@@ -110,7 +111,7 @@ public class ReflectionCheckerDecoder : ProxyMessageDecoder<ReflectionChecker> {
                     }
                 }
             }
-        val old = session.reflectionChecks.put(id, checks)
+        val old = session.getReflectionChecks().put(id, checks)
         check(old == null) {
             "Overlapping reflection check: $old/$checks"
         }
