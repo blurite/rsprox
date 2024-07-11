@@ -62,6 +62,22 @@ public class SoundArea private constructor(
         CoordInZone(xInZone, zInZone),
     )
 
+    internal constructor(
+        id: Int,
+        delay: Int,
+        loops: Int,
+        radius: Int,
+        size: Int,
+        coordInZone: CoordInZone,
+    ) : this(
+        id.toUShort(),
+        delay.toUByte(),
+        loops.toUByte(),
+        radius.toUByte(),
+        size.toUByte(),
+        coordInZone,
+    )
+
     public val id: Int
         get() = _id.toInt()
     public val delay: Int

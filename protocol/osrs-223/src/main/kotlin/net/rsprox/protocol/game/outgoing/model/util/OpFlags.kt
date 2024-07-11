@@ -25,6 +25,8 @@ public value class OpFlags(
             .toByte(),
     )
 
+    public constructor(packed: Int) : this(packed.toByte())
+
     public val value: Int
         get() = packed.toInt()
 

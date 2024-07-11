@@ -71,6 +71,30 @@ public class LocMerge private constructor(
         maxZ.toByte(),
     )
 
+    internal constructor(
+        index: Int,
+        id: Int,
+        coordInZone: CoordInZone,
+        locProperties: LocProperties,
+        start: Int,
+        end: Int,
+        minX: Int,
+        minZ: Int,
+        maxX: Int,
+        maxZ: Int,
+    ) : this(
+        index.toUShort(),
+        id.toUShort(),
+        coordInZone,
+        locProperties,
+        start.toUShort(),
+        end.toUShort(),
+        minX.toByte(),
+        minZ.toByte(),
+        maxX.toByte(),
+        maxZ.toByte(),
+    )
+
     public val index: Int
         get() = _index.toInt()
     public val id: Int

@@ -86,6 +86,36 @@ public class MapProjAnim private constructor(
         deltaZ.toByte(),
     )
 
+    internal constructor(
+        id: Int,
+        startHeight: Int,
+        endHeight: Int,
+        startTime: Int,
+        endTime: Int,
+        angle: Int,
+        progress: Int,
+        sourceIndex: Int,
+        targetIndex: Int,
+        coordInZone: CoordInZone,
+        deltaX: Int,
+        deltaZ: Int,
+    ) : this(
+        id.toUShort(),
+        startTime.toUShort(),
+        endTime.toUShort(),
+        angle.toUByte(),
+        progress.toUShort(),
+        CompressedMapProjAnimInfo(
+            sourceIndex,
+            targetIndex,
+            startHeight.toUByte(),
+            endHeight.toUByte(),
+        ),
+        coordInZone,
+        deltaX.toByte(),
+        deltaZ.toByte(),
+    )
+
     public val id: Int
         get() = _id.toInt()
     public val startHeight: Int

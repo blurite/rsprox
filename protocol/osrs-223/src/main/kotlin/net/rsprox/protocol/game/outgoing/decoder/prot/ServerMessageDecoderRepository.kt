@@ -61,6 +61,8 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.inv.UpdateInvStopTransmit
 import net.rsprox.protocol.game.outgoing.decoder.codec.logout.LogoutDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.logout.LogoutTransferDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.logout.LogoutWithReasonDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.map.RebuildRegionDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.map.RebuildWorldEntityDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.map.StaticRebuildDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.HeatmapToggleDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.HideLocOpsDecoder
@@ -101,10 +103,34 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.sound.MidiSongStopDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.sound.MidiSongWithSecondaryDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.sound.MidiSwapDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.sound.SynthSoundDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.specific.LocAnimSpecificDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.specific.MapAnimSpecificDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.specific.NpcAnimSpecificDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.specific.NpcHeadIconSpecificDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.specific.NpcSpotAnimSpecificDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.specific.PlayerAnimSpecificDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.specific.PlayerSpotAnimSpecificDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.specific.ProjAnimSpecificDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.varp.VarpLargeDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.varp.VarpResetDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.varp.VarpSmallDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.varp.VarpSyncDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.worldentity.ClearEntitiesDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.worldentity.SetActiveWorldDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.zone.header.UpdateZoneFullFollowsDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.zone.header.UpdateZonePartialEnclosedDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.zone.header.UpdateZonePartialFollowsDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.LocAddChangeDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.LocAnimDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.LocDelDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.LocMergeDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.MapAnimDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.MapProjAnimDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.ObjAddDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.ObjCountDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.ObjDelDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.ObjOpFilterDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.SoundAreaDecoder
 
 public object ServerMessageDecoderRepository {
     @ExperimentalStdlibApi
@@ -178,6 +204,8 @@ public object ServerMessageDecoderRepository {
                 bind(LogoutWithReasonDecoder())
 
                 bind(StaticRebuildDecoder())
+                bind(RebuildRegionDecoder())
+                bind(RebuildWorldEntityDecoder())
 
                 bind(HeatmapToggleDecoder())
                 bind(HideLocOpsDecoder())
@@ -222,10 +250,38 @@ public object ServerMessageDecoderRepository {
                 bind(MidiSwapDecoder())
                 bind(SynthSoundDecoder())
 
+                bind(LocAnimSpecificDecoder())
+                bind(MapAnimSpecificDecoder())
+                bind(NpcAnimSpecificDecoder())
+                bind(NpcHeadIconSpecificDecoder())
+                bind(NpcSpotAnimSpecificDecoder())
+                bind(PlayerAnimSpecificDecoder())
+                bind(PlayerSpotAnimSpecificDecoder())
+                bind(ProjAnimSpecificDecoder())
+
                 bind(VarpLargeDecoder())
                 bind(VarpResetDecoder())
                 bind(VarpSmallDecoder())
                 bind(VarpSyncDecoder())
+
+                bind(ClearEntitiesDecoder())
+                bind(SetActiveWorldDecoder())
+
+                bind(UpdateZonePartialEnclosedDecoder())
+                bind(UpdateZoneFullFollowsDecoder())
+                bind(UpdateZonePartialFollowsDecoder())
+
+                bind(LocAddChangeDecoder())
+                bind(LocAnimDecoder())
+                bind(LocDelDecoder())
+                bind(LocMergeDecoder())
+                bind(MapAnimDecoder())
+                bind(MapProjAnimDecoder())
+                bind(ObjAddDecoder())
+                bind(ObjCountDecoder())
+                bind(ObjDelDecoder())
+                bind(ObjOpFilterDecoder())
+                bind(SoundAreaDecoder())
             }
         return builder.build()
     }

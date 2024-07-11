@@ -89,6 +89,26 @@ public class ObjAdd private constructor(
         neverBecomesPublic = false,
     )
 
+    internal constructor(
+        id: Int,
+        quantity: Int,
+        coordInZone: CoordInZone,
+        opFlags: OpFlags,
+        timeUntilPublic: Int,
+        timeUntilDespawn: Int,
+        ownershipType: Int,
+        neverBecomesPublic: Boolean,
+    ) : this(
+        id.toUShort(),
+        quantity,
+        coordInZone,
+        opFlags,
+        timeUntilPublic.toUShort(),
+        timeUntilDespawn.toUShort(),
+        ownershipType.toUByte(),
+        neverBecomesPublic,
+    )
+
     public val id: Int
         get() = _id.toInt()
     public val xInZone: Int

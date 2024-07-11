@@ -13,6 +13,8 @@ internal value class CoordInZone private constructor(
             .toUByte(),
     )
 
+    constructor(packed: Int) : this(packed.toUByte())
+
     val xInZone: Int
         get() = packed.toInt() ushr 4 and 0x7
     val zInZone: Int

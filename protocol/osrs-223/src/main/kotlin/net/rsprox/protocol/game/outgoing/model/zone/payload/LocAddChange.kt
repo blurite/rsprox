@@ -40,6 +40,18 @@ public class LocAddChange private constructor(
         opFlags,
     )
 
+    internal constructor(
+        id: Int,
+        coordInZone: CoordInZone,
+        locProperties: LocProperties,
+        opFlags: OpFlags,
+    ) : this(
+        id.toUShort(),
+        coordInZone,
+        locProperties,
+        opFlags,
+    )
+
     public val id: Int
         get() = _id.toInt()
     public val xInZone: Int

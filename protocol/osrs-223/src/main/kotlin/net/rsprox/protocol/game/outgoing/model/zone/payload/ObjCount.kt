@@ -37,6 +37,18 @@ public class ObjCount private constructor(
         CoordInZone(xInZone, zInZone),
     )
 
+    internal constructor(
+        id: Int,
+        oldQuantity: Int,
+        newQuantity: Int,
+        coordInZone: CoordInZone,
+    ) : this(
+        id.toUShort(),
+        oldQuantity,
+        newQuantity,
+        coordInZone,
+    )
+
     public val id: Int
         get() = _id.toInt()
     public val xInZone: Int

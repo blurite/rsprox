@@ -33,6 +33,18 @@ public class MapAnim private constructor(
         CoordInZone(xInZone, zInZone),
     )
 
+    internal constructor(
+        id: Int,
+        delay: Int,
+        height: Int,
+        coordInZone: CoordInZone,
+    ) : this(
+        id.toUShort(),
+        delay.toUShort(),
+        height.toUByte(),
+        coordInZone,
+    )
+
     public val id: Int
         get() = _id.toInt()
     public val delay: Int

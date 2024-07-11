@@ -4,6 +4,8 @@ package net.rsprox.protocol.game.outgoing.model.zone.payload.util
 internal value class LocProperties private constructor(
     val packed: UByte,
 ) {
+    constructor(packed: Int) : this(packed.toUByte())
+
     constructor(
         shape: Int,
         rotation: Int,

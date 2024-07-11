@@ -33,6 +33,16 @@ public class ObjDel private constructor(
         CoordInZone(xInZone, zInZone),
     )
 
+    internal constructor(
+        id: Int,
+        quantity: Int,
+        coordInZone: CoordInZone,
+    ) : this(
+        id.toUShort(),
+        quantity,
+        coordInZone,
+    )
+
     public val id: Int
         get() = _id.toInt()
     public val xInZone: Int

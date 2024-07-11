@@ -66,6 +66,16 @@ public class LocAnimSpecific private constructor(
         LocProperties(shape, rotation),
     )
 
+    internal constructor(
+        id: Int,
+        coordInBuildArea: CoordInBuildArea,
+        locProperties: LocProperties,
+    ) : this(
+        id.toUShort(),
+        coordInBuildArea,
+        locProperties,
+    )
+
     public val id: Int
         get() = _id.toInt()
     public val zoneX: Int

@@ -33,6 +33,16 @@ public class ObjOpFilter private constructor(
         CoordInZone(xInZone, zInZone),
     )
 
+    internal constructor(
+        id: Int,
+        opFlags: OpFlags,
+        coordInZone: CoordInZone,
+    ) : this(
+        id.toUShort(),
+        opFlags,
+        coordInZone,
+    )
+
     public val id: Int
         get() = _id.toInt()
     public val xInZone: Int

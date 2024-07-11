@@ -32,6 +32,16 @@ public class LocAnim private constructor(
         LocProperties(shape, rotation),
     )
 
+    internal constructor(
+        id: Int,
+        coordInZone: CoordInZone,
+        locProperties: LocProperties,
+    ) : this(
+        id.toUShort(),
+        coordInZone,
+        locProperties,
+    )
+
     public val id: Int
         get() = _id.toInt()
     public val xInZone: Int

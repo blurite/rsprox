@@ -14,7 +14,7 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.util.LocProperties
  * @property shape the shape of the loc, a value of 0 to 22 (inclusive) is expected.
  * @property rotation the rotation of the loc, a value of 0 to 3 (inclusive) is expected.
  */
-public class LocDel private constructor(
+public class LocDel internal constructor(
     private val coordInZone: CoordInZone,
     private val locProperties: LocProperties,
 ) : IncomingZoneProt {

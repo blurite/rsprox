@@ -1,7 +1,7 @@
 package net.rsprox.protocol.game.outgoing.model.zone.header
 
-import io.netty.buffer.ByteBuf
 import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
+import net.rsprox.protocol.game.outgoing.model.IncomingZoneProt
 
 /**
  * Update zone partial-enclosed is used to send a batch of updates for a given
@@ -24,18 +24,18 @@ public class UpdateZonePartialEnclosed private constructor(
     private val _zoneX: UByte,
     private val _zoneZ: UByte,
     private val _level: UByte,
-    public val payload: ByteBuf,
+    public val packets: List<IncomingZoneProt>,
 ) : IncomingServerGameMessage {
     public constructor(
         zoneX: Int,
         zoneZ: Int,
         level: Int,
-        payload: ByteBuf,
+        packets: List<IncomingZoneProt>,
     ) : this(
         zoneX.toUByte(),
         zoneZ.toUByte(),
         level.toUByte(),
-        payload.retain(),
+        packets,
     )
 
     public val zoneX: Int
@@ -54,6 +54,7 @@ public class UpdateZonePartialEnclosed private constructor(
         if (_zoneX != other._zoneX) return false
         if (_zoneZ != other._zoneZ) return false
         if (_level != other._level) return false
+        if (packets != other.packets) return false
 
         return true
     }
@@ -62,6 +63,7 @@ public class UpdateZonePartialEnclosed private constructor(
         var result = _zoneX.hashCode()
         result = 31 * result + _zoneZ.hashCode()
         result = 31 * result + _level.hashCode()
+        result = 31 * result + packets.hashCode()
         return result
     }
 
@@ -69,7 +71,8 @@ public class UpdateZonePartialEnclosed private constructor(
         return "UpdateZonePartialEnclosed(" +
             "zoneX=$zoneX, " +
             "zoneZ=$zoneZ, " +
-            "level=$level" +
+            "level=$level, " +
+            "packets=$packets" +
             ")"
     }
 }

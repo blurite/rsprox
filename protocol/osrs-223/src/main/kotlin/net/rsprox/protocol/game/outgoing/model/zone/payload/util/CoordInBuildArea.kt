@@ -16,6 +16,10 @@ package net.rsprox.protocol.game.outgoing.model.zone.payload.util
 internal value class CoordInBuildArea private constructor(
     private val packedShort: UShort,
 ) {
+    constructor(packed: Int) : this(
+        packed.toUShort(),
+    )
+
     constructor(
         zoneX: Int,
         xInZone: Int,
