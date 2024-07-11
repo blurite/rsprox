@@ -27,3 +27,15 @@ public fun LowResolutionPosition(coordGrid: CoordGrid): LowResolutionPosition {
             .or((coordGrid.level shl 16)),
     )
 }
+
+public fun LowResolutionPosition(
+    lowResX: Int,
+    lowResZ: Int,
+    level: Int,
+): LowResolutionPosition {
+    return LowResolutionPosition(
+        (lowResZ)
+            .or((lowResX) shl 8)
+            .or((level shl 16)),
+    )
+}

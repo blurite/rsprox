@@ -2,6 +2,7 @@ package net.rsprox.protocol.game.outgoing.decoder.codec.map
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.buffer.bitbuffer.toBitBuf
+import net.rsprot.compression.HuffmanCodec
 import net.rsprot.crypto.xtea.XteaKey
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
@@ -12,8 +13,12 @@ import net.rsprox.protocol.game.outgoing.model.map.RebuildNormal
 import net.rsprox.protocol.game.outgoing.model.map.StaticRebuildMessage
 import net.rsprox.protocol.game.outgoing.model.playerinfo.util.PlayerInfoInitBlock
 import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.session.allocateWorld
+import net.rsprox.protocol.session.getWorld
 
-public class StaticRebuildDecoder : ProxyMessageDecoder<StaticRebuildMessage> {
+public class StaticRebuildDecoder(
+    private val huffmanCodec: HuffmanCodec,
+) : ProxyMessageDecoder<StaticRebuildMessage> {
     override val prot: ClientProt = GameServerProt.REBUILD_NORMAL
 
     override fun decode(
@@ -57,14 +62,23 @@ public class StaticRebuildDecoder : ProxyMessageDecoder<StaticRebuildMessage> {
                 }
             }
         return if (playerInfoInitBlock != null) {
-            RebuildLogin(
-                zoneX,
-                zoneZ,
-                worldArea,
-                keys,
-                playerInfoInitBlock,
-            )
+            val message =
+                RebuildLogin(
+                    zoneX,
+                    zoneZ,
+                    worldArea,
+                    keys,
+                    playerInfoInitBlock,
+                )
+            val world = session.allocateWorld(-1, session.localPlayerIndex, huffmanCodec)
+            world.baseX = (zoneX - 6) * 8
+            world.baseZ = (zoneZ - 6) * 8
+            world.playerInfo.gpiInit(playerInfoInitBlock)
+            message
         } else {
+            val world = session.getWorld(-1)
+            world.baseX = (zoneX - 6) * 8
+            world.baseZ = (zoneZ - 6) * 8
             RebuildNormal(
                 zoneX,
                 zoneZ,

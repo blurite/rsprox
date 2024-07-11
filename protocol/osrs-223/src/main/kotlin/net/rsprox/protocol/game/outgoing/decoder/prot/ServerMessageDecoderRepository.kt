@@ -31,6 +31,7 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.friendchat.MessageFriendC
 import net.rsprox.protocol.game.outgoing.decoder.codec.friendchat.UpdateFriendChatChannelFullV1Decoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.friendchat.UpdateFriendChatChannelFullV2Decoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.friendchat.UpdateFriendChatChannelSingleUserDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.info.PlayerInfoDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.interfaces.IfClearInvDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.interfaces.IfCloseSubDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.interfaces.IfInitialStateDecoder
@@ -171,6 +172,8 @@ public object ServerMessageDecoderRepository {
                 bind(UpdateFriendChatChannelFullV2Decoder())
                 bind(UpdateFriendChatChannelSingleUserDecoder())
 
+                bind(PlayerInfoDecoder())
+
                 bind(IfClearInvDecoder())
                 bind(IfCloseSubDecoder())
                 bind(IfInitialStateDecoder())
@@ -204,7 +207,7 @@ public object ServerMessageDecoderRepository {
                 bind(LogoutTransferDecoder())
                 bind(LogoutWithReasonDecoder())
 
-                bind(StaticRebuildDecoder())
+                bind(StaticRebuildDecoder(huffmanCodec))
                 bind(RebuildRegionDecoder())
                 bind(RebuildWorldEntityDecoder())
 
