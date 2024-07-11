@@ -37,16 +37,12 @@ import java.io.File
 import java.math.BigInteger
 import java.net.URL
 import java.nio.file.Files
-import java.nio.file.LinkOption
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
-import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.copyTo
 import kotlin.io.path.extension
-import kotlin.io.path.isRegularFile
 import kotlin.io.path.nameWithoutExtension
-import kotlin.io.path.readText
 import kotlin.properties.Delegates
 import kotlin.system.exitProcess
 import kotlin.time.measureTime
@@ -66,10 +62,9 @@ public class ProxyService(
         createConfigurationDirectories(CLIENTS_DIRECTORY)
         loadProperties()
         HuffmanProvider.load()
-        val preferredCppWorld = parsePreferredCppWorld()
         val rsa = loadRsa()
         val factory = BootstrapFactory(allocator, properties)
-        val javConfig = loadJavConfig(preferredCppWorld)
+        val javConfig = loadJavConfig()
         val worldListProvider = loadWorldListProvider(javConfig.getWorldListUrl())
         val replacementWorld = findCodebaseReplacementWorld(javConfig, worldListProvider)
         val updatedJavConfig = rebuildJavConfig(javConfig, replacementWorld)
@@ -159,32 +154,6 @@ public class ProxyService(
         }
     }
 
-    private fun parsePreferredCppWorld(): Int? {
-        val path =
-            Path(
-                System.getProperty("user.home"),
-                "AppData",
-                "Local",
-                "Jagex",
-                "Old School Runescape",
-                "preferences_client.dat",
-            )
-        if (!path.isRegularFile(LinkOption.NOFOLLOW_LINKS)) {
-            return null
-        }
-        val text = path.readText(Charsets.UTF_8)
-        val preferredWorld =
-            text
-                .lineSequence()
-                .firstOrNull { line -> line.startsWith("LastWorldId ") }
-                ?.substring(12)
-                ?.toIntOrNull()
-        if (preferredWorld != null) {
-            logger.debug { "Loaded preferred C++ world: $preferredWorld" }
-        }
-        return preferredWorld
-    }
-
     private fun createConfigurationDirectories(path: Path) {
         runCatching("Unable to create configuration directory: $path") {
             Files.createDirectories(path)
@@ -207,13 +176,8 @@ public class ProxyService(
         }
     }
 
-    private fun loadJavConfig(preferredWorldId: Int?): JavConfig {
-        val url =
-            if (preferredWorldId == null) {
-                "https://oldschool.runescape.com/jav_config.ws"
-            } else {
-                "https://oldschool${preferredWorldId - 300}.runescape.com/jav_config.ws"
-            }
+    private fun loadJavConfig(): JavConfig {
+        val url = "https://oldschool.runescape.com/jav_config.ws"
         return runCatching("Failed to load jav_config.ws from $url") {
             val config = JavConfig(URL(url))
             logger.debug { "Jav config loaded from $url" }
