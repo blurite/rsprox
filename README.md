@@ -33,6 +33,8 @@ Below is a small task list showing a rough breakdown of what the tool will consi
   - [x] Login tokens in URL open packets
 - [ ] Graphical User Interface (Proxy tool)
 - [ ] Graphical User Interface (Live Transcriber)
+- [ ] Live cache loading
+- [ ] Historical cache loading
 - [ ] Public archive
   - [ ] Automated binary blob uploading at the end of a session
   - [ ] Indexing of binary files
