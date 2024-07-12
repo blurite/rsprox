@@ -1,5 +1,7 @@
 package net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo
 
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
+
 public class FaceAngleExtendedInfo(
     public val angle: Int,
 ) : ExtendedInfo {

@@ -10,24 +10,24 @@ import net.rsprot.compression.HuffmanCodec
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.AppearanceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.ChatExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.ExactMoveExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.ExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.FaceAngleExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.FacePathingEntityExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.Headbar
-import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.Hit
-import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.HitExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.MoveSpeedExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.NameExtrasExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.ObjTypeCustomisation
-import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.SayExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.SequenceExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.Spotanim
-import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.SpotanimExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.TemporaryMoveSpeedExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.TintingExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.LowResolutionPosition
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FacePathingEntityExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Headbar
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Hit
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HitExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SayExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SequenceExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Spotanim
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
 
 @Suppress("DuplicatedCode")
 public class PlayerInfoClient(

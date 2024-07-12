@@ -1,5 +1,7 @@
 package net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo
 
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
+
 public class ChatExtendedInfo(
     public val colour: Int,
     public val effects: Int,

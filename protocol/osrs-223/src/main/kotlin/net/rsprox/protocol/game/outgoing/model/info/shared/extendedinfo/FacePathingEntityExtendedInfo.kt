@@ -1,4 +1,4 @@
-package net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo
+package net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo
 
 public class FacePathingEntityExtendedInfo(
     public val index: Int,
