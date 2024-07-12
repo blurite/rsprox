@@ -30,49 +30,95 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Spotanim
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
 
+@Suppress("DuplicatedCode")
 public class NpcInfoClient {
-    private var deletedNpcCount: Int = 0
-    private var deletedNpcSlot = IntArray(1000)
-    private var cachedNpcs = arrayOfNulls<Npc>(65536)
-    private var npcSlotCount = 0
-    private var npcSlot = IntArray(65536)
-    private var updatedNpcSlotCount: Int = 0
-    private var updatedNpcSlot: IntArray = IntArray(250)
+    private var deletedNPCCount: Int = 0
+    private var deletedNPC = IntArray(1000)
+    private var npc = arrayOfNulls<Npc>(65536)
+    private var transmittedNPCCount = 0
+    private var transmittedNPC = IntArray(65536)
+    private var extraUpdateNPCCount: Int = 0
+    private var extraUpdateNPC: IntArray = IntArray(250)
     private var cycle = 0
+
+    private val updates: MutableMap<Int, UpdateType> = mutableMapOf()
+    private val extendedInfoBlocks: MutableMap<Int, List<ExtendedInfo>> = mutableMapOf()
 
     public fun decode(
         buffer: ByteBuf,
         large: Boolean,
         baseCoord: CoordGrid,
-    ) {
-        deletedNpcCount = 0
-        updatedNpcSlotCount = 0
+    ): NpcInfo {
+        deletedNPCCount = 0
+        extraUpdateNPCCount = 0
         buffer.toBitBuf().use { bitBuffer ->
             processHighResolution(bitBuffer)
             processLowResolution(large, bitBuffer, baseCoord)
         }
         processExtendedInfo(buffer.toJagByteBuf())
-        for (i in 0..<deletedNpcCount) {
-            val index = deletedNpcSlot[i]
-            if (cycle != checkNotNull(cachedNpcs[index]).lastUpdateCycle) {
-                cachedNpcs[index] = null
+        for (i in 0..<deletedNPCCount) {
+            val index = deletedNPC[i]
+            if (cycle != checkNotNull(npc[index]).lastTransmitCycle) {
+                npc[index] = null
             }
         }
         if (buffer.isReadable) {
             throw IllegalStateException("npc info buffer still readable: ${buffer.readableBytes()}")
         }
-        for (i in 0..<npcSlotCount) {
-            if (cachedNpcs[npcSlot[i]] == null) {
+        for (i in 0..<transmittedNPCCount) {
+            if (npc[transmittedNPC[i]] == null) {
                 throw IllegalStateException("Npc null at i $i")
             }
         }
         cycle++
+        val result = mutableMapOf<Int, NpcUpdateType>()
+        for ((index, update) in updates) {
+            when (update) {
+                UpdateType.IDLE -> {
+                    // Too spammy, continue
+                    continue
+                }
+                UpdateType.LOW_RESOLUTION_TO_HIGH_RESOLUTION -> {
+                    val npc = checkNotNull(npc[index])
+                    val extendedInfo = this.extendedInfoBlocks[index] ?: emptyList()
+                    result[index] =
+                        NpcUpdateType.LowResolutionToHighResolution(
+                            npc.spawnCycle,
+                            npc.coord.x,
+                            npc.coord.z,
+                            npc.coord.level,
+                            npc.angle,
+                            npc.jump,
+                            extendedInfo,
+                        )
+                }
+                UpdateType.HIGH_RESOLUTION_TO_LOW_RESOLUTION -> {
+                    result[index] = NpcUpdateType.HighResolutionToLowResolution
+                }
+                UpdateType.ACTIVE -> {
+                    val npc = checkNotNull(npc[index])
+                    val extendedInfo = this.extendedInfoBlocks[index] ?: emptyList()
+                    result[index] =
+                        NpcUpdateType.Active(
+                            npc.coord.x,
+                            npc.coord.z,
+                            npc.coord.level,
+                            npc.steps,
+                            npc.moveSpeed,
+                            extendedInfo,
+                        )
+                }
+            }
+        }
+        this.updates.clear()
+        this.extendedInfoBlocks.clear()
+        return NpcInfo(result)
     }
 
     private fun processExtendedInfo(buffer: JagByteBuf) {
-        for (i in 0..<updatedNpcSlotCount) {
-            val index = updatedNpcSlot[i]
-            val npc = checkNotNull(cachedNpcs[index])
+        for (i in 0..<extraUpdateNPCCount) {
+            val index = extraUpdateNPC[i]
+            val npc = checkNotNull(npc[index])
             var flag = buffer.g1()
             if ((flag and EXTENDED_SHORT) != 0) {
                 flag += buffer.g1() shl 8
@@ -81,6 +127,8 @@ public class NpcInfoClient {
                 flag += buffer.g1() shl 16
             }
             val blocks = mutableListOf<ExtendedInfo>()
+
+            this.extendedInfoBlocks[index] = blocks
 
             if (flag and BAS_CHANGE != 0) {
                 decodeBaseAnimationSet(buffer, blocks)
@@ -548,68 +596,80 @@ public class NpcInfoClient {
 
     private fun processHighResolution(buffer: BitBuf) {
         val count = buffer.gBits(8)
-        if (count < npcSlotCount) {
-            for (i in count..<npcSlotCount) {
-                deletedNpcSlot[deletedNpcCount++] = npcSlot[i]
+        if (count < transmittedNPCCount) {
+            for (i in count..<transmittedNPCCount) {
+                deletedNPC[deletedNPCCount++] = transmittedNPC[i]
+                updates[transmittedNPC[i]] = UpdateType.HIGH_RESOLUTION_TO_LOW_RESOLUTION
             }
         }
-        require(count <= npcSlotCount) {
-            "Too many npcs to process: $count, $npcSlotCount"
+        require(count <= transmittedNPCCount) {
+            "Too many npcs to process: $count, $transmittedNPCCount"
         }
-        npcSlotCount = 0
+        transmittedNPCCount = 0
         for (i in 0..<count) {
-            val index = npcSlot[i]
-            val npc = requireNotNull(cachedNpcs[i])
+            val index = transmittedNPC[i]
+            val npc = requireNotNull(npc[index])
+            npc.steps.clear()
             val hasUpdate = buffer.gBits(1)
             if (hasUpdate == 0) {
-                npcSlot[npcSlotCount++] = index
-                npc.lastUpdateCycle = cycle
+                transmittedNPC[transmittedNPCCount++] = index
+                npc.lastTransmitCycle = cycle
+                updates[index] = UpdateType.IDLE
                 continue
             }
             val updateType = buffer.gBits(2)
-            if (updateType == 0) {
-                npcSlot[npcSlotCount++] = index
-                npc.lastUpdateCycle = cycle
-                updatedNpcSlot[updatedNpcSlotCount++] = index
-            } else if (updateType == 1) {
-                npcSlot[npcSlotCount++] = index
-                npc.lastUpdateCycle = cycle
-                val walkDirection = buffer.gBits(3)
-                npc.addRouteWaypointAdjacent(
-                    walkDirection,
-                    MoveSpeed.WALK,
-                )
-                val extendedInfo = buffer.gBits(1)
-                if (extendedInfo == 1) {
-                    updatedNpcSlot[updatedNpcSlotCount++] = index
+            when (updateType) {
+                0 -> {
+                    transmittedNPC[transmittedNPCCount++] = index
+                    npc.lastTransmitCycle = cycle
+                    extraUpdateNPC[extraUpdateNPCCount++] = index
+                    updates[index] = UpdateType.ACTIVE
                 }
-            } else if (updateType == 2) {
-                npcSlot[npcSlotCount++] = index
-                npc.lastUpdateCycle = cycle
-                if (buffer.gBits(1) == 1) {
+                1 -> {
+                    transmittedNPC[transmittedNPCCount++] = index
+                    npc.lastTransmitCycle = cycle
                     val walkDirection = buffer.gBits(3)
                     npc.addRouteWaypointAdjacent(
                         walkDirection,
-                        MoveSpeed.RUN,
+                        MoveSpeed.WALK,
                     )
-                    val runDirection = buffer.gBits(3)
-                    npc.addRouteWaypointAdjacent(
-                        runDirection,
-                        MoveSpeed.RUN,
-                    )
-                } else {
-                    val crawlDirection = buffer.gBits(3)
-                    npc.addRouteWaypointAdjacent(
-                        crawlDirection,
-                        MoveSpeed.CRAWL,
-                    )
+                    val extendedInfo = buffer.gBits(1)
+                    if (extendedInfo == 1) {
+                        this.extraUpdateNPC[extraUpdateNPCCount++] = index
+                    }
+                    updates[index] = UpdateType.ACTIVE
                 }
-                val extendedInfo = buffer.gBits(1)
-                if (extendedInfo == 1) {
-                    updatedNpcSlot[updatedNpcSlotCount++] = index
+                2 -> {
+                    transmittedNPC[transmittedNPCCount++] = index
+                    npc.lastTransmitCycle = cycle
+                    if (buffer.gBits(1) == 1) {
+                        val walkDirection = buffer.gBits(3)
+                        npc.addRouteWaypointAdjacent(
+                            walkDirection,
+                            MoveSpeed.RUN,
+                        )
+                        val runDirection = buffer.gBits(3)
+                        npc.addRouteWaypointAdjacent(
+                            runDirection,
+                            MoveSpeed.RUN,
+                        )
+                    } else {
+                        val crawlDirection = buffer.gBits(3)
+                        npc.addRouteWaypointAdjacent(
+                            crawlDirection,
+                            MoveSpeed.CRAWL,
+                        )
+                    }
+                    val extendedInfo = buffer.gBits(1)
+                    if (extendedInfo == 1) {
+                        this.extraUpdateNPC[extraUpdateNPCCount++] = index
+                    }
+                    updates[index] = UpdateType.ACTIVE
                 }
-            } else if (updateType == 3) {
-                deletedNpcSlot[deletedNpcCount++] = index
+                3 -> {
+                    deletedNPC[deletedNPCCount++] = index
+                    updates[index] = UpdateType.HIGH_RESOLUTION_TO_LOW_RESOLUTION
+                }
             }
         }
     }
@@ -617,7 +677,7 @@ public class NpcInfoClient {
     private fun processLowResolution(
         large: Boolean,
         buffer: BitBuf,
-        localPlayerCoord: CoordGrid,
+        baseCoord: CoordGrid,
     ) {
         while (true) {
             val indexBitCount = 16
@@ -626,18 +686,20 @@ public class NpcInfoClient {
                 val index = buffer.gBits(indexBitCount)
                 if (capacity - 1 != index) {
                     var isNew = false
-                    if (cachedNpcs[index] == null) {
-                        cachedNpcs[index] =
-                            Npc(
-                                index,
-                                -1,
-                                CoordGrid.INVALID,
-                            )
+                    if (npc[index] == null) {
+                        npc[index] = Npc(-1, CoordGrid.INVALID)
                         isNew = true
                     }
-                    val npc = checkNotNull(cachedNpcs[index])
-                    npcSlot[npcSlotCount++] = index
-                    npc.lastUpdateCycle = cycle
+                    val existingType = updates[index]
+                    if (existingType == UpdateType.HIGH_RESOLUTION_TO_LOW_RESOLUTION) {
+                        // Teleport
+                        updates[index] = UpdateType.ACTIVE
+                    } else {
+                        updates[index] = UpdateType.LOW_RESOLUTION_TO_HIGH_RESOLUTION
+                    }
+                    val npc = checkNotNull(npc[index])
+                    transmittedNPC[transmittedNPCCount++] = index
+                    npc.lastTransmitCycle = cycle
                     val hasSpawnCycle = buffer.gBits(1) == 1
                     if (hasSpawnCycle) {
                         npc.spawnCycle = buffer.gBits(32)
@@ -646,15 +708,9 @@ public class NpcInfoClient {
                     val deltaZ = decodeDelta(large, buffer)
                     val extendedInfo = buffer.gBits(1)
                     if (extendedInfo == 1) {
-                        updatedNpcSlot[updatedNpcSlotCount++] = index
+                        this.extraUpdateNPC[extraUpdateNPCCount++] = index
                     }
-                    val angle =
-                        NPC_TURN_ANGLES[
-                            buffer
-                                .gBits(
-                                    3,
-                                ),
-                        ]
+                    val angle = NPC_TURN_ANGLES[buffer.gBits(3)]
                     if (isNew) {
                         npc.turnAngle = angle
                         npc.angle = angle
@@ -666,7 +722,7 @@ public class NpcInfoClient {
                         npc.angle = 0
                     }
                     npc.addRouteWaypoint(
-                        localPlayerCoord,
+                        baseCoord,
                         deltaX,
                         deltaZ,
                         jump == 1,
@@ -697,30 +753,25 @@ public class NpcInfoClient {
         }
 
     private class Npc(
-        val index: Int,
         var id: Int,
         var coord: CoordGrid,
     ) {
-        var lastUpdateCycle: Int = 0
+        var lastTransmitCycle: Int = 0
         var moveSpeed: MoveSpeed = MoveSpeed.STATIONARY
         var turnAngle = 0
         var angle = 0
         var spawnCycle = 0
         var turnSpeed = 32
         var jump: Boolean = false
+        var steps: MutableList<Int> = mutableListOf()
 
         fun addRouteWaypoint(
-            localPlayerCoord: CoordGrid,
+            baseCoord: CoordGrid,
             relativeX: Int,
             relativeZ: Int,
             jump: Boolean,
         ) {
-            coord =
-                CoordGrid(
-                    localPlayerCoord.level,
-                    localPlayerCoord.x + relativeX,
-                    localPlayerCoord.z + relativeZ,
-                )
+            coord = CoordGrid(baseCoord.level, baseCoord.x + relativeX, baseCoord.z + relativeZ)
             moveSpeed = MoveSpeed.STATIONARY
             this.jump = jump
         }
@@ -729,8 +780,9 @@ public class NpcInfoClient {
             opcode: Int,
             speed: MoveSpeed,
         ) {
-            var x: Int = coord.x
-            var z: Int = coord.z
+            steps += opcode
+            var x = coord.x
+            var z = coord.z
             if (opcode == 0) {
                 --x
                 ++z
@@ -770,29 +822,6 @@ public class NpcInfoClient {
             coord = CoordGrid(coord.level, x, z)
             moveSpeed = speed
         }
-
-        override fun toString(): String =
-            "Npc(" +
-                "index=$index, " +
-                "id=$id, " +
-                "coord=$coord, " +
-                "lastUpdateCycle=$lastUpdateCycle, " +
-                "moveSpeed=$moveSpeed, " +
-                "turnAngle=$turnAngle, " +
-                "angle=$angle, " +
-                "spawnCycle=$spawnCycle, " +
-                "turnSpeed=$turnSpeed, " +
-                "jump=$jump" +
-                ")"
-    }
-
-    private enum class MoveSpeed(
-        val id: Int,
-    ) {
-        STATIONARY(-1),
-        CRAWL(0),
-        WALK(1),
-        RUN(2),
     }
 
     private companion object {
@@ -816,5 +845,12 @@ public class NpcInfoClient {
         private const val BAS_CHANGE: Int = 0x10000
         private const val HEADICON_CUSTOMISATION: Int = 0x20000
         private const val SPOTANIM: Int = 0x40000
+
+        private enum class UpdateType {
+            IDLE,
+            LOW_RESOLUTION_TO_HIGH_RESOLUTION,
+            HIGH_RESOLUTION_TO_LOW_RESOLUTION,
+            ACTIVE,
+        }
     }
 }
