@@ -1,4 +1,4 @@
-package net.rsprox.protocol.game.outgoing.model.playerinfo.util
+package net.rsprox.protocol.game.outgoing.model.info.playerinfo.util
 
 import net.rsprox.protocol.common.CoordGrid
 

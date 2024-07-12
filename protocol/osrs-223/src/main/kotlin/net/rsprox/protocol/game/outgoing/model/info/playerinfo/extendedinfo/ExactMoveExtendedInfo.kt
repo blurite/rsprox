@@ -1,4 +1,4 @@
-package net.rsprox.protocol.game.outgoing.model.playerinfo.extendedinfo
+package net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo
 
 public class ExactMoveExtendedInfo(
     public val deltaX1: Int,

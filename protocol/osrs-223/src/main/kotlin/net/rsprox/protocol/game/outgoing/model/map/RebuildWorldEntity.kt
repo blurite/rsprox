@@ -2,8 +2,8 @@ package net.rsprox.protocol.game.outgoing.model.map
 
 import net.rsprot.crypto.xtea.XteaKey
 import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
 import net.rsprox.protocol.game.outgoing.model.map.util.BuildArea
-import net.rsprox.protocol.game.outgoing.model.playerinfo.util.PlayerInfoInitBlock
 
 /**
  * Rebuild worldentity packet is used to build a new world entity block,

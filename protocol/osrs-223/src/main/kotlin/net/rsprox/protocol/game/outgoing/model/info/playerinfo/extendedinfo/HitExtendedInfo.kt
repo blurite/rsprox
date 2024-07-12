@@ -1,4 +1,4 @@
-package net.rsprox.protocol.game.outgoing.model.playerinfo.extendedinfo
+package net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo
 
 public class HitExtendedInfo(
     public val hits: List<Hit>,

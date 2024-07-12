@@ -1,8 +1,8 @@
-package net.rsprox.protocol.game.outgoing.model.playerinfo
+package net.rsprox.protocol.game.outgoing.model.info.playerinfo
 
 import net.rsprox.protocol.common.CoordGrid
-import net.rsprox.protocol.game.outgoing.model.playerinfo.extendedinfo.ExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.playerinfo.util.LowResolutionPosition
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.ExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.LowResolutionPosition
 
 public sealed interface PlayerUpdateType {
     public data object LowResolutionIdle : PlayerUpdateType

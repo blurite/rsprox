@@ -1,4 +1,4 @@
-package net.rsprox.protocol.game.outgoing.model.playerinfo
+package net.rsprox.protocol.game.outgoing.model.info.playerinfo
 
 import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 

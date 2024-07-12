@@ -1,7 +1,7 @@
 package net.rsprox.protocol.world
 
 import net.rsprot.compression.HuffmanCodec
-import net.rsprox.protocol.game.outgoing.model.playerinfo.PlayerInfoClient
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerInfoClient
 
 public class World(
     localPlayerIndex: Int,

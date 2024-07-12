@@ -1,4 +1,4 @@
-package net.rsprox.protocol.game.outgoing.model.playerinfo
+package net.rsprox.protocol.game.outgoing.model.info.playerinfo
 
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
@@ -8,26 +8,26 @@ import net.rsprot.buffer.bitbuffer.toBitBuf
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.compression.HuffmanCodec
 import net.rsprox.protocol.common.CoordGrid
-import net.rsprox.protocol.game.outgoing.model.playerinfo.extendedinfo.AppearanceExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.playerinfo.extendedinfo.ChatExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.playerinfo.extendedinfo.ExactMoveExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.playerinfo.extendedinfo.ExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.playerinfo.extendedinfo.FaceAngleExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.playerinfo.extendedinfo.FacePathingEntityExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.playerinfo.extendedinfo.Headbar
-import net.rsprox.protocol.game.outgoing.model.playerinfo.extendedinfo.Hit
-import net.rsprox.protocol.game.outgoing.model.playerinfo.extendedinfo.HitExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.playerinfo.extendedinfo.MoveSpeedExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.playerinfo.extendedinfo.NameExtrasExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.playerinfo.extendedinfo.ObjTypeCustomisation
-import net.rsprox.protocol.game.outgoing.model.playerinfo.extendedinfo.SayExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.playerinfo.extendedinfo.SequenceExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.playerinfo.extendedinfo.Spotanim
-import net.rsprox.protocol.game.outgoing.model.playerinfo.extendedinfo.SpotanimExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.playerinfo.extendedinfo.TemporaryMoveSpeedExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.playerinfo.extendedinfo.TintingExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.playerinfo.util.LowResolutionPosition
-import net.rsprox.protocol.game.outgoing.model.playerinfo.util.PlayerInfoInitBlock
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.AppearanceExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.ChatExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.ExactMoveExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.ExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.FaceAngleExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.FacePathingEntityExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.Headbar
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.Hit
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.HitExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.MoveSpeedExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.NameExtrasExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.ObjTypeCustomisation
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.SayExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.SequenceExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.Spotanim
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.SpotanimExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.TemporaryMoveSpeedExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.TintingExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.LowResolutionPosition
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
 
 @Suppress("DuplicatedCode")
 public class PlayerInfoClient(

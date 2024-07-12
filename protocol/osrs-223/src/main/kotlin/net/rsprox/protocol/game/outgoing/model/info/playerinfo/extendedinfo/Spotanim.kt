@@ -1,17 +1,19 @@
-package net.rsprox.protocol.game.outgoing.model.playerinfo.extendedinfo
+package net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo
 
-public class SequenceExtendedInfo(
+public class Spotanim(
     public val id: Int,
     public val delay: Int,
-) : ExtendedInfo {
+    public val height: Int,
+) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as SequenceExtendedInfo
+        other as Spotanim
 
         if (id != other.id) return false
         if (delay != other.delay) return false
+        if (height != other.height) return false
 
         return true
     }
@@ -19,13 +21,15 @@ public class SequenceExtendedInfo(
     override fun hashCode(): Int {
         var result = id
         result = 31 * result + delay
+        result = 31 * result + height
         return result
     }
 
     override fun toString(): String {
-        return "SequenceExtendedInfo(" +
+        return "Spotanim(" +
             "id=$id, " +
-            "delay=$delay" +
+            "delay=$delay, " +
+            "height=$height" +
             ")"
     }
 }

@@ -1,7 +1,7 @@
 package net.rsprox.protocol.game.outgoing.model.map
 
 import net.rsprot.crypto.xtea.XteaKey
-import net.rsprox.protocol.game.outgoing.model.playerinfo.util.PlayerInfoInitBlock
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
 
 /**
  * Rebuild login is sent as part of the login procedure as the very first packet,

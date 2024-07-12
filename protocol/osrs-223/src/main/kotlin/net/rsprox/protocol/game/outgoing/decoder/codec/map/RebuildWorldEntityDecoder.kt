@@ -8,10 +8,10 @@ import net.rsprot.protocol.metadata.Consistent
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
 import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntity
 import net.rsprox.protocol.game.outgoing.model.map.util.BuildArea
 import net.rsprox.protocol.game.outgoing.model.map.util.RebuildRegionZone
-import net.rsprox.protocol.game.outgoing.model.playerinfo.util.PlayerInfoInitBlock
 import net.rsprox.protocol.session.Session
 
 @Consistent
