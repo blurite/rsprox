@@ -40,10 +40,6 @@ public class DecodingSession(
                     }
                 DirectionalPacket(binaryPacket.direction, packet)
             } catch (t: Throwable) {
-                // TODO: erase later, too many unimplemented ones right now
-                if (t is IllegalArgumentException && t.message!!.contains("is not registered.")) {
-                    return@mapNotNull null
-                }
                 logger.error(t) {
                     "Error decoding packet: ${binaryPacket.prot}"
                 }
