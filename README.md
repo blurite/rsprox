@@ -42,7 +42,7 @@ Below is a small task list showing a rough breakdown of what the tool will consi
 - [ ] Decoders
   - [x] Plugin system for decoders, with each revision acting as its own plugin
   - [x] Revision 223 (client decoders)
-  - [ ] Revision 223 (server decoders)
+  - [x] Revision 223 (server decoders)
 - [ ] Transcriber
 - [ ] Launchers
   - [ ] Proxy launcher/updater
