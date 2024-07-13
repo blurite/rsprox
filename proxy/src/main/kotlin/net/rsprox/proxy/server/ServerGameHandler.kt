@@ -7,8 +7,10 @@ import io.netty.channel.SimpleChannelInboundHandler
 import net.rsprot.buffer.extensions.gjstr
 import net.rsprot.buffer.extensions.p2
 import net.rsprot.buffer.extensions.p4
+import net.rsprot.buffer.extensions.pdata
 import net.rsprot.buffer.extensions.pjstr
 import net.rsprot.buffer.extensions.toJagByteBuf
+import net.rsprot.crypto.crc.CyclicRedundancyCheck
 import net.rsprot.protocol.util.CombinedId
 import net.rsprot.protocol.util.gCombinedId
 import net.rsprox.proxy.attributes.INCOMING_BANK_PIN
@@ -123,6 +125,25 @@ public class ServerGameHandler(
                     this.bankPinComponent = null
                     clientChannel.attr(INCOMING_BANK_PIN).set(null)
                 }
+            }
+            GameServerProt.UPDATE_UID192 -> {
+                // Erase all the UID data
+                // We shouldn't keep it as this could bear some relevance when it comes to
+                // account recovery, as it is another piece of information that can be
+                // used to link to a specific user.
+                val data = ByteArray(24)
+                val crc = CyclicRedundancyCheck.computeCrc32(data)
+                val buffer = Unpooled.buffer(28)
+                buffer.pdata(data)
+                buffer.p4(crc)
+                msg.replacePayload(buffer)
+            }
+            GameServerProt.UPDATE_SITESETTINGS -> {
+                val old = msg.payload.gjstr()
+                // Similarly to update uid192, since both of them are linked, this can be followed
+                // back to account recovery system.
+                val replacement = Unpooled.buffer().pjstr("*".repeat(old.length))
+                msg.replacePayload(replacement)
             }
             else -> {
                 // no-op, we don't care about other packets
