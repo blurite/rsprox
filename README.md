@@ -20,7 +20,7 @@ Below is a small task list showing a rough breakdown of what the tool will consi
   - [x] Native (Mac)
   - [ ] RuneLite
   - [ ] RuneLite Forks
-  - [ ] HDOS
+  - [ ] ~~HDOS~~ (Cancelled, too difficult to patch)
 - [x] World identification via localhost address
 - [x] World-hop host address injection
 - [x] Login re-encoding & obtaining ISAAC Seed
