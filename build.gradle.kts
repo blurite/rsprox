@@ -2,7 +2,6 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    application
 }
 
 allprojects {
@@ -36,6 +35,16 @@ allprojects {
 
 subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
+}
+
+dependencies {
+    runtimeOnly(projects.proxy)
+}
+
+tasks.create<JavaExec>("proxy") {
+    group = "run"
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("net.rsprox.proxy.ProxyServiceKt")
 }
 
 // fixes some weird error with "Entry classpath.index is a duplicate but no duplicate handling strategy has been set"
