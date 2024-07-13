@@ -29,6 +29,8 @@ Below is a small task list showing a rough breakdown of what the tool will consi
 - [x] Binary blob reader/writer
 - [x] Privacy concerns
   - [x] Bank Pin erasure
+    - [x] Erases the full 4-digit code sent after entering
+    - [x] Erases any keyboard presses while bank pin interface is open
   - [x] Private message content erasure
   - [x] Login tokens in URL open packets
   - [x] 192-bit UID (linked to account recoveries)
