@@ -31,6 +31,8 @@ Below is a small task list showing a rough breakdown of what the tool will consi
   - [x] Bank Pin erasure
   - [x] Private message content erasure
   - [x] Login tokens in URL open packets
+  - [x] 192-bit UID (linked to account recoveries)
+  - [x] Site settings (linked to account recoveries)
 - [ ] Graphical User Interface (Proxy tool)
 - [ ] Graphical User Interface (Live Transcriber)
 - [ ] Live cache loading
