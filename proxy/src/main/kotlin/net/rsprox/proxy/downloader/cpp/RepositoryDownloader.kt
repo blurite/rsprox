@@ -1,4 +1,4 @@
-package net.rsprox.proxy.downloader
+package net.rsprox.proxy.downloader.cpp
 
 import com.auth0.jwt.JWT
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper

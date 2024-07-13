@@ -3,6 +3,8 @@ package net.rsprox.proxy.downloader
 import com.github.michaelbull.logging.InlineLogger
 import net.rsprox.patch.NativeClientType
 import net.rsprox.proxy.config.CLIENTS_DIRECTORY
+import net.rsprox.proxy.downloader.cpp.Repository
+import net.rsprox.proxy.downloader.cpp.RepositoryDownloader
 import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.nio.file.Path

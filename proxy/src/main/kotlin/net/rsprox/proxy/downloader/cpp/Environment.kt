@@ -1,4 +1,4 @@
-package net.rsprox.proxy.downloader
+package net.rsprox.proxy.downloader.cpp
 
 public data class Environment(
     public val id: String,
