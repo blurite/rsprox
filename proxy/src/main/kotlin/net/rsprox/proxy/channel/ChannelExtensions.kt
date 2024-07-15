@@ -12,6 +12,7 @@ import net.rsprox.proxy.attributes.WORLD_ATTRIBUTE
 import net.rsprox.proxy.binary.BinaryBlob
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.worlds.World
+import java.net.InetSocketAddress
 
 /**
  * Replaces a channel handler with a new variant.
@@ -60,4 +61,8 @@ public fun Channel.getServerToClientStreamCipher(): StreamCipher {
 public fun Channel.getBinaryBlob(): BinaryBlob {
     return attr(BINARY_BLOB).get()
         ?: throw IllegalStateException("Binary blob not assigned to $this")
+}
+
+public fun Channel.getPort(): Int {
+    return (localAddress() as InetSocketAddress).port
 }

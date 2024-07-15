@@ -3,7 +3,6 @@ package net.rsprox.proxy
 import com.github.michaelbull.logging.InlineLogger
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.buffer.ByteBufAllocator
-import io.netty.buffer.UnpooledByteBufAllocator
 import net.rsprox.patch.NativeClientType
 import net.rsprox.patch.PatchResult
 import net.rsprox.patch.native.NativePatcher
@@ -16,17 +15,21 @@ import net.rsprox.proxy.config.ProxyProperties
 import net.rsprox.proxy.config.ProxyProperty.Companion.BINARY_WRITE_INTERVAL_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
-import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_HTTP_PORT
-import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT
+import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_HTTP
+import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
-import net.rsprox.proxy.config.patchedRsaModulus
+import net.rsprox.proxy.config.TEMP_CLIENTS_DIRECTORY
+import net.rsprox.proxy.config.registerConnection
 import net.rsprox.proxy.downloader.NativeClientDownloader
 import net.rsprox.proxy.futures.asCompletableFuture
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.plugin.PluginLoader
+import net.rsprox.proxy.progressbar.ProgressBarNotifier
 import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
+import net.rsprox.proxy.util.ClientType
+import net.rsprox.proxy.util.ConnectionInfo
 import net.rsprox.proxy.util.OperatingSystem
 import net.rsprox.proxy.util.getOperatingSystem
 import net.rsprox.proxy.worlds.DynamicWorldListProvider
@@ -46,52 +49,85 @@ import kotlin.io.path.extension
 import kotlin.io.path.nameWithoutExtension
 import kotlin.properties.Delegates
 import kotlin.system.exitProcess
-import kotlin.time.measureTime
 
 public class ProxyService(
     private val allocator: ByteBufAllocator,
 ) {
     private val pluginLoader: PluginLoader = PluginLoader()
+    private lateinit var bootstrapFactory: BootstrapFactory
     private lateinit var serverBootstrap: ServerBootstrap
     private lateinit var httpServerBootstrap: ServerBootstrap
+    private lateinit var worldListProvider: WorldListProvider
+    private lateinit var operatingSystem: OperatingSystem
+    private lateinit var rsa: RSAPrivateCrtKeyParameters
     private var properties: ProxyProperties by Delegates.notNull()
+    private var availablePort: Int = -1
 
     public fun start() {
         logger.info { "Starting proxy service" }
         createConfigurationDirectories(CONFIGURATION_PATH)
         createConfigurationDirectories(BINARY_PATH)
         createConfigurationDirectories(CLIENTS_DIRECTORY)
+        createConfigurationDirectories(TEMP_CLIENTS_DIRECTORY)
         loadProperties()
         HuffmanProvider.load()
-        val rsa = loadRsa()
-        val factory = BootstrapFactory(allocator, properties)
+        this.rsa = loadRsa()
+        this.availablePort = properties.getProperty(PROXY_PORT_MIN)
+        this.bootstrapFactory = BootstrapFactory(allocator, properties)
         val javConfig = loadJavConfig()
-        val worldListProvider = loadWorldListProvider(javConfig.getWorldListUrl())
+        this.worldListProvider = loadWorldListProvider(javConfig.getWorldListUrl())
         val replacementWorld = findCodebaseReplacementWorld(javConfig, worldListProvider)
         val updatedJavConfig = rebuildJavConfig(javConfig, replacementWorld)
 
-        val os = getOperatingSystem()
-        logger.debug { "Proxy launched on $os" }
-        if (os == OperatingSystem.SOLARIS) {
-            throw IllegalStateException("Operating system not supported for native: $os")
+        this.operatingSystem = getOperatingSystem()
+        logger.debug { "Proxy launched on $operatingSystem" }
+        if (operatingSystem == OperatingSystem.SOLARIS) {
+            throw IllegalStateException("Operating system not supported for native: $operatingSystem")
         }
 
-        launchHttpServer(factory, worldListProvider, updatedJavConfig)
-        launchProxyServer(factory, worldListProvider, rsa)
+        launchHttpServer(this.bootstrapFactory, worldListProvider, updatedJavConfig)
 
         // Only load osrs plugins for now, we don't currently intend on supporting other types
         pluginLoader.loadPlugins("osrs")
 
-        // Immediately launch the corresponding native client
-        launchNativeClient(os, rsa)
+        deleteTemporaryClients()
+    }
+
+    private fun deleteTemporaryClients() {
+        val files =
+            TEMP_CLIENTS_DIRECTORY
+                .toFile()
+                .walkTopDown()
+                .filter { it.isFile }
+        for (file in files) {
+            try {
+                file.delete()
+            } catch (t: Throwable) {
+                // Doesn't really matter, we're just deleting to avoid growing infinitely
+                continue
+            }
+        }
+    }
+
+    public fun launchNativeClient(progressBarNotifier: ProgressBarNotifier) {
+        launchNativeClient(operatingSystem, rsa, progressBarNotifier)
     }
 
     private fun launchNativeClient(
         os: OperatingSystem,
         rsa: RSAPrivateCrtKeyParameters,
+        progressBarNotifier: ProgressBarNotifier,
     ) {
-        val port = properties.getProperty(PROXY_PORT)
-        val webPort = properties.getProperty(PROXY_HTTP_PORT)
+        val port = this.availablePort++
+        progressBarNotifier.update(0, "Binding port $port")
+        try {
+            launchProxyServer(this.bootstrapFactory, this.worldListProvider, rsa, port)
+        } catch (t: Throwable) {
+            logger.error { "Unable to bind network port $port for native client." }
+            return
+        }
+        progressBarNotifier.update(5, "Checking native client updates")
+        val webPort = properties.getProperty(PROXY_PORT_HTTP)
         val javConfigEndpoint = properties.getProperty(JAV_CONFIG_ENDPOINT)
         val worldlistEndpoint = properties.getProperty(WORLDLIST_ENDPOINT)
         val nativeClientType =
@@ -100,9 +136,11 @@ public class ProxyService(
                 OperatingSystem.MAC -> NativeClientType.MAC
                 else -> throw IllegalStateException()
             }
-        val binary = NativeClientDownloader.download(nativeClientType)
+        val binary = NativeClientDownloader.download(nativeClientType, progressBarNotifier)
         val extension = if (binary.extension.isNotEmpty()) ".${binary.extension}" else ""
-        val patched = binary.parent.resolve("${binary.nameWithoutExtension}-patched$extension")
+        val stamp = System.currentTimeMillis()
+        val patched = TEMP_CLIENTS_DIRECTORY.resolve("${binary.nameWithoutExtension}-$stamp.$extension")
+        progressBarNotifier.update(90, "Cloning native client")
         binary.copyTo(patched, overwrite = true)
 
         // For now, directly just download, patch and launch the C++ client
@@ -119,14 +157,15 @@ public class ProxyService(
         check(result is PatchResult.Success) {
             "Failed to patch"
         }
-        val originalModulus = BigInteger(result.oldModulus, 16)
-        val patchedModulus = patchedRsaModulus
-        if (patchedModulus != null) {
-            check(patchedModulus == originalModulus) {
-                "Unable to launch client due to different modulus being used. Reboot proxy."
-            }
-        }
-        patchedRsaModulus = originalModulus
+        registerConnection(
+            ConnectionInfo(
+                ClientType.Native,
+                os,
+                port,
+                BigInteger(result.oldModulus, 16),
+            ),
+        )
+        progressBarNotifier.update(100, "Launching native client")
         launchExecutable(result.outputPath, os)
     }
 
@@ -231,7 +270,7 @@ public class ProxyService(
         return runCatching("Failed to rebuild jav_config.ws") {
             val oldWorldList = javConfig.getWorldListUrl()
             val oldCodebase = javConfig.getCodebase()
-            val changedWorldListUrl = "http://127.0.0.1:${properties.getProperty(PROXY_HTTP_PORT)}/worldlist.ws"
+            val changedWorldListUrl = "http://127.0.0.1:${properties.getProperty(PROXY_PORT_HTTP)}/worldlist.ws"
             val changedCodebase = "http://${replacementWorld.localHostAddress}/"
             val updated =
                 javConfig
@@ -255,7 +294,7 @@ public class ProxyService(
                     worldListProvider,
                     javConfig,
                 )
-            val port = properties.getProperty(PROXY_HTTP_PORT)
+            val port = properties.getProperty(PROXY_PORT_HTTP)
             val timeoutSeconds = properties.getProperty(BIND_TIMEOUT_SECONDS).toLong()
             httpServerBootstrap
                 .bind(port)
@@ -271,24 +310,22 @@ public class ProxyService(
         factory: BootstrapFactory,
         worldListProvider: WorldListProvider,
         rsa: RSAPrivateCrtKeyParameters,
+        port: Int,
     ) {
-        runCatching("Failure to launch HTTP server") {
-            val serverBootstrap =
-                factory.createServerBootStrap(
-                    worldListProvider,
-                    rsa,
-                    properties.getProperty(BINARY_WRITE_INTERVAL_SECONDS),
-                )
-            val port = properties.getProperty(PROXY_PORT)
-            val timeoutSeconds = properties.getProperty(BIND_TIMEOUT_SECONDS).toLong()
-            serverBootstrap
-                .bind(port)
-                .asCompletableFuture()
-                .orTimeout(timeoutSeconds, TimeUnit.SECONDS)
-                .join()
-            this.serverBootstrap = serverBootstrap
-            logger.debug { "Proxy server bound to port $port" }
-        }
+        val serverBootstrap =
+            factory.createServerBootStrap(
+                worldListProvider,
+                rsa,
+                properties.getProperty(BINARY_WRITE_INTERVAL_SECONDS),
+            )
+        val timeoutSeconds = properties.getProperty(BIND_TIMEOUT_SECONDS).toLong()
+        serverBootstrap
+            .bind(port)
+            .asCompletableFuture()
+            .orTimeout(timeoutSeconds, TimeUnit.SECONDS)
+            .join()
+        this.serverBootstrap = serverBootstrap
+        logger.debug { "Proxy server bound to port $port" }
     }
 
     private inline fun <T> runCatching(
@@ -309,11 +346,4 @@ public class ProxyService(
         private val logger = InlineLogger()
         private val PROPERTIES_FILE = CONFIGURATION_PATH.resolve("proxy.properties")
     }
-}
-
-public fun main() {
-    val logger = InlineLogger("ProxyService")
-    val service = ProxyService(UnpooledByteBufAllocator.DEFAULT)
-    val time = measureTime(service::start)
-    logger.info { "Proxy service started in $time" }
 }

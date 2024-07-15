@@ -16,11 +16,12 @@ import net.rsprot.crypto.rsa.decipherRsa
 import net.rsprox.proxy.attributes.STREAM_CIPHER_PAIR
 import net.rsprox.proxy.channel.addLastWithName
 import net.rsprox.proxy.channel.getBinaryHeaderBuilder
+import net.rsprox.proxy.channel.getPort
 import net.rsprox.proxy.channel.getWorld
 import net.rsprox.proxy.channel.remove
 import net.rsprox.proxy.channel.replace
 import net.rsprox.proxy.client.prot.LoginClientProt
-import net.rsprox.proxy.config.patchedRsaModulus
+import net.rsprox.proxy.config.getConnection
 import net.rsprox.proxy.js5.Js5MasterIndexArchive
 import net.rsprox.proxy.rsa.Rsa
 import net.rsprox.proxy.rsa.rsa
@@ -161,10 +162,9 @@ public class ClientLoginHandler(
         val encoded = ctx.alloc().buffer(msg.payload.readableBytes())
         encoded.writeBytes(msg.payload, msg.start, headerSize)
         decryptedRsaBuffer.readerIndex(rsaStart)
-        val modulus =
-            checkNotNull(patchedRsaModulus) {
-                "Patched RSA modulus has not been assigned yet!"
-            }
+        val port = ctx.channel().getPort()
+        val connection = getConnection(port)
+        val modulus = connection.modulus
         val encrypted =
             decryptedRsaBuffer.buffer.decipherRsa(
                 Rsa.PUBLIC_EXPONENT,

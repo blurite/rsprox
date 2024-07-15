@@ -5,6 +5,7 @@ import net.rsprox.patch.NativeClientType
 import net.rsprox.proxy.config.CLIENTS_DIRECTORY
 import net.rsprox.proxy.downloader.cpp.Repository
 import net.rsprox.proxy.downloader.cpp.RepositoryDownloader
+import net.rsprox.proxy.progressbar.ProgressBarNotifier
 import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.nio.file.Path
@@ -17,7 +18,10 @@ public data object NativeClientDownloader {
     private val logger = InlineLogger()
 
     @OptIn(ExperimentalStdlibApi::class)
-    public fun download(type: NativeClientType): Path {
+    public fun download(
+        type: NativeClientType,
+        progressBarNotifier: ProgressBarNotifier,
+    ): Path {
         val repository = buildRepositoryInfo(type.systemShortName)
         val versionData = repository.getVersionData()
         val version =
@@ -74,8 +78,11 @@ public data object NativeClientDownloader {
             val gzipData = data.copyOfRange(6, data.size)
             val decompressedData = GZIPInputStream(gzipData.inputStream()).readAllBytes()
             buffer.put(decompressedData)
+            val percentage = 60 * i / digests.size
+            progressBarNotifier.update(15 + (percentage), "Downloading native client")
         }
         buffer.flip()
+        progressBarNotifier.update(80, "Saving native client")
         for (file in metafile.files) {
             logger.debug { "Saving output file ${file.name}" }
             val filePath = CLIENTS_DIRECTORY.resolve(file.name)
