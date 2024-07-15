@@ -38,13 +38,13 @@ subprojects {
 }
 
 dependencies {
-    runtimeOnly(projects.proxy)
+    runtimeOnly(projects.gui.proxyTool)
 }
 
 tasks.create<JavaExec>("proxy") {
     group = "run"
     classpath = sourceSets["main"].runtimeClasspath
-    mainClass.set("net.rsprox.proxy.ProxyServiceKt")
+    mainClass.set("net.rsprox.gui.ProxyToolGuiKt")
 }
 
 // fixes some weird error with "Entry classpath.index is a duplicate but no duplicate handling strategy has been set"

@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Proxy" type="JetRunConfigurationType">
-    <option name="MAIN_CLASS_NAME" value="net.rsprox.proxy.ProxyServiceKt" />
-    <module name="rsprox.proxy.main" />
+    <option name="MAIN_CLASS_NAME" value="net.rsprox.gui.ProxyToolGuiKt" />
+    <module name="rsprox.gui.proxy-tool.main" />
     <shortenClasspath name="NONE" />
     <extension name="software.aws.toolkits.jetbrains.core.execution.JavaAwsConnectionExtension">
       <option name="credential" />
