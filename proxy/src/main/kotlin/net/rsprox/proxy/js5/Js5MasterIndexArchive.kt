@@ -16,16 +16,24 @@ public data object Js5MasterIndexArchive {
     private val logger = InlineLogger()
     private val archive: MutableMap<WorldUid, ByteArray> = mutableMapOf()
 
-    public fun getJs5MasterIndex(world: World): ByteArray? {
+    public fun getJs5MasterIndex(
+        port: Int,
+        world: World,
+    ): ByteArray? {
         if (archive.isEmpty()) {
             return null
         }
-        val uid = getWorldUid(world)
+        val uid = getWorldUid(port, world)
         val existing = archive[uid]
         if (existing != null) {
             return existing
         }
-        val distinct = archive.values.distinct()
+        val distinct =
+            archive
+                .entries
+                .filterNot { it.key.port != port }
+                .map { it.value }
+                .distinct()
         if (distinct.size != 1) {
             return null
         }
@@ -33,18 +41,23 @@ public data object Js5MasterIndexArchive {
     }
 
     public fun setJs5MasterIndex(
+        port: Int,
         world: World,
         value: ByteArray,
     ) {
-        val uid = getWorldUid(world)
+        val uid = getWorldUid(port, world)
         val old = archive.put(uid, value)
         if (!old.contentEquals(value)) {
             logger.debug { "Updating JS5 master index for world $uid" }
         }
     }
 
-    private fun getWorldUid(world: World): WorldUid {
+    private fun getWorldUid(
+        port: Int,
+        world: World,
+    ): WorldUid {
         return WorldUid(
+            port,
             world.id,
             world.properties,
             world.host,
@@ -52,8 +65,9 @@ public data object Js5MasterIndexArchive {
     }
 
     private data class WorldUid(
-        private val id: Int,
-        private val properties: Int,
-        private val host: String,
+        val port: Int,
+        val id: Int,
+        val properties: Int,
+        val host: String,
     )
 }

@@ -2,6 +2,7 @@ package net.rsprox.proxy.server
 
 import com.github.michaelbull.logging.InlineLogger
 import io.netty.buffer.ByteBuf
+import io.netty.channel.Channel
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ByteToMessageDecoder
 import net.rsprot.buffer.extensions.g1
@@ -11,10 +12,13 @@ import net.rsprot.buffer.extensions.p1
 import net.rsprot.buffer.extensions.p2
 import net.rsprot.buffer.extensions.p4
 import net.rsprox.proxy.attributes.WORLD_ATTRIBUTE
+import net.rsprox.proxy.channel.getPort
 import net.rsprox.proxy.channel.remove
 import net.rsprox.proxy.js5.Js5MasterIndexArchive
 
-public class ServerJs5ResponseDecoder : ByteToMessageDecoder() {
+public class ServerJs5ResponseDecoder(
+    private val clientChannel: Channel,
+) : ByteToMessageDecoder() {
     private enum class State {
         Header,
         Payload,
@@ -78,7 +82,8 @@ public class ServerJs5ResponseDecoder : ByteToMessageDecoder() {
             val world =
                 ctx.channel().attr(WORLD_ATTRIBUTE).get()
                     ?: throw IllegalStateException("World not assigned to JS5 connection!")
-            Js5MasterIndexArchive.setJs5MasterIndex(world, array)
+            val port = clientChannel.getPort()
+            Js5MasterIndexArchive.setJs5MasterIndex(port, world, array)
             // Finally, pass the original message along to the client
             out += copy
             state = State.Header

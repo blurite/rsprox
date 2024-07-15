@@ -24,7 +24,7 @@ public class ServerJs5LoginHandler(
         logger.debug { "Js5 login successful, switching to response decoding" }
         clientChannel.writeAndFlush(msg.encode(ctx.alloc()))
         val pipeline = ctx.channel().pipeline()
-        pipeline.replace<ServerGenericDecoder<*>>(ServerJs5ResponseDecoder())
+        pipeline.replace<ServerGenericDecoder<*>>(ServerJs5ResponseDecoder(clientChannel))
         pipeline.replace<ServerJs5LoginHandler>(ServerRelayHandler(clientChannel))
     }
 

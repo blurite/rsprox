@@ -109,7 +109,9 @@ public class ClientLoginHandler(
         builder.subRevision(subVersion)
         builder.clientType(clientType)
         builder.platformType(platformType)
-        val masterIndex = Js5MasterIndexArchive.getJs5MasterIndex(ctx.channel().getWorld())
+        val world = ctx.channel().getWorld()
+        val port = ctx.channel().getPort()
+        val masterIndex = Js5MasterIndexArchive.getJs5MasterIndex(port, world)
         if (masterIndex == null) {
             // If we can't find a JS5 master index associated to a world,
             // the proxy was likely restarted while the client was kept at login screen.
@@ -162,7 +164,6 @@ public class ClientLoginHandler(
         val encoded = ctx.alloc().buffer(msg.payload.readableBytes())
         encoded.writeBytes(msg.payload, msg.start, headerSize)
         decryptedRsaBuffer.readerIndex(rsaStart)
-        val port = ctx.channel().getPort()
         val connection = getConnection(port)
         val modulus = connection.modulus
         val encrypted =
