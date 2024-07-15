@@ -8,6 +8,7 @@ bouncycastle = "1.70"
 java-jwt = "4.4.0"
 jackson = "2.17.2"
 flatlaf = "3.4.1"
+miglayout = "11.4"
 
 [libraries]
 netty-bom = { module = "io.netty:netty-bom", version.ref = "netty" }
@@ -31,6 +32,7 @@ jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations
 jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 flatlaf = { module = "com.formdev:flatlaf", version.ref = "flatlaf" }
+mig-layout = { module = "com.miglayout:miglayout-swing", version.ref = "miglayout" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
