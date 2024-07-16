@@ -16,4 +16,5 @@ dependencies {
     implementation(projects.patch)
     implementation(projects.patch.patchNative)
     implementation(projects.protocol)
+    implementation(rootProject.libs.clikt)
 }

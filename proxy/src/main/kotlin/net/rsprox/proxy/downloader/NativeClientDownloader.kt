@@ -20,7 +20,7 @@ public data object NativeClientDownloader {
     @OptIn(ExperimentalStdlibApi::class)
     public fun download(
         type: NativeClientType,
-        progressBarNotifier: ProgressBarNotifier,
+        progressBarNotifier: ProgressBarNotifier? = null,
     ): Path {
         val repository = buildRepositoryInfo(type.systemShortName)
         val versionData = repository.getVersionData()
@@ -36,19 +36,22 @@ public data object NativeClientDownloader {
             } else {
                 "osclient.app/Contents/MacOS/osclient"
             }
-        val metafileCache = CLIENTS_DIRECTORY.resolve("${type.systemShortName}-cached-version.txt")
-        if (metafileCache.exists()) {
-            val text = metafileCache.readText(Charsets.UTF_8)
-            if (text == id) {
-                val client = CLIENTS_DIRECTORY.resolve(expectedClientName)
-                if (client.exists()) {
-                    logger.debug { "Cached native client up to date." }
-                    return client
+        // If no progress bar is provided, the downloader is ran via CLI
+        if (progressBarNotifier != null) {
+            val metafileCache = CLIENTS_DIRECTORY.resolve("${type.systemShortName}-cached-version.txt")
+            if (metafileCache.exists()) {
+                val text = metafileCache.readText(Charsets.UTF_8)
+                if (text == id) {
+                    val client = CLIENTS_DIRECTORY.resolve(expectedClientName)
+                    if (client.exists()) {
+                        logger.debug { "Cached native client up to date." }
+                        return client
+                    }
                 }
             }
+            // Update the metadata file
+            metafileCache.toFile().writeText(id)
         }
-        // Update the metadata file
-        metafileCache.toFile().writeText(id)
         logger.debug { "Downloading version ${type.systemShortName}/${version.value.version}-production" }
         val catalog = repository.getCatalog(id)
         val remote = catalog.config.remote
@@ -79,13 +82,13 @@ public data object NativeClientDownloader {
             val decompressedData = GZIPInputStream(gzipData.inputStream()).readAllBytes()
             buffer.put(decompressedData)
             val percentage = 60 * i / digests.size
-            progressBarNotifier.update(15 + (percentage), "Downloading native client")
+            progressBarNotifier?.update(15 + (percentage), "Downloading native client")
         }
         buffer.flip()
-        progressBarNotifier.update(80, "Saving native client")
+        progressBarNotifier?.update(80, "Saving native client")
         for (file in metafile.files) {
-            logger.debug { "Saving output file ${file.name}" }
             val filePath = CLIENTS_DIRECTORY.resolve(file.name)
+            logger.debug { "Saving output file $filePath" }
             val data = ByteArray(file.size.toInt())
             buffer.get(data)
             Files.createDirectories(filePath.parent)
