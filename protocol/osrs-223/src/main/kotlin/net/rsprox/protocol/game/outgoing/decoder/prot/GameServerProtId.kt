@@ -42,7 +42,7 @@ internal object GameServerProtId {
     const val OBJ_ADD = 38
     const val CAM_SHAKE = 39
     const val MESSAGE_CLANCHANNEL = 40
-    const val CAM_LOOKAT_EASED_ANGLE_RELATIVE = 41
+    const val CAM_ROTATEBY = 41
     const val FRIENDLIST_LOADED = 42
     const val LOC_MERGE = 43
     const val VARP_LARGE = 44
