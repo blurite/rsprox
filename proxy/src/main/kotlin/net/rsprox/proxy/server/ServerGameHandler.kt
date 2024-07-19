@@ -138,7 +138,7 @@ public class ServerGameHandler(
                 buffer.p4(crc)
                 msg.replacePayload(buffer)
             }
-            GameServerProt.UPDATE_SITESETTINGS -> {
+            GameServerProt.SITE_SETTINGS -> {
                 val old = msg.payload.gjstr()
                 // Similarly to update uid192, since both of them are linked, this can be followed
                 // back to account recovery system.

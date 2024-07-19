@@ -67,7 +67,7 @@ internal object GameServerProtId {
     const val UPDATE_UID192 = 62
     const val IF_SETMODEL = 63
     const val MIDI_SWAP = 64
-    const val UPDATE_SITESETTINGS = 65
+    const val SITE_SETTINGS = 65
     const val MAP_PROJANIM = 66
     const val OBJ_OPFILTER = 67
     const val CAM_MOVETO = 68

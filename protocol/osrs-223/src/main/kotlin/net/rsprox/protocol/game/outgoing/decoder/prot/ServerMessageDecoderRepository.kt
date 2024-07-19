@@ -80,8 +80,8 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.ReflectionChe
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.ResetAnimsDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.SendPingDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.ServerTickEndDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.SiteSettingsDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.UpdateRebootTimerDecoder
-import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.UpdateSiteSettingsDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.UpdateUid192Decoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.UrlOpenDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.player.ChatFilterSettingsDecoder
@@ -231,7 +231,7 @@ public object ServerMessageDecoderRepository {
                 bind(SendPingDecoder())
                 bind(ServerTickEndDecoder())
                 bind(UpdateRebootTimerDecoder())
-                bind(UpdateSiteSettingsDecoder())
+                bind(SiteSettingsDecoder())
                 bind(UpdateUid192Decoder())
                 bind(UrlOpenDecoder())
 
