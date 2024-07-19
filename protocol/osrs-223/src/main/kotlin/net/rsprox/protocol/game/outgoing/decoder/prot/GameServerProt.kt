@@ -109,7 +109,7 @@ public enum class GameServerProt(
     CAM_LOOKAT(GameServerProtId.CAM_LOOKAT, 6),
     CAM_LOOKAT_EASED_COORD(GameServerProtId.CAM_LOOKAT_EASED_COORD, 7),
     CAM_ROTATEBY(GameServerProtId.CAM_ROTATEBY, 7),
-    CAM_LOOKAT_EASED_ANGLE_ABSOLUTE(GameServerProtId.CAM_LOOKAT_EASED_ANGLE_ABSOLUTE, 7),
+    CAM_ROTATETO(GameServerProtId.CAM_ROTATETO, 7),
     CAM_MODE(GameServerProtId.CAM_MODE, 1),
     CAM_TARGET(GameServerProtId.CAM_TARGET, 5),
     CAM_TARGET_OLD(GameServerProtId.CAM_TARGET_OLD, 3),

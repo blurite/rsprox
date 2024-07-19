@@ -5,7 +5,6 @@ import net.rsprot.protocol.ProtRepository
 import net.rsprox.protocol.MessageDecoderRepository
 import net.rsprox.protocol.MessageDecoderRepositoryBuilder
 import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamLookAtDecoder
-import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamLookAtEasedAngleAbsoluteDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamLookAtEasedCoordDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamModeDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamMoveToArcDecoder
@@ -13,6 +12,7 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamMoveToCyclesDec
 import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamMoveToDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamResetDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamRotateBy
+import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamRotateToDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamShakeDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamSmoothResetDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamTargetDecoder
@@ -146,7 +146,7 @@ public object ServerMessageDecoderRepository {
             MessageDecoderRepositoryBuilder(
                 protRepository,
             ).apply {
-                bind(CamLookAtEasedAngleAbsoluteDecoder())
+                bind(CamRotateToDecoder())
                 bind(CamRotateBy())
                 bind(CamLookAtEasedCoordDecoder())
                 bind(CamLookAtDecoder())
