@@ -5,7 +5,7 @@ import net.rsprox.protocol.game.outgoing.model.camera.util.CameraEaseFunction
 import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildArea
 
 /**
- * Camera move to eased packet is used to move camera
+ * Camera move to cycles packet is used to move camera
  * to a new coordinate with finer control behind it.
  * @property destinationXInBuildArea the dest x coordinate within the build area,
  * in range of 0 to 103 (inclusive)
@@ -21,7 +21,7 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildAre
  * control over the way it moves from the start coordinate to the end.
  */
 @Suppress("DuplicatedCode")
-public class CamMoveToEased private constructor(
+public class CamMoveToCycles private constructor(
     private val destinationCoordInBuildArea: CoordInBuildArea,
     private val _height: UShort,
     private val _duration: UShort,
@@ -58,7 +58,7 @@ public class CamMoveToEased private constructor(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as CamMoveToEased
+        other as CamMoveToCycles
 
         if (destinationCoordInBuildArea != other.destinationCoordInBuildArea) return false
         if (_height != other._height) return false
@@ -79,7 +79,7 @@ public class CamMoveToEased private constructor(
     }
 
     override fun toString(): String {
-        return "CamMoveToEased(" +
+        return "CamMoveToCycles(" +
             "destinationXInBuildArea=$destinationXInBuildArea, " +
             "destinationZInBuildArea=$destinationZInBuildArea, " +
             "height=$height, " +

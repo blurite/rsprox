@@ -7,7 +7,7 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildAre
 /**
  * Camera move to eased circular packet is used to move camera
  * to a new coordinate with finer control behind it.
- * This packet differs from [CamMoveToEased] in that it will first
+ * This packet differs from [CamMoveToCycles] in that it will first
  * move through a center coordinate before going towards the destination,
  * creating a `)`-shape movement. An example image of this can be seen
  * [here](https://media.z-kris.com/2024/04/cam%20move%20eased%20circular.png)

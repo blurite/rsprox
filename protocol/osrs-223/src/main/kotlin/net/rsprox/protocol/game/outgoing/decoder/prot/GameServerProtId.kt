@@ -121,7 +121,7 @@ internal object GameServerProtId {
     const val PLAYER_ANIM_SPECIFIC = 117
     const val PROJANIM_SPECIFIC = 118
     const val SET_PLAYER_OP = 119
-    const val CAM_MOVETO_EASED = 120
+    const val CAM_MOVETO_CYCLES = 120
     const val REBUILD_REGION = 121
     const val IF_SETHIDE = 122
     const val CAM_MOVETO_EASED_CIRCULAR = 123
