@@ -50,7 +50,7 @@ internal object GameServerProtId {
     const val PLAYER_INFO = 45
     const val LOC_ANIM_SPECIFIC = 46
     const val CAM_LOOKAT_EASED_ANGLE_ABSOLUTE = 47
-    const val IF_INITIALSTATE = 48
+    const val IF_RESYNC = 48
     const val IF_SETNPCHEAD_ACTIVE = 49
     const val IF_SETROTATESPEED = 50
     const val IF_SETANGLE = 51

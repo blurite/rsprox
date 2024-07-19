@@ -38,10 +38,10 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.info.SetNpcUpdateOriginDe
 import net.rsprox.protocol.game.outgoing.decoder.codec.info.WorldEntityInfoDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.interfaces.IfClearInvDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.interfaces.IfCloseSubDecoder
-import net.rsprox.protocol.game.outgoing.decoder.codec.interfaces.IfInitialStateDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.interfaces.IfMoveSubDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.interfaces.IfOpenSubDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.interfaces.IfOpenTopDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.interfaces.IfResyncDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.interfaces.IfSetAngleDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.interfaces.IfSetAnimDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.interfaces.IfSetColourDecoder
@@ -184,7 +184,7 @@ public object ServerMessageDecoderRepository {
 
                 bind(IfClearInvDecoder())
                 bind(IfCloseSubDecoder())
-                bind(IfInitialStateDecoder())
+                bind(IfResyncDecoder())
                 bind(IfMoveSubDecoder())
                 bind(IfOpenSubDecoder())
                 bind(IfOpenTopDecoder())

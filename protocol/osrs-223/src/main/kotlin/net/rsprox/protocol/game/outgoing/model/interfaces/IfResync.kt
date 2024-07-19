@@ -5,16 +5,15 @@ import net.rsprot.protocol.util.CombinedId
 import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
- * If initial state is a way to compress sending initial interfaces
- * to the client in a single packet, reducing the overall packet count
- * sent, as well as bandwidth used by a tiny amount (by not sending packet
- * headers and size with each one).
+ * If resync is a way to re-synchronize all opened interfaces with the client,
+ * in a compressed manner. It appears to only ever be sent on login and reconnection,
+ * after the interfaces have already been opened individually.
  * @property topLevelInterface the top-level interface being opened
  * @property subInterfaces the sub interfaces being opened in this batch
  * @property events the interface events being set in this batch
  */
 @Suppress("MemberVisibilityCanBePrivate")
-public class IfInitialState private constructor(
+public class IfResync private constructor(
     private val _topLevelInterface: UShort,
     public val subInterfaces: List<SubInterfaceMessage>,
     public val events: List<InterfaceEventsMessage>,
@@ -36,7 +35,7 @@ public class IfInitialState private constructor(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as IfInitialState
+        other as IfResync
 
         if (_topLevelInterface != other._topLevelInterface) return false
         if (subInterfaces != other.subInterfaces) return false
@@ -53,7 +52,7 @@ public class IfInitialState private constructor(
     }
 
     override fun toString(): String {
-        return "IfInitialState(" +
+        return "IfResync(" +
             "topLevelInterface=$topLevelInterface, " +
             "subInterfaces=$subInterfaces, " +
             "events=$events" +

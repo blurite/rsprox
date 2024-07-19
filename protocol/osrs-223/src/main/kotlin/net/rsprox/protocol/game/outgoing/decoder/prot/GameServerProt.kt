@@ -8,7 +8,7 @@ public enum class GameServerProt(
     override val size: Int,
 ) : ClientProt {
     // Interface related packets
-    IF_INITIALSTATE(GameServerProtId.IF_INITIALSTATE, Prot.VAR_SHORT),
+    IF_RESYNC(GameServerProtId.IF_RESYNC, Prot.VAR_SHORT),
     IF_OPENTOP(GameServerProtId.IF_OPENTOP, 2),
     IF_OPENSUB(GameServerProtId.IF_OPENSUB, 7),
     IF_CLOSESUB(GameServerProtId.IF_CLOSESUB, 4),
