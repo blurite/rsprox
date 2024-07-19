@@ -170,7 +170,7 @@ public enum class GameServerProt(
     HINT_ARROW(GameServerProtId.HINT_ARROW, 6),
     RESET_ANIMS(GameServerProtId.RESET_ANIMS, 0),
     UPDATE_REBOOT_TIMER(GameServerProtId.UPDATE_REBOOT_TIMER, 2),
-    HEATMAP_TOGGLE(GameServerProtId.HEATMAP_TOGGLE, 1),
+    SET_HEATMAP_ENABLED(GameServerProtId.SET_HEATMAP_ENABLED, 1),
     MINIMAP_TOGGLE(GameServerProtId.MINIMAP_TOGGLE, 1),
     SERVER_TICK_END(GameServerProtId.SERVER_TICK_END, 0),
     HIDENPCOPS(GameServerProtId.HIDENPCOPS, 1),

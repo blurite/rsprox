@@ -5,18 +5,18 @@ import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.metadata.Consistent
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
-import net.rsprox.protocol.game.outgoing.model.misc.client.HeatmapToggle
+import net.rsprox.protocol.game.outgoing.model.misc.client.SetHeatmapEnabled
 import net.rsprox.protocol.session.Session
 
 @Consistent
-public class HeatmapToggleDecoder : ProxyMessageDecoder<HeatmapToggle> {
-    override val prot: ClientProt = GameServerProt.HEATMAP_TOGGLE
+public class SetHeatmapEnabledDecoder : ProxyMessageDecoder<SetHeatmapEnabled> {
+    override val prot: ClientProt = GameServerProt.SET_HEATMAP_ENABLED
 
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
-    ): HeatmapToggle {
+    ): SetHeatmapEnabled {
         val enabled = buffer.gboolean()
-        return HeatmapToggle(enabled)
+        return SetHeatmapEnabled(enabled)
     }
 }

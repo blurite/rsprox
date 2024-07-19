@@ -3,7 +3,7 @@ package net.rsprox.protocol.game.outgoing.model.misc.client
 import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
- * Heatmap toggle packet is used to either enable or
+ * Set heatmap enabled packet is used to either enable or
  * disabled the heatmap, which is rendered over the
  * world map in OldSchool.
  * This packet utilizes high resolution coordinate info
@@ -12,14 +12,14 @@ import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
  * high resolution information must be sent for everyone
  * in the game.
  */
-public class HeatmapToggle(
+public class SetHeatmapEnabled(
     public val enabled: Boolean,
 ) : IncomingServerGameMessage {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as HeatmapToggle
+        other as SetHeatmapEnabled
 
         return enabled == other.enabled
     }
@@ -29,6 +29,6 @@ public class HeatmapToggle(
     }
 
     override fun toString(): String {
-        return "HeatmapToggle(enabled=$enabled)"
+        return "SetHeatmapEnabled(enabled=$enabled)"
     }
 }

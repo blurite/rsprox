@@ -35,7 +35,7 @@ internal object GameServerProtId {
     const val RUNCLIENTSCRIPT = 30
     const val CLANSETTINGS_FULL = 31
     const val NPC_INFO_LARGE = 32
-    const val HEATMAP_TOGGLE = 33
+    const val SET_HEATMAP_ENABLED = 33
     const val URL_OPEN = 34
     const val IF_MOVESUB = 35
     const val CAM_LOOKAT_EASED_COORD = 36

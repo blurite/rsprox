@@ -69,7 +69,6 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.logout.LogoutWithReasonDe
 import net.rsprox.protocol.game.outgoing.decoder.codec.map.RebuildRegionDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.map.RebuildWorldEntityDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.map.StaticRebuildDecoder
-import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.HeatmapToggleDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.HideLocOpsDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.HideNpcOpsDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.HidePlayerOpsDecoder
@@ -80,6 +79,7 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.ReflectionChe
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.ResetAnimsDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.SendPingDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.ServerTickEndDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.SetHeatmapEnabledDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.SiteSettingsDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.UpdateRebootTimerDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.UpdateUid192Decoder
@@ -219,7 +219,7 @@ public object ServerMessageDecoderRepository {
                 bind(RebuildRegionDecoder())
                 bind(RebuildWorldEntityDecoder())
 
-                bind(HeatmapToggleDecoder())
+                bind(SetHeatmapEnabledDecoder())
                 bind(HideLocOpsDecoder())
                 bind(HideNpcOpsDecoder())
                 bind(HidePlayerOpsDecoder())
