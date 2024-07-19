@@ -5,7 +5,7 @@ import net.rsprox.protocol.game.outgoing.model.camera.util.CameraEaseFunction
 import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildArea
 
 /**
- * Camera move to eased circular packet is used to move camera
+ * Camera move to arc packet is used to move camera
  * to a new coordinate with finer control behind it.
  * This packet differs from [CamMoveToCycles] in that it will first
  * move through a center coordinate before going towards the destination,
@@ -32,7 +32,7 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildAre
  * control over the way it moves from the start coordinate to the end.
  */
 @Suppress("DuplicatedCode")
-public class CamMoveToEasedCircular private constructor(
+public class CamMoveToArc private constructor(
     private val centerCoordInBuildArea: CoordInBuildArea,
     private val destinationCoordInBuildArea: CoordInBuildArea,
     private val _height: UShort,
@@ -77,7 +77,7 @@ public class CamMoveToEasedCircular private constructor(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as CamMoveToEasedCircular
+        other as CamMoveToArc
 
         if (centerCoordInBuildArea != other.centerCoordInBuildArea) return false
         if (destinationCoordInBuildArea != other.destinationCoordInBuildArea) return false
@@ -100,7 +100,7 @@ public class CamMoveToEasedCircular private constructor(
     }
 
     override fun toString(): String {
-        return "CameraMoveToEasedCircular(" +
+        return "CamMoveToArc(" +
             "centerXInBuildArea=$centerXInBuildArea, " +
             "centerZInBuildArea=$centerZInBuildArea, " +
             "destinationXInBuildArea=$destinationXInBuildArea, " +

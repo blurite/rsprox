@@ -124,7 +124,7 @@ internal object GameServerProtId {
     const val CAM_MOVETO_CYCLES = 120
     const val REBUILD_REGION = 121
     const val IF_SETHIDE = 122
-    const val CAM_MOVETO_EASED_CIRCULAR = 123
+    const val CAM_MOVETO_ARC = 123
     const val VARCLAN_ENABLE = 124
     const val CAM_TARGET = 125
     const val HINT_ARROW = 126

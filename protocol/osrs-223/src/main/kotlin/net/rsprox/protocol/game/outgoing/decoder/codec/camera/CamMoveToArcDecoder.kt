@@ -5,17 +5,17 @@ import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.metadata.Consistent
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
-import net.rsprox.protocol.game.outgoing.model.camera.CamMoveToEasedCircular
+import net.rsprox.protocol.game.outgoing.model.camera.CamMoveToArc
 import net.rsprox.protocol.session.Session
 
 @Consistent
-public class CamMoveToEasedCircularDecoder : ProxyMessageDecoder<CamMoveToEasedCircular> {
-    override val prot: ClientProt = GameServerProt.CAM_MOVETO_EASED_CIRCULAR
+public class CamMoveToArcDecoder : ProxyMessageDecoder<CamMoveToArc> {
+    override val prot: ClientProt = GameServerProt.CAM_MOVETO_ARC
 
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
-    ): CamMoveToEasedCircular {
+    ): CamMoveToArc {
         val destinationXInBuildArea = buffer.g1()
         val destinationZInBuildArea = buffer.g1()
         val height = buffer.g2()
@@ -24,7 +24,7 @@ public class CamMoveToEasedCircularDecoder : ProxyMessageDecoder<CamMoveToEasedC
         val duration = buffer.g2()
         val maintainFixedAltitude = !buffer.gboolean()
         val function = buffer.g1()
-        return CamMoveToEasedCircular(
+        return CamMoveToArc(
             centerXInBuildArea,
             centerZInBuildArea,
             destinationXInBuildArea,
