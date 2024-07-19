@@ -10,14 +10,6 @@ import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
  * is used. Other types will use the traditional priority system.
  * @property type the camera target type to focus on.
  */
-@Deprecated(
-    "Deprecated in revision 223.",
-    replaceWith =
-        ReplaceWith(
-            "CamTarget",
-            imports = arrayOf("net.rsprot.protocol.game.outgoing.camera.CamTarget"),
-        ),
-)
 public class CamTargetOld(
     public val type: CamTargetType,
 ) : IncomingServerGameMessage {
@@ -25,7 +17,6 @@ public class CamTargetOld(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        @Suppress("DEPRECATION")
         other as CamTargetOld
 
         return type == other.type
