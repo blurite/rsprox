@@ -33,7 +33,7 @@ public class ModelCustomisation(
     }
 
     override fun toString(): String {
-        return "BodyCustomisation(" +
+        return "ModelCustomisation(" +
             "models=$models, " +
             "recolours=$recolours, " +
             "retextures=$retextures, " +
