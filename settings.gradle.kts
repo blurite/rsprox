@@ -18,11 +18,13 @@ include(
     "protocol",
     "patch",
     "gui",
+    "transcriber",
 )
 
 includeSubprojects(":protocol")
 includeSubprojects(":patch")
 includeSubprojects(":gui")
+includeSubprojects(":transcriber")
 
 fun includeSubprojects(projectName: String) {
     val projectPath = project(projectName).projectDir.toPath()
