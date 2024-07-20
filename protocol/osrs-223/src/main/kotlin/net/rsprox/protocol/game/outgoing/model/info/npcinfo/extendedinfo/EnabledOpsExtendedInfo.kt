@@ -3,7 +3,7 @@ package net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.util.OpFlags
 
-public class OpFilterExtendedInfo(
+public class EnabledOpsExtendedInfo(
     public val value: Int,
 ) : ExtendedInfo {
     public constructor(
@@ -36,7 +36,7 @@ public class OpFilterExtendedInfo(
     }
 
     override fun toString(): String {
-        return "OpFlags(" +
+        return "EnabledOpsExtendedInfo(" +
             "op1=${isEnabled(1)}, " +
             "op2=${isEnabled(2)}, " +
             "op3=${isEnabled(3)}, " +

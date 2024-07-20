@@ -135,7 +135,7 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.MapProjAnimD
 import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.ObjAddDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.ObjCountDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.ObjDelDecoder
-import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.ObjOpFilterDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.ObjEnabledOpsDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.SoundAreaDecoder
 
 public object ServerMessageDecoderRepository {
@@ -293,7 +293,7 @@ public object ServerMessageDecoderRepository {
                 bind(ObjAddDecoder())
                 bind(ObjCountDecoder())
                 bind(ObjDelDecoder())
-                bind(ObjOpFilterDecoder())
+                bind(ObjEnabledOpsDecoder())
                 bind(SoundAreaDecoder())
             }
         return builder.build()

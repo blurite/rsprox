@@ -8,7 +8,7 @@ public object OldSchoolZoneProt {
     public const val OBJ_ADD: Int = 4
     public const val OBJ_DEL: Int = 5
     public const val OBJ_COUNT: Int = 6
-    public const val OBJ_OPFILTER: Int = 7
+    public const val OBJ_ENABLED_OPS: Int = 7
     public const val MAP_ANIM: Int = 8
     public const val MAP_PROJANIM: Int = 9
     public const val SOUND_AREA: Int = 10

@@ -14,7 +14,7 @@ import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.HeadCus
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.HeadIconCustomisationExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.NameChangeExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.OldSpotanimExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.OpFilterExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.EnabledOpsExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.TransformationExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.customisation.ModelCustomisation
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.customisation.ResetCustomisation
@@ -152,7 +152,7 @@ public class NpcInfoClient {
                 decodeTransformation(buffer, blocks, npc)
             }
             if (flag and OPS != 0) {
-                decodeOps(buffer, blocks)
+                decodeEnabledOps(buffer, blocks)
             }
             if (flag and FACE_PATHINGENTITY != 0) {
                 decodeFacePathingEntity(buffer, blocks)
@@ -374,12 +374,12 @@ public class NpcInfoClient {
         npc.id = id
     }
 
-    private fun decodeOps(
+    private fun decodeEnabledOps(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
         val flag = buffer.g1Alt3()
-        blocks += OpFilterExtendedInfo(flag)
+        blocks += EnabledOpsExtendedInfo(flag)
     }
 
     private fun decodeFacePathingEntity(

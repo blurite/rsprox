@@ -6,7 +6,7 @@ import net.rsprox.protocol.game.outgoing.model.util.OpFlags
 import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInZone
 
 /**
- * Obj opfilter is used to change the right-click options on an obj
+ * Obj enabled ops is used to change the right-click options on an obj
  * on the ground. This packet is currently unused in OldSchool RuneScape.
  * It works by finding the first obj in the stack with the provided [id],
  * and modifying the right-click ops on that. It does not verify quantity.
@@ -17,7 +17,7 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInZone
  * @property zInZone the z coordinate of the obj within the zone it is in,
  * a value in range of 0 to 7 (inclusive) is expected. Any bits outside that are ignored.
  */
-public class ObjOpFilter private constructor(
+public class ObjEnabledOps private constructor(
     private val _id: UShort,
     public val opFlags: OpFlags,
     private val coordInZone: CoordInZone,
@@ -52,13 +52,13 @@ public class ObjOpFilter private constructor(
 
     public val coordInZonePacked: Int
         get() = coordInZone.packed.toInt()
-    override val protId: Int = OldSchoolZoneProt.OBJ_OPFILTER
+    override val protId: Int = OldSchoolZoneProt.OBJ_ENABLED_OPS
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as ObjOpFilter
+        other as ObjEnabledOps
 
         if (_id != other._id) return false
         if (opFlags != other.opFlags) return false
@@ -75,7 +75,7 @@ public class ObjOpFilter private constructor(
     }
 
     override fun toString(): String {
-        return "ObjOpFilter(" +
+        return "ObjEnabledOps(" +
             "id=$id, " +
             "opFlags=$opFlags, " +
             "xInZone=$xInZone, " +

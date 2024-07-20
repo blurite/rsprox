@@ -131,7 +131,7 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.MapProjAnim
 import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjAdd
 import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjCount
 import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjDel
-import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjOpFilter
+import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjEnabledOps
 import net.rsprox.protocol.game.outgoing.model.zone.payload.SoundArea
 
 public interface ServerPacketTranscriber {
@@ -397,7 +397,7 @@ public interface ServerPacketTranscriber {
 
     public fun objDel(message: ObjDel)
 
-    public fun objOpFilter(message: ObjOpFilter)
+    public fun objEnabledOps(message: ObjEnabledOps)
 
     public fun soundArea(message: SoundArea)
 }

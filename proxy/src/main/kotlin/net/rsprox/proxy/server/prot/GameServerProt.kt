@@ -56,7 +56,7 @@ public enum class GameServerProt(
     OBJ_ADD(GameServerProtId.OBJ_ADD, 14),
     OBJ_DEL(GameServerProtId.OBJ_DEL, 7),
     OBJ_COUNT(GameServerProtId.OBJ_COUNT, 11),
-    OBJ_OPFILTER(GameServerProtId.OBJ_OPFILTER, 4),
+    OBJ_ENABLED_OPS(GameServerProtId.OBJ_ENABLED_OPS, 4),
     MAP_ANIM(GameServerProtId.MAP_ANIM, 6),
     MAP_PROJANIM(GameServerProtId.MAP_PROJANIM, 20),
     SOUND_AREA(GameServerProtId.SOUND_AREA, 7),

@@ -69,7 +69,7 @@ internal object GameServerProtId {
     const val MIDI_SWAP = 64
     const val SITE_SETTINGS = 65
     const val MAP_PROJANIM = 66
-    const val OBJ_OPFILTER = 67
+    const val OBJ_ENABLED_OPS = 67
     const val CAM_MOVETO = 68
     const val LOGOUT_WITHREASON = 69
     const val VARCLAN = 70
