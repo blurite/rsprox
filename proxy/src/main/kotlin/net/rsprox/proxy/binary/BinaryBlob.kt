@@ -20,6 +20,7 @@ public data class BinaryBlob(
     public val writeIntervalSeconds: Int,
 ) {
     private var lastWrite = TimeSource.Monotonic.markNow()
+    private var lastWriteSize = 0
     private val closed = AtomicBoolean(false)
 
     public fun append(
@@ -99,6 +100,10 @@ public data class BinaryBlob(
         }
         try {
             Files.move(tempPath, path, StandardCopyOption.ATOMIC_MOVE)
+            logger.info {
+                "Appended ${array.size - lastWriteSize} bytes to $path"
+            }
+            lastWriteSize = array.size
         } catch (t: Throwable) {
             logger.error(t) {
                 "Unable to copy temporary binary file to real file: $tempPath"
