@@ -1,6 +1,5 @@
 package net.rsprox.protocol.game.outgoing.model.friendchat
 
-import net.rsprot.compression.Base37
 import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
@@ -35,7 +34,7 @@ import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
  */
 public class MessageFriendChannel private constructor(
     public val sender: String,
-    public val channelNameBase37: Long,
+    public val channelName: String,
     private val _worldId: UShort,
     public val worldMessageCounter: Int,
     private val _chatCrownType: UByte,
@@ -50,15 +49,13 @@ public class MessageFriendChannel private constructor(
         message: String,
     ) : this(
         sender,
-        Base37.encode(channelName),
+        channelName,
         worldId.toUShort(),
         worldMessageCounter,
         chatCrownType.toUByte(),
         message,
     )
 
-    public val channelName: String
-        get() = Base37.decodeWithCase(channelNameBase37)
     public val worldId: Int
         get() = _worldId.toInt()
     public val chatCrownType: Int
@@ -71,7 +68,7 @@ public class MessageFriendChannel private constructor(
         other as MessageFriendChannel
 
         if (sender != other.sender) return false
-        if (channelNameBase37 != other.channelNameBase37) return false
+        if (channelName != other.channelName) return false
         if (_worldId != other._worldId) return false
         if (worldMessageCounter != other.worldMessageCounter) return false
         if (_chatCrownType != other._chatCrownType) return false
@@ -82,7 +79,7 @@ public class MessageFriendChannel private constructor(
 
     override fun hashCode(): Int {
         var result = sender.hashCode()
-        result = 31 * result + channelNameBase37.hashCode()
+        result = 31 * result + channelName.hashCode()
         result = 31 * result + _worldId.hashCode()
         result = 31 * result + worldMessageCounter
         result = 31 * result + _chatCrownType.hashCode()

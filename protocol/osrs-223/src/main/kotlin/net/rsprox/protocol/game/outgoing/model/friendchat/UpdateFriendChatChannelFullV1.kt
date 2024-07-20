@@ -1,6 +1,5 @@
 package net.rsprox.protocol.game.outgoing.model.friendchat
 
-import net.rsprot.compression.Base37
 import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
@@ -29,7 +28,7 @@ public class UpdateFriendChatChannelFullV1(
      */
     public class JoinUpdate(
         override val channelOwner: String,
-        public val channelNameBase37: Long,
+        public override val channelName: String,
         private val _kickRank: Byte,
         override val entries: List<FriendChatEntry>,
     ) : UpdateFriendChatChannelFull(),
@@ -41,7 +40,7 @@ public class UpdateFriendChatChannelFullV1(
             entries: List<FriendChatEntry>,
         ) : this(
             channelOwner,
-            Base37.encode(channelName),
+            channelName,
             kickRank.toByte(),
             entries,
         ) {
@@ -50,8 +49,6 @@ public class UpdateFriendChatChannelFullV1(
             }
         }
 
-        override val channelName: String
-            get() = Base37.decode(channelNameBase37)
         override val kickRank: Int
             get() = _kickRank.toInt()
 
@@ -62,7 +59,7 @@ public class UpdateFriendChatChannelFullV1(
             other as JoinUpdate
 
             if (channelOwner != other.channelOwner) return false
-            if (channelNameBase37 != other.channelNameBase37) return false
+            if (channelName != other.channelName) return false
             if (_kickRank != other._kickRank) return false
             if (entries != other.entries) return false
 
@@ -71,7 +68,7 @@ public class UpdateFriendChatChannelFullV1(
 
         override fun hashCode(): Int {
             var result = channelOwner.hashCode()
-            result = 31 * result + channelNameBase37.hashCode()
+            result = 31 * result + channelName.hashCode()
             result = 31 * result + _kickRank.hashCode()
             result = 31 * result + entries.hashCode()
             return result
