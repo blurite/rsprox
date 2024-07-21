@@ -41,6 +41,7 @@ import net.rsprox.protocol.game.incoming.model.misc.user.CloseModal
 import net.rsprox.protocol.game.incoming.model.misc.user.HiscoreRequest
 import net.rsprox.protocol.game.incoming.model.misc.user.IfCrmViewClick
 import net.rsprox.protocol.game.incoming.model.misc.user.MoveGameClick
+import net.rsprox.protocol.game.incoming.model.misc.user.MoveMinimapClick
 import net.rsprox.protocol.game.incoming.model.misc.user.OculusLeave
 import net.rsprox.protocol.game.incoming.model.misc.user.SendSnapshot
 import net.rsprox.protocol.game.incoming.model.misc.user.SetChatFilterSettings
@@ -149,6 +150,8 @@ public interface ClientPacketTranscriber {
     public fun ifCrmViewClick(message: IfCrmViewClick)
 
     public fun moveGameClick(message: MoveGameClick)
+
+    public fun moveMinimapClick(message: MoveMinimapClick)
 
     public fun oculusLeave(message: OculusLeave)
 

@@ -16,5 +16,7 @@ dependencies {
     implementation(projects.patch)
     implementation(projects.patch.patchNative)
     implementation(projects.protocol)
+    implementation(projects.transcriber)
     implementation(rootProject.libs.clikt)
+    implementation(rootProject.libs.classgraph)
 }

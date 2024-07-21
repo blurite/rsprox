@@ -8,6 +8,7 @@ internal val CONFIGURATION_PATH: Path = Path(System.getProperty("user.home"), ".
 internal val BINARY_PATH: Path = CONFIGURATION_PATH.resolve("binary")
 internal val CLIENTS_DIRECTORY: Path = CONFIGURATION_PATH.resolve("clients")
 internal val PLUGINS_DIRECTORY: Path = CONFIGURATION_PATH.resolve("plugins")
+internal val TRANSCRIBERS_DIRECTORY: Path = CONFIGURATION_PATH.resolve("transcribers")
 internal val TEMP_CLIENTS_DIRECTORY: Path = CLIENTS_DIRECTORY.resolve("temp")
 private val connections: MutableList<ConnectionInfo> = mutableListOf()
 

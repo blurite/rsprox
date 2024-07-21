@@ -88,7 +88,7 @@ public class ProxyService(
         launchHttpServer(this.bootstrapFactory, worldListProvider, updatedJavConfig)
 
         // Only load osrs plugins for now, we don't currently intend on supporting other types
-        pluginLoader.loadPlugins("osrs")
+        pluginLoader.loadDecoderPlugins("osrs")
 
         deleteTemporaryClients()
     }

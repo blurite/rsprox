@@ -19,7 +19,7 @@ public class BinaryToStringCommand : CliktCommand(name = "tostring") {
     override fun run() {
         val pluginLoader = PluginLoader()
         HuffmanProvider.load()
-        pluginLoader.loadPlugins("osrs")
+        pluginLoader.loadDecoderPlugins("osrs")
         val fileName = this.name
         if (fileName != null) {
             val binaryName = if (fileName.endsWith(".bin")) fileName else "$fileName.bin"
@@ -76,7 +76,7 @@ public class BinaryToStringCommand : CliktCommand(name = "tostring") {
         output.newLine()
         output.write("-------------------")
         output.newLine()
-        for ((direction, packet) in session.sequence()) {
+        for ((direction, _, packet) in session.sequence()) {
             val string = StringBuilder()
             string.append('[').append(tick).append(']')
             string.append(if (direction == StreamDirection.CLIENT_TO_SERVER) " -> " else " <- ")

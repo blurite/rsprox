@@ -38,7 +38,11 @@ public class DecodingSession(
                             )
                         }
                     }
-                DirectionalPacket(binaryPacket.direction, packet)
+                DirectionalPacket(
+                    binaryPacket.direction,
+                    binaryPacket.prot,
+                    packet,
+                )
             } catch (t: Throwable) {
                 logger.error(t) {
                     "Error decoding packet: ${binaryPacket.prot}"

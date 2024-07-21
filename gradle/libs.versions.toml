@@ -10,6 +10,7 @@ jackson = "2.17.2"
 flatlaf = "3.4.1"
 miglayout = "11.4"
 clikt = "4.2.2"
+classgraph = "4.8.174"
 
 [libraries]
 netty-bom = { module = "io.netty:netty-bom", version.ref = "netty" }
@@ -35,6 +36,7 @@ jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-
 flatlaf = { module = "com.formdev:flatlaf", version.ref = "flatlaf" }
 mig-layout = { module = "com.miglayout:miglayout-swing", version.ref = "miglayout" }
 clikt = { module = "com.github.ajalt.clikt:clikt-jvm", version.ref = "clikt" }
+classgraph = { module = "io.github.classgraph:classgraph", version.ref = "classgraph" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
