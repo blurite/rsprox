@@ -54,7 +54,7 @@ public data class BinaryHeader(
         val formattedDate = FILE_NAME_DATE_FORMATTER.format(date)
         val hexHash = accountHash.toHexString(HexFormat.Default)
         val shortHash = hexHash.substring(0, min(7, hexHash.length))
-        return "$formattedDate - $shortHash.$BINARY_EXTENSION"
+        return "$formattedDate-$shortHash.$BINARY_EXTENSION"
     }
 
     override fun equals(other: Any?): Boolean {
@@ -228,7 +228,7 @@ public data class BinaryHeader(
     public companion object {
         private const val BINARY_EXTENSION: String = "bin"
         public const val HEADER_VERSION: Int = 1
-        private val FILE_NAME_DATE_FORMATTER = SimpleDateFormat("yyyy-MM-dd HH-mm-ss")
+        private val FILE_NAME_DATE_FORMATTER = SimpleDateFormat("yyyyMMdd'T'HHmmss")
 
         public fun decode(buffer: JagByteBuf): BinaryHeader {
             val headerVersion = buffer.g4()
