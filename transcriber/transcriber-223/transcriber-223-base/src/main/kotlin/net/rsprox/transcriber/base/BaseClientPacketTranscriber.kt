@@ -242,11 +242,10 @@ public open class BaseClientPacketTranscriber(
             property("averageTime", message.averageTime.format() + "ms")
             property("remainingTime", message.remainingTime.format() + "ms")
         }
-        container.publish("Movements".indent(2))
         for (index in message.movements.asLongArray().indices) {
             val movement = message.movements.getMousePosChange(index)
             container.publish(
-                format(3, "Movement") {
+                format(2, "Movement") {
                     property("deltaTime", movement.timeDelta.format() + "ms")
                     property("deltaX", movement.xDelta)
                     property("deltaY", movement.yDelta)
@@ -275,11 +274,10 @@ public open class BaseClientPacketTranscriber(
             property("averageTime", message.averageTime.format() + "ms")
             property("remainingTime", message.remainingTime.format() + "ms")
         }
-        container.publish("Movements".indent(2))
         for (index in message.movements.asLongArray().indices) {
             val movement = message.movements.getMousePosChange(index)
             container.publish(
-                format(3, "Movement") {
+                format(2, "Movement") {
                     property("deltaTime", movement.timeDelta.format() + "ms")
                     property("deltaX", movement.xDelta)
                     property("deltaY", movement.yDelta)
