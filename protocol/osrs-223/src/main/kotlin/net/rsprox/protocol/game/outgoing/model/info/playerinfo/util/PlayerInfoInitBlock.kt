@@ -3,6 +3,7 @@ package net.rsprox.protocol.game.outgoing.model.info.playerinfo.util
 import net.rsprox.protocol.common.CoordGrid
 
 public class PlayerInfoInitBlock(
+    public val localPlayerIndex: Int,
     public val localPlayerCoord: CoordGrid,
     private val positions: IntArray,
 ) {
@@ -36,6 +37,7 @@ public class PlayerInfoInitBlock(
 
     override fun toString(): String {
         return "PlayerInfoInitBlock(" +
+            "localPlayerIndex=$localPlayerIndex, " +
             "localPlayerCoord=$localPlayerCoord, " +
             "lowResolutionPositions=${lowResolutionPositions.contentToString()}" +
             ")"

@@ -1,5 +1,9 @@
 package net.rsprox.transcriber
 
+import net.rsprot.protocol.Prot
+
 public interface Transcriber :
     ClientPacketTranscriber,
-    ServerPacketTranscriber
+    ServerPacketTranscriber {
+    public fun setCurrentProt(prot: Prot)
+}

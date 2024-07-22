@@ -42,7 +42,7 @@ import net.rsprox.protocol.game.incoming.decoder.codec.misc.client.ReflectionChe
 // import net.rsprox.protocol.game.incoming.decoder.codec.misc.client.ReflectionCheckReplyDecoder
 import net.rsprox.protocol.game.incoming.decoder.codec.misc.client.SendPingReplyDecoder
 import net.rsprox.protocol.game.incoming.decoder.codec.misc.client.SoundJingleEndDecoder
-import net.rsprox.protocol.game.incoming.decoder.codec.misc.client.TimingsDecoder
+import net.rsprox.protocol.game.incoming.decoder.codec.misc.client.ConnectionTelemetryDecoder
 import net.rsprox.protocol.game.incoming.decoder.codec.misc.client.WindowStatusDecoder
 import net.rsprox.protocol.game.incoming.decoder.codec.misc.user.BugReportDecoder
 import net.rsprox.protocol.game.incoming.decoder.codec.misc.user.ClickWorldMapDecoder
@@ -193,7 +193,7 @@ public object ClientMessageDecoderRepository {
                 bind(IfCrmViewClickDecoder())
                 bind(UpdatePlayerModelDecoder())
 
-                bind(TimingsDecoder())
+                bind(ConnectionTelemetryDecoder())
                 bind(SendPingReplyDecoder())
                 bind(DetectModifiedClientDecoder())
                 bind(ReflectionCheckReplyDecoder())

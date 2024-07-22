@@ -70,6 +70,10 @@ public class PlayerInfoClient(
 
     public fun decode(buffer: ByteBuf): PlayerInfo {
         extendedInfoCount = 0
+        updateTypes.fill(UpdateType.LOW_RESOLUTION_IDLE)
+        for (player in cachedPlayers) {
+            player?.extendedInfoBlocks = emptyList()
+        }
         val updates = mutableMapOf<Int, PlayerUpdateType>()
         decodeBitCodes(buffer)
         for ((index, updateType) in updateTypes.withIndex()) {

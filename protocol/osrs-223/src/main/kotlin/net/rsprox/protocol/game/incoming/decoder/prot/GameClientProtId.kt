@@ -43,7 +43,7 @@ internal object GameClientProtId {
     const val FRIENDCHAT_SETRANK = 39
     const val OPPLAYERU = 40
     const val IF_BUTTON4 = 41
-    const val TIMINGS = 42
+    const val CONNECTION_TELEMETRY = 42
     const val IF_BUTTOND = 43
     const val NO_TIMEOUT = 44
     const val OPPLAYER2 = 45

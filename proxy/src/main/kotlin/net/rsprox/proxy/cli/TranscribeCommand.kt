@@ -11,6 +11,7 @@ import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.transcriber.MessageConsumer
 import net.rsprox.transcriber.MessageConsumerContainer
 import java.nio.file.Path
+import java.util.Locale
 import kotlin.io.path.exists
 
 @Suppress("DuplicatedCode")
@@ -18,6 +19,7 @@ public class TranscribeCommand : CliktCommand(name = "tostring") {
     private val name by option("-name")
 
     override fun run() {
+        Locale.setDefault(Locale.US)
         val pluginLoader = PluginLoader()
         HuffmanProvider.load()
         pluginLoader.loadTranscriberPlugins("osrs")

@@ -10,7 +10,7 @@ public class PropertyBuilder {
         this.properties += Property(name, value)
     }
 
-    public inline fun <T : Any> filteredProperty(
+    public inline fun <T> filteredProperty(
         name: String,
         value: T,
         filter: (T) -> Boolean,
@@ -18,7 +18,11 @@ public class PropertyBuilder {
         if (!filter(value)) {
             return
         }
-        property(name, value)
+        if (value == null) {
+            property(name, "null")
+        } else {
+            property(name, value)
+        }
     }
 
     internal fun build(): List<Property> {

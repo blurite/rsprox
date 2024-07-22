@@ -26,9 +26,11 @@ public class TranscriberPlugin(
         }
         // Special exception as it has its own dedicated class
         if (message is RebuildLogin) {
+            transcriber.setCurrentProt(GameServerProt.REBUILD_NORMAL)
             pass(message, Transcriber::rebuildLogin)
             return
         }
+        transcriber.setCurrentProt(prot)
         when (prot) {
             GameServerProt.IF_RESYNC -> pass(message, Transcriber::ifResync)
             GameServerProt.IF_OPENTOP -> pass(message, Transcriber::ifOpenTop)
@@ -180,6 +182,7 @@ public class TranscriberPlugin(
         check(prot is GameClientProt) {
             "Invalid prot: $prot"
         }
+        transcriber.setCurrentProt(prot)
         when (prot) {
             GameClientProt.IF_BUTTON -> pass(message, Transcriber::if1Button)
             GameClientProt.IF_BUTTON1 -> pass(message, Transcriber::if3Button)
@@ -273,7 +276,7 @@ public class TranscriberPlugin(
             GameClientProt.HISCORE_REQUEST -> pass(message, Transcriber::hiscoreRequest)
             GameClientProt.IF_CRMVIEW_CLICK -> pass(message, Transcriber::ifCrmViewClick)
             GameClientProt.UPDATE_PLAYER_MODEL -> pass(message, Transcriber::updatePlayerModel)
-            GameClientProt.TIMINGS -> pass(message, Transcriber::timings)
+            GameClientProt.CONNECTION_TELEMETRY -> pass(message, Transcriber::connectionTelemetry)
             GameClientProt.SEND_PING_REPLY -> pass(message, Transcriber::sendPingReply)
             GameClientProt.DETECT_MODIFIED_CLIENT -> pass(message, Transcriber::detectModifiedClient)
             GameClientProt.REFLECTION_CHECK_REPLY -> pass(message, Transcriber::reflectionCheckReply)

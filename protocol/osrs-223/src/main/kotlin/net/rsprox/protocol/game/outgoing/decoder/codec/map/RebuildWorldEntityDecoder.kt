@@ -36,6 +36,7 @@ public class RebuildWorldEntityDecoder : ProxyMessageDecoder<RebuildWorldEntity>
                         lowResolutionPositions[i] = bitBuf.gBits(18)
                     }
                     PlayerInfoInitBlock(
+                        session.localPlayerIndex,
                         CoordGrid(localPlayerAbsolutePosition),
                         lowResolutionPositions,
                     )

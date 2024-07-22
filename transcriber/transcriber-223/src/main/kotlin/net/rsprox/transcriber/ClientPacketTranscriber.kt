@@ -24,6 +24,7 @@ import net.rsprox.protocol.game.incoming.model.locs.OpLoc
 import net.rsprox.protocol.game.incoming.model.locs.OpLoc6
 import net.rsprox.protocol.game.incoming.model.locs.OpLocT
 import net.rsprox.protocol.game.incoming.model.messaging.MessagePublic
+import net.rsprox.protocol.game.incoming.model.misc.client.ConnectionTelemetry
 import net.rsprox.protocol.game.incoming.model.misc.client.DetectModifiedClient
 import net.rsprox.protocol.game.incoming.model.misc.client.Idle
 import net.rsprox.protocol.game.incoming.model.misc.client.MapBuildComplete
@@ -32,7 +33,6 @@ import net.rsprox.protocol.game.incoming.model.misc.client.NoTimeout
 import net.rsprox.protocol.game.incoming.model.misc.client.ReflectionCheckReply
 import net.rsprox.protocol.game.incoming.model.misc.client.SendPingReply
 import net.rsprox.protocol.game.incoming.model.misc.client.SoundJingleEnd
-import net.rsprox.protocol.game.incoming.model.misc.client.Timings
 import net.rsprox.protocol.game.incoming.model.misc.client.WindowStatus
 import net.rsprox.protocol.game.incoming.model.misc.user.BugReport
 import net.rsprox.protocol.game.incoming.model.misc.user.ClickWorldMap
@@ -133,7 +133,7 @@ public interface ClientPacketTranscriber {
 
     public fun soundJingleEnd(message: SoundJingleEnd)
 
-    public fun timings(message: Timings)
+    public fun connectionTelemetry(message: ConnectionTelemetry)
 
     public fun windowStatus(message: WindowStatus)
 

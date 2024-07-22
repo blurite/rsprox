@@ -1,5 +1,6 @@
 package net.rsprox.transcriber.base
 
+import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.outgoing.model.camera.CamLookAt
 import net.rsprox.protocol.game.outgoing.model.camera.CamLookAtEasedCoord
 import net.rsprox.protocol.game.outgoing.model.camera.CamMode
@@ -30,6 +31,21 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChanne
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcInfo
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerUpdateType
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.AppearanceExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.ChatExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.FaceAngleExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.MoveSpeedExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.NameExtrasExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.TemporaryMoveSpeedExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FacePathingEntityExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HitExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SayExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SequenceExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfo
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
@@ -134,7 +150,16 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjDel
 import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjEnabledOps
 import net.rsprox.protocol.game.outgoing.model.zone.payload.SoundArea
 import net.rsprox.transcriber.MessageConsumerContainer
+import net.rsprox.transcriber.ScriptVarType
+import net.rsprox.transcriber.ScriptVarType.SEQ
+import net.rsprox.transcriber.ScriptVarType.TEXTURE
 import net.rsprox.transcriber.ServerPacketTranscriber
+import net.rsprox.transcriber.indent
+import net.rsprox.transcriber.properties.Property
+import net.rsprox.transcriber.properties.PropertyBuilder
+import net.rsprox.transcriber.properties.properties
+import net.rsprox.transcriber.quote
+import net.rsprox.transcriber.state.Player
 import net.rsprox.transcriber.state.StateTracker
 
 public open class BaseServerPacketTranscriber(
@@ -142,6 +167,63 @@ public open class BaseServerPacketTranscriber(
     private val container: MessageConsumerContainer,
     private val stateTracker: StateTracker,
 ) : ServerPacketTranscriber {
+    private fun format(
+        indentation: Int,
+        name: String,
+        properties: List<Property>,
+    ): String {
+        return formatter.format(
+            clientPacket = false,
+            name = name,
+            properties = properties,
+            indentation = indentation,
+        )
+    }
+
+    private fun format(
+        indentation: Int,
+        name: String,
+        builderAction: PropertyBuilder.() -> Unit = {},
+    ): String {
+        val properties = properties(builderAction)
+        return formatter.format(
+            clientPacket = false,
+            name = name,
+            properties = properties,
+            indentation = indentation,
+        )
+    }
+
+    private fun format(
+        indentation: Int,
+        properties: List<Property>,
+    ): String {
+        return format(
+            indentation,
+            "",
+            properties,
+        )
+    }
+
+    private fun actor(ambiguousIndex: Int): List<Property> {
+        return properties {
+            if (ambiguousIndex == -1 || ambiguousIndex == 0xFFFFFF) {
+                property("index", -1)
+                return@properties
+            }
+            if (ambiguousIndex > 0xFFFF) {
+                val index = ambiguousIndex - 0xFFFF
+                property("index", index)
+                val name = stateTracker.getLastKnownPlayerName(index)
+                if (name != null) {
+                    property("player", name.quote())
+                }
+            } else {
+                property("index", ambiguousIndex)
+            }
+        }
+    }
+
     override fun camLookAt(message: CamLookAt) {
         TODO("Not yet implemented")
     }
@@ -258,8 +340,417 @@ public open class BaseServerPacketTranscriber(
         TODO("Not yet implemented")
     }
 
+    private fun publishProt() {
+        container.publish("[${stateTracker.currentProt}]".indent(1))
+    }
+
     override fun playerInfo(message: PlayerInfo) {
-        TODO("Not yet implemented")
+        TODO("Disabled")
+        // Assign the coord and name of each player that is being added
+        preloadPlayerInfo(message)
+        // Log any activities that happened for all the players
+        logPlayerInfo(message)
+        // Update the last known coord and name of each player being processed
+        postPlayerInfo(message)
+    }
+
+    private fun logPlayerInfo(message: PlayerInfo) {
+        publishProt()
+        val lines = mutableListOf<String>()
+        for ((index, update) in message.updates) {
+            when (update) {
+                is PlayerUpdateType.LowResolutionMovement,
+                PlayerUpdateType.LowResolutionIdle,
+                -> {
+                    // no-op
+                }
+                is PlayerUpdateType.HighResolutionIdle -> {
+                    // No need to spam if the player isn't actually updating
+                    if (update.extendedInfo.isEmpty()) {
+                        continue
+                    }
+                    val player = stateTracker.getPlayer(index)
+                    lines +=
+                        format(2, "Player") {
+                            property("index", index)
+                            property("name", player.name.quote())
+                            property("coord", player.coord)
+                            property("update", "idle")
+                        }
+                    appendExtendedInfo(player, lines, update.extendedInfo)
+                }
+                is PlayerUpdateType.HighResolutionMovement -> {
+                    val player = stateTracker.getPlayer(index)
+                    lines +=
+                        format(2, "Player") {
+                            property("index", index)
+                            property("name", player.name.quote())
+                            property("oldCoord", player.coord)
+                            property("newCoord", update.coord)
+                            property("update", "moving")
+                        }
+                    appendExtendedInfo(player, lines, update.extendedInfo)
+                }
+                is PlayerUpdateType.HighResolutionToLowResolution -> {
+                    val player = stateTracker.getPlayer(index)
+                    lines +=
+                        format(2, "Player") {
+                            property("index", index)
+                            property("name", player.name.quote())
+                            property("lastCoord", player.coord)
+                            property("update", "delete")
+                        }
+                }
+                is PlayerUpdateType.LowResolutionToHighResolution -> {
+                    val player = stateTracker.getPlayer(index)
+                    lines +=
+                        format(2, "Player") {
+                            property("index", index)
+                            property("name", player.name.quote())
+                            property("coord", player.coord)
+                            property("update", "add")
+                        }
+                    appendExtendedInfo(player, lines, update.extendedInfo)
+                }
+            }
+        }
+        container.publish(lines)
+    }
+
+    private fun appendExtendedInfo(
+        player: Player,
+        lines: MutableList<String>,
+        extendedInfo: List<ExtendedInfo>,
+    ) {
+        for (info in extendedInfo) {
+            when (info) {
+                is ChatExtendedInfo -> {
+                    lines +=
+                        format(3, "Chat") {
+                            property("text", info.text.quote())
+                            filteredProperty("autotyper", info.autotyper) { it }
+                            filteredProperty("colour", info.colour) { it != 0 }
+                            filteredProperty("effects", info.effects) { it != 0 }
+                            filteredProperty("modicon", info.modIcon) { it != 0 }
+                            filteredProperty("pattern", info.pattern) { it != null }
+                        }
+                }
+                is FaceAngleExtendedInfo -> {
+                    lines +=
+                        format(3, "FaceAngle") {
+                            property("angle", info.angle)
+                        }
+                }
+                is MoveSpeedExtendedInfo -> {
+                    lines +=
+                        format(3, "MoveSpeed") {
+                            property("speed", formatMoveSpeed(info.speed))
+                        }
+                }
+                is TemporaryMoveSpeedExtendedInfo -> {
+                    lines +=
+                        format(3, "TempMoveSpeed") {
+                            property("speed", formatMoveSpeed(info.speed))
+                        }
+                }
+                is NameExtrasExtendedInfo -> {
+                    lines +=
+                        format(3, "NameExtras") {
+                            property("beforeName", info.beforeName.quote())
+                            property("afterName", info.afterName.quote())
+                            property("afterCombatLevel", info.afterCombatLevel.quote())
+                        }
+                }
+                is SayExtendedInfo -> {
+                    lines +=
+                        format(3, "Say") {
+                            property("text", info.text.quote())
+                        }
+                }
+                is SequenceExtendedInfo -> {
+                    lines +=
+                        format(3, "Sequence") {
+                            property("id", formatter.type(SEQ, info.id.maxUShortToMinusOne()))
+                            filteredProperty("delay", info.delay) { it != 0 }
+                        }
+                }
+                is ExactMoveExtendedInfo -> {
+                    val curX = player.coord.x
+                    val curZ = player.coord.z
+                    val level = player.coord.level
+                    lines +=
+                        format(3, "ExactMove") {
+                            property("to1", CoordGrid(level, curX - info.deltaX2, curZ - info.deltaZ2))
+                            property("delay1", info.delay1)
+                            property("to2", CoordGrid(level, curX - info.deltaX1, curZ - info.deltaZ1))
+                            property("delay2", info.delay2)
+                            property("angle", info.direction)
+                        }
+                }
+                is HitExtendedInfo -> {
+                    if (info.hits.isNotEmpty()) {
+                        lines += format(3, "Hits")
+                        for (hit in info.hits) {
+                            lines +=
+                                format(4, "Hit") {
+                                    property("type", hit.type)
+                                    property("value", hit.value)
+                                    if (hit.soakType != -1) {
+                                        property("soakType", hit.soakType)
+                                        property("soakValue", hit.soakValue)
+                                    }
+                                    filteredProperty("delay", hit.delay) { it != 0 }
+                                }
+                        }
+                    }
+                    if (info.headbars.isNotEmpty()) {
+                        lines += format(3, "Headbars")
+                        for (headbar in info.headbars) {
+                            lines +=
+                                format(4, "Headbar") {
+                                    property("type", headbar.type)
+                                    property("startFill", headbar.startFill)
+                                    property("endFill", headbar.endFill)
+                                    property("startTime", headbar.startTime)
+                                    property("endTime", headbar.endTime)
+                                }
+                        }
+                    }
+                }
+                is TintingExtendedInfo -> {
+                    lines +=
+                        format(3, "Tinting") {
+                            property("start", info.start)
+                            property("end", info.end)
+                            property("hue", info.hue)
+                            property("saturation", info.saturation)
+                            property("lightness", info.lightness)
+                            property("weight", info.weight)
+                        }
+                }
+                is SpotanimExtendedInfo -> {
+                    lines += format(3, "Spotanims")
+                    for ((slot, spotanim) in info.spotanims) {
+                        lines +=
+                            format(4, "Spotanim") {
+                                property("slot", slot)
+                                property("id", formatter.type(ScriptVarType.SPOTANIM, spotanim.id))
+                                property("delay", spotanim.delay)
+                                property("height", spotanim.height)
+                            }
+                    }
+                }
+                is FacePathingEntityExtendedInfo -> {
+                    lines += format(3, "FacePathingEntity", actor(info.index))
+                }
+                is AppearanceExtendedInfo -> {
+                    lines += format(3, "Appearance")
+                    lines +=
+                        format(4, "Details") {
+                            property("name", info.name.quote())
+                            property("combatLevel", info.combatLevel)
+                            property("skillLevel", info.skillLevel)
+                            property("gender", info.gender)
+                            property("textGender", info.textGender)
+                        }
+                    lines +=
+                        format(4, "Status") {
+                            property("hidden", info.hidden)
+                            property("skullIcon", info.skullIcon)
+                            property("overheadIcon", info.overheadIcon)
+                            if (info.transformedNpcId != -1) {
+                                property("npc", formatter.type(ScriptVarType.NPC, info.transformedNpcId))
+                            }
+                        }
+                    if (info.transformedNpcId == -1) {
+                        lines +=
+                            format(4, "Equipment") {
+                                for ((index, value) in info.identKit.withIndex()) {
+                                    if (value >= 512) {
+                                        property(
+                                            formatWearPos(index),
+                                            formatter.type(ScriptVarType.OBJ, value - 512),
+                                        )
+                                    }
+                                }
+                            }
+                        val identKit = IntArray(info.identKit.size)
+                        lines +=
+                            format(4, "IdentKit") {
+                                for ((index, value) in info.identKit.withIndex()) {
+                                    if (value in 256..<512) {
+                                        identKit[index] = value
+                                        property(
+                                            formatWearPos(index),
+                                            formatter.type(ScriptVarType.IDKIT, value - 256),
+                                        )
+                                    }
+                                }
+                            }
+                        if (!identKit.contentEquals(info.interfaceIdentKit)) {
+                            lines +=
+                                format(4, "InterfaceIdentKit") {
+                                    for ((index, value) in info.interfaceIdentKit.withIndex()) {
+                                        if (value in 256..<512) {
+                                            identKit[index] = value
+                                            property(
+                                                formatWearPos(index),
+                                                formatter.type(ScriptVarType.IDKIT, value - 256),
+                                            )
+                                        }
+                                    }
+                                }
+                        }
+                    }
+                    lines +=
+                        format(4, "Colours") {
+                            for ((index, value) in info.colours.withIndex()) {
+                                property("col$index", value)
+                            }
+                        }
+                    lines +=
+                        format(4, "Bas") {
+                            property("ready", formatter.type(SEQ, info.readyAnim.maxUShortToMinusOne()))
+                            property("turn", formatter.type(SEQ, info.turnAnim.maxUShortToMinusOne()))
+                            property("walk", formatter.type(SEQ, info.walkAnim.maxUShortToMinusOne()))
+                            property("walkback", formatter.type(SEQ, info.walkAnimBack.maxUShortToMinusOne()))
+                            property("walkleft", formatter.type(SEQ, info.walkAnimLeft.maxUShortToMinusOne()))
+                            property("walkright", formatter.type(SEQ, info.walkAnimRight.maxUShortToMinusOne()))
+                            property("run", formatter.type(SEQ, info.runAnim.maxUShortToMinusOne()))
+                        }
+                    lines +=
+                        format(4, "NameExtras") {
+                            property("beforeName", info.beforeName.quote())
+                            property("afterName", info.afterName.quote())
+                            property("afterCombatLevel", info.afterCombatLevel.quote())
+                        }
+                    lines +=
+                        format(4, "ObjTypeCustomisation") {
+                            property("forceModelRefresh", info.forceModelRefresh)
+                            val customisation = info.objTypeCustomisation
+                            if (customisation != null) {
+                                for ((index, cus) in customisation.withIndex()) {
+                                    if (cus == null) {
+                                        continue
+                                    }
+                                    property("wearpos", formatWearPos(index))
+                                    val recolIndex1 = cus.recolIndices and 0xF
+                                    val recolIndex2 = cus.recolIndices ushr 4 and 0xF
+                                    if (recolIndex1 != 0xF) {
+                                        property("recol$recolIndex1", cus.recol1)
+                                    }
+                                    if (recolIndex2 != 0xF) {
+                                        property("recol$recolIndex2", cus.recol2)
+                                    }
+
+                                    val retexIndex1 = cus.retexIndices and 0xF
+                                    val retexIndex2 = cus.retexIndices ushr 4 and 0xF
+                                    if (retexIndex1 != 0xF) {
+                                        property("retex$retexIndex1", formatter.type(TEXTURE, cus.retex1))
+                                    }
+                                    if (retexIndex2 != 0xF) {
+                                        property("retex$retexIndex2", formatter.type(TEXTURE, cus.retex2))
+                                    }
+                                }
+                            }
+                        }
+                }
+            }
+        }
+    }
+
+    private fun formatWearPos(id: Int): String {
+        return when (id) {
+            0 -> "hat"
+            1 -> "back"
+            2 -> "front"
+            3 -> "righthand"
+            4 -> "torso"
+            5 -> "lefthand"
+            6 -> "arms"
+            7 -> "legs"
+            8 -> "head"
+            9 -> "hands"
+            10 -> "feet"
+            11 -> "jaw"
+            12 -> "ring"
+            13 -> "quiver"
+            else -> error("Unknown wearpos $id")
+        }
+    }
+
+    private fun Int.maxUShortToMinusOne(): Int {
+        return if (this == 0xFFFF) {
+            -1
+        } else {
+            this
+        }
+    }
+
+    private fun formatMoveSpeed(value: Int): String {
+        return when (value) {
+            0 -> "crawl"
+            1 -> "walk"
+            2 -> "run"
+            -1, 127, 255 -> "teleport"
+            else -> "unknown($value)"
+        }
+    }
+
+    private fun loadPlayerName(
+        index: Int,
+        extendedInfo: List<ExtendedInfo>,
+    ): String {
+        val appearance =
+            extendedInfo
+                .filterIsInstance<AppearanceExtendedInfo>()
+                .singleOrNull()
+        return appearance?.name
+            ?: stateTracker.getLastKnownPlayerName(index)
+            ?: "null"
+    }
+
+    private fun preloadPlayerInfo(message: PlayerInfo) {
+        for ((index, update) in message.updates) {
+            when (update) {
+                is PlayerUpdateType.LowResolutionToHighResolution -> {
+                    val name = loadPlayerName(index, update.extendedInfo)
+                    stateTracker.overridePlayer(Player(index, name, update.coord))
+                }
+                is PlayerUpdateType.HighResolutionIdle -> {
+                    val name = loadPlayerName(index, update.extendedInfo)
+                    val player = stateTracker.getPlayer(index)
+                    stateTracker.overridePlayer(Player(index, name, player.coord))
+                }
+                is PlayerUpdateType.HighResolutionMovement -> {
+                    val name = loadPlayerName(index, update.extendedInfo)
+                    val player = stateTracker.getPlayer(index)
+                    stateTracker.overridePlayer(Player(index, name, player.coord))
+                }
+                else -> {
+                    // No-op, no info to preload
+                }
+            }
+        }
+    }
+
+    private fun postPlayerInfo(message: PlayerInfo) {
+        for ((index, update) in message.updates) {
+            when (update) {
+                is PlayerUpdateType.HighResolutionIdle -> {
+                    val oldPlayer = stateTracker.getPlayerOrNull(index) ?: return
+                    val name = loadPlayerName(index, update.extendedInfo)
+                    stateTracker.overridePlayer(Player(index, name, oldPlayer.coord))
+                }
+                is PlayerUpdateType.HighResolutionMovement -> {
+                    val name = loadPlayerName(index, update.extendedInfo)
+                    stateTracker.overridePlayer(Player(index, name, update.coord))
+                }
+                else -> {
+                    // No-op, no info to preload
+                }
+            }
+        }
     }
 
     override fun worldEntityInfo(message: WorldEntityInfo) {
@@ -387,6 +878,14 @@ public open class BaseServerPacketTranscriber(
     }
 
     override fun rebuildLogin(message: RebuildLogin) {
+        stateTracker.overridePlayer(
+            Player(
+                message.playerInfoInitBlock.localPlayerIndex,
+                "uninitialized",
+                message.playerInfoInitBlock.localPlayerCoord,
+            ),
+        )
+        stateTracker.localPlayerIndex = message.playerInfoInitBlock.localPlayerIndex
         TODO("Not yet implemented")
     }
 
@@ -439,6 +938,8 @@ public open class BaseServerPacketTranscriber(
     }
 
     override fun serverTickEnd(message: ServerTickEnd) {
+        stateTracker.incrementCycle()
+        container.publish("[${stateTracker.cycle}]".indent(0))
         TODO("Not yet implemented")
     }
 

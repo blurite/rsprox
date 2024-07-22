@@ -11,3 +11,7 @@ public fun properties(builderAction: PropertyBuilder.() -> Unit): List<Property>
     builderAction(builder)
     return builder.build()
 }
+
+public fun emptyProperties(): List<Property> {
+    return emptyList()
+}
