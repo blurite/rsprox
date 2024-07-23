@@ -2335,10 +2335,14 @@ public open class BaseServerPacketTranscriber(
         }
         val mapsquares = mutableSetOf<Int>()
         container.publish(format(2, "BuildArea"))
+        val startZoneX = message.zoneX - 6
+        val startZoneZ = message.zoneZ - 6
         for (level in 0..<4) {
-            for (zoneX in (message.zoneX - 6)..(message.zoneX + 6)) {
-                for (zoneZ in (message.zoneZ - 6)..(message.zoneZ + 6)) {
-                    val block = message.buildArea[level, zoneX, zoneZ]
+            for (zoneX in startZoneX..(message.zoneX + 6)) {
+                for (zoneZ in startZoneZ..(message.zoneZ + 6)) {
+                    val block = message.buildArea[level, zoneX - startZoneX, zoneZ - startZoneZ]
+                    // Invalid zone
+                    if (block.mapsquareId == 32767) continue
                     mapsquares += block.mapsquareId
                     container.publish(
                         format(3, "Zone") {
@@ -2377,10 +2381,14 @@ public open class BaseServerPacketTranscriber(
         }
         val mapsquares = mutableSetOf<Int>()
         container.publish(format(2, "BuildArea"))
+        val startZoneX = message.baseX - 6
+        val startZoneZ = message.baseZ - 6
         for (level in 0..<4) {
-            for (zoneX in (message.baseX - 6)..(message.baseX + 6)) {
-                for (zoneZ in (message.baseZ - 6)..(message.baseZ + 6)) {
-                    val block = message.buildArea[level, zoneX, zoneZ]
+            for (zoneX in startZoneX..(message.baseX + 6)) {
+                for (zoneZ in startZoneZ..(message.baseZ + 6)) {
+                    val block = message.buildArea[level, zoneX - startZoneX, zoneZ - startZoneZ]
+                    // Invalid zone
+                    if (block.mapsquareId == 32767) continue
                     mapsquares += block.mapsquareId
                     container.publish(
                         format(3, "Zone") {
