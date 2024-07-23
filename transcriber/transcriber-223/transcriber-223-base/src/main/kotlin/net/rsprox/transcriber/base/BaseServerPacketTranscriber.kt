@@ -227,21 +227,29 @@ public open class BaseServerPacketTranscriber(
         container.publish(format(properties(builderAction)))
     }
 
-    private fun npc(index: Int): String {
+    private fun npc(
+        index: Int,
+        specify: Boolean = false,
+    ): String {
+        val prefix = if (specify) "npcindex" else "index"
         val npc = stateTracker.getActiveWorld().getNpcOrNull(index)
         return if (npc == null) {
-            "(index=$index)"
+            "($prefix=$index)"
         } else {
-            "(index=$index, id=${formatter.type(ScriptVarType.NPC, npc.id)}, coord=${formatter.coord(npc.coord)})"
+            "($prefix=$index, id=${formatter.type(ScriptVarType.NPC, npc.id)}, coord=${formatter.coord(npc.coord)})"
         }
     }
 
-    private fun player(index: Int): String {
+    private fun player(
+        index: Int,
+        specify: Boolean = false,
+    ): String {
+        val prefix = if (specify) "playerindex" else "index"
         val tracked = stateTracker.getPlayerOrNull(index)
         return if (tracked == null) {
-            "(index=$index)"
+            "($prefix=$index)"
         } else {
-            "(index=$index, name=${tracked.name.quote()}, coord=${formatter.coord(tracked.coord)})"
+            "($prefix=$index, name=${tracked.name.quote()}, coord=${formatter.coord(tracked.coord)})"
         }
     }
 
@@ -305,6 +313,18 @@ public open class BaseServerPacketTranscriber(
             } else {
                 property("npcindex", ambiguousIndex)
             }
+        }
+    }
+
+    private fun formatActor(ambiguousIndex: Int): String {
+        if (ambiguousIndex == -1 || ambiguousIndex == 0xFFFFFF) {
+            return "(index=-1)"
+        }
+        return if (ambiguousIndex > 0xFFFF) {
+            val index = ambiguousIndex - 0xFFFF
+            player(index, specify = true)
+        } else {
+            npc(ambiguousIndex, specify = true)
         }
     }
 
@@ -3270,8 +3290,8 @@ public open class BaseServerPacketTranscriber(
                     )
                     container.publish(
                         format(3, "Source") {
-                            if (event.sourceIndex != 0xFFFFFF) {
-                                property("source", actor(event.sourceIndex))
+                            if (event.sourceIndex != 0) {
+                                property("source", formatActor(event.sourceIndex))
                             }
                             property("coord", coordInZone(event.xInZone, event.zInZone))
                         },
@@ -3285,8 +3305,8 @@ public open class BaseServerPacketTranscriber(
                                     event.zInZone + event.deltaZ,
                                 ),
                             )
-                            if (event.targetIndex != 0xFFFFFF) {
-                                property("target", actor(event.targetIndex))
+                            if (event.targetIndex != 0) {
+                                property("target", formatActor(event.targetIndex))
                             }
                         },
                     )
@@ -3379,8 +3399,8 @@ public open class BaseServerPacketTranscriber(
         // TODO: multiplier
         container.publish(
             format(3, "Source") {
-                if (message.sourceIndex != 0xFFFFFF) {
-                    property("source", actor(message.sourceIndex))
+                if (message.sourceIndex != 0) {
+                    property("source", formatActor(message.sourceIndex))
                 }
                 property("coord", coordInZone(message.xInZone, message.zInZone))
             },
@@ -3394,8 +3414,8 @@ public open class BaseServerPacketTranscriber(
                         message.zInZone + message.deltaZ,
                     ),
                 )
-                if (message.targetIndex != 0xFFFFFF) {
-                    property("target", actor(message.targetIndex))
+                if (message.targetIndex != 0) {
+                    property("target", formatActor(message.targetIndex))
                 }
             },
         )
