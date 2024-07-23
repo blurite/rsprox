@@ -29,7 +29,20 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChanne
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV2
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelSingleUser
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcInfo
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcUpdateType
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.BaseAnimationSetExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.BodyCustomisationExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.CombatLevelChangeExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.EnabledOpsExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.FaceCoordExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.HeadCustomisationExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.HeadIconCustomisationExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.NameChangeExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.OldSpotanimExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.TransformationExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.customisation.ModelCustomisation
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.customisation.ResetCustomisation
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerUpdateType
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.AppearanceExtendedInfo
@@ -161,13 +174,14 @@ import net.rsprox.transcriber.properties.Property
 import net.rsprox.transcriber.properties.PropertyBuilder
 import net.rsprox.transcriber.properties.properties
 import net.rsprox.transcriber.quote
+import net.rsprox.transcriber.state.Npc
 import net.rsprox.transcriber.state.Player
 import net.rsprox.transcriber.state.StateTracker
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.concurrent.TimeUnit
 
-@Suppress("DuplicatedCode", "SameParameterValue", "MemberVisibilityCanBePrivate")
+@Suppress("DuplicatedCode", "SameParameterValue", "MemberVisibilityCanBePrivate", "SpellCheckingInspection")
 public open class BaseServerPacketTranscriber(
     private val formatter: BaseMessageFormatter,
     private val container: MessageConsumerContainer,
@@ -214,8 +228,12 @@ public open class BaseServerPacketTranscriber(
     }
 
     private fun npc(index: Int): String {
-        // TODO: Format this properly later when NPC info is added
-        return "(index=$index)"
+        val npc = stateTracker.getActiveWorld().getNpcOrNull(index)
+        return if (npc == null) {
+            "(index=$index)"
+        } else {
+            "(index=$index, id=${formatter.type(ScriptVarType.NPC, npc.id)}, coord=${formatter.coord(npc.coord)})"
+        }
     }
 
     private fun player(index: Int): String {
@@ -279,13 +297,13 @@ public open class BaseServerPacketTranscriber(
             }
             if (ambiguousIndex > 0xFFFF) {
                 val index = ambiguousIndex - 0xFFFF
-                property("index", index)
+                property("playerindex", index)
                 val name = stateTracker.getLastKnownPlayerName(index)
                 if (name != null) {
                     property("player", name.quote())
                 }
             } else {
-                property("index", ambiguousIndex)
+                property("npcindex", ambiguousIndex)
             }
         }
     }
@@ -917,8 +935,437 @@ public open class BaseServerPacketTranscriber(
         }
     }
 
+    private fun formatNpcInfoStepDirection(dir: Int): String {
+        return when (dir) {
+            0 -> "North-West"
+            1 -> "North"
+            2 -> "North-East"
+            3 -> "West"
+            4 -> "East"
+            5 -> "South-West"
+            6 -> "South"
+            7 -> "South-East"
+            else -> dir.toString()
+        }
+    }
+
     override fun npcInfo(message: NpcInfo) {
-        TODO("Not yet implemented")
+        publishProt()
+        prenpcinfo(message)
+        val world = stateTracker.getActiveWorld()
+        for ((index, update) in message.updates) {
+            val lines = mutableListOf<String>()
+            when (update) {
+                is NpcUpdateType.Active -> {
+                    val npc = world.getNpc(index)
+                    container.publish(
+                        format(2, "Npc") {
+                            if (update.steps.isNotEmpty()) {
+                                property(
+                                    "npc",
+                                    "(index=$index, id=${formatter.type(ScriptVarType.NPC, npc.id)}, " +
+                                        "lastCoord=${formatter.coord(npc.coord)}, " +
+                                        "newCoord=${formatter.coord(update.level, update.x, update.z)})",
+                                )
+                                property(
+                                    "speed",
+                                    update.moveSpeed.name
+                                        .lowercase()
+                                        .replaceFirstChar { it.uppercase() }
+                                        .quote(),
+                                )
+                                if (update.steps.size == 1) {
+                                    property("step", formatNpcInfoStepDirection(update.steps.first()).quote())
+                                } else {
+                                    val (first, second) = update.steps
+                                    property("step1", formatNpcInfoStepDirection(first).quote())
+                                    property("step2", formatNpcInfoStepDirection(second).quote())
+                                }
+                            } else {
+                                property(
+                                    "npc",
+                                    "(index=$index, id=${formatter.type(ScriptVarType.NPC, npc.id)}, " +
+                                        "coord=${formatter.coord(npc.coord)})",
+                                )
+                            }
+                        },
+                    )
+                    appendExtendedInfo(npc, lines, update.extendedInfo)
+                }
+                NpcUpdateType.HighResolutionToLowResolution -> {
+                    val npc = world.getNpc(index)
+                    container.publish(
+                        format(2, "Npc") {
+                            property("npc", "(index=$index, id=${npc.id}, lastCoord=${formatter.coord(npc.coord)})")
+                            property("update", "Removed")
+                        },
+                    )
+                }
+                is NpcUpdateType.LowResolutionToHighResolution -> {
+                    val npc = world.getNpc(index)
+                    container.publish(
+                        format(2, "Npc") {
+                            property("npc", npc(index))
+                            filteredProperty("creationcycle", update.spawnCycle.format()) { it != "0" }
+                            property("angle", update.angle)
+                            filteredProperty("jump", update.jump) { it }
+                            property("update", "Added")
+                        },
+                    )
+                    appendExtendedInfo(npc, lines, update.extendedInfo)
+                }
+                NpcUpdateType.Idle -> {
+                    // noop
+                }
+            }
+            container.publish(lines)
+        }
+        postnpcinfo(message)
+    }
+
+    private fun appendExtendedInfo(
+        npc: Npc,
+        lines: MutableList<String>,
+        extendedInfo: List<ExtendedInfo>,
+    ) {
+        for (info in extendedInfo) {
+            when (info) {
+                is ExactMoveExtendedInfo -> {
+                    val curX = npc.coord.x
+                    val curZ = npc.coord.z
+                    val level = npc.coord.level
+                    lines +=
+                        format(3, "ExactMove") {
+                            property("to1", CoordGrid(level, curX - info.deltaX2, curZ - info.deltaZ2))
+                            property("delay1", info.delay1)
+                            property("to2", CoordGrid(level, curX - info.deltaX1, curZ - info.deltaZ1))
+                            property("delay2", info.delay2)
+                            property("angle", info.direction)
+                        }
+                }
+                is FacePathingEntityExtendedInfo -> {
+                    lines += format(3, "FacePathingEntity", actor(info.index))
+                }
+                is HitExtendedInfo -> {
+                    if (info.hits.isNotEmpty()) {
+                        lines += format(3, "Hits")
+                        for (hit in info.hits) {
+                            lines +=
+                                format(4, "Hit") {
+                                    property("type", hit.type)
+                                    property("value", hit.value)
+                                    if (hit.soakType != -1) {
+                                        property("soakType", hit.soakType)
+                                        property("soakValue", hit.soakValue)
+                                    }
+                                    filteredProperty("delay", hit.delay) { it != 0 }
+                                }
+                        }
+                    }
+                    if (info.headbars.isNotEmpty()) {
+                        lines += format(3, "Headbars")
+                        for (headbar in info.headbars) {
+                            lines +=
+                                format(4, "Headbar") {
+                                    property("type", headbar.type)
+                                    property("startFill", headbar.startFill)
+                                    property("endFill", headbar.endFill)
+                                    property("startTime", headbar.startTime)
+                                    property("endTime", headbar.endTime)
+                                }
+                        }
+                    }
+                }
+                is SayExtendedInfo -> {
+                    lines +=
+                        format(3, "Say") {
+                            property("text", info.text.quote())
+                        }
+                }
+                is SequenceExtendedInfo -> {
+                    lines +=
+                        format(3, "Sequence") {
+                            property("id", formatter.type(ScriptVarType.SEQ, info.id.maxUShortToMinusOne()))
+                            filteredProperty("delay", info.delay) { it != 0 }
+                        }
+                }
+                is TintingExtendedInfo -> {
+                    lines +=
+                        format(3, "Tinting") {
+                            property("start", info.start)
+                            property("end", info.end)
+                            property("hue", info.hue)
+                            property("saturation", info.saturation)
+                            property("lightness", info.lightness)
+                            property("weight", info.weight)
+                        }
+                }
+                is SpotanimExtendedInfo -> {
+                    for ((slot, spotanim) in info.spotanims) {
+                        lines +=
+                            format(3, "Spotanim") {
+                                property("slot", slot)
+                                property("id", formatter.type(ScriptVarType.SPOTANIM, spotanim.id))
+                                filteredProperty("delay", spotanim.delay) { it != 0 }
+                                filteredProperty("height", spotanim.height) { it != 0 }
+                            }
+                    }
+                }
+                is OldSpotanimExtendedInfo -> {
+                    lines +=
+                        format(3, "OldSpotanim") {
+                            property("id", formatter.type(ScriptVarType.SPOTANIM, info.id))
+                            filteredProperty("delay", info.delay) { it != 0 }
+                            filteredProperty("height", info.height) { it != 0 }
+                        }
+                }
+                is BaseAnimationSetExtendedInfo -> {
+                    lines +=
+                        format(3, "Bas") {
+                            val turnleft = info.turnLeftAnim
+                            val turnright = info.turnRightAnim
+                            val walk = info.walkAnim
+                            val walkback = info.walkAnimBack
+                            val walkleft = info.walkAnimLeft
+                            val walkright = info.walkAnimRight
+                            val run = info.runAnim
+                            val runback = info.runAnimBack
+                            val runleft = info.runAnimLeft
+                            val runright = info.runAnimRight
+                            val crawl = info.crawlAnim
+                            val crawlback = info.crawlAnimBack
+                            val crawlleft = info.crawlAnimLeft
+                            val crawlright = info.crawlAnimRight
+                            val ready = info.readyAnim
+                            if (turnleft != null) {
+                                property("turnleft", formatter.type(ScriptVarType.SEQ, turnleft))
+                            }
+                            if (turnright != null) {
+                                property("turnright", formatter.type(ScriptVarType.SEQ, turnright))
+                            }
+                            if (walk != null) {
+                                property("walk", formatter.type(ScriptVarType.SEQ, walk))
+                            }
+                            if (walkback != null) {
+                                property("walkback", formatter.type(ScriptVarType.SEQ, walkback))
+                            }
+                            if (walkleft != null) {
+                                property("walkleft", formatter.type(ScriptVarType.SEQ, walkleft))
+                            }
+                            if (walkright != null) {
+                                property("walkright", formatter.type(ScriptVarType.SEQ, walkright))
+                            }
+                            if (run != null) {
+                                property("run", formatter.type(ScriptVarType.SEQ, run))
+                            }
+                            if (runback != null) {
+                                property("runback", formatter.type(ScriptVarType.SEQ, runback))
+                            }
+                            if (runleft != null) {
+                                property("runleft", formatter.type(ScriptVarType.SEQ, runleft))
+                            }
+                            if (runright != null) {
+                                property("runright", formatter.type(ScriptVarType.SEQ, runright))
+                            }
+                            if (crawl != null) {
+                                property("crawl", formatter.type(ScriptVarType.SEQ, crawl))
+                            }
+                            if (crawlback != null) {
+                                property("crawlback", formatter.type(ScriptVarType.SEQ, crawlback))
+                            }
+                            if (crawlleft != null) {
+                                property("crawlleft", formatter.type(ScriptVarType.SEQ, crawlleft))
+                            }
+                            if (crawlright != null) {
+                                property("crawlright", formatter.type(ScriptVarType.SEQ, crawlright))
+                            }
+                            if (ready != null) {
+                                property("ready", formatter.type(ScriptVarType.SEQ, ready))
+                            }
+                        }
+                }
+                is BodyCustomisationExtendedInfo -> {
+                    when (val type = info.type) {
+                        is ModelCustomisation -> {
+                            lines +=
+                                format(3, "BodyCustomisation") {
+                                    val models = type.models
+                                    if (models != null) {
+                                        val joined =
+                                            models.joinToString(prefix = "[", postfix = "]") {
+                                                formatter.type(
+                                                    ScriptVarType.MODEL,
+                                                    it,
+                                                )
+                                            }
+                                        property("models", joined)
+                                    }
+                                    val recol = type.recolours
+                                    if (recol != null) {
+                                        property("recolours", recol)
+                                    }
+                                    val retex = type.retextures
+                                    if (retex != null) {
+                                        val joined =
+                                            retex.joinToString(prefix = "[", postfix = "]") {
+                                                formatter.type(
+                                                    ScriptVarType.TEXTURE,
+                                                    it,
+                                                )
+                                            }
+                                        property("retextures", joined)
+                                    }
+                                    val mirror = type.mirror
+                                    if (mirror != null) {
+                                        property("mirror", mirror)
+                                    }
+                                }
+                        }
+                        ResetCustomisation -> {
+                            lines +=
+                                format(3, "BodyCustomisation") {
+                                    property("type", "Reset")
+                                }
+                        }
+                    }
+                }
+                is HeadCustomisationExtendedInfo -> {
+                    when (val type = info.type) {
+                        is ModelCustomisation -> {
+                            lines +=
+                                format(3, "HeadCustomisation") {
+                                    val models = type.models
+                                    if (models != null) {
+                                        val joined =
+                                            models.joinToString(prefix = "[", postfix = "]") {
+                                                formatter.type(
+                                                    ScriptVarType.MODEL,
+                                                    it,
+                                                )
+                                            }
+                                        property("models", joined)
+                                    }
+                                    val recol = type.recolours
+                                    if (recol != null) {
+                                        property("recolours", recol)
+                                    }
+                                    val retex = type.retextures
+                                    if (retex != null) {
+                                        val joined =
+                                            retex.joinToString(prefix = "[", postfix = "]") {
+                                                formatter.type(
+                                                    ScriptVarType.TEXTURE,
+                                                    it,
+                                                )
+                                            }
+                                        property("retextures", joined)
+                                    }
+                                    val mirror = type.mirror
+                                    if (mirror != null) {
+                                        property("mirror", mirror)
+                                    }
+                                }
+                        }
+                        ResetCustomisation -> {
+                            lines +=
+                                format(3, "HeadCustomisation") {
+                                    property("type", "Reset")
+                                }
+                        }
+                    }
+                }
+                is CombatLevelChangeExtendedInfo -> {
+                    lines +=
+                        format(3, "LevelChange") {
+                            property("level", info.level.format())
+                        }
+                }
+                is EnabledOpsExtendedInfo -> {
+                    lines +=
+                        format(3, "EnabledOps") {
+                            property("opflags", "0b" + info.value.toString(2))
+                        }
+                }
+                is FaceCoordExtendedInfo -> {
+                    lines +=
+                        format(3, "FaceCoord") {
+                            property("coord", formatter.coord(npc.coord.level, info.x, info.z))
+                            filteredProperty("instant", info.instant) { it }
+                        }
+                }
+                is NameChangeExtendedInfo -> {
+                    lines +=
+                        format(3, "NameChange") {
+                            val oldName = npc.name
+                            if (oldName != null) {
+                                property("oldName", oldName.quote())
+                                property("newName", info.name.quote())
+                            } else {
+                                property("name", info.name.quote())
+                            }
+                        }
+                }
+                is TransformationExtendedInfo -> {
+                    lines +=
+                        format(3, "Transformation") {
+                            property("oldId", formatter.type(ScriptVarType.NPC, npc.id))
+                            property("newId", formatter.type(ScriptVarType.NPC, info.id))
+                        }
+                }
+                is HeadIconCustomisationExtendedInfo -> {
+                    for (i in info.groups.indices) {
+                        val group = info.groups[i]
+                        val index = info.indices[i]
+                        if (group == -1 && index == -1) {
+                            continue
+                        }
+                        lines +=
+                            format(3, "HeadIconCustomisation") {
+                                property("graphic", formatter.type(ScriptVarType.GRAPHIC, group))
+                                property("index", index)
+                            }
+                    }
+                }
+                else -> throw IllegalStateException("Unknown extended info: $info")
+            }
+        }
+    }
+
+    private fun prenpcinfo(message: NpcInfo) {
+        val world = stateTracker.getActiveWorld()
+        for ((index, update) in message.updates) {
+            when (update) {
+                is NpcUpdateType.Active -> {
+                }
+                NpcUpdateType.HighResolutionToLowResolution -> {
+                }
+                is NpcUpdateType.LowResolutionToHighResolution -> {
+                    world.createNpc(index, update.id, update.spawnCycle, CoordGrid(update.level, update.x, update.z))
+                }
+                NpcUpdateType.Idle -> {
+                    // noop
+                }
+            }
+        }
+    }
+
+    private fun postnpcinfo(message: NpcInfo) {
+        val world = stateTracker.getActiveWorld()
+        for ((index, update) in message.updates) {
+            when (update) {
+                is NpcUpdateType.Active -> {
+                    world.updateNpc(index, CoordGrid(update.level, update.x, update.z))
+                }
+                NpcUpdateType.HighResolutionToLowResolution -> {
+                    world.removeNpc(index)
+                }
+                is NpcUpdateType.LowResolutionToHighResolution -> {
+                }
+                NpcUpdateType.Idle -> {
+                    // noop
+                }
+            }
+        }
     }
 
     override fun setNpcUpdateOrigin(message: SetNpcUpdateOrigin) {
@@ -1115,14 +1562,13 @@ public open class BaseServerPacketTranscriber(
                         }
                 }
                 is SpotanimExtendedInfo -> {
-                    lines += format(3, "Spotanims")
                     for ((slot, spotanim) in info.spotanims) {
                         lines +=
-                            format(4, "Spotanim") {
+                            format(3, "Spotanim") {
                                 property("slot", slot)
                                 property("id", formatter.type(ScriptVarType.SPOTANIM, spotanim.id))
-                                property("delay", spotanim.delay)
-                                property("height", spotanim.height)
+                                filteredProperty("delay", spotanim.delay) { it != 0 }
+                                filteredProperty("height", spotanim.height) { it != 0 }
                             }
                     }
                 }
@@ -1250,6 +1696,7 @@ public open class BaseServerPacketTranscriber(
                             }
                         }
                 }
+                else -> throw IllegalStateException("Unknown extended info: $info")
             }
         }
     }
@@ -2128,10 +2575,10 @@ public open class BaseServerPacketTranscriber(
     }
 
     override fun serverTickEnd(message: ServerTickEnd) {
+        publishProt()
         stateTracker.incrementCycle()
         container.publish("")
         container.publish("[${stateTracker.cycle}]".indent(0))
-        publishProt()
     }
 
     override fun setHeatmapEnabled(message: SetHeatmapEnabled) {
@@ -2734,6 +3181,7 @@ public open class BaseServerPacketTranscriber(
 
     override fun clearEntities(message: ClearEntities) {
         publishProt()
+        stateTracker.destroyDynamicWorlds()
     }
 
     override fun setActiveWorld(message: SetActiveWorld) {

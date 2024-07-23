@@ -6,6 +6,7 @@ public sealed interface NpcUpdateType {
     public data object Idle : NpcUpdateType
 
     public class LowResolutionToHighResolution(
+        public val id: Int,
         public val spawnCycle: Int,
         public val x: Int,
         public val z: Int,
@@ -20,6 +21,7 @@ public sealed interface NpcUpdateType {
 
             other as LowResolutionToHighResolution
 
+            if (id != other.id) return false
             if (spawnCycle != other.spawnCycle) return false
             if (x != other.x) return false
             if (z != other.z) return false
@@ -32,7 +34,8 @@ public sealed interface NpcUpdateType {
         }
 
         override fun hashCode(): Int {
-            var result = spawnCycle
+            var result = id
+            result = 31 * result + spawnCycle
             result = 31 * result + x
             result = 31 * result + z
             result = 31 * result + level
@@ -44,6 +47,7 @@ public sealed interface NpcUpdateType {
 
         override fun toString(): String {
             return "LowResolutionToHighResolution(" +
+                "id=$id, " +
                 "spawnCycle=$spawnCycle, " +
                 "x=$x, " +
                 "z=$z, " +

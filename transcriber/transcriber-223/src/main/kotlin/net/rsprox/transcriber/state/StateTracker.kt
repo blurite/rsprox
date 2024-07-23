@@ -26,6 +26,10 @@ public class StateTracker {
         return newWorld
     }
 
+    public fun destroyDynamicWorlds() {
+        worlds.keys.removeAll { it != -1 }
+    }
+
     public fun destroyWorld(id: Int) {
         worlds.remove(id)
     }
