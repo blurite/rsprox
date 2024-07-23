@@ -4,8 +4,13 @@ import io.netty.buffer.Unpooled
 import io.netty.channel.Channel
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
+import net.rsprot.buffer.extensions.g1
+import net.rsprot.buffer.extensions.g2
+import net.rsprot.buffer.extensions.g3
 import net.rsprot.buffer.extensions.gjstr
+import net.rsprot.buffer.extensions.p1
 import net.rsprot.buffer.extensions.p2
+import net.rsprot.buffer.extensions.p3
 import net.rsprot.buffer.extensions.p4
 import net.rsprot.buffer.extensions.pdata
 import net.rsprot.buffer.extensions.pjstr
@@ -71,7 +76,7 @@ public class ServerGameHandler(
         // Both the message private and message private echo follow the same consistent structure
         // of [String: name, EncodedString: contents]
         when (prot) {
-            GameServerProt.MESSAGE_PRIVATE, GameServerProt.MESSAGE_PRIVATE_ECHO -> {
+            GameServerProt.MESSAGE_PRIVATE_ECHO -> {
                 val payload = msg.payload
                 val readableBytes = payload.readableBytes()
                 val name = payload.gjstr()
@@ -79,6 +84,24 @@ public class ServerGameHandler(
                 val contents = huffman.decode(payload)
                 val replacement = ctx.alloc().buffer(readableBytes)
                 replacement.pjstr(name)
+                // Replace the contents of private messages with asterisks of the same msg length
+                huffman.encode(replacement, "*".repeat(contents.length))
+                msg.replacePayload(replacement)
+            }
+            GameServerProt.MESSAGE_PRIVATE -> {
+                val payload = msg.payload
+                val readableBytes = payload.readableBytes()
+                val name = payload.gjstr()
+                val worldId = payload.g2()
+                val worldMessageCounter = payload.g3()
+                val chatCrownType = payload.g1()
+                val huffman = HuffmanProvider.get()
+                val contents = huffman.decode(payload)
+                val replacement = ctx.alloc().buffer(readableBytes)
+                replacement.pjstr(name)
+                replacement.p2(worldId)
+                replacement.p3(worldMessageCounter)
+                replacement.p1(chatCrownType)
                 // Replace the contents of private messages with asterisks of the same msg length
                 huffman.encode(replacement, "*".repeat(contents.length))
                 msg.replacePayload(replacement)
