@@ -2,6 +2,7 @@ package net.rsprox.proxy.cli
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.michaelbull.logging.InlineLogger
 import net.rsprox.proxy.binary.BinaryBlob
 import net.rsprox.proxy.binary.StreamDirection
 import net.rsprox.proxy.config.BINARY_PATH
@@ -10,9 +11,13 @@ import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.transcriber.MessageConsumer
 import net.rsprox.transcriber.MessageConsumerContainer
+import java.io.BufferedWriter
 import java.nio.file.Path
 import java.util.Locale
+import kotlin.io.path.bufferedWriter
 import kotlin.io.path.exists
+import kotlin.io.path.nameWithoutExtension
+import kotlin.time.measureTime
 
 @Suppress("DuplicatedCode")
 public class TranscribeCommand : CliktCommand(name = "tostring") {
@@ -31,7 +36,11 @@ public class TranscribeCommand : CliktCommand(name = "tostring") {
                 echo("Unable to locate file $fileName in $BINARY_PATH")
                 return
             }
-            stdoutTranscribe(file, pluginLoader)
+            val time =
+                measureTime {
+                    stdoutTranscribe(file, pluginLoader)
+                }
+            logger.debug { "$file took $time to transcribe." }
         } else {
             val fileTreeWalk =
                 BINARY_PATH
@@ -39,7 +48,11 @@ public class TranscribeCommand : CliktCommand(name = "tostring") {
                     .walkTopDown()
                     .filter { it.extension == "bin" }
             for (bin in fileTreeWalk) {
-                stdoutTranscribe(bin.toPath(), pluginLoader)
+                val time =
+                    measureTime {
+                        stdoutTranscribe(bin.toPath(), pluginLoader)
+                    }
+                logger.debug { "${bin.name} took $time to transcribe." }
             }
         }
     }
@@ -52,21 +65,22 @@ public class TranscribeCommand : CliktCommand(name = "tostring") {
         val latestPlugin = pluginLoader.getPlugin(binary.header.revision)
         val transcriberProvider = pluginLoader.getTranscriberProvider(binary.header.revision)
         val session = DecodingSession(binary, latestPlugin)
-        val consumers = MessageConsumerContainer(listOf(createStdOutConsumer()))
+        val writer = binaryPath.parent.resolve(binaryPath.nameWithoutExtension + ".txt").bufferedWriter()
+        val consumers = MessageConsumerContainer(listOf(createBufferedWriterConsumer(writer)))
         val runner = transcriberProvider.provide(consumers)
 
-        println("------------------")
-        println("Header information")
-        println("version: ${binary.header.revision}.${binary.header.subRevision}")
-        println("client type: ${binary.header.clientType}")
-        println("platform type: ${binary.header.platformType}")
-        println(
+        writer.appendLine("------------------")
+        writer.appendLine("Header information")
+        writer.appendLine("version: ${binary.header.revision}.${binary.header.subRevision}")
+        writer.appendLine("client type: ${binary.header.clientType}")
+        writer.appendLine("platform type: ${binary.header.platformType}")
+        writer.appendLine(
             "world: ${binary.header.worldId}, host: ${binary.header.worldHost}, " +
                 "flags: ${binary.header.worldFlags}, location: ${binary.header.worldLocation}, " +
                 "activity: ${binary.header.worldActivity}",
         )
-        println("local player index: ${binary.header.localPlayerIndex}")
-        println("-------------------")
+        writer.appendLine("local player index: ${binary.header.localPlayerIndex}")
+        writer.appendLine("-------------------")
 
         for ((direction, prot, packet) in session.sequence()) {
             try {
@@ -85,17 +99,24 @@ public class TranscribeCommand : CliktCommand(name = "tostring") {
         consumers.close()
     }
 
-    private fun createStdOutConsumer(): MessageConsumer {
+    private fun createBufferedWriterConsumer(writer: BufferedWriter): MessageConsumer {
         return object : MessageConsumer {
             override fun consume(message: List<String>) {
                 for (line in message) {
-                    println(line)
+                    writer.write(line)
+                    writer.newLine()
                 }
             }
 
             override fun close() {
+                writer.flush()
+                writer.close()
             }
         }
+    }
+
+    private companion object {
+        private val logger = InlineLogger()
     }
 }
 
