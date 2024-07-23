@@ -12,6 +12,10 @@ public class World(
         this.buildAreaSouthWestCoord = southWestCoord
     }
 
+    public fun activeLevel(): Int {
+        return this.activeZoneSouthWestCoord.level
+    }
+
     public fun setActiveZone(
         xInBuildArea: Int,
         zInBuildArea: Int,
@@ -23,7 +27,7 @@ public class World(
     public fun relativizeZoneCoord(
         xInZone: Int,
         zInZone: Int,
-        level: Int,
+        level: Int = -1,
     ): CoordGrid {
         return CoordGrid(
             if (level == -1) this.activeZoneSouthWestCoord.level else level,

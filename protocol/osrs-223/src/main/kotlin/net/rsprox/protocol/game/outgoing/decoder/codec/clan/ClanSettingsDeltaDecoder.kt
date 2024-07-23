@@ -186,7 +186,7 @@ public class ClanSettingsDeltaDecoder : ProxyMessageDecoder<ClanSettingsDelta> {
                         }
                         15 -> {
                             val index = buffer.g2()
-                            add(ClanSettingsDelta.ClanSettingDeltaSetClanOwnerUpdate(index))
+                            add(ClanSettingsDelta.ClanSettingsDeltaSetClanOwnerUpdate(index))
                         }
                         else -> error("Unknown opcode: $opcode")
                     }

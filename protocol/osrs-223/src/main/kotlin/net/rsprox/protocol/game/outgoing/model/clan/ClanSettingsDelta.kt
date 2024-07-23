@@ -702,14 +702,14 @@ public class ClanSettingsDelta private constructor(
      * Clan owner updates are used to assign a new owner to this clan.
      * @property index the index of the new owner in the clan's members list.
      */
-    public class ClanSettingDeltaSetClanOwnerUpdate(
+    public class ClanSettingsDeltaSetClanOwnerUpdate(
         public val index: Int,
     ) : ClanSettingsDeltaUpdate {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (javaClass != other?.javaClass) return false
 
-            other as ClanSettingDeltaSetClanOwnerUpdate
+            other as ClanSettingsDeltaSetClanOwnerUpdate
 
             return index == other.index
         }

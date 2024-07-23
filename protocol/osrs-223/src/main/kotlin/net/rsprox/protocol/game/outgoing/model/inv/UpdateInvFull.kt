@@ -83,8 +83,8 @@ public class UpdateInvFull private constructor(
     }
 
     public class Obj(
-        private val id: Int,
-        private val count: Int,
+        public val id: Int,
+        public val count: Int,
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true

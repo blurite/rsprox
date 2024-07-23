@@ -748,6 +748,7 @@ public class PlayerInfoClient(
         if (opcode == 0) {
             if (extendedInfo) {
                 cachedPlayer.queuedMove = false
+                setUpdateType(idx, UpdateType.HIGH_RESOLUTION_IDLE)
             } else if (localIndex == idx) {
                 throw RuntimeException()
             } else {

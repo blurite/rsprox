@@ -13,14 +13,14 @@ package net.rsprox.protocol.game.outgoing.model.zone.payload.util
  * as this is how they tend to be transmitted to the client.
  */
 @JvmInline
-internal value class CoordInBuildArea private constructor(
+public value class CoordInBuildArea private constructor(
     private val packedShort: UShort,
 ) {
-    constructor(packed: Int) : this(
+    public constructor(packed: Int) : this(
         packed.toUShort(),
     )
 
-    constructor(
+    public constructor(
         zoneX: Int,
         xInZone: Int,
         zoneZ: Int,
@@ -31,7 +31,7 @@ internal value class CoordInBuildArea private constructor(
             .toUShort(),
     )
 
-    constructor(
+    public constructor(
         xinBuildArea: Int,
         zInBuildArea: Int,
     ) : this(
@@ -40,21 +40,21 @@ internal value class CoordInBuildArea private constructor(
             .toUShort(),
     )
 
-    val zoneX: Int
+    public val zoneX: Int
         get() = packedShort.toInt() ushr 8 and 0xF8
-    val xInZone: Int
+    public val xInZone: Int
         get() = packedShort.toInt() ushr 8 and 0x7
-    val zoneZ: Int
+    public val zoneZ: Int
         get() = packedShort.toInt() and 0xF8
-    val zInZone: Int
+    public val zInZone: Int
         get() = packedShort.toInt() and 0x7
 
-    val xInBuildArea: Int
+    public val xInBuildArea: Int
         get() = packedShort.toInt() ushr 8
-    val zInBuildArea: Int
+    public val zInBuildArea: Int
         get() = packedShort.toInt() and 0xFF
 
-    val packedMedium: Int
+    public val packedMedium: Int
         get() =
             (zoneX shl 16)
                 .or(zoneZ shl 8)

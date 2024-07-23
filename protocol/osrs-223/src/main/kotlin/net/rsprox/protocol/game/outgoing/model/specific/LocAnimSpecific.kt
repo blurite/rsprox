@@ -29,7 +29,7 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.util.LocProperties
  */
 public class LocAnimSpecific private constructor(
     private val _id: UShort,
-    private val coordInBuildArea: CoordInBuildArea,
+    public val coordInBuildArea: CoordInBuildArea,
     private val locProperties: LocProperties,
 ) : IncomingServerGameMessage {
     public constructor(

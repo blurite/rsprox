@@ -10,10 +10,16 @@ public interface MessageFormatter {
         indentation: Int,
     ): String
 
+    /**
+     * Formats an interface:componentId combination.
+     * If the component id is -1, only an interfaceId is provided.
+     */
     public fun com(
         interfaceId: Int,
         componentId: Int,
     ): String
+
+    public fun script(id: Int): String
 
     public fun coord(
         level: Int,
@@ -25,4 +31,14 @@ public interface MessageFormatter {
         type: ScriptVarType,
         id: Int,
     ): String
+
+    public fun zoneCoord(
+        level: Int,
+        zoneX: Int,
+        zoneZ: Int,
+    ): String
+
+    public fun varp(id: Int): String
+
+    public fun varbit(id: Int): String
 }

@@ -2,6 +2,7 @@ package net.rsprox.transcriber.base
 
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.transcriber.MessageFormatter
+import net.rsprox.transcriber.SINGLE_INDENTATION
 import net.rsprox.transcriber.ScriptVarType
 import net.rsprox.transcriber.properties.Property
 
@@ -13,7 +14,7 @@ public open class BaseMessageFormatter : MessageFormatter {
         indentation: Int,
     ): String {
         val builder = StringBuilder()
-        val prefix = "  ".repeat(indentation)
+        val prefix = SINGLE_INDENTATION.repeat(indentation)
         builder.append(prefix)
         val wrapped = indentation >= 2
         if (wrapped) {
@@ -60,7 +61,16 @@ public open class BaseMessageFormatter : MessageFormatter {
         interfaceId: Int,
         componentId: Int,
     ): String {
-        return "$interfaceId:$componentId"
+        val int = if (interfaceId == 0xFFFF) -1 else interfaceId
+        val com = if (componentId == 0xFFFF) -1 else componentId
+        if (int == -1 && com == -1) {
+            return "null"
+        }
+        return if (int != -1 && com == -1) {
+            "$int"
+        } else {
+            "$int:$com"
+        }
     }
 
     override fun coord(
@@ -68,13 +78,52 @@ public open class BaseMessageFormatter : MessageFormatter {
         x: Int,
         z: Int,
     ): String {
+        if (level == 15 && x == 16383 && z == 16383) {
+            return "null"
+        }
         return "($x, $z, $level)"
+    }
+
+    override fun zoneCoord(
+        level: Int,
+        zoneX: Int,
+        zoneZ: Int,
+    ): String {
+        return "($zoneX, $zoneZ, $level)"
+    }
+
+    override fun script(id: Int): String {
+        return "$id"
     }
 
     override fun type(
         type: ScriptVarType,
         id: Int,
     ): String {
+        return when (type) {
+            ScriptVarType.COLOUR -> {
+                val red = id ushr 10 and 0x1F
+                val green = id ushr 5 and 0x1F
+                val blue = id and 0x1F
+                "(red=$red, green=$green, blue=$blue)"
+            }
+            ScriptVarType.COMPONENT -> {
+                com(id ushr 16, id and 0xFFFF)
+            }
+            ScriptVarType.COORDGRID -> {
+                coord(id ushr 28, id ushr 14 and 0x3FFF, id and 0x3FFF)
+            }
+            else -> {
+                "$id"
+            }
+        }
+    }
+
+    override fun varp(id: Int): String {
+        return "$id"
+    }
+
+    override fun varbit(id: Int): String {
         return "$id"
     }
 }

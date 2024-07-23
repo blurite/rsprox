@@ -25,7 +25,7 @@ public class UpdateInvPartialDecoder : ProxyMessageDecoder<UpdateInvPartial> {
                     val slot = buffer.gSmart1or2()
                     val id = buffer.g2()
                     if (id == 0) {
-                        add(UpdateInvPartial.IndexedObj(slot, 0, 0))
+                        add(UpdateInvPartial.IndexedObj(slot, -1, 0))
                         continue
                     }
                     var count = buffer.g1()

@@ -24,7 +24,7 @@ public class CamTarget(
 
     override fun hashCode(): Int = type.hashCode()
 
-    override fun toString(): String = "CamTargetOld(type=$type)"
+    override fun toString(): String = "CamTarget(type=$type)"
 
     /**
      * A sealed interface for various camera target types.

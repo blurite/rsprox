@@ -44,6 +44,13 @@ public enum class CameraEaseFunction(
     EASE_IN_OUT_ELASTIC(27),
     ;
 
+    public fun prettyName(): String {
+        return name
+            .replace('_', ' ')
+            .lowercase()
+            .replaceFirstChar { it.uppercaseChar() }
+    }
+
     public companion object {
         /**
          * Gets the camera easing function based on the [id] provided.

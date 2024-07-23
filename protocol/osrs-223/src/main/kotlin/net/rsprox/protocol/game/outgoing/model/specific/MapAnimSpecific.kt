@@ -30,7 +30,7 @@ public class MapAnimSpecific private constructor(
     private val _id: UShort,
     private val _delay: UShort,
     private val _height: UByte,
-    private val coordInBuildArea: CoordInBuildArea,
+    public val coordInBuildArea: CoordInBuildArea,
 ) : IncomingServerGameMessage {
     public constructor(
         id: Int,

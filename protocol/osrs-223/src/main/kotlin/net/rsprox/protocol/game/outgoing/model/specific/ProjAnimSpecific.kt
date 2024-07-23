@@ -69,7 +69,7 @@ public class ProjAnimSpecific private constructor(
     private val _angle: UByte,
     private val _progress: UShort,
     public val targetIndex: Int,
-    private val coordInBuildArea: CoordInBuildArea,
+    public val coordInBuildArea: CoordInBuildArea,
     private val _deltaX: Byte,
     private val _deltaZ: Byte,
 ) : IncomingServerGameMessage {

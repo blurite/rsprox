@@ -26,7 +26,7 @@ public class UpdateInvFullDecoder : ProxyMessageDecoder<UpdateInvFull> {
                         count = buffer.g4Alt3()
                     }
                     val id = buffer.g2()
-                    add(UpdateInvFull.Obj(id, count))
+                    add(UpdateInvFull.Obj(id - 1, count))
                 }
             }
         return UpdateInvFull(
