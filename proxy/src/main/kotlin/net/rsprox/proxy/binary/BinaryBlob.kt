@@ -5,7 +5,14 @@ import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.Unpooled
 import net.rsprot.buffer.extensions.toJagByteBuf
+import net.rsprox.protocol.session.AttributeMap
+import net.rsprox.protocol.session.Session
 import net.rsprox.proxy.config.BINARY_PATH
+import net.rsprox.proxy.plugin.DecodingSession
+import net.rsprox.proxy.plugin.PluginLoader
+import net.rsprox.proxy.transcriber.LiveTranscriberSession
+import net.rsprox.transcriber.MessageConsumer
+import net.rsprox.transcriber.MessageConsumerContainer
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
@@ -22,6 +29,7 @@ public data class BinaryBlob(
     private var lastWrite = TimeSource.Monotonic.markNow()
     private var lastWriteSize = 0
     private val closed = AtomicBoolean(false)
+    private var liveSession: LiveTranscriberSession? = null
 
     public fun append(
         direction: StreamDirection,
@@ -29,6 +37,15 @@ public data class BinaryBlob(
     ) {
         if (closed.get()) {
             throw IllegalStateException("Binary stream is closed.")
+        }
+        val session = this.liveSession
+        if (session != null) {
+            val copy = packet.copy()
+            try {
+                session.pass(direction, copy)
+            } finally {
+                copy.release()
+            }
         }
         stream.append(
             direction,
@@ -107,6 +124,37 @@ public data class BinaryBlob(
         } catch (t: Throwable) {
             logger.error(t) {
                 "Unable to copy temporary binary file to real file: $tempPath"
+            }
+        }
+    }
+
+    public fun hookLiveTranscriber(pluginLoader: PluginLoader) {
+        check(this.liveSession == null) {
+            "Live session already hooked."
+        }
+        check(this.stream.isEmpty()) {
+            "Stream has already been launched - it is impossible to hook mid-session."
+        }
+        try {
+            val latestPlugin = pluginLoader.getPluginOrNull(header.revision)
+            if (latestPlugin == null) {
+                logger.info { "Plugin for ${header.revision} missing, no live transcriber hooked." }
+                return
+            }
+            val transcriberProvider = pluginLoader.getTranscriberProvider(header.revision)
+            val consumers = MessageConsumerContainer(listOf(MessageConsumer.STDOUT_CONSUMER))
+            val session = Session(header.localPlayerIndex, AttributeMap())
+            val decodingSession = DecodingSession(this, latestPlugin)
+            val runner = transcriberProvider.provide(consumers)
+            this.liveSession =
+                LiveTranscriberSession(
+                    session,
+                    decodingSession,
+                    runner,
+                )
+        } catch (t: Throwable) {
+            logger.error(t) {
+                "Unable to hook a live transcriber."
             }
         }
     }

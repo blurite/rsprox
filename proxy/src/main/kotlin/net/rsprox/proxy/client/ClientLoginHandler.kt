@@ -23,6 +23,7 @@ import net.rsprox.proxy.channel.replace
 import net.rsprox.proxy.client.prot.LoginClientProt
 import net.rsprox.proxy.config.getConnection
 import net.rsprox.proxy.js5.Js5MasterIndexArchive
+import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.rsa.Rsa
 import net.rsprox.proxy.rsa.rsa
 import net.rsprox.proxy.server.ServerGameLoginDecoder
@@ -39,6 +40,7 @@ public class ClientLoginHandler(
     private val rsa: RSAPrivateCrtKeyParameters,
     private val binaryWriteInterval: Int,
     private val worldListProvider: WorldListProvider,
+    private val pluginLoader: PluginLoader,
 ) : SimpleChannelInboundHandler<ClientPacket<LoginClientProt>>() {
     override fun channelRead0(
         ctx: ChannelHandlerContext,
@@ -218,7 +220,14 @@ public class ClientLoginHandler(
 
     private fun switchServerToGameLoginDecoding(ctx: ChannelHandlerContext) {
         val pipeline = serverChannel.pipeline()
-        pipeline.addLastWithName(ServerGameLoginDecoder(ctx.channel(), binaryWriteInterval, worldListProvider))
+        pipeline.addLastWithName(
+            ServerGameLoginDecoder(
+                ctx.channel(),
+                binaryWriteInterval,
+                worldListProvider,
+                pluginLoader,
+            ),
+        )
         pipeline.addLastWithName(ServerRelayHandler(ctx.channel()))
     }
 

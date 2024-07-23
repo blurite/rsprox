@@ -22,6 +22,7 @@ import net.rsprox.proxy.client.ClientGameHandler
 import net.rsprox.proxy.client.ClientGenericDecoder
 import net.rsprox.proxy.client.ClientRelayHandler
 import net.rsprox.proxy.client.prot.GameClientProtProvider
+import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.server.prot.GameServerProtProvider
 import net.rsprox.proxy.util.UserUid
 import net.rsprox.proxy.worlds.WorldListProvider
@@ -30,6 +31,7 @@ public class ServerGameLoginDecoder(
     private val clientChannel: Channel,
     private val binaryWriteInterval: Int,
     private val worldListProvider: WorldListProvider,
+    private val pluginLoader: PluginLoader,
 ) : ByteToMessageDecoder() {
     private enum class State {
         AWAITING_GAME_CONNECTION_REPLY,
@@ -236,6 +238,7 @@ public class ServerGameLoginDecoder(
             val header = builder.build()
             val stream = BinaryStream(Unpooled.buffer(1_000_000), nanoTimestamp)
             val blob = BinaryBlob(header, stream, binaryWriteInterval)
+            blob.hookLiveTranscriber(pluginLoader)
             val serverChannel = ctx.channel()
             // Remove the binary header builder, nothing should be trying to update it from here on out
             serverChannel.attr(BINARY_HEADER_BUILDER).set(null)
@@ -269,8 +272,6 @@ public class ServerGameLoginDecoder(
     private fun switchClientToGameDecoding(ctx: ChannelHandlerContext) {
         val cipher = ctx.channel().getClientToServerStreamCipher()
         val clientPipeline = clientChannel.pipeline()
-        //         clientPipeline.remove<ClientGenericDecoder<*>>()
-        //        clientPipeline.replace<ClientLoginHandler>(ClientRelayHandler(serverChannel))
         clientPipeline.remove<ClientRelayHandler>()
         clientPipeline.addLast(ClientGenericDecoder(cipher, GameClientProtProvider))
         clientPipeline.addLast(ClientGameHandler(ctx.channel()))

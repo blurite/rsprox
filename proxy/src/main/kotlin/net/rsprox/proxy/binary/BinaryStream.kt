@@ -17,6 +17,10 @@ public class BinaryStream(
     private val buffer: ByteBuf,
     private var nanoTime: Long = 0,
 ) {
+    public fun isEmpty(): Boolean {
+        return !buffer.isReadable
+    }
+
     @Synchronized
     public fun append(
         direction: StreamDirection,
@@ -86,39 +90,39 @@ public class BinaryStream(
         }
     }
 
-    private fun decodeOpcode(
-        buffer: ByteBuf,
-        direction: StreamDirection,
-    ): Int {
-        return if (direction == StreamDirection.CLIENT_TO_SERVER) {
-            buffer.g1()
-        } else {
-            val p1 = buffer.g1()
-            if (p1 >= 128) {
-                val p2 = buffer.g1()
-                ((p1 - 128) shl 8) + p2
-            } else {
-                p1
-            }
-        }
-    }
-
-    private fun decodeSize(
-        buffer: ByteBuf,
-        prot: Prot,
-    ): Int {
-        if (prot.size == Prot.VAR_BYTE) {
-            return buffer.g1()
-        }
-        if (prot.size == Prot.VAR_SHORT) {
-            return buffer.g2()
-        }
-        return prot.size
-    }
-
-    private companion object {
+    public companion object {
         private const val MAX_31BIT_INT: Long = 1 shl 30
         private const val NANOSECONDS_IN_MILLISECOND: Long = 1_000_000
         private val logger = InlineLogger()
+
+        public fun decodeOpcode(
+            buffer: ByteBuf,
+            direction: StreamDirection,
+        ): Int {
+            return if (direction == StreamDirection.CLIENT_TO_SERVER) {
+                buffer.g1()
+            } else {
+                val p1 = buffer.g1()
+                if (p1 >= 128) {
+                    val p2 = buffer.g1()
+                    ((p1 - 128) shl 8) + p2
+                } else {
+                    p1
+                }
+            }
+        }
+
+        public fun decodeSize(
+            buffer: ByteBuf,
+            prot: Prot,
+        ): Int {
+            if (prot.size == Prot.VAR_BYTE) {
+                return buffer.g1()
+            }
+            if (prot.size == Prot.VAR_SHORT) {
+                return buffer.g2()
+            }
+            return prot.size
+        }
     }
 }

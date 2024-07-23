@@ -16,6 +16,7 @@ import net.rsprox.proxy.client.ClientLoginInitializer
 import net.rsprox.proxy.config.JavConfig
 import net.rsprox.proxy.config.ProxyProperties
 import net.rsprox.proxy.http.HttpServerHandler
+import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.server.ServerConnectionInitializer
 import net.rsprox.proxy.worlds.WorldListProvider
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
@@ -31,6 +32,7 @@ public class BootstrapFactory(
     public fun createServerBootStrap(
         worldListProvider: WorldListProvider,
         rsa: RSAPrivateCrtKeyParameters,
+        pluginLoader: PluginLoader,
         binaryWriteInterval: Int,
     ): ServerBootstrap {
         return ServerBootstrap()
@@ -48,6 +50,7 @@ public class BootstrapFactory(
                     this,
                     worldListProvider,
                     rsa,
+                    pluginLoader,
                     binaryWriteInterval,
                 ),
             )

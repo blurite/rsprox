@@ -11,6 +11,7 @@ import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.bootstrap.BootstrapFactory
 import net.rsprox.proxy.channel.setAutoRead
 import net.rsprox.proxy.client.prot.LoginClientProtProvider
+import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.util.ChannelConnectionHandler
 import net.rsprox.proxy.worlds.LocalHostAddress
 import net.rsprox.proxy.worlds.WorldListProvider
@@ -22,6 +23,7 @@ public class ClientLoginInitializer(
     private val bootstrapFactory: BootstrapFactory,
     private val worldListProvider: WorldListProvider,
     private val rsa: RSAPrivateCrtKeyParameters,
+    private val pluginLoader: PluginLoader,
     private val binaryWriteInterval: Int,
 ) : ChannelInitializer<Channel>() {
     override fun initChannel(clientChannel: Channel) {
@@ -59,7 +61,13 @@ public class ClientLoginInitializer(
                 }
                 clientChannel.pipeline().addLast(
                     ClientGenericDecoder(NopStreamCipher, LoginClientProtProvider),
-                    ClientLoginHandler(serverChannel, rsa, binaryWriteInterval, worldListProvider),
+                    ClientLoginHandler(
+                        serverChannel,
+                        rsa,
+                        binaryWriteInterval,
+                        worldListProvider,
+                        pluginLoader,
+                    ),
                 )
                 clientChannel.pipeline().addLast(ChannelConnectionHandler(serverChannel))
                 serverChannel.pipeline().addLast(ChannelConnectionHandler(clientChannel))

@@ -88,7 +88,7 @@ public class ProxyService(
         launchHttpServer(this.bootstrapFactory, worldListProvider, updatedJavConfig)
 
         // Only load osrs plugins for now, we don't currently intend on supporting other types
-        pluginLoader.loadDecoderPlugins("osrs")
+        pluginLoader.loadTranscriberPlugins("osrs")
 
         deleteTemporaryClients()
     }
@@ -316,6 +316,7 @@ public class ProxyService(
             factory.createServerBootStrap(
                 worldListProvider,
                 rsa,
+                pluginLoader,
                 properties.getProperty(BINARY_WRITE_INTERVAL_SECONDS),
             )
         val timeoutSeconds = properties.getProperty(BIND_TIMEOUT_SECONDS).toLong()

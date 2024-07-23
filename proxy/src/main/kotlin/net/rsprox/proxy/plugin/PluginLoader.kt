@@ -115,6 +115,10 @@ public class PluginLoader {
         return plugins.getValue(revision)
     }
 
+    public fun getPluginOrNull(revision: Int): DecoderPlugin? {
+        return plugins[revision]
+    }
+
     @Suppress("UNUSED_VARIABLE")
     public fun loadTranscriberPlugins(
         @Suppress("UNUSED_PARAMETER") type: String,
