@@ -20,7 +20,7 @@ import kotlin.io.path.nameWithoutExtension
 import kotlin.time.measureTime
 
 @Suppress("DuplicatedCode")
-public class TranscribeCommand : CliktCommand(name = "tostring") {
+public class TranscribeCommand : CliktCommand(name = "transcribe") {
     private val name by option("-name")
 
     override fun run() {

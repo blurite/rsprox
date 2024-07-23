@@ -60,6 +60,12 @@ tasks.create<JavaExec>("tostring") {
     mainClass.set("net.rsprox.proxy.cli.BinaryToStringCommandKt")
 }
 
+tasks.create<JavaExec>("transcribe") {
+    group = "run"
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("net.rsprox.proxy.cli.TranscribeCommandKt")
+}
+
 // fixes some weird error with "Entry classpath.index is a duplicate but no duplicate handling strategy has been set"
 // see https://github.com/gradle/gradle/issues/17236
 gradle.taskGraph.whenReady {
