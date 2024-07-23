@@ -34,6 +34,10 @@ public class StateTracker {
         return worlds[id] ?: error("World $id not available.")
     }
 
+    public fun getWorldOrNull(id: Int): World? {
+        return worlds[id]
+    }
+
     public fun getActiveWorld(): World {
         return worlds[activeWorldId] ?: error("World $activeWorldId not available.")
     }

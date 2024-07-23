@@ -47,6 +47,7 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Sequence
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfo
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityUpdateType
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfMoveSub
@@ -227,8 +228,14 @@ public open class BaseServerPacketTranscriber(
     }
 
     private fun worldentity(index: Int): String {
-        // TODO: Format this properly later when worldentity info is added
-        return "(index=$index)"
+        val entity = stateTracker.getWorldOrNull(index)
+        return if (entity == null) {
+            "(index=$index)"
+        } else {
+            "(index=$index, sizeX=${entity.sizeX}, " +
+                "sizeZ=${entity.sizeZ}, angle=${entity.angle}, " +
+                "coord=${formatter.coord(entity.coord)})"
+        }
     }
 
     public fun loc(
@@ -1346,7 +1353,68 @@ public open class BaseServerPacketTranscriber(
     }
 
     override fun worldEntityInfo(message: WorldEntityInfo) {
-        TODO("Not yet implemented")
+        publishProt()
+        for ((index, update) in message.updates) {
+            when (update) {
+                WorldEntityUpdateType.Idle -> {
+                    // no-op, too spammy
+                }
+                is WorldEntityUpdateType.LowResolutionToHighResolution -> {
+                    container.publish(
+                        format(2, "AddWorldEntity") {
+                            property("index", index)
+                            property("width", update.sizeX)
+                            property("length", update.sizeZ)
+                            property("angle", update.angle)
+                            property("unknown", update.unknownProperty)
+                            property("coord", formatter.coord(update.coordGrid))
+                        },
+                    )
+                }
+                is WorldEntityUpdateType.Active -> {
+                    container.publish(
+                        format(2, "UpdateWorldEntity") {
+                            property("worldentity", worldentity(index))
+                            property("angle", update.angle)
+                            property("movespeed", "${update.moveSpeed.id * 0.5} tiles/gamecycle")
+                            property("coord", formatter.coord(update.coordGrid))
+                        },
+                    )
+                }
+                WorldEntityUpdateType.HighResolutionToLowResolution -> {
+                    container.publish(
+                        format(3, "RemoveWorldEntity") {
+                            property("worldentity", worldentity(index))
+                        },
+                    )
+                }
+            }
+        }
+
+        for ((index, update) in message.updates) {
+            when (update) {
+                is WorldEntityUpdateType.Active -> {
+                    val world = stateTracker.getWorld(index)
+                    world.angle = update.angle
+                    world.coord = update.coordGrid
+                    world.moveSpeed = update.moveSpeed
+                }
+                WorldEntityUpdateType.HighResolutionToLowResolution -> {
+                    stateTracker.destroyWorld(index)
+                }
+                is WorldEntityUpdateType.LowResolutionToHighResolution -> {
+                    val world = stateTracker.createWorld(index)
+                    world.sizeX = update.sizeX
+                    world.sizeZ = update.sizeZ
+                    world.angle = update.angle
+                    world.unknownProperty = update.unknownProperty
+                    world.coord = update.coordGrid
+                }
+                WorldEntityUpdateType.Idle -> {
+                    // noop
+                }
+            }
+        }
     }
 
     override fun ifClearInv(message: IfClearInv) {
