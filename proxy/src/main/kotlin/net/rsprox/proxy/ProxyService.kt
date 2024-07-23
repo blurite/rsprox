@@ -3,6 +3,7 @@ package net.rsprox.proxy
 import com.github.michaelbull.logging.InlineLogger
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.buffer.ByteBufAllocator
+import io.netty.channel.Channel
 import net.rsprox.patch.NativeClientType
 import net.rsprox.patch.PatchResult
 import net.rsprox.patch.native.NativePatcher
@@ -21,6 +22,7 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
 import net.rsprox.proxy.config.TEMP_CLIENTS_DIRECTORY
 import net.rsprox.proxy.config.registerConnection
+import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.downloader.NativeClientDownloader
 import net.rsprox.proxy.futures.asCompletableFuture
 import net.rsprox.proxy.huffman.HuffmanProvider
@@ -62,6 +64,8 @@ public class ProxyService(
     private lateinit var rsa: RSAPrivateCrtKeyParameters
     private var properties: ProxyProperties by Delegates.notNull()
     private var availablePort: Int = -1
+    private val processes: MutableMap<Int, Process> = mutableMapOf()
+    private val connections: ProxyConnectionContainer = ProxyConnectionContainer()
 
     public fun start() {
         logger.info { "Starting proxy service" }
@@ -91,6 +95,56 @@ public class ProxyService(
         pluginLoader.loadTranscriberPlugins("osrs")
 
         deleteTemporaryClients()
+    }
+
+    public fun hasAliveProcesses(): Boolean {
+        return processes.values.any { process ->
+            process.isAlive
+        }
+    }
+
+    public fun killAliveProcesses() {
+        for ((port, process) in processes) {
+            if (process.isAlive) {
+                try {
+                    process.destroyForcibly().waitFor(5, TimeUnit.SECONDS)
+                } catch (t: Throwable) {
+                    logger.error(t) {
+                        "Unable to destroy process on port $port: ${process.info()}"
+                    }
+                    continue
+                }
+            }
+            logger.info {
+                "Destroyed process on port $port: ${process.info()}"
+            }
+        }
+    }
+
+    public fun safeShutdown() {
+        for (connection in connections.listConnections()) {
+            closeActiveChannel(connection.clientChannel)
+            closeActiveChannel(connection.serverChannel)
+            try {
+                connection.blob.close()
+            } catch (t: Throwable) {
+                logger.error(t) {
+                    "Unable to close blob ${connection.blob}"
+                }
+            }
+        }
+    }
+
+    private fun closeActiveChannel(channel: Channel) {
+        try {
+            if (channel.isActive) {
+                channel.close()
+            }
+        } catch (t: Throwable) {
+            logger.error(t) {
+                "Unable to close channel $channel"
+            }
+        }
     }
 
     private fun deleteTemporaryClients() {
@@ -166,10 +220,11 @@ public class ProxyService(
             ),
         )
         progressBarNotifier.update(100, "Launching native client")
-        launchExecutable(result.outputPath, os)
+        launchExecutable(port, result.outputPath, os)
     }
 
     private fun launchExecutable(
+        port: Int,
         path: Path,
         operatingSystem: OperatingSystem,
     ) {
@@ -177,29 +232,47 @@ public class ProxyService(
             OperatingSystem.WINDOWS -> {
                 val directory = path.parent.toFile()
                 val absolutePath = path.absolutePathString()
-                Runtime.getRuntime().exec(absolutePath, null, directory)
-                logger.debug { "Launched $path" }
+                createProcess(absolutePath, directory, path, port)
             }
             OperatingSystem.MAC -> {
                 // The patched file is at /.rsprox/clients/osclient.app/Contents/MacOS/osclient-patched
                 // We need to however execute the /.rsprox/clients/osclient.app "file"
                 val rootDirection = path.parent.parent.parent
                 val absolutePath = "${File.separator}${rootDirection.absolutePathString()}"
-                logger.debug { "Attempting to execute command 'open $absolutePath'" }
-                Runtime.getRuntime().exec("open $absolutePath")
-                logger.debug { "Launched $path" }
+                createProcess("open $absolutePath", null, path, port)
             }
             OperatingSystem.UNIX -> {
                 try {
                     val directory = path.parent.toFile()
                     val absolutePath = path.absolutePathString()
-                    Runtime.getRuntime().exec("wine $absolutePath", null, directory)
-                    logger.debug { "Launched $path" }
+                    createProcess("wine $absolutePath", directory, path, port)
                 } catch (e: IOException) {
                     throw RuntimeException("wine is required to run the enhanced client on unix", e)
                 }
             }
             OperatingSystem.SOLARIS -> throw IllegalStateException("Solaris not supported yet.")
+        }
+    }
+
+    private fun createProcess(
+        command: String,
+        directory: File?,
+        path: Path,
+        port: Int,
+    ) {
+        logger.debug { "Attempting to create process $command" }
+        val builder =
+            ProcessBuilder()
+                .command(command)
+        if (directory != null) {
+            builder.directory(directory)
+        }
+        val process = builder.start()
+        if (process.isAlive) {
+            logger.debug { "Successfully launched $path" }
+            processes[port] = process
+        } else {
+            logger.warn { "Unable to successfully launch $path" }
         }
     }
 
@@ -318,6 +391,7 @@ public class ProxyService(
                 rsa,
                 pluginLoader,
                 properties.getProperty(BINARY_WRITE_INTERVAL_SECONDS),
+                connections,
             )
         val timeoutSeconds = properties.getProperty(BIND_TIMEOUT_SECONDS).toLong()
         serverBootstrap

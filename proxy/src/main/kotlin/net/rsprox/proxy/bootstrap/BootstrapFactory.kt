@@ -15,6 +15,7 @@ import io.netty.handler.codec.http.HttpResponseEncoder
 import net.rsprox.proxy.client.ClientLoginInitializer
 import net.rsprox.proxy.config.JavConfig
 import net.rsprox.proxy.config.ProxyProperties
+import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.http.HttpServerHandler
 import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.server.ServerConnectionInitializer
@@ -34,6 +35,7 @@ public class BootstrapFactory(
         rsa: RSAPrivateCrtKeyParameters,
         pluginLoader: PluginLoader,
         binaryWriteInterval: Int,
+        connections: ProxyConnectionContainer,
     ): ServerBootstrap {
         return ServerBootstrap()
             .group(group(PARENT_GROUP_THREADS), group(CHILD_GROUP_THREADS))
@@ -52,6 +54,7 @@ public class BootstrapFactory(
                     rsa,
                     pluginLoader,
                     binaryWriteInterval,
+                    connections,
                 ),
             )
     }

@@ -22,6 +22,7 @@ import net.rsprox.proxy.channel.remove
 import net.rsprox.proxy.channel.replace
 import net.rsprox.proxy.client.prot.LoginClientProt
 import net.rsprox.proxy.config.getConnection
+import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.js5.Js5MasterIndexArchive
 import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.rsa.Rsa
@@ -41,6 +42,7 @@ public class ClientLoginHandler(
     private val binaryWriteInterval: Int,
     private val worldListProvider: WorldListProvider,
     private val pluginLoader: PluginLoader,
+    private val connections: ProxyConnectionContainer,
 ) : SimpleChannelInboundHandler<ClientPacket<LoginClientProt>>() {
     override fun channelRead0(
         ctx: ChannelHandlerContext,
@@ -226,6 +228,7 @@ public class ClientLoginHandler(
                 binaryWriteInterval,
                 worldListProvider,
                 pluginLoader,
+                connections,
             ),
         )
         pipeline.addLastWithName(ServerRelayHandler(ctx.channel()))

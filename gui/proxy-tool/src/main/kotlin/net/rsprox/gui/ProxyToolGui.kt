@@ -8,12 +8,16 @@ import net.rsprox.gui.components.createClientsPanel
 import net.rsprox.proxy.ProxyService
 import net.rsprox.proxy.progressbar.ProgressBarNotifier
 import java.awt.BorderLayout
-import java.util.Locale
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
+import java.util.*
 import java.util.concurrent.ForkJoinPool
 import javax.swing.JFrame
+import javax.swing.JOptionPane
 import javax.swing.JPanel
 import javax.swing.JTabbedPane
 import javax.swing.SwingUtilities
+import kotlin.system.exitProcess
 import kotlin.time.measureTime
 
 public class ProxyToolGui : JFrame() {
@@ -22,7 +26,7 @@ public class ProxyToolGui : JFrame() {
 
     init {
         title = "RSProx"
-        defaultCloseOperation = EXIT_ON_CLOSE
+        defaultCloseOperation = DO_NOTHING_ON_CLOSE
         setSize(320, 230)
         isResizable = false
         setLocationRelativeTo(null)
@@ -32,6 +36,39 @@ public class ProxyToolGui : JFrame() {
         add(panel, BorderLayout.CENTER)
         createTabs(panel)
         isVisible = true
+        addWindowListener(
+            object : WindowAdapter() {
+                override fun windowClosing(e: WindowEvent) {
+                    var result = JOptionPane.OK_OPTION
+
+                    if (service.hasAliveProcesses()) {
+                        try {
+                            result =
+                                JOptionPane.showConfirmDialog(
+                                    this@ProxyToolGui,
+                                    "Are you sure you want to exit?",
+                                    "Exit",
+                                    JOptionPane.OK_CANCEL_OPTION,
+                                    JOptionPane.QUESTION_MESSAGE,
+                                )
+                        } catch (e: Exception) {
+                            logger.warn(e) {
+                                "Unexpected exception occurred while check for confirm required"
+                            }
+                        }
+                    }
+
+                    if (result == JOptionPane.OK_OPTION) {
+                        try {
+                            service.killAliveProcesses()
+                        } finally {
+                            service.safeShutdown()
+                        }
+                        exitProcess(0)
+                    }
+                }
+            },
+        )
     }
 
     private fun createTabs(panel: JPanel) {
@@ -85,6 +122,10 @@ public class ProxyToolGui : JFrame() {
                 }
             }
         }
+    }
+
+    private companion object {
+        private val logger = InlineLogger()
     }
 }
 
