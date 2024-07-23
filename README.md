@@ -48,7 +48,7 @@ Below is a small task list showing a rough breakdown of what the tool will consi
   - [x] Plugin system for decoders, with each revision acting as its own plugin
   - [x] Revision 223 (client decoders)
   - [x] Revision 223 (server decoders)
-- [ ] Transcriber
+- [x] Transcriber
 - [ ] Launchers
   - [ ] Proxy launcher/updater
   - [ ] RuneLite launcher (necessary to avoid detection)
