@@ -2,11 +2,13 @@ package net.rsprox.protocol.game.outgoing.decoder.prot
 
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.Prot
+import net.rsprot.protocol.ServerProt
 
 public enum class GameServerProt(
     override val opcode: Int,
     override val size: Int,
-) : ClientProt {
+) : ServerProt,
+    ClientProt {
     // Interface related packets
     IF_RESYNC(GameServerProtId.IF_RESYNC, Prot.VAR_SHORT),
     IF_OPENTOP(GameServerProtId.IF_OPENTOP, 2),

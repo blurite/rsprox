@@ -19,4 +19,5 @@ dependencies {
     implementation(projects.transcriber)
     implementation(rootProject.libs.clikt)
     implementation(rootProject.libs.classgraph)
+    implementation(projects.protocol.osrs223)
 }

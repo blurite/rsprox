@@ -1,6 +1,7 @@
 package net.rsprox.proxy.client.prot
 
 import net.rsprox.protocol.ProtProvider
+import net.rsprox.protocol.game.incoming.decoder.prot.GameClientProt
 
 public data object GameClientProtProvider : ProtProvider<GameClientProt> {
     override fun get(opcode: Int): GameClientProt {

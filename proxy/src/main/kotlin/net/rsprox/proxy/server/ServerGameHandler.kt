@@ -18,12 +18,12 @@ import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.crypto.crc.CyclicRedundancyCheck
 import net.rsprot.protocol.util.CombinedId
 import net.rsprot.protocol.util.gCombinedId
+import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.proxy.attributes.INCOMING_BANK_PIN
 import net.rsprox.proxy.binary.StreamDirection
 import net.rsprox.proxy.channel.getBinaryBlob
 import net.rsprox.proxy.channel.getServerToClientStreamCipher
 import net.rsprox.proxy.huffman.HuffmanProvider
-import net.rsprox.proxy.server.prot.GameServerProt
 import net.rsprox.proxy.worlds.WorldListProvider
 
 public class ServerGameHandler(
