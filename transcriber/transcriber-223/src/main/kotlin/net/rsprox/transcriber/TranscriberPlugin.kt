@@ -262,7 +262,7 @@ public class TranscriberPlugin(
             GameClientProt.IGNORELIST_ADD -> pass(message, Transcriber::ignoreListAdd)
             GameClientProt.IGNORELIST_DEL -> pass(message, Transcriber::ignoreListDel)
             GameClientProt.MESSAGE_PUBLIC -> pass(message, Transcriber::messagePublic)
-            GameClientProt.MESSAGE_PRIVATE -> pass(message, Transcriber::messagePrivate)
+            GameClientProt.MESSAGE_PRIVATE -> pass(message, Transcriber::messagePrivateClient)
             GameClientProt.MOVE_GAMECLICK -> pass(message, Transcriber::moveGameClick)
             GameClientProt.MOVE_MINIMAPCLICK -> pass(message, Transcriber::moveMinimapClick)
             GameClientProt.CLIENT_CHEAT -> pass(message, Transcriber::clientCheat)

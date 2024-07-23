@@ -23,6 +23,7 @@ import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatSetRank
 import net.rsprox.protocol.game.incoming.model.locs.OpLoc
 import net.rsprox.protocol.game.incoming.model.locs.OpLoc6
 import net.rsprox.protocol.game.incoming.model.locs.OpLocT
+import net.rsprox.protocol.game.incoming.model.messaging.MessagePrivate
 import net.rsprox.protocol.game.incoming.model.messaging.MessagePublic
 import net.rsprox.protocol.game.incoming.model.misc.client.ConnectionTelemetry
 import net.rsprox.protocol.game.incoming.model.misc.client.DetectModifiedClient
@@ -64,7 +65,6 @@ import net.rsprox.protocol.game.incoming.model.social.FriendListAdd
 import net.rsprox.protocol.game.incoming.model.social.FriendListDel
 import net.rsprox.protocol.game.incoming.model.social.IgnoreListAdd
 import net.rsprox.protocol.game.incoming.model.social.IgnoreListDel
-import net.rsprox.protocol.game.outgoing.model.social.MessagePrivate
 
 public interface ClientPacketTranscriber {
     public fun if1Button(message: If1Button)
