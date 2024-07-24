@@ -2,6 +2,7 @@ package net.rsprox.transcriber.state
 
 import net.rsprot.protocol.Prot
 import net.rsprot.protocol.util.CombinedId
+import net.rsprox.cache.api.type.VarBitType
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 
 public class StateTracker {
@@ -16,6 +17,7 @@ public class StateTracker {
     private val openInterfaces: MutableMap<CombinedId, Int> = mutableMapOf()
     public var toplevelInterface: Int = -1
     private val cachedVarps: IntArray = IntArray(10_000)
+    private lateinit var varpToVarbitsMap: Map<Int, List<VarBitType>>
 
     public fun createWorld(id: Int): World {
         val newWorld = World(id)
@@ -115,6 +117,22 @@ public class StateTracker {
         value: Int,
     ) {
         cachedVarps[id] = value
+    }
+
+    public fun varbitsLoaded(): Boolean {
+        return this::varpToVarbitsMap.isInitialized
+    }
+
+    public fun associateVarbits(list: Collection<VarBitType>) {
+        val map = mutableMapOf<Int, MutableList<VarBitType>>()
+        for (type in list) {
+            map.getOrPut(type.basevar) { mutableListOf() }.add(type)
+        }
+        this.varpToVarbitsMap = map
+    }
+
+    public fun getAssociatedVarbits(basevar: Int): List<VarBitType> {
+        return this.varpToVarbitsMap[basevar] ?: emptyList()
     }
 
     public companion object {

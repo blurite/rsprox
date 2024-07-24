@@ -3188,17 +3188,16 @@ public open class BaseServerPacketTranscriber(
         oldValue: Int,
         newValue: Int,
     ): List<VarBitType> {
-        return cache
-            .listVarBitTypes()
-            .asSequence()
-            .filter { it.basevar == basevar }
-            .filter { type ->
-                val bitcount = (type.endbit - type.startbit) + 1
-                val bitmask = type.bitmask(bitcount)
-                val oldVarbitValue = oldValue ushr type.startbit and bitmask
-                val newVarbitValue = newValue ushr type.startbit and bitmask
-                oldVarbitValue != newVarbitValue
-            }.toList()
+        if (!stateTracker.varbitsLoaded()) {
+            stateTracker.associateVarbits(cache.listVarBitTypes())
+        }
+        return stateTracker.getAssociatedVarbits(basevar).filter { type ->
+            val bitcount = (type.endbit - type.startbit) + 1
+            val bitmask = type.bitmask(bitcount)
+            val oldVarbitValue = oldValue ushr type.startbit and bitmask
+            val newVarbitValue = newValue ushr type.startbit and bitmask
+            oldVarbitValue != newVarbitValue
+        }
     }
 
     private fun publishVarbits(
