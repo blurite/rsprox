@@ -5,6 +5,10 @@ import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.Unpooled
 import net.rsprot.buffer.extensions.toJagByteBuf
+import net.rsprox.cache.Js5MasterIndex
+import net.rsprox.cache.OldSchoolCache
+import net.rsprox.cache.api.CacheProvider
+import net.rsprox.cache.resolver.HistoricCacheResolver
 import net.rsprox.protocol.session.AttributeMap
 import net.rsprox.protocol.session.Session
 import net.rsprox.proxy.config.BINARY_PATH
@@ -136,6 +140,17 @@ public data class BinaryBlob(
             "Stream has already been launched - it is impossible to hook mid-session."
         }
         try {
+            val masterIndex =
+                Js5MasterIndex.trimmed(
+                    header.revision,
+                    header.js5MasterIndex,
+                )
+            // TODO: Switch to live implementation in the future
+            val provider =
+                CacheProvider {
+                    OldSchoolCache(HistoricCacheResolver(), masterIndex)
+                }
+            pluginLoader.loadTranscriberPlugins("osrs", provider)
             val latestPlugin = pluginLoader.getPluginOrNull(header.revision)
             if (latestPlugin == null) {
                 logger.info { "Plugin for ${header.revision} missing, no live transcriber hooked." }

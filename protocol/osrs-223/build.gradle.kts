@@ -10,4 +10,5 @@ dependencies {
     implementation(platform(rootProject.libs.log4j.bom))
     implementation(rootProject.libs.bundles.log4j)
     implementation(projects.protocol)
+    implementation(projects.cache.cacheApi)
 }

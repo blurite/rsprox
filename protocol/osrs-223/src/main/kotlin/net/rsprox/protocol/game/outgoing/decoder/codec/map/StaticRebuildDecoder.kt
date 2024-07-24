@@ -5,6 +5,7 @@ import net.rsprot.buffer.bitbuffer.toBitBuf
 import net.rsprot.compression.HuffmanCodec
 import net.rsprot.crypto.xtea.XteaKey
 import net.rsprot.protocol.ClientProt
+import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
@@ -18,6 +19,7 @@ import net.rsprox.protocol.session.getWorld
 
 public class StaticRebuildDecoder(
     private val huffmanCodec: HuffmanCodec,
+    private val cache: CacheProvider,
 ) : ProxyMessageDecoder<StaticRebuildMessage> {
     override val prot: ClientProt = GameServerProt.REBUILD_NORMAL
 
@@ -71,7 +73,13 @@ public class StaticRebuildDecoder(
                     keys,
                     playerInfoInitBlock,
                 )
-            val world = session.allocateWorld(-1, session.localPlayerIndex, huffmanCodec)
+            val world =
+                session.allocateWorld(
+                    -1,
+                    session.localPlayerIndex,
+                    huffmanCodec,
+                    cache,
+                )
             world.baseX = (zoneX - 6) * 8
             world.baseZ = (zoneZ - 6) * 8
             world.playerInfo.gpiInit(playerInfoInitBlock)

@@ -5,6 +5,7 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.buffer.bitbuffer.BitBuf
 import net.rsprot.buffer.bitbuffer.toBitBuf
 import net.rsprot.buffer.extensions.toJagByteBuf
+import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.BaseAnimationSetExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.BodyCustomisationExtendedInfo
@@ -31,7 +32,9 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Spotanim
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
 
 @Suppress("DuplicatedCode")
-public class NpcInfoClient {
+public class NpcInfoClient(
+    public val cache: CacheProvider,
+) {
     private var deletedNPCCount: Int = 0
     private var deletedNPC = IntArray(1000)
     private var npc = arrayOfNulls<Npc>(65536)

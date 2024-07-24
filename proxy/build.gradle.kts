@@ -20,4 +20,6 @@ dependencies {
     implementation(rootProject.libs.clikt)
     implementation(rootProject.libs.classgraph)
     implementation(projects.protocol.osrs223)
+    implementation(projects.cache)
+    implementation(projects.cache.cacheApi)
 }

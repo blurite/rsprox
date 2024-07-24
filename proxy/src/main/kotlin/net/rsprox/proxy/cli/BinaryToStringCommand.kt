@@ -2,8 +2,11 @@ package net.rsprox.proxy.cli
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.option
+import net.rsprox.cache.Js5MasterIndex
+import net.rsprox.cache.resolver.HistoricCacheResolver
 import net.rsprox.proxy.binary.BinaryBlob
 import net.rsprox.proxy.binary.StreamDirection
+import net.rsprox.proxy.cache.StatefulCacheProvider
 import net.rsprox.proxy.config.BINARY_PATH
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.plugin.DecodingSession
@@ -19,7 +22,8 @@ public class BinaryToStringCommand : CliktCommand(name = "tostring") {
     override fun run() {
         val pluginLoader = PluginLoader()
         HuffmanProvider.load()
-        pluginLoader.loadDecoderPlugins("osrs")
+        val provider = StatefulCacheProvider(HistoricCacheResolver())
+        pluginLoader.loadDecoderPlugins("osrs", provider)
         val fileName = this.name
         if (fileName != null) {
             val binaryName = if (fileName.endsWith(".bin")) fileName else "$fileName.bin"
@@ -28,7 +32,7 @@ public class BinaryToStringCommand : CliktCommand(name = "tostring") {
                 echo("Unable to locate file $fileName in $BINARY_PATH")
                 return
             }
-            simpleTranscribe(file, pluginLoader)
+            simpleTranscribe(file, pluginLoader, provider)
         } else {
             val fileTreeWalk =
                 BINARY_PATH
@@ -39,7 +43,7 @@ public class BinaryToStringCommand : CliktCommand(name = "tostring") {
                 if (BINARY_PATH.resolve(bin.nameWithoutExtension + ".txt").exists()) {
                     continue
                 }
-                simpleTranscribe(bin.toPath(), pluginLoader)
+                simpleTranscribe(bin.toPath(), pluginLoader, provider)
             }
         }
     }
@@ -47,8 +51,15 @@ public class BinaryToStringCommand : CliktCommand(name = "tostring") {
     private fun simpleTranscribe(
         binaryPath: Path,
         pluginLoader: PluginLoader,
+        statefulCacheProvider: StatefulCacheProvider,
     ) {
         val binary = BinaryBlob.decode(binaryPath)
+        statefulCacheProvider.update(
+            Js5MasterIndex.trimmed(
+                binary.header.revision,
+                binary.header.js5MasterIndex,
+            ),
+        )
         val latestPlugin = pluginLoader.getPlugin(binary.header.revision)
         val session = DecodingSession(binary, latestPlugin)
         var tick = 0

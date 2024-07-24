@@ -1,6 +1,7 @@
 package net.rsprox.protocol.session
 
 import net.rsprot.compression.HuffmanCodec
+import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.reflection.ReflectionCheck
 import net.rsprox.protocol.world.World
@@ -29,13 +30,14 @@ internal fun Session.allocateWorld(
     worldIndex: Int,
     localPlayerIndex: Int,
     huffmanCodec: HuffmanCodec,
+    cache: CacheProvider,
 ): World {
     var worldMap = this.trackedWorldMap
     if (worldMap == null) {
         worldMap = mutableMapOf()
         this.trackedWorldMap = worldMap
     }
-    val world = World(localPlayerIndex, huffmanCodec)
+    val world = World(localPlayerIndex, huffmanCodec, cache)
     worldMap[worldIndex] = world
     return world
 }

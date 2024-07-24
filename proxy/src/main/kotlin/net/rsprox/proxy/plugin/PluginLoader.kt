@@ -4,6 +4,7 @@ import com.github.michaelbull.logging.InlineLogger
 import io.github.classgraph.ClassGraph
 import net.rsprot.compression.HuffmanCodec
 import net.rsprot.protocol.ClientProt
+import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.ClientPacketDecoder
 import net.rsprox.protocol.ProtProvider
 import net.rsprox.protocol.ServerPacketDecoder
@@ -18,7 +19,10 @@ public class PluginLoader {
     private val plugins: MutableMap<Int, DecoderPlugin> = mutableMapOf()
     private val transcribers: MutableMap<Int, TranscriberProvider> = mutableMapOf()
 
-    public fun loadDecoderPlugins(type: String) {
+    public fun loadDecoderPlugins(
+        type: String,
+        cache: CacheProvider,
+    ) {
         val plugins =
             PLUGINS_DIRECTORY
                 .toFile()
@@ -31,7 +35,7 @@ public class PluginLoader {
                 if (name != type) {
                     continue
                 }
-                loadDecoderPlugin(file, revisionString.toInt())
+                loadDecoderPlugin(cache, file, revisionString.toInt())
             } catch (t: Throwable) {
                 logger.error(t) {
                     "Error loading plugin $file"
@@ -41,6 +45,7 @@ public class PluginLoader {
     }
 
     private fun loadDecoderPlugin(
+        cache: CacheProvider,
         file: File,
         revision: Int,
     ) {
@@ -50,11 +55,12 @@ public class PluginLoader {
                 arrayOf(file.toURI().toURL()),
                 this::class.java.classLoader,
             )
-        loadDecoderPlugin(jarLoader, revision)
+        loadDecoderPlugin(cache, jarLoader, revision)
         logger.debug { "Loaded ${file.nameWithoutExtension} plugin." }
     }
 
     private fun loadDecoderPlugin(
+        cache: CacheProvider,
         classLoader: ClassLoader,
         revision: Int,
     ) {
@@ -78,8 +84,8 @@ public class PluginLoader {
             )
         val serverPacketDecoder =
             serverPacketDecoderService
-                .getDeclaredConstructor(HuffmanCodec::class.java)
-                .newInstance(huffmanCodec) as ServerPacketDecoder
+                .getDeclaredConstructor(HuffmanCodec::class.java, CacheProvider::class.java)
+                .newInstance(huffmanCodec, cache) as ServerPacketDecoder
 
         @Suppress("UNCHECKED_CAST")
         val clientProtProvider =
@@ -122,6 +128,7 @@ public class PluginLoader {
     @Suppress("UNUSED_VARIABLE")
     public fun loadTranscriberPlugins(
         @Suppress("UNUSED_PARAMETER") type: String,
+        cache: CacheProvider,
     ) {
         val plugins =
             TRANSCRIBERS_DIRECTORY
@@ -132,7 +139,7 @@ public class PluginLoader {
             try {
                 val match = transcriberRegex.find(file.name) ?: continue
                 val (revisionString, name) = match.destructured
-                loadTranscriberPlugin(file, revisionString.toInt())
+                loadTranscriberPlugin(cache, file, revisionString.toInt())
             } catch (t: Throwable) {
                 logger.error(t) {
                     "Error loading transcriber $file"
@@ -142,6 +149,7 @@ public class PluginLoader {
     }
 
     private fun loadTranscriberPlugin(
+        cache: CacheProvider,
         file: File,
         revision: Int,
     ) {
@@ -151,7 +159,7 @@ public class PluginLoader {
                 arrayOf(file.toURI().toURL()),
                 this::class.java.classLoader,
             )
-        loadDecoderPlugin(loader, revision)
+        loadDecoderPlugin(cache, loader, revision)
         val scanner = ClassGraph()
         val result =
             scanner

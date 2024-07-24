@@ -2,6 +2,7 @@ package net.rsprox.protocol.game.outgoing.decoder.prot
 
 import net.rsprot.compression.HuffmanCodec
 import net.rsprot.protocol.ProtRepository
+import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.MessageDecoderRepository
 import net.rsprox.protocol.MessageDecoderRepositoryBuilder
 import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamLookAtDecoder
@@ -140,7 +141,10 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.SoundAreaDec
 
 public object ServerMessageDecoderRepository {
     @ExperimentalStdlibApi
-    public fun build(huffmanCodec: HuffmanCodec): MessageDecoderRepository<GameServerProt> {
+    public fun build(
+        huffmanCodec: HuffmanCodec,
+        cache: CacheProvider,
+    ): MessageDecoderRepository<GameServerProt> {
         val protRepository = ProtRepository.of<GameServerProt>()
         val builder =
             MessageDecoderRepositoryBuilder(
@@ -215,7 +219,7 @@ public object ServerMessageDecoderRepository {
                 bind(LogoutTransferDecoder())
                 bind(LogoutWithReasonDecoder())
 
-                bind(StaticRebuildDecoder(huffmanCodec))
+                bind(StaticRebuildDecoder(huffmanCodec, cache))
                 bind(RebuildRegionDecoder())
                 bind(RebuildWorldEntityDecoder())
 
