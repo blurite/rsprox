@@ -4,4 +4,5 @@ dependencies {
     implementation(projects.transcriber.transcriber223)
     implementation(rootProject.libs.rsprot.protocol)
     implementation(rootProject.libs.rsprot.crypto)
+    implementation(projects.cache.cacheApi)
 }

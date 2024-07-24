@@ -160,7 +160,7 @@ public data class BinaryBlob(
             val consumers = MessageConsumerContainer(listOf(MessageConsumer.STDOUT_CONSUMER))
             val session = Session(header.localPlayerIndex, AttributeMap())
             val decodingSession = DecodingSession(this, latestPlugin)
-            val runner = transcriberProvider.provide(consumers)
+            val runner = transcriberProvider.provide(consumers, provider)
             this.liveSession =
                 LiveTranscriberSession(
                     session,

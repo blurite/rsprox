@@ -1,5 +1,6 @@
 package net.rsprox.transcriber.base
 
+import net.rsprox.cache.api.Cache
 import net.rsprox.protocol.game.incoming.model.buttons.If1Button
 import net.rsprox.protocol.game.incoming.model.buttons.If3Button
 import net.rsprox.protocol.game.incoming.model.buttons.IfButtonD
@@ -83,6 +84,7 @@ public open class BaseClientPacketTranscriber(
     private val formatter: BaseMessageFormatter,
     private val container: MessageConsumerContainer,
     private val stateTracker: StateTracker,
+    private val cache: Cache,
 ) : ClientPacketTranscriber {
     private fun format(properties: List<Property>): String {
         return formatter.format(

@@ -1,5 +1,6 @@
 package net.rsprox.transcriber.base
 
+import net.rsprox.cache.api.Cache
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.outgoing.model.camera.CamLookAt
 import net.rsprox.protocol.game.outgoing.model.camera.CamLookAtEasedCoord
@@ -186,6 +187,7 @@ public open class BaseServerPacketTranscriber(
     private val formatter: BaseMessageFormatter,
     private val container: MessageConsumerContainer,
     private val stateTracker: StateTracker,
+    private val cache: Cache,
 ) : ServerPacketTranscriber {
     private fun format(
         indentation: Int,

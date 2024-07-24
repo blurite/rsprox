@@ -7,6 +7,7 @@ dependencies {
     implementation(projects.protocol.osrs223)
     implementation(projects.transcriber)
     implementation(rootProject.libs.rsprot.protocol)
+    implementation(projects.cache.cacheApi)
 }
 
 private val pluginsPath: Path = Path(System.getProperty("user.home"), ".rsprox", "transcribers")
