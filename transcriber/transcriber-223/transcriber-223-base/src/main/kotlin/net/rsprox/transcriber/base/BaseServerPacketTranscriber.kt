@@ -179,6 +179,7 @@ import net.rsprox.transcriber.quote
 import net.rsprox.transcriber.state.Npc
 import net.rsprox.transcriber.state.Player
 import net.rsprox.transcriber.state.StateTracker
+import net.rsprox.transcriber.state.World
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.concurrent.TimeUnit
@@ -239,8 +240,28 @@ public open class BaseServerPacketTranscriber(
         return if (npc == null) {
             "($prefix=$index)"
         } else {
-            "($prefix=$index, id=${formatter.type(ScriptVarType.NPC, npc.id)}, coord=${formatter.coord(npc.coord)})"
+            formatNpc(prefix, npc.index, npc.name?.quote(), formatter.coord(npc.coord))
         }
+    }
+
+    private fun formatNpc(
+        prefix: String,
+        index: Int,
+        name: String?,
+        coord: String,
+    ): String {
+        val builder = StringBuilder()
+        builder
+            .append('(')
+            .append(prefix)
+            .append('=')
+            .append(index)
+            .append(", ")
+        if (name != null) {
+            builder.append("name=").append(name).append(", ")
+        }
+        builder.append("coord=").append(coord).append(')')
+        return builder.toString()
     }
 
     private fun player(
@@ -981,12 +1002,14 @@ public open class BaseServerPacketTranscriber(
             when (update) {
                 is NpcUpdateType.Active -> {
                     val npc = world.getNpc(index)
+                    val name = npc.name?.quote()
                     container.publish(
                         format(2, "Npc") {
                             if (update.steps.isNotEmpty()) {
                                 property(
                                     "npc",
                                     "(index=$index, id=${formatter.type(ScriptVarType.NPC, npc.id)}, " +
+                                        (if (name != null) "name=$name, " else "") +
                                         "lastCoord=${formatter.coord(npc.coord)}, " +
                                         "newCoord=${formatter.coord(update.level, update.x, update.z)})",
                                 )
@@ -1008,18 +1031,25 @@ public open class BaseServerPacketTranscriber(
                                 property(
                                     "npc",
                                     "(index=$index, id=${formatter.type(ScriptVarType.NPC, npc.id)}, " +
+                                        (if (name != null) "name=$name, " else "") +
                                         "coord=${formatter.coord(npc.coord)})",
                                 )
                             }
                         },
                     )
-                    appendExtendedInfo(npc, lines, update.extendedInfo)
+                    appendExtendedInfo(world, npc, lines, update.extendedInfo)
                 }
                 NpcUpdateType.HighResolutionToLowResolution -> {
                     val npc = world.getNpc(index)
+                    val name = npc.name?.quote()
                     container.publish(
                         format(2, "Npc") {
-                            property("npc", "(index=$index, id=${npc.id}, lastCoord=${formatter.coord(npc.coord)})")
+                            property(
+                                "npc",
+                                "(index=$index, id=${npc.id}, " +
+                                    (if (name != null) "name=$name, " else "") +
+                                    "lastCoord=${formatter.coord(npc.coord)})",
+                            )
                             property("update", "Removed")
                         },
                     )
@@ -1035,7 +1065,7 @@ public open class BaseServerPacketTranscriber(
                             property("update", "Added")
                         },
                     )
-                    appendExtendedInfo(npc, lines, update.extendedInfo)
+                    appendExtendedInfo(world, npc, lines, update.extendedInfo)
                 }
                 NpcUpdateType.Idle -> {
                     // noop
@@ -1047,6 +1077,7 @@ public open class BaseServerPacketTranscriber(
     }
 
     private fun appendExtendedInfo(
+        world: World,
         npc: Npc,
         lines: MutableList<String>,
         extendedInfo: List<ExtendedInfo>,
@@ -1329,6 +1360,7 @@ public open class BaseServerPacketTranscriber(
                         }
                 }
                 is TransformationExtendedInfo -> {
+                    world.updateNpcName(npc.index, cache.getNpcType(info.id)?.name)
                     lines +=
                         format(3, "Transformation") {
                             property("oldId", formatter.type(ScriptVarType.NPC, npc.id))
@@ -1363,7 +1395,14 @@ public open class BaseServerPacketTranscriber(
                 NpcUpdateType.HighResolutionToLowResolution -> {
                 }
                 is NpcUpdateType.LowResolutionToHighResolution -> {
-                    world.createNpc(index, update.id, update.spawnCycle, CoordGrid(update.level, update.x, update.z))
+                    val name = cache.getNpcType(update.id)?.name
+                    world.createNpc(
+                        index,
+                        update.id,
+                        name,
+                        update.spawnCycle,
+                        CoordGrid(update.level, update.x, update.z),
+                    )
                 }
                 NpcUpdateType.Idle -> {
                     // noop
