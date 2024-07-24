@@ -29,11 +29,25 @@ public class OldSchoolCache(
         return npcs[id]
     }
 
+    override fun listNpcTypes(): Collection<NpcType> {
+        if (!this::npcs.isInitialized) {
+            resolveNpcs()
+        }
+        return this.npcs.values
+    }
+
     override fun getVarBitType(id: Int): VarBitType? {
         if (!this::varbits.isInitialized) {
             resolveVarBits()
         }
         return varbits[id]
+    }
+
+    override fun listVarBitTypes(): Collection<VarBitType> {
+        if (!this::varbits.isInitialized) {
+            resolveVarBits()
+        }
+        return this.varbits.values
     }
 
     private fun resolveNpcs() {
