@@ -32,7 +32,6 @@ public class HintArrowDecoder : ProxyMessageDecoder<HintArrow> {
                 HintArrow(HintArrow.PlayerHintArrow(index))
             }
             in 2..6 -> {
-                val positionId = buffer.g1()
                 val x = buffer.g2()
                 val z = buffer.g2()
                 val height = buffer.g1()
@@ -41,7 +40,7 @@ public class HintArrowDecoder : ProxyMessageDecoder<HintArrow> {
                         x,
                         z,
                         height,
-                        positionId,
+                        type,
                     ),
                 )
             }
