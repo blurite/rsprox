@@ -19,6 +19,7 @@ include(
     "patch",
     "gui",
     "transcriber",
+    "cache",
 )
 
 includeSubprojects(":protocol")

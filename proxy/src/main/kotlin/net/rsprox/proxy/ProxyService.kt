@@ -9,6 +9,7 @@ import net.rsprox.patch.PatchResult
 import net.rsprox.patch.native.NativePatcher
 import net.rsprox.proxy.bootstrap.BootstrapFactory
 import net.rsprox.proxy.config.BINARY_PATH
+import net.rsprox.proxy.config.CACHES_DIRECTORY
 import net.rsprox.proxy.config.CLIENTS_DIRECTORY
 import net.rsprox.proxy.config.CONFIGURATION_PATH
 import net.rsprox.proxy.config.JavConfig
@@ -73,6 +74,7 @@ public class ProxyService(
         createConfigurationDirectories(BINARY_PATH)
         createConfigurationDirectories(CLIENTS_DIRECTORY)
         createConfigurationDirectories(TEMP_CLIENTS_DIRECTORY)
+        createConfigurationDirectories(CACHES_DIRECTORY)
         loadProperties()
         HuffmanProvider.load()
         this.rsa = loadRsa()

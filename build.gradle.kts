@@ -10,6 +10,8 @@ allprojects {
 
     repositories {
         mavenCentral()
+        maven("https://repo.openrs2.org/repository/openrs2-snapshots/")
+        maven("https://maven.runelab.io/snapshots/")
     }
 
     tasks.withType<AbstractArchiveTask>().configureEach {
