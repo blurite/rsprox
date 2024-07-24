@@ -7,6 +7,7 @@ import net.rsprot.buffer.bitbuffer.toBitBuf
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.common.CoordGrid
+import net.rsprox.protocol.exceptions.DecodeError
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.BaseAnimationSetExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.BodyCustomisationExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.CombatLevelChangeExtendedInfo
@@ -162,10 +163,10 @@ public class NpcInfoClient(
                 decodeFacePathingEntity(buffer, blocks)
             }
             if (flag and BODY_CUSTOMISATION != 0) {
-                decodeBodyCustomisation(buffer, blocks)
+                decodeBodyCustomisation(npc.id, buffer, blocks)
             }
             if (flag and HEAD_CUSTOMISATION != 0) {
-                decodeHeadCustomisation(buffer, blocks)
+                decodeHeadCustomisation(npc.id, buffer, blocks)
             }
             if (flag and SAY != 0) {
                 decodeSay(buffer, blocks)
@@ -397,6 +398,7 @@ public class NpcInfoClient(
 
     @Suppress("EmptyRange")
     private fun decodeBodyCustomisation(
+        id: Int,
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
@@ -410,8 +412,8 @@ public class NpcInfoClient(
                 val count = buffer.g1()
                 val models = ArrayList<Int>(count)
                 for (i in 0..<count) {
-                    val id = buffer.g2Alt3()
-                    models += if (id == 0xFFFF) -1 else id
+                    val modelId = buffer.g2Alt3()
+                    models += if (modelId == 0xFFFF) -1 else modelId
                 }
                 models
             } else {
@@ -419,7 +421,11 @@ public class NpcInfoClient(
             }
         val recolours =
             if (flag and 0x4 != 0) {
-                val length = 0 // TODO: Length must be grabbed from the cache
+                val cache = cache.get()
+                val npc =
+                    cache.getNpcType(id)
+                        ?: throw DecodeError("Npc $id not found in cache $cache! Npc info decoding cannot continue.")
+                val length = npc.recoldest.size
                 val recolours = ArrayList<Int>(length)
                 for (i in 0..<length) {
                     recolours += buffer.g2Alt3()
@@ -430,7 +436,11 @@ public class NpcInfoClient(
             }
         val retextures =
             if (flag and 0x8 != 0) {
-                val length = 0 // TODO: Length must be grabbed from the cache
+                val cache = cache.get()
+                val npc =
+                    cache.getNpcType(id)
+                        ?: throw DecodeError("Npc $id not found in cache $cache! Npc info decoding cannot continue.")
+                val length = npc.retexdest.size
                 val retextures = ArrayList<Int>(length)
                 for (i in 0..<length) {
                     retextures += buffer.g2Alt1()
@@ -459,6 +469,7 @@ public class NpcInfoClient(
 
     @Suppress("EmptyRange")
     private fun decodeHeadCustomisation(
+        id: Int,
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
@@ -472,8 +483,8 @@ public class NpcInfoClient(
                 val count = buffer.g1Alt1()
                 val models = ArrayList<Int>(count)
                 for (i in 0..<count) {
-                    val id = buffer.g2()
-                    models += if (id == 0xFFFF) -1 else id
+                    val modelId = buffer.g2()
+                    models += if (modelId == 0xFFFF) -1 else modelId
                 }
                 models
             } else {
@@ -481,7 +492,11 @@ public class NpcInfoClient(
             }
         val recolours =
             if (flag and 0x4 != 0) {
-                val length = 0 // TODO: Length must be grabbed from the cache
+                val cache = cache.get()
+                val npc =
+                    cache.getNpcType(id)
+                        ?: throw DecodeError("Npc $id not found in cache $cache! Npc info decoding cannot continue.")
+                val length = npc.recoldest.size
                 val recolours = ArrayList<Int>(length)
                 for (i in 0..<length) {
                     recolours += buffer.g2Alt1()
@@ -492,7 +507,11 @@ public class NpcInfoClient(
             }
         val retextures =
             if (flag and 0x8 != 0) {
-                val length = 0 // TODO: Length must be grabbed from the cache
+                val cache = cache.get()
+                val npc =
+                    cache.getNpcType(id)
+                        ?: throw DecodeError("Npc $id not found in cache $cache! Npc info decoding cannot continue.")
+                val length = npc.retexdest.size
                 val retextures = ArrayList<Int>(length)
                 for (i in 0..<length) {
                     retextures += buffer.g2()
