@@ -1,6 +1,7 @@
 package net.rsprox.transcriber.base
 
 import net.rsprox.cache.api.Cache
+import net.rsprox.cache.api.type.VarBitType
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.outgoing.model.camera.CamLookAt
 import net.rsprox.protocol.game.outgoing.model.camera.CamLookAtEasedCoord
@@ -3143,51 +3144,74 @@ public open class BaseServerPacketTranscriber(
         )
     }
 
-    private data class Varbit(
-        val id: Int,
-        val lsb: Int,
-        val msb: Int,
-    )
-
     private fun getImpactedVarbits(
         basevar: Int,
         oldValue: Int,
         newValue: Int,
-    ): List<Varbit> {
-        // TODO: Cache loading support
-        return emptyList()
+    ): List<VarBitType> {
+        return cache
+            .listVarBitTypes()
+            .asSequence()
+            .filter { it.basevar == basevar }
+            .filter { type ->
+                val bitcount = (type.endbit - type.startbit) + 1
+                val bitmask = type.bitmask(bitcount)
+                val oldVarbitValue = oldValue ushr type.startbit and bitmask
+                val newVarbitValue = newValue ushr type.startbit and bitmask
+                oldVarbitValue != newVarbitValue
+            }.toList()
     }
 
     private fun publishVarbits(
-        basevar: Int,
         oldValue: Int,
         newValue: Int,
+        impactedVarbits: List<VarBitType>,
+        indentation: Int,
     ) {
-        val impactedVarbits = getImpactedVarbits(basevar, oldValue, newValue)
-        if (impactedVarbits.isNotEmpty()) {
-            for (varbit in impactedVarbits) {
-                container.publish(
-                    format(2, "Varbit") {
-                        property("id", formatter.varbit(varbit.id))
-                        val oldVarbit = (oldValue shr varbit.lsb) and ((1 shl (varbit.msb - varbit.lsb)) - 1)
-                        val newVarbit = (newValue shr varbit.lsb) and ((1 shl (varbit.msb - varbit.lsb)) - 1)
-                        property("oldValue", oldVarbit)
-                        property("newValue", newVarbit)
-                    },
-                )
-            }
+        for (varbit in impactedVarbits) {
+            container.publish(
+                format(indentation, if (indentation == 1) "VARBIT" else "Varbit") {
+                    if (indentation == 1) {
+                        property("basevar", formatter.varp(varbit.basevar))
+                    }
+                    property("id", formatter.varbit(varbit.id))
+                    val bitcount = (varbit.endbit - varbit.startbit) + 1
+                    val bitmask = varbit.bitmask(bitcount)
+                    val oldVarbitValue = oldValue ushr varbit.startbit and bitmask
+                    val newVarbitValue = newValue ushr varbit.startbit and bitmask
+                    property("oldValue", oldVarbitValue)
+                    property("newValue", newVarbitValue)
+                },
+            )
+        }
+    }
+
+    private fun remainingImpactedBits(
+        oldValue: Int,
+        newValue: Int,
+        impactedVarbits: List<VarBitType>,
+    ): Int {
+        return impactedVarbits.fold(oldValue and newValue.inv()) { remaining, varbit ->
+            val bitcount = (varbit.endbit - varbit.startbit) + 1
+            val bitmask = varbit.bitmask(bitcount) shl varbit.startbit
+            remaining and bitmask.inv()
         }
     }
 
     override fun varpLarge(message: VarpLarge) {
-        val old = stateTracker.getVarp(message.id)
-        publish {
-            property("id", formatter.varp(message.id))
-            property("oldValue", old)
-            property("newValue", message.value)
-        }
+        val oldValue = stateTracker.getVarp(message.id)
+        val impactedVarbits = getImpactedVarbits(message.id, oldValue, message.value)
         stateTracker.setVarp(message.id, message.value)
-        publishVarbits(message.id, old, message.value)
+        if (remainingImpactedBits(oldValue, message.value, impactedVarbits) == 0) {
+            publishVarbits(oldValue, message.value, impactedVarbits, 1)
+        } else {
+            publish {
+                property("id", formatter.varp(message.id))
+                property("oldValue", oldValue)
+                property("newValue", message.value)
+            }
+            publishVarbits(oldValue, message.value, impactedVarbits, 2)
+        }
     }
 
     override fun varpReset(message: VarpReset) {
@@ -3195,14 +3219,19 @@ public open class BaseServerPacketTranscriber(
     }
 
     override fun varpSmall(message: VarpSmall) {
-        val old = stateTracker.getVarp(message.id)
-        publish {
-            property("id", formatter.varp(message.id))
-            property("oldValue", old)
-            property("newValue", message.value)
-        }
+        val oldValue = stateTracker.getVarp(message.id)
+        val impactedVarbits = getImpactedVarbits(message.id, oldValue, message.value)
         stateTracker.setVarp(message.id, message.value)
-        publishVarbits(message.id, old, message.value)
+        if (remainingImpactedBits(oldValue, message.value, impactedVarbits) == 0) {
+            publishVarbits(oldValue, message.value, impactedVarbits, 1)
+        } else {
+            publish {
+                property("id", formatter.varp(message.id))
+                property("oldValue", oldValue)
+                property("newValue", message.value)
+            }
+            publishVarbits(oldValue, message.value, impactedVarbits, 2)
+        }
     }
 
     override fun varpSync(message: VarpSync) {
