@@ -7,4 +7,5 @@ dependencies {
     implementation(libs.rsprot.buffer)
     implementation(platform(rootProject.libs.log4j.bom))
     implementation(rootProject.libs.bundles.log4j)
+    implementation(projects.cache.cacheApi)
 }

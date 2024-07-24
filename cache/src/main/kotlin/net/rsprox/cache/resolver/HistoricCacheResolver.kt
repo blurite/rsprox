@@ -32,7 +32,7 @@ public class HistoricCacheResolver : CacheResolver {
         group: Int,
     ): ByteBuf? {
         logger.debug {
-            "Attempting to download $archive:$group for revision " +
+            "Attempting to resolve $archive:$group for revision " +
                 "${masterIndex.revision} (short-hash: ${masterIndex.shortHash()})"
         }
         logger.debug { "Searching for local variant of $archive:$group" }

@@ -26,6 +26,7 @@ includeSubprojects(":protocol")
 includeSubprojects(":patch")
 includeSubprojects(":gui")
 includeSubprojects(":transcriber")
+includeSubprojects(":cache")
 
 fun includeSubprojects(projectName: String) {
     val projectPath = project(projectName).projectDir.toPath()
