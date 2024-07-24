@@ -61,7 +61,13 @@ public class OldSchoolCache(
                 measureTime {
                     this.npcs =
                         buffers.entries.associate { (id, buffer) ->
-                            id to OldSchoolNpcType.get(masterIndex.revision, id, buffer.toJagByteBuf())
+                            val decoded =
+                                try {
+                                    OldSchoolNpcType.get(masterIndex.revision, id, buffer.toJagByteBuf())
+                                } finally {
+                                    buffer.release()
+                                }
+                            id to decoded
                         }
                 }
             logger.debug { "${buffers.size} npc types decoded in $time" }
@@ -84,7 +90,13 @@ public class OldSchoolCache(
                 measureTime {
                     this.varbits =
                         buffers.entries.associate { (id, buffer) ->
-                            id to OldSchoolVarBitType.get(masterIndex.revision, id, buffer.toJagByteBuf())
+                            val decoded =
+                                try {
+                                    OldSchoolVarBitType.get(masterIndex.revision, id, buffer.toJagByteBuf())
+                                } finally {
+                                    buffer.release()
+                                }
+                            id to decoded
                         }
                 }
             logger.debug {
@@ -105,7 +117,7 @@ public class OldSchoolCache(
     ): Map<Int, ByteBuf> {
         val indexBuf = checkNotNull(resolver.get(masterIndex, MASTER_INDEX, archive))
         val groupBuf = checkNotNull(resolver.get(masterIndex, archive, group))
-        return Js5Compression.uncompress(indexBuf.slice()).use { uncompressedIndex ->
+        return Js5Compression.uncompress(indexBuf).use { uncompressedIndex ->
             Js5Compression.uncompress(groupBuf).use { uncompressedGroup ->
                 Group.unpack(uncompressedGroup, checkNotNull(Js5Index.read(uncompressedIndex)[group]))
             }
