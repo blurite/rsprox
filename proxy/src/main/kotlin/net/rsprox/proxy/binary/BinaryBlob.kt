@@ -46,15 +46,7 @@ public data class BinaryBlob(
         if (closed.get()) {
             throw IllegalStateException("Binary stream is closed.")
         }
-        val session = this.liveSession
-        if (session != null) {
-            val copy = packet.copy()
-            try {
-                session.pass(direction, copy)
-            } finally {
-                copy.release()
-            }
-        }
+        liveSession?.pass(direction, packet.copy())
         stream.append(
             direction,
             packet,
@@ -75,6 +67,7 @@ public data class BinaryBlob(
             return
         }
         write()
+        liveSession?.shutdown()
     }
 
     private fun write() {

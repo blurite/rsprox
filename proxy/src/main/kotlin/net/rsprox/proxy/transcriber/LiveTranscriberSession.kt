@@ -7,20 +7,38 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.proxy.binary.StreamDirection
 import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.transcriber.TranscriberRunner
+import java.util.Queue
+import java.util.concurrent.ConcurrentLinkedQueue
 
 public class LiveTranscriberSession(
     private val session: Session,
     private val decodingSession: DecodingSession,
     private val runner: TranscriberRunner,
 ) {
+    @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+    private val lock: Object = Object()
+    private val queue: Queue<Packet> = ConcurrentLinkedQueue()
+    private var running: Boolean = true
+
+    init {
+        launchThread()
+    }
+
     public fun pass(
         direction: StreamDirection,
         payload: ByteBuf,
     ) {
-        val index = payload.readerIndex()
+        queue.offer(Packet(direction, payload))
+        synchronized(lock) {
+            lock.notifyAll()
+        }
+    }
+
+    private fun decode(packet: Packet) {
+        val index = packet.payload.readerIndex()
         try {
-            val result = decodingSession.decodePacket(direction, payload, session)
-            when (direction) {
+            val result = decodingSession.decodePacket(packet.direction, packet.payload, session)
+            when (packet.direction) {
                 StreamDirection.CLIENT_TO_SERVER -> {
                     runner.onClientProt(result.prot, result.message)
                 }
@@ -29,12 +47,43 @@ public class LiveTranscriberSession(
                 }
             }
         } catch (t: Throwable) {
-            payload.readerIndex(index)
+            packet.payload.readerIndex(index)
             logger.error(t) {
-                "Error decoding packet: ${payload.toByteArray().contentToString()}"
+                "Error decoding packet: ${packet.payload.toByteArray().contentToString()}"
             }
+        } finally {
+            packet.payload.release()
         }
     }
+
+    private fun launchThread(): Thread {
+        val thread =
+            Thread {
+                while (this.running) {
+                    while (queue.isNotEmpty()) {
+                        val next = queue.poll()
+                        decode(next)
+                    }
+                    synchronized(lock) {
+                        lock.wait()
+                    }
+                }
+            }
+        thread.start()
+        return thread
+    }
+
+    public fun shutdown() {
+        this.running = false
+        synchronized(lock) {
+            lock.notifyAll()
+        }
+    }
+
+    private class Packet(
+        val direction: StreamDirection,
+        val payload: ByteBuf,
+    )
 
     private companion object {
         private val logger = InlineLogger()
