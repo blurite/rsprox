@@ -93,6 +93,24 @@ public class ProxyService(
 
         launchHttpServer(this.bootstrapFactory, worldListProvider, updatedJavConfig)
         deleteTemporaryClients()
+        setShutdownHook()
+    }
+
+    private fun setShutdownHook() {
+        Runtime.getRuntime().addShutdownHook(
+            Thread {
+                if (hasAliveProcesses()) {
+                    logger.debug {
+                        "Unsafe shutdown detected - attempting to shut down gracefully"
+                    }
+                    try {
+                        killAliveProcesses()
+                    } finally {
+                        safeShutdown()
+                    }
+                }
+            },
+        )
     }
 
     public fun hasAliveProcesses(): Boolean {
