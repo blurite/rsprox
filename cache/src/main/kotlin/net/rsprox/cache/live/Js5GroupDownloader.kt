@@ -10,6 +10,7 @@ import io.netty.handler.codec.DecoderException
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.buffer.extensions.toByteArray
 import net.rsprot.buffer.extensions.toJagByteBuf
+import net.rsprox.cache.Js5MasterIndex
 
 /**
  * A sequential blocking JS5 group downloader. This is not intended for downloading full caches,
@@ -37,6 +38,10 @@ public class Js5GroupDownloader internal constructor(
         val future = bootstrap.connect(info.host, info.port).sync()
         logger.info { "Successfully connected to /${info.host}:${info.port}" }
         return future.channel()
+    }
+
+    public fun isUpToDate(masterIndex: Js5MasterIndex): Boolean {
+        return info.masterIndex == masterIndex
     }
 
     private fun invalidateConnection() {
@@ -126,10 +131,6 @@ public class Js5GroupDownloader internal constructor(
         if (this::channel.isInitialized && this.channel.isActive) {
             logger.debug { "Shutting JS5 downloader down" }
             this.channel.close()
-            this.bootstrap
-                .config()
-                .group()
-                .shutdownGracefully()
         }
     }
 
