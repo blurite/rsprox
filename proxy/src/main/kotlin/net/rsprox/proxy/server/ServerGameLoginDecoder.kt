@@ -9,10 +9,12 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ByteToMessageDecoder
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.buffer.extensions.toJagByteBuf
+import net.rsprot.crypto.xtea.XteaKey
 import net.rsprox.proxy.attributes.BINARY_BLOB
 import net.rsprox.proxy.attributes.BINARY_HEADER_BUILDER
 import net.rsprox.proxy.binary.BinaryBlob
 import net.rsprox.proxy.binary.BinaryStream
+import net.rsprox.proxy.channel.getAndDropEncodeSeed
 import net.rsprox.proxy.channel.getBinaryHeaderBuilder
 import net.rsprox.proxy.channel.getClientToServerStreamCipher
 import net.rsprox.proxy.channel.getServerToClientStreamCipher
@@ -239,8 +241,10 @@ public class ServerGameLoginDecoder(
             val nanoTimestamp = System.nanoTime()
             val header = builder.build()
             val stream = BinaryStream(Unpooled.buffer(1_000_000), nanoTimestamp)
+            val encodeSeed = clientChannel.getAndDropEncodeSeed()
+            val key = XteaKey(encodeSeed)
             val blob = BinaryBlob(header, stream, binaryWriteInterval)
-            blob.hookLiveTranscriber(pluginLoader)
+            blob.hookLiveTranscriber(key, pluginLoader)
             val serverChannel = ctx.channel()
             connections.addConnection(
                 clientChannel,

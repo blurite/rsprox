@@ -138,7 +138,10 @@ public data class BinaryBlob(
         }.getOrNull()
     }
 
-    public fun hookLiveTranscriber(pluginLoader: PluginLoader) {
+    public fun hookLiveTranscriber(
+        key: XteaKey,
+        pluginLoader: PluginLoader,
+    ) {
         check(this.liveSession == null) {
             "Live session already hooked."
         }
@@ -164,7 +167,7 @@ public data class BinaryBlob(
                     host,
                     PORT,
                     header.revision,
-                    XteaKey.ZERO,
+                    key,
                     masterIndex,
                 )
             val provider =

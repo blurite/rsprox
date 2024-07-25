@@ -7,6 +7,7 @@ import net.rsprot.crypto.cipher.StreamCipher
 import net.rsprot.crypto.cipher.StreamCipherPair
 import net.rsprox.proxy.attributes.BINARY_BLOB
 import net.rsprox.proxy.attributes.BINARY_HEADER_BUILDER
+import net.rsprox.proxy.attributes.SESSION_ENCODE_SEED
 import net.rsprox.proxy.attributes.STREAM_CIPHER_PAIR
 import net.rsprox.proxy.attributes.WORLD_ATTRIBUTE
 import net.rsprox.proxy.binary.BinaryBlob
@@ -56,6 +57,11 @@ public fun Channel.getClientToServerStreamCipher(): StreamCipher {
 
 public fun Channel.getServerToClientStreamCipher(): StreamCipher {
     return getStreamCipherPair().decodeCipher
+}
+
+public fun Channel.getAndDropEncodeSeed(): IntArray {
+    return attr(SESSION_ENCODE_SEED).getAndSet(null)
+        ?: throw IllegalStateException("Encode seed not attached to $this")
 }
 
 public fun Channel.getBinaryBlob(): BinaryBlob {

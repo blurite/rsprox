@@ -13,6 +13,7 @@ import net.rsprot.crypto.cipher.IsaacRandom
 import net.rsprot.crypto.cipher.NopStreamCipher
 import net.rsprot.crypto.cipher.StreamCipherPair
 import net.rsprot.crypto.rsa.decipherRsa
+import net.rsprox.proxy.attributes.SESSION_ENCODE_SEED
 import net.rsprox.proxy.attributes.STREAM_CIPHER_PAIR
 import net.rsprox.proxy.channel.addLastWithName
 import net.rsprox.proxy.channel.getBinaryHeaderBuilder
@@ -154,6 +155,7 @@ public class ClientLoginHandler(
             IntArray(4) {
                 decryptedRsaBuffer.g4()
             }
+        val encodeSeedCopy = encodeSeed.copyOf()
         val decodeSeed =
             IntArray(encodeSeed.size) {
                 encodeSeed[it] + 50
@@ -163,6 +165,7 @@ public class ClientLoginHandler(
         // Decoding seed is for client -> server
         val decodingCipher = IsaacRandom(decodeSeed)
         val pair = StreamCipherPair(encodingCipher, decodingCipher)
+        ctx.channel().attr(SESSION_ENCODE_SEED).set(encodeSeedCopy)
         ctx.channel().attr(STREAM_CIPHER_PAIR).set(pair)
         serverChannel.attr(STREAM_CIPHER_PAIR).set(pair)
         val encoded = ctx.alloc().buffer(msg.payload.readableBytes())
