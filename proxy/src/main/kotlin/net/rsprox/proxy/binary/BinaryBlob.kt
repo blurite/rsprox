@@ -5,18 +5,22 @@ import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.Unpooled
 import net.rsprot.buffer.extensions.toJagByteBuf
+import net.rsprot.crypto.xtea.XteaKey
 import net.rsprox.cache.Js5MasterIndex
 import net.rsprox.cache.OldSchoolCache
 import net.rsprox.cache.api.CacheProvider
-import net.rsprox.cache.resolver.HistoricCacheResolver
+import net.rsprox.cache.live.LiveConnectionInfo
+import net.rsprox.cache.resolver.LiveCacheResolver
 import net.rsprox.protocol.session.AttributeMap
 import net.rsprox.protocol.session.Session
 import net.rsprox.proxy.config.BINARY_PATH
+import net.rsprox.proxy.config.JavConfig
 import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.transcriber.LiveTranscriberSession
 import net.rsprox.transcriber.MessageConsumer
 import net.rsprox.transcriber.MessageConsumerContainer
+import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
@@ -132,6 +136,15 @@ public data class BinaryBlob(
         }
     }
 
+    private fun loadJavConfig(): JavConfig? {
+        val url = "https://oldschool.runescape.com/jav_config.ws"
+        return runCatching {
+            val config = JavConfig(URL(url))
+            logger.debug { "Jav config loaded from $url" }
+            config
+        }.getOrNull()
+    }
+
     public fun hookLiveTranscriber(pluginLoader: PluginLoader) {
         check(this.liveSession == null) {
             "Live session already hooked."
@@ -145,10 +158,25 @@ public data class BinaryBlob(
                     header.revision,
                     header.js5MasterIndex,
                 )
-            // TODO: Switch to live implementation in the future
+            val javConfig = loadJavConfig()
+            val host =
+                javConfig
+                    ?.getCodebase()
+                    ?.removePrefix("http://")
+                    ?.removePrefix("https://")
+                    ?.removeSuffix("/")
+                    ?: "oldschool67.runescape.com"
+            val info =
+                LiveConnectionInfo(
+                    host,
+                    PORT,
+                    header.revision,
+                    XteaKey.ZERO,
+                    masterIndex,
+                )
             val provider =
                 CacheProvider {
-                    OldSchoolCache(HistoricCacheResolver(), masterIndex)
+                    OldSchoolCache(LiveCacheResolver(info), masterIndex)
                 }
             pluginLoader.loadTranscriberPlugins("osrs", provider)
             val latestPlugin = pluginLoader.getPluginOrNull(header.revision)
@@ -175,6 +203,7 @@ public data class BinaryBlob(
     }
 
     public companion object {
+        private const val PORT: Int = 43_594
         private val logger = InlineLogger()
 
         public fun decode(path: Path): BinaryBlob {
