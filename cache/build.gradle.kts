@@ -1,6 +1,10 @@
 dependencies {
-    implementation(platform(libs.netty.bom))
-    implementation(libs.netty.buffer)
+    implementation(platform(rootProject.libs.netty.bom))
+    implementation(rootProject.libs.netty.buffer)
+    implementation(rootProject.libs.netty.transport)
+    implementation(rootProject.libs.netty.handler)
+    implementation(rootProject.libs.netty.codec.http)
+    implementation(rootProject.libs.rsprot.crypto)
     implementation(libs.bundles.openrs2)
     implementation(libs.bundles.jackson)
     implementation(libs.inline.logger)
