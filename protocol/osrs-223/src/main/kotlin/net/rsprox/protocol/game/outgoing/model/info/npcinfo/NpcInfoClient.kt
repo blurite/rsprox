@@ -396,7 +396,6 @@ public class NpcInfoClient(
         blocks += FacePathingEntityExtendedInfo(index)
     }
 
-    @Suppress("EmptyRange")
     private fun decodeBodyCustomisation(
         id: Int,
         buffer: JagByteBuf,
@@ -467,7 +466,6 @@ public class NpcInfoClient(
         throw IllegalStateException("Body customisation not supported due to lack of cache loading!")
     }
 
-    @Suppress("EmptyRange")
     private fun decodeHeadCustomisation(
         id: Int,
         buffer: JagByteBuf,
