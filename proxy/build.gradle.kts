@@ -1,3 +1,9 @@
+import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.Path
+import kotlin.streams.toList
+
+private val latestDecoder = projects.protocol.osrs223
 dependencies {
     implementation(platform(rootProject.libs.netty.bom))
     implementation(rootProject.libs.netty.buffer)
@@ -19,7 +25,54 @@ dependencies {
     implementation(projects.transcriber)
     implementation(rootProject.libs.clikt)
     implementation(rootProject.libs.classgraph)
-    implementation(projects.protocol.osrs223)
+    implementation(latestDecoder)
     implementation(projects.cache)
     implementation(projects.cache.cacheApi)
+}
+
+tasks.build.configure {
+    finalizedBy(*buildPluginTaskDependencies().toTypedArray())
+}
+
+tasks.compileKotlin.configure {
+    finalizedBy(*buildPluginTaskDependencies().toTypedArray())
+}
+
+fun buildPluginTaskDependencies(): List<String> {
+    val subprojects =
+        buildSubprojectTree(":protocol")
+            .plus(buildSubprojectTree(":transcriber"))
+    val buildTasks = subprojects.map { it.removeSuffix(":") + ":build" }
+    // Get rid of the projects we already directly depend on in the above
+    // dependencies block
+    val filteredTasks =
+        buildTasks.filterNot { task ->
+            ":${this.latestDecoder.name}:" in task ||
+                task == ":protocol:build" ||
+                task == ":transcriber:build"
+        }
+    return filteredTasks
+}
+
+fun buildSubprojectTree(projectName: String): List<String> {
+    val projectPath = rootProject.project(projectName).projectDir.toPath()
+    return try {
+        Files.walk(projectPath).filter(Files::isDirectory).toList().mapNotNull {
+            searchSubproject(projectName, projectPath, it)
+        }
+    } catch (e: IOException) {
+        emptyList()
+    }
+}
+
+fun searchSubproject(
+    projectName: String,
+    projectPath: Path,
+    subprojectPath: Path,
+): String? {
+    val isMissingBuildFile = Files.notExists(subprojectPath.resolve("build.gradle.kts"))
+    if (isMissingBuildFile) return null
+    val relativePath = projectPath.relativize(subprojectPath)
+    val subprojectName = relativePath.toString().replace(File.separator, ":")
+    return "$projectName:$subprojectName"
 }
