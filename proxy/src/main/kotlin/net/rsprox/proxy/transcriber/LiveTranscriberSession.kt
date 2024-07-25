@@ -3,6 +3,7 @@ package net.rsprox.proxy.transcriber
 import com.github.michaelbull.logging.InlineLogger
 import io.netty.buffer.ByteBuf
 import net.rsprot.buffer.extensions.toByteArray
+import net.rsprox.protocol.exceptions.DecodeError
 import net.rsprox.protocol.session.Session
 import net.rsprox.proxy.binary.StreamDirection
 import net.rsprox.proxy.plugin.DecodingSession
@@ -18,6 +19,8 @@ public class LiveTranscriberSession(
     @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
     private val lock: Object = Object()
     private val queue: Queue<Packet> = ConcurrentLinkedQueue()
+
+    @Volatile
     private var running: Boolean = true
 
     init {
@@ -28,6 +31,7 @@ public class LiveTranscriberSession(
         direction: StreamDirection,
         payload: ByteBuf,
     ) {
+        if (!running) return
         queue.offer(Packet(direction, payload))
         synchronized(lock) {
             lock.notifyAll()
@@ -50,6 +54,12 @@ public class LiveTranscriberSession(
             packet.payload.readerIndex(index)
             logger.error(t) {
                 "Error decoding packet: ${packet.payload.toByteArray().contentToString()}"
+            }
+            // Decode error is a special error we cannot recover from
+            // If this is hit, the state becomes corrupted and the decoding cannot continue.
+            if (t is DecodeError) {
+                running = false
+                throw t
             }
         } finally {
             packet.payload.release()
