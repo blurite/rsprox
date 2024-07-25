@@ -97,6 +97,7 @@ public class LiveCacheResolver(
                 return null
             }
         val directory = diskCacheDictionary.getOrPut(masterIndex, null)
+        diskCacheDictionary.write()
         val copy = result.copy()
         try {
             DiskGroupStore(directory).put(archive, group, copy)
