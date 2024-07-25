@@ -38,7 +38,7 @@ Below is a small task list showing a rough breakdown of what the tool will consi
 - [x] Minimal graphical User Interface (Proxy tool)
 - [ ] Expanded graphical User Interface (Proxy tool)
 - [ ] Graphical User Interface (Live Transcriber)
-- [x] Live cache loading (Missing on-demand, uses local/OpenRS2)
+- [x] Live cache loading
 - [x] Historical cache loading
 - [ ] Public archive
   - [ ] Automated binary blob uploading at the end of a session
