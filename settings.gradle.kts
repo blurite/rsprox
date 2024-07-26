@@ -20,6 +20,7 @@ include(
     "gui",
     "transcriber",
     "cache",
+    "shared",
 )
 
 includeSubprojects(":protocol")

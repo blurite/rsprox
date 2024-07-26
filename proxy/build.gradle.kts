@@ -28,6 +28,7 @@ dependencies {
     implementation(latestDecoder)
     implementation(projects.cache)
     implementation(projects.cache.cacheApi)
+    implementation(projects.shared)
 }
 
 tasks.build.configure {

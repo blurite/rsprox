@@ -66,6 +66,7 @@ import net.rsprox.protocol.game.incoming.model.social.FriendListAdd
 import net.rsprox.protocol.game.incoming.model.social.FriendListDel
 import net.rsprox.protocol.game.incoming.model.social.IgnoreListAdd
 import net.rsprox.protocol.game.incoming.model.social.IgnoreListDel
+import net.rsprox.shared.SessionMonitor
 import net.rsprox.transcriber.ClientPacketTranscriber
 import net.rsprox.transcriber.MessageConsumerContainer
 import net.rsprox.transcriber.ScriptVarType
@@ -85,6 +86,7 @@ public open class BaseClientPacketTranscriber(
     private val container: MessageConsumerContainer,
     private val stateTracker: StateTracker,
     private val cache: Cache,
+    private val monitor: SessionMonitor<*>,
 ) : ClientPacketTranscriber {
     private fun format(properties: List<Property>): String {
         return formatter.format(

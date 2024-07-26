@@ -12,8 +12,9 @@ import net.rsprox.proxy.config.BINARY_PATH
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.proxy.plugin.PluginLoader
+import net.rsprox.proxy.util.NopSessionMonitor
+import net.rsprox.transcriber.BaseMessageConsumerContainer
 import net.rsprox.transcriber.MessageConsumer
-import net.rsprox.transcriber.MessageConsumerContainer
 import java.io.BufferedWriter
 import java.nio.file.Path
 import java.util.Locale
@@ -77,8 +78,13 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
         val transcriberProvider = pluginLoader.getTranscriberProvider(binary.header.revision)
         val session = DecodingSession(binary, latestPlugin)
         val writer = binaryPath.parent.resolve(binaryPath.nameWithoutExtension + ".txt").bufferedWriter()
-        val consumers = MessageConsumerContainer(listOf(createBufferedWriterConsumer(writer)))
-        val runner = transcriberProvider.provide(consumers, statefulCacheProvider)
+        val consumers = BaseMessageConsumerContainer(listOf(createBufferedWriterConsumer(writer)))
+        val runner =
+            transcriberProvider.provide(
+                consumers,
+                statefulCacheProvider,
+                NopSessionMonitor,
+            )
 
         writer.appendLine("------------------")
         writer.appendLine("Header information")

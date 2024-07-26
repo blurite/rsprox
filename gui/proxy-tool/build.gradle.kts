@@ -6,4 +6,5 @@ dependencies {
     implementation(libs.inline.logger)
     implementation(platform(rootProject.libs.netty.bom))
     implementation(rootProject.libs.netty.buffer)
+    implementation(projects.shared)
 }

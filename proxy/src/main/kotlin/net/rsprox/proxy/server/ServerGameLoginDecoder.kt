@@ -17,6 +17,7 @@ import net.rsprox.proxy.binary.BinaryStream
 import net.rsprox.proxy.channel.getAndDropEncodeSeed
 import net.rsprox.proxy.channel.getBinaryHeaderBuilder
 import net.rsprox.proxy.channel.getClientToServerStreamCipher
+import net.rsprox.proxy.channel.getPort
 import net.rsprox.proxy.channel.getServerToClientStreamCipher
 import net.rsprox.proxy.channel.remove
 import net.rsprox.proxy.channel.replace
@@ -243,7 +244,10 @@ public class ServerGameLoginDecoder(
             val stream = BinaryStream(Unpooled.buffer(1_000_000), nanoTimestamp)
             val encodeSeed = clientChannel.getAndDropEncodeSeed()
             val key = XteaKey(encodeSeed)
-            val blob = BinaryBlob(header, stream, binaryWriteInterval)
+            val port = clientChannel.getPort()
+            val sessionMonitor = connections.getSessionMonitor(port)
+            sessionMonitor.onLogin(header)
+            val blob = BinaryBlob(header, stream, binaryWriteInterval, sessionMonitor)
             blob.hookLiveTranscriber(key, pluginLoader)
             val serverChannel = ctx.channel()
             connections.addConnection(

@@ -7,6 +7,7 @@ import io.netty.channel.Channel
 import net.rsprox.patch.NativeClientType
 import net.rsprox.patch.PatchResult
 import net.rsprox.patch.native.NativePatcher
+import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.bootstrap.BootstrapFactory
 import net.rsprox.proxy.config.BINARY_PATH
 import net.rsprox.proxy.config.CACHES_DIRECTORY
@@ -38,6 +39,7 @@ import net.rsprox.proxy.util.getOperatingSystem
 import net.rsprox.proxy.worlds.DynamicWorldListProvider
 import net.rsprox.proxy.worlds.World
 import net.rsprox.proxy.worlds.WorldListProvider
+import net.rsprox.shared.SessionMonitor
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
 import java.io.File
 import java.io.IOException
@@ -179,14 +181,23 @@ public class ProxyService(
         }
     }
 
-    public fun launchNativeClient(progressBarNotifier: ProgressBarNotifier) {
-        launchNativeClient(operatingSystem, rsa, progressBarNotifier)
+    public fun launchNativeClient(
+        progressBarNotifier: ProgressBarNotifier,
+        sessionMonitor: SessionMonitor<BinaryHeader>,
+    ) {
+        launchNativeClient(
+            operatingSystem,
+            rsa,
+            progressBarNotifier,
+            sessionMonitor,
+        )
     }
 
     private fun launchNativeClient(
         os: OperatingSystem,
         rsa: RSAPrivateCrtKeyParameters,
         progressBarNotifier: ProgressBarNotifier,
+        sessionMonitor: SessionMonitor<BinaryHeader>,
     ) {
         val port = this.availablePort++
         progressBarNotifier.update(0, "Binding port $port")
@@ -237,6 +248,7 @@ public class ProxyService(
         )
         progressBarNotifier.update(100, "Launching native client")
         launchExecutable(port, result.outputPath, os)
+        this.connections.addSessionMonitor(port, sessionMonitor)
     }
 
     private fun launchExecutable(

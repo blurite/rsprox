@@ -18,8 +18,10 @@ import net.rsprox.proxy.config.JavConfig
 import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.transcriber.LiveTranscriberSession
+import net.rsprox.proxy.util.NopSessionMonitor
+import net.rsprox.shared.SessionMonitor
+import net.rsprox.transcriber.BaseMessageConsumerContainer
 import net.rsprox.transcriber.MessageConsumer
-import net.rsprox.transcriber.MessageConsumerContainer
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
@@ -33,6 +35,7 @@ public data class BinaryBlob(
     public val header: BinaryHeader,
     public val stream: BinaryStream,
     public val writeIntervalSeconds: Int,
+    private val monitor: SessionMonitor<BinaryHeader>,
 ) {
     private var lastWrite = TimeSource.Monotonic.markNow()
     private var lastWriteSize = 0
@@ -68,6 +71,7 @@ public data class BinaryBlob(
         }
         write()
         liveSession?.shutdown()
+        this.monitor.onLogout(header)
     }
 
     private fun write() {
@@ -181,10 +185,10 @@ public data class BinaryBlob(
                 return
             }
             val transcriberProvider = pluginLoader.getTranscriberProvider(header.revision)
-            val consumers = MessageConsumerContainer(listOf(MessageConsumer.STDOUT_CONSUMER))
+            val consumers = BaseMessageConsumerContainer(listOf(MessageConsumer.STDOUT_CONSUMER))
             val session = Session(header.localPlayerIndex, AttributeMap())
             val decodingSession = DecodingSession(this, latestPlugin)
-            val runner = transcriberProvider.provide(consumers, provider)
+            val runner = transcriberProvider.provide(consumers, provider, monitor)
             this.liveSession =
                 LiveTranscriberSession(
                     session,
@@ -210,7 +214,7 @@ public data class BinaryBlob(
             val buffer = Unpooled.wrappedBuffer(file.readBytes())
             val header = BinaryHeader.decode(buffer.toJagByteBuf())
             val stream = BinaryStream(buffer.slice())
-            return BinaryBlob(header, stream, 0)
+            return BinaryBlob(header, stream, 0, NopSessionMonitor)
         }
     }
 }

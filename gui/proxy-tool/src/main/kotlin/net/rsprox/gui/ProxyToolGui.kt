@@ -7,6 +7,7 @@ import net.rsprox.gui.components.ClientPanel
 import net.rsprox.gui.components.createClientsPanel
 import net.rsprox.proxy.ProxyService
 import net.rsprox.proxy.progressbar.ProgressBarNotifier
+import net.rsprox.proxy.util.NopSessionMonitor
 import java.awt.BorderLayout
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
@@ -109,7 +110,7 @@ public class ProxyToolGui : JFrame() {
                                     this.clientsPanel.progressBar.string = text
                                 }
                             }
-                        service.launchNativeClient(progressBar)
+                        service.launchNativeClient(progressBar, NopSessionMonitor)
                         SwingUtilities.invokeLater {
                             this.clientsPanel.progressBar.isVisible = false
                         }

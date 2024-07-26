@@ -166,6 +166,7 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjDel
 import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjEnabledOps
 import net.rsprox.protocol.game.outgoing.model.zone.payload.SoundArea
 import net.rsprox.protocol.reflection.ReflectionCheck
+import net.rsprox.shared.SessionMonitor
 import net.rsprox.transcriber.MessageConsumerContainer
 import net.rsprox.transcriber.ScriptVarType
 import net.rsprox.transcriber.ServerPacketTranscriber
@@ -190,6 +191,7 @@ public open class BaseServerPacketTranscriber(
     private val container: MessageConsumerContainer,
     private val stateTracker: StateTracker,
     private val cache: Cache,
+    private val monitor: SessionMonitor<*>,
 ) : ServerPacketTranscriber {
     private fun format(
         indentation: Int,
@@ -1638,6 +1640,9 @@ public open class BaseServerPacketTranscriber(
                     lines += format(3, "FacePathingEntity", actor(info.index))
                 }
                 is AppearanceExtendedInfo -> {
+                    if (player.index == this.stateTracker.localPlayerIndex) {
+                        monitor.onNameUpdate(info.name)
+                    }
                     lines += format(3, "Appearance")
                     lines +=
                         format(4, "Details") {
