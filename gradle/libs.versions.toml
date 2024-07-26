@@ -7,11 +7,12 @@ log4j = "2.23.1"
 bouncycastle = "1.70"
 java-jwt = "4.4.0"
 jackson = "2.17.2"
-flatlaf = "3.4.1"
+flatlaf = "3.5"
 miglayout = "11.4"
 clikt = "4.2.2"
 classgraph = "4.8.174"
 openrs2 = "0.1.0-20240627.193627-617"
+swingx = "1.6.5-1"
 
 [libraries]
 netty-bom = { module = "io.netty:netty-bom", version.ref = "netty" }
@@ -35,11 +36,14 @@ jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations
 jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 flatlaf = { module = "com.formdev:flatlaf", version.ref = "flatlaf" }
+flatlaf-extras = { module = "com.formdev:flatlaf-extras", version.ref = "flatlaf" }
+flatlaf-intellij-themes = { module = "com.formdev:flatlaf-intellij-themes", version.ref = "flatlaf" }
 mig-layout = { module = "com.miglayout:miglayout-swing", version.ref = "miglayout" }
 clikt = { module = "com.github.ajalt.clikt:clikt-jvm", version.ref = "clikt" }
 classgraph = { module = "io.github.classgraph:classgraph", version.ref = "classgraph" }
 openrs2-buffer = { module = "org.openrs2:openrs2-buffer", version.ref = "openrs2"}
 openrs2-cache = { module = "org.openrs2:openrs2-cache", version.ref = "openrs2"}
+swingx = { module = "org.swinglabs.swingx:swingx-all", version.ref = "swingx" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
@@ -49,3 +53,4 @@ log4j = ["log4j-core", "log4j-api", "log4j-slf4j-impl", "inline-logger"]
 bouncycastle = ["bouncycastle-pkix", "bouncycastle-provider"]
 jackson = ["jackson-annotations", "jackson-dataformat-yaml", "jackson-module-kotlin"]
 openrs2 = ["openrs2-buffer", "openrs2-cache"]
+flatlaf = [ "flatlaf", "flatlaf-extras", "flatlaf-intellij-themes" ]
