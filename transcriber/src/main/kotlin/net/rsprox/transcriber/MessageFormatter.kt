@@ -1,5 +1,6 @@
 package net.rsprox.transcriber
 
+import net.rsprox.shared.ScriptVarType
 import net.rsprox.transcriber.properties.Property
 
 public interface MessageFormatter {

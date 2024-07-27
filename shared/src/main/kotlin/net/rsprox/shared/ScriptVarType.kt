@@ -1,4 +1,4 @@
-package net.rsprox.transcriber
+package net.rsprox.shared
 
 public enum class ScriptVarType(
     public val id: Int,

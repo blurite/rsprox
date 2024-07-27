@@ -166,16 +166,15 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjDel
 import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjEnabledOps
 import net.rsprox.protocol.game.outgoing.model.zone.payload.SoundArea
 import net.rsprox.protocol.reflection.ReflectionCheck
+import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.transcriber.MessageConsumerContainer
-import net.rsprox.transcriber.ScriptVarType
 import net.rsprox.transcriber.ServerPacketTranscriber
 import net.rsprox.transcriber.coord
 import net.rsprox.transcriber.format
 import net.rsprox.transcriber.indent
 import net.rsprox.transcriber.properties.Property
 import net.rsprox.transcriber.properties.PropertyBuilder
-import net.rsprox.transcriber.properties.properties
 import net.rsprox.transcriber.quote
 import net.rsprox.transcriber.state.Npc
 import net.rsprox.transcriber.state.Player
@@ -184,6 +183,9 @@ import net.rsprox.transcriber.state.World
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.concurrent.TimeUnit
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 @Suppress("DuplicatedCode", "SameParameterValue", "MemberVisibilityCanBePrivate", "SpellCheckingInspection")
 public open class BaseServerPacketTranscriber(
@@ -321,6 +323,14 @@ public open class BaseServerPacketTranscriber(
     private fun formatEpochTimeMinute(num: Int): String {
         val epochTimeMillis = TimeUnit.MINUTES.toMillis(num.toLong())
         return SimpleDateFormat("yyyy-MM-dd HH:mm").format(Date(epochTimeMillis))
+    }
+
+    @OptIn(ExperimentalContracts::class)
+    private fun properties(builderAction: PropertyBuilder.() -> Unit): List<Property> {
+        contract { callsInPlace(builderAction, InvocationKind.EXACTLY_ONCE) }
+        val builder = PropertyBuilder()
+        builderAction(builder)
+        return builder.build()
     }
 
     private fun actor(ambiguousIndex: Int): List<Property> {

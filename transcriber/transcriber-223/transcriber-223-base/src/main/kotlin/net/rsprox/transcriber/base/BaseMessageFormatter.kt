@@ -1,9 +1,9 @@
 package net.rsprox.transcriber.base
 
 import net.rsprox.protocol.common.CoordGrid
+import net.rsprox.shared.ScriptVarType
 import net.rsprox.transcriber.MessageFormatter
 import net.rsprox.transcriber.SINGLE_INDENTATION
-import net.rsprox.transcriber.ScriptVarType
 import net.rsprox.transcriber.properties.Property
 
 public open class BaseMessageFormatter : MessageFormatter {

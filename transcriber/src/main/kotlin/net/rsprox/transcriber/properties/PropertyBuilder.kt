@@ -25,7 +25,7 @@ public class PropertyBuilder {
         }
     }
 
-    internal fun build(): List<Property> {
+    public fun build(): List<Property> {
         return properties
     }
 }

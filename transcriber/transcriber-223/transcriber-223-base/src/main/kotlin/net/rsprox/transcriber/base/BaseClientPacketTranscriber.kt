@@ -66,19 +66,21 @@ import net.rsprox.protocol.game.incoming.model.social.FriendListAdd
 import net.rsprox.protocol.game.incoming.model.social.FriendListDel
 import net.rsprox.protocol.game.incoming.model.social.IgnoreListAdd
 import net.rsprox.protocol.game.incoming.model.social.IgnoreListDel
+import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.transcriber.ClientPacketTranscriber
 import net.rsprox.transcriber.MessageConsumerContainer
-import net.rsprox.transcriber.ScriptVarType
 import net.rsprox.transcriber.coord
 import net.rsprox.transcriber.format
 import net.rsprox.transcriber.indent
 import net.rsprox.transcriber.properties.Property
 import net.rsprox.transcriber.properties.PropertyBuilder
-import net.rsprox.transcriber.properties.properties
 import net.rsprox.transcriber.quote
 import net.rsprox.transcriber.state.StateTracker
 import java.awt.event.KeyEvent
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 @Suppress("DuplicatedCode")
 public open class BaseClientPacketTranscriber(
@@ -88,6 +90,14 @@ public open class BaseClientPacketTranscriber(
     private val cache: Cache,
     private val monitor: SessionMonitor<*>,
 ) : ClientPacketTranscriber {
+    @OptIn(ExperimentalContracts::class)
+    private fun properties(builderAction: PropertyBuilder.() -> Unit): List<Property> {
+        contract { callsInPlace(builderAction, InvocationKind.EXACTLY_ONCE) }
+        val builder = PropertyBuilder()
+        builderAction(builder)
+        return builder.build()
+    }
+
     private fun format(properties: List<Property>): String {
         return formatter.format(
             clientPacket = true,
