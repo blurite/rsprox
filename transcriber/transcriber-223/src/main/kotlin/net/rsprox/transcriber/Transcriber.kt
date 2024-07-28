@@ -11,4 +11,8 @@ public interface Transcriber :
     public val monitor: SessionMonitor<*>
 
     public fun setCurrentProt(prot: Prot)
+
+    public fun onTranscribeStart()
+
+    public fun onTranscribeEnd()
 }

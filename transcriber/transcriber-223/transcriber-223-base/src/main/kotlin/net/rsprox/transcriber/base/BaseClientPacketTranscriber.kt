@@ -1,6 +1,5 @@
 package net.rsprox.transcriber.base
 
-import net.rsprox.cache.api.Cache
 import net.rsprox.protocol.game.incoming.model.buttons.If1Button
 import net.rsprox.protocol.game.incoming.model.buttons.If3Button
 import net.rsprox.protocol.game.incoming.model.buttons.IfButtonD
@@ -66,452 +65,470 @@ import net.rsprox.protocol.game.incoming.model.social.FriendListAdd
 import net.rsprox.protocol.game.incoming.model.social.FriendListDel
 import net.rsprox.protocol.game.incoming.model.social.IgnoreListAdd
 import net.rsprox.protocol.game.incoming.model.social.IgnoreListDel
+import net.rsprox.protocol.reflection.ReflectionCheck
 import net.rsprox.shared.ScriptVarType
-import net.rsprox.shared.SessionMonitor
+import net.rsprox.shared.property.ChildProperty
+import net.rsprox.shared.property.NamedEnum
+import net.rsprox.shared.property.Property
+import net.rsprox.shared.property.RootProperty
+import net.rsprox.shared.property.boolean
+import net.rsprox.shared.property.com
+import net.rsprox.shared.property.coordGrid
+import net.rsprox.shared.property.enum
+import net.rsprox.shared.property.filteredBoolean
+import net.rsprox.shared.property.filteredEnum
+import net.rsprox.shared.property.filteredInt
+import net.rsprox.shared.property.filteredScriptVarType
+import net.rsprox.shared.property.filteredString
+import net.rsprox.shared.property.formattedInt
+import net.rsprox.shared.property.group
+import net.rsprox.shared.property.identifiedNpc
+import net.rsprox.shared.property.identifiedPlayer
+import net.rsprox.shared.property.int
+import net.rsprox.shared.property.long
+import net.rsprox.shared.property.scriptVarType
+import net.rsprox.shared.property.string
+import net.rsprox.shared.property.unidentifiedNpc
+import net.rsprox.shared.property.unidentifiedPlayer
 import net.rsprox.transcriber.ClientPacketTranscriber
-import net.rsprox.transcriber.MessageConsumerContainer
-import net.rsprox.transcriber.coord
-import net.rsprox.transcriber.format
-import net.rsprox.transcriber.indent
-import net.rsprox.transcriber.properties.Property
-import net.rsprox.transcriber.properties.PropertyBuilder
-import net.rsprox.transcriber.quote
 import net.rsprox.transcriber.state.StateTracker
 import java.awt.event.KeyEvent
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
+import java.text.DecimalFormat
+import java.text.NumberFormat
 
-@Suppress("DuplicatedCode")
+@Suppress("SpellCheckingInspection", "DuplicatedCode")
 public open class BaseClientPacketTranscriber(
-    private val formatter: BaseMessageFormatter,
-    private val container: MessageConsumerContainer,
     private val stateTracker: StateTracker,
-    private val cache: Cache,
-    private val monitor: SessionMonitor<*>,
 ) : ClientPacketTranscriber {
-    @OptIn(ExperimentalContracts::class)
-    private fun properties(builderAction: PropertyBuilder.() -> Unit): List<Property> {
-        contract { callsInPlace(builderAction, InvocationKind.EXACTLY_ONCE) }
-        val builder = PropertyBuilder()
-        builderAction(builder)
-        return builder.build()
-    }
+    private val root: RootProperty<*>
+        get() = stateTracker.root
 
-    private fun format(properties: List<Property>): String {
-        return formatter.format(
-            clientPacket = true,
-            name = stateTracker.currentProt.toString(),
-            properties = properties,
-            indentation = 1,
-        )
-    }
-
-    private fun format(
-        indentation: Int,
-        name: String,
-        builderAction: PropertyBuilder.() -> Unit = {},
-    ): String {
-        val properties = properties(builderAction)
-        return formatter.format(
-            clientPacket = true,
-            name = name,
-            properties = properties,
-            indentation = indentation,
-        )
-    }
-
-    private fun publish(builderAction: PropertyBuilder.() -> Unit) {
-        container.publish(format(properties(builderAction)))
-    }
-
-    private fun publishProt() {
-        container.publish("[${stateTracker.currentProt}]".indent(1))
-    }
-
-    private fun npc(index: Int): String {
-        // TODO: Format this properly later when NPC info is added
-        return "(index=$index)"
-    }
-
-    private fun player(index: Int): String {
-        val tracked = stateTracker.getPlayerOrNull(index)
-        return if (tracked == null) {
-            "(index=$index)"
+    private fun Property.npc(index: Int): ChildProperty<*> {
+        val npc = stateTracker.getActiveWorld().getNpcOrNull(index)
+        return if (npc != null) {
+            identifiedNpc(
+                index,
+                npc.name ?: "null",
+                npc.coord.level,
+                npc.coord.x,
+                npc.coord.z,
+            )
         } else {
-            "(index=$index, name=${tracked.name}, coord=${formatter.coord(tracked.coord)})"
+            unidentifiedNpc(index)
+        }
+    }
+
+    private fun Property.player(index: Int): ChildProperty<*> {
+        val npc = stateTracker.getPlayerOrNull(index)
+        return if (npc != null) {
+            identifiedPlayer(
+                index,
+                npc.name,
+                npc.coord.level,
+                npc.coord.x,
+                npc.coord.z,
+            )
+        } else {
+            unidentifiedPlayer(index)
         }
     }
 
     override fun if1Button(message: If1Button) {
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
-        }
+        root.com(message.interfaceId, message.componentId)
     }
 
     override fun if3Button(message: If3Button) {
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
-            filteredProperty("sub", message.sub) { it != -1 }
-            filteredProperty("obj", formatter.type(ScriptVarType.OBJ, message.obj)) { it != "-1" }
-        }
+        root.com(message.interfaceId, message.componentId)
+        root.filteredInt("sub", message.sub, -1)
+        root.filteredScriptVarType("obj", ScriptVarType.OBJ, message.obj, -1)
     }
 
     override fun ifButtonD(message: IfButtonD) {
-        publish {
-            property("selectedCom", formatter.com(message.selectedInterfaceId, message.selectedComponentId))
-            filteredProperty("selectedSub", message.selectedSub) { it != -1 }
-            filteredProperty("selectedObj", formatter.type(ScriptVarType.OBJ, message.selectedObj)) { it != "-1" }
-            property("targetCom", formatter.com(message.targetInterfaceId, message.targetComponentId))
-            filteredProperty("targetSub", message.targetSub) { it != -1 }
-            filteredProperty("targetObj", formatter.type(ScriptVarType.OBJ, message.targetObj)) { it != "-1" }
-        }
+        root.com("selectcom", message.selectedInterfaceId, message.selectedComponentId)
+        root.filteredInt("selectedsub", message.selectedSub, -1)
+        root.filteredScriptVarType("selectedobj", ScriptVarType.OBJ, message.selectedObj, -1)
+        root.com("targetcom", message.targetInterfaceId, message.targetComponentId)
+        root.filteredInt("targetsub", message.targetSub, -1)
+        root.filteredScriptVarType("targetobj", ScriptVarType.OBJ, message.targetObj, -1)
     }
 
     override fun ifButtonT(message: IfButtonT) {
-        publish {
-            property("selectedCom", formatter.com(message.selectedInterfaceId, message.selectedComponentId))
-            filteredProperty("selectedSub", message.selectedSub) { it != -1 }
-            filteredProperty("selectedObj", formatter.type(ScriptVarType.OBJ, message.selectedObj)) { it != "-1" }
-            property("targetCom", formatter.com(message.targetInterfaceId, message.targetComponentId))
-            filteredProperty("targetSub", message.targetSub) { it != -1 }
-            filteredProperty("targetObj", formatter.type(ScriptVarType.OBJ, message.targetObj)) { it != "-1" }
-        }
+        root.com("selectcom", message.selectedInterfaceId, message.selectedComponentId)
+        root.filteredInt("selectedsub", message.selectedSub, -1)
+        root.filteredScriptVarType("selectedobj", ScriptVarType.OBJ, message.selectedObj, -1)
+        root.com("targetcom", message.targetInterfaceId, message.targetComponentId)
+        root.filteredInt("targetsub", message.targetSub, -1)
+        root.filteredScriptVarType("targetobj", ScriptVarType.OBJ, message.targetObj, -1)
     }
 
     override fun affinedClanSettingsAddBannedFromChannel(message: AffinedClanSettingsAddBannedFromChannel) {
-        publish {
-            property("name", message.name.quote())
-            property("clanId", message.clanId)
-            property("memberIndex", message.memberIndex)
-        }
+        root.string("name", message.name)
+        root.int("clanid", message.clanId)
+        root.int("memberindex", message.memberIndex)
     }
 
     override fun affinedClanSettingsSetMutedFromChannel(message: AffinedClanSettingsSetMutedFromChannel) {
-        publish {
-            property("name", message.name.quote())
-            property("clanId", message.clanId)
-            property("memberIndex", message.memberIndex)
-            property("muted", message.muted)
-        }
+        root.string("name", message.name)
+        root.int("clanid", message.clanId)
+        root.int("memberindex", message.memberIndex)
+        root.boolean("muted", message.muted)
     }
 
     override fun clanChannelFullRequest(message: ClanChannelFullRequest) {
-        publish {
-            property("clanId", message.clanId)
-        }
+        root.int("clanid", message.clanId)
     }
 
     override fun clanChannelKickUser(message: ClanChannelKickUser) {
-        publish {
-            property("name", message.name.quote())
-            property("clanId", message.clanId)
-            property("memberIndex", message.memberIndex)
-        }
+        root.string("name", message.name)
+        root.int("clanid", message.clanId)
+        root.int("memberindex", message.memberIndex)
     }
 
     override fun clanSettingsFullRequest(message: ClanSettingsFullRequest) {
-        publish {
-            property("clanId", message.clanId)
-        }
+        root.int("clanid", message.clanId)
     }
 
     override fun eventAppletFocus(message: EventAppletFocus) {
-        publish {
-            property("inFocus", message.inFocus)
-        }
+        root.boolean("infocus", message.inFocus)
     }
 
     override fun eventCameraPosition(message: EventCameraPosition) {
-        publish {
-            property("angleX", message.angleX)
-            property("angleY", message.angleY)
-        }
+        root.int("anglex", message.angleX)
+        root.int("angley", message.angleY)
     }
 
     override fun eventKeyboard(message: EventKeyboard) {
-        publish {
-            property("lastTransmitted", message.lastTransmittedKeyPress.format() + "ms")
-            property(
-                "keys",
-                message
-                    .keysPressed
-                    .toAwtKeyCodeIntArray()
-                    .map { KeyEvent.getKeyText(it) },
-            )
-        }
+        root.formattedInt("lasttransmitted", message.lastTransmittedKeyPress, MS_NUMBER_FORMAT)
+        root.string(
+            "keys",
+            message
+                .keysPressed
+                .toAwtKeyCodeIntArray()
+                .joinToString(prefix = "[", postfix = "]") { KeyEvent.getKeyText(it) },
+        )
     }
 
     override fun eventMouseClick(message: EventMouseClick) {
-        publish {
-            property("lastTransmitted", message.lastTransmittedMouseClick.format() + "ms")
-            property("x", message.x)
-            property("y", message.y)
-            property("rightClick", message.rightClick)
-        }
+        root.formattedInt("lasttransmitted", message.lastTransmittedMouseClick, MS_NUMBER_FORMAT)
+        root.int("x", message.x)
+        root.int("y", message.y)
+        root.boolean("rightclick", message.rightClick)
     }
 
     override fun eventMouseMove(message: EventMouseMove) {
-        publish {
-            property("averageTime", message.averageTime.format() + "ms")
-            property("remainingTime", message.remainingTime.format() + "ms")
-        }
+        root.formattedInt("averagetime", message.averageTime, MS_NUMBER_FORMAT)
+        root.formattedInt("remainingtime", message.remainingTime, MS_NUMBER_FORMAT)
         for (index in message.movements.asLongArray().indices) {
-            val movement = message.movements.getMousePosChange(index)
-            container.publish(
-                format(2, "Movement") {
-                    property("deltaTime", movement.timeDelta.format() + "ms")
-                    property("deltaX", movement.xDelta)
-                    property("deltaY", movement.yDelta)
-                },
-            )
+            root.group {
+                val movement = message.movements.getMousePosChange(index)
+                formattedInt("deltatime", movement.timeDelta, MS_NUMBER_FORMAT)
+                int("deltax", movement.xDelta)
+                int("deltay", movement.yDelta)
+            }
         }
     }
 
     override fun eventMouseScroll(message: EventMouseScroll) {
-        publish {
-            property("rotation", message.mouseWheelRotation)
-        }
+        root.int("rotation", message.mouseWheelRotation)
     }
 
     override fun eventNativeMouseClick(message: EventNativeMouseClick) {
-        publish {
-            property("lastTransmitted", message.lastTransmittedMouseClick.format() + "ms")
-            property("x", message.x)
-            property("y", message.y)
-            property("code", message.code)
-        }
+        root.formattedInt("lasttransmitted", message.lastTransmittedMouseClick, MS_NUMBER_FORMAT)
+        root.int("x", message.x)
+        root.int("y", message.y)
+        root.int("code", message.code)
     }
 
     override fun eventNativeMouseMove(message: EventNativeMouseMove) {
-        publish {
-            property("averageTime", message.averageTime.format() + "ms")
-            property("remainingTime", message.remainingTime.format() + "ms")
-        }
+        root.formattedInt("averagetime", message.averageTime, MS_NUMBER_FORMAT)
+        root.formattedInt("remainingtime", message.remainingTime, MS_NUMBER_FORMAT)
         for (index in message.movements.asLongArray().indices) {
-            val movement = message.movements.getMousePosChange(index)
-            container.publish(
-                format(2, "Movement") {
-                    property("deltaTime", movement.timeDelta.format() + "ms")
-                    property("deltaX", movement.xDelta)
-                    property("deltaY", movement.yDelta)
-                },
-            )
+            root.group {
+                val movement = message.movements.getMousePosChange(index)
+                formattedInt("deltatime", movement.timeDelta, MS_NUMBER_FORMAT)
+                int("deltax", movement.xDelta)
+                int("deltay", movement.yDelta)
+            }
         }
     }
 
     override fun friendChatJoinLeave(message: FriendChatJoinLeave) {
-        publish {
-            property("name", message.name?.quote() ?: "null")
-        }
+        root.string("name", message.name)
     }
 
     override fun friendChatKick(message: FriendChatKick) {
-        publish {
-            property("name", message.name.quote())
-        }
+        root.string("name", message.name)
     }
 
     override fun friendChatSetRank(message: FriendChatSetRank) {
-        publish {
-            property("name", message.name.quote())
-            property("rank", message.rank)
-        }
+        root.string("name", message.name)
+        root.int("rank", message.rank)
     }
 
     override fun opLoc(message: OpLoc) {
-        publish {
-            property("id", formatter.type(ScriptVarType.LOC, message.id))
-            property("coord", formatter.coord(stateTracker.level(), message.x, message.z))
-            filteredProperty("controlKey", message.controlKey) { it }
-        }
+        root.scriptVarType("id", ScriptVarType.LOC, message.id)
+        root.coordGrid(stateTracker.level(), message.x, message.z)
+        root.filteredBoolean("ctrl", message.controlKey)
     }
 
     override fun opLoc6(message: OpLoc6) {
-        publish {
-            property("id", formatter.type(ScriptVarType.LOC, message.id))
-        }
+        root.scriptVarType("id", ScriptVarType.LOC, message.id)
     }
 
     override fun opLocT(message: OpLocT) {
-        publish {
-            property("id", formatter.type(ScriptVarType.LOC, message.id))
-            property("coord", formatter.coord(stateTracker.level(), message.x, message.z))
-            filteredProperty("controlKey", message.controlKey) { it }
-            property("com", formatter.com(message.selectedInterfaceId, message.selectedComponentId))
-            filteredProperty("sub", message.selectedSub) { it != -1 }
-            filteredProperty("obj", formatter.type(ScriptVarType.OBJ, message.selectedObj)) { it != "-1" }
-        }
+        root.scriptVarType("id", ScriptVarType.LOC, message.id)
+        root.coordGrid(stateTracker.level(), message.x, message.z)
+        root.filteredBoolean("ctrl", message.controlKey)
+        root.com(message.selectedInterfaceId, message.selectedComponentId)
+        root.filteredInt("sub", message.selectedSub, -1)
+        root.filteredScriptVarType("obj", ScriptVarType.OBJ, message.selectedObj, -1)
     }
 
     override fun messagePrivateClient(message: MessagePrivate) {
-        publish {
-            property("name", message.name.quote())
-            property("message", message.message.quote())
-        }
+        root.string("name", message.name)
+        root.string("message", message.message)
     }
 
     override fun messagePublic(message: MessagePublic) {
-        publish {
-            property("type", message.type)
-            property("message", message.message.quote())
-            filteredProperty("colour", message.colour) { it != 0 }
-            filteredProperty("effect", message.effect) { it != 0 }
-            filteredProperty("clanType", message.clanType) { it != -1 }
-            filteredProperty("pattern", message.pattern?.asByteArray()?.contentToString()) { it != null }
-        }
+        root.int("type", message.type)
+        root.filteredInt("colour", message.colour, 0)
+        root.filteredInt("effect", message.effect, 0)
+        root.filteredInt("clantype", message.clanType, -1)
+        root.string("message", message.message)
+        root.filteredString("pattern", message.pattern?.asByteArray()?.contentToString(), null)
     }
 
     override fun detectModifiedClient(message: DetectModifiedClient) {
-        publish {
-            property("code", message.code.format())
-        }
+        root.formattedInt("code", message.code)
     }
 
     override fun idle(message: Idle) {
-        publishProt()
     }
 
     override fun mapBuildComplete(message: MapBuildComplete) {
-        publishProt()
     }
 
     override fun membershipPromotionEligibility(message: MembershipPromotionEligibility) {
-        publish {
-            property("introductoryPrice", message.eligibleForIntroductoryPrice)
-            property("trialPurchase", message.eligibleForTrialPurchase)
-        }
+        root.int("introductoryprice", message.eligibleForIntroductoryPrice)
+        root.int("trialpurchase", message.eligibleForTrialPurchase)
     }
 
     override fun noTimeout(message: NoTimeout) {
-        publishProt()
     }
 
     override fun reflectionCheckReply(message: ReflectionCheckReply) {
-        publish {
-            property("id", message.id.format())
+        root.group {
+            formattedInt("id", message.id)
         }
-        // This may need prettier logging, but there's no way to test right now without
-        // adding RuneLite support, so leaving it be as is
         for (result in message.result) {
-            container.publish(
-                format(2, "") {
-                    property("result", result)
-                },
-            )
+            when (result) {
+                is ReflectionCheckReply.ErrorResult<*, *> -> {
+                    root.group("Error") {
+                        when (val res = result.check) {
+                            is ReflectionCheck.GetFieldModifiers -> {
+                                root.group("GetFieldModifiers") {
+                                    string("classname", res.className)
+                                    string("fieldname", res.fieldName)
+                                }
+                            }
+                            is ReflectionCheck.GetFieldValue -> {
+                                root.group("GetFieldValue") {
+                                    string("classname", res.className)
+                                    string("fieldname", res.fieldName)
+                                }
+                            }
+                            is ReflectionCheck.GetMethodModifiers -> {
+                                root.group("GetMethodModifiers") {
+                                    string("classname", res.className)
+                                    string("methodname", res.methodName)
+                                    string("returnclass", res.returnClass)
+                                    string("parameterclasses", res.parameterClasses.toString())
+                                }
+                            }
+                            is ReflectionCheck.InvokeMethod -> {
+                                root.group("InvokeMethod") {
+                                    string("classname", res.className)
+                                    string("methodname", res.methodName)
+                                    string("returnclass", res.returnClass)
+                                    string("parameterclasses", res.parameterClasses.toString())
+                                    string(
+                                        "parametervalues",
+                                        res.parameterValues
+                                            .map { it.contentToString() }
+                                            .toString(),
+                                    )
+                                }
+                            }
+                            is ReflectionCheck.SetFieldValue -> {
+                                root.group("SetFieldValue") {
+                                    string("classname", res.className)
+                                    string("fieldname", res.fieldName)
+                                    int("value", res.value)
+                                }
+                            }
+                        }
+                        string("exceptionclass", result.exceptionClass.toString())
+                    }
+                }
+
+                is ReflectionCheckReply.GetFieldModifiersResult -> {
+                    root.group("GetFieldModifiers") {
+                        string("classname", result.check.className)
+                        string("fieldname", result.check.fieldName)
+                        int("modifiers", result.modifiers)
+                    }
+                }
+                is ReflectionCheckReply.GetFieldValueResult -> {
+                    root.group("GetFieldValue") {
+                        string("classname", result.check.className)
+                        string("fieldname", result.check.fieldName)
+                        int("value", result.value)
+                    }
+                }
+                is ReflectionCheckReply.GetMethodModifiersResult -> {
+                    root.group("GetMethodModifiers") {
+                        string("classname", result.check.className)
+                        string("methodname", result.check.methodName)
+                        string("returnclass", result.check.returnClass)
+                        string("parameterclasses", result.check.parameterClasses.toString())
+                        int("modifiers", result.modifiers)
+                    }
+                }
+                is ReflectionCheckReply.InvokeMethodResult<*> -> {
+                    root.group("InvokeMethod") {
+                        string("classname", result.check.className)
+                        string("methodname", result.check.methodName)
+                        string("returnclass", result.check.returnClass)
+                        string("parameterclasses", result.check.parameterClasses.toString())
+                        string(
+                            "parametervalues",
+                            result.check.parameterValues
+                                .map { it.contentToString() }
+                                .toString(),
+                        )
+                        when (val res = result.result) {
+                            ReflectionCheckReply.NullReturnValue -> {
+                                string("result", null)
+                            }
+                            is ReflectionCheckReply.NumberReturnValue -> {
+                                long("result", res.longValue)
+                            }
+                            is ReflectionCheckReply.StringReturnValue -> {
+                                string("result", res.stringValue)
+                            }
+                            ReflectionCheckReply.UnknownReturnValue -> {
+                                string("result", "unknown")
+                            }
+                        }
+                    }
+                }
+                is ReflectionCheckReply.SetFieldValueResult -> {
+                    root.group("SetFieldValue") {
+                        string("classname", result.check.className)
+                        string("fieldname", result.check.fieldName)
+                        int("value", result.check.value)
+                    }
+                }
+            }
         }
     }
 
     override fun sendPingReply(message: SendPingReply) {
-        publish {
-            property("fps", message.fps)
-            property("gcPercentTime", message.gcPercentTime)
-            property("value1", message.value1)
-            property("value2", message.value2)
-        }
+        root.int("fps", message.fps)
+        root.int("gcpercenttime", message.gcPercentTime)
+        root.int("value1", message.value1)
+        root.int("value2", message.value2)
     }
 
     override fun soundJingleEnd(message: SoundJingleEnd) {
-        publish {
-            property("id", formatter.type(ScriptVarType.JINGLE, message.jingleId))
-        }
+        root.scriptVarType("id", ScriptVarType.JINGLE, message.jingleId)
     }
 
     override fun connectionTelemetry(message: ConnectionTelemetry) {
-        publish {
-            property("connectionLostDuration", (message.connectionLostDuration * 10).format() + "ms")
-            property("loginDuration", (message.loginDuration * 10).format() + "ms")
-            property("clientState", message.clientState)
-            property("loginCount", message.loginCount)
-        }
+        root.formattedInt("connectionlostduration", message.connectionLostDuration * 10, MS_NUMBER_FORMAT)
+        root.formattedInt("loginduration", message.loginDuration * 10, MS_NUMBER_FORMAT)
+        root.int("clientstate", message.clientState)
+        root.int("logincount", message.loginCount)
     }
 
     override fun windowStatus(message: WindowStatus) {
-        publish {
-            property("windowMode", message.windowMode)
-            property("frameWidth", message.frameWidth)
-            property("frameHeight", message.frameHeight)
-        }
+        root.int("windowmode", message.windowMode)
+        root.int("framewidth", message.frameWidth)
+        root.int("frameheight", message.frameHeight)
     }
 
     override fun bugReport(message: BugReport) {
-        publish {
-            property("type", message.type)
-            property("description", message.description.quote())
-            property("instructions", message.instructions.quote())
-        }
+        root.int("type", message.type)
+        root.string("description", message.description)
+        root.string("instructions", message.instructions)
     }
 
     override fun clickWorldMap(message: ClickWorldMap) {
-        publish {
-            property("coord", formatter.coord(message.level, message.x, message.z))
-        }
+        root.coordGrid(message.level, message.x, message.z)
     }
 
     override fun clientCheat(message: ClientCheat) {
-        publish {
-            property("cheat", message.command)
-        }
+        root.string("cheat", message.command)
     }
 
     override fun closeModal(message: CloseModal) {
-        publishProt()
     }
 
     override fun hiscoreRequest(message: HiscoreRequest) {
-        publish {
-            property("type", message.type)
-            property("requestId", message.requestId)
-            property("name", message.name.quote())
-        }
+        root.int("type", message.type)
+        root.int("requestid", message.requestId)
+        root.string("name", message.name)
     }
 
     override fun ifCrmViewClick(message: IfCrmViewClick) {
-        publish {
-            property("crmServerTarget", message.crmServerTarget)
-            property("com", formatter.com(message.interfaceId, message.componentId))
-            filteredProperty("sub", message.sub) { it != -1 }
-            property("payload", "[${message.behaviour1}, ${message.behaviour2}, ${message.behaviour3}]")
+        root.int("crmservertarget", message.crmServerTarget)
+        root.com(message.interfaceId, message.componentId)
+        root.filteredInt("sub", message.sub, -1)
+        root.int("payload1", message.behaviour1)
+        root.int("payload2", message.behaviour2)
+        root.int("payload3", message.behaviour3)
+    }
+
+    private enum class MovementKeyCombination(
+        override val prettyName: String,
+    ) : NamedEnum {
+        NONE("None"),
+        CTRL("Ctrl"),
+        CTRLPLUSSHIFT("Ctrl+Shift"),
+    }
+
+    private fun getMovementKeyCombination(id: Int): MovementKeyCombination {
+        return when (id) {
+            1 -> MovementKeyCombination.CTRL
+            2 -> MovementKeyCombination.CTRLPLUSSHIFT
+            else -> MovementKeyCombination.NONE
         }
     }
 
     override fun moveGameClick(message: MoveGameClick) {
-        publish {
-            property("coord", formatter.coord(stateTracker.level(), message.x, message.z))
-            val keyLabel =
-                when (message.keyCombination) {
-                    1 -> "Ctrl"
-                    2 -> "Ctrl+Shift"
-                    else -> "None"
-                }
-            filteredProperty("keyCombination", keyLabel) {
-                it != "None"
-            }
-        }
+        root.coordGrid(stateTracker.level(), message.x, message.z)
+        root.filteredEnum(
+            "keycombination",
+            getMovementKeyCombination(message.keyCombination),
+            MovementKeyCombination.NONE,
+        )
     }
 
     override fun moveMinimapClick(message: MoveMinimapClick) {
-        publish {
-            property("coord", formatter.coord(stateTracker.level(), message.x, message.z))
-            val keyLabel =
-                when (message.keyCombination) {
-                    1 -> "Ctrl"
-                    2 -> "Ctrl+Shift"
-                    else -> "None"
-                }
-            filteredProperty("keyCombination", keyLabel) {
-                it != "None"
-            }
-            property("minimapWidth", message.minimapWidth)
-            property("minimapHeight", message.minimapHeight)
-            property("cameraAngleY", message.cameraAngleY)
-            property("fineX", message.fineX)
-            property("fineZ", message.fineZ)
-        }
+        root.coordGrid(stateTracker.level(), message.x, message.z)
+        root.filteredEnum(
+            "keycombination",
+            getMovementKeyCombination(message.keyCombination),
+            MovementKeyCombination.NONE,
+        )
+        root.int("minimapwidth", message.minimapWidth)
+        root.int("minimapheight", message.minimapHeight)
+        root.int("camerangley", message.cameraAngleY)
+        root.int("finex", message.fineX)
+        root.int("finez", message.fineZ)
     }
 
     override fun oculusLeave(message: OculusLeave) {
-        publishProt()
     }
 
     private fun getRule(id: Int): String {
@@ -538,166 +555,138 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun sendSnapshot(message: SendSnapshot) {
-        publish {
-            property("name", message.name.quote())
-            property("rule", getRule(message.ruleId).quote())
-            filteredProperty("mute", message.mute) { it }
-        }
+        root.string("name", message.name)
+        root.string("rule", getRule(message.ruleId))
+        root.filteredBoolean("mute", message.mute)
     }
 
-    private fun getChatFilter(id: Int): String {
+    private enum class ChatFilter(
+        override val prettyName: String,
+    ) : NamedEnum {
+        ON("On"),
+        FRIENDS("Friends"),
+        OFF("Off"),
+        HIDE("Hide"),
+        AUTOCHAT("Autochat"),
+    }
+
+    private fun getChatFilter(id: Int): ChatFilter {
         return when (id) {
-            0 -> "On"
-            1 -> "Friends"
-            2 -> "Off"
-            3 -> "Hide"
-            4 -> "Autochat"
-            else -> id.toString()
+            0 -> ChatFilter.ON
+            1 -> ChatFilter.FRIENDS
+            2 -> ChatFilter.OFF
+            3 -> ChatFilter.HIDE
+            4 -> ChatFilter.AUTOCHAT
+            else -> error("Unknown chatfilter id: $id")
         }
     }
 
     override fun setChatFilterSettings(message: SetChatFilterSettings) {
-        publish {
-            property("public", getChatFilter(message.publicChatFilter).quote())
-            property("private", getChatFilter(message.privateChatFilter).quote())
-            property("trade", getChatFilter(message.tradeChatFilter).quote())
-        }
+        root.enum("public", getChatFilter(message.publicChatFilter))
+        root.enum("private", getChatFilter(message.privateChatFilter))
+        root.enum("trade", getChatFilter(message.tradeChatFilter))
     }
 
     override fun teleport(message: Teleport) {
-        publish {
-            property("coord", formatter.coord(message.level, message.x, message.z))
-            filteredProperty("oculusSyncValue", message.oculusSyncValue) { it != 0 }
-        }
+        root.coordGrid(message.level, message.x, message.z)
+        root.filteredInt("oculussyncvalue", message.oculusSyncValue, 0)
     }
 
     override fun updatePlayerModel(message: UpdatePlayerModel) {
         // Never used any more so not too worried about the formatting
-        publish {
-            property("bodyType", message.bodyType)
-            property("identKits", message.getIdentKitsByteArray().contentToString())
-            property("colours", message.getColoursByteArray().contentToString())
-        }
+        root.int("bodytype", message.bodyType)
+        root.string("identkit", message.getIdentKitsByteArray().contentToString())
+        root.string("colours", message.getColoursByteArray().contentToString())
     }
 
     override fun opNpc(message: OpNpc) {
-        publish {
-            property("npc", npc(message.index))
-            filteredProperty("controlKey", message.controlKey) { it }
-        }
+        root.npc(message.index)
+        root.filteredBoolean("ctrl", message.controlKey)
     }
 
     override fun opNpc6(message: OpNpc6) {
-        publish {
-            property("id", formatter.type(ScriptVarType.NPC, message.id))
-        }
+        root.scriptVarType("id", ScriptVarType.NPC, message.id)
     }
 
     override fun opNpcT(message: OpNpcT) {
-        publish {
-            property("npc", npc(message.index))
-            filteredProperty("controlKey", message.controlKey) { it }
-            property("com", formatter.com(message.selectedInterfaceId, message.selectedComponentId))
-            filteredProperty("sub", message.selectedSub) { it != -1 }
-            filteredProperty("obj", formatter.type(ScriptVarType.OBJ, message.selectedObj)) { it != "-1" }
-        }
+        root.npc(message.index)
+        root.filteredBoolean("ctrl", message.controlKey)
+        root.com(message.selectedInterfaceId, message.selectedComponentId)
+        root.filteredInt("sub", message.selectedSub, -1)
+        root.filteredScriptVarType("obj", ScriptVarType.OBJ, message.selectedObj, -1)
     }
 
     override fun opObj(message: OpObj) {
-        publish {
-            property("id", formatter.type(ScriptVarType.OBJ, message.id))
-            property("coord", formatter.coord(stateTracker.level(), message.x, message.z))
-            filteredProperty("controlKey", message.controlKey) { it }
-        }
+        root.scriptVarType("id", ScriptVarType.OBJ, message.id)
+        root.coordGrid(stateTracker.level(), message.x, message.z)
+        root.filteredBoolean("ctrl", message.controlKey)
     }
 
     override fun opObj6(message: OpObj6) {
-        publish {
-            property("id", formatter.type(ScriptVarType.OBJ, message.id))
-            property("coord", formatter.coord(stateTracker.level(), message.x, message.z))
-        }
+        root.scriptVarType("id", ScriptVarType.OBJ, message.id)
+        root.coordGrid(stateTracker.level(), message.x, message.z)
     }
 
     override fun opObjT(message: OpObjT) {
-        publish {
-            property("id", formatter.type(ScriptVarType.OBJ, message.id))
-            property("coord", formatter.coord(stateTracker.level(), message.x, message.z))
-            filteredProperty("controlKey", message.controlKey) { it }
-            property("selectedCom", formatter.com(message.selectedInterfaceId, message.selectedComponentId))
-            filteredProperty("selectedSub", message.selectedSub) { it != -1 }
-            filteredProperty("selectedObj", formatter.type(ScriptVarType.OBJ, message.selectedObj)) { it != "-1" }
-        }
+        root.scriptVarType("id", ScriptVarType.OBJ, message.id)
+        root.coordGrid(stateTracker.level(), message.x, message.z)
+        root.filteredBoolean("ctrl", message.controlKey)
+        root.com("selectedcom", message.selectedInterfaceId, message.selectedComponentId)
+        root.filteredInt("selectedsub", message.selectedSub, -1)
+        root.filteredScriptVarType("selectedobj", ScriptVarType.OBJ, message.selectedObj, -1)
     }
 
     override fun opPlayer(message: OpPlayer) {
-        publish {
-            property("player", player(message.index))
-            filteredProperty("controlKey", message.controlKey) { it }
-        }
+        root.player(message.index)
+        root.filteredBoolean("ctrl", message.controlKey)
     }
 
     override fun opPlayerT(message: OpPlayerT) {
-        publish {
-            property("player", player(message.index))
-            filteredProperty("controlKey", message.controlKey) { it }
-            property("com", formatter.com(message.selectedInterfaceId, message.selectedComponentId))
-            filteredProperty("sub", message.selectedSub) { it != -1 }
-            filteredProperty("obj", formatter.type(ScriptVarType.OBJ, message.selectedObj)) { it != "-1" }
-        }
+        root.player(message.index)
+        root.filteredBoolean("ctrl", message.controlKey)
+        root.com(message.selectedInterfaceId, message.selectedComponentId)
+        root.filteredInt("sub", message.selectedSub, -1)
+        root.filteredScriptVarType("obj", ScriptVarType.OBJ, message.selectedObj, -1)
     }
 
     override fun resumePauseButton(message: ResumePauseButton) {
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
-            filteredProperty("sub", message.sub) { it != -1 }
-        }
+        root.com(message.interfaceId, message.componentId)
+        root.filteredInt("sub", message.sub, -1)
     }
 
     override fun resumePCountDialog(message: ResumePCountDialog) {
-        publish {
-            property("count", message.count.format())
-        }
+        root.formattedInt("count", message.count)
     }
 
     override fun resumePNameDialog(message: ResumePNameDialog) {
-        publish {
-            property("name", message.name.quote())
-        }
+        root.string("name", message.name)
     }
 
     override fun resumePObjDialog(message: ResumePObjDialog) {
-        publish {
-            property("id", formatter.type(ScriptVarType.OBJ, message.obj))
-        }
+        root.scriptVarType("id", ScriptVarType.OBJ, message.obj)
     }
 
     override fun resumePStringDialog(message: ResumePStringDialog) {
-        publish {
-            property("string", message.string.quote())
-        }
+        root.string("string", message.string)
     }
 
     override fun friendListAdd(message: FriendListAdd) {
-        publish {
-            property("name", message.name.quote())
-        }
+        root.string("name", message.name)
     }
 
     override fun friendListDel(message: FriendListDel) {
-        publish {
-            property("name", message.name.quote())
-        }
+        root.string("name", message.name)
     }
 
     override fun ignoreListAdd(message: IgnoreListAdd) {
-        publish {
-            property("name", message.name.quote())
-        }
+        root.string("name", message.name)
     }
 
     override fun ignoreListDel(message: IgnoreListDel) {
-        publish {
-            property("name", message.name.quote())
-        }
+        root.string("name", message.name)
+    }
+
+    private companion object {
+        private val MS_NUMBER_FORMAT: NumberFormat = DecimalFormat("###,###,###ms")
     }
 }

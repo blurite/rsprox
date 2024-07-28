@@ -4,6 +4,7 @@ import net.rsprot.protocol.Prot
 import net.rsprox.cache.api.Cache
 import net.rsprox.cache.api.CacheProvider
 import net.rsprox.shared.SessionMonitor
+import net.rsprox.shared.property.OmitFilteredPropertyFormatter
 import net.rsprox.transcriber.ClientPacketTranscriber
 import net.rsprox.transcriber.MessageConsumerContainer
 import net.rsprox.transcriber.ServerPacketTranscriber
@@ -17,13 +18,7 @@ public class BaseTranscriber private constructor(
     cacheProvider: CacheProvider,
     override val monitor: SessionMonitor<*>,
 ) : Transcriber,
-    ClientPacketTranscriber by BaseClientPacketTranscriber(
-        formatter,
-        container,
-        stateTracker,
-        cacheProvider.get(),
-        monitor,
-    ),
+    ClientPacketTranscriber by BaseClientPacketTranscriber(stateTracker),
     ServerPacketTranscriber by BaseServerPacketTranscriber(
         formatter,
         container,
@@ -48,5 +43,26 @@ public class BaseTranscriber private constructor(
 
     override fun setCurrentProt(prot: Prot) {
         stateTracker.currentProt = prot
+    }
+
+    override fun onTranscribeStart() {
+        stateTracker.setRoot()
+    }
+
+    override fun onTranscribeEnd() {
+        val formatter = OmitFilteredPropertyFormatter()
+        val lines = formatter.format(stateTracker.root)
+        for (line in lines) {
+            println(line)
+        }
+        /*val hasGroups = stateTracker.root.children.any { it is GroupProperty }
+        if (!hasGroups) {
+            // If there were no groups defined, we add an implicit group around all the properties
+            val children = stateTracker.root.children.toList()
+            stateTracker.root.children.clear()
+            stateTracker.root.group {
+                this.children.addAll(children)
+            }
+        }*/
     }
 }

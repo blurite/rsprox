@@ -4,6 +4,8 @@ import net.rsprot.protocol.Prot
 import net.rsprot.protocol.util.CombinedId
 import net.rsprox.cache.api.type.VarBitType
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
+import net.rsprox.shared.property.ChildProperty
+import net.rsprox.shared.property.RootProperty
 
 public class StateTracker {
     public var cycle: Int = 0
@@ -18,6 +20,15 @@ public class StateTracker {
     public var toplevelInterface: Int = -1
     private val cachedVarps: IntArray = IntArray(10_000)
     private lateinit var varpToVarbitsMap: Map<Int, List<VarBitType>>
+    public lateinit var root: RootProperty<*>
+
+    public fun setRoot() {
+        this.root =
+            object : RootProperty<Prot> {
+                override val prot: Prot = currentProt
+                override val children: MutableList<ChildProperty<*>> = mutableListOf()
+            }
+    }
 
     public fun createWorld(id: Int): World {
         val newWorld = World(id)

@@ -14,7 +14,12 @@ public class TranscriberPlugin(
         value: IncomingMessage,
         block: Transcriber.(instance: T) -> Unit,
     ) {
-        block(transcriber, value as T)
+        transcriber.onTranscribeStart()
+        try {
+            block(transcriber, value as T)
+        } finally {
+            transcriber.onTranscribeEnd()
+        }
     }
 
     override fun onServerPacket(
