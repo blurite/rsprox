@@ -1,4 +1,4 @@
-package net.rsprox.transcriber.base
+package net.rsprox.transcriber.base.impl
 
 import net.rsprox.cache.api.Cache
 import net.rsprox.cache.api.type.VarBitType
@@ -170,7 +170,8 @@ import net.rsprox.shared.property.unidentifiedWorldEntity
 import net.rsprox.shared.property.varbit
 import net.rsprox.shared.property.varp
 import net.rsprox.shared.property.zoneCoordGrid
-import net.rsprox.transcriber.ServerPacketTranscriber
+import net.rsprox.transcriber.base.maxUShortToMinusOne
+import net.rsprox.transcriber.impl.ServerPacketTranscriber
 import net.rsprox.transcriber.state.Player
 import net.rsprox.transcriber.state.StateTracker
 import java.text.DecimalFormat

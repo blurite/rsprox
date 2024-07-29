@@ -1,4 +1,4 @@
-package net.rsprox.transcriber
+package net.rsprox.transcriber.impl
 
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerInfo
 

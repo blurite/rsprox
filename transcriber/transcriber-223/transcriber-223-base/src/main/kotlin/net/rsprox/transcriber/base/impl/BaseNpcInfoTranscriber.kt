@@ -1,4 +1,4 @@
-package net.rsprox.transcriber.base
+package net.rsprox.transcriber.base.impl
 
 import net.rsprox.cache.api.Cache
 import net.rsprox.protocol.common.CoordGrid
@@ -45,7 +45,9 @@ import net.rsprox.shared.property.scriptVarType
 import net.rsprox.shared.property.string
 import net.rsprox.shared.property.unidentifiedNpc
 import net.rsprox.shared.property.unidentifiedPlayer
-import net.rsprox.transcriber.NpcInfoTranscriber
+import net.rsprox.transcriber.base.maxUShortToMinusOne
+import net.rsprox.transcriber.base.toFullBinaryString
+import net.rsprox.transcriber.impl.NpcInfoTranscriber
 import net.rsprox.transcriber.state.Npc
 import net.rsprox.transcriber.state.StateTracker
 

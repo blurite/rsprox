@@ -3,6 +3,10 @@ package net.rsprox.transcriber
 import net.rsprot.protocol.Prot
 import net.rsprox.cache.api.Cache
 import net.rsprox.shared.SessionMonitor
+import net.rsprox.transcriber.impl.ClientPacketTranscriber
+import net.rsprox.transcriber.impl.NpcInfoTranscriber
+import net.rsprox.transcriber.impl.PlayerInfoTranscriber
+import net.rsprox.transcriber.impl.ServerPacketTranscriber
 
 public interface Transcriber :
     ClientPacketTranscriber,

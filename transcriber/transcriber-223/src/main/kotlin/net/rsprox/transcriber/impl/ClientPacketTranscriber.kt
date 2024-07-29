@@ -1,4 +1,4 @@
-package net.rsprox.transcriber
+package net.rsprox.transcriber.impl
 
 import net.rsprox.protocol.game.incoming.model.buttons.If1Button
 import net.rsprox.protocol.game.incoming.model.buttons.If3Button

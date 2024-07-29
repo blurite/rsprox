@@ -1,4 +1,4 @@
-package net.rsprox.transcriber.base
+package net.rsprox.transcriber.base.impl
 
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerInfo
@@ -39,7 +39,9 @@ import net.rsprox.shared.property.scriptVarType
 import net.rsprox.shared.property.string
 import net.rsprox.shared.property.unidentifiedNpc
 import net.rsprox.shared.property.unidentifiedPlayer
-import net.rsprox.transcriber.PlayerInfoTranscriber
+import net.rsprox.transcriber.base.firstOfInstanceOfNull
+import net.rsprox.transcriber.base.maxUShortToMinusOne
+import net.rsprox.transcriber.impl.PlayerInfoTranscriber
 import net.rsprox.transcriber.state.Player
 import net.rsprox.transcriber.state.StateTracker
 

@@ -1,4 +1,4 @@
-package net.rsprox.transcriber.base
+package net.rsprox.transcriber.base.impl
 
 import net.rsprox.protocol.game.incoming.model.buttons.If1Button
 import net.rsprox.protocol.game.incoming.model.buttons.If3Button
@@ -90,7 +90,7 @@ import net.rsprox.shared.property.scriptVarType
 import net.rsprox.shared.property.string
 import net.rsprox.shared.property.unidentifiedNpc
 import net.rsprox.shared.property.unidentifiedPlayer
-import net.rsprox.transcriber.ClientPacketTranscriber
+import net.rsprox.transcriber.impl.ClientPacketTranscriber
 import net.rsprox.transcriber.state.StateTracker
 import java.awt.event.KeyEvent
 import java.text.DecimalFormat

@@ -5,12 +5,16 @@ import net.rsprox.cache.api.Cache
 import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.shared.SessionMonitor
-import net.rsprox.transcriber.ClientPacketTranscriber
 import net.rsprox.transcriber.MessageConsumerContainer
-import net.rsprox.transcriber.NpcInfoTranscriber
-import net.rsprox.transcriber.PlayerInfoTranscriber
-import net.rsprox.transcriber.ServerPacketTranscriber
 import net.rsprox.transcriber.Transcriber
+import net.rsprox.transcriber.base.impl.BaseClientPacketTranscriber
+import net.rsprox.transcriber.base.impl.BaseNpcInfoTranscriber
+import net.rsprox.transcriber.base.impl.BasePlayerInfoTranscriber
+import net.rsprox.transcriber.base.impl.BaseServerPacketTranscriber
+import net.rsprox.transcriber.impl.ClientPacketTranscriber
+import net.rsprox.transcriber.impl.NpcInfoTranscriber
+import net.rsprox.transcriber.impl.PlayerInfoTranscriber
+import net.rsprox.transcriber.impl.ServerPacketTranscriber
 import net.rsprox.transcriber.state.StateTracker
 
 public class BaseTranscriber private constructor(
