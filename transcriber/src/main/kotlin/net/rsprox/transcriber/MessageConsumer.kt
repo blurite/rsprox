@@ -1,28 +1,35 @@
 package net.rsprox.transcriber
 
+import net.rsprox.shared.property.OmitFilteredPropertyTreeFormatter
+import net.rsprox.shared.property.RootProperty
+
 public interface MessageConsumer {
-    public fun consume(message: List<String>)
+    public fun consume(
+        cycle: Int,
+        property: RootProperty<*>,
+    )
 
     public fun close()
 
     public companion object {
         public val STDOUT_CONSUMER: MessageConsumer =
             object : MessageConsumer {
-                override fun consume(message: List<String>) {
-                    for (line in message) {
-                        println(line)
+                val propertyTreeFormatter = OmitFilteredPropertyTreeFormatter()
+                var lastCycle = -1
+
+                override fun consume(
+                    cycle: Int,
+                    property: RootProperty<*>,
+                ) {
+                    if (cycle != lastCycle) {
+                        lastCycle = cycle
+                        println("[$cycle]")
                     }
-                }
-
-                override fun close() {
-                }
-            }
-
-        public val STDERR_CONSUMER: MessageConsumer =
-            object : MessageConsumer {
-                override fun consume(message: List<String>) {
-                    for (line in message) {
-                        System.err.println(line)
+                    val result = propertyTreeFormatter.format(property)
+                    for (line in result) {
+                        // Add four space indentation due to the cycle header
+                        print("    ")
+                        println(line)
                     }
                 }
 

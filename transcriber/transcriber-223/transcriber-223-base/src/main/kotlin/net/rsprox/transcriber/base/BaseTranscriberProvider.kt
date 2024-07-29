@@ -20,6 +20,7 @@ public class BaseTranscriberProvider : TranscriberProvider {
                 cacheProvider,
                 monitor,
                 stateTracker,
+                container,
             ),
         )
     }

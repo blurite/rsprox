@@ -1,16 +1,23 @@
 package net.rsprox.transcriber.base
 
 import net.rsprox.shared.SessionMonitor
+import net.rsprox.shared.property.RootProperty
+import net.rsprox.transcriber.BaseMessageConsumerContainer
 import net.rsprox.transcriber.MessageConsumerContainer
-import net.rsprox.transcriber.state.StateTracker
 
 public class MonitoredMessageConsumerContainer(
-    root: MessageConsumerContainer,
-    private val stateTracker: StateTracker,
+    private val root: BaseMessageConsumerContainer,
     private val monitor: SessionMonitor<*>,
-) : MessageConsumerContainer by root {
-    override fun publish(message: String) {
-        super.publish(message)
-        monitor.onTranscribe(stateTracker.cycle, message)
+) : MessageConsumerContainer {
+    override fun publish(
+        cycle: Int,
+        property: RootProperty<*>,
+    ) {
+        root.publish(cycle, property)
+        monitor.onTranscribe(cycle, property)
+    }
+
+    override fun close() {
+        root.close()
     }
 }

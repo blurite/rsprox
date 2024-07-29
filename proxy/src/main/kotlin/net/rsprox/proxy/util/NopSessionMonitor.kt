@@ -2,6 +2,7 @@ package net.rsprox.proxy.util
 
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.shared.SessionMonitor
+import net.rsprox.shared.property.RootProperty
 
 public object NopSessionMonitor : SessionMonitor<BinaryHeader> {
     override fun onLogin(header: BinaryHeader) {
@@ -15,7 +16,7 @@ public object NopSessionMonitor : SessionMonitor<BinaryHeader> {
 
     override fun onTranscribe(
         cycle: Int,
-        message: String,
+        property: RootProperty<*>,
     ) {
     }
 }

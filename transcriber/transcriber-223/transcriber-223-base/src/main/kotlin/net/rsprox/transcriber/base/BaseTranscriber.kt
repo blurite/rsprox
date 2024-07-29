@@ -5,8 +5,8 @@ import net.rsprox.cache.api.Cache
 import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.shared.SessionMonitor
-import net.rsprox.shared.property.OmitFilteredPropertyTreeFormatter
 import net.rsprox.transcriber.ClientPacketTranscriber
+import net.rsprox.transcriber.MessageConsumerContainer
 import net.rsprox.transcriber.NpcInfoTranscriber
 import net.rsprox.transcriber.PlayerInfoTranscriber
 import net.rsprox.transcriber.ServerPacketTranscriber
@@ -17,6 +17,7 @@ public class BaseTranscriber private constructor(
     private val stateTracker: StateTracker,
     cacheProvider: CacheProvider,
     override val monitor: SessionMonitor<*>,
+    private val consumers: MessageConsumerContainer,
 ) : Transcriber,
     ClientPacketTranscriber by BaseClientPacketTranscriber(stateTracker),
     ServerPacketTranscriber by BaseServerPacketTranscriber(
@@ -35,10 +36,12 @@ public class BaseTranscriber private constructor(
         cacheProvider: CacheProvider,
         monitor: SessionMonitor<*>,
         stateTracker: StateTracker,
+        consumers: MessageConsumerContainer,
     ) : this(
         stateTracker,
         cacheProvider,
         monitor,
+        consumers,
     )
 
     override val cache: Cache = cacheProvider.get()
@@ -52,15 +55,11 @@ public class BaseTranscriber private constructor(
     }
 
     override fun onTranscribeEnd() {
-        val formatter = OmitFilteredPropertyTreeFormatter()
         var cycle = stateTracker.cycle
         // Decrement the cycle if we're logging server tick end
         if (stateTracker.currentProt == GameServerProt.SERVER_TICK_END) {
             cycle--
         }
-        val tree = formatter.format(cycle, stateTracker.root)
-        for (line in tree.text) {
-            println(line)
-        }
+        consumers.publish(cycle, stateTracker.root)
     }
 }

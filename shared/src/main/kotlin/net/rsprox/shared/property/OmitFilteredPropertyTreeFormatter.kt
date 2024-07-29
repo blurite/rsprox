@@ -3,10 +3,7 @@ package net.rsprox.shared.property
 import net.rsprox.shared.property.regular.GroupProperty
 
 public class OmitFilteredPropertyTreeFormatter : PropertyTreeFormatter {
-    override fun format(
-        cycle: Int,
-        property: RootProperty<*>,
-    ): StringPropertyTree {
+    override fun format(property: RootProperty<*>): List<String> {
         val builder = StringBuilder()
         builder.append('[').append(property.prot).append("] ")
         var count = 0
@@ -16,10 +13,7 @@ public class OmitFilteredPropertyTreeFormatter : PropertyTreeFormatter {
             }
             writeChild(child, builder, 1, if (count++ == 0) null else SEPARATOR)
         }
-        return StringPropertyTree(
-            cycle,
-            builder.lines(),
-        )
+        return builder.lines()
     }
 
     private fun ChildProperty<*>.isExcluded(): Boolean {

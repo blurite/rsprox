@@ -13,6 +13,8 @@ import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.util.NopSessionMonitor
+import net.rsprox.shared.property.OmitFilteredPropertyTreeFormatter
+import net.rsprox.shared.property.RootProperty
 import net.rsprox.transcriber.BaseMessageConsumerContainer
 import net.rsprox.transcriber.MessageConsumer
 import java.io.BufferedWriter
@@ -78,7 +80,7 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
         val transcriberProvider = pluginLoader.getTranscriberProvider(binary.header.revision)
         val session = DecodingSession(binary, latestPlugin)
         val writer = binaryPath.parent.resolve(binaryPath.nameWithoutExtension + ".txt").bufferedWriter()
-        val consumers = BaseMessageConsumerContainer(emptyList())
+        val consumers = BaseMessageConsumerContainer(listOf(createBufferedWriterConsumer(writer)))
         val runner =
             transcriberProvider.provide(
                 consumers,
@@ -118,8 +120,25 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
 
     private fun createBufferedWriterConsumer(writer: BufferedWriter): MessageConsumer {
         return object : MessageConsumer {
-            override fun consume(message: List<String>) {
-                for (line in message) {
+            val propertyTreeFormatter = OmitFilteredPropertyTreeFormatter()
+            var lastCycle = -1
+
+            override fun consume(
+                cycle: Int,
+                property: RootProperty<*>,
+            ) {
+                if (cycle != lastCycle) {
+                    if (lastCycle != -1) {
+                        writer.newLine()
+                    }
+                    lastCycle = cycle
+                    writer.write("[$cycle]")
+                    writer.newLine()
+                }
+                val result = propertyTreeFormatter.format(property)
+                for (line in result) {
+                    // Add four space indentation due to the cycle header
+                    writer.write("    ")
                     writer.write(line)
                     writer.newLine()
                 }
