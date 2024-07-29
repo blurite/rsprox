@@ -27,9 +27,7 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.MessageFriendChannel
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV1
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV2
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelSingleUser
-import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcInfo
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
-import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerInfo
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfo
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
@@ -189,11 +187,7 @@ public interface ServerPacketTranscriber {
 
     public fun updateFriendChatChannelSingleUser(message: UpdateFriendChatChannelSingleUser)
 
-    public fun npcInfo(message: NpcInfo)
-
     public fun setNpcUpdateOrigin(message: SetNpcUpdateOrigin)
-
-    public fun playerInfo(message: PlayerInfo)
 
     public fun worldEntityInfo(message: WorldEntityInfo)
 

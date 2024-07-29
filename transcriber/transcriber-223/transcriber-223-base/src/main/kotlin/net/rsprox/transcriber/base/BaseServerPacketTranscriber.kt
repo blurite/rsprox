@@ -30,37 +30,7 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.MessageFriendChannel
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV1
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV2
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelSingleUser
-import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcInfo
-import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcUpdateType
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
-import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.BaseAnimationSetExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.BodyCustomisationExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.CombatLevelChangeExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.EnabledOpsExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.FaceCoordExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.HeadCustomisationExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.HeadIconCustomisationExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.NameChangeExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.OldSpotanimExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.TransformationExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.customisation.ModelCustomisation
-import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.customisation.ResetCustomisation
-import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerInfo
-import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerUpdateType
-import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.AppearanceExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.ChatExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.FaceAngleExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.MoveSpeedExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.NameExtrasExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.TemporaryMoveSpeedExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FacePathingEntityExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HitExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SayExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SequenceExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfo
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityUpdateType
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
@@ -167,209 +137,111 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjEnabledOps
 import net.rsprox.protocol.game.outgoing.model.zone.payload.SoundArea
 import net.rsprox.protocol.reflection.ReflectionCheck
 import net.rsprox.shared.ScriptVarType
-import net.rsprox.shared.SessionMonitor
-import net.rsprox.transcriber.MessageConsumerContainer
+import net.rsprox.shared.property.ChildProperty
+import net.rsprox.shared.property.NamedEnum
+import net.rsprox.shared.property.Property
+import net.rsprox.shared.property.RootProperty
+import net.rsprox.shared.property.boolean
+import net.rsprox.shared.property.com
+import net.rsprox.shared.property.coordGrid
+import net.rsprox.shared.property.enum
+import net.rsprox.shared.property.filteredBoolean
+import net.rsprox.shared.property.filteredInt
+import net.rsprox.shared.property.filteredLong
+import net.rsprox.shared.property.filteredNamedEnum
+import net.rsprox.shared.property.filteredString
+import net.rsprox.shared.property.formattedInt
+import net.rsprox.shared.property.group
+import net.rsprox.shared.property.identifiedNpc
+import net.rsprox.shared.property.identifiedPlayer
+import net.rsprox.shared.property.identifiedWorldEntity
+import net.rsprox.shared.property.int
+import net.rsprox.shared.property.inter
+import net.rsprox.shared.property.long
+import net.rsprox.shared.property.namedEnum
+import net.rsprox.shared.property.regular.CoordGridProperty
+import net.rsprox.shared.property.regular.ZoneCoordProperty
+import net.rsprox.shared.property.script
+import net.rsprox.shared.property.scriptVarType
+import net.rsprox.shared.property.string
+import net.rsprox.shared.property.unidentifiedNpc
+import net.rsprox.shared.property.unidentifiedPlayer
+import net.rsprox.shared.property.unidentifiedWorldEntity
+import net.rsprox.shared.property.varbit
+import net.rsprox.shared.property.varp
+import net.rsprox.shared.property.zoneCoordGrid
 import net.rsprox.transcriber.ServerPacketTranscriber
-import net.rsprox.transcriber.coord
-import net.rsprox.transcriber.format
-import net.rsprox.transcriber.indent
-import net.rsprox.transcriber.properties.Property
-import net.rsprox.transcriber.properties.PropertyBuilder
-import net.rsprox.transcriber.quote
-import net.rsprox.transcriber.state.Npc
 import net.rsprox.transcriber.state.Player
 import net.rsprox.transcriber.state.StateTracker
-import net.rsprox.transcriber.state.World
+import java.text.DecimalFormat
+import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.concurrent.TimeUnit
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 
-@Suppress("DuplicatedCode", "SameParameterValue", "MemberVisibilityCanBePrivate", "SpellCheckingInspection")
-public open class BaseServerPacketTranscriber(
-    private val formatter: BaseMessageFormatter,
-    private val container: MessageConsumerContainer,
+@Suppress("SpellCheckingInspection", "DuplicatedCode")
+public class BaseServerPacketTranscriber(
     private val stateTracker: StateTracker,
     private val cache: Cache,
-    private val monitor: SessionMonitor<*>,
 ) : ServerPacketTranscriber {
-    private fun format(
-        indentation: Int,
-        name: String,
-        properties: List<Property>,
-    ): String {
-        return formatter.format(
-            clientPacket = false,
-            name = name,
-            properties = properties,
-            indentation = indentation,
-        )
-    }
+    private val root: RootProperty<*>
+        get() = stateTracker.root
 
-    private fun format(properties: List<Property>): String {
-        return formatter.format(
-            clientPacket = false,
-            name = stateTracker.currentProt.toString(),
-            properties = properties,
-            indentation = 1,
-        )
-    }
-
-    private fun format(
-        indentation: Int,
-        name: String,
-        builderAction: PropertyBuilder.() -> Unit = {},
-    ): String {
-        val properties = properties(builderAction)
-        return formatter.format(
-            clientPacket = false,
-            name = name,
-            properties = properties,
-            indentation = indentation,
-        )
-    }
-
-    private fun publish(builderAction: PropertyBuilder.() -> Unit) {
-        container.publish(format(properties(builderAction)))
-    }
-
-    private fun npc(
-        index: Int,
-        specify: Boolean = false,
-    ): String {
-        val prefix = if (specify) "npcindex" else "index"
+    private fun Property.npc(index: Int): ChildProperty<*> {
         val npc = stateTracker.getActiveWorld().getNpcOrNull(index)
-        return if (npc == null) {
-            "($prefix=$index)"
+        return if (npc != null) {
+            identifiedNpc(
+                index,
+                npc.name ?: "null",
+                npc.coord.level,
+                npc.coord.x,
+                npc.coord.z,
+            )
         } else {
-            formatNpc(prefix, npc.index, npc.name?.quote(), formatter.coord(npc.coord))
+            unidentifiedNpc(index)
         }
     }
 
-    private fun formatNpc(
-        prefix: String,
+    private fun Property.player(
         index: Int,
-        name: String?,
-        coord: String,
-    ): String {
-        val builder = StringBuilder()
-        builder
-            .append('(')
-            .append(prefix)
-            .append('=')
-            .append(index)
-            .append(", ")
-        if (name != null) {
-            builder.append("name=").append(name).append(", ")
+        name: String = "player",
+    ): ChildProperty<*> {
+        val player = stateTracker.getPlayerOrNull(index)
+        return if (player != null) {
+            identifiedPlayer(
+                index,
+                player.name,
+                player.coord.level,
+                player.coord.x,
+                player.coord.z,
+                name,
+            )
+        } else {
+            unidentifiedPlayer(index, name)
         }
-        builder.append("coord=").append(coord).append(')')
-        return builder.toString()
     }
 
-    private fun player(
+    private fun Property.worldentity(
         index: Int,
-        specify: Boolean = false,
-    ): String {
-        val prefix = if (specify) "playerindex" else "index"
-        val tracked = stateTracker.getPlayerOrNull(index)
-        return if (tracked == null) {
-            "($prefix=$index)"
+        name: String = "worldentity",
+    ): ChildProperty<*> {
+        if (index == -1) {
+            return string("worldentity", "root")
+        }
+        val world = stateTracker.getWorldOrNull(index)
+        return if (world != null) {
+            identifiedWorldEntity(
+                index,
+                world.coord.level,
+                world.coord.x,
+                world.coord.z,
+                world.sizeX,
+                world.sizeZ,
+                name,
+            )
         } else {
-            "($prefix=$index, name=${tracked.name.quote()}, coord=${formatter.coord(tracked.coord)})"
+            unidentifiedWorldEntity(index, name)
         }
-    }
-
-    private fun worldentity(index: Int): String {
-        val entity = stateTracker.getWorldOrNull(index)
-        return if (entity == null) {
-            "(index=$index)"
-        } else {
-            "(index=$index, sizeX=${entity.sizeX}, " +
-                "sizeZ=${entity.sizeZ}, angle=${entity.angle}, " +
-                "coord=${formatter.coord(entity.coord)})"
-        }
-    }
-
-    public fun loc(
-        id: Int,
-        coordGrid: CoordGrid,
-        shape: Int,
-        rotation: Int,
-    ): String {
-        val builder = StringBuilder()
-        builder.append('(')
-        builder.append("id=").append(formatter.type(ScriptVarType.LOC, id)).append(", ")
-        builder.append("coord=").append(formatter.coord(coordGrid)).append(", ")
-        builder.append("shape=").append(formatter.type(ScriptVarType.LOC_SHAPE, shape)).append(", ")
-        builder.append("rotation=").append(rotation).append(')')
-        return builder.toString()
-    }
-
-    public fun loc(
-        coordGrid: CoordGrid,
-        shape: Int,
-        rotation: Int,
-    ): String {
-        val builder = StringBuilder()
-        builder.append('(')
-        builder.append("coord=").append(formatter.coord(coordGrid)).append(", ")
-        builder.append("shape=").append(formatter.type(ScriptVarType.LOC_SHAPE, shape)).append(", ")
-        builder.append("rotation=").append(rotation).append(')')
-        return builder.toString()
-    }
-
-    private fun formatEpochTimeMinute(num: Int): String {
-        val epochTimeMillis = TimeUnit.MINUTES.toMillis(num.toLong())
-        return SimpleDateFormat("yyyy-MM-dd HH:mm").format(Date(epochTimeMillis))
-    }
-
-    @OptIn(ExperimentalContracts::class)
-    private fun properties(builderAction: PropertyBuilder.() -> Unit): List<Property> {
-        contract { callsInPlace(builderAction, InvocationKind.EXACTLY_ONCE) }
-        val builder = PropertyBuilder()
-        builderAction(builder)
-        return builder.build()
-    }
-
-    private fun actor(ambiguousIndex: Int): List<Property> {
-        return properties {
-            if (ambiguousIndex == -1 || ambiguousIndex == 0xFFFFFF) {
-                property("index", -1)
-                return@properties
-            }
-            if (ambiguousIndex > 0xFFFF) {
-                val index = ambiguousIndex - 0xFFFF
-                property("playerindex", index)
-                val name = stateTracker.getLastKnownPlayerName(index)
-                if (name != null) {
-                    property("player", name.quote())
-                }
-            } else {
-                property("npcindex", ambiguousIndex)
-            }
-        }
-    }
-
-    private fun formatActor(ambiguousIndex: Int): String {
-        if (ambiguousIndex == -1 || ambiguousIndex == 0xFFFFFF) {
-            return "(index=-1)"
-        }
-        return if (ambiguousIndex > 0xFFFF) {
-            val index = ambiguousIndex - 0xFFFF
-            player(index, specify = true)
-        } else {
-            npc(ambiguousIndex, specify = true)
-        }
-    }
-
-    private fun buildAreaCoord(
-        xInBuildArea: Int,
-        zInBuildArea: Int,
-        level: Int = -1,
-    ): String {
-        return formatter.coord(buildAreaCoordGrid(xInBuildArea, zInBuildArea, level))
     }
 
     private fun buildAreaCoordGrid(
@@ -386,234 +258,202 @@ public open class BaseServerPacketTranscriber(
             )
     }
 
+    private fun Property.coordGrid(coordGrid: CoordGrid): CoordGridProperty {
+        return coordGrid(coordGrid.level, coordGrid.x, coordGrid.z)
+    }
+
+    private fun Property.coordGrid(
+        name: String,
+        coordGrid: CoordGrid,
+    ): CoordGridProperty {
+        return coordGrid(coordGrid.level, coordGrid.x, coordGrid.z, name)
+    }
+
+    private fun Property.zoneCoord(
+        name: String,
+        level: Int,
+        zoneX: Int,
+        zoneZ: Int,
+    ): ZoneCoordProperty {
+        return zoneCoordGrid(level, zoneX shl 3, zoneZ shl 3, name)
+    }
+
     override fun camLookAt(message: CamLookAt) {
-        publish {
-            property("coord", buildAreaCoord(message.destinationXInBuildArea, message.destinationZInBuildArea))
-            property("height", message.height)
-            property("rate", message.speed)
-            property("rate2", message.acceleration)
-        }
+        root.coordGrid(buildAreaCoordGrid(message.destinationXInBuildArea, message.destinationZInBuildArea))
+        root.int("height", message.height)
+        root.int("rate", message.speed)
+        root.int("rate2", message.acceleration)
     }
 
     override fun camLookAtEasedCoord(message: CamLookAtEasedCoord) {
-        publish {
-            property("coord", buildAreaCoord(message.destinationXInBuildArea, message.destinationZInBuildArea))
-            property("height", message.height)
-            property("cycles", message.duration)
-            property("easing", message.function.prettyName().quote())
-        }
+        root.coordGrid(buildAreaCoordGrid(message.destinationXInBuildArea, message.destinationZInBuildArea))
+        root.int("height", message.height)
+        root.int("cycles", message.duration)
+        root.enum("easing", message.function)
     }
 
     override fun camMode(message: CamMode) {
-        publish {
-            property("mode", message.mode)
-        }
+        root.int("mode", message.mode)
     }
 
     override fun camMoveTo(message: CamMoveTo) {
-        publish {
-            property("coord", buildAreaCoord(message.destinationXInBuildArea, message.destinationZInBuildArea))
-            property("height", message.height)
-            property("rate", message.speed)
-            property("rate2", message.acceleration)
-        }
+        root.coordGrid(buildAreaCoordGrid(message.destinationXInBuildArea, message.destinationZInBuildArea))
+        root.int("height", message.height)
+        root.int("rate", message.speed)
+        root.int("rate2", message.acceleration)
     }
 
     override fun camMoveToArc(message: CamMoveToArc) {
-        publish {
-            property("coord", buildAreaCoord(message.destinationXInBuildArea, message.destinationZInBuildArea))
-            property("height", message.height)
-            property("tertiaryCoord", buildAreaCoord(message.centerXInBuildArea, message.centerZInBuildArea))
-            property("cycles", message.duration)
-            property("ignoreTerrain", message.maintainFixedAltitude)
-            property("easing", message.function.prettyName().quote())
-        }
+        root.coordGrid(buildAreaCoordGrid(message.destinationXInBuildArea, message.destinationZInBuildArea))
+        root.int("height", message.height)
+        root.coordGrid("tertiarycoord", buildAreaCoordGrid(message.centerXInBuildArea, message.centerZInBuildArea))
+        root.int("cycles", message.duration)
+        root.boolean("ignoreterrain", message.maintainFixedAltitude)
+        root.enum("easing", message.function)
     }
 
     override fun camMoveToCycles(message: CamMoveToCycles) {
-        publish {
-            property("coord", buildAreaCoord(message.destinationXInBuildArea, message.destinationZInBuildArea))
-            property("height", message.height)
-            property("cycles", message.duration)
-            property("ignoreTerrain", message.maintainFixedAltitude)
-            property("easing", message.function.prettyName().quote())
-        }
+        root.coordGrid(buildAreaCoordGrid(message.destinationXInBuildArea, message.destinationZInBuildArea))
+        root.int("height", message.height)
+        root.int("cycles", message.duration)
+        root.boolean("ignoreterrain", message.maintainFixedAltitude)
+        root.enum("easing", message.function)
     }
 
     override fun camReset(message: CamReset) {
-        publishProt()
     }
 
     override fun camRotateBy(message: CamRotateBy) {
-        publish {
-            property("pitch", message.xAngle)
-            property("yaw", message.yAngle)
-            property("cycles", message.duration)
-            property("easing", message.function.prettyName().quote())
-        }
+        root.int("pitch", message.xAngle)
+        root.int("yaw", message.yAngle)
+        root.int("cycles", message.duration)
+        root.enum("easing", message.function)
     }
 
     override fun camRotateTo(message: CamRotateTo) {
-        publish {
-            property("pitch", message.xAngle)
-            property("yaw", message.yAngle)
-            property("cycles", message.duration)
-            property("easing", message.function.prettyName().quote())
-        }
+        root.int("pitch", message.xAngle)
+        root.int("yaw", message.yAngle)
+        root.int("cycles", message.duration)
+        root.enum("easing", message.function)
     }
 
     override fun camShake(message: CamShake) {
-        publish {
-            property("axis", message.type)
-            property("random", message.randomAmount)
-            property("amplitude", message.sineAmount)
-            property("rate", message.sineFrequency)
-        }
+        root.int("axis", message.type)
+        root.int("random", message.randomAmount)
+        root.int("amplitude", message.sineAmount)
+        root.int("rate", message.sineFrequency)
     }
 
     override fun camSmoothReset(message: CamSmoothReset) {
-        publish {
-            property("moveConstantSpeed", message.cameraMoveConstantSpeed)
-            property("moveProportionalSpeed", message.cameraMoveProportionalSpeed)
-            property("lookConstantSpeed", message.cameraLookConstantSpeed)
-            property("lookProportionalSpeed", message.cameraLookProportionalSpeed)
-        }
+        root.int("moveconstantspeed", message.cameraMoveConstantSpeed)
+        root.int("moveproportionalspeed", message.cameraMoveProportionalSpeed)
+        root.int("lookconstantspeed", message.cameraLookConstantSpeed)
+        root.int("lookproportionalspeed", message.cameraLookProportionalSpeed)
     }
 
     override fun camTarget(message: CamTarget) {
-        publish {
-            when (val type = message.type) {
-                is CamTarget.NpcCamTarget -> {
-                    property("npc", npc(type.index))
-                }
-                is CamTarget.PlayerCamTarget -> {
-                    property("player", player(type.index))
-                }
-                is CamTarget.WorldEntityTarget -> {
-                    property("worldentity", worldentity(type.index))
-                    if (type.cameraLockedPlayerIndex != -1) {
-                        property("cameraLockedPlayerIndex", player(type.index))
-                    }
+        when (val type = message.type) {
+            is CamTarget.NpcCamTarget -> {
+                root.npc(type.index)
+            }
+            is CamTarget.PlayerCamTarget -> {
+                root.player(type.index)
+            }
+            is CamTarget.WorldEntityTarget -> {
+                root.worldentity(type.index)
+                if (type.cameraLockedPlayerIndex != -1) {
+                    root.player(type.index, "cameralockedplayer")
                 }
             }
         }
     }
 
     override fun camTargetOld(message: CamTargetOld) {
-        publish {
-            when (val type = message.type) {
-                is CamTargetOld.NpcCamTarget -> {
-                    property("npc", npc(type.index))
-                }
-                is CamTargetOld.PlayerCamTarget -> {
-                    property("player", player(type.index))
-                }
-                is CamTargetOld.WorldEntityTarget -> {
-                    property("worldentity", worldentity(type.index))
-                }
+        when (val type = message.type) {
+            is CamTargetOld.NpcCamTarget -> {
+                root.npc(type.index)
+            }
+            is CamTargetOld.PlayerCamTarget -> {
+                root.player(type.index)
+            }
+            is CamTargetOld.WorldEntityTarget -> {
+                root.worldentity(type.index)
             }
         }
     }
 
     override fun oculusSync(message: OculusSync) {
-        publish {
-            property("value", message.value)
-        }
+        root.int("value", message.value)
     }
 
     override fun clanChannelDelta(message: ClanChannelDelta) {
-        publish {
-            property("clanType", message.clanType)
-            property("clanHash", message.clanHash.format())
-            property("updateNum", message.updateNum.format())
-        }
+        root.int("clantype", message.clanType)
+        root.long("clanhash", message.clanHash)
+        root.long("updatenum", message.updateNum)
         for (event in message.events) {
             when (event) {
                 is ClanChannelDelta.ClanChannelDeltaAddUserEvent -> {
-                    container.publish(
-                        format(2, "AddUser") {
-                            property("name", event.name.quote())
-                            property("world", event.world)
-                            property("rank", event.rank)
-                        },
-                    )
+                    root.group("ADD_USER") {
+                        string("name", event.name)
+                        int("world", event.world)
+                        int("rank", event.rank)
+                    }
                 }
                 is ClanChannelDelta.ClanChannelDeltaDeleteUserEvent -> {
-                    container.publish(
-                        format(2, "DelUser") {
-                            property("memberIndex", event.index)
-                        },
-                    )
+                    root.group("DEL_USER") {
+                        int("memberindex", event.index)
+                    }
                 }
                 is ClanChannelDelta.ClanChannelDeltaUpdateBaseSettingsEvent -> {
-                    container.publish(
-                        format(2, "UpdateBaseSettings") {
-                            filteredProperty("clanName", event.clanName?.quote()) { it != null }
-                            property("talkRank", event.talkRank)
-                            property("kickRank", event.kickRank)
-                        },
-                    )
+                    root.group("UPDATE_BASE_SETTINGS") {
+                        filteredString("clanname", event.clanName, null)
+                        int("talkrank", event.talkRank)
+                        int("kickrank", event.kickRank)
+                    }
                 }
                 is ClanChannelDelta.ClanChannelDeltaUpdateUserDetailsEvent -> {
-                    container.publish(
-                        format(2, "UpdateUserDetails") {
-                            property("memberIndex", event.index)
-                            property("name", event.name.quote())
-                            property("rank", event.rank)
-                            property("world", event.world)
-                        },
-                    )
+                    root.group("UPDATE_USER_DETAILS") {
+                        int("memberindex", event.index)
+                        string("name", event.name)
+                        int("rank", event.rank)
+                        int("world", event.world)
+                    }
                 }
                 is ClanChannelDelta.ClanChannelDeltaUpdateUserDetailsV2Event -> {
-                    container.publish(
-                        format(2, "UpdateUserDetailsV2") {
-                            property("memberIndex", event.index)
-                            property("name", event.name.quote())
-                            property("rank", event.rank)
-                            property("world", event.world)
-                        },
-                    )
+                    root.group("UPDATE_USER_DETAILS") {
+                        int("memberindex", event.index)
+                        string("name", event.name)
+                        int("rank", event.rank)
+                        int("world", event.world)
+                    }
                 }
             }
         }
     }
 
     override fun clanChannelFull(message: ClanChannelFull) {
-        publish {
-            property("clanType", message.clanType)
-            property(
-                "updateType",
-                if (message.update == ClanChannelFull.ClanChannelFullLeaveUpdate) {
-                    "Leave"
-                } else {
-                    "Join"
-                },
-            )
-        }
+        root.int("clantype", message.clanType)
         when (val update = message.update) {
             is ClanChannelFull.ClanChannelFullJoinUpdate -> {
-                container.publish(
-                    format(2, "Details") {
-                        property("flags", update.flags)
-                        property("version", update.version)
-                        property("clanHash", update.clanHash.format())
-                        property("updateNum", update.updateNum.format())
-                        property("clanName", update.clanName.quote())
-                        property("discardedBoolean", update.discardedBoolean)
-                        property("kickRank", update.kickRank)
-                        property("talkRank", update.talkRank)
-                    },
-                )
-                container.publish(format(2, "Members"))
-                for (member in update.members) {
-                    container.publish(
-                        format(3, "Member") {
-                            property("name", member.name.quote())
-                            property("rank", member.rank)
-                            property("world", member.world)
-                            property("discardedBoolean", member.discardedBoolean)
-                        },
-                    )
+                root.group("DETAILS") {
+                    int("flags", update.flags)
+                    int("version", update.version)
+                    long("clanhash", update.clanHash)
+                    long("updatenum", update.updateNum)
+                    string("clanname", update.clanName)
+                    boolean("discarded", update.discardedBoolean)
+                    int("kickrank", update.kickRank)
+                    int("talkrank", update.talkRank)
+                }
+                root.group("MEMBERS") {
+                    for (member in update.members) {
+                        group {
+                            string("name", member.name)
+                            int("rank", member.rank)
+                            int("world", member.world)
+                            boolean("discarded", member.discardedBoolean)
+                        }
+                    }
                 }
             }
             ClanChannelFull.ClanChannelFullLeaveUpdate -> {
@@ -622,317 +462,244 @@ public open class BaseServerPacketTranscriber(
     }
 
     override fun clanSettingsDelta(message: ClanSettingsDelta) {
-        publish {
-            property("clanType", message.clanType)
-            property("owner", message.owner.format())
-            property("updateNum", message.updateNum)
-        }
-        for (update in message.updates) {
-            when (update) {
-                is ClanSettingsDelta.ClanSettingsDeltaSetClanOwnerUpdate -> {
-                    container.publish(
-                        format(2, "SetClanOwner") {
-                            property("memberIndex", update.index)
-                        },
-                    )
-                }
-                is ClanSettingsDelta.ClanSettingsDeltaAddBannedUpdate -> {
-                    container.publish(
-                        format(2, "AddBanned") {
-                            filteredProperty("hash", update.hash) { it != 0L }
-                            filteredProperty("name", update.name?.quote()) { it != null }
-                        },
-                    )
-                }
-                is ClanSettingsDelta.ClanSettingsDeltaAddMemberV1Update -> {
-                    container.publish(
-                        format(2, "AddMemberV1") {
-                            filteredProperty("hash", update.hash) { it != 0L }
-                            filteredProperty("name", update.name?.quote()) { it != null }
-                        },
-                    )
-                }
-                is ClanSettingsDelta.ClanSettingsDeltaAddMemberV2Update -> {
-                    container.publish(
-                        format(2, "AddMemberV2") {
-                            filteredProperty("hash", update.hash) { it != 0L }
-                            filteredProperty("name", update.name?.quote()) { it != null }
-                            property("joinRuneDay", update.joinRuneDay)
-                        },
-                    )
-                }
-                is ClanSettingsDelta.ClanSettingsDeltaBaseSettingsUpdate -> {
-                    container.publish(
-                        format(2, "BaseSettings") {
-                            property("allowUnaffined", update.allowUnaffined)
-                            property("talkRank", update.talkRank)
-                            property("kickRank", update.kickRank)
-                            property("lootshareRank", update.lootshareRank)
-                            property("coinshareRank", update.coinshareRank)
-                        },
-                    )
-                }
-                is ClanSettingsDelta.ClanSettingsDeltaDeleteBannedUpdate -> {
-                    container.publish(
-                        format(2, "DeleteBanned") {
-                            property("memberIndex", update.index)
-                        },
-                    )
-                }
-                is ClanSettingsDelta.ClanSettingsDeltaDeleteMemberUpdate -> {
-                    container.publish(
-                        format(2, "DeleteMember") {
-                            property("memberIndex", update.index)
-                        },
-                    )
-                }
-                is ClanSettingsDelta.ClanSettingsDeltaSetClanNameUpdate -> {
-                    container.publish(
-                        format(2, "SetClanName") {
-                            property("name", update.clanName.quote())
-                        },
-                    )
-                }
-                is ClanSettingsDelta.ClanSettingsDeltaSetIntSettingUpdate -> {
-                    container.publish(
-                        format(2, "SetIntSetting") {
-                            property("setting", update.setting)
-                            property("value", update.value)
-                        },
-                    )
-                }
-                is ClanSettingsDelta.ClanSettingsDeltaSetLongSettingUpdate -> {
-                    container.publish(
-                        format(2, "SetLongSetting") {
-                            property("setting", update.setting)
-                            property("value", update.value)
-                        },
-                    )
-                }
-                is ClanSettingsDelta.ClanSettingsDeltaSetMemberExtraInfoUpdate -> {
-                    container.publish(
-                        format(2, "SetMemberExtraInfo") {
-                            property("memberIndex", update.index)
-                            property("value", update.value)
-                            property("startBit", update.startBit)
-                            property("endBit", update.endBit)
-                        },
-                    )
-                }
-                is ClanSettingsDelta.ClanSettingsDeltaSetMemberMutedUpdate -> {
-                    container.publish(
-                        format(2, "SetMemberMuted") {
-                            property("memberIndex", update.index)
-                            property("muted", update.muted)
-                        },
-                    )
-                }
-                is ClanSettingsDelta.ClanSettingsDeltaSetMemberRankUpdate -> {
-                    container.publish(
-                        format(2, "SetMemberRank") {
-                            property("memberIndex", update.index)
-                            property("rank", update.rank)
-                        },
-                    )
-                }
-                is ClanSettingsDelta.ClanSettingsDeltaSetStringSettingUpdate -> {
-                    container.publish(
-                        format(2, "SetStringSetting") {
-                            property("setting", update.setting)
-                            property("value", update.value)
-                        },
-                    )
-                }
-                is ClanSettingsDelta.ClanSettingsDeltaSetVarbitSettingUpdate -> {
-                    container.publish(
-                        format(2, "SetVarbitSetting") {
-                            property("setting", update.setting)
-                            property("value", update.value)
-                            property("startBit", update.startBit)
-                            property("endBit", update.endBit)
-                        },
-                    )
+        root.int("clantype", message.clanType)
+        root.long("ownerhash", message.owner)
+        root.int("updatenum", message.updateNum)
+        root.group("UPDATES") {
+            for (update in message.updates) {
+                when (update) {
+                    is ClanSettingsDelta.ClanSettingsDeltaSetClanOwnerUpdate -> {
+                        group("SET_CLAN_OWNER") {
+                            int("memberindex", update.index)
+                        }
+                    }
+                    is ClanSettingsDelta.ClanSettingsDeltaAddBannedUpdate -> {
+                        group("ADD_BANNED") {
+                            filteredLong("hash", update.hash, 0)
+                            filteredString("name", update.name, null)
+                        }
+                    }
+                    is ClanSettingsDelta.ClanSettingsDeltaAddMemberV1Update -> {
+                        group("ADD_MEMBER_V1") {
+                            filteredLong("hash", update.hash, 0)
+                            filteredString("name", update.name, null)
+                        }
+                    }
+                    is ClanSettingsDelta.ClanSettingsDeltaAddMemberV2Update -> {
+                        group("ADD_MEMBER_V2") {
+                            filteredLong("hash", update.hash, 0)
+                            filteredString("name", update.name, null)
+                            int("joinruneday", update.joinRuneDay)
+                        }
+                    }
+                    is ClanSettingsDelta.ClanSettingsDeltaBaseSettingsUpdate -> {
+                        group("BASE_SETTINGS") {
+                            boolean("allowunaffined", update.allowUnaffined)
+                            int("talkrank", update.talkRank)
+                            int("kickrank", update.kickRank)
+                            int("lootsharerank", update.lootshareRank)
+                            int("coinsharerank", update.coinshareRank)
+                        }
+                    }
+                    is ClanSettingsDelta.ClanSettingsDeltaDeleteBannedUpdate -> {
+                        group("DELETE_BANNED") {
+                            int("memberindex", update.index)
+                        }
+                    }
+                    is ClanSettingsDelta.ClanSettingsDeltaDeleteMemberUpdate -> {
+                        group("DELETE_MEMBER") {
+                            int("memberindex", update.index)
+                        }
+                    }
+                    is ClanSettingsDelta.ClanSettingsDeltaSetClanNameUpdate -> {
+                        group("SET_CLAN_NAME") {
+                            string("clanname", update.clanName)
+                        }
+                    }
+                    is ClanSettingsDelta.ClanSettingsDeltaSetIntSettingUpdate -> {
+                        group("SET_INT_SETTING") {
+                            int("id", update.setting)
+                            int("value", update.value)
+                        }
+                    }
+                    is ClanSettingsDelta.ClanSettingsDeltaSetLongSettingUpdate -> {
+                        group("SET_LONG_SETTING") {
+                            int("id", update.setting)
+                            long("value", update.value)
+                        }
+                    }
+                    is ClanSettingsDelta.ClanSettingsDeltaSetMemberExtraInfoUpdate -> {
+                        group("SET_MEMBER_EXTRA_INFO") {
+                            int("memberindex", update.index)
+                            int("value", update.value)
+                            int("startbit", update.startBit)
+                            int("endbit", update.endBit)
+                        }
+                    }
+                    is ClanSettingsDelta.ClanSettingsDeltaSetMemberMutedUpdate -> {
+                        group("SET_MEMBER_MUTED") {
+                            int("memberindex", update.index)
+                            boolean("muted", update.muted)
+                        }
+                    }
+                    is ClanSettingsDelta.ClanSettingsDeltaSetMemberRankUpdate -> {
+                        group("SET_MEMBER_RANK") {
+                            int("memberindex", update.index)
+                            int("rank", update.rank)
+                        }
+                    }
+                    is ClanSettingsDelta.ClanSettingsDeltaSetStringSettingUpdate -> {
+                        group("SET_STRING_SETTING") {
+                            int("id", update.setting)
+                            string("value", update.value)
+                        }
+                    }
+                    is ClanSettingsDelta.ClanSettingsDeltaSetVarbitSettingUpdate -> {
+                        group("SET_VARBIT_SETTING") {
+                            int("id", update.setting)
+                            int("value", update.value)
+                            int("startbit", update.startBit)
+                            int("endbit", update.endBit)
+                        }
+                    }
                 }
             }
         }
     }
 
+    private fun formatEpochTimeMinute(num: Int): String {
+        val epochTimeMillis = TimeUnit.MINUTES.toMillis(num.toLong())
+        return SimpleDateFormat("yyyy-MM-dd HH:mm").format(Date(epochTimeMillis))
+    }
+
     override fun clanSettingsFull(message: ClanSettingsFull) {
-        publish {
-            property("clanType", message.clanType)
-            property(
-                "updateType",
-                if (message.update == ClanSettingsFull.ClanSettingsFullLeaveUpdate) {
-                    "Leave"
-                } else {
-                    "Join"
-                },
-            )
-        }
+        root.int("clantype", message.clanType)
         when (val update = message.update) {
             is ClanSettingsFull.ClanSettingsFullJoinUpdate -> {
-                container.publish(
-                    format(2, "Details") {
-                        property("flags", update.flags)
-                        property("updateNum", update.updateNum.format())
-                        property("creationTime", formatEpochTimeMinute(update.creationTime).quote())
-                        property("clanName", update.clanName.quote())
-                        property("allowUnaffined", update.allowUnaffined)
-                        property("talkRank", update.talkRank)
-                        property("kickRank", update.kickRank)
-                        filteredProperty("lootshareRank", update.lootshareRank) { it != 0 }
-                        filteredProperty("coinshareRank", update.coinshareRank) { it != 0 }
-                    },
-                )
+                root.int("flags", update.flags)
+                root.int("updatenum", update.updateNum)
+                root.string("creationtime", formatEpochTimeMinute(update.creationTime))
+                root.string("clanname", update.clanName)
+                root.boolean("allowunaffined", update.allowUnaffined)
+                root.int("talkrank", update.talkRank)
+                root.int("kickrank", update.kickRank)
+                root.filteredInt("lootsharerank", update.lootshareRank, 0)
+                root.filteredInt("coinsharerank", update.coinshareRank, 0)
                 if (update.affinedMembers.isNotEmpty()) {
-                    container.publish(format(2, "Affined Members"))
-                    for (member in update.affinedMembers) {
-                        container.publish(
-                            format(3, "Member") {
-                                filteredProperty("hash", member.hash) { it != 0L }
-                                filteredProperty("name", member.name?.quote()) { it != null }
-                                property("rank", member.rank)
-                                property("extraInfo", member.extraInfo)
-                                property("joinRuneDay", member.joinRuneDay)
-                                property("muted", member.muted)
-                            },
-                        )
+                    root.group("AFFINED_MEMBERS") {
+                        for (member in update.affinedMembers) {
+                            group {
+                                filteredLong("hash", member.hash, 0)
+                                filteredString("name", member.name, null)
+                                int("rank", member.rank)
+                                int("extrainfo", member.extraInfo)
+                                int("joinruneday", member.joinRuneDay)
+                                filteredBoolean("muted", member.muted)
+                            }
+                        }
                     }
                 }
-
                 if (update.bannedMembers.isNotEmpty()) {
-                    container.publish(format(2, "Banned Members"))
-                    for (member in update.bannedMembers) {
-                        container.publish(
-                            format(3, "Member") {
-                                filteredProperty("hash", member.hash) { it != 0L }
-                                filteredProperty("name", member.name?.quote()) { it != null }
-                            },
-                        )
+                    root.group("BANNED_MEMBERS") {
+                        for (member in update.bannedMembers) {
+                            group {
+                                filteredLong("hash", member.hash, 0)
+                                filteredString("name", member.name, null)
+                            }
+                        }
                     }
                 }
-
                 if (update.settings.isNotEmpty()) {
-                    container.publish(format(2, "Settings"))
-                    for (setting in update.settings) {
-                        when (setting) {
-                            is ClanSettingsFull.IntClanSetting -> {
-                                container.publish(
-                                    format(3, "IntSetting") {
-                                        property("id", setting.id)
-                                        property("value", setting.value)
-                                    },
-                                )
-                            }
-                            is ClanSettingsFull.LongClanSetting -> {
-                                container.publish(
-                                    format(3, "LongSetting") {
-                                        property("id", setting.id)
-                                        property("value", setting.value)
-                                    },
-                                )
-                            }
-                            is ClanSettingsFull.StringClanSetting -> {
-                                container.publish(
-                                    format(3, "StringSetting") {
-                                        property("id", setting.id)
-                                        property("value", setting.value)
-                                    },
-                                )
+                    root.group("SETTINGS") {
+                        for (setting in update.settings) {
+                            group {
+                                when (setting) {
+                                    is ClanSettingsFull.IntClanSetting -> {
+                                        int("id", setting.id)
+                                        int("int", setting.value)
+                                    }
+                                    is ClanSettingsFull.LongClanSetting -> {
+                                        int("id", setting.id)
+                                        long("long", setting.value)
+                                    }
+                                    is ClanSettingsFull.StringClanSetting -> {
+                                        int("id", setting.id)
+                                        string("string", setting.value)
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
-            ClanSettingsFull.ClanSettingsFullLeaveUpdate -> {
-            }
+            ClanSettingsFull.ClanSettingsFullLeaveUpdate -> {}
         }
     }
 
     override fun messageClanChannel(message: MessageClanChannel) {
-        publish {
-            property("clanType", message.clanType)
-            property("name", message.name.quote())
-            property("worldId", message.worldId)
-            property("worldMessageCounter", message.worldMessageCounter)
-            filteredProperty("chatCrownType", message.chatCrownType) { it != 0 }
-            property("message", message.message.quote())
-        }
+        root.int("clantype", message.clanType)
+        root.string("name", message.name)
+        root.int("world", message.worldId)
+        root.int("mescount", message.worldMessageCounter)
+        root.filteredInt("chatcrown", message.chatCrownType, 0)
+        root.string("message", message.message)
     }
 
     override fun messageClanChannelSystem(message: MessageClanChannelSystem) {
-        publish {
-            property("clanType", message.clanType)
-            property("worldId", message.worldId)
-            property("worldMessageCounter", message.worldMessageCounter)
-            property("message", message.message.quote())
-        }
+        root.int("clantype", message.clanType)
+        root.int("world", message.worldId)
+        root.int("mescount", message.worldMessageCounter)
+        root.string("message", message.message)
     }
 
     override fun varClan(message: VarClan) {
-        publish {
-            property("id", message.id)
-            when (val value = message.value) {
-                is VarClan.UnknownVarClanData -> {
-                    property("unknownValue", value.data.contentToString())
-                }
-                is VarClan.VarClanIntData -> {
-                    property("intValue", value.value)
-                }
-                is VarClan.VarClanLongData -> {
-                    property("longValue", value.value)
-                }
-                is VarClan.VarClanStringData -> {
-                    property("stringValue", value.value.quote())
-                }
+        root.int("id", message.id)
+        when (val value = message.value) {
+            is VarClan.UnknownVarClanData -> {
+                root.string("unknown", value.data.contentToString())
+            }
+            is VarClan.VarClanIntData -> {
+                root.int("int", value.value)
+            }
+            is VarClan.VarClanLongData -> {
+                root.long("long", value.value)
+            }
+            is VarClan.VarClanStringData -> {
+                root.string("string", value.value)
             }
         }
     }
 
     override fun varClanDisable(message: VarClanDisable) {
-        publishProt()
     }
 
     override fun varClanEnable(message: VarClanEnable) {
-        publishProt()
     }
 
     override fun messageFriendChannel(message: MessageFriendChannel) {
-        publish {
-            property("sender", message.sender.quote())
-            property("channelName", message.channelName.quote())
-            property("worldId", message.worldId)
-            property("worldMessageCounter", message.worldMessageCounter)
-            property("chatCrownType", message.chatCrownType)
-            property("message", message.message.quote())
-        }
+        root.string("name", message.sender)
+        root.string("channelname", message.channelName)
+        root.int("world", message.worldId)
+        root.int("mescount", message.worldMessageCounter)
+        root.int("chatcrown", message.chatCrownType)
+        root.string("message", message.message)
     }
 
     override fun updateFriendChatChannelFullV1(message: UpdateFriendChatChannelFullV1) {
-        publish {
-            when (val update = message.updateType) {
-                is UpdateFriendChatChannelFullV1.JoinUpdate -> {
-                    property("type", "Join")
-                    property("channelOwner", update.channelOwner.quote())
-                    property("channelName", update.channelName.quote())
-                    property("kickRank", update.kickRank)
-                }
-                UpdateFriendChatChannelFullV1.LeaveUpdate -> {
-                    property("type", "Leave")
-                }
-            }
-        }
         when (val update = message.updateType) {
             is UpdateFriendChatChannelFullV1.JoinUpdate -> {
-                for (entry in update.entries) {
-                    container.publish(
-                        format(2, "Member") {
-                            property("name", entry.name.quote())
-                            property("worldId", entry.worldId)
-                            property("worldName", entry.worldName)
-                            property("rank", entry.rank)
-                        },
-                    )
+                root.string("owner", update.channelOwner)
+                root.string("channelname", update.channelName)
+                root.int("kickrank", update.kickRank)
+                root.group("MEMBERS") {
+                    for (member in update.entries) {
+                        group {
+                            string("name", member.name)
+                            int("world", member.worldId)
+                            string("worldname", member.worldName)
+                            int("rank", member.rank)
+                        }
+                    }
                 }
             }
             UpdateFriendChatChannelFullV1.LeaveUpdate -> {
@@ -941,30 +708,20 @@ public open class BaseServerPacketTranscriber(
     }
 
     override fun updateFriendChatChannelFullV2(message: UpdateFriendChatChannelFullV2) {
-        publish {
-            when (val update = message.updateType) {
-                is UpdateFriendChatChannelFullV2.JoinUpdate -> {
-                    property("type", "Join")
-                    property("channelOwner", update.channelOwner.quote())
-                    property("channelName", update.channelName.quote())
-                    property("kickRank", update.kickRank)
-                }
-                UpdateFriendChatChannelFullV2.LeaveUpdate -> {
-                    property("type", "Leave")
-                }
-            }
-        }
         when (val update = message.updateType) {
             is UpdateFriendChatChannelFullV2.JoinUpdate -> {
-                for (entry in update.entries) {
-                    container.publish(
-                        format(2, "Member") {
-                            property("name", entry.name.quote())
-                            property("worldId", entry.worldId)
-                            property("worldName", entry.worldName)
-                            property("rank", entry.rank)
-                        },
-                    )
+                root.string("owner", update.channelOwner)
+                root.string("channelname", update.channelName)
+                root.int("kickrank", update.kickRank)
+                root.group("MEMBERS") {
+                    for (member in update.entries) {
+                        group {
+                            string("name", member.name)
+                            int("world", member.worldId)
+                            string("worldname", member.worldName)
+                            int("rank", member.rank)
+                        }
+                    }
                 }
             }
             UpdateFriendChatChannelFullV2.LeaveUpdate -> {
@@ -973,958 +730,33 @@ public open class BaseServerPacketTranscriber(
     }
 
     override fun updateFriendChatChannelSingleUser(message: UpdateFriendChatChannelSingleUser) {
-        publish {
-            when (val user = message.user) {
-                is UpdateFriendChatChannelSingleUser.AddedFriendChatUser -> {
-                    property("type", "Add")
-                    property("name", user.name.quote())
-                    property("worldId", user.worldId)
-                    property("worldName", user.worldName.quote())
-                    property("rank", user.rank)
-                }
-                is UpdateFriendChatChannelSingleUser.RemovedFriendChatUser -> {
-                    property("type", "Remove")
-                    property("name", user.name.quote())
-                    property("worldId", user.worldId)
-                }
+        when (val user = message.user) {
+            is UpdateFriendChatChannelSingleUser.AddedFriendChatUser -> {
+                root.string("type", "add")
+                root.string("name", user.name)
+                root.int("world", user.worldId)
+                root.string("worldname", user.worldName)
+                root.int("rank", user.rank)
             }
-        }
-    }
-
-    private fun formatNpcInfoStepDirection(dir: Int): String {
-        return when (dir) {
-            0 -> "North-West"
-            1 -> "North"
-            2 -> "North-East"
-            3 -> "West"
-            4 -> "East"
-            5 -> "South-West"
-            6 -> "South"
-            7 -> "South-East"
-            else -> dir.toString()
-        }
-    }
-
-    override fun npcInfo(message: NpcInfo) {
-        publishProt()
-        prenpcinfo(message)
-        val world = stateTracker.getActiveWorld()
-        for ((index, update) in message.updates) {
-            val lines = mutableListOf<String>()
-            when (update) {
-                is NpcUpdateType.Active -> {
-                    val npc = world.getNpc(index)
-                    val name = npc.name?.quote()
-                    container.publish(
-                        format(2, "Npc") {
-                            if (update.steps.isNotEmpty()) {
-                                property(
-                                    "npc",
-                                    "(index=$index, id=${formatter.type(ScriptVarType.NPC, npc.id)}, " +
-                                        (if (name != null) "name=$name, " else "") +
-                                        "lastCoord=${formatter.coord(npc.coord)}, " +
-                                        "newCoord=${formatter.coord(update.level, update.x, update.z)})",
-                                )
-                                property(
-                                    "speed",
-                                    update.moveSpeed.name
-                                        .lowercase()
-                                        .replaceFirstChar { it.uppercase() }
-                                        .quote(),
-                                )
-                                if (update.steps.size == 1) {
-                                    property("step", formatNpcInfoStepDirection(update.steps.first()).quote())
-                                } else {
-                                    val (first, second) = update.steps
-                                    property("step1", formatNpcInfoStepDirection(first).quote())
-                                    property("step2", formatNpcInfoStepDirection(second).quote())
-                                }
-                            } else {
-                                property(
-                                    "npc",
-                                    "(index=$index, id=${formatter.type(ScriptVarType.NPC, npc.id)}, " +
-                                        (if (name != null) "name=$name, " else "") +
-                                        "coord=${formatter.coord(npc.coord)})",
-                                )
-                            }
-                        },
-                    )
-                    appendExtendedInfo(world, npc, lines, update.extendedInfo)
-                }
-                NpcUpdateType.HighResolutionToLowResolution -> {
-                    val npc = world.getNpc(index)
-                    val name = npc.name?.quote()
-                    container.publish(
-                        format(2, "Npc") {
-                            property(
-                                "npc",
-                                "(index=$index, id=${npc.id}, " +
-                                    (if (name != null) "name=$name, " else "") +
-                                    "lastCoord=${formatter.coord(npc.coord)})",
-                            )
-                            property("update", "Removed")
-                        },
-                    )
-                }
-                is NpcUpdateType.LowResolutionToHighResolution -> {
-                    val npc = world.getNpc(index)
-                    container.publish(
-                        format(2, "Npc") {
-                            property("npc", npc(index))
-                            filteredProperty("creationcycle", update.spawnCycle.format()) { it != "0" }
-                            property("angle", update.angle)
-                            filteredProperty("jump", update.jump) { it }
-                            property("update", "Added")
-                        },
-                    )
-                    appendExtendedInfo(world, npc, lines, update.extendedInfo)
-                }
-                NpcUpdateType.Idle -> {
-                    // noop
-                }
-            }
-            container.publish(lines)
-        }
-        postnpcinfo(message)
-    }
-
-    private fun appendExtendedInfo(
-        world: World,
-        npc: Npc,
-        lines: MutableList<String>,
-        extendedInfo: List<ExtendedInfo>,
-    ) {
-        for (info in extendedInfo) {
-            when (info) {
-                is ExactMoveExtendedInfo -> {
-                    val curX = npc.coord.x
-                    val curZ = npc.coord.z
-                    val level = npc.coord.level
-                    lines +=
-                        format(3, "ExactMove") {
-                            property("to1", CoordGrid(level, curX - info.deltaX2, curZ - info.deltaZ2))
-                            property("delay1", info.delay1)
-                            property("to2", CoordGrid(level, curX - info.deltaX1, curZ - info.deltaZ1))
-                            property("delay2", info.delay2)
-                            property("angle", info.direction)
-                        }
-                }
-                is FacePathingEntityExtendedInfo -> {
-                    lines += format(3, "FacePathingEntity", actor(info.index))
-                }
-                is HitExtendedInfo -> {
-                    if (info.hits.isNotEmpty()) {
-                        lines += format(3, "Hits")
-                        for (hit in info.hits) {
-                            lines +=
-                                format(4, "Hit") {
-                                    property("type", hit.type)
-                                    property("value", hit.value)
-                                    if (hit.soakType != -1) {
-                                        property("soakType", hit.soakType)
-                                        property("soakValue", hit.soakValue)
-                                    }
-                                    filteredProperty("delay", hit.delay) { it != 0 }
-                                }
-                        }
-                    }
-                    if (info.headbars.isNotEmpty()) {
-                        lines += format(3, "Headbars")
-                        for (headbar in info.headbars) {
-                            lines +=
-                                format(4, "Headbar") {
-                                    property("type", headbar.type)
-                                    property("startFill", headbar.startFill)
-                                    property("endFill", headbar.endFill)
-                                    property("startTime", headbar.startTime)
-                                    property("endTime", headbar.endTime)
-                                }
-                        }
-                    }
-                }
-                is SayExtendedInfo -> {
-                    lines +=
-                        format(3, "Say") {
-                            property("text", info.text.quote())
-                        }
-                }
-                is SequenceExtendedInfo -> {
-                    lines +=
-                        format(3, "Sequence") {
-                            property("id", formatter.type(ScriptVarType.SEQ, info.id.maxUShortToMinusOne()))
-                            filteredProperty("delay", info.delay) { it != 0 }
-                        }
-                }
-                is TintingExtendedInfo -> {
-                    lines +=
-                        format(3, "Tinting") {
-                            property("start", info.start)
-                            property("end", info.end)
-                            property("hue", info.hue)
-                            property("saturation", info.saturation)
-                            property("lightness", info.lightness)
-                            property("weight", info.weight)
-                        }
-                }
-                is SpotanimExtendedInfo -> {
-                    for ((slot, spotanim) in info.spotanims) {
-                        lines +=
-                            format(3, "Spotanim") {
-                                property("slot", slot)
-                                property("id", formatter.type(ScriptVarType.SPOTANIM, spotanim.id))
-                                filteredProperty("delay", spotanim.delay) { it != 0 }
-                                filteredProperty("height", spotanim.height) { it != 0 }
-                            }
-                    }
-                }
-                is OldSpotanimExtendedInfo -> {
-                    lines +=
-                        format(3, "OldSpotanim") {
-                            property("id", formatter.type(ScriptVarType.SPOTANIM, info.id))
-                            filteredProperty("delay", info.delay) { it != 0 }
-                            filteredProperty("height", info.height) { it != 0 }
-                        }
-                }
-                is BaseAnimationSetExtendedInfo -> {
-                    lines +=
-                        format(3, "Bas") {
-                            val turnleft = info.turnLeftAnim
-                            val turnright = info.turnRightAnim
-                            val walk = info.walkAnim
-                            val walkback = info.walkAnimBack
-                            val walkleft = info.walkAnimLeft
-                            val walkright = info.walkAnimRight
-                            val run = info.runAnim
-                            val runback = info.runAnimBack
-                            val runleft = info.runAnimLeft
-                            val runright = info.runAnimRight
-                            val crawl = info.crawlAnim
-                            val crawlback = info.crawlAnimBack
-                            val crawlleft = info.crawlAnimLeft
-                            val crawlright = info.crawlAnimRight
-                            val ready = info.readyAnim
-                            if (turnleft != null) {
-                                property("turnleft", formatter.type(ScriptVarType.SEQ, turnleft))
-                            }
-                            if (turnright != null) {
-                                property("turnright", formatter.type(ScriptVarType.SEQ, turnright))
-                            }
-                            if (walk != null) {
-                                property("walk", formatter.type(ScriptVarType.SEQ, walk))
-                            }
-                            if (walkback != null) {
-                                property("walkback", formatter.type(ScriptVarType.SEQ, walkback))
-                            }
-                            if (walkleft != null) {
-                                property("walkleft", formatter.type(ScriptVarType.SEQ, walkleft))
-                            }
-                            if (walkright != null) {
-                                property("walkright", formatter.type(ScriptVarType.SEQ, walkright))
-                            }
-                            if (run != null) {
-                                property("run", formatter.type(ScriptVarType.SEQ, run))
-                            }
-                            if (runback != null) {
-                                property("runback", formatter.type(ScriptVarType.SEQ, runback))
-                            }
-                            if (runleft != null) {
-                                property("runleft", formatter.type(ScriptVarType.SEQ, runleft))
-                            }
-                            if (runright != null) {
-                                property("runright", formatter.type(ScriptVarType.SEQ, runright))
-                            }
-                            if (crawl != null) {
-                                property("crawl", formatter.type(ScriptVarType.SEQ, crawl))
-                            }
-                            if (crawlback != null) {
-                                property("crawlback", formatter.type(ScriptVarType.SEQ, crawlback))
-                            }
-                            if (crawlleft != null) {
-                                property("crawlleft", formatter.type(ScriptVarType.SEQ, crawlleft))
-                            }
-                            if (crawlright != null) {
-                                property("crawlright", formatter.type(ScriptVarType.SEQ, crawlright))
-                            }
-                            if (ready != null) {
-                                property("ready", formatter.type(ScriptVarType.SEQ, ready))
-                            }
-                        }
-                }
-                is BodyCustomisationExtendedInfo -> {
-                    when (val type = info.type) {
-                        is ModelCustomisation -> {
-                            lines +=
-                                format(3, "BodyCustomisation") {
-                                    val models = type.models
-                                    if (models != null) {
-                                        val joined =
-                                            models.joinToString(prefix = "[", postfix = "]") {
-                                                formatter.type(
-                                                    ScriptVarType.MODEL,
-                                                    it,
-                                                )
-                                            }
-                                        property("models", joined)
-                                    }
-                                    val recol = type.recolours
-                                    if (recol != null) {
-                                        property("recolours", recol)
-                                    }
-                                    val retex = type.retextures
-                                    if (retex != null) {
-                                        val joined =
-                                            retex.joinToString(prefix = "[", postfix = "]") {
-                                                formatter.type(
-                                                    ScriptVarType.TEXTURE,
-                                                    it,
-                                                )
-                                            }
-                                        property("retextures", joined)
-                                    }
-                                    val mirror = type.mirror
-                                    if (mirror != null) {
-                                        property("mirror", mirror)
-                                    }
-                                }
-                        }
-                        ResetCustomisation -> {
-                            lines +=
-                                format(3, "BodyCustomisation") {
-                                    property("type", "Reset")
-                                }
-                        }
-                    }
-                }
-                is HeadCustomisationExtendedInfo -> {
-                    when (val type = info.type) {
-                        is ModelCustomisation -> {
-                            lines +=
-                                format(3, "HeadCustomisation") {
-                                    val models = type.models
-                                    if (models != null) {
-                                        val joined =
-                                            models.joinToString(prefix = "[", postfix = "]") {
-                                                formatter.type(
-                                                    ScriptVarType.MODEL,
-                                                    it,
-                                                )
-                                            }
-                                        property("models", joined)
-                                    }
-                                    val recol = type.recolours
-                                    if (recol != null) {
-                                        property("recolours", recol)
-                                    }
-                                    val retex = type.retextures
-                                    if (retex != null) {
-                                        val joined =
-                                            retex.joinToString(prefix = "[", postfix = "]") {
-                                                formatter.type(
-                                                    ScriptVarType.TEXTURE,
-                                                    it,
-                                                )
-                                            }
-                                        property("retextures", joined)
-                                    }
-                                    val mirror = type.mirror
-                                    if (mirror != null) {
-                                        property("mirror", mirror)
-                                    }
-                                }
-                        }
-                        ResetCustomisation -> {
-                            lines +=
-                                format(3, "HeadCustomisation") {
-                                    property("type", "Reset")
-                                }
-                        }
-                    }
-                }
-                is CombatLevelChangeExtendedInfo -> {
-                    lines +=
-                        format(3, "LevelChange") {
-                            property("level", info.level.format())
-                        }
-                }
-                is EnabledOpsExtendedInfo -> {
-                    lines +=
-                        format(3, "EnabledOps") {
-                            property("opflags", "0b" + info.value.toString(2))
-                        }
-                }
-                is FaceCoordExtendedInfo -> {
-                    lines +=
-                        format(3, "FaceCoord") {
-                            property("coord", formatter.coord(npc.coord.level, info.x, info.z))
-                            filteredProperty("instant", info.instant) { it }
-                        }
-                }
-                is NameChangeExtendedInfo -> {
-                    lines +=
-                        format(3, "NameChange") {
-                            val oldName = npc.name
-                            if (oldName != null) {
-                                property("oldName", oldName.quote())
-                                property("newName", info.name.quote())
-                            } else {
-                                property("name", info.name.quote())
-                            }
-                        }
-                }
-                is TransformationExtendedInfo -> {
-                    world.updateNpcName(npc.index, cache.getNpcType(info.id)?.name)
-                    lines +=
-                        format(3, "Transformation") {
-                            property("oldId", formatter.type(ScriptVarType.NPC, npc.id))
-                            property("newId", formatter.type(ScriptVarType.NPC, info.id))
-                        }
-                }
-                is HeadIconCustomisationExtendedInfo -> {
-                    for (i in info.groups.indices) {
-                        val group = info.groups[i]
-                        val index = info.indices[i]
-                        if (group == -1 && index == -1) {
-                            continue
-                        }
-                        lines +=
-                            format(3, "HeadIconCustomisation") {
-                                property("graphic", formatter.type(ScriptVarType.GRAPHIC, group))
-                                property("index", index)
-                            }
-                    }
-                }
-                else -> throw IllegalStateException("Unknown extended info: $info")
-            }
-        }
-    }
-
-    private fun prenpcinfo(message: NpcInfo) {
-        val world = stateTracker.getActiveWorld()
-        for ((index, update) in message.updates) {
-            when (update) {
-                is NpcUpdateType.Active -> {
-                }
-                NpcUpdateType.HighResolutionToLowResolution -> {
-                }
-                is NpcUpdateType.LowResolutionToHighResolution -> {
-                    val name = cache.getNpcType(update.id)?.name
-                    world.createNpc(
-                        index,
-                        update.id,
-                        name,
-                        update.spawnCycle,
-                        CoordGrid(update.level, update.x, update.z),
-                    )
-                }
-                NpcUpdateType.Idle -> {
-                    // noop
-                }
-            }
-        }
-    }
-
-    private fun postnpcinfo(message: NpcInfo) {
-        val world = stateTracker.getActiveWorld()
-        for ((index, update) in message.updates) {
-            when (update) {
-                is NpcUpdateType.Active -> {
-                    world.updateNpc(index, CoordGrid(update.level, update.x, update.z))
-                }
-                NpcUpdateType.HighResolutionToLowResolution -> {
-                    world.removeNpc(index)
-                }
-                is NpcUpdateType.LowResolutionToHighResolution -> {
-                }
-                NpcUpdateType.Idle -> {
-                    // noop
-                }
+            is UpdateFriendChatChannelSingleUser.RemovedFriendChatUser -> {
+                root.string("type", "del")
+                root.string("name", user.name)
+                root.int("world", user.worldId)
+                root.int("rank", user.rank)
             }
         }
     }
 
     override fun setNpcUpdateOrigin(message: SetNpcUpdateOrigin) {
-        publish {
-            property("coord", buildAreaCoord(message.originX, message.originZ))
-        }
+        root.coordGrid(buildAreaCoordGrid(message.originX, message.originZ))
     }
 
-    private fun publishProt() {
-        container.publish("[${stateTracker.currentProt}]".indent(1))
-    }
-
-    override fun playerInfo(message: PlayerInfo) {
-        // Assign the coord and name of each player that is being added
-        preloadPlayerInfo(message)
-        // Log any activities that happened for all the players
-        logPlayerInfo(message)
-        // Update the last known coord and name of each player being processed
-        postPlayerInfo(message)
-    }
-
-    private fun logPlayerInfo(message: PlayerInfo) {
-        publishProt()
-        val lines = mutableListOf<String>()
-        for ((index, update) in message.updates) {
-            when (update) {
-                is PlayerUpdateType.LowResolutionMovement,
-                PlayerUpdateType.LowResolutionIdle,
-                -> {
-                    // no-op
-                }
-                is PlayerUpdateType.HighResolutionIdle -> {
-                    // No need to spam if the player isn't actually updating
-                    if (update.extendedInfo.isEmpty()) {
-                        continue
-                    }
-                    val player = stateTracker.getPlayer(index)
-                    lines +=
-                        format(2, "Player") {
-                            property("index", index)
-                            property("name", player.name.quote())
-                            property("coord", player.coord)
-                            property("update", "idle")
-                        }
-                    appendExtendedInfo(player, lines, update.extendedInfo)
-                }
-                is PlayerUpdateType.HighResolutionMovement -> {
-                    val player = stateTracker.getPlayer(index)
-                    lines +=
-                        format(2, "Player") {
-                            property("index", index)
-                            property("name", player.name.quote())
-                            property("oldCoord", player.coord)
-                            property("newCoord", update.coord)
-                            property("update", "moving")
-                        }
-                    appendExtendedInfo(player, lines, update.extendedInfo)
-                }
-                is PlayerUpdateType.HighResolutionToLowResolution -> {
-                    val player = stateTracker.getPlayer(index)
-                    lines +=
-                        format(2, "Player") {
-                            property("index", index)
-                            property("name", player.name.quote())
-                            property("lastCoord", player.coord)
-                            property("update", "delete")
-                        }
-                }
-                is PlayerUpdateType.LowResolutionToHighResolution -> {
-                    val player = stateTracker.getPlayer(index)
-                    lines +=
-                        format(2, "Player") {
-                            property("index", index)
-                            property("name", player.name.quote())
-                            property("coord", player.coord)
-                            property("update", "add")
-                        }
-                    appendExtendedInfo(player, lines, update.extendedInfo)
-                }
-            }
-        }
-        container.publish(lines)
-    }
-
-    private fun appendExtendedInfo(
-        player: Player,
-        lines: MutableList<String>,
-        extendedInfo: List<ExtendedInfo>,
-    ) {
-        for (info in extendedInfo) {
-            when (info) {
-                is ChatExtendedInfo -> {
-                    lines +=
-                        format(3, "Chat") {
-                            property("text", info.text.quote())
-                            filteredProperty("autotyper", info.autotyper) { it }
-                            filteredProperty("colour", info.colour) { it != 0 }
-                            filteredProperty("effects", info.effects) { it != 0 }
-                            filteredProperty("modicon", info.modIcon) { it != 0 }
-                            filteredProperty("pattern", info.pattern) { it != null }
-                        }
-                }
-                is FaceAngleExtendedInfo -> {
-                    lines +=
-                        format(3, "FaceAngle") {
-                            property("angle", info.angle)
-                        }
-                }
-                is MoveSpeedExtendedInfo -> {
-                    lines +=
-                        format(3, "MoveSpeed") {
-                            property("speed", formatMoveSpeed(info.speed))
-                        }
-                }
-                is TemporaryMoveSpeedExtendedInfo -> {
-                    lines +=
-                        format(3, "TempMoveSpeed") {
-                            property("speed", formatMoveSpeed(info.speed))
-                        }
-                }
-                is NameExtrasExtendedInfo -> {
-                    lines +=
-                        format(3, "NameExtras") {
-                            property("beforeName", info.beforeName.quote())
-                            property("afterName", info.afterName.quote())
-                            property("afterCombatLevel", info.afterCombatLevel.quote())
-                        }
-                }
-                is SayExtendedInfo -> {
-                    lines +=
-                        format(3, "Say") {
-                            property("text", info.text.quote())
-                        }
-                }
-                is SequenceExtendedInfo -> {
-                    lines +=
-                        format(3, "Sequence") {
-                            property("id", formatter.type(ScriptVarType.SEQ, info.id.maxUShortToMinusOne()))
-                            filteredProperty("delay", info.delay) { it != 0 }
-                        }
-                }
-                is ExactMoveExtendedInfo -> {
-                    val curX = player.coord.x
-                    val curZ = player.coord.z
-                    val level = player.coord.level
-                    lines +=
-                        format(3, "ExactMove") {
-                            property("to1", CoordGrid(level, curX - info.deltaX2, curZ - info.deltaZ2))
-                            property("delay1", info.delay1)
-                            property("to2", CoordGrid(level, curX - info.deltaX1, curZ - info.deltaZ1))
-                            property("delay2", info.delay2)
-                            property("angle", info.direction)
-                        }
-                }
-                is HitExtendedInfo -> {
-                    if (info.hits.isNotEmpty()) {
-                        lines += format(3, "Hits")
-                        for (hit in info.hits) {
-                            lines +=
-                                format(4, "Hit") {
-                                    property("type", hit.type)
-                                    property("value", hit.value)
-                                    if (hit.soakType != -1) {
-                                        property("soakType", hit.soakType)
-                                        property("soakValue", hit.soakValue)
-                                    }
-                                    filteredProperty("delay", hit.delay) { it != 0 }
-                                }
-                        }
-                    }
-                    if (info.headbars.isNotEmpty()) {
-                        lines += format(3, "Headbars")
-                        for (headbar in info.headbars) {
-                            lines +=
-                                format(4, "Headbar") {
-                                    property("type", headbar.type)
-                                    property("startFill", headbar.startFill)
-                                    property("endFill", headbar.endFill)
-                                    property("startTime", headbar.startTime)
-                                    property("endTime", headbar.endTime)
-                                }
-                        }
-                    }
-                }
-                is TintingExtendedInfo -> {
-                    lines +=
-                        format(3, "Tinting") {
-                            property("start", info.start)
-                            property("end", info.end)
-                            property("hue", info.hue)
-                            property("saturation", info.saturation)
-                            property("lightness", info.lightness)
-                            property("weight", info.weight)
-                        }
-                }
-                is SpotanimExtendedInfo -> {
-                    for ((slot, spotanim) in info.spotanims) {
-                        lines +=
-                            format(3, "Spotanim") {
-                                property("slot", slot)
-                                property("id", formatter.type(ScriptVarType.SPOTANIM, spotanim.id))
-                                filteredProperty("delay", spotanim.delay) { it != 0 }
-                                filteredProperty("height", spotanim.height) { it != 0 }
-                            }
-                    }
-                }
-                is FacePathingEntityExtendedInfo -> {
-                    lines += format(3, "FacePathingEntity", actor(info.index))
-                }
-                is AppearanceExtendedInfo -> {
-                    if (player.index == this.stateTracker.localPlayerIndex) {
-                        monitor.onNameUpdate(info.name)
-                    }
-                    lines += format(3, "Appearance")
-                    lines +=
-                        format(4, "Details") {
-                            property("name", info.name.quote())
-                            property("combatLevel", info.combatLevel)
-                            property("skillLevel", info.skillLevel)
-                            property("gender", info.gender)
-                            property("textGender", info.textGender)
-                        }
-                    lines +=
-                        format(4, "Status") {
-                            property("hidden", info.hidden)
-                            property("skullIcon", info.skullIcon)
-                            property("overheadIcon", info.overheadIcon)
-                            if (info.transformedNpcId != -1) {
-                                property("npc", formatter.type(ScriptVarType.NPC, info.transformedNpcId))
-                            }
-                        }
-                    if (info.transformedNpcId == -1) {
-                        lines +=
-                            format(4, "Equipment") {
-                                for ((index, value) in info.identKit.withIndex()) {
-                                    if (value >= 512) {
-                                        property(
-                                            formatWearPos(index),
-                                            formatter.type(ScriptVarType.OBJ, value - 512),
-                                        )
-                                    }
-                                }
-                            }
-                        val identKit = IntArray(info.identKit.size)
-                        lines +=
-                            format(4, "IdentKit") {
-                                for ((index, value) in info.identKit.withIndex()) {
-                                    if (value in 256..<512) {
-                                        identKit[index] = value
-                                        property(
-                                            formatWearPos(index),
-                                            formatter.type(ScriptVarType.IDKIT, value - 256),
-                                        )
-                                    }
-                                }
-                            }
-                        if (!identKit.contentEquals(info.interfaceIdentKit)) {
-                            lines +=
-                                format(4, "InterfaceIdentKit") {
-                                    for ((index, value) in info.interfaceIdentKit.withIndex()) {
-                                        if (value in 256..<512) {
-                                            identKit[index] = value
-                                            property(
-                                                formatWearPos(index),
-                                                formatter.type(ScriptVarType.IDKIT, value - 256),
-                                            )
-                                        }
-                                    }
-                                }
-                        }
-                    }
-                    lines +=
-                        format(4, "Colours") {
-                            for ((index, value) in info.colours.withIndex()) {
-                                property("col$index", value)
-                            }
-                        }
-                    lines +=
-                        format(4, "Bas") {
-                            property("ready", formatter.type(ScriptVarType.SEQ, info.readyAnim.maxUShortToMinusOne()))
-                            property("turn", formatter.type(ScriptVarType.SEQ, info.turnAnim.maxUShortToMinusOne()))
-                            property("walk", formatter.type(ScriptVarType.SEQ, info.walkAnim.maxUShortToMinusOne()))
-                            property(
-                                "walkback",
-                                formatter.type(ScriptVarType.SEQ, info.walkAnimBack.maxUShortToMinusOne()),
-                            )
-                            property(
-                                "walkleft",
-                                formatter.type(ScriptVarType.SEQ, info.walkAnimLeft.maxUShortToMinusOne()),
-                            )
-                            property(
-                                "walkright",
-                                formatter.type(ScriptVarType.SEQ, info.walkAnimRight.maxUShortToMinusOne()),
-                            )
-                            property("run", formatter.type(ScriptVarType.SEQ, info.runAnim.maxUShortToMinusOne()))
-                        }
-                    lines +=
-                        format(4, "NameExtras") {
-                            property("beforeName", info.beforeName.quote())
-                            property("afterName", info.afterName.quote())
-                            property("afterCombatLevel", info.afterCombatLevel.quote())
-                        }
-                    lines +=
-                        format(4, "ObjTypeCustomisation") {
-                            property("forceModelRefresh", info.forceModelRefresh)
-                            val customisation = info.objTypeCustomisation
-                            if (customisation != null) {
-                                for ((index, cus) in customisation.withIndex()) {
-                                    if (cus == null) {
-                                        continue
-                                    }
-                                    property("wearpos", formatWearPos(index))
-                                    val recolIndex1 = cus.recolIndices and 0xF
-                                    val recolIndex2 = cus.recolIndices ushr 4 and 0xF
-                                    if (recolIndex1 != 0xF) {
-                                        property("recol$recolIndex1", cus.recol1)
-                                    }
-                                    if (recolIndex2 != 0xF) {
-                                        property("recol$recolIndex2", cus.recol2)
-                                    }
-
-                                    val retexIndex1 = cus.retexIndices and 0xF
-                                    val retexIndex2 = cus.retexIndices ushr 4 and 0xF
-                                    if (retexIndex1 != 0xF) {
-                                        property("retex$retexIndex1", formatter.type(ScriptVarType.TEXTURE, cus.retex1))
-                                    }
-                                    if (retexIndex2 != 0xF) {
-                                        property("retex$retexIndex2", formatter.type(ScriptVarType.TEXTURE, cus.retex2))
-                                    }
-                                }
-                            }
-                        }
-                }
-                else -> throw IllegalStateException("Unknown extended info: $info")
-            }
-        }
-    }
-
-    private fun formatWearPos(id: Int): String {
-        return when (id) {
-            0 -> "hat"
-            1 -> "back"
-            2 -> "front"
-            3 -> "righthand"
-            4 -> "torso"
-            5 -> "lefthand"
-            6 -> "arms"
-            7 -> "legs"
-            8 -> "head"
-            9 -> "hands"
-            10 -> "feet"
-            11 -> "jaw"
-            12 -> "ring"
-            13 -> "quiver"
-            else -> error("Unknown wearpos $id")
-        }
-    }
-
-    private fun Int.maxUShortToMinusOne(): Int {
-        return if (this == 0xFFFF) {
-            -1
-        } else {
-            this
-        }
-    }
-
-    private fun formatMoveSpeed(value: Int): String {
-        return when (value) {
-            0 -> "crawl"
-            1 -> "walk"
-            2 -> "run"
-            -1, 127, 255 -> "teleport"
-            else -> "unknown($value)"
-        }
-    }
-
-    private fun loadPlayerName(
-        index: Int,
-        extendedInfo: List<ExtendedInfo>,
-    ): String {
-        val appearance =
-            extendedInfo
-                .filterIsInstance<AppearanceExtendedInfo>()
-                .singleOrNull()
-        return appearance?.name
-            ?: stateTracker.getLastKnownPlayerName(index)
-            ?: "null"
-    }
-
-    private fun preloadPlayerInfo(message: PlayerInfo) {
-        for ((index, update) in message.updates) {
-            when (update) {
-                is PlayerUpdateType.LowResolutionToHighResolution -> {
-                    val name = loadPlayerName(index, update.extendedInfo)
-                    stateTracker.overridePlayer(Player(index, name, update.coord))
-                }
-                is PlayerUpdateType.HighResolutionIdle -> {
-                    val name = loadPlayerName(index, update.extendedInfo)
-                    val player = stateTracker.getPlayer(index)
-                    stateTracker.overridePlayer(Player(index, name, player.coord))
-                }
-                is PlayerUpdateType.HighResolutionMovement -> {
-                    val name = loadPlayerName(index, update.extendedInfo)
-                    val player = stateTracker.getPlayer(index)
-                    stateTracker.overridePlayer(Player(index, name, player.coord))
-                }
-                else -> {
-                    // No-op, no info to preload
-                }
-            }
-        }
-    }
-
-    private fun postPlayerInfo(message: PlayerInfo) {
-        for ((index, update) in message.updates) {
-            when (update) {
-                is PlayerUpdateType.LowResolutionToHighResolution -> {
-                    val name = loadPlayerName(index, update.extendedInfo)
-                    stateTracker.overridePlayer(Player(index, name, update.coord))
-                }
-                is PlayerUpdateType.HighResolutionIdle -> {
-                    val oldPlayer = stateTracker.getPlayerOrNull(index) ?: return
-                    val name = loadPlayerName(index, update.extendedInfo)
-                    stateTracker.overridePlayer(Player(index, name, oldPlayer.coord))
-                }
-                is PlayerUpdateType.HighResolutionMovement -> {
-                    val name = loadPlayerName(index, update.extendedInfo)
-                    stateTracker.overridePlayer(Player(index, name, update.coord))
-                }
-                else -> {
-                    // No-op, no info to preload
-                }
-            }
-        }
-    }
-
-    override fun worldEntityInfo(message: WorldEntityInfo) {
-        publishProt()
-        for ((index, update) in message.updates) {
-            when (update) {
-                WorldEntityUpdateType.Idle -> {
-                    // no-op, too spammy
-                }
-                is WorldEntityUpdateType.LowResolutionToHighResolution -> {
-                    container.publish(
-                        format(2, "AddWorldEntity") {
-                            property("index", index)
-                            property("width", update.sizeX)
-                            property("length", update.sizeZ)
-                            property("angle", update.angle)
-                            property("unknown", update.unknownProperty)
-                            property("coord", formatter.coord(update.coordGrid))
-                        },
-                    )
-                }
-                is WorldEntityUpdateType.Active -> {
-                    container.publish(
-                        format(2, "UpdateWorldEntity") {
-                            property("worldentity", worldentity(index))
-                            property("angle", update.angle)
-                            property("movespeed", "${update.moveSpeed.id * 0.5} tiles/gamecycle")
-                            property("coord", formatter.coord(update.coordGrid))
-                        },
-                    )
-                }
-                WorldEntityUpdateType.HighResolutionToLowResolution -> {
-                    container.publish(
-                        format(3, "RemoveWorldEntity") {
-                            property("worldentity", worldentity(index))
-                        },
-                    )
-                }
-            }
-        }
-
+    private fun preWorldEntityUpdate(message: WorldEntityInfo) {
         for ((index, update) in message.updates) {
             when (update) {
                 is WorldEntityUpdateType.Active -> {
-                    val world = stateTracker.getWorld(index)
-                    world.angle = update.angle
-                    world.coord = update.coordGrid
-                    world.moveSpeed = update.moveSpeed
                 }
                 WorldEntityUpdateType.HighResolutionToLowResolution -> {
-                    stateTracker.destroyWorld(index)
                 }
                 is WorldEntityUpdateType.LowResolutionToHighResolution -> {
                     val world = stateTracker.createWorld(index)
@@ -1941,62 +773,125 @@ public open class BaseServerPacketTranscriber(
         }
     }
 
-    override fun ifClearInv(message: IfClearInv) {
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
+    private fun postWorldEntityUpdate(message: WorldEntityInfo) {
+        for ((index, update) in message.updates) {
+            when (update) {
+                is WorldEntityUpdateType.Active -> {
+                    val world = stateTracker.getWorld(index)
+                    world.angle = update.angle
+                    world.coord = update.coordGrid
+                    world.moveSpeed = update.moveSpeed
+                }
+                WorldEntityUpdateType.HighResolutionToLowResolution -> {
+                    stateTracker.destroyWorld(index)
+                }
+                is WorldEntityUpdateType.LowResolutionToHighResolution -> {
+                }
+                WorldEntityUpdateType.Idle -> {
+                    // noop
+                }
+            }
         }
+    }
+
+    override fun worldEntityInfo(message: WorldEntityInfo) {
+        preWorldEntityUpdate(message)
+        val group =
+            root.group {
+                for ((index, update) in message.updates) {
+                    when (update) {
+                        is WorldEntityUpdateType.Active -> {
+                            group("ACTIVE") {
+                                worldentity(index)
+                                int("angle", update.angle)
+                                string("movespeed", "${update.moveSpeed.id * 0.5} tiles/gamecycle")
+                                coordGrid("newcoord", update.coordGrid)
+                            }
+                        }
+                        WorldEntityUpdateType.HighResolutionToLowResolution -> {
+                            group("DEL") {
+                                worldentity(index)
+                            }
+                        }
+                        WorldEntityUpdateType.Idle -> {
+                            // noop
+                        }
+                        is WorldEntityUpdateType.LowResolutionToHighResolution -> {
+                            group("ADD") {
+                                worldentity(index)
+                                int("angle", update.angle)
+                                int("unknown", update.unknownProperty)
+                            }
+                        }
+                    }
+                }
+            }
+        postWorldEntityUpdate(message)
+        val children = group.children
+        // If no children were added to the root group, it means no worldentities are being updated
+        // In this case, remove the empty line that the group is generating
+        if (children.isEmpty()) {
+            root.children.clear()
+            return
+        }
+        // Remove the empty line generated by the wrapper group
+        root.children.clear()
+        root.children.addAll(children)
+    }
+
+    override fun ifClearInv(message: IfClearInv) {
+        root.com(message.interfaceId, message.componentId)
     }
 
     override fun ifCloseSub(message: IfCloseSub) {
         val interfaceId = stateTracker.getOpenInterface(message.combinedId)
         stateTracker.closeInterface(message.combinedId)
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
-            if (interfaceId != null) {
-                property("id", formatter.com(interfaceId, -1))
-            }
+        root.com(message.interfaceId, message.componentId)
+        if (interfaceId != null) {
+            root.inter(interfaceId)
         }
     }
 
     override fun ifMoveSub(message: IfMoveSub) {
         val interfaceId = stateTracker.getOpenInterface(message.sourceCombinedId)
         stateTracker.moveInterface(message.sourceCombinedId, message.destinationCombinedId)
-        publish {
-            property("sourceCom", formatter.com(message.sourceInterfaceId, message.sourceComponentId))
-            property("destinationCom", formatter.com(message.destinationInterfaceId, message.destinationComponentId))
-            if (interfaceId != null) {
-                property("id", formatter.com(interfaceId, -1))
-            }
+        root.com("sourcecom", message.sourceInterfaceId, message.sourceComponentId)
+        root.com("destcom", message.destinationInterfaceId, message.destinationComponentId)
+        if (interfaceId != null) {
+            root.inter(interfaceId)
         }
     }
 
-    private fun formatIfType(id: Int): String {
+    private enum class IfType(
+        override val prettyName: String,
+    ) : NamedEnum {
+        MODAL("modal"),
+        OVERLAY("overlay"),
+        CLIENT("client"),
+    }
+
+    private fun getIfType(id: Int): IfType {
         return when (id) {
-            0 -> "Modal"
-            1 -> "Overlay"
-            3 -> "Client"
-            else -> id.toString()
+            0 -> IfType.MODAL
+            1 -> IfType.OVERLAY
+            3 -> IfType.CLIENT
+            else -> error("Unknown type: $id")
         }
     }
 
     override fun ifOpenSub(message: IfOpenSub) {
-        stateTracker.openInterface(message.interfaceId, message.destinationCombinedId)
-        publish {
-            property("com", formatter.com(message.destinationInterfaceId, message.destinationComponentId))
-            property("id", formatter.com(message.interfaceId, -1))
-            property("type", formatIfType(message.type))
-        }
+        root.com(message.destinationInterfaceId, message.destinationComponentId)
+        root.inter(message.interfaceId)
+        root.namedEnum("type", getIfType(message.type))
     }
 
     override fun ifOpenTop(message: IfOpenTop) {
         val existing = stateTracker.toplevelInterface
         stateTracker.toplevelInterface = message.interfaceId
-        publish {
-            property("id", formatter.com(message.interfaceId, -1))
-            if (existing != -1) {
-                property("previousId", formatter.com(existing, -1))
-            }
+        if (existing != -1) {
+            root.inter("previousid", existing)
         }
+        root.inter(message.interfaceId)
     }
 
     private enum class EventMask(
@@ -2056,206 +951,158 @@ public open class BaseServerPacketTranscriber(
 
     override fun ifResync(message: IfResync) {
         stateTracker.toplevelInterface = message.topLevelInterface
-        publish {
-            property("id", formatter.com(message.topLevelInterface, -1))
+        root.inter(message.topLevelInterface)
+        root.group("SUB_INTERFACES") {
+            for (sub in message.subInterfaces) {
+                stateTracker.openInterface(sub.interfaceId, sub.destinationCombinedId)
+                group {
+                    com(sub.destinationInterfaceId, sub.destinationComponentId)
+                    inter(sub.interfaceId)
+                    namedEnum("type", getIfType(sub.type))
+                }
+            }
         }
-        container.publish(format(2, "Sub Interfaces"))
-        for (sub in message.subInterfaces) {
-            stateTracker.openInterface(sub.interfaceId, sub.destinationCombinedId)
-            container.publish(
-                format(3, "IfOpenSub") {
-                    property("com", formatter.com(sub.destinationInterfaceId, sub.destinationComponentId))
-                    property("id", formatter.com(sub.interfaceId, -1))
-                    property("type", formatIfType(sub.type))
-                },
-            )
-        }
-
-        container.publish(format(2, "Events"))
-        for (events in message.events) {
-            container.publish(
-                format(3, "IfSetEvents") {
-                    property("com", formatter.com(events.interfaceId, events.componentId))
-                    property("start", events.start.maxUShortToMinusOne())
-                    property("end", events.end.maxUShortToMinusOne())
-                    property("events", EventMask.list(events.events))
-                },
-            )
+        root.group("EVENTS") {
+            for (event in message.events) {
+                group {
+                    com(event.interfaceId, event.componentId)
+                    int("start", event.start.maxUShortToMinusOne())
+                    int("end", event.end.maxUShortToMinusOne())
+                    string("events", EventMask.list(event.events).toString())
+                }
+            }
         }
     }
 
     override fun ifSetAngle(message: IfSetAngle) {
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
-            property("angleX", message.angleX)
-            property("angleY", message.angleY)
-            property("zoom", message.zoom)
-        }
+        root.com(message.interfaceId, message.componentId)
+        root.int("anglex", message.angleX)
+        root.int("angley", message.angleY)
+        root.int("zoom", message.zoom)
     }
 
     override fun ifSetAnim(message: IfSetAnim) {
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
-            property("anim", formatter.type(ScriptVarType.SEQ, message.anim))
-        }
+        root.com(message.interfaceId, message.componentId)
+        root.scriptVarType("id", ScriptVarType.SEQ, message.anim)
     }
 
     override fun ifSetColour(message: IfSetColour) {
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
-            property("colour", formatter.type(ScriptVarType.COLOUR, message.colour15BitPacked))
-        }
+        root.com(message.interfaceId, message.componentId)
+        root.scriptVarType("colour", ScriptVarType.COLOUR, message.colour15BitPacked)
     }
 
     override fun ifSetEvents(message: IfSetEvents) {
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
-            property("start", message.start.maxUShortToMinusOne())
-            property("end", message.end.maxUShortToMinusOne())
-            property("events", EventMask.list(message.events))
-        }
+        root.com(message.interfaceId, message.componentId)
+        root.int("start", message.start.maxUShortToMinusOne())
+        root.int("end", message.start.maxUShortToMinusOne())
+        root.string("events", EventMask.list(message.events).toString())
     }
 
     override fun ifSetHide(message: IfSetHide) {
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
-            property("hide", message.hidden)
-        }
+        root.com(message.interfaceId, message.componentId)
+        root.boolean("hide", message.hidden)
     }
 
     override fun ifSetModel(message: IfSetModel) {
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
-            property("model", formatter.type(ScriptVarType.MODEL, message.model))
-        }
+        root.com(message.interfaceId, message.componentId)
+        root.scriptVarType("id", ScriptVarType.MODEL, message.model)
     }
 
     override fun ifSetNpcHead(message: IfSetNpcHead) {
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
-            property("npc", formatter.type(ScriptVarType.NPC, message.npc))
-        }
+        root.com(message.interfaceId, message.componentId)
+        root.scriptVarType("id", ScriptVarType.NPC, message.npc)
     }
 
     override fun ifSetNpcHeadActive(message: IfSetNpcHeadActive) {
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
-            property("npc", npc(message.index))
-        }
+        root.com(message.interfaceId, message.componentId)
+        root.npc(message.index)
     }
 
     override fun ifSetObject(message: IfSetObject) {
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
-            property("obj", formatter.type(ScriptVarType.OBJ, message.obj))
-            property("zoomorcount", message.count)
-        }
+        root.com(message.interfaceId, message.componentId)
+        root.scriptVarType("id", ScriptVarType.OBJ, message.obj)
+        root.int("zoomorcount", message.count)
     }
 
     override fun ifSetPlayerHead(message: IfSetPlayerHead) {
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
-        }
+        root.com(message.interfaceId, message.componentId)
     }
 
     override fun ifSetPlayerModelBaseColour(message: IfSetPlayerModelBaseColour) {
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
-            property("index", message.index)
-            property("colour", message.colour)
-        }
+        root.com(message.interfaceId, message.componentId)
+        root.int("index", message.index)
+        root.scriptVarType("colour", ScriptVarType.COLOUR, message.colour)
     }
 
     override fun ifSetPlayerModelBodyType(message: IfSetPlayerModelBodyType) {
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
-            property("bodyType", message.bodyType)
-        }
+        root.com(message.interfaceId, message.componentId)
+        root.int("bodytype", message.bodyType)
     }
 
     override fun ifSetPlayerModelObj(message: IfSetPlayerModelObj) {
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
-            property("obj", formatter.type(ScriptVarType.OBJ, message.obj))
-        }
+        root.com(message.interfaceId, message.componentId)
+        root.scriptVarType("id", ScriptVarType.OBJ, message.obj)
     }
 
     override fun ifSetPlayerModelSelf(message: IfSetPlayerModelSelf) {
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
-            property("copyobjs", message.copyObjs)
-        }
+        root.com(message.interfaceId, message.componentId)
+        root.boolean("copyobjs", message.copyObjs)
     }
 
     override fun ifSetPosition(message: IfSetPosition) {
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
-            property("x", message.x)
-            property("y", message.y)
-        }
+        root.com(message.interfaceId, message.componentId)
+        root.int("x", message.x)
+        root.int("y", message.y)
     }
 
     override fun ifSetRotateSpeed(message: IfSetRotateSpeed) {
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
-            property("xspeed", message.xSpeed)
-            property("yspeed", message.ySpeed)
-        }
+        root.com(message.interfaceId, message.componentId)
+        root.int("xspeed", message.xSpeed)
+        root.int("yspeed", message.ySpeed)
     }
 
     override fun ifSetScrollPos(message: IfSetScrollPos) {
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
-            property("scrollpos", message.scrollPos)
-        }
+        root.com(message.interfaceId, message.componentId)
+        root.int("scrollpos", message.scrollPos)
     }
 
     override fun ifSetText(message: IfSetText) {
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
-            property("text", message.text.quote())
-        }
+        root.com(message.interfaceId, message.componentId)
+        root.string("text", message.text)
     }
 
     override fun updateInvFull(message: UpdateInvFull) {
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
-            property("inv", formatter.type(ScriptVarType.INV, message.inventoryId))
-        }
-        for (obj in message.objs) {
-            container.publish(
-                format(2, "Obj") {
-                    property("id", formatter.type(ScriptVarType.OBJ, obj.id))
-                    property("count", obj.count.format())
-                },
-            )
+        root.com(message.interfaceId, message.componentId)
+        root.scriptVarType("id", ScriptVarType.INV, message.inventoryId)
+        root.group("OBJS") {
+            for (obj in message.objs) {
+                group {
+                    scriptVarType("id", ScriptVarType.OBJ, obj.id)
+                    formattedInt("count", obj.count)
+                }
+            }
         }
     }
 
     override fun updateInvPartial(message: UpdateInvPartial) {
-        publish {
-            property("com", formatter.com(message.interfaceId, message.componentId))
-            property("inv", formatter.type(ScriptVarType.INV, message.inventoryId))
-        }
-        for (obj in message.objs) {
-            container.publish(
-                format(2, "Obj") {
-                    property("slot", obj.slot)
-                    property("id", formatter.type(ScriptVarType.OBJ, obj.id))
-                    property("count", obj.count)
-                },
-            )
+        root.com(message.interfaceId, message.componentId)
+        root.scriptVarType("id", ScriptVarType.INV, message.inventoryId)
+        root.group("OBJS") {
+            for (obj in message.objs) {
+                group {
+                    int("slot", obj.slot)
+                    scriptVarType("id", ScriptVarType.OBJ, obj.id)
+                    formattedInt("count", obj.count)
+                }
+            }
         }
     }
 
     override fun updateInvStopTransmit(message: UpdateInvStopTransmit) {
-        publish {
-            property("inv", formatter.type(ScriptVarType.INV, message.inventoryId))
-        }
+        root.scriptVarType("id", ScriptVarType.INV, message.inventoryId)
     }
 
     override fun logout(message: Logout) {
-        publishProt()
     }
 
     private enum class WorldFlag(
@@ -2310,30 +1157,33 @@ public open class BaseServerPacketTranscriber(
     }
 
     override fun logoutTransfer(message: LogoutTransfer) {
-        publish {
-            property("host", message.host.quote())
-            property("id", message.id)
-            property("properties", WorldFlag.list(message.properties))
-        }
+        root.string("host", message.host)
+        root.int("id", message.id)
+        root.string("properties", WorldFlag.list(message.properties).toString())
     }
 
-    private fun formatLogoutReason(num: Int): String {
-        return when (num) {
-            0 -> "Requested"
-            1 -> "Kicked"
-            2 -> "Updating"
-            else -> num.toString()
+    private enum class LogoutReason(
+        override val prettyName: String,
+    ) : NamedEnum {
+        REQUESTED("requested"),
+        KICKED("kicked"),
+        UPDATING("updating"),
+    }
+
+    private fun getLogoutReason(id: Int): LogoutReason {
+        return when (id) {
+            0 -> LogoutReason.REQUESTED
+            1 -> LogoutReason.KICKED
+            2 -> LogoutReason.UPDATING
+            else -> error("Unknown logout reason: $id")
         }
     }
 
     override fun logoutWithReason(message: LogoutWithReason) {
-        publish {
-            property("reason", formatLogoutReason(message.reason))
-        }
+        root.namedEnum("reason", getLogoutReason(message.reason))
     }
 
     override fun rebuildLogin(message: RebuildLogin) {
-        container.publish("[${stateTracker.cycle}]".indent(0))
         stateTracker.overridePlayer(
             Player(
                 message.playerInfoInitBlock.localPlayerIndex,
@@ -2344,27 +1194,25 @@ public open class BaseServerPacketTranscriber(
         stateTracker.localPlayerIndex = message.playerInfoInitBlock.localPlayerIndex
         val world = stateTracker.createWorld(-1)
         world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
-        publish {
-            property("zoneX", message.zoneX)
-            property("zoneZ", message.zoneZ)
-            property("worldArea", message.worldArea)
-            property("localPlayerCoord", message.playerInfoInitBlock.localPlayerCoord)
-        }
+        root.int("zonex", message.zoneX)
+        root.int("zonez", message.zoneZ)
+        root.int("worldarea", message.worldArea)
+        root.coordGrid("localplayercoord", message.playerInfoInitBlock.localPlayerCoord)
         val minMapsquareX = (message.zoneX - 6) ushr 3
         val maxMapsquareX = (message.zoneX + 6) ushr 3
         val minMapsquareZ = (message.zoneZ - 6) ushr 3
         val maxMapsquareZ = (message.zoneZ + 6) ushr 3
         val iterator = message.keys.listIterator()
-        for (mapsquareX in minMapsquareX..maxMapsquareX) {
-            for (mapsquareZ in minMapsquareZ..maxMapsquareZ) {
-                val mapsquareId = (mapsquareX shl 8) or mapsquareZ
-                val key = iterator.next()
-                container.publish(
-                    format(2, "XteaKey") {
-                        property("mapsquareId", mapsquareId)
-                        property("key", key.key.contentToString())
-                    },
-                )
+        root.group("KEYS") {
+            for (mapsquareX in minMapsquareX..maxMapsquareX) {
+                for (mapsquareZ in minMapsquareZ..maxMapsquareZ) {
+                    val mapsquareId = (mapsquareX shl 8) or mapsquareZ
+                    val key = iterator.next()
+                    group {
+                        int("mapsquareid", mapsquareId)
+                        string("key", key.key.contentToString())
+                    }
+                }
             }
         }
         check(!iterator.hasNext()) {
@@ -2375,26 +1223,24 @@ public open class BaseServerPacketTranscriber(
     override fun rebuildNormal(message: RebuildNormal) {
         val world = stateTracker.getWorld(-1)
         world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
-        publish {
-            property("zoneX", message.zoneX)
-            property("zoneZ", message.zoneZ)
-            property("worldArea", message.worldArea)
-        }
+        root.int("zonex", message.zoneX)
+        root.int("zonez", message.zoneZ)
+        root.int("worldarea", message.worldArea)
         val minMapsquareX = (message.zoneX - 6) ushr 3
         val maxMapsquareX = (message.zoneX + 6) ushr 3
         val minMapsquareZ = (message.zoneZ - 6) ushr 3
         val maxMapsquareZ = (message.zoneZ + 6) ushr 3
         val iterator = message.keys.listIterator()
-        for (mapsquareX in minMapsquareX..maxMapsquareX) {
-            for (mapsquareZ in minMapsquareZ..maxMapsquareZ) {
-                val mapsquareId = (mapsquareX shl 8) or mapsquareZ
-                val key = iterator.next()
-                container.publish(
-                    format(2, "XteaKey") {
-                        property("mapsquareId", mapsquareId)
-                        property("key", key.key.contentToString())
-                    },
-                )
+        root.group("KEYS") {
+            for (mapsquareX in minMapsquareX..maxMapsquareX) {
+                for (mapsquareZ in minMapsquareZ..maxMapsquareZ) {
+                    val mapsquareId = (mapsquareX shl 8) or mapsquareZ
+                    val key = iterator.next()
+                    group {
+                        int("mapsquareid", mapsquareId)
+                        string("key", key.key.contentToString())
+                    }
+                }
             }
         }
         check(!iterator.hasNext()) {
@@ -2405,42 +1251,38 @@ public open class BaseServerPacketTranscriber(
     override fun rebuildRegion(message: RebuildRegion) {
         val world = stateTracker.getWorld(-1)
         world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
-        publish {
-            property("zoneX", message.zoneX)
-            property("zoneZ", message.zoneZ)
-            property("reload", message.reload)
-        }
+        root.int("zonex", message.zoneX)
+        root.int("zonez", message.zoneZ)
+        root.boolean("reload", message.reload)
         val mapsquares = mutableSetOf<Int>()
-        container.publish(format(2, "BuildArea"))
-        val startZoneX = message.zoneX - 6
-        val startZoneZ = message.zoneZ - 6
-        for (level in 0..<4) {
-            for (zoneX in startZoneX..(message.zoneX + 6)) {
-                for (zoneZ in startZoneZ..(message.zoneZ + 6)) {
-                    val block = message.buildArea[level, zoneX - startZoneX, zoneZ - startZoneZ]
-                    // Invalid zone
-                    if (block.mapsquareId == 32767) continue
-                    mapsquares += block.mapsquareId
-                    container.publish(
-                        format(3, "Zone") {
-                            property("src", formatter.zoneCoord(block.level, block.zoneX, block.zoneZ))
-                            property("dest", formatter.zoneCoord(level, zoneX, zoneZ))
-                            property("rotation", block.rotation)
-                        },
-                    )
+        root.group("BUILD_AREA") {
+            val startZoneX = message.zoneX - 6
+            val startZoneZ = message.zoneZ - 6
+            for (level in 0..<4) {
+                for (zoneX in startZoneX..(message.zoneX + 6)) {
+                    for (zoneZ in startZoneZ..(message.zoneZ + 6)) {
+                        val block = message.buildArea[level, zoneX - startZoneX, zoneZ - startZoneZ]
+                        // Invalid zone
+                        if (block.mapsquareId == 32767) continue
+                        mapsquares += block.mapsquareId
+                        group {
+                            zoneCoord("source", block.level, block.zoneX, block.zoneZ)
+                            zoneCoord("dest", level, zoneX, zoneZ)
+                            int("rotation", block.rotation)
+                        }
+                    }
                 }
             }
         }
-        container.publish(format(2, "Keys"))
         val iterator = message.keys.listIterator()
-        for (mapsquareId in mapsquares) {
-            val key = iterator.next()
-            container.publish(
-                format(3, "XteaKey") {
-                    property("mapsquareId", mapsquareId)
-                    property("key", key.key.contentToString())
-                },
-            )
+        root.group("KEYS") {
+            for (mapsquareId in mapsquares) {
+                val key = iterator.next()
+                group {
+                    int("mapsquareid", mapsquareId)
+                    string("key", key.key.contentToString())
+                }
+            }
         }
         check(!iterator.hasNext()) {
             "Xtea keys leftover"
@@ -2450,43 +1292,39 @@ public open class BaseServerPacketTranscriber(
     override fun rebuildWorldEntity(message: RebuildWorldEntity) {
         val world = stateTracker.getWorld(-1)
         world.rebuild(CoordGrid(0, (message.baseX - 6) shl 3, (message.baseZ - 6) shl 3))
-        publish {
-            property("worldentity", worldentity(message.index))
-            property("zoneX", message.baseX)
-            property("zoneZ", message.baseZ)
-            property("localPlayerCoord", formatter.coord(message.playerInfoInitBlock.localPlayerCoord))
-        }
+        root.worldentity(message.index)
+        root.int("zonex", message.baseX)
+        root.int("zonez", message.baseZ)
+        root.coordGrid("localplayercoord", message.playerInfoInitBlock.localPlayerCoord)
         val mapsquares = mutableSetOf<Int>()
-        container.publish(format(2, "BuildArea"))
-        val startZoneX = message.baseX - 6
-        val startZoneZ = message.baseZ - 6
-        for (level in 0..<4) {
-            for (zoneX in startZoneX..(message.baseX + 6)) {
-                for (zoneZ in startZoneZ..(message.baseZ + 6)) {
-                    val block = message.buildArea[level, zoneX - startZoneX, zoneZ - startZoneZ]
-                    // Invalid zone
-                    if (block.mapsquareId == 32767) continue
-                    mapsquares += block.mapsquareId
-                    container.publish(
-                        format(3, "Zone") {
-                            property("src", formatter.zoneCoord(block.level, block.zoneX, block.zoneZ))
-                            property("dest", formatter.zoneCoord(level, zoneX, zoneZ))
-                            property("rotation", block.rotation)
-                        },
-                    )
+        root.group("BUILD_AREA") {
+            val startZoneX = message.baseX - 6
+            val startZoneZ = message.baseZ - 6
+            for (level in 0..<4) {
+                for (zoneX in startZoneX..(message.baseX + 6)) {
+                    for (zoneZ in startZoneZ..(message.baseZ + 6)) {
+                        val block = message.buildArea[level, zoneX - startZoneX, zoneZ - startZoneZ]
+                        // Invalid zone
+                        if (block.mapsquareId == 32767) continue
+                        mapsquares += block.mapsquareId
+                        group {
+                            zoneCoord("source", block.level, block.zoneX, block.zoneZ)
+                            zoneCoord("dest", level, zoneX, zoneZ)
+                            int("rotation", block.rotation)
+                        }
+                    }
                 }
             }
         }
-        container.publish(format(2, "Keys"))
         val iterator = message.keys.listIterator()
-        for (mapsquareId in mapsquares) {
-            val key = iterator.next()
-            container.publish(
-                format(3, "XteaKey") {
-                    property("mapsquareId", mapsquareId)
-                    property("key", key.key.contentToString())
-                },
-            )
+        root.group("KEYS") {
+            for (mapsquareId in mapsquares) {
+                val key = iterator.next()
+                group {
+                    int("mapsquareid", mapsquareId)
+                    string("key", key.key.contentToString())
+                }
+            }
         }
         check(!iterator.hasNext()) {
             "Xtea keys leftover"
@@ -2494,348 +1332,298 @@ public open class BaseServerPacketTranscriber(
     }
 
     override fun hideLocOps(message: HideLocOps) {
-        publish {
-            property("hide", message.hidden)
-        }
+        root.boolean("hide", message.hidden)
     }
 
     override fun hideNpcOps(message: HideNpcOps) {
-        publish {
-            property("hide", message.hidden)
-        }
+        root.boolean("hide", message.hidden)
     }
 
     override fun hidePlayerOps(message: HidePlayerOps) {
-        publish {
-            property("hide", message.hidden)
-        }
+        root.boolean("hide", message.hidden)
     }
 
     override fun hintArrow(message: HintArrow) {
-        publish {
-            when (val type = message.type) {
-                is HintArrow.NpcHintArrow -> {
-                    property("npc", npc(type.index))
-                }
-                is HintArrow.PlayerHintArrow -> {
-                    property("player", player(type.index))
-                }
-                HintArrow.ResetHintArrow -> {
-                    property("type", "Reset")
-                }
-                is HintArrow.TileHintArrow -> {
-                    property("coord", formatter.coord(stateTracker.level(), type.x, type.z))
-                    property("height", type.height)
-                    property(
-                        "position",
-                        type.position.name
-                            .lowercase()
-                            .replaceFirstChar { it.uppercaseChar() },
-                    )
-                }
+        when (val type = message.type) {
+            is HintArrow.NpcHintArrow -> {
+                root.npc(type.index)
+            }
+            is HintArrow.PlayerHintArrow -> {
+                root.player(type.index)
+            }
+            HintArrow.ResetHintArrow -> {
+                root.string("type", "reset")
+            }
+            is HintArrow.TileHintArrow -> {
+                root.coordGrid(stateTracker.level(), type.x, type.z)
+                root.int("height", type.height)
+                root.string(
+                    "position",
+                    type.position.name
+                        .lowercase()
+                        .replaceFirstChar { it.uppercaseChar() },
+                )
             }
         }
     }
 
     override fun hiscoreReply(message: HiscoreReply) {
-        publish {
-            property("requestId", message.requestId.format())
-        }
+        root.int("requestid", message.requestId)
         when (val type = message.response) {
             is HiscoreReply.FailedHiscoreReply -> {
-                container.publish(
-                    format(2, "Failure") {
-                        property("reason", type.reason.quote())
-                    },
-                )
+                root.string("type", "failure")
+                root.string("reason", type.reason)
             }
             is HiscoreReply.SuccessfulHiscoreReply -> {
-                container.publish(format(2, "Success"))
-                container.publish(
-                    format(3, "Overall") {
-                        property("overallRank", type.overallRank.format())
-                        property("overallExperience", type.overallExperience.format())
-                    },
-                )
-                container.publish(format(3, "Stats"))
-                for (stat in type.statResults) {
-                    container.publish(
-                        format(4, "Stat") {
-                            property("id", stat.id)
-                            property("experience", stat.result.format())
-                            property("rank", stat.rank.format())
-                        },
-                    )
+                root.string("type", "success")
+                root.group("OVERALL") {
+                    group {
+                        int("rank", type.overallRank)
+                        long("experience", type.overallExperience)
+                    }
                 }
-                container.publish(format(3, "Activities"))
-                for (stat in type.statResults) {
-                    container.publish(
-                        format(4, "Activity") {
-                            property("id", stat.id)
-                            property("result", stat.result.format())
-                            property("rank", stat.rank.format())
-                        },
-                    )
+                root.group("STATS") {
+                    for (stat in type.statResults) {
+                        group {
+                            namedEnum("stat", Stat.entries.first { it.id == stat.id })
+                            int("experience", stat.result)
+                            int("rank", stat.rank)
+                        }
+                    }
+                }
+                root.group("ACTIVITIES") {
+                    for (activity in type.statResults) {
+                        group {
+                            int("id", activity.id)
+                            int("result", activity.result)
+                            int("rank", activity.rank)
+                        }
+                    }
                 }
             }
         }
     }
 
     override fun minimapToggle(message: MinimapToggle) {
-        publish {
-            property("state", message.minimapState)
-        }
+        root.int("state", message.minimapState)
     }
 
     override fun reflectionChecker(message: ReflectionChecker) {
-        publish {
-            property("id", message.id.format())
-        }
-        for (check in message.checks) {
-            when (check) {
-                is ReflectionCheck.GetFieldModifiers -> {
-                    container.publish(
-                        format(2, "GetFieldModifiers") {
-                            property("className", check.className.quote())
-                            property("fieldName", check.fieldName.quote())
-                        },
-                    )
-                }
-                is ReflectionCheck.GetFieldValue -> {
-                    container.publish(
-                        format(2, "GetFieldValue") {
-                            property("className", check.className.quote())
-                            property("fieldName", check.fieldName.quote())
-                        },
-                    )
-                }
-                is ReflectionCheck.GetMethodModifiers -> {
-                    container.publish(
-                        format(2, "GetMethodModifiers") {
-                            property("className", check.className.quote())
-                            property("methodName", check.methodName.quote())
-                            property("returnClass", check.returnClass.quote())
-                            property("paramClasses", check.parameterClasses)
-                        },
-                    )
-                }
-                is ReflectionCheck.InvokeMethod -> {
-                    container.publish(
-                        format(2, "InvokeMethod") {
-                            property("className", check.className.quote())
-                            property("methodName", check.methodName.quote())
-                            property("returnClass", check.returnClass.quote())
-                            property("paramClasses", check.parameterClasses)
-                            val mapped =
+        root.formattedInt("id", message.id)
+        root.group("CHECKS") {
+            for (check in message.checks) {
+                when (check) {
+                    is ReflectionCheck.GetFieldModifiers -> {
+                        group("GET_FIELD_MODIFIERS") {
+                            string("classname", check.className)
+                            string("fieldname", check.fieldName)
+                        }
+                    }
+                    is ReflectionCheck.GetFieldValue -> {
+                        group("GET_FIELD_VALUE") {
+                            string("classname", check.className)
+                            string("fieldname", check.fieldName)
+                        }
+                    }
+                    is ReflectionCheck.GetMethodModifiers -> {
+                        group("GET_METHOD_MODIFIERS") {
+                            string("classname", check.className)
+                            string("methodname", check.methodName)
+                            string("returnclass", check.returnClass)
+                            string("parameterclasses", check.parameterClasses.toString())
+                        }
+                    }
+                    is ReflectionCheck.InvokeMethod -> {
+                        group("INVOKE_METHOD") {
+                            string("classname", check.className)
+                            string("methodname", check.methodName)
+                            string("returnclass", check.returnClass)
+                            string("parameterclasses", check.parameterClasses.toString())
+                            string(
+                                "parametervalues",
                                 check.parameterValues
-                                    .joinToString(prefix = "[", postfix = "]") {
-                                        it.contentToString()
-                                    }
-                            property("paramValues", mapped)
-                        },
-                    )
-                }
-                is ReflectionCheck.SetFieldValue -> {
-                    container.publish(
-                        format(2, "SetFieldValue") {
-                            property("className", check.className.quote())
-                            property("fieldName", check.fieldName.quote())
-                            property("value", check.value)
-                        },
-                    )
+                                    .map { it.contentToString() }
+                                    .toString(),
+                            )
+                        }
+                    }
+                    is ReflectionCheck.SetFieldValue -> {
+                        group("SET_FIELD_VALUE") {
+                            string("classname", check.className)
+                            string("fieldname", check.fieldName)
+                            int("value", check.value)
+                        }
+                    }
                 }
             }
         }
     }
 
     override fun resetAnims(message: ResetAnims) {
-        publishProt()
     }
 
     override fun sendPing(message: SendPing) {
-        publish {
-            property("value1", message.value1.format())
-            property("value2", message.value2.format())
-        }
+        root.int("value1", message.value1)
+        root.int("value2", message.value2)
     }
 
     override fun serverTickEnd(message: ServerTickEnd) {
-        publishProt()
         stateTracker.incrementCycle()
-        container.publish("")
-        container.publish("[${stateTracker.cycle}]".indent(0))
     }
 
     override fun setHeatmapEnabled(message: SetHeatmapEnabled) {
-        publish {
-            property("enabled", message.enabled)
-        }
+        root.boolean("enabled", message.enabled)
     }
 
     override fun siteSettings(message: SiteSettings) {
-        publish {
-            property("settings", "erased")
-        }
+        root.string("settings", message.settings)
     }
 
     override fun updateRebootTimer(message: UpdateRebootTimer) {
-        publish {
-            property("gamecycles", message.gameCycles.format())
-        }
+        root.formattedInt("gamecycles", message.gameCycles)
     }
 
     override fun updateUid192(message: UpdateUid192) {
-        publish {
-            property("uid", "erased")
-        }
+        root.string("uid", message.uid.toString(Charsets.UTF_8))
     }
 
     override fun urlOpen(message: UrlOpen) {
-        publish {
-            property("url", message.url.quote())
-        }
+        root.string("url", message.url)
     }
 
-    private fun getChatFilter(id: Int): String {
+    private enum class ChatFilter(
+        override val prettyName: String,
+    ) : NamedEnum {
+        ON("on"),
+        FRIENDS("friends"),
+        OFF("off"),
+        HIDE("hide"),
+        AUTOCHAT("autochat"),
+    }
+
+    private fun getChatFilter(id: Int): ChatFilter {
         return when (id) {
-            0 -> "On"
-            1 -> "Friends"
-            2 -> "Off"
-            3 -> "Hide"
-            4 -> "Autochat"
-            else -> id.toString()
+            0 -> ChatFilter.ON
+            1 -> ChatFilter.FRIENDS
+            2 -> ChatFilter.OFF
+            3 -> ChatFilter.HIDE
+            4 -> ChatFilter.AUTOCHAT
+            else -> error("Unknown chatfilter id: $id")
         }
     }
 
     override fun chatFilterSettings(message: ChatFilterSettings) {
-        publish {
-            property("public", getChatFilter(message.publicChatFilter))
-            property("trade", getChatFilter(message.tradeChatFilter))
-        }
+        root.namedEnum("public", getChatFilter(message.publicChatFilter))
+        root.namedEnum("trade", getChatFilter(message.tradeChatFilter))
     }
 
     override fun chatFilterSettingsPrivateChat(message: ChatFilterSettingsPrivateChat) {
-        publish {
-            property("private", getChatFilter(message.privateChatFilter))
-        }
+        root.namedEnum("private", getChatFilter(message.privateChatFilter))
     }
 
-    private fun getMessageType(id: Int): String {
-        return when (id) {
-            0 -> "gamemessage"
-            1 -> "modchat"
-            2 -> "publicchat"
-            3 -> "privatechat"
-            4 -> "engine"
-            5 -> "loginlogoutnotification"
-            6 -> "privatechatout"
-            7 -> "modprivatechat"
-            9 -> "friendschat"
-            11 -> "friendschatnotification"
-            14 -> "broadcast"
-            26 -> "snapshotfeedback"
-            27 -> "obj_examine"
-            28 -> "npc_examine"
-            29 -> "loc_examine"
-            30 -> "friendnotification"
-            31 -> "ignorenotification"
-            41 -> "clanchat"
-            43 -> "clanmessage"
-            44 -> "clanguestchat"
-            46 -> "clanguestmessage"
-            90 -> "autotyper"
-            91 -> "modautotyper"
-            99 -> "console"
-            101 -> "tradereq"
-            102 -> "trade"
-            103 -> "chalreq_trade"
-            104 -> "chalreq_friendschat"
-            105 -> "spam"
-            106 -> "playerrelated"
-            107 -> "10sectimeout"
-            109 -> "clancreationinvitation"
-            110 -> "clanreq_clanchat"
-            114 -> "dialogue"
-            115 -> "mesbox"
-            else -> id.toString()
-        }
+    private enum class MessageType(
+        val id: Int,
+    ) : NamedEnum {
+        GAMEMESSAGE(0),
+        MODCHAT(1),
+        PUBLICCHAT(2),
+        PRIVATECHAT(3),
+        ENGINE(4),
+        LOGINLOGOUTNOTIFICATION(5),
+        PRIVATECHATOUT(6),
+        MODPRIVATECHAT(7),
+        FRIENDSCHAT(9),
+        FRIENDSCHATNOTIFICATION(11),
+        BROADCAST(14),
+        SNAPSHOTFEEDBACK(26),
+        OBJ_EXAMINE(27),
+        NPC_EXAMINE(28),
+        LOC_EXAMINE(29),
+        FRIENDNOTIFICATION(30),
+        IGNORENOTIFICATION(31),
+        CLANCHAT(41),
+        CLANMESSAGE(43),
+        CLANGUESTCHAT(44),
+        CLANGUESTMESSAGE(46),
+        AUTOTYPER(90),
+        MODAUTOTYPER(91),
+        CONSOLE(99),
+        TRADEREQ(101),
+        TRADE(102),
+        CHALREQ_TRADE(103),
+        CHALREQ_FRIENDSCHAT(104),
+        SPAM(105),
+        PLAYERRELATED(106),
+        TENSECTIMEOUT(107),
+        CLANCREATIONINVITATION(109),
+        CLANREQ_CLANCHAT(110),
+        DIALOGUE(114),
+        MESBOX(115),
+        ;
+
+        override val prettyName: String = name.lowercase()
     }
 
     override fun messageGame(message: MessageGame) {
-        publish {
-            property("type", getMessageType(message.type).quote())
-            filteredProperty("name", message.name?.quote()) { it != null }
-            property("message", message.message.quote())
+        val type = MessageType.entries.firstOrNull { it.id == message.type }
+        if (type != null) {
+            root.namedEnum("type", type)
+        } else {
+            root.int("type", message.type)
         }
+        root.filteredString("name", message.name, null)
+        root.string("message", message.message)
     }
 
     override fun runClientScript(message: RunClientScript) {
-        publish {
-            property("id", formatter.script(message.id))
+        root.script("id", message.id)
+        if (message.types.isEmpty() || message.values.isEmpty()) {
+            return
         }
-        if (message.types.isNotEmpty() || message.values.isNotEmpty()) {
+        root.group("PARAMS") {
             for (i in message.types.indices) {
                 val char = message.types[i]
                 val value = message.values[i].toString()
-                container.publish(
-                    format(2, "Param") {
-                        val type =
-                            ScriptVarType.entries.firstOrNull { type ->
-                                type.char == char
-                            }
-                        property("type", type?.fullName ?: "'$char'")
-                        val result =
-                            if (type == ScriptVarType.STRING) {
-                                value.quote()
-                            } else if (type != null) {
-                                formatter.type(type, value.toInt())
-                            } else {
-                                value
-                            }
-                        property("value", result)
-                    },
-                )
+                val type =
+                    ScriptVarType.entries.first { type ->
+                        type.char == char
+                    }
+                group {
+                    enum("type", type)
+                    scriptVarType("value", type, if (type == ScriptVarType.STRING) value else value.toInt())
+                }
             }
         }
     }
 
     override fun setMapFlag(message: SetMapFlag) {
-        publish {
-            if (message.xInBuildArea == 0xFF && message.zInBuildArea == 0xFF) {
-                property("coord", "null")
-            } else {
-                property("coord", buildAreaCoord(message.xInBuildArea, message.zInBuildArea))
-            }
+        if (message.xInBuildArea == 0xFF && message.zInBuildArea == 0xFF) {
+            root.coordGrid(-1, -1, -1)
+        } else {
+            root.coordGrid(buildAreaCoordGrid(message.xInBuildArea, message.zInBuildArea))
         }
     }
 
     override fun setPlayerOp(message: SetPlayerOp) {
-        publish {
-            property("id", message.id)
-            property("op", message.op?.quote() ?: "null")
-            filteredProperty("priority", message.priority) { it }
-        }
+        root.int("id", message.id)
+        root.string("op", message.op ?: "null")
+        root.filteredBoolean("priority", message.priority)
     }
 
     override fun triggerOnDialogAbort(message: TriggerOnDialogAbort) {
-        publishProt()
     }
 
     override fun updateRunEnergy(message: UpdateRunEnergy) {
-        publish {
-            property("energy", message.runenergy.format())
-        }
+        root.int("energy", message.runenergy)
     }
 
     override fun updateRunWeight(message: UpdateRunWeight) {
-        publish {
-            property("runweight", message.runweight.format() + "g")
-        }
+        root.formattedInt("weight", message.runweight, GRAM_NUMBER_FORMAT)
     }
 
     private enum class Stat(
         val id: Int,
-    ) {
+    ) : NamedEnum {
         ATTACK(0),
         DEFENCE(1),
         STRENGTH(2),
@@ -2861,99 +1649,76 @@ public open class BaseServerPacketTranscriber(
         CONSTRUCTION(22),
         SAILING(23),
         UNRELEASED(24),
+        ;
+
+        override val prettyName: String = name.lowercase()
     }
 
     override fun updateStat(message: UpdateStat) {
-        publish {
-            val stat = Stat.entries.first { it.id == message.stat }
-            property("stat", stat.name.lowercase().replaceFirstChar { it.uppercaseChar() })
-            property("level", message.currentLevel)
-            filteredProperty("invisibleLevel", message.invisibleBoostedLevel) { it != message.currentLevel }
-            property("experience", message.experience.format())
-        }
+        root.namedEnum("stat", Stat.entries.first { it.id == message.stat })
+        root.int("level", message.currentLevel)
+        root.filteredInt("invisiblelevel", message.invisibleBoostedLevel, message.currentLevel)
+        root.formattedInt("experience", message.experience)
     }
 
     override fun updateStatOld(message: UpdateStatOld) {
-        publish {
-            val stat = Stat.entries.first { it.id == message.stat }
-            property("stat", stat.name.lowercase().replaceFirstChar { it.uppercaseChar() })
-            property("level", message.currentLevel)
-            property("experience", message.experience.format())
-        }
+        root.namedEnum("stat", Stat.entries.first { it.id == message.stat })
+        root.int("level", message.currentLevel)
+        root.formattedInt("experience", message.experience)
     }
 
     override fun updateStockMarketSlot(message: UpdateStockMarketSlot) {
-        publish {
-            property("slot", message.slot)
-            when (val update = message.update) {
-                UpdateStockMarketSlot.ResetStockMarketSlot -> {
-                    property("update", "Reset")
-                }
-                is UpdateStockMarketSlot.SetStockMarketSlot -> {
-                    property("status", update.status)
-                    property("obj", formatter.type(ScriptVarType.OBJ, update.obj))
-                    property("price", update.price.format())
-                    property("count", update.count.format())
-                    property("completedCount", update.completedCount.format())
-                    property("completedGold", update.completedGold.format())
-                }
+        root.int("slot", message.slot)
+        when (val update = message.update) {
+            UpdateStockMarketSlot.ResetStockMarketSlot -> {}
+            is UpdateStockMarketSlot.SetStockMarketSlot -> {
+                root.int("status", update.status)
+                root.scriptVarType("id", ScriptVarType.OBJ, update.obj)
+                root.formattedInt("price", update.price)
+                root.formattedInt("count", update.count)
+                root.formattedInt("completedcount", update.completedCount)
+                root.formattedInt("completedgold", update.completedGold)
             }
         }
     }
 
     override fun updateTradingPost(message: UpdateTradingPost) {
-        publish {
-            when (val update = message.updateType) {
-                UpdateTradingPost.ResetTradingPost -> {
-                    property("update", "Reset")
-                }
-                is UpdateTradingPost.SetTradingPostOfferList -> {
-                    property("age", update.age)
-                    property("obj", formatter.type(ScriptVarType.OBJ, update.obj))
-                    property("status", update.status)
-                }
-            }
-        }
         when (val update = message.updateType) {
+            UpdateTradingPost.ResetTradingPost -> {}
             is UpdateTradingPost.SetTradingPostOfferList -> {
-                for (offer in update.offers) {
-                    container.publish(
-                        format(2, "Offer") {
-                            property("name", offer.name.quote())
-                            property("previousName", offer.name.quote())
-                            property("world", offer.world)
-                            property("time", offer.time.format())
-                            property("price", offer.price.format())
-                            property("count", offer.count.format())
-                        },
-                    )
+                root.long("age", update.age)
+                root.scriptVarType("id", ScriptVarType.OBJ, update.obj)
+                root.boolean("status", update.status)
+                root.group("OFFERS") {
+                    for (offer in update.offers) {
+                        group {
+                            string("name", offer.name)
+                            string("previousname", offer.previousName)
+                            int("world", offer.world)
+                            long("time", offer.time)
+                            formattedInt("price", offer.price)
+                            formattedInt("count", offer.count)
+                        }
+                    }
                 }
-            }
-            UpdateTradingPost.ResetTradingPost -> {
-                // noop
             }
         }
     }
 
     override fun friendListLoaded(message: FriendListLoaded) {
-        publishProt()
     }
 
     override fun messagePrivate(message: MessagePrivate) {
-        publish {
-            property("sender", message.sender.quote())
-            property("worldId", message.worldId)
-            property("worldMessageCounter", message.worldMessageCounter)
-            property("chatCrownType", message.chatCrownType)
-            property("message", message.message.quote())
-        }
+        root.string("from", message.sender)
+        root.int("world", message.worldId)
+        root.int("mescount", message.worldMessageCounter)
+        root.filteredInt("chatcrown", message.chatCrownType, 0)
+        root.string("message", message.message)
     }
 
     override fun messagePrivateEcho(message: MessagePrivateEcho) {
-        publish {
-            property("recipient", message.recipient.quote())
-            property("message", message.message.quote())
-        }
+        root.string("to", message.recipient)
+        root.string("message", message.message)
     }
 
     private fun formatPlatform(id: Int): String {
@@ -2966,236 +1731,177 @@ public open class BaseServerPacketTranscriber(
     }
 
     override fun updateFriendList(message: UpdateFriendList) {
-        publishProt()
         for (friend in message.friends) {
             when (friend) {
                 is UpdateFriendList.OfflineFriend -> {
-                    container.publish(
-                        format(2, "OfflineFriend") {
-                            property("name", friend.name.quote())
-                            filteredProperty("previousName", friend.previousName?.quote()) {
-                                it != null && it.length > 2
-                            }
-                            filteredProperty("rank", friend.rank) { it != 0 }
-                            filteredProperty("properties", friend.properties) { it != 0 }
-                            filteredProperty("notes", friend.notes.quote()) { it.length > 2 }
-                            filteredProperty("added", friend.added) { it }
-                        },
-                    )
+                    root.group("OFFLINE_FRIEND") {
+                        string("name", friend.name)
+                        filteredString("previousname", friend.previousName, "")
+                        filteredInt("rank", friend.rank, 0)
+                        filteredInt("properties", friend.properties, 0)
+                        filteredString("notes", friend.notes, "")
+                        filteredBoolean("added", friend.added)
+                    }
                 }
                 is UpdateFriendList.OnlineFriend -> {
-                    container.publish(
-                        format(2, "OnlineFriend") {
-                            property("name", friend.name.quote())
-                            filteredProperty("previousName", friend.previousName?.quote()) {
-                                it != null && it.length > 2
-                            }
-                            property("worldId", friend.worldId)
-                            filteredProperty("rank", friend.rank) { it != 0 }
-                            filteredProperty("properties", friend.properties) { it != 0 }
-                            filteredProperty("notes", friend.notes.quote()) { it.length > 2 }
-                            property("worldName", friend.worldName.quote())
-                            property("platform", formatPlatform(friend.platform).quote())
-                            filteredProperty("worldFlags", friend.worldFlags) { it != 0 }
-                            filteredProperty("added", friend.added) { it }
-                        },
-                    )
+                    root.group("ONLINE_FRIEND") {
+                        string("name", friend.name)
+                        filteredString("previousname", friend.previousName, "")
+                        int("world", friend.worldId)
+                        filteredInt("rank", friend.rank, 0)
+                        filteredInt("properties", friend.properties, 0)
+                        filteredString("notes", friend.notes, "")
+                        string("worldname", friend.worldName)
+                        string("platform", formatPlatform(friend.platform))
+                        filteredInt("worldflags", friend.worldFlags, 0)
+                        filteredBoolean("added", friend.added)
+                    }
                 }
             }
         }
     }
 
     override fun updateIgnoreList(message: UpdateIgnoreList) {
-        publishProt()
         for (ignore in message.ignores) {
             when (ignore) {
                 is UpdateIgnoreList.AddedIgnoredEntry -> {
-                    container.publish(
-                        format(2, "AddedIgnore") {
-                            property("name", ignore.name.quote())
-                            filteredProperty("previousName", ignore.previousName?.quote()) {
-                                it != null && it.length > 2
-                            }
-                            filteredProperty("notes", ignore.note.quote()) { it.length > 2 }
-                            filteredProperty("added", ignore.added) { it }
-                        },
-                    )
+                    root.group("ADDED_IGNORE") {
+                        string("name", ignore.name)
+                        filteredString("previousname", ignore.previousName, "")
+                        filteredString("notes", ignore.note, "")
+                        filteredBoolean("added", ignore.added)
+                    }
                 }
                 is UpdateIgnoreList.RemovedIgnoredEntry -> {
-                    container.publish(
-                        format(2, "RemovedIgnore") {
-                            property("name", ignore.name.quote())
-                        },
-                    )
+                    root.group("REMOVED_IGNORE") {
+                        string("name", ignore.name)
+                    }
                 }
             }
         }
     }
 
     override fun midiJingle(message: MidiJingle) {
-        publish {
-            property("id", formatter.type(ScriptVarType.JINGLE, message.id))
-            filteredProperty("length", message.lengthInMillis.format() + "ms") { it != "0ms" }
+        root.scriptVarType("id", ScriptVarType.JINGLE, message.id)
+        if (message.lengthInMillis != 0) {
+            root.formattedInt("length", message.lengthInMillis, MS_NUMBER_FORMAT)
         }
     }
 
     override fun midiSong(message: MidiSong) {
-        publish {
-            property("id", formatter.type(ScriptVarType.MIDI, message.id))
-            property("fadeOutDelay", message.fadeOutDelay)
-            property("fadeOutSpeed", message.fadeOutSpeed)
-            property("fadeInDelay", message.fadeInDelay)
-            property("fadeInSpeed", message.fadeInSpeed)
-        }
+        root.scriptVarType("id", ScriptVarType.MIDI, message.id)
+        root.int("fadeoutdelay", message.fadeOutDelay)
+        root.int("fadeoutspeed", message.fadeOutSpeed)
+        root.int("fadeindelay", message.fadeInDelay)
+        root.int("fadeinspeed", message.fadeInSpeed)
     }
 
     override fun midiSongOld(message: MidiSongOld) {
-        publish {
-            property("id", formatter.type(ScriptVarType.MIDI, message.id))
-        }
+        root.scriptVarType("id", ScriptVarType.MIDI, message.id)
     }
 
     override fun midiSongStop(message: MidiSongStop) {
-        publish {
-            property("fadeOutDelay", message.fadeOutDelay)
-            property("fadeOutSpeed", message.fadeOutSpeed)
-        }
+        root.int("fadeoutdelay", message.fadeOutDelay)
+        root.int("fadeoutspeed", message.fadeOutSpeed)
     }
 
     override fun midiSongWithSecondary(message: MidiSongWithSecondary) {
-        publish {
-            property("primaryId", formatter.type(ScriptVarType.MIDI, message.primaryId))
-            property("secondaryId", formatter.type(ScriptVarType.MIDI, message.secondaryId))
-            property("fadeOutDelay", message.fadeOutDelay)
-            property("fadeOutSpeed", message.fadeOutSpeed)
-            property("fadeInDelay", message.fadeInDelay)
-            property("fadeInSpeed", message.fadeInSpeed)
-        }
+        root.scriptVarType("primaryid", ScriptVarType.MIDI, message.primaryId)
+        root.scriptVarType("secondaryid", ScriptVarType.MIDI, message.secondaryId)
+        root.int("fadeoutdelay", message.fadeOutDelay)
+        root.int("fadeoutspeed", message.fadeOutSpeed)
+        root.int("fadeindelay", message.fadeInDelay)
+        root.int("fadeinspeed", message.fadeInSpeed)
     }
 
     override fun midiSwap(message: MidiSwap) {
-        publish {
-            property("fadeOutDelay", message.fadeOutDelay)
-            property("fadeOutSpeed", message.fadeOutSpeed)
-            property("fadeInDelay", message.fadeInDelay)
-            property("fadeInSpeed", message.fadeInSpeed)
-        }
+        root.int("fadeoutdelay", message.fadeOutDelay)
+        root.int("fadeoutspeed", message.fadeOutSpeed)
+        root.int("fadeindelay", message.fadeInDelay)
+        root.int("fadeinspeed", message.fadeInSpeed)
     }
 
     override fun synthSound(message: SynthSound) {
-        publish {
-            property("id", formatter.type(ScriptVarType.SYNTH, message.id))
-            filteredProperty("loops", message.loops) { it != 1 }
-            filteredProperty("delay", message.delay) { it != 0 }
-        }
+        root.scriptVarType("id", ScriptVarType.SYNTH, message.id.maxUShortToMinusOne())
+        root.filteredInt("loops", message.loops, 1)
+        root.filteredInt("delay", message.delay, 0)
     }
 
     override fun locAnimSpecific(message: LocAnimSpecific) {
-        val coord =
-            buildAreaCoordGrid(
-                message.coordInBuildArea.xInBuildArea,
-                message.coordInBuildArea.zInBuildArea,
-            )
-        publish {
-            property("loc", loc(message.id, coord, message.shape, message.rotation))
-        }
+        root.scriptVarType("id", ScriptVarType.LOC, message.id)
+        root.coordGrid(buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea))
+        root.scriptVarType("shape", ScriptVarType.LOC_SHAPE, message.shape)
+        root.int("rotation", message.rotation)
     }
 
     override fun mapAnimSpecific(message: MapAnimSpecific) {
-        publish {
-            property("id", formatter.type(ScriptVarType.SPOTANIM, message.id))
-            filteredProperty("delay", message.delay) { it != 0 }
-            filteredProperty("height", message.height) { it != 0 }
-            property(
-                "coord",
-                buildAreaCoord(
-                    message.coordInBuildArea.xInBuildArea,
-                    message.coordInBuildArea.zInBuildArea,
-                ),
-            )
-        }
+        root.scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
+        root.filteredInt("delay", message.delay, 0)
+        root.filteredInt("height", message.height, 0)
+        root.coordGrid(buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea))
     }
 
     override fun npcAnimSpecific(message: NpcAnimSpecific) {
-        publish {
-            property("npc", npc(message.index))
-            property("anim", formatter.type(ScriptVarType.SEQ, message.id))
-            filteredProperty("delay", message.delay) { it != 0 }
-        }
+        root.npc(message.index)
+        root.scriptVarType("anim", ScriptVarType.SEQ, message.id)
+        root.filteredInt("delay", message.delay, 0)
     }
 
     override fun npcHeadIconSpecific(message: NpcHeadIconSpecific) {
-        publish {
-            property("npc", npc(message.index))
-            property("slot", message.headIconSlot)
-            property("graphic", formatter.type(ScriptVarType.GRAPHIC, message.spriteGroup))
-            filteredProperty("graphicIndex", message.spriteIndex) { it != 0 }
-        }
+        root.npc(message.index)
+        root.int("slot", message.headIconSlot)
+        root.scriptVarType("graphic", ScriptVarType.GRAPHIC, message.spriteGroup)
+        root.filteredInt("graphicindex", message.spriteIndex, 0)
     }
 
     override fun npcSpotAnimSpecific(message: NpcSpotAnimSpecific) {
-        publish {
-            property("npc", npc(message.index))
-            property("slot", message.slot)
-            property("spotanim", formatter.type(ScriptVarType.SPOTANIM, message.id))
-            filteredProperty("height", message.height) { it != 0 }
-            filteredProperty("delay", message.delay) { it != 0 }
-        }
+        root.npc(message.index)
+        root.int("slot", message.slot)
+        root.scriptVarType("spotanim", ScriptVarType.SPOTANIM, message.id)
+        root.filteredInt("height", message.height, 0)
+        root.filteredInt("delay", message.delay, 0)
     }
 
     override fun playerAnimSpecific(message: PlayerAnimSpecific) {
-        publish {
-            property("anim", formatter.type(ScriptVarType.SEQ, message.id))
-            filteredProperty("delay", message.delay) { it != 0 }
-        }
+        root.scriptVarType("anim", ScriptVarType.SEQ, message.id)
+        root.filteredInt("delay", message.delay, 0)
     }
 
     override fun playerSpotAnimSpecific(message: PlayerSpotAnimSpecific) {
-        publish {
-            property("npc", player(message.index))
-            property("slot", message.slot)
-            property("spotanim", formatter.type(ScriptVarType.SPOTANIM, message.id))
-            filteredProperty("height", message.height) { it != 0 }
-            filteredProperty("delay", message.delay) { it != 0 }
-        }
+        root.player(message.index)
+        root.int("slot", message.slot)
+        root.scriptVarType("spotanim", ScriptVarType.SPOTANIM, message.id)
+        root.filteredInt("height", message.height, 0)
+        root.filteredInt("delay", message.delay, 0)
     }
 
     override fun projAnimSpecific(message: ProjAnimSpecific) {
-        publish {
-            property("id", formatter.type(ScriptVarType.SPOTANIM, message.id))
-            property("start", message.startTime)
-            property("end", message.endTime)
-            property("angle", message.angle)
-            property("progress", message.progress)
-            property("startheight", message.startHeight)
-            property("endheight", message.endHeight)
+        root.scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
+        root.int("starttime", message.startTime)
+        root.int("endtime", message.endTime)
+        root.int("angle", message.angle)
+        root.int("progress", message.progress)
+        root.int("startheight", message.startHeight)
+        root.int("endheight", message.endHeight)
+        root.group("SOURCE") {
+            coordGrid(buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea))
         }
-        // TODO: Multiplier
-        container.publish(
-            format(3, "Source") {
-                property(
-                    "coord",
-                    buildAreaCoord(
-                        message.coordInBuildArea.xInBuildArea,
-                        message.coordInBuildArea.zInBuildArea,
-                    ),
-                )
-            },
-        )
-        container.publish(
-            format(3, "Target") {
-                property(
-                    "coord",
-                    buildAreaCoord(
-                        message.coordInBuildArea.xInBuildArea + message.deltaX,
-                        message.coordInBuildArea.zInBuildArea + message.deltaZ,
-                    ),
-                )
-                if (message.targetIndex != 0xFFFFFF) {
-                    property("target", actor(message.targetIndex))
+        root.group("TARGET") {
+            coordGrid(
+                buildAreaCoordGrid(
+                    message.coordInBuildArea.xInBuildArea + message.deltaX,
+                    message.coordInBuildArea.zInBuildArea + message.deltaZ,
+                ),
+            )
+            val ambiguousIndex = message.targetIndex
+            if (ambiguousIndex != 0) {
+                if (ambiguousIndex > 0) {
+                    npc(ambiguousIndex - 1)
+                } else {
+                    player(-ambiguousIndex - 1)
                 }
-            },
-        )
+            }
+        }
     }
 
     private fun getImpactedVarbits(
@@ -3215,220 +1921,140 @@ public open class BaseServerPacketTranscriber(
         }
     }
 
-    private fun publishVarbits(
-        oldValue: Int,
-        newValue: Int,
-        impactedVarbits: List<VarBitType>,
-        indentation: Int,
-    ) {
-        for (varbit in impactedVarbits) {
-            container.publish(
-                format(indentation, if (indentation == 1) "VARBIT" else "Varbit") {
-                    if (indentation == 1) {
-                        property("basevar", formatter.varp(varbit.basevar))
-                    }
-                    property("id", formatter.varbit(varbit.id))
-                    val bitcount = (varbit.endbit - varbit.startbit) + 1
-                    val bitmask = varbit.bitmask(bitcount)
-                    val oldVarbitValue = oldValue ushr varbit.startbit and bitmask
-                    val newVarbitValue = newValue ushr varbit.startbit and bitmask
-                    property("oldValue", oldVarbitValue)
-                    property("newValue", newVarbitValue)
-                },
-            )
-        }
-    }
-
-    private fun remainingImpactedBits(
-        oldValue: Int,
-        newValue: Int,
-        impactedVarbits: List<VarBitType>,
-    ): Int {
-        return impactedVarbits.fold(oldValue and newValue.inv()) { remaining, varbit ->
-            val bitcount = (varbit.endbit - varbit.startbit) + 1
-            val bitmask = varbit.bitmask(bitcount) shl varbit.startbit
-            remaining and bitmask.inv()
-        }
-    }
-
     override fun varpLarge(message: VarpLarge) {
         val oldValue = stateTracker.getVarp(message.id)
         val impactedVarbits = getImpactedVarbits(message.id, oldValue, message.value)
         stateTracker.setVarp(message.id, message.value)
-        if (remainingImpactedBits(oldValue, message.value, impactedVarbits) == 0) {
-            publishVarbits(oldValue, message.value, impactedVarbits, 1)
-        } else {
-            publish {
-                property("id", formatter.varp(message.id))
-                property("oldValue", oldValue)
-                property("newValue", message.value)
+        root.varp("id", message.id)
+        root.int("oldvalue", oldValue)
+        root.int("newvalue", message.value)
+        if (impactedVarbits.isNotEmpty()) {
+            for (varbit in impactedVarbits) {
+                root.group("VARBIT") {
+                    varbit("id", varbit.id)
+                    val bitcount = (varbit.endbit - varbit.startbit) + 1
+                    val bitmask = varbit.bitmask(bitcount)
+                    val oldVarbitValue = oldValue ushr varbit.startbit and bitmask
+                    val newVarbitValue = message.value ushr varbit.startbit and bitmask
+                    int("oldValue", oldVarbitValue)
+                    int("newValue", newVarbitValue)
+                }
             }
-            publishVarbits(oldValue, message.value, impactedVarbits, 2)
         }
     }
 
     override fun varpReset(message: VarpReset) {
-        publishProt()
     }
 
     override fun varpSmall(message: VarpSmall) {
         val oldValue = stateTracker.getVarp(message.id)
         val impactedVarbits = getImpactedVarbits(message.id, oldValue, message.value)
         stateTracker.setVarp(message.id, message.value)
-        if (remainingImpactedBits(oldValue, message.value, impactedVarbits) == 0) {
-            publishVarbits(oldValue, message.value, impactedVarbits, 1)
-        } else {
-            publish {
-                property("id", formatter.varp(message.id))
-                property("oldValue", oldValue)
-                property("newValue", message.value)
+        root.varp("id", message.id)
+        root.int("oldvalue", oldValue)
+        root.int("newvalue", message.value)
+        root.group("VARBITS") {
+            for (varbit in impactedVarbits) {
+                group {
+                    varbit("id", varbit.id)
+                    val bitcount = (varbit.endbit - varbit.startbit) + 1
+                    val bitmask = varbit.bitmask(bitcount)
+                    val oldVarbitValue = oldValue ushr varbit.startbit and bitmask
+                    val newVarbitValue = message.value ushr varbit.startbit and bitmask
+                    int("oldValue", oldVarbitValue)
+                    int("newValue", newVarbitValue)
+                }
             }
-            publishVarbits(oldValue, message.value, impactedVarbits, 2)
         }
     }
 
     override fun varpSync(message: VarpSync) {
-        publishProt()
     }
 
     override fun clearEntities(message: ClearEntities) {
-        publishProt()
         stateTracker.destroyDynamicWorlds()
     }
 
     override fun setActiveWorld(message: SetActiveWorld) {
-        publish {
-            when (val type = message.worldType) {
-                is SetActiveWorld.DynamicWorldType -> {
-                    property("type", "Dynamic")
-                    property("worldentity", worldentity(type.index))
-                    property("level", type.activeLevel)
-                }
-                is SetActiveWorld.RootWorldType -> {
-                    property("type", "Root")
-                    property("level", type.activeLevel)
-                }
+        when (val type = message.worldType) {
+            is SetActiveWorld.DynamicWorldType -> {
+                root.worldentity(type.index)
+                root.int("level", type.activeLevel)
+            }
+            is SetActiveWorld.RootWorldType -> {
+                root.worldentity(-1)
+                root.int("level", type.activeLevel)
             }
         }
     }
 
     override fun updateZoneFullFollows(message: UpdateZoneFullFollows) {
         stateTracker.getActiveWorld().setActiveZone(message.zoneX, message.zoneZ, message.level)
-        publish {
-            property("coord", buildAreaCoord(message.zoneX, message.zoneZ, message.level))
-        }
+        root.coordGrid(buildAreaCoordGrid(message.zoneX, message.zoneZ, message.level))
     }
 
     override fun updateZonePartialEnclosed(message: UpdateZonePartialEnclosed) {
         stateTracker.getActiveWorld().setActiveZone(message.zoneX, message.zoneZ, message.level)
-        publish {
-            property("coord", buildAreaCoord(message.zoneX, message.zoneZ, message.level))
-        }
-        for (event in message.packets) {
-            when (event) {
-                is LocAddChange -> {
-                    container.publish(
-                        format(2, "LocAddChange") {
+        root.coordGrid(buildAreaCoordGrid(message.zoneX, message.zoneZ, message.level))
+        if (message.packets.isEmpty()) return
+        root.apply {
+            for (event in message.packets) {
+                when (event) {
+                    is LocAddChange -> {
+                        group("LOC_ADD_CHANGE") {
                             buildLocAddChange(event)
-                        },
-                    )
-                }
-                is LocAnim -> {
-                    container.publish(
-                        format(2, "LocAnim") {
+                        }
+                    }
+                    is LocAnim -> {
+                        group("LOC_ANIM") {
                             buildLocAnim(event)
-                        },
-                    )
-                }
-                is LocDel -> {
-                    container.publish(
-                        format(2, "LocDel") {
+                        }
+                    }
+                    is LocDel -> {
+                        group("LOC_DEL") {
                             buildLocDel(event)
-                        },
-                    )
-                }
-                is LocMerge -> {
-                    container.publish(
-                        format(2, "LocMerge") {
+                        }
+                    }
+                    is LocMerge -> {
+                        group("LOC_MERGE") {
                             buildLocMerge(event)
-                        },
-                    )
-                    container.publish(
-                        format(3, "Target") {
-                            property("player", player(event.index))
-                        },
-                    )
-                }
-                is MapAnim -> {
-                    container.publish(
-                        format(2, "MapAnim") {
+                        }
+                    }
+                    is MapAnim -> {
+                        group("MAP_ANIM") {
                             buildMapAnim(event)
-                        },
-                    )
-                }
-                is MapProjAnim -> {
-                    container.publish(
-                        format(2, "MapProjAnim") {
+                        }
+                    }
+                    is MapProjAnim -> {
+                        group("MAP_PROJANIM") {
                             buildMapProjAnim(event)
-                        },
-                    )
-                    container.publish(
-                        format(3, "Source") {
-                            if (event.sourceIndex != 0) {
-                                property("source", formatActor(event.sourceIndex))
-                            }
-                            property("coord", coordInZone(event.xInZone, event.zInZone))
-                        },
-                    )
-                    container.publish(
-                        format(3, "Target") {
-                            property(
-                                "coord",
-                                coordInZone(
-                                    event.xInZone + event.deltaX,
-                                    event.zInZone + event.deltaZ,
-                                ),
-                            )
-                            if (event.targetIndex != 0) {
-                                property("target", formatActor(event.targetIndex))
-                            }
-                        },
-                    )
-                }
-                is ObjAdd -> {
-                    container.publish(
-                        format(2, "ObjAdd") {
+                        }
+                    }
+                    is ObjAdd -> {
+                        group("OBJ_ADD") {
                             buildObjAdd(event)
-                        },
-                    )
-                }
-                is ObjCount -> {
-                    container.publish(
-                        format(2, "ObjCount") {
+                        }
+                    }
+                    is ObjCount -> {
+                        group("OBJ_COUNT") {
                             buildObjCount(event)
-                        },
-                    )
-                }
-                is ObjDel -> {
-                    container.publish(
-                        format(2, "ObjDel") {
+                        }
+                    }
+                    is ObjDel -> {
+                        group("OBJ_DEL") {
                             buildObjDel(event)
-                        },
-                    )
-                }
-                is ObjEnabledOps -> {
-                    container.publish(
-                        format(2, "ObjEnabledOps") {
+                        }
+                    }
+                    is ObjEnabledOps -> {
+                        group("OBJ_ENABLED_OPS") {
                             buildObjEnabledOps(event)
-                        },
-                    )
-                }
-                is SoundArea -> {
-                    container.publish(
-                        format(2, "SoundArea") {
+                        }
+                    }
+                    is SoundArea -> {
+                        group("SOUND_AREA") {
                             buildSoundArea(event)
-                        },
-                    )
+                        }
+                    }
                 }
             }
         }
@@ -3436,103 +2062,51 @@ public open class BaseServerPacketTranscriber(
 
     override fun updateZonePartialFollows(message: UpdateZonePartialFollows) {
         stateTracker.getActiveWorld().setActiveZone(message.zoneX, message.zoneZ, message.level)
-        publish {
-            property("coord", buildAreaCoord(message.zoneX, message.zoneZ, message.level))
-        }
+        root.coordGrid(buildAreaCoordGrid(message.zoneX, message.zoneZ, message.level))
     }
 
     override fun locAddChange(message: LocAddChange) {
-        publish {
-            buildLocAddChange(message)
-        }
+        root.buildLocAddChange(message)
     }
 
     override fun locAnim(message: LocAnim) {
-        publish {
-            buildLocAnim(message)
-        }
+        root.buildLocAnim(message)
     }
 
     override fun locDel(message: LocDel) {
-        publish {
-            buildLocDel(message)
-        }
+        root.buildLocDel(message)
     }
 
     override fun locMerge(message: LocMerge) {
-        publish {
-            buildLocMerge(message)
-        }
-        container.publish(
-            format(3, "Target") {
-                property("player", player(message.index))
-            },
-        )
+        root.buildLocMerge(message)
     }
 
     override fun mapAnim(message: MapAnim) {
-        publish {
-            buildMapAnim(message)
-        }
+        root.buildMapAnim(message)
     }
 
     override fun mapProjAnim(message: MapProjAnim) {
-        publish {
-            buildMapProjAnim(message)
-        }
-        // TODO: multiplier
-        container.publish(
-            format(3, "Source") {
-                if (message.sourceIndex != 0) {
-                    property("source", formatActor(message.sourceIndex))
-                }
-                property("coord", coordInZone(message.xInZone, message.zInZone))
-            },
-        )
-        container.publish(
-            format(3, "Target") {
-                property(
-                    "coord",
-                    coordInZone(
-                        message.xInZone + message.deltaX,
-                        message.zInZone + message.deltaZ,
-                    ),
-                )
-                if (message.targetIndex != 0) {
-                    property("target", formatActor(message.targetIndex))
-                }
-            },
-        )
+        root.buildMapProjAnim(message)
     }
 
     override fun objAdd(message: ObjAdd) {
-        publish {
-            buildObjAdd(message)
-        }
+        root.buildObjAdd(message)
     }
 
     override fun objCount(message: ObjCount) {
-        publish {
-            buildObjCount(message)
-        }
+        root.buildObjCount(message)
     }
 
     override fun objDel(message: ObjDel) {
-        publish {
-            buildObjDel(message)
-        }
+        root.buildObjDel(message)
     }
 
     override fun objEnabledOps(message: ObjEnabledOps) {
-        publish {
-            buildObjEnabledOps(message)
-        }
+        root.buildObjEnabledOps(message)
     }
 
     override fun soundArea(message: SoundArea) {
-        publish {
-            buildSoundArea(message)
-        }
+        root.buildSoundArea(message)
     }
 
     private fun coordInZone(
@@ -3542,108 +2116,138 @@ public open class BaseServerPacketTranscriber(
         return stateTracker.getActiveWorld().relativizeZoneCoord(xInZone, zInZone)
     }
 
-    public fun PropertyBuilder.buildLocAddChange(message: LocAddChange) {
-        property(
-            "loc",
-            loc(
-                message.id,
-                coordInZone(message.xInZone, message.zInZone),
-                message.shape,
-                message.rotation,
-            ),
-        )
+    private fun Property.buildLocAddChange(message: LocAddChange) {
+        scriptVarType("id", ScriptVarType.LOC, message.id)
+        coordGrid(coordInZone(message.xInZone, message.zInZone))
+        scriptVarType("shape", ScriptVarType.LOC_SHAPE, message.shape)
+        int("rotation", message.rotation)
     }
 
-    public fun PropertyBuilder.buildLocAnim(message: LocAnim) {
-        property("loc", loc(coordInZone(message.xInZone, message.zInZone), message.shape, message.rotation))
-        property("anim", formatter.type(ScriptVarType.SEQ, message.id))
+    private fun Property.buildLocAnim(message: LocAnim) {
+        coordGrid(coordInZone(message.xInZone, message.zInZone))
+        scriptVarType("shape", ScriptVarType.LOC_SHAPE, message.shape)
+        int("rotation", message.rotation)
+        scriptVarType("anim", ScriptVarType.SEQ, message.id)
     }
 
-    public fun PropertyBuilder.buildLocDel(message: LocDel) {
-        property("loc", loc(coordInZone(message.xInZone, message.zInZone), message.shape, message.rotation))
+    private fun Property.buildLocDel(message: LocDel) {
+        coordGrid(coordInZone(message.xInZone, message.zInZone))
+        scriptVarType("shape", ScriptVarType.LOC_SHAPE, message.shape)
+        int("rotation", message.rotation)
     }
 
-    public fun PropertyBuilder.buildLocMerge(message: LocMerge) {
-        property(
-            "loc",
-            loc(
-                message.id,
-                coordInZone(message.xInZone, message.zInZone),
-                message.shape,
-                message.rotation,
-            ),
-        )
-        property("start", message.start)
-        property("end", message.end)
-        property("minx", message.minX)
-        property("maxx", message.maxX)
-        property("minz", message.minZ)
-        property("maxz", message.maxZ)
+    private fun Property.buildLocMerge(message: LocMerge) {
+        scriptVarType("id", ScriptVarType.LOC, message.id)
+        coordGrid(coordInZone(message.xInZone, message.zInZone))
+        scriptVarType("shape", ScriptVarType.LOC_SHAPE, message.shape)
+        int("rotation", message.rotation)
+        int("start", message.start)
+        int("end", message.end)
+        int("minx", message.minX)
+        int("maxx", message.maxX)
+        int("minz", message.minZ)
+        int("maxz", message.maxZ)
     }
 
-    public fun PropertyBuilder.buildMapAnim(message: MapAnim) {
-        property("id", formatter.type(ScriptVarType.SPOTANIM, message.id))
-        filteredProperty("delay", message.delay) { it != 0 }
-        filteredProperty("height", message.height) { it != 0 }
-        property("coord", coordInZone(message.xInZone, message.zInZone))
+    private fun Property.buildMapAnim(message: MapAnim) {
+        scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
+        filteredInt("delay", message.delay, 0)
+        filteredInt("height", message.height, 0)
+        coordGrid(coordInZone(message.xInZone, message.zInZone))
     }
 
-    public fun PropertyBuilder.buildMapProjAnim(message: MapProjAnim) {
-        property("id", formatter.type(ScriptVarType.SPOTANIM, message.id))
-        property("start", message.startTime)
-        property("end", message.endTime)
-        property("angle", message.angle)
-        property("progress", message.progress)
-        property("startheight", message.startHeight)
-        property("endheight", message.endHeight)
-    }
-
-    private fun getOwnershipType(id: Int): String {
-        return when (id) {
-            0 -> "None"
-            1 -> "Self"
-            2 -> "Other"
-            3 -> "GIM"
-            else -> id.toString()
+    private fun Property.buildMapProjAnim(message: MapProjAnim) {
+        scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
+        int("starttime", message.startTime)
+        int("endtime", message.endTime)
+        int("angle", message.angle)
+        int("progress", message.progress)
+        int("startheight", message.startHeight)
+        int("endheight", message.endHeight)
+        group("SOURCE") {
+            coordGrid(coordInZone(message.xInZone, message.zInZone))
+            val ambiguousIndex = message.sourceIndex
+            if (ambiguousIndex != 0) {
+                if (ambiguousIndex > 0) {
+                    npc(ambiguousIndex - 1)
+                } else {
+                    player(-ambiguousIndex - 1)
+                }
+            }
+        }
+        group("TARGET") {
+            coordGrid(coordInZone(message.xInZone + message.deltaX, message.zInZone + message.deltaZ))
+            val ambiguousIndex = message.targetIndex
+            if (ambiguousIndex != 0) {
+                if (ambiguousIndex > 0) {
+                    npc(ambiguousIndex - 1)
+                } else {
+                    player(-ambiguousIndex - 1)
+                }
+            }
         }
     }
 
-    public fun PropertyBuilder.buildObjAdd(message: ObjAdd) {
-        property("id", formatter.type(ScriptVarType.OBJ, message.id))
-        property("count", message.quantity.format())
-        filteredProperty("opflags", "0b" + message.opFlags.value.toString(2)) { it != "0b11111" }
-        filteredProperty("reveal", message.timeUntilPublic) { it != 0 }
-        filteredProperty("despawn", message.timeUntilDespawn) { it != 0 }
-        filteredProperty("ownership", getOwnershipType(message.ownershipType)) { it != "None" }
-        property("neverturnpublic", message.neverBecomesPublic)
-        property("coord", coordInZone(message.xInZone, message.zInZone))
+    private enum class ObjOwnership(
+        override val prettyName: String,
+    ) : NamedEnum {
+        None("none"),
+        Self("self"),
+        Other("other"),
+        GroupIronman("gim"),
     }
 
-    public fun PropertyBuilder.buildObjCount(message: ObjCount) {
-        property("id", formatter.type(ScriptVarType.OBJ, message.id))
-        property("oldcount", message.oldQuantity.format())
-        property("newcount", message.newQuantity.format())
-        property("coord", coordInZone(message.xInZone, message.zInZone))
+    private fun getObjOwnership(id: Int): ObjOwnership {
+        return when (id) {
+            0 -> ObjOwnership.None
+            1 -> ObjOwnership.Self
+            2 -> ObjOwnership.Other
+            3 -> ObjOwnership.GroupIronman
+            else -> error("Unknown obj ownership type: $id")
+        }
     }
 
-    public fun PropertyBuilder.buildObjDel(message: ObjDel) {
-        property("id", formatter.type(ScriptVarType.OBJ, message.id))
-        property("count", message.quantity.format())
-        property("coord", coordInZone(message.xInZone, message.zInZone))
+    private fun Property.buildObjAdd(message: ObjAdd) {
+        scriptVarType("id", ScriptVarType.OBJ, message.id)
+        formattedInt("count", message.quantity)
+        filteredString("opflags", "0b" + message.opFlags.value.toString(2), "0b11111")
+        filteredInt("reveal", message.timeUntilPublic, 0)
+        filteredInt("despawn", message.timeUntilDespawn, 0)
+        filteredNamedEnum("ownership", getObjOwnership(message.ownershipType), ObjOwnership.None)
+        boolean("neverturnpublic", message.neverBecomesPublic)
+        coordGrid(coordInZone(message.xInZone, message.zInZone))
     }
 
-    public fun PropertyBuilder.buildObjEnabledOps(message: ObjEnabledOps) {
-        property("id", formatter.type(ScriptVarType.OBJ, message.id))
-        property("opflags", "0b" + message.opFlags.value.toString(2))
-        property("coord", coordInZone(message.xInZone, message.zInZone))
+    private fun Property.buildObjCount(message: ObjCount) {
+        scriptVarType("id", ScriptVarType.OBJ, message.id)
+        formattedInt("oldcount", message.oldQuantity)
+        formattedInt("newcount", message.newQuantity)
+        coordGrid(coordInZone(message.xInZone, message.zInZone))
     }
 
-    public fun PropertyBuilder.buildSoundArea(message: SoundArea) {
-        property("id", formatter.type(ScriptVarType.SYNTH, message.id))
-        filteredProperty("loops", message.loops) { it != 0 }
-        filteredProperty("delay", message.delay) { it != 0 }
-        property("range", message.radius)
-        filteredProperty("size", message.size) { it != 0 }
-        property("coord", coordInZone(message.xInZone, message.zInZone))
+    private fun Property.buildObjDel(message: ObjDel) {
+        scriptVarType("id", ScriptVarType.OBJ, message.id)
+        formattedInt("count", message.quantity)
+        coordGrid(coordInZone(message.xInZone, message.zInZone))
+    }
+
+    private fun Property.buildObjEnabledOps(message: ObjEnabledOps) {
+        scriptVarType("id", ScriptVarType.OBJ, message.id)
+        string("opflags", "0b" + message.opFlags.value.toString(2))
+        coordGrid(coordInZone(message.xInZone, message.zInZone))
+    }
+
+    private fun Property.buildSoundArea(message: SoundArea) {
+        scriptVarType("id", ScriptVarType.SYNTH, message.id.maxUShortToMinusOne())
+        filteredInt("loops", message.loops, 0)
+        filteredInt("delay", message.delay, 0)
+        int("range", message.radius)
+        filteredInt("size", message.size, 0)
+        coordGrid(coordInZone(message.xInZone, message.zInZone))
+    }
+
+    private companion object {
+        private val MS_NUMBER_FORMAT: NumberFormat = DecimalFormat("###,###,###ms")
+        private val GRAM_NUMBER_FORMAT: NumberFormat = DecimalFormat("###,###,###g")
     }
 }

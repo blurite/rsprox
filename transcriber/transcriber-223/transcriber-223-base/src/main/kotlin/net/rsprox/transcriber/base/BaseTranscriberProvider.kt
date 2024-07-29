@@ -15,10 +15,8 @@ public class BaseTranscriberProvider : TranscriberProvider {
         monitor: SessionMonitor<*>,
     ): TranscriberRunner {
         val stateTracker = StateTracker()
-        val monitoredContainer = MonitoredMessageConsumerContainer(container, stateTracker, monitor)
         return TranscriberPlugin(
             BaseTranscriber(
-                monitoredContainer,
                 cacheProvider,
                 monitor,
                 stateTracker,

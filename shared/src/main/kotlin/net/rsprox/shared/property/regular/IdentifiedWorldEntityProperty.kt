@@ -2,14 +2,15 @@ package net.rsprox.shared.property.regular
 
 import net.rsprox.shared.property.ChildProperty
 
-public class IdentifiedNpcProperty(
+public class IdentifiedWorldEntityProperty(
     override val propertyName: String,
     public val index: Int,
-    public val npcName: String,
     public val level: Int,
     public val x: Int,
     public val z: Int,
-    override val value: String = "(index=$index, name=$npcName, coord=($x, $z, $level))",
+    public val sizeX: Int,
+    public val sizeZ: Int,
+    override val value: String = "(index=$index, coord=($x, $z, $level), sizex=$sizeX, sizez=$sizeZ)",
     override val children: MutableList<ChildProperty<*>> = mutableListOf(),
     override val type: Class<String> = String::class.java,
 ) : ChildProperty<String>

@@ -6,7 +6,9 @@ import net.rsprox.shared.SessionMonitor
 
 public interface Transcriber :
     ClientPacketTranscriber,
-    ServerPacketTranscriber {
+    ServerPacketTranscriber,
+    PlayerInfoTranscriber,
+    NpcInfoTranscriber {
     public val cache: Cache
     public val monitor: SessionMonitor<*>
 

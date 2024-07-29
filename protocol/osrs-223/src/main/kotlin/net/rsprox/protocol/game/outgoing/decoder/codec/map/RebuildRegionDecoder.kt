@@ -10,6 +10,7 @@ import net.rsprox.protocol.game.outgoing.model.map.RebuildRegion
 import net.rsprox.protocol.game.outgoing.model.map.util.BuildArea
 import net.rsprox.protocol.game.outgoing.model.map.util.RebuildRegionZone
 import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.session.getWorld
 
 public class RebuildRegionDecoder : ProxyMessageDecoder<RebuildRegion> {
     override val prot: ClientProt = GameServerProt.REBUILD_REGION
@@ -40,6 +41,9 @@ public class RebuildRegionDecoder : ProxyMessageDecoder<RebuildRegion> {
                     add(XteaKey(buffer.g4(), buffer.g4(), buffer.g4(), buffer.g4()))
                 }
             }
+        val world = session.getWorld(-1)
+        world.baseX = (zoneX - 6) * 8
+        world.baseZ = (zoneZ - 6) * 8
         return RebuildRegion(
             zoneX,
             zoneZ,

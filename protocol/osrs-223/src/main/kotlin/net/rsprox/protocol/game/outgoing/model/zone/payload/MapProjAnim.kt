@@ -224,13 +224,21 @@ public class MapProjAnim private constructor(
         )
 
         val sourceIndex: Int
-            get() = (packed and 0xFFFFFF).toInt()
+            get() = signMedium((packed and 0xFFFFFF).toInt())
         val targetIndex: Int
-            get() = (packed ushr 24 and 0xFFFFFF).toInt()
+            get() = signMedium((packed ushr 24 and 0xFFFFFF).toInt())
         val startHeight: Int
             get() = (packed ushr 48 and 0xFF).toInt()
         val endHeight: Int
             get() = (packed ushr 56 and 0xFF).toInt()
+
+        private fun signMedium(num: Int): Int {
+            return if (num > 8388607) {
+                num - 16777216
+            } else {
+                num
+            }
+        }
 
         override fun toString(): String {
             return "MapProjAnimInfo(" +

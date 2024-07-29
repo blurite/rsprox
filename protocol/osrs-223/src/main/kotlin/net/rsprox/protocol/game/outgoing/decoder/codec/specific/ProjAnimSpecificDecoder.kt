@@ -16,7 +16,7 @@ public class ProjAnimSpecificDecoder : ProxyMessageDecoder<ProjAnimSpecific> {
         session: Session,
     ): ProjAnimSpecific {
         val angle = buffer.g1()
-        val targetIndex = buffer.g3Alt2()
+        val targetIndex = buffer.g3sAlt2()
         val deltaZ = buffer.g1Alt1()
         val endTime = buffer.g2Alt1()
         val endHeight = buffer.g1Alt2()

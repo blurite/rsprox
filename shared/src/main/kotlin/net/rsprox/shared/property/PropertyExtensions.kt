@@ -4,6 +4,7 @@ import net.rsprox.shared.BaseVarType
 import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.property.filtered.FilteredBooleanProperty
 import net.rsprox.shared.property.filtered.FilteredIntProperty
+import net.rsprox.shared.property.filtered.FilteredLongProperty
 import net.rsprox.shared.property.filtered.FilteredNamedEnumProperty
 import net.rsprox.shared.property.filtered.FilteredScriptVarTypeProperty
 import net.rsprox.shared.property.filtered.FilteredStringProperty
@@ -11,16 +12,23 @@ import net.rsprox.shared.property.formatted.FormattedIntProperty
 import net.rsprox.shared.property.regular.BooleanProperty
 import net.rsprox.shared.property.regular.ComponentProperty
 import net.rsprox.shared.property.regular.CoordGridProperty
+import net.rsprox.shared.property.regular.EnumProperty
 import net.rsprox.shared.property.regular.GroupProperty
 import net.rsprox.shared.property.regular.IdentifiedNpcProperty
 import net.rsprox.shared.property.regular.IdentifiedPlayerProperty
+import net.rsprox.shared.property.regular.IdentifiedWorldEntityProperty
 import net.rsprox.shared.property.regular.IntProperty
 import net.rsprox.shared.property.regular.LongProperty
 import net.rsprox.shared.property.regular.NamedEnumProperty
+import net.rsprox.shared.property.regular.ScriptProperty
 import net.rsprox.shared.property.regular.ScriptVarTypeProperty
 import net.rsprox.shared.property.regular.StringProperty
 import net.rsprox.shared.property.regular.UnidentifiedNpcProperty
 import net.rsprox.shared.property.regular.UnidentifiedPlayerProperty
+import net.rsprox.shared.property.regular.UnidentifiedWorldEntityProperty
+import net.rsprox.shared.property.regular.VarbitProperty
+import net.rsprox.shared.property.regular.VarpProperty
+import net.rsprox.shared.property.regular.ZoneCoordProperty
 import java.text.NumberFormat
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
@@ -62,6 +70,23 @@ public fun Property.com(
     )
 }
 
+public fun Property.inter(id: Int): ComponentProperty {
+    return inter("id", id)
+}
+
+public fun Property.inter(
+    name: String,
+    id: Int,
+): ComponentProperty {
+    return child(
+        ComponentProperty(
+            name,
+            id,
+            -1,
+        ),
+    )
+}
+
 public fun Property.coordGrid(
     level: Int,
     x: Int,
@@ -74,6 +99,22 @@ public fun Property.coordGrid(
             level,
             x,
             z,
+        ),
+    )
+}
+
+public fun Property.zoneCoordGrid(
+    level: Int,
+    zoneX: Int,
+    zoneZ: Int,
+    name: String = "zone",
+): ZoneCoordProperty {
+    return child(
+        ZoneCoordProperty(
+            name,
+            level,
+            zoneX,
+            zoneZ,
         ),
     )
 }
@@ -100,6 +141,42 @@ public fun Property.filteredString(
             name,
             value,
             filterValue,
+        ),
+    )
+}
+
+public fun Property.script(
+    name: String,
+    value: Int,
+): ScriptProperty {
+    return child(
+        ScriptProperty(
+            name,
+            value,
+        ),
+    )
+}
+
+public fun Property.varp(
+    name: String,
+    value: Int,
+): VarpProperty {
+    return child(
+        VarpProperty(
+            name,
+            value,
+        ),
+    )
+}
+
+public fun Property.varbit(
+    name: String,
+    value: Int,
+): VarbitProperty {
+    return child(
+        VarbitProperty(
+            name,
+            value,
         ),
     )
 }
@@ -152,6 +229,20 @@ public fun Property.long(
         LongProperty(
             name,
             value,
+        ),
+    )
+}
+
+public fun Property.filteredLong(
+    name: String,
+    value: Long,
+    filterValue: Long,
+): FilteredLongProperty {
+    return child(
+        FilteredLongProperty(
+            name,
+            value,
+            filterValue,
         ),
     )
 }
@@ -273,6 +364,19 @@ public fun <V> Property.filteredScriptVarType(
 public inline fun <reified T> Property.enum(
     name: String,
     value: T,
+): EnumProperty<T> where T : Enum<T> {
+    return child(
+        EnumProperty(
+            name,
+            value,
+            T::class.java,
+        ),
+    )
+}
+
+public inline fun <reified T> Property.namedEnum(
+    name: String,
+    value: T,
 ): NamedEnumProperty<T> where T : Enum<T>, T : NamedEnum {
     return child(
         NamedEnumProperty(
@@ -283,7 +387,7 @@ public inline fun <reified T> Property.enum(
     )
 }
 
-public inline fun <reified T> Property.filteredEnum(
+public inline fun <reified T> Property.filteredNamedEnum(
     name: String,
     value: T,
     filterValue: T,
@@ -356,6 +460,40 @@ public fun Property.unidentifiedPlayer(
 ): UnidentifiedPlayerProperty {
     return child(
         UnidentifiedPlayerProperty(
+            propertyName,
+            index,
+        ),
+    )
+}
+
+public fun Property.identifiedWorldEntity(
+    index: Int,
+    level: Int,
+    x: Int,
+    z: Int,
+    sizeX: Int,
+    sizeZ: Int,
+    propertyName: String = "worldentity",
+): IdentifiedWorldEntityProperty {
+    return child(
+        IdentifiedWorldEntityProperty(
+            propertyName,
+            index,
+            level,
+            x,
+            z,
+            sizeX,
+            sizeZ,
+        ),
+    )
+}
+
+public fun Property.unidentifiedWorldEntity(
+    index: Int,
+    propertyName: String = "worldentity",
+): UnidentifiedWorldEntityProperty {
+    return child(
+        UnidentifiedWorldEntityProperty(
             propertyName,
             index,
         ),

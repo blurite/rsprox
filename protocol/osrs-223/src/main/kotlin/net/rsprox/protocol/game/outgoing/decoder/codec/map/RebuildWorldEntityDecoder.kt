@@ -13,6 +13,7 @@ import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntity
 import net.rsprox.protocol.game.outgoing.model.map.util.BuildArea
 import net.rsprox.protocol.game.outgoing.model.map.util.RebuildRegionZone
 import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.session.getWorld
 
 @Consistent
 public class RebuildWorldEntityDecoder : ProxyMessageDecoder<RebuildWorldEntity> {
@@ -61,6 +62,10 @@ public class RebuildWorldEntityDecoder : ProxyMessageDecoder<RebuildWorldEntity>
                     add(XteaKey(buffer.g4(), buffer.g4(), buffer.g4(), buffer.g4()))
                 }
             }
+        val world = session.getWorld(index)
+        world.baseX = (baseX - 6) * 8
+        world.baseZ = (baseZ - 6) * 8
+        world.playerInfo.gpiInit(playerInfoInitBlock)
         return RebuildWorldEntity(
             index,
             baseX,

@@ -74,10 +74,9 @@ import net.rsprox.shared.property.RootProperty
 import net.rsprox.shared.property.boolean
 import net.rsprox.shared.property.com
 import net.rsprox.shared.property.coordGrid
-import net.rsprox.shared.property.enum
 import net.rsprox.shared.property.filteredBoolean
-import net.rsprox.shared.property.filteredEnum
 import net.rsprox.shared.property.filteredInt
+import net.rsprox.shared.property.filteredNamedEnum
 import net.rsprox.shared.property.filteredScriptVarType
 import net.rsprox.shared.property.filteredString
 import net.rsprox.shared.property.formattedInt
@@ -86,6 +85,7 @@ import net.rsprox.shared.property.identifiedNpc
 import net.rsprox.shared.property.identifiedPlayer
 import net.rsprox.shared.property.int
 import net.rsprox.shared.property.long
+import net.rsprox.shared.property.namedEnum
 import net.rsprox.shared.property.scriptVarType
 import net.rsprox.shared.property.string
 import net.rsprox.shared.property.unidentifiedNpc
@@ -218,12 +218,14 @@ public open class BaseClientPacketTranscriber(
     override fun eventMouseMove(message: EventMouseMove) {
         root.formattedInt("averagetime", message.averageTime, MS_NUMBER_FORMAT)
         root.formattedInt("remainingtime", message.remainingTime, MS_NUMBER_FORMAT)
-        for (index in message.movements.asLongArray().indices) {
-            root.group {
-                val movement = message.movements.getMousePosChange(index)
-                formattedInt("deltatime", movement.timeDelta, MS_NUMBER_FORMAT)
-                int("deltax", movement.xDelta)
-                int("deltay", movement.yDelta)
+        root.group("MOVEMENTS") {
+            for (index in message.movements.asLongArray().indices) {
+                group {
+                    val movement = message.movements.getMousePosChange(index)
+                    formattedInt("deltatime", movement.timeDelta, MS_NUMBER_FORMAT)
+                    int("deltax", movement.xDelta)
+                    int("deltay", movement.yDelta)
+                }
             }
         }
     }
@@ -242,12 +244,14 @@ public open class BaseClientPacketTranscriber(
     override fun eventNativeMouseMove(message: EventNativeMouseMove) {
         root.formattedInt("averagetime", message.averageTime, MS_NUMBER_FORMAT)
         root.formattedInt("remainingtime", message.remainingTime, MS_NUMBER_FORMAT)
-        for (index in message.movements.asLongArray().indices) {
-            root.group {
-                val movement = message.movements.getMousePosChange(index)
-                formattedInt("deltatime", movement.timeDelta, MS_NUMBER_FORMAT)
-                int("deltax", movement.xDelta)
-                int("deltay", movement.yDelta)
+        root.group("MOVEMENTS") {
+            for (index in message.movements.asLongArray().indices) {
+                group("MOVEMENT") {
+                    val movement = message.movements.getMousePosChange(index)
+                    formattedInt("deltatime", movement.timeDelta, MS_NUMBER_FORMAT)
+                    int("deltax", movement.xDelta)
+                    int("deltay", movement.yDelta)
+                }
             }
         }
     }
@@ -317,28 +321,26 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun reflectionCheckReply(message: ReflectionCheckReply) {
-        root.group {
-            formattedInt("id", message.id)
-        }
+        root.formattedInt("id", message.id)
         for (result in message.result) {
             when (result) {
                 is ReflectionCheckReply.ErrorResult<*, *> -> {
                     root.group("Error") {
                         when (val res = result.check) {
                             is ReflectionCheck.GetFieldModifiers -> {
-                                root.group("GetFieldModifiers") {
+                                group("GET_FIELD_MODIFIERS") {
                                     string("classname", res.className)
                                     string("fieldname", res.fieldName)
                                 }
                             }
                             is ReflectionCheck.GetFieldValue -> {
-                                root.group("GetFieldValue") {
+                                group("GET_FIELD_VALUE") {
                                     string("classname", res.className)
                                     string("fieldname", res.fieldName)
                                 }
                             }
                             is ReflectionCheck.GetMethodModifiers -> {
-                                root.group("GetMethodModifiers") {
+                                group("GET_METHOD_MODIFIERS") {
                                     string("classname", res.className)
                                     string("methodname", res.methodName)
                                     string("returnclass", res.returnClass)
@@ -346,7 +348,7 @@ public open class BaseClientPacketTranscriber(
                                 }
                             }
                             is ReflectionCheck.InvokeMethod -> {
-                                root.group("InvokeMethod") {
+                                group("INVOKE_METHOD") {
                                     string("classname", res.className)
                                     string("methodname", res.methodName)
                                     string("returnclass", res.returnClass)
@@ -360,7 +362,7 @@ public open class BaseClientPacketTranscriber(
                                 }
                             }
                             is ReflectionCheck.SetFieldValue -> {
-                                root.group("SetFieldValue") {
+                                group("SET_FIELD_VALUE") {
                                     string("classname", res.className)
                                     string("fieldname", res.fieldName)
                                     int("value", res.value)
@@ -492,9 +494,9 @@ public open class BaseClientPacketTranscriber(
     private enum class MovementKeyCombination(
         override val prettyName: String,
     ) : NamedEnum {
-        NONE("None"),
-        CTRL("Ctrl"),
-        CTRLPLUSSHIFT("Ctrl+Shift"),
+        NONE("none"),
+        CTRL("ctrl"),
+        CTRLPLUSSHIFT("ctrl+shift"),
     }
 
     private fun getMovementKeyCombination(id: Int): MovementKeyCombination {
@@ -507,7 +509,7 @@ public open class BaseClientPacketTranscriber(
 
     override fun moveGameClick(message: MoveGameClick) {
         root.coordGrid(stateTracker.level(), message.x, message.z)
-        root.filteredEnum(
+        root.filteredNamedEnum(
             "keycombination",
             getMovementKeyCombination(message.keyCombination),
             MovementKeyCombination.NONE,
@@ -516,7 +518,7 @@ public open class BaseClientPacketTranscriber(
 
     override fun moveMinimapClick(message: MoveMinimapClick) {
         root.coordGrid(stateTracker.level(), message.x, message.z)
-        root.filteredEnum(
+        root.filteredNamedEnum(
             "keycombination",
             getMovementKeyCombination(message.keyCombination),
             MovementKeyCombination.NONE,
@@ -563,11 +565,11 @@ public open class BaseClientPacketTranscriber(
     private enum class ChatFilter(
         override val prettyName: String,
     ) : NamedEnum {
-        ON("On"),
-        FRIENDS("Friends"),
-        OFF("Off"),
-        HIDE("Hide"),
-        AUTOCHAT("Autochat"),
+        ON("on"),
+        FRIENDS("friends"),
+        OFF("off"),
+        HIDE("hide"),
+        AUTOCHAT("autochat"),
     }
 
     private fun getChatFilter(id: Int): ChatFilter {
@@ -582,9 +584,9 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun setChatFilterSettings(message: SetChatFilterSettings) {
-        root.enum("public", getChatFilter(message.publicChatFilter))
-        root.enum("private", getChatFilter(message.privateChatFilter))
-        root.enum("trade", getChatFilter(message.tradeChatFilter))
+        root.namedEnum("public", getChatFilter(message.publicChatFilter))
+        root.namedEnum("private", getChatFilter(message.privateChatFilter))
+        root.namedEnum("trade", getChatFilter(message.tradeChatFilter))
     }
 
     override fun teleport(message: Teleport) {
