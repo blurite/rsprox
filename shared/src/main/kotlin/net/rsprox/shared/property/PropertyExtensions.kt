@@ -4,7 +4,6 @@ import net.rsprox.shared.BaseVarType
 import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.property.filtered.FilteredNamedEnumProperty
 import net.rsprox.shared.property.filtered.FilteredScriptVarTypeProperty
-import net.rsprox.shared.property.filtered.FilteredStringProperty
 import net.rsprox.shared.property.formatted.FormattedIntProperty
 import net.rsprox.shared.property.regular.EnumProperty
 import net.rsprox.shared.property.regular.GroupProperty
@@ -115,14 +114,8 @@ public fun Property.filteredString(
     name: String,
     value: String?,
     filterValue: String?,
-): FilteredStringProperty {
-    return child(
-        FilteredStringProperty(
-            name,
-            value,
-            filterValue,
-        ),
-    )
+): FilteredScriptVarTypeProperty<*> {
+    return filteredScriptVarType(name, ScriptVarType.STRING, value, filterValue)
 }
 
 public fun Property.script(
@@ -295,11 +288,11 @@ public fun <V> Property.filteredScriptVarType(
             BaseVarType.STRING -> {
                 child(
                     FilteredScriptVarTypeProperty(
-                        String::class.java,
+                        type(),
                         type,
                         name,
-                        value as String,
-                        filterValue as String,
+                        value as? String?,
+                        filterValue as? String?,
                     ),
                 )
             }
