@@ -14,7 +14,6 @@ import net.rsprox.shared.property.regular.GroupProperty
 import net.rsprox.shared.property.regular.IdentifiedNpcProperty
 import net.rsprox.shared.property.regular.IdentifiedPlayerProperty
 import net.rsprox.shared.property.regular.IdentifiedWorldEntityProperty
-import net.rsprox.shared.property.regular.LongProperty
 import net.rsprox.shared.property.regular.NamedEnumProperty
 import net.rsprox.shared.property.regular.ScriptProperty
 import net.rsprox.shared.property.regular.ScriptVarTypeProperty
@@ -203,13 +202,8 @@ public fun Property.filteredInt(
 public fun Property.long(
     name: String,
     value: Long,
-): LongProperty {
-    return child(
-        LongProperty(
-            name,
-            value,
-        ),
-    )
+): ScriptVarTypeProperty<*> {
+    return scriptVarType(name, ScriptVarType.LONG, value)
 }
 
 public fun Property.filteredLong(
