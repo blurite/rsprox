@@ -10,7 +10,6 @@ import net.rsprox.shared.property.filtered.FilteredScriptVarTypeProperty
 import net.rsprox.shared.property.filtered.FilteredStringProperty
 import net.rsprox.shared.property.formatted.FormattedIntProperty
 import net.rsprox.shared.property.regular.BooleanProperty
-import net.rsprox.shared.property.regular.ComponentProperty
 import net.rsprox.shared.property.regular.CoordGridProperty
 import net.rsprox.shared.property.regular.EnumProperty
 import net.rsprox.shared.property.regular.GroupProperty
@@ -52,7 +51,7 @@ public fun Property.group(
 public fun Property.com(
     id: Int,
     com: Int,
-): ComponentProperty {
+): ScriptVarTypeProperty<*> {
     return com("com", id, com)
 }
 
@@ -60,31 +59,22 @@ public fun Property.com(
     name: String,
     id: Int,
     com: Int,
-): ComponentProperty {
-    return child(
-        ComponentProperty(
-            name,
-            id,
-            com,
-        ),
-    )
+): ScriptVarTypeProperty<*> {
+    if (id and 0xFFFF != 0xFFFF && com and 0xFFFF == 0xFFFF) {
+        return scriptVarType(name, ScriptVarType.INTERFACE, id)
+    }
+    return scriptVarType(name, ScriptVarType.COMPONENT, (id and 0xFFFF shl 16) or (com and 0xFFFF))
 }
 
-public fun Property.inter(id: Int): ComponentProperty {
+public fun Property.inter(id: Int): ScriptVarTypeProperty<*> {
     return inter("id", id)
 }
 
 public fun Property.inter(
     name: String,
     id: Int,
-): ComponentProperty {
-    return child(
-        ComponentProperty(
-            name,
-            id,
-            -1,
-        ),
-    )
+): ScriptVarTypeProperty<*> {
+    return scriptVarType(name, ScriptVarType.INTERFACE, id)
 }
 
 public fun Property.coordGrid(
