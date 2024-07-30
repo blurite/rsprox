@@ -159,7 +159,7 @@ import net.rsprox.shared.property.int
 import net.rsprox.shared.property.inter
 import net.rsprox.shared.property.long
 import net.rsprox.shared.property.namedEnum
-import net.rsprox.shared.property.regular.CoordGridProperty
+import net.rsprox.shared.property.regular.ScriptVarTypeProperty
 import net.rsprox.shared.property.regular.ZoneCoordProperty
 import net.rsprox.shared.property.script
 import net.rsprox.shared.property.scriptVarType
@@ -259,14 +259,14 @@ public class BaseServerPacketTranscriber(
             )
     }
 
-    private fun Property.coordGrid(coordGrid: CoordGrid): CoordGridProperty {
+    private fun Property.coordGrid(coordGrid: CoordGrid): ScriptVarTypeProperty<*> {
         return coordGrid(coordGrid.level, coordGrid.x, coordGrid.z)
     }
 
     private fun Property.coordGrid(
         name: String,
         coordGrid: CoordGrid,
-    ): CoordGridProperty {
+    ): ScriptVarTypeProperty<*> {
         return coordGrid(coordGrid.level, coordGrid.x, coordGrid.z, name)
     }
 

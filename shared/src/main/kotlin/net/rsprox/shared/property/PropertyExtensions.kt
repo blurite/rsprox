@@ -10,7 +10,6 @@ import net.rsprox.shared.property.filtered.FilteredScriptVarTypeProperty
 import net.rsprox.shared.property.filtered.FilteredStringProperty
 import net.rsprox.shared.property.formatted.FormattedIntProperty
 import net.rsprox.shared.property.regular.BooleanProperty
-import net.rsprox.shared.property.regular.CoordGridProperty
 import net.rsprox.shared.property.regular.EnumProperty
 import net.rsprox.shared.property.regular.GroupProperty
 import net.rsprox.shared.property.regular.IdentifiedNpcProperty
@@ -82,14 +81,11 @@ public fun Property.coordGrid(
     x: Int,
     z: Int,
     name: String = "coord",
-): CoordGridProperty {
-    return child(
-        CoordGridProperty(
-            name,
-            level,
-            x,
-            z,
-        ),
+): ScriptVarTypeProperty<*> {
+    return scriptVarType(
+        name,
+        ScriptVarType.COORDGRID,
+        (level and 0x3 shl 28) or (x and 0x3FFF shl 14) or (z and 0x3FFF),
     )
 }
 

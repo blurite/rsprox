@@ -34,7 +34,7 @@ import net.rsprox.shared.property.identifiedNpc
 import net.rsprox.shared.property.identifiedPlayer
 import net.rsprox.shared.property.int
 import net.rsprox.shared.property.namedEnum
-import net.rsprox.shared.property.regular.CoordGridProperty
+import net.rsprox.shared.property.regular.ScriptVarTypeProperty
 import net.rsprox.shared.property.scriptVarType
 import net.rsprox.shared.property.string
 import net.rsprox.shared.property.unidentifiedNpc
@@ -98,7 +98,7 @@ public class BasePlayerInfoTranscriber(
     private fun Property.coordGrid(
         name: String,
         coordGrid: CoordGrid,
-    ): CoordGridProperty {
+    ): ScriptVarTypeProperty<*> {
         return coordGrid(coordGrid.level, coordGrid.x, coordGrid.z, name)
     }
 
