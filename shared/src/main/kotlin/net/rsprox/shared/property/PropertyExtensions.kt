@@ -9,7 +9,6 @@ import net.rsprox.shared.property.filtered.FilteredNamedEnumProperty
 import net.rsprox.shared.property.filtered.FilteredScriptVarTypeProperty
 import net.rsprox.shared.property.filtered.FilteredStringProperty
 import net.rsprox.shared.property.formatted.FormattedIntProperty
-import net.rsprox.shared.property.regular.BooleanProperty
 import net.rsprox.shared.property.regular.EnumProperty
 import net.rsprox.shared.property.regular.GroupProperty
 import net.rsprox.shared.property.regular.IdentifiedNpcProperty
@@ -236,13 +235,8 @@ public fun Property.filteredLong(
 public fun Property.boolean(
     name: String,
     value: Boolean,
-): BooleanProperty {
-    return child(
-        BooleanProperty(
-            name,
-            value,
-        ),
-    )
+): ScriptVarTypeProperty<*> {
+    return scriptVarType(name, ScriptVarType.BOOLEAN, if (value) 1 else 0)
 }
 
 public fun Property.filteredBoolean(
