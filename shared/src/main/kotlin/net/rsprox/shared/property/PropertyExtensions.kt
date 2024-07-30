@@ -2,7 +2,6 @@ package net.rsprox.shared.property
 
 import net.rsprox.shared.BaseVarType
 import net.rsprox.shared.ScriptVarType
-import net.rsprox.shared.property.filtered.FilteredBooleanProperty
 import net.rsprox.shared.property.filtered.FilteredNamedEnumProperty
 import net.rsprox.shared.property.filtered.FilteredScriptVarTypeProperty
 import net.rsprox.shared.property.filtered.FilteredStringProperty
@@ -217,14 +216,8 @@ public fun Property.filteredBoolean(
     name: String,
     value: Boolean,
     filteredValue: Boolean = false,
-): FilteredBooleanProperty {
-    return child(
-        FilteredBooleanProperty(
-            name,
-            value,
-            filteredValue,
-        ),
-    )
+): FilteredScriptVarTypeProperty<*> {
+    return filteredScriptVarType(name, ScriptVarType.BOOLEAN, if (value) 1 else 0, if (filteredValue) 1 else 0)
 }
 
 public fun <V> Property.scriptVarType(
