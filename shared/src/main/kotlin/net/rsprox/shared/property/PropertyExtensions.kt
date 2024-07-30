@@ -3,7 +3,6 @@ package net.rsprox.shared.property
 import net.rsprox.shared.BaseVarType
 import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.property.filtered.FilteredBooleanProperty
-import net.rsprox.shared.property.filtered.FilteredIntProperty
 import net.rsprox.shared.property.filtered.FilteredNamedEnumProperty
 import net.rsprox.shared.property.filtered.FilteredScriptVarTypeProperty
 import net.rsprox.shared.property.filtered.FilteredStringProperty
@@ -188,14 +187,8 @@ public fun Property.filteredInt(
     name: String,
     value: Int,
     filterValue: Int,
-): FilteredIntProperty {
-    return child(
-        FilteredIntProperty(
-            name,
-            value,
-            filterValue,
-        ),
-    )
+): FilteredScriptVarTypeProperty<*> {
+    return filteredScriptVarType(name, ScriptVarType.INT, value, filterValue)
 }
 
 public fun Property.long(
