@@ -13,10 +13,8 @@ import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.util.NopSessionMonitor
-import net.rsprox.shared.property.OmitFilteredPropertyTreeFormatter
-import net.rsprox.shared.property.PropertyFormatterCollection
+import net.rsprox.shared.property.PropertyTreeFormatter
 import net.rsprox.shared.property.RootProperty
-import net.rsprox.shared.property.SymbolDictionary
 import net.rsprox.transcriber.BaseMessageConsumerContainer
 import net.rsprox.transcriber.MessageConsumer
 import java.io.BufferedWriter
@@ -122,15 +120,10 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
 
     private fun createBufferedWriterConsumer(writer: BufferedWriter): MessageConsumer {
         return object : MessageConsumer {
-            val propertyTreeFormatter =
-                OmitFilteredPropertyTreeFormatter(
-                    PropertyFormatterCollection.default(
-                        SymbolDictionary.EMPTY_SYMBOL_DICTIONARY,
-                    ),
-                )
             var lastCycle = -1
 
             override fun consume(
+                formatter: PropertyTreeFormatter,
                 cycle: Int,
                 property: RootProperty<*>,
             ) {
@@ -142,7 +135,7 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
                     writer.write("[$cycle]")
                     writer.newLine()
                 }
-                val result = propertyTreeFormatter.format(property)
+                val result = formatter.format(property)
                 for (line in result) {
                     // Add four space indentation due to the cycle header
                     writer.write("    ")

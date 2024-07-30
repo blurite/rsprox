@@ -1,12 +1,11 @@
 package net.rsprox.transcriber
 
-import net.rsprox.shared.property.OmitFilteredPropertyTreeFormatter
-import net.rsprox.shared.property.PropertyFormatterCollection
+import net.rsprox.shared.property.PropertyTreeFormatter
 import net.rsprox.shared.property.RootProperty
-import net.rsprox.shared.property.SymbolDictionary
 
 public interface MessageConsumer {
     public fun consume(
+        formatter: PropertyTreeFormatter,
         cycle: Int,
         property: RootProperty<*>,
     )
@@ -16,15 +15,10 @@ public interface MessageConsumer {
     public companion object {
         public val STDOUT_CONSUMER: MessageConsumer =
             object : MessageConsumer {
-                val propertyTreeFormatter =
-                    OmitFilteredPropertyTreeFormatter(
-                        PropertyFormatterCollection.default(
-                            SymbolDictionary.EMPTY_SYMBOL_DICTIONARY,
-                        ),
-                    )
                 var lastCycle = -1
 
                 override fun consume(
+                    formatter: PropertyTreeFormatter,
                     cycle: Int,
                     property: RootProperty<*>,
                 ) {
@@ -32,7 +26,7 @@ public interface MessageConsumer {
                         lastCycle = cycle
                         println("[$cycle]")
                     }
-                    val result = propertyTreeFormatter.format(property)
+                    val result = formatter.format(property)
                     for (line in result) {
                         // Add four space indentation due to the cycle header
                         print("    ")
