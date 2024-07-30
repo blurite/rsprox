@@ -13,7 +13,6 @@ import net.rsprox.shared.property.regular.IdentifiedWorldEntityProperty
 import net.rsprox.shared.property.regular.NamedEnumProperty
 import net.rsprox.shared.property.regular.ScriptProperty
 import net.rsprox.shared.property.regular.ScriptVarTypeProperty
-import net.rsprox.shared.property.regular.StringProperty
 import net.rsprox.shared.property.regular.UnidentifiedNpcProperty
 import net.rsprox.shared.property.regular.UnidentifiedPlayerProperty
 import net.rsprox.shared.property.regular.UnidentifiedWorldEntityProperty
@@ -101,13 +100,8 @@ public fun Property.zoneCoordGrid(
 public fun Property.string(
     name: String,
     value: String?,
-): StringProperty {
-    return child(
-        StringProperty(
-            name,
-            value,
-        ),
-    )
+): ScriptVarTypeProperty<*> {
+    return scriptVarType(name, ScriptVarType.STRING, value)
 }
 
 public fun Property.filteredString(
@@ -243,10 +237,10 @@ public fun <V> Property.scriptVarType(
             BaseVarType.STRING -> {
                 child(
                     ScriptVarTypeProperty(
-                        String::class.java,
+                        type(),
                         type,
                         name,
-                        value as String,
+                        value as? String?,
                     ),
                 )
             }
