@@ -14,7 +14,6 @@ import net.rsprox.shared.property.regular.GroupProperty
 import net.rsprox.shared.property.regular.IdentifiedNpcProperty
 import net.rsprox.shared.property.regular.IdentifiedPlayerProperty
 import net.rsprox.shared.property.regular.IdentifiedWorldEntityProperty
-import net.rsprox.shared.property.regular.IntProperty
 import net.rsprox.shared.property.regular.LongProperty
 import net.rsprox.shared.property.regular.NamedEnumProperty
 import net.rsprox.shared.property.regular.ScriptProperty
@@ -169,13 +168,8 @@ public fun Property.varbit(
 public fun Property.int(
     name: String,
     value: Int,
-): IntProperty {
-    return child(
-        IntProperty(
-            name,
-            value,
-        ),
-    )
+): ScriptVarTypeProperty<*> {
+    return scriptVarType(name, ScriptVarType.INT, value)
 }
 
 public fun Property.formattedInt(
