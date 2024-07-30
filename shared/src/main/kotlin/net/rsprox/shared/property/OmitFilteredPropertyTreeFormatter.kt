@@ -2,7 +2,9 @@ package net.rsprox.shared.property
 
 import net.rsprox.shared.property.regular.GroupProperty
 
-public class OmitFilteredPropertyTreeFormatter : PropertyTreeFormatter {
+public class OmitFilteredPropertyTreeFormatter(
+    private val propertyFormatterCollection: PropertyFormatterCollection,
+) : PropertyTreeFormatter {
     override fun format(property: RootProperty<*>): List<String> {
         val builder = StringBuilder()
         builder.append('[').append(property.prot).append("] ")
@@ -64,10 +66,12 @@ public class OmitFilteredPropertyTreeFormatter : PropertyTreeFormatter {
         if (linePrefix != null) {
             builder.append(linePrefix)
         }
+        val formatter = propertyFormatterCollection.getTypedFormatter(property.javaClass)
+        val value = formatter?.format(property) ?: property.value
         builder
             .append(property.propertyName)
             .append('=')
-            .append(property.value)
+            .append(value)
         if (property.children.isNotEmpty()) {
             builder.appendLine()
             builder.append(INDENTATION.repeat(indent + 1))

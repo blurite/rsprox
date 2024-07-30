@@ -338,6 +338,7 @@ public inline fun <reified T> Property.filteredNamedEnum(
 
 public fun Property.identifiedNpc(
     index: Int,
+    id: Int,
     name: String,
     level: Int,
     x: Int,
@@ -348,6 +349,7 @@ public fun Property.identifiedNpc(
         IdentifiedNpcProperty(
             propertyName,
             index,
+            id,
             name,
             level,
             x,

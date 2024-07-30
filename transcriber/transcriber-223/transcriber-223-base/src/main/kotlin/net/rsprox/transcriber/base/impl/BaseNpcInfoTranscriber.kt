@@ -72,6 +72,7 @@ public class BaseNpcInfoTranscriber(
         return if (npc != null) {
             identifiedNpc(
                 index,
+                npc.id,
                 npc.name ?: "null",
                 npc.coord.level,
                 npc.coord.x,

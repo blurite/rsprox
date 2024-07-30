@@ -14,7 +14,9 @@ import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.util.NopSessionMonitor
 import net.rsprox.shared.property.OmitFilteredPropertyTreeFormatter
+import net.rsprox.shared.property.PropertyFormatterCollection
 import net.rsprox.shared.property.RootProperty
+import net.rsprox.shared.property.SymbolDictionary
 import net.rsprox.transcriber.BaseMessageConsumerContainer
 import net.rsprox.transcriber.MessageConsumer
 import java.io.BufferedWriter
@@ -120,7 +122,12 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
 
     private fun createBufferedWriterConsumer(writer: BufferedWriter): MessageConsumer {
         return object : MessageConsumer {
-            val propertyTreeFormatter = OmitFilteredPropertyTreeFormatter()
+            val propertyTreeFormatter =
+                OmitFilteredPropertyTreeFormatter(
+                    PropertyFormatterCollection.default(
+                        SymbolDictionary.EMPTY_SYMBOL_DICTIONARY,
+                    ),
+                )
             var lastCycle = -1
 
             override fun consume(

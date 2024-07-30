@@ -1,7 +1,9 @@
 package net.rsprox.transcriber
 
 import net.rsprox.shared.property.OmitFilteredPropertyTreeFormatter
+import net.rsprox.shared.property.PropertyFormatterCollection
 import net.rsprox.shared.property.RootProperty
+import net.rsprox.shared.property.SymbolDictionary
 
 public interface MessageConsumer {
     public fun consume(
@@ -14,7 +16,12 @@ public interface MessageConsumer {
     public companion object {
         public val STDOUT_CONSUMER: MessageConsumer =
             object : MessageConsumer {
-                val propertyTreeFormatter = OmitFilteredPropertyTreeFormatter()
+                val propertyTreeFormatter =
+                    OmitFilteredPropertyTreeFormatter(
+                        PropertyFormatterCollection.default(
+                            SymbolDictionary.EMPTY_SYMBOL_DICTIONARY,
+                        ),
+                    )
                 var lastCycle = -1
 
                 override fun consume(

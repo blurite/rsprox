@@ -5,6 +5,7 @@ import net.rsprox.shared.property.ChildProperty
 public class IdentifiedNpcProperty(
     override val propertyName: String,
     public val index: Int,
+    public val id: Int,
     public val npcName: String,
     public val level: Int,
     public val x: Int,
