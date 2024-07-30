@@ -3,7 +3,7 @@ package net.rsprox.shared.property.regular
 import net.rsprox.shared.property.ChildProperty
 import net.rsprox.shared.property.NamedEnum
 
-public class NamedEnumProperty<T>(
+public open class NamedEnumProperty<T>(
     override val propertyName: String,
     override val value: T,
     override val type: Class<T>,
