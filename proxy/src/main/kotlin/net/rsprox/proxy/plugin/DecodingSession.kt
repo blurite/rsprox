@@ -7,7 +7,7 @@ import net.rsprox.protocol.session.AttributeMap
 import net.rsprox.protocol.session.Session
 import net.rsprox.proxy.binary.BinaryBlob
 import net.rsprox.proxy.binary.BinaryStream
-import net.rsprox.proxy.binary.StreamDirection
+import net.rsprox.shared.StreamDirection
 
 public class DecodingSession(
     private val blob: BinaryBlob,

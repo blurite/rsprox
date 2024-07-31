@@ -20,11 +20,11 @@ import net.rsprot.protocol.util.CombinedId
 import net.rsprot.protocol.util.gCombinedId
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.proxy.attributes.INCOMING_BANK_PIN
-import net.rsprox.proxy.binary.StreamDirection
 import net.rsprox.proxy.channel.getBinaryBlob
 import net.rsprox.proxy.channel.getServerToClientStreamCipher
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.worlds.WorldListProvider
+import net.rsprox.shared.StreamDirection
 
 public class ServerGameHandler(
     private val clientChannel: Channel,

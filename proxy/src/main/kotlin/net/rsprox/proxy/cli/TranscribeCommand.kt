@@ -6,13 +6,13 @@ import com.github.michaelbull.logging.InlineLogger
 import net.rsprox.cache.Js5MasterIndex
 import net.rsprox.cache.resolver.HistoricCacheResolver
 import net.rsprox.proxy.binary.BinaryBlob
-import net.rsprox.proxy.binary.StreamDirection
 import net.rsprox.proxy.cache.StatefulCacheProvider
 import net.rsprox.proxy.config.BINARY_PATH
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.util.NopSessionMonitor
+import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.property.PropertyTreeFormatter
 import net.rsprox.shared.property.RootProperty
 import net.rsprox.transcriber.BaseMessageConsumerContainer

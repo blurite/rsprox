@@ -20,6 +20,7 @@ import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.transcriber.LiveTranscriberSession
 import net.rsprox.proxy.util.NopSessionMonitor
 import net.rsprox.shared.SessionMonitor
+import net.rsprox.shared.StreamDirection
 import net.rsprox.transcriber.BaseMessageConsumerContainer
 import net.rsprox.transcriber.MessageConsumer
 import java.net.URL

@@ -8,8 +8,8 @@ import net.rsprot.buffer.extensions.p4
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprox.protocol.game.incoming.decoder.prot.GameClientProt
 import net.rsprox.proxy.attributes.INCOMING_BANK_PIN
-import net.rsprox.proxy.binary.StreamDirection
 import net.rsprox.proxy.channel.getBinaryBlob
+import net.rsprox.shared.StreamDirection
 
 public class ClientGameHandler(
     private val serverChannel: Channel,

@@ -2,6 +2,7 @@ package net.rsprox.proxy.binary
 
 import io.netty.buffer.ByteBuf
 import net.rsprot.protocol.Prot
+import net.rsprox.shared.StreamDirection
 
 public data class BinaryPacket(
     public val epochTimeMillis: Long,

@@ -5,8 +5,8 @@ import io.netty.buffer.ByteBuf
 import net.rsprot.buffer.extensions.toByteArray
 import net.rsprox.protocol.exceptions.DecodeError
 import net.rsprox.protocol.session.Session
-import net.rsprox.proxy.binary.StreamDirection
 import net.rsprox.proxy.plugin.DecodingSession
+import net.rsprox.shared.StreamDirection
 import net.rsprox.transcriber.TranscriberRunner
 import java.util.Queue
 import java.util.concurrent.ConcurrentLinkedQueue
