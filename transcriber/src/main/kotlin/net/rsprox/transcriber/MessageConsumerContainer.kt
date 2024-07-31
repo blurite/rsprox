@@ -1,11 +1,14 @@
 package net.rsprox.transcriber
 
-public interface MessageConsumerContainer {
-    public fun publish(message: List<String>)
+import net.rsprox.shared.property.PropertyTreeFormatter
+import net.rsprox.shared.property.RootProperty
 
-    public fun publish(message: String) {
-        publish(listOf(message))
-    }
+public interface MessageConsumerContainer {
+    public fun publish(
+        formatter: PropertyTreeFormatter,
+        cycle: Int,
+        property: RootProperty<*>,
+    )
 
     public fun close()
 }

@@ -2,6 +2,9 @@ package net.rsprox.transcriber.base
 
 import net.rsprox.cache.api.CacheProvider
 import net.rsprox.shared.SessionMonitor
+import net.rsprox.shared.property.OmitFilteredPropertyTreeFormatter
+import net.rsprox.shared.property.PropertyFormatterCollection
+import net.rsprox.shared.property.SymbolDictionary
 import net.rsprox.transcriber.BaseMessageConsumerContainer
 import net.rsprox.transcriber.TranscriberPlugin
 import net.rsprox.transcriber.TranscriberProvider
@@ -15,13 +18,19 @@ public class BaseTranscriberProvider : TranscriberProvider {
         monitor: SessionMonitor<*>,
     ): TranscriberRunner {
         val stateTracker = StateTracker()
-        val monitoredContainer = MonitoredMessageConsumerContainer(container, stateTracker, monitor)
+        val formatter =
+            OmitFilteredPropertyTreeFormatter(
+                PropertyFormatterCollection.default(
+                    SymbolDictionary.EMPTY_SYMBOL_DICTIONARY,
+                ),
+            )
         return TranscriberPlugin(
             BaseTranscriber(
-                monitoredContainer,
                 cacheProvider,
                 monitor,
                 stateTracker,
+                container,
+                formatter,
             ),
         )
     }

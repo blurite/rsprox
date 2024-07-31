@@ -1,17 +1,23 @@
 package net.rsprox.transcriber
 
 import com.github.michaelbull.logging.InlineLogger
+import net.rsprox.shared.property.PropertyTreeFormatter
+import net.rsprox.shared.property.RootProperty
 
-public class BaseMessageConsumerContainer(
+public open class BaseMessageConsumerContainer(
     private val consumers: List<MessageConsumer>,
 ) : MessageConsumerContainer {
-    override fun publish(message: List<String>) {
+    override fun publish(
+        formatter: PropertyTreeFormatter,
+        cycle: Int,
+        property: RootProperty<*>,
+    ) {
         for (consumer in consumers) {
             try {
-                consumer.consume(message)
+                consumer.consume(formatter, cycle, property)
             } catch (e: Exception) {
                 logger.error(e) {
-                    "Unable to publish message: $message"
+                    "Unable to publish message: $property"
                 }
             }
         }

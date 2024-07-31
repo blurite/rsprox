@@ -4,6 +4,8 @@ import net.rsprot.protocol.Prot
 import net.rsprot.protocol.util.CombinedId
 import net.rsprox.cache.api.type.VarBitType
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
+import net.rsprox.shared.property.ChildProperty
+import net.rsprox.shared.property.RootProperty
 
 public class StateTracker {
     public var cycle: Int = 0
@@ -18,6 +20,20 @@ public class StateTracker {
     public var toplevelInterface: Int = -1
     private val cachedVarps: IntArray = IntArray(10_000)
     private lateinit var varpToVarbitsMap: Map<Int, List<VarBitType>>
+    public lateinit var root: RootProperty<*>
+    private val cachedMoveSpeeds: IntArray =
+        IntArray(2048) {
+            -1
+        }
+    private val tempMoveSpeeds: MutableMap<Int, Int> = HashMap()
+
+    public fun setRoot() {
+        this.root =
+            object : RootProperty<Prot> {
+                override val prot: Prot = currentProt
+                override val children: MutableList<ChildProperty<*>> = mutableListOf()
+            }
+    }
 
     public fun createWorld(id: Int): World {
         val newWorld = World(id)
@@ -133,6 +149,28 @@ public class StateTracker {
 
     public fun getAssociatedVarbits(basevar: Int): List<VarBitType> {
         return this.varpToVarbitsMap[basevar] ?: emptyList()
+    }
+
+    public fun setCachedMoveSpeed(
+        index: Int,
+        speed: Int,
+    ) {
+        this.cachedMoveSpeeds[index] = speed
+    }
+
+    public fun setTempMoveSpeed(
+        index: Int,
+        speed: Int,
+    ) {
+        this.tempMoveSpeeds[index] = speed
+    }
+
+    public fun clearTempMoveSpeeds() {
+        this.tempMoveSpeeds.clear()
+    }
+
+    public fun getMoveSpeed(index: Int): Int {
+        return tempMoveSpeeds[index] ?: cachedMoveSpeeds[index]
     }
 
     public companion object {
