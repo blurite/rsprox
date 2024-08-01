@@ -137,6 +137,8 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjEnabledOps
 import net.rsprox.protocol.game.outgoing.model.zone.payload.SoundArea
 import net.rsprox.protocol.reflection.ReflectionCheck
 import net.rsprox.shared.ScriptVarType
+import net.rsprox.shared.filters.PropertyFilterSet
+import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.property.ChildProperty
 import net.rsprox.shared.property.NamedEnum
 import net.rsprox.shared.property.Property
@@ -184,9 +186,12 @@ import java.util.concurrent.TimeUnit
 public class BaseServerPacketTranscriber(
     private val stateTracker: StateTracker,
     private val cache: Cache,
+    private val filterSetStore: PropertyFilterSetStore,
 ) : ServerPacketTranscriber {
     private val root: RootProperty<*>
         get() = stateTracker.root
+    private val filters: PropertyFilterSet
+        get() = filterSetStore.getActive()
 
     private fun Property.npc(index: Int): ChildProperty<*> {
         val npc = stateTracker.getActiveWorld().getNpcOrNull(index)

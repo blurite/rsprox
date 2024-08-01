@@ -16,6 +16,7 @@ import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.util.ChannelConnectionHandler
 import net.rsprox.proxy.worlds.LocalHostAddress
 import net.rsprox.proxy.worlds.WorldListProvider
+import net.rsprox.shared.filters.PropertyFilterSetStore
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
 import java.net.Inet4Address
 import java.net.InetSocketAddress
@@ -27,6 +28,7 @@ public class ClientLoginInitializer(
     private val pluginLoader: PluginLoader,
     private val binaryWriteInterval: Int,
     private val connections: ProxyConnectionContainer,
+    private val filters: PropertyFilterSetStore,
 ) : ChannelInitializer<Channel>() {
     override fun initChannel(clientChannel: Channel) {
         val localHostAddress = getLocalHostAddress(clientChannel)
@@ -70,6 +72,7 @@ public class ClientLoginInitializer(
                         worldListProvider,
                         pluginLoader,
                         connections,
+                        filters,
                     ),
                 )
                 clientChannel.pipeline().addLast(ChannelConnectionHandler(serverChannel))

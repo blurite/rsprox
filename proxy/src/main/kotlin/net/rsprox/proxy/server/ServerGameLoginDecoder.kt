@@ -30,6 +30,7 @@ import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.server.prot.GameServerProtProvider
 import net.rsprox.proxy.util.UserUid
 import net.rsprox.proxy.worlds.WorldListProvider
+import net.rsprox.shared.filters.PropertyFilterSetStore
 
 public class ServerGameLoginDecoder(
     private val clientChannel: Channel,
@@ -37,6 +38,7 @@ public class ServerGameLoginDecoder(
     private val worldListProvider: WorldListProvider,
     private val pluginLoader: PluginLoader,
     private val connections: ProxyConnectionContainer,
+    private val filters: PropertyFilterSetStore,
 ) : ByteToMessageDecoder() {
     private enum class State {
         AWAITING_GAME_CONNECTION_REPLY,
@@ -247,7 +249,7 @@ public class ServerGameLoginDecoder(
             val port = clientChannel.getPort()
             val sessionMonitor = connections.getSessionMonitor(port)
             sessionMonitor.onLogin(header)
-            val blob = BinaryBlob(header, stream, binaryWriteInterval, sessionMonitor)
+            val blob = BinaryBlob(header, stream, binaryWriteInterval, sessionMonitor, filters)
             blob.hookLiveTranscriber(key, pluginLoader)
             val serverChannel = ctx.channel()
             connections.addConnection(

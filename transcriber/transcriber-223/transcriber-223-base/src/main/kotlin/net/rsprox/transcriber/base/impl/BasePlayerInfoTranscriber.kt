@@ -19,6 +19,8 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Spotanim
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
 import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.SessionMonitor
+import net.rsprox.shared.filters.PropertyFilterSet
+import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.property.ChildProperty
 import net.rsprox.shared.property.NamedEnum
 import net.rsprox.shared.property.Property
@@ -49,9 +51,12 @@ import net.rsprox.transcriber.state.StateTracker
 public class BasePlayerInfoTranscriber(
     private val stateTracker: StateTracker,
     private val monitor: SessionMonitor<*>,
+    private val filterSetStore: PropertyFilterSetStore,
 ) : PlayerInfoTranscriber {
     private val root: RootProperty<*>
         get() = stateTracker.root
+    private val filters: PropertyFilterSet
+        get() = filterSetStore.getActive()
 
     private fun Property.entity(ambiguousIndex: Int): ChildProperty<*> {
         return if (ambiguousIndex > 0xFFFF) {

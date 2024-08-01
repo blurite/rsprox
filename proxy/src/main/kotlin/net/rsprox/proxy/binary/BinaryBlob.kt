@@ -21,6 +21,7 @@ import net.rsprox.proxy.transcriber.LiveTranscriberSession
 import net.rsprox.proxy.util.NopSessionMonitor
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.StreamDirection
+import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.transcriber.BaseMessageConsumerContainer
 import net.rsprox.transcriber.MessageConsumer
 import java.net.URL
@@ -37,6 +38,7 @@ public data class BinaryBlob(
     public val stream: BinaryStream,
     public val writeIntervalSeconds: Int,
     private val monitor: SessionMonitor<BinaryHeader>,
+    private val filters: PropertyFilterSetStore,
 ) {
     private var lastWrite = TimeSource.Monotonic.markNow()
     private var lastWriteSize = 0
@@ -189,7 +191,13 @@ public data class BinaryBlob(
             val consumers = BaseMessageConsumerContainer(listOf(MessageConsumer.STDOUT_CONSUMER))
             val session = Session(header.localPlayerIndex, AttributeMap())
             val decodingSession = DecodingSession(this, latestPlugin)
-            val runner = transcriberProvider.provide(consumers, provider, monitor)
+            val runner =
+                transcriberProvider.provide(
+                    consumers,
+                    provider,
+                    monitor,
+                    filters,
+                )
             this.liveSession =
                 LiveTranscriberSession(
                     session,
@@ -207,7 +215,10 @@ public data class BinaryBlob(
         private const val PORT: Int = 43_594
         private val logger = InlineLogger()
 
-        public fun decode(path: Path): BinaryBlob {
+        public fun decode(
+            path: Path,
+            filters: PropertyFilterSetStore,
+        ): BinaryBlob {
             val file = path.toFile()
             if (!file.isFile) {
                 throw IllegalArgumentException("Path does not point to a file: $path")
@@ -215,7 +226,7 @@ public data class BinaryBlob(
             val buffer = Unpooled.wrappedBuffer(file.readBytes())
             val header = BinaryHeader.decode(buffer.toJagByteBuf())
             val stream = BinaryStream(buffer.slice())
-            return BinaryBlob(header, stream, 0, NopSessionMonitor)
+            return BinaryBlob(header, stream, 0, NopSessionMonitor, filters)
         }
     }
 }

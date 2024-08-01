@@ -26,6 +26,8 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Sequence
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
 import net.rsprox.shared.ScriptVarType
+import net.rsprox.shared.filters.PropertyFilterSet
+import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.property.ChildProperty
 import net.rsprox.shared.property.NamedEnum
 import net.rsprox.shared.property.Property
@@ -55,9 +57,12 @@ import net.rsprox.transcriber.state.StateTracker
 public class BaseNpcInfoTranscriber(
     private val stateTracker: StateTracker,
     private val cache: Cache,
+    private val filterSetStore: PropertyFilterSetStore,
 ) : NpcInfoTranscriber {
     private val root: RootProperty<*>
         get() = stateTracker.root
+    private val filters: PropertyFilterSet
+        get() = filterSetStore.getActive()
 
     private fun Property.entity(ambiguousIndex: Int): ChildProperty<*> {
         return if (ambiguousIndex > 0xFFFF) {

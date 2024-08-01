@@ -67,6 +67,8 @@ import net.rsprox.protocol.game.incoming.model.social.IgnoreListAdd
 import net.rsprox.protocol.game.incoming.model.social.IgnoreListDel
 import net.rsprox.protocol.reflection.ReflectionCheck
 import net.rsprox.shared.ScriptVarType
+import net.rsprox.shared.filters.PropertyFilterSet
+import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.property.ChildProperty
 import net.rsprox.shared.property.NamedEnum
 import net.rsprox.shared.property.Property
@@ -99,9 +101,12 @@ import java.text.NumberFormat
 @Suppress("SpellCheckingInspection", "DuplicatedCode")
 public open class BaseClientPacketTranscriber(
     private val stateTracker: StateTracker,
+    private val filterSetStore: PropertyFilterSetStore,
 ) : ClientPacketTranscriber {
     private val root: RootProperty<*>
         get() = stateTracker.root
+    private val filters: PropertyFilterSet
+        get() = filterSetStore.getActive()
 
     private fun Property.npc(index: Int): ChildProperty<*> {
         val npc = stateTracker.getActiveWorld().getNpcOrNull(index)

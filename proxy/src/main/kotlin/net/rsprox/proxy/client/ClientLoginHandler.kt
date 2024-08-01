@@ -35,6 +35,7 @@ import net.rsprox.proxy.server.ServerRelayHandler
 import net.rsprox.proxy.server.prot.LoginServerProtId
 import net.rsprox.proxy.server.prot.LoginServerProtProvider
 import net.rsprox.proxy.worlds.WorldListProvider
+import net.rsprox.shared.filters.PropertyFilterSetStore
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
 
 public class ClientLoginHandler(
@@ -44,6 +45,7 @@ public class ClientLoginHandler(
     private val worldListProvider: WorldListProvider,
     private val pluginLoader: PluginLoader,
     private val connections: ProxyConnectionContainer,
+    private val filters: PropertyFilterSetStore,
 ) : SimpleChannelInboundHandler<ClientPacket<LoginClientProt>>() {
     override fun channelRead0(
         ctx: ChannelHandlerContext,
@@ -232,6 +234,7 @@ public class ClientLoginHandler(
                 worldListProvider,
                 pluginLoader,
                 connections,
+                filters,
             ),
         )
         pipeline.addLastWithName(ServerRelayHandler(ctx.channel()))

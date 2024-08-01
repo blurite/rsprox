@@ -8,6 +8,8 @@ import net.rsprox.cache.resolver.HistoricCacheResolver
 import net.rsprox.proxy.binary.BinaryBlob
 import net.rsprox.proxy.cache.StatefulCacheProvider
 import net.rsprox.proxy.config.BINARY_PATH
+import net.rsprox.proxy.config.FILTERS_DIRECTORY
+import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.proxy.plugin.PluginLoader
@@ -69,7 +71,8 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
         pluginLoader: PluginLoader,
         statefulCacheProvider: StatefulCacheProvider,
     ) {
-        val binary = BinaryBlob.decode(binaryPath)
+        val filters = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY)
+        val binary = BinaryBlob.decode(binaryPath, filters)
         statefulCacheProvider.update(
             Js5MasterIndex.trimmed(
                 binary.header.revision,
@@ -86,6 +89,7 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
                 consumers,
                 statefulCacheProvider,
                 NopSessionMonitor,
+                filters,
             )
 
         writer.appendLine("------------------")

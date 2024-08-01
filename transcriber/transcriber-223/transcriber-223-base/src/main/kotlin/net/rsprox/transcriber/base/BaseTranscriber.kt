@@ -5,6 +5,7 @@ import net.rsprox.cache.api.Cache
 import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.shared.SessionMonitor
+import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.property.PropertyTreeFormatter
 import net.rsprox.transcriber.MessageConsumerContainer
 import net.rsprox.transcriber.Transcriber
@@ -24,19 +25,26 @@ public class BaseTranscriber private constructor(
     override val monitor: SessionMonitor<*>,
     private val consumers: MessageConsumerContainer,
     private val formatter: PropertyTreeFormatter,
+    private val filterSetStore: PropertyFilterSetStore,
 ) : Transcriber,
-    ClientPacketTranscriber by BaseClientPacketTranscriber(stateTracker),
+    ClientPacketTranscriber by BaseClientPacketTranscriber(
+        stateTracker,
+        filterSetStore,
+    ),
     ServerPacketTranscriber by BaseServerPacketTranscriber(
         stateTracker,
         cacheProvider.get(),
+        filterSetStore,
     ),
     PlayerInfoTranscriber by BasePlayerInfoTranscriber(
         stateTracker,
         monitor,
+        filterSetStore,
     ),
     NpcInfoTranscriber by BaseNpcInfoTranscriber(
         stateTracker,
         cacheProvider.get(),
+        filterSetStore,
     ) {
     public constructor(
         cacheProvider: CacheProvider,
@@ -44,12 +52,14 @@ public class BaseTranscriber private constructor(
         stateTracker: StateTracker,
         consumers: MessageConsumerContainer,
         formatter: PropertyTreeFormatter,
+        filters: PropertyFilterSetStore,
     ) : this(
         stateTracker,
         cacheProvider,
         monitor,
         consumers,
         formatter,
+        filters,
     )
 
     override val cache: Cache = cacheProvider.get()

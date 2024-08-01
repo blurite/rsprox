@@ -426,6 +426,7 @@ public class ProxyService(
                 pluginLoader,
                 properties.getProperty(BINARY_WRITE_INTERVAL_SECONDS),
                 connections,
+                filterSetStore,
             )
         val timeoutSeconds = properties.getProperty(BIND_TIMEOUT_SECONDS).toLong()
         serverBootstrap
