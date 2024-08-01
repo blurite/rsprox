@@ -208,9 +208,11 @@ public class BasePlayerInfoTranscriber(
 
     private fun logPlayerInfo(message: PlayerInfo) {
         if (!filters[PropertyFilter.PLAYER_INFO]) return omit()
+        val localPlayerOnly = filters[PropertyFilter.PLAYER_INFO_LOCAL_PLAYER_ONLY]
         val group =
             root.group {
                 for ((index, update) in message.updates) {
+                    if (localPlayerOnly && index != stateTracker.localPlayerIndex) continue
                     when (update) {
                         is PlayerUpdateType.LowResolutionMovement, PlayerUpdateType.LowResolutionIdle -> {
                             // no-op
