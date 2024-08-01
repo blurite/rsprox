@@ -19,6 +19,7 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Spotanim
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
 import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.SessionMonitor
+import net.rsprox.shared.filters.PropertyFilter
 import net.rsprox.shared.filters.PropertyFilterSet
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.property.ChildProperty
@@ -57,6 +58,10 @@ public class BasePlayerInfoTranscriber(
         get() = checkNotNull(stateTracker.root)
     private val filters: PropertyFilterSet
         get() = filterSetStore.getActive()
+
+    private fun omit() {
+        stateTracker.deleteRoot()
+    }
 
     private fun Property.entity(ambiguousIndex: Int): ChildProperty<*> {
         return if (ambiguousIndex > 0xFFFF) {
@@ -202,6 +207,7 @@ public class BasePlayerInfoTranscriber(
     }
 
     private fun logPlayerInfo(message: PlayerInfo) {
+        if (!filters[PropertyFilter.PLAYER_INFO]) return omit()
         val group =
             root.group {
                 for ((index, update) in message.updates) {
@@ -237,8 +243,10 @@ public class BasePlayerInfoTranscriber(
                             }
                         }
                         is PlayerUpdateType.HighResolutionToLowResolution -> {
-                            group("DEL") {
-                                player(index)
+                            if (filters[PropertyFilter.PLAYER_REMOVAL]) {
+                                group("DEL") {
+                                    player(index)
+                                }
                             }
                         }
                         is PlayerUpdateType.LowResolutionToHighResolution -> {
@@ -255,6 +263,9 @@ public class BasePlayerInfoTranscriber(
         // If no children were added to the root group, it means no players are being updated
         // In this case, remove the empty line that the group is generating
         if (children.isEmpty()) {
+            if (filters[PropertyFilter.PLAYER_INFO_OMIT_EMPTY]) {
+                return omit()
+            }
             root.children.clear()
             return
         }
@@ -270,64 +281,90 @@ public class BasePlayerInfoTranscriber(
         for (info in extendedInfo) {
             when (info) {
                 is ChatExtendedInfo -> {
-                    group("CHAT") {
-                        appendChatExtendedInfo(info)
+                    if (filters[PropertyFilter.PLAYER_CHAT]) {
+                        group("CHAT") {
+                            appendChatExtendedInfo(info)
+                        }
                     }
                 }
                 is FaceAngleExtendedInfo -> {
-                    group("FACE_ANGLE") {
-                        appendFaceAngleExtendedInfo(info)
+                    if (filters[PropertyFilter.PLAYER_FACE_ANGLE]) {
+                        group("FACE_ANGLE") {
+                            appendFaceAngleExtendedInfo(info)
+                        }
                     }
                 }
                 is MoveSpeedExtendedInfo -> {
-                    group("MOVE_SPEED") {
-                        appendMoveSpeedExtendedInfo(info)
+                    if (filters[PropertyFilter.PLAYER_MOVE_SPEED]) {
+                        group("MOVE_SPEED") {
+                            appendMoveSpeedExtendedInfo(info)
+                        }
                     }
                 }
                 is TemporaryMoveSpeedExtendedInfo -> {
-                    group("TEMP_MOVE_SPEED") {
-                        appendTemporaryMoveSpeedExtendedInfo(info)
+                    if (filters[PropertyFilter.PLAYER_MOVE_SPEED]) {
+                        group("TEMP_MOVE_SPEED") {
+                            appendTemporaryMoveSpeedExtendedInfo(info)
+                        }
                     }
                 }
                 is NameExtrasExtendedInfo -> {
-                    group("NAME_EXTRAS") {
-                        appendNameExtrasExtendedInfo(info)
+                    if (filters[PropertyFilter.PLAYER_NAME_EXTRAS]) {
+                        group("NAME_EXTRAS") {
+                            appendNameExtrasExtendedInfo(info)
+                        }
                     }
                 }
                 is SayExtendedInfo -> {
-                    group("SAY") {
-                        appendSayExtendedInfo(info)
+                    if (filters[PropertyFilter.PLAYER_SAY]) {
+                        group("SAY") {
+                            appendSayExtendedInfo(info)
+                        }
                     }
                 }
                 is SequenceExtendedInfo -> {
-                    group("SEQUENCE") {
-                        appendSequenceExtendedInfo(info)
+                    if (filters[PropertyFilter.PLAYER_SEQUENCE]) {
+                        group("SEQUENCE") {
+                            appendSequenceExtendedInfo(info)
+                        }
                     }
                 }
                 is ExactMoveExtendedInfo -> {
-                    group("EXACTMOVE") {
-                        appendExactMoveExtendedInfo(player, info)
+                    if (filters[PropertyFilter.PLAYER_EXACTMOVE]) {
+                        group("EXACTMOVE") {
+                            appendExactMoveExtendedInfo(player, info)
+                        }
                     }
                 }
                 is HitExtendedInfo -> {
-                    appendHitExtendedInfo(info)
+                    if (filters[PropertyFilter.PLAYER_HITS]) {
+                        appendHitExtendedInfo(info)
+                    }
                 }
                 is TintingExtendedInfo -> {
-                    group("TINTING") {
-                        appendTintingExtendedInfo(info)
+                    if (filters[PropertyFilter.PLAYER_TINTING]) {
+                        group("TINTING") {
+                            appendTintingExtendedInfo(info)
+                        }
                     }
                 }
                 is SpotanimExtendedInfo -> {
-                    appendSpotanimExtendedInfo(info)
+                    if (filters[PropertyFilter.PLAYER_SPOTANIMS]) {
+                        appendSpotanimExtendedInfo(info)
+                    }
                 }
                 is FacePathingEntityExtendedInfo -> {
-                    group("FACE_PATHINGENTITY") {
-                        appendFacePathingEntityExtendedInfo(info)
+                    if (filters[PropertyFilter.PLAYER_FACE_PATHINGENTITY]) {
+                        group("FACE_PATHINGENTITY") {
+                            appendFacePathingEntityExtendedInfo(info)
+                        }
                     }
                 }
                 is AppearanceExtendedInfo -> {
-                    group("APPEARANCE") {
-                        appendAppearanceExtendedInfo(info)
+                    if (filters[PropertyFilter.PLAYER_APPEARANCE]) {
+                        group("APPEARANCE") {
+                            appendAppearanceExtendedInfo(info)
+                        }
                     }
                 }
                 else -> error("Unknown extended info: $info")
@@ -484,53 +521,58 @@ public class BasePlayerInfoTranscriber(
     }
 
     private fun Property.appendAppearanceExtendedInfo(info: AppearanceExtendedInfo) {
-        group("DETAILS") {
-            string("name", info.name)
-            int("combatlevel", info.combatLevel)
-            filteredInt("skilllevel", info.skillLevel, 0)
-            int("gender", info.gender)
-            int("textgender", info.textGender)
-        }
-        val statusGroup =
-            group("STATUS") {
-                filteredBoolean("hidden", info.hidden)
-                filteredInt("skullicon", info.skullIcon, -1)
-                filteredInt("overheadicon", info.overheadIcon, -1)
-                filteredScriptVarType("npc", ScriptVarType.NPC, info.transformedNpcId, -1)
+        if (filters[PropertyFilter.PLAYER_APPEARANCE_DETAILS]) {
+            group("DETAILS") {
+                string("name", info.name)
+                int("combatlevel", info.combatLevel)
+                filteredInt("skilllevel", info.skillLevel, 0)
+                int("gender", info.gender)
+                int("textgender", info.textGender)
             }
-        if (statusGroup.children.isEmpty()) {
-            children.removeLast()
+        }
+        if (filters[PropertyFilter.PLAYER_APPEARANCE_STATUS]) {
+            val statusGroup =
+                group("STATUS") {
+                    filteredBoolean("hidden", info.hidden)
+                    filteredInt("skullicon", info.skullIcon, -1)
+                    filteredInt("overheadicon", info.overheadIcon, -1)
+                    filteredScriptVarType("npc", ScriptVarType.NPC, info.transformedNpcId, -1)
+                }
+            if (statusGroup.children.isEmpty()) {
+                children.removeLast()
+            }
         }
         if (info.transformedNpcId == -1) {
-            group("EQUIPMENT") {
-                for ((index, value) in info.identKit.withIndex()) {
-                    if (value >= 512) {
-                        val pos = WearPos.entries.first { it.id == index }
-                        group {
-                            namedEnum("wearpos", pos)
-                            scriptVarType("id", ScriptVarType.OBJ, value - 512)
+            if (filters[PropertyFilter.PLAYER_APPEARANCE_EQUIPMENT]) {
+                group("EQUIPMENT") {
+                    for ((index, value) in info.identKit.withIndex()) {
+                        if (value >= 512) {
+                            val pos = WearPos.entries.first { it.id == index }
+                            group {
+                                namedEnum("wearpos", pos)
+                                scriptVarType("id", ScriptVarType.OBJ, value - 512)
+                            }
                         }
                     }
                 }
             }
-            val identKit = IntArray(info.identKit.size)
-            group("IDENTKIT") {
-                for ((index, value) in info.identKit.withIndex()) {
-                    if (value in 256..<512) {
-                        identKit[index] = value
-                        val pos = WearPos.entries.first { it.id == index }
-                        group {
-                            namedEnum("wearpos", pos)
-                            scriptVarType("id", ScriptVarType.IDKIT, value - 256)
+            if (filters[PropertyFilter.PLAYER_APPEARANCE_IDENTKIT]) {
+                group("IDENTKIT") {
+                    for ((index, value) in info.identKit.withIndex()) {
+                        if (value in 256..<512) {
+                            val pos = WearPos.entries.first { it.id == index }
+                            group {
+                                namedEnum("wearpos", pos)
+                                scriptVarType("id", ScriptVarType.IDKIT, value - 256)
+                            }
                         }
                     }
                 }
             }
-            if (!identKit.contentEquals(info.interfaceIdentKit)) {
+            if (filters[PropertyFilter.PLAYER_APPEARANCE_IF_IDENTKIT]) {
                 group("INTERFACE_IDENTKIT") {
                     for ((index, value) in info.interfaceIdentKit.withIndex()) {
                         if (value in 256..<512) {
-                            identKit[index] = value
                             val pos = WearPos.entries.first { it.id == index }
                             group {
                                 namedEnum("wearpos", pos)
@@ -541,58 +583,66 @@ public class BasePlayerInfoTranscriber(
                 }
             }
         }
-        group("COLOURS") {
-            for ((index, value) in info.colours.withIndex()) {
-                int("colour$index", value)
+        if (filters[PropertyFilter.PLAYER_APPEARANCE_COLOURS]) {
+            group("COLOURS") {
+                for ((index, value) in info.colours.withIndex()) {
+                    int("colour$index", value)
+                }
             }
         }
-        group("BAS") {
-            scriptVarType("ready", ScriptVarType.SEQ, info.readyAnim.maxUShortToMinusOne())
-            scriptVarType("turn", ScriptVarType.SEQ, info.turnAnim.maxUShortToMinusOne())
-            scriptVarType("walk", ScriptVarType.SEQ, info.walkAnim.maxUShortToMinusOne())
-            scriptVarType("walkback", ScriptVarType.SEQ, info.walkAnimBack.maxUShortToMinusOne())
-            scriptVarType("walkleft", ScriptVarType.SEQ, info.walkAnimLeft.maxUShortToMinusOne())
-            scriptVarType("walkright", ScriptVarType.SEQ, info.walkAnimRight.maxUShortToMinusOne())
-            scriptVarType("run", ScriptVarType.SEQ, info.runAnim.maxUShortToMinusOne())
+        if (filters[PropertyFilter.PLAYER_APPEARANCE_BAS]) {
+            group("BAS") {
+                scriptVarType("ready", ScriptVarType.SEQ, info.readyAnim.maxUShortToMinusOne())
+                scriptVarType("turn", ScriptVarType.SEQ, info.turnAnim.maxUShortToMinusOne())
+                scriptVarType("walk", ScriptVarType.SEQ, info.walkAnim.maxUShortToMinusOne())
+                scriptVarType("walkback", ScriptVarType.SEQ, info.walkAnimBack.maxUShortToMinusOne())
+                scriptVarType("walkleft", ScriptVarType.SEQ, info.walkAnimLeft.maxUShortToMinusOne())
+                scriptVarType("walkright", ScriptVarType.SEQ, info.walkAnimRight.maxUShortToMinusOne())
+                scriptVarType("run", ScriptVarType.SEQ, info.runAnim.maxUShortToMinusOne())
+            }
         }
-        group("NAME_EXTRAS") {
-            string("beforename", info.beforeName)
-            string("aftername", info.afterName)
-            string("afterlevel", info.afterCombatLevel)
+        if (filters[PropertyFilter.PLAYER_APPEARANCE_NAME_EXTRAS]) {
+            group("NAME_EXTRAS") {
+                string("beforename", info.beforeName)
+                string("aftername", info.afterName)
+                string("afterlevel", info.afterCombatLevel)
+            }
         }
-        val objTypeCustomisationGroup =
-            group("OBJ_TYPE_CUSTOMISATION") {
-                boolean("forcemodelrefresh", info.forceModelRefresh)
-                val customisation = info.objTypeCustomisation
-                if (customisation != null) {
-                    for ((index, cus) in customisation.withIndex()) {
-                        if (cus == null) {
-                            continue
-                        }
-                        val pos = WearPos.entries.first { it.id == index }
-                        namedEnum("wearpos", pos)
-                        val recolIndex1 = cus.recolIndices and 0xF
-                        val recolIndex2 = cus.recolIndices ushr 4 and 0xF
-                        if (recolIndex1 != 0xF) {
-                            int("recol$recolIndex1", cus.recol1)
-                        }
-                        if (recolIndex2 != 0xF) {
-                            int("recol$recolIndex2", cus.recol2)
-                        }
+        if (filters[PropertyFilter.PLAYER_APPEARANCE_OBJ_TYPE_CUSTOMIZATION]) {
+            val objTypeCustomisationGroup =
+                group("OBJ_TYPE_CUSTOMISATION") {
+                    boolean("forcemodelrefresh", info.forceModelRefresh)
+                    val customisation = info.objTypeCustomisation
+                    if (customisation != null) {
+                        for ((index, cus) in customisation.withIndex()) {
+                            if (cus == null) {
+                                continue
+                            }
+                            val pos = WearPos.entries.first { it.id == index }
+                            namedEnum("wearpos", pos)
+                            val recolIndex1 = cus.recolIndices and 0xF
+                            val recolIndex2 = cus.recolIndices ushr 4 and 0xF
+                            if (recolIndex1 != 0xF) {
+                                int("recol$recolIndex1", cus.recol1)
+                            }
+                            if (recolIndex2 != 0xF) {
+                                int("recol$recolIndex2", cus.recol2)
+                            }
 
-                        val retexIndex1 = cus.retexIndices and 0xF
-                        val retexIndex2 = cus.retexIndices ushr 4 and 0xF
-                        if (retexIndex1 != 0xF) {
-                            scriptVarType("retex$retexIndex1", ScriptVarType.TEXTURE, cus.retex1)
-                        }
-                        if (retexIndex2 != 0xF) {
-                            scriptVarType("retex$retexIndex2", ScriptVarType.TEXTURE, cus.retex2)
+                            val retexIndex1 = cus.retexIndices and 0xF
+                            val retexIndex2 = cus.retexIndices ushr 4 and 0xF
+                            if (retexIndex1 != 0xF) {
+                                scriptVarType("retex$retexIndex1", ScriptVarType.TEXTURE, cus.retex1)
+                            }
+                            if (retexIndex2 != 0xF) {
+                                scriptVarType("retex$retexIndex2", ScriptVarType.TEXTURE, cus.retex2)
+                            }
                         }
                     }
                 }
+            if (objTypeCustomisationGroup.children.isEmpty()) {
+                children.removeLast()
             }
-        if (objTypeCustomisationGroup.children.isEmpty()) {
-            children.removeLast()
         }
     }
 }
