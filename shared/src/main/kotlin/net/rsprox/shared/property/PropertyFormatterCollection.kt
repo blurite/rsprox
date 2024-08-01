@@ -64,7 +64,11 @@ public class PropertyFormatterCollection private constructor(
             builder.add<IdentifiedNpcProperty> {
                 val id = dictionary.getScriptVarTypeName(it.id, ScriptVarType.NPC)
                 val col = if (id != null) "id=$id" else "name=${it.npcName}"
-                "(index=${it.index}, $col, coord=(${it.x}, ${it.z}, ${it.level}))"
+                if (it.index == Int.MIN_VALUE) {
+                    "($col, coord=(${it.x}, ${it.z}, ${it.level}))"
+                } else {
+                    "(index=${it.index}, $col, coord=(${it.x}, ${it.z}, ${it.level}))"
+                }
             }
             builder.add<ScriptProperty> {
                 dictionary.getScriptName(it.value) ?: "${it.value}"

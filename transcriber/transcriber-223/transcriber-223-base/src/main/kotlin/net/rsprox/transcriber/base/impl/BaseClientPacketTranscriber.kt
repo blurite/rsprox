@@ -115,9 +115,15 @@ public open class BaseClientPacketTranscriber(
 
     private fun Property.npc(index: Int): ChildProperty<*> {
         val npc = stateTracker.getActiveWorld().getNpcOrNull(index)
+        val finalIndex =
+            if (filters[PropertyFilter.NPC_OMIT_INDEX]) {
+                Int.MIN_VALUE
+            } else {
+                index
+            }
         return if (npc != null) {
             identifiedNpc(
-                index,
+                finalIndex,
                 npc.id,
                 npc.name ?: "null",
                 npc.coord.level,
@@ -131,9 +137,15 @@ public open class BaseClientPacketTranscriber(
 
     private fun Property.player(index: Int): ChildProperty<*> {
         val npc = stateTracker.getPlayerOrNull(index)
+        val finalIndex =
+            if (filters[PropertyFilter.PLAYER_OMIT_INDEX]) {
+                Int.MIN_VALUE
+            } else {
+                index
+            }
         return if (npc != null) {
             identifiedPlayer(
-                index,
+                finalIndex,
                 npc.name,
                 npc.coord.level,
                 npc.coord.x,

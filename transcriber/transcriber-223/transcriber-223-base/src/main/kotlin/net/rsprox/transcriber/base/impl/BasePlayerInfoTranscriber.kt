@@ -73,9 +73,15 @@ public class BasePlayerInfoTranscriber(
 
     private fun Property.npc(index: Int): ChildProperty<*> {
         val npc = stateTracker.getActiveWorld().getNpcOrNull(index)
+        val finalIndex =
+            if (filters[PropertyFilter.NPC_OMIT_INDEX]) {
+                Int.MIN_VALUE
+            } else {
+                index
+            }
         return if (npc != null) {
             identifiedNpc(
-                index,
+                finalIndex,
                 npc.id,
                 npc.name ?: "null",
                 npc.coord.level,
@@ -92,9 +98,15 @@ public class BasePlayerInfoTranscriber(
         name: String = "player",
     ): ChildProperty<*> {
         val player = stateTracker.getPlayerOrNull(index)
+        val finalIndex =
+            if (filters[PropertyFilter.PLAYER_OMIT_INDEX]) {
+                Int.MIN_VALUE
+            } else {
+                index
+            }
         return if (player != null) {
             identifiedPlayer(
-                index,
+                finalIndex,
                 player.name,
                 player.coord.level,
                 player.coord.x,
