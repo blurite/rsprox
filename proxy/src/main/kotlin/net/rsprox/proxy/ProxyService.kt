@@ -13,6 +13,7 @@ import net.rsprox.proxy.config.BINARY_PATH
 import net.rsprox.proxy.config.CACHES_DIRECTORY
 import net.rsprox.proxy.config.CLIENTS_DIRECTORY
 import net.rsprox.proxy.config.CONFIGURATION_PATH
+import net.rsprox.proxy.config.FILTERS_DIRECTORY
 import net.rsprox.proxy.config.JavConfig
 import net.rsprox.proxy.config.ProxyProperties
 import net.rsprox.proxy.config.ProxyProperty.Companion.BINARY_WRITE_INTERVAL_SECONDS
@@ -26,6 +27,7 @@ import net.rsprox.proxy.config.TEMP_CLIENTS_DIRECTORY
 import net.rsprox.proxy.config.registerConnection
 import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.downloader.NativeClientDownloader
+import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.futures.asCompletableFuture
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.plugin.PluginLoader
@@ -40,6 +42,7 @@ import net.rsprox.proxy.worlds.DynamicWorldListProvider
 import net.rsprox.proxy.worlds.World
 import net.rsprox.proxy.worlds.WorldListProvider
 import net.rsprox.shared.SessionMonitor
+import net.rsprox.shared.filters.PropertyFilterSetStore
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
 import java.io.File
 import java.io.IOException
@@ -65,6 +68,7 @@ public class ProxyService(
     private lateinit var worldListProvider: WorldListProvider
     private lateinit var operatingSystem: OperatingSystem
     private lateinit var rsa: RSAPrivateCrtKeyParameters
+    private lateinit var filterSetStore: PropertyFilterSetStore
     private var properties: ProxyProperties by Delegates.notNull()
     private var availablePort: Int = -1
     private val processes: MutableMap<Int, Process> = mutableMapOf()
@@ -77,9 +81,11 @@ public class ProxyService(
         createConfigurationDirectories(CLIENTS_DIRECTORY)
         createConfigurationDirectories(TEMP_CLIENTS_DIRECTORY)
         createConfigurationDirectories(CACHES_DIRECTORY)
+        createConfigurationDirectories(FILTERS_DIRECTORY)
         loadProperties()
         HuffmanProvider.load()
         this.rsa = loadRsa()
+        this.filterSetStore = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY)
         this.availablePort = properties.getProperty(PROXY_PORT_MIN)
         this.bootstrapFactory = BootstrapFactory(allocator, properties)
         val javConfig = loadJavConfig()
