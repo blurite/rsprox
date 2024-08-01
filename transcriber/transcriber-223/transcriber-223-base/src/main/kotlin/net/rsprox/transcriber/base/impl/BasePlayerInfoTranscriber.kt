@@ -458,7 +458,7 @@ public class BasePlayerInfoTranscriber(
     private fun Property.appendHitExtendedInfo(info: HitExtendedInfo) {
         for (hit in info.hits) {
             group("HIT") {
-                int("type", hit.type)
+                scriptVarType("id", ScriptVarType.HITMARK, hit.type)
                 int("value", hit.value)
                 if (hit.soakType != -1) {
                     int("soaktype", hit.soakType)
@@ -469,6 +469,7 @@ public class BasePlayerInfoTranscriber(
         }
         for (headbar in info.headbars) {
             group("HEADBAR") {
+                scriptVarType("id", ScriptVarType.HEADBAR, headbar.type)
                 int("type", headbar.type)
                 if (headbar.startFill == headbar.endFill) {
                     int("fill", headbar.startFill)
