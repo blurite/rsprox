@@ -5,7 +5,6 @@ import com.formdev.flatlaf.extras.components.FlatButton.ButtonType
 import com.formdev.flatlaf.extras.components.FlatLabel
 import com.formdev.flatlaf.extras.components.FlatSeparator
 import com.formdev.flatlaf.extras.components.FlatTabbedPane
-import com.formdev.flatlaf.icons.FlatCheckBoxIcon
 import net.miginfocom.swing.MigLayout
 import net.rsprox.gui.dialogs.Dialogs
 import net.rsprox.proxy.ProxyService
@@ -33,7 +32,7 @@ public class FiltersSidePanel(
 
     init {
         layout = MigLayout("fill, ins panel, wrap 1, hidemode 3", "[grow]", "[][][][grow, fill]")
-        minimumSize = Dimension(210, 0)
+        minimumSize = Dimension(225, 0)
 
         presetsBox.addItemListener { e ->
             if (e.stateChange != ItemEvent.SELECTED) return@addItemListener
@@ -102,8 +101,8 @@ public class FiltersSidePanel(
         add(controlPanel, "growx")
 
         val tabbedGroup = FlatTabbedPane()
-        tabbedGroup.addTab("Server to Client", createFilterPanel(StreamDirection.SERVER_TO_CLIENT))
-        tabbedGroup.addTab("Client to Server", createFilterPanel(StreamDirection.CLIENT_TO_SERVER))
+        tabbedGroup.addTab("Incoming", createFilterPanel(StreamDirection.SERVER_TO_CLIENT))
+        tabbedGroup.addTab("Outgoing", createFilterPanel(StreamDirection.CLIENT_TO_SERVER))
 
         add(tabbedGroup, "grow, pushy")
 
@@ -144,7 +143,7 @@ public class FiltersSidePanel(
         }
         if (oldSelectedItem != null) {
             val selectedIndex = presetsBoxModel.getIndexOf(oldSelectedItem)
-            if (selectedIndex == -1)  {
+            if (selectedIndex == -1) {
                 presetsBox.selectedIndex = presetsBoxModel.size - 1
             } else {
                 presetsBox.selectedIndex = selectedIndex
@@ -163,14 +162,14 @@ public class FiltersSidePanel(
 
     private inner class FiltersPanel(private val direction: StreamDirection) : JPanel() {
         init {
-            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            layout = MigLayout("flowy, ins 0, gap 0", "[grow]", "[]")
 
             val filteredProperties = PropertyFilter.entries
                 .filter { it.direction == direction }
                 .groupBy { it.category }
 
             for ((category, properties) in filteredProperties) {
-                add(createCategoryPanel(category, properties))
+                add(createCategoryPanel(category, properties), "growx")
             }
         }
     }
@@ -214,6 +213,15 @@ public class FiltersSidePanel(
         add(label, BorderLayout.CENTER)
 
         label.addMouseListener(object : MouseAdapter() {
+
+            override fun mouseEntered(e: MouseEvent?) {
+                label.foreground = UIManager.getColor("Label.selectedForeground")
+            }
+
+            override fun mouseExited(e: MouseEvent?) {
+                label.foreground = UIManager.getColor("Label.foreground")
+            }
+
             override fun mouseReleased(e: MouseEvent) {
                 if (SwingUtilities.isLeftMouseButton(e)
                     && e.x >= 0 && e.x <= label.width && e.y >= 0 && e.y <= label.height
