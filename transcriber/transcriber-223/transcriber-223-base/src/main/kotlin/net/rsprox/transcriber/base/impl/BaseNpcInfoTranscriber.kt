@@ -462,7 +462,7 @@ public class BaseNpcInfoTranscriber(
         for ((slot, spotanim) in info.spotanims) {
             group("SPOTANIM") {
                 filteredInt("slot", slot, 0)
-                scriptVarType("id", ScriptVarType.SPOTANIM, spotanim.id)
+                scriptVarType("id", ScriptVarType.SPOTANIM, spotanim.id.maxUShortToMinusOne())
                 filteredInt("delay", spotanim.delay, 0)
                 filteredInt("height", spotanim.height, 0)
             }
@@ -470,7 +470,7 @@ public class BaseNpcInfoTranscriber(
     }
 
     private fun Property.oldSpotanim(info: OldSpotanimExtendedInfo) {
-        scriptVarType("id", ScriptVarType.SPOTANIM, info.id)
+        scriptVarType("id", ScriptVarType.SPOTANIM, info.id.maxUShortToMinusOne())
         filteredInt("delay", info.delay, 0)
         filteredInt("height", info.height, 0)
     }

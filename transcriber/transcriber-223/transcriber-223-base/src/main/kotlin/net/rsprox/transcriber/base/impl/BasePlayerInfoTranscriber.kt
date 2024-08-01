@@ -485,7 +485,7 @@ public class BasePlayerInfoTranscriber(
         for ((slot, spotanim) in info.spotanims) {
             group("SPOTANIM") {
                 filteredInt("slot", slot, 0)
-                scriptVarType("id", ScriptVarType.SPOTANIM, spotanim.id)
+                scriptVarType("id", ScriptVarType.SPOTANIM, spotanim.id.maxUShortToMinusOne())
                 filteredInt("delay", spotanim.delay, 0)
                 filteredInt("height", spotanim.height, 0)
             }
