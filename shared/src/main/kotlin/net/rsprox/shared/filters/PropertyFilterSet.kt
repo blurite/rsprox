@@ -9,6 +9,8 @@ public interface PropertyFilterSet {
 
     public fun setName(name: String)
 
+    public fun deleteBackingFile()
+
     public operator fun get(filter: PropertyFilter): Boolean
 
     public operator fun set(

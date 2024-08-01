@@ -6,6 +6,7 @@ import net.rsprox.shared.filters.PropertyFilter
 import net.rsprox.shared.filters.PropertyFilterSet
 import net.rsprox.shared.filters.ProtCategory
 import java.nio.file.Path
+import kotlin.io.path.deleteIfExists
 import kotlin.io.path.readText
 
 public class DefaultPropertyFilterSet(
@@ -26,6 +27,10 @@ public class DefaultPropertyFilterSet(
 
     override fun setName(name: String) {
         this.name = name
+    }
+
+    override fun deleteBackingFile() {
+        path.deleteIfExists()
     }
 
     override fun get(filter: PropertyFilter): Boolean {

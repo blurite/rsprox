@@ -17,6 +17,9 @@ public class UnmodifiablePropertyFilterSet : PropertyFilterSet {
     override fun setName(name: String) {
     }
 
+    override fun deleteBackingFile() {
+    }
+
     override fun get(filter: PropertyFilter): Boolean {
         return filter.enabled
     }

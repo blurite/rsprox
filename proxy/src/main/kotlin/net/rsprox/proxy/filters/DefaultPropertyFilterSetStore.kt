@@ -25,6 +25,7 @@ public class DefaultPropertyFilterSetStore(
     override fun delete(index: Int): PropertyFilterSet? {
         if (index == 0) throw IllegalArgumentException("Element at index 0 cannot be deleted.")
         val element = filterSets.getOrNull(index) ?: return null
+        element.deleteBackingFile()
         filterSets.removeAt(index)
         return element
     }
