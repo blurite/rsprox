@@ -1,4 +1,4 @@
-package net.rsprox.transcriber.base.symbols
+package net.rsprox.shared.symbols
 
 import java.nio.file.LinkOption
 import java.nio.file.Path

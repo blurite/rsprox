@@ -1,4 +1,4 @@
-package net.rsprox.transcriber.base.symbols
+package net.rsprox.shared.symbols
 
 import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.property.SymbolDictionary

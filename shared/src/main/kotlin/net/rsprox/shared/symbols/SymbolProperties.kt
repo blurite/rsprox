@@ -1,4 +1,4 @@
-package net.rsprox.transcriber.base.symbols
+package net.rsprox.shared.symbols
 
 import com.github.michaelbull.logging.InlineLogger
 import net.rsprox.shared.ScriptVarType
