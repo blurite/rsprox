@@ -266,20 +266,20 @@ public class ProxyService(
             OperatingSystem.WINDOWS -> {
                 val directory = path.parent.toFile()
                 val absolutePath = path.absolutePathString()
-                createProcess(absolutePath, directory, path, port)
+                createProcess(listOf(absolutePath), directory, path, port)
             }
             OperatingSystem.MAC -> {
                 // The patched file is at /.rsprox/clients/osclient.app/Contents/MacOS/osclient-patched
                 // We need to however execute the /.rsprox/clients/osclient.app "file"
                 val rootDirection = path.parent.parent.parent
                 val absolutePath = "${File.separator}${rootDirection.absolutePathString()}"
-                createProcess("open $absolutePath", null, path, port)
+                createProcess(listOf("open", absolutePath), null, path, port)
             }
             OperatingSystem.UNIX -> {
                 try {
                     val directory = path.parent.toFile()
                     val absolutePath = path.absolutePathString()
-                    createProcess("wine $absolutePath", directory, path, port)
+                    createProcess(listOf("wine", absolutePath), directory, path, port)
                 } catch (e: IOException) {
                     throw RuntimeException("wine is required to run the enhanced client on unix", e)
                 }
@@ -289,7 +289,7 @@ public class ProxyService(
     }
 
     private fun createProcess(
-        command: String,
+        command: List<String>,
         directory: File?,
         path: Path,
         port: Int,
