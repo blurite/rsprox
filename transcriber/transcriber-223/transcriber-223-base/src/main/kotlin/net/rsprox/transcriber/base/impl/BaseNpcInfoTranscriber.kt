@@ -197,6 +197,11 @@ public class BaseNpcInfoTranscriber(
                 for ((index, update) in message.updates) {
                     when (update) {
                         is NpcUpdateType.Active -> {
+                            if (filters[PropertyFilter.NPC_INFO_OMIT_NO_EXTENDED_INFO] &&
+                                update.extendedInfo.isEmpty()
+                            ) {
+                                continue
+                            }
                             val movementType =
                                 when (update.moveSpeed) {
                                     MoveSpeed.STATIONARY -> "ACTIVE"
@@ -233,6 +238,11 @@ public class BaseNpcInfoTranscriber(
                             }
                         }
                         is NpcUpdateType.LowResolutionToHighResolution -> {
+                            if (filters[PropertyFilter.NPC_INFO_OMIT_NO_EXTENDED_INFO] &&
+                                update.extendedInfo.isEmpty()
+                            ) {
+                                continue
+                            }
                             group("ADD") {
                                 npc(index)
                                 filteredInt("creationcycle", update.spawnCycle, 0)

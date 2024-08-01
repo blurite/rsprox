@@ -143,6 +143,7 @@ public enum class PropertyFilter(
     PLAYER_INFO_OMIT_EMPTY(SERVER_TO_CLIENT, INFO, "Omit empty player info", true),
     NPC_INFO(SERVER_TO_CLIENT, INFO, "Npc info", true),
     NPC_REMOVAL(SERVER_TO_CLIENT, INFO, "Npc removal", false),
+    NPC_INFO_OMIT_NO_EXTENDED_INFO(SERVER_TO_CLIENT, INFO, "Omit npcs w/o ext. info", true),
     NPC_INFO_OMIT_EMPTY(SERVER_TO_CLIENT, INFO, "Omit empty npc info", true),
     SET_NPC_UPDATE_ORIGIN(SERVER_TO_CLIENT, INFO, "Npc info origin", false),
 
