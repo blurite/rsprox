@@ -40,8 +40,8 @@ public class StateTracker {
         this.root.clear()
     }
 
-    public fun createFakeServerRoot(name: String) {
-        this.root +=
+    public fun createFakeServerRoot(name: String): RootProperty<*> {
+        val property =
             object : RootProperty<Prot> {
                 override val prot: Prot =
                     object : ServerProt {
@@ -54,6 +54,8 @@ public class StateTracker {
                     }
                 override val children: MutableList<ChildProperty<*>> = mutableListOf()
             }
+        this.root += property
+        return property
     }
 
     public fun createWorld(id: Int): World {

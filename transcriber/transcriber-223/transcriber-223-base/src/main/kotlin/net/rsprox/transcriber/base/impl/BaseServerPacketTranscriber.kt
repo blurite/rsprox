@@ -3,6 +3,7 @@ package net.rsprox.transcriber.base.impl
 import net.rsprox.cache.api.Cache
 import net.rsprox.cache.api.type.VarBitType
 import net.rsprox.protocol.common.CoordGrid
+import net.rsprox.protocol.game.outgoing.model.IncomingZoneProt
 import net.rsprox.protocol.game.outgoing.model.camera.CamLookAt
 import net.rsprox.protocol.game.outgoing.model.camera.CamLookAtEasedCoord
 import net.rsprox.protocol.game.outgoing.model.camera.CamMode
@@ -2151,12 +2152,77 @@ public class BaseServerPacketTranscriber(
     override fun updateZonePartialEnclosed(message: UpdateZonePartialEnclosed) {
         stateTracker.getActiveWorld().setActiveZone(message.zoneX, message.zoneZ, message.level)
         root.coordGrid(buildAreaCoordGrid(message.zoneX, message.zoneZ, message.level))
+        val includeZoneHeader = filters[PropertyFilter.ZONE_HEADER]
+        if (!includeZoneHeader) {
+            omit()
+        }
         if (message.packets.isEmpty()) {
-            if (!filters[PropertyFilter.ZONE_HEADER]) return omit()
             return
         }
+        if (includeZoneHeader) {
+            createChildZoneProts(root, message.packets)
+        } else {
+            createFakeZoneProts(message.packets)
+        }
+    }
+
+    private fun createFakeZoneProts(packets: List<IncomingZoneProt>) {
+        for (event in packets) {
+            when (event) {
+                is LocAddChange -> {
+                    val root = stateTracker.createFakeServerRoot("LOC_ADD_CHANGE")
+                    root.buildLocAddChange(event)
+                }
+                is LocAnim -> {
+                    val root = stateTracker.createFakeServerRoot("LOC_ANIM")
+                    root.buildLocAnim(event)
+                }
+                is LocDel -> {
+                    val root = stateTracker.createFakeServerRoot("LOC_DEL")
+                    root.buildLocDel(event)
+                }
+                is LocMerge -> {
+                    val root = stateTracker.createFakeServerRoot("LOC_MERGE")
+                    root.buildLocMerge(event)
+                }
+                is MapAnim -> {
+                    val root = stateTracker.createFakeServerRoot("MAP_ANIM")
+                    root.buildMapAnim(event)
+                }
+                is MapProjAnim -> {
+                    val root = stateTracker.createFakeServerRoot("MAP_PROJANIM")
+                    root.buildMapProjAnim(event)
+                }
+                is ObjAdd -> {
+                    val root = stateTracker.createFakeServerRoot("OBJ_ADD")
+                    root.buildObjAdd(event)
+                }
+                is ObjCount -> {
+                    val root = stateTracker.createFakeServerRoot("OBJ_COUNT")
+                    root.buildObjCount(event)
+                }
+                is ObjDel -> {
+                    val root = stateTracker.createFakeServerRoot("OBJ_DEL")
+                    root.buildObjDel(event)
+                }
+                is ObjEnabledOps -> {
+                    val root = stateTracker.createFakeServerRoot("OBJ_ENABLED_OPS")
+                    root.buildObjEnabledOps(event)
+                }
+                is SoundArea -> {
+                    val root = stateTracker.createFakeServerRoot("SOUND_AREA")
+                    root.buildSoundArea(event)
+                }
+            }
+        }
+    }
+
+    private fun createChildZoneProts(
+        root: RootProperty<*>,
+        packets: List<IncomingZoneProt>,
+    ) {
         root.apply {
-            for (event in message.packets) {
+            for (event in packets) {
                 when (event) {
                     is LocAddChange -> {
                         group("LOC_ADD_CHANGE") {
