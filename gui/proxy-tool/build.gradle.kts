@@ -9,3 +9,11 @@ dependencies {
     implementation(projects.shared)
     implementation(libs.swingx)
 }
+
+tasks.processResources {
+    filesMatching("**/rsprox.properties") {
+        expand(
+            "version" to project.version,
+        )
+    }
+}
