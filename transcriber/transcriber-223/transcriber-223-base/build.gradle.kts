@@ -6,4 +6,5 @@ dependencies {
     implementation(rootProject.libs.rsprot.crypto)
     implementation(projects.cache.cacheApi)
     implementation(projects.shared)
+    implementation(libs.inline.logger)
 }
