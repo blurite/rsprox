@@ -5,14 +5,12 @@ import com.formdev.flatlaf.extras.components.FlatMenuBar
 import com.formdev.flatlaf.util.UIScale
 import io.netty.buffer.UnpooledByteBufAllocator
 import net.miginfocom.swing.MigLayout
+import net.rsprox.gui.dialogs.AboutDialog
 import net.rsprox.gui.sessions.SessionsPanel
 import net.rsprox.gui.sidebar.SideBar
 import net.rsprox.proxy.ProxyService
 import java.awt.Dimension
-import javax.swing.BorderFactory
-import javax.swing.JFrame
-import javax.swing.JMenu
-import javax.swing.JPanel
+import javax.swing.*
 
 public class App {
 
@@ -53,7 +51,16 @@ public class App {
     private fun setupMenuBar() {
         val menuBar = FlatMenuBar()
         menuBar.add(JMenu("RSProx"))
-        menuBar.add(JMenu("Help"))
+        menuBar.add(JMenu("Help").apply {
+            val aboutItem = JMenuItem("About")
+            aboutItem.accelerator = KeyStroke.getKeyStroke("F1")
+            aboutItem.mnemonic = 'A'.code
+            aboutItem.addActionListener {
+                val dialog = AboutDialog(frame)
+                dialog.isVisible = true
+            }
+            add(aboutItem)
+        })
         frame.jMenuBar = menuBar
     }
 
