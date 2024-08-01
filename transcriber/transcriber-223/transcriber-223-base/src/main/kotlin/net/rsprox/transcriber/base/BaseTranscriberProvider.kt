@@ -36,12 +36,13 @@ public class BaseTranscriberProvider : TranscriberProvider {
                     dictionary,
                 ),
             )
+        val monitoredContainer = MonitoredMessageConsumerContainer(container, monitor)
         return TranscriberPlugin(
             BaseTranscriber(
                 cacheProvider,
                 monitor,
                 stateTracker,
-                container,
+                monitoredContainer,
                 formatter,
                 filters,
             ),
