@@ -54,7 +54,7 @@ public class BasePlayerInfoTranscriber(
     private val filterSetStore: PropertyFilterSetStore,
 ) : PlayerInfoTranscriber {
     private val root: RootProperty<*>
-        get() = stateTracker.root
+        get() = checkNotNull(stateTracker.root)
     private val filters: PropertyFilterSet
         get() = filterSetStore.getActive()
 

@@ -60,7 +60,7 @@ public class BaseNpcInfoTranscriber(
     private val filterSetStore: PropertyFilterSetStore,
 ) : NpcInfoTranscriber {
     private val root: RootProperty<*>
-        get() = stateTracker.root
+        get() = checkNotNull(stateTracker.root)
     private val filters: PropertyFilterSet
         get() = filterSetStore.getActive()
 

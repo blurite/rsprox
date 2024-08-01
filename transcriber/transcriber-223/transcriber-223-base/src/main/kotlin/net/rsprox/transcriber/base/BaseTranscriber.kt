@@ -73,11 +73,12 @@ public class BaseTranscriber private constructor(
     }
 
     override fun onTranscribeEnd() {
+        val root = stateTracker.root ?: return
         var cycle = stateTracker.cycle
         // Decrement the cycle if we're logging server tick end
         if (stateTracker.currentProt == GameServerProt.SERVER_TICK_END) {
             cycle--
         }
-        consumers.publish(formatter, cycle, stateTracker.root)
+        consumers.publish(formatter, cycle, root)
     }
 }

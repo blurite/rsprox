@@ -28,7 +28,7 @@ public enum class PropertyFilter(
     OPOBJ(CLIENT_TO_SERVER, OBJS, "Obj clicks", true),
     OPOBJT(CLIENT_TO_SERVER, OBJS, "Obj targetting", true),
 
-    OPPLAYER1(CLIENT_TO_SERVER, PLAYERS, "Player clicks", true),
+    OPPLAYER(CLIENT_TO_SERVER, PLAYERS, "Player clicks", true),
     OPPLAYERT(CLIENT_TO_SERVER, PLAYERS, "Player targetting", true),
 
     EVENT_APPLET_FOCUS(CLIENT_TO_SERVER, EVENTS, "Applet focus", false),

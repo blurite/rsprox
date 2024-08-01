@@ -20,7 +20,7 @@ public class StateTracker {
     public var toplevelInterface: Int = -1
     private val cachedVarps: IntArray = IntArray(10_000)
     private lateinit var varpToVarbitsMap: Map<Int, List<VarBitType>>
-    public lateinit var root: RootProperty<*>
+    public var root: RootProperty<*>? = null
     private val cachedMoveSpeeds: IntArray =
         IntArray(2048) {
             -1
@@ -33,6 +33,10 @@ public class StateTracker {
                 override val prot: Prot = currentProt
                 override val children: MutableList<ChildProperty<*>> = mutableListOf()
             }
+    }
+
+    public fun deleteRoot() {
+        this.root = null
     }
 
     public fun createWorld(id: Int): World {

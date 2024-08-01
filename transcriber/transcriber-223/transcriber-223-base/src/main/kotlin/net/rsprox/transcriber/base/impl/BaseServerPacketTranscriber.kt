@@ -189,7 +189,7 @@ public class BaseServerPacketTranscriber(
     private val filterSetStore: PropertyFilterSetStore,
 ) : ServerPacketTranscriber {
     private val root: RootProperty<*>
-        get() = stateTracker.root
+        get() = checkNotNull(stateTracker.root)
     private val filters: PropertyFilterSet
         get() = filterSetStore.getActive()
 

@@ -67,6 +67,7 @@ import net.rsprox.protocol.game.incoming.model.social.IgnoreListAdd
 import net.rsprox.protocol.game.incoming.model.social.IgnoreListDel
 import net.rsprox.protocol.reflection.ReflectionCheck
 import net.rsprox.shared.ScriptVarType
+import net.rsprox.shared.filters.PropertyFilter
 import net.rsprox.shared.filters.PropertyFilterSet
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.property.ChildProperty
@@ -104,9 +105,13 @@ public open class BaseClientPacketTranscriber(
     private val filterSetStore: PropertyFilterSetStore,
 ) : ClientPacketTranscriber {
     private val root: RootProperty<*>
-        get() = stateTracker.root
+        get() = checkNotNull(stateTracker.root)
     private val filters: PropertyFilterSet
         get() = filterSetStore.getActive()
+
+    private fun omit() {
+        stateTracker.deleteRoot()
+    }
 
     private fun Property.npc(index: Int): ChildProperty<*> {
         val npc = stateTracker.getActiveWorld().getNpcOrNull(index)
@@ -140,16 +145,19 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun if1Button(message: If1Button) {
+        if (!filters[PropertyFilter.IF_BUTTON]) return omit()
         root.com(message.interfaceId, message.componentId)
     }
 
     override fun if3Button(message: If3Button) {
+        if (!filters[PropertyFilter.IF_BUTTON]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.filteredInt("sub", message.sub, -1)
         root.filteredScriptVarType("obj", ScriptVarType.OBJ, message.obj, -1)
     }
 
     override fun ifButtonD(message: IfButtonD) {
+        if (!filters[PropertyFilter.IF_BUTTOND]) return omit()
         root.com("selectcom", message.selectedInterfaceId, message.selectedComponentId)
         root.filteredInt("selectedsub", message.selectedSub, -1)
         root.filteredScriptVarType("selectedobj", ScriptVarType.OBJ, message.selectedObj, -1)
@@ -159,6 +167,7 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun ifButtonT(message: IfButtonT) {
+        if (!filters[PropertyFilter.IF_BUTTONT]) return omit()
         root.com("selectcom", message.selectedInterfaceId, message.selectedComponentId)
         root.filteredInt("selectedsub", message.selectedSub, -1)
         root.filteredScriptVarType("selectedobj", ScriptVarType.OBJ, message.selectedObj, -1)
@@ -168,12 +177,14 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun affinedClanSettingsAddBannedFromChannel(message: AffinedClanSettingsAddBannedFromChannel) {
+        if (!filters[PropertyFilter.AFFINEDCLANSETTINGS_ADDBANNED_FROMCHANNEL]) return omit()
         root.string("name", message.name)
         root.int("clanid", message.clanId)
         root.int("memberindex", message.memberIndex)
     }
 
     override fun affinedClanSettingsSetMutedFromChannel(message: AffinedClanSettingsSetMutedFromChannel) {
+        if (!filters[PropertyFilter.AFFINEDCLANSETTINGS_SETMUTED_FROMCHANNEL]) return omit()
         root.string("name", message.name)
         root.int("clanid", message.clanId)
         root.int("memberindex", message.memberIndex)
@@ -181,29 +192,35 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun clanChannelFullRequest(message: ClanChannelFullRequest) {
+        if (!filters[PropertyFilter.CLANCHANNEL_FULL_REQUEST]) return omit()
         root.int("clanid", message.clanId)
     }
 
     override fun clanChannelKickUser(message: ClanChannelKickUser) {
+        if (!filters[PropertyFilter.CLANCHANNEL_KICKUSER]) return omit()
         root.string("name", message.name)
         root.int("clanid", message.clanId)
         root.int("memberindex", message.memberIndex)
     }
 
     override fun clanSettingsFullRequest(message: ClanSettingsFullRequest) {
+        if (!filters[PropertyFilter.CLANSETTINGS_FULL_REQUEST]) return omit()
         root.int("clanid", message.clanId)
     }
 
     override fun eventAppletFocus(message: EventAppletFocus) {
+        if (!filters[PropertyFilter.EVENT_APPLET_FOCUS]) return omit()
         root.boolean("infocus", message.inFocus)
     }
 
     override fun eventCameraPosition(message: EventCameraPosition) {
+        if (!filters[PropertyFilter.EVENT_CAMERA_POSITION]) return omit()
         root.int("anglex", message.angleX)
         root.int("angley", message.angleY)
     }
 
     override fun eventKeyboard(message: EventKeyboard) {
+        if (!filters[PropertyFilter.EVENT_KEYBOARD]) return omit()
         root.formattedInt("lasttransmitted", message.lastTransmittedKeyPress, MS_NUMBER_FORMAT)
         root.string(
             "keys",
@@ -215,6 +232,7 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun eventMouseClick(message: EventMouseClick) {
+        if (!filters[PropertyFilter.EVENT_MOUSE_CLICK]) return omit()
         root.formattedInt("lasttransmitted", message.lastTransmittedMouseClick, MS_NUMBER_FORMAT)
         root.int("x", message.x)
         root.int("y", message.y)
@@ -222,6 +240,7 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun eventMouseMove(message: EventMouseMove) {
+        if (!filters[PropertyFilter.EVENT_MOUSE_MOVE]) return omit()
         root.formattedInt("averagetime", message.averageTime, MS_NUMBER_FORMAT)
         root.formattedInt("remainingtime", message.remainingTime, MS_NUMBER_FORMAT)
         root.group("MOVEMENTS") {
@@ -237,10 +256,12 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun eventMouseScroll(message: EventMouseScroll) {
+        if (!filters[PropertyFilter.EVENT_MOUSE_SCROLL]) return omit()
         root.int("rotation", message.mouseWheelRotation)
     }
 
     override fun eventNativeMouseClick(message: EventNativeMouseClick) {
+        if (!filters[PropertyFilter.EVENT_NATIVE_MOUSE_CLICK]) return omit()
         root.formattedInt("lasttransmitted", message.lastTransmittedMouseClick, MS_NUMBER_FORMAT)
         root.int("x", message.x)
         root.int("y", message.y)
@@ -248,6 +269,7 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun eventNativeMouseMove(message: EventNativeMouseMove) {
+        if (!filters[PropertyFilter.EVENT_NATIVE_MOUSE_MOVE]) return omit()
         root.formattedInt("averagetime", message.averageTime, MS_NUMBER_FORMAT)
         root.formattedInt("remainingtime", message.remainingTime, MS_NUMBER_FORMAT)
         root.group("MOVEMENTS") {
@@ -263,29 +285,35 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun friendChatJoinLeave(message: FriendChatJoinLeave) {
+        if (!filters[PropertyFilter.FRIENDCHAT_JOIN_LEAVE]) return omit()
         root.string("name", message.name)
     }
 
     override fun friendChatKick(message: FriendChatKick) {
+        if (!filters[PropertyFilter.FRIENDCHAT_KICK]) return omit()
         root.string("name", message.name)
     }
 
     override fun friendChatSetRank(message: FriendChatSetRank) {
+        if (!filters[PropertyFilter.FRIENDCHAT_SETRANK]) return omit()
         root.string("name", message.name)
         root.int("rank", message.rank)
     }
 
     override fun opLoc(message: OpLoc) {
+        if (!filters[PropertyFilter.OPLOC]) return omit()
         root.scriptVarType("id", ScriptVarType.LOC, message.id)
         root.coordGrid(stateTracker.level(), message.x, message.z)
         root.filteredBoolean("ctrl", message.controlKey)
     }
 
     override fun opLoc6(message: OpLoc6) {
+        if (!filters[PropertyFilter.OPLOC]) return omit()
         root.scriptVarType("id", ScriptVarType.LOC, message.id)
     }
 
     override fun opLocT(message: OpLocT) {
+        if (!filters[PropertyFilter.OPLOCT]) return omit()
         root.scriptVarType("id", ScriptVarType.LOC, message.id)
         root.coordGrid(stateTracker.level(), message.x, message.z)
         root.filteredBoolean("ctrl", message.controlKey)
@@ -295,11 +323,13 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun messagePrivateClient(message: MessagePrivate) {
+        if (!filters[PropertyFilter.MESSAGE_PRIVATE_CLIENT]) return omit()
         root.string("name", message.name)
         root.string("message", message.message)
     }
 
     override fun messagePublic(message: MessagePublic) {
+        if (!filters[PropertyFilter.MESSAGE_PUBLIC]) return omit()
         root.int("type", message.type)
         root.filteredInt("colour", message.colour, 0)
         root.filteredInt("effect", message.effect, 0)
@@ -309,24 +339,30 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun detectModifiedClient(message: DetectModifiedClient) {
+        if (!filters[PropertyFilter.DETECT_MODIFIED_CLIENT]) return omit()
         root.formattedInt("code", message.code)
     }
 
     override fun idle(message: Idle) {
+        if (!filters[PropertyFilter.IDLE]) return omit()
     }
 
     override fun mapBuildComplete(message: MapBuildComplete) {
+        if (!filters[PropertyFilter.MAP_BUILD_COMPLETE]) return omit()
     }
 
     override fun membershipPromotionEligibility(message: MembershipPromotionEligibility) {
+        if (!filters[PropertyFilter.MEMBERSHIP_PROMOTION_ELIGIBILITY]) return omit()
         root.int("introductoryprice", message.eligibleForIntroductoryPrice)
         root.int("trialpurchase", message.eligibleForTrialPurchase)
     }
 
     override fun noTimeout(message: NoTimeout) {
+        if (!filters[PropertyFilter.NO_TIMEOUT]) return omit()
     }
 
     override fun reflectionCheckReply(message: ReflectionCheckReply) {
+        if (!filters[PropertyFilter.REFLECTION_CHECK_REPLY]) return omit()
         root.formattedInt("id", message.id)
         for (result in message.result) {
             when (result) {
@@ -442,6 +478,7 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun sendPingReply(message: SendPingReply) {
+        if (!filters[PropertyFilter.SEND_PING_REPLY]) return omit()
         root.int("fps", message.fps)
         root.int("gcpercenttime", message.gcPercentTime)
         root.int("value1", message.value1)
@@ -449,10 +486,12 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun soundJingleEnd(message: SoundJingleEnd) {
+        if (!filters[PropertyFilter.SOUND_JINGLEEND]) return omit()
         root.scriptVarType("id", ScriptVarType.JINGLE, message.jingleId)
     }
 
     override fun connectionTelemetry(message: ConnectionTelemetry) {
+        if (!filters[PropertyFilter.CONNECTION_TELEMETRY]) return omit()
         root.formattedInt("connectionlostduration", message.connectionLostDuration * 10, MS_NUMBER_FORMAT)
         root.formattedInt("loginduration", message.loginDuration * 10, MS_NUMBER_FORMAT)
         root.int("clientstate", message.clientState)
@@ -460,35 +499,42 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun windowStatus(message: WindowStatus) {
+        if (!filters[PropertyFilter.WINDOW_STATUS]) return omit()
         root.int("windowmode", message.windowMode)
         root.int("framewidth", message.frameWidth)
         root.int("frameheight", message.frameHeight)
     }
 
     override fun bugReport(message: BugReport) {
+        if (!filters[PropertyFilter.BUG_REPORT]) return omit()
         root.int("type", message.type)
         root.string("description", message.description)
         root.string("instructions", message.instructions)
     }
 
     override fun clickWorldMap(message: ClickWorldMap) {
+        if (!filters[PropertyFilter.CLICKWORLDMAP]) return omit()
         root.coordGrid(message.level, message.x, message.z)
     }
 
     override fun clientCheat(message: ClientCheat) {
+        if (!filters[PropertyFilter.CLIENT_CHEAT]) return omit()
         root.string("cheat", message.command)
     }
 
     override fun closeModal(message: CloseModal) {
+        if (!filters[PropertyFilter.CLOSE_MODAL]) return omit()
     }
 
     override fun hiscoreRequest(message: HiscoreRequest) {
+        if (!filters[PropertyFilter.HISCORE_REQUEST]) return omit()
         root.int("type", message.type)
         root.int("requestid", message.requestId)
         root.string("name", message.name)
     }
 
     override fun ifCrmViewClick(message: IfCrmViewClick) {
+        if (!filters[PropertyFilter.IF_CRMVIEW_CLICK]) return omit()
         root.int("crmservertarget", message.crmServerTarget)
         root.com(message.interfaceId, message.componentId)
         root.filteredInt("sub", message.sub, -1)
@@ -514,6 +560,7 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun moveGameClick(message: MoveGameClick) {
+        if (!filters[PropertyFilter.MOVE_GAMECLICK]) return omit()
         root.coordGrid(stateTracker.level(), message.x, message.z)
         root.filteredNamedEnum(
             "keycombination",
@@ -523,6 +570,7 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun moveMinimapClick(message: MoveMinimapClick) {
+        if (!filters[PropertyFilter.MOVE_MINIMAPCLICK]) return omit()
         root.coordGrid(stateTracker.level(), message.x, message.z)
         root.filteredNamedEnum(
             "keycombination",
@@ -537,6 +585,7 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun oculusLeave(message: OculusLeave) {
+        if (!filters[PropertyFilter.OCULUS_LEAVE]) return omit()
     }
 
     private fun getRule(id: Int): String {
@@ -563,6 +612,7 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun sendSnapshot(message: SendSnapshot) {
+        if (!filters[PropertyFilter.SEND_SNAPSHOT]) return omit()
         root.string("name", message.name)
         root.string("rule", getRule(message.ruleId))
         root.filteredBoolean("mute", message.mute)
@@ -590,17 +640,20 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun setChatFilterSettings(message: SetChatFilterSettings) {
+        if (!filters[PropertyFilter.CHAT_FILTER_SETTINGS]) return omit()
         root.namedEnum("public", getChatFilter(message.publicChatFilter))
         root.namedEnum("private", getChatFilter(message.privateChatFilter))
         root.namedEnum("trade", getChatFilter(message.tradeChatFilter))
     }
 
     override fun teleport(message: Teleport) {
+        if (!filters[PropertyFilter.TELEPORT]) return omit()
         root.coordGrid(message.level, message.x, message.z)
         root.filteredInt("oculussyncvalue", message.oculusSyncValue, 0)
     }
 
     override fun updatePlayerModel(message: UpdatePlayerModel) {
+        if (!filters[PropertyFilter.DEPRECATED_CLIENT]) return omit()
         // Never used any more so not too worried about the formatting
         root.int("bodytype", message.bodyType)
         root.string("identkit", message.getIdentKitsByteArray().contentToString())
@@ -608,15 +661,18 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun opNpc(message: OpNpc) {
+        if (!filters[PropertyFilter.OPNPC]) return omit()
         root.npc(message.index)
         root.filteredBoolean("ctrl", message.controlKey)
     }
 
     override fun opNpc6(message: OpNpc6) {
+        if (!filters[PropertyFilter.OPNPC]) return omit()
         root.scriptVarType("id", ScriptVarType.NPC, message.id)
     }
 
     override fun opNpcT(message: OpNpcT) {
+        if (!filters[PropertyFilter.OPNPCT]) return omit()
         root.npc(message.index)
         root.filteredBoolean("ctrl", message.controlKey)
         root.com(message.selectedInterfaceId, message.selectedComponentId)
@@ -625,17 +681,20 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun opObj(message: OpObj) {
+        if (!filters[PropertyFilter.OPOBJ]) return omit()
         root.scriptVarType("id", ScriptVarType.OBJ, message.id)
         root.coordGrid(stateTracker.level(), message.x, message.z)
         root.filteredBoolean("ctrl", message.controlKey)
     }
 
     override fun opObj6(message: OpObj6) {
+        if (!filters[PropertyFilter.OPOBJ]) return omit()
         root.scriptVarType("id", ScriptVarType.OBJ, message.id)
         root.coordGrid(stateTracker.level(), message.x, message.z)
     }
 
     override fun opObjT(message: OpObjT) {
+        if (!filters[PropertyFilter.OPOBJT]) return omit()
         root.scriptVarType("id", ScriptVarType.OBJ, message.id)
         root.coordGrid(stateTracker.level(), message.x, message.z)
         root.filteredBoolean("ctrl", message.controlKey)
@@ -645,11 +704,13 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun opPlayer(message: OpPlayer) {
+        if (!filters[PropertyFilter.OPPLAYER]) return omit()
         root.player(message.index)
         root.filteredBoolean("ctrl", message.controlKey)
     }
 
     override fun opPlayerT(message: OpPlayerT) {
+        if (!filters[PropertyFilter.OPPLAYERT]) return omit()
         root.player(message.index)
         root.filteredBoolean("ctrl", message.controlKey)
         root.com(message.selectedInterfaceId, message.selectedComponentId)
@@ -658,39 +719,48 @@ public open class BaseClientPacketTranscriber(
     }
 
     override fun resumePauseButton(message: ResumePauseButton) {
+        if (!filters[PropertyFilter.RESUME_PAUSEBUTTON]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.filteredInt("sub", message.sub, -1)
     }
 
     override fun resumePCountDialog(message: ResumePCountDialog) {
+        if (!filters[PropertyFilter.RESUME_P_COUNTDIALOG]) return omit()
         root.formattedInt("count", message.count)
     }
 
     override fun resumePNameDialog(message: ResumePNameDialog) {
+        if (!filters[PropertyFilter.RESUME_P_NAMEDIALOG]) return omit()
         root.string("name", message.name)
     }
 
     override fun resumePObjDialog(message: ResumePObjDialog) {
+        if (!filters[PropertyFilter.RESUME_P_OBJDIALOG]) return omit()
         root.scriptVarType("id", ScriptVarType.OBJ, message.obj)
     }
 
     override fun resumePStringDialog(message: ResumePStringDialog) {
+        if (!filters[PropertyFilter.RESUME_P_STRINGDIALOG]) return omit()
         root.string("string", message.string)
     }
 
     override fun friendListAdd(message: FriendListAdd) {
+        if (!filters[PropertyFilter.FRIENDLIST_ADD]) return omit()
         root.string("name", message.name)
     }
 
     override fun friendListDel(message: FriendListDel) {
+        if (!filters[PropertyFilter.FRIENDLIST_DEL]) return omit()
         root.string("name", message.name)
     }
 
     override fun ignoreListAdd(message: IgnoreListAdd) {
+        if (!filters[PropertyFilter.IGNORELIST_ADD]) return omit()
         root.string("name", message.name)
     }
 
     override fun ignoreListDel(message: IgnoreListDel) {
+        if (!filters[PropertyFilter.IGNORELIST_DEL]) return omit()
         root.string("name", message.name)
     }
 
