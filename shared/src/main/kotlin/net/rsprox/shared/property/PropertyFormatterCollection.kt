@@ -83,7 +83,11 @@ public class PropertyFormatterCollection private constructor(
             }
             val scriptVarTypePropertyFormatter =
                 PropertyFormatter<ScriptVarTypeProperty<*>> {
-                    if (it.scriptVarType.baseVarType != BaseVarType.INTEGER) {
+                    val vartype = it.scriptVarType.baseVarType
+                    if (vartype == BaseVarType.STRING) {
+                        return@PropertyFormatter "'${it.value}'"
+                    }
+                    if (vartype != BaseVarType.INTEGER) {
                         return@PropertyFormatter it.value.toString()
                     }
                     val value = it.value as Int
