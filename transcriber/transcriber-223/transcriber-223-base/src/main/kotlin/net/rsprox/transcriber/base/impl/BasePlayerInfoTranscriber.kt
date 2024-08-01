@@ -234,6 +234,10 @@ public class BasePlayerInfoTranscriber(
                                 return@group
                             }
                             val player = stateTracker.getPlayer(index)
+                            if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+                                appendExtendedInfo(player, update.extendedInfo)
+                                continue
+                            }
                             group("IDLE") {
                                 player(index)
                                 appendExtendedInfo(player, update.extendedInfo)
@@ -246,6 +250,10 @@ public class BasePlayerInfoTranscriber(
                                 continue
                             }
                             val player = stateTracker.getPlayer(index)
+                            if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+                                appendExtendedInfo(player, update.extendedInfo)
+                                continue
+                            }
                             val speed = getMoveSpeed(stateTracker.getMoveSpeed(index))
                             val label =
                                 when (speed) {
@@ -275,6 +283,10 @@ public class BasePlayerInfoTranscriber(
                                 continue
                             }
                             val player = stateTracker.getPlayer(index)
+                            if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+                                appendExtendedInfo(player, update.extendedInfo)
+                                continue
+                            }
                             group("ADD") {
                                 player(index)
                                 appendExtendedInfo(player, update.extendedInfo)
@@ -307,49 +319,49 @@ public class BasePlayerInfoTranscriber(
                 is ChatExtendedInfo -> {
                     if (filters[PropertyFilter.PLAYER_CHAT]) {
                         group("CHAT") {
-                            appendChatExtendedInfo(info)
+                            appendChatExtendedInfo(player, info)
                         }
                     }
                 }
                 is FaceAngleExtendedInfo -> {
                     if (filters[PropertyFilter.PLAYER_FACE_ANGLE]) {
                         group("FACE_ANGLE") {
-                            appendFaceAngleExtendedInfo(info)
+                            appendFaceAngleExtendedInfo(player, info)
                         }
                     }
                 }
                 is MoveSpeedExtendedInfo -> {
                     if (filters[PropertyFilter.PLAYER_MOVE_SPEED]) {
                         group("MOVE_SPEED") {
-                            appendMoveSpeedExtendedInfo(info)
+                            appendMoveSpeedExtendedInfo(player, info)
                         }
                     }
                 }
                 is TemporaryMoveSpeedExtendedInfo -> {
                     if (filters[PropertyFilter.PLAYER_MOVE_SPEED]) {
                         group("TEMP_MOVE_SPEED") {
-                            appendTemporaryMoveSpeedExtendedInfo(info)
+                            appendTemporaryMoveSpeedExtendedInfo(player, info)
                         }
                     }
                 }
                 is NameExtrasExtendedInfo -> {
                     if (filters[PropertyFilter.PLAYER_NAME_EXTRAS]) {
                         group("NAME_EXTRAS") {
-                            appendNameExtrasExtendedInfo(info)
+                            appendNameExtrasExtendedInfo(player, info)
                         }
                     }
                 }
                 is SayExtendedInfo -> {
                     if (filters[PropertyFilter.PLAYER_SAY]) {
                         group("SAY") {
-                            appendSayExtendedInfo(info)
+                            appendSayExtendedInfo(player, info)
                         }
                     }
                 }
                 is SequenceExtendedInfo -> {
                     if (filters[PropertyFilter.PLAYER_SEQUENCE]) {
                         group("SEQUENCE") {
-                            appendSequenceExtendedInfo(info)
+                            appendSequenceExtendedInfo(player, info)
                         }
                     }
                 }
@@ -362,32 +374,32 @@ public class BasePlayerInfoTranscriber(
                 }
                 is HitExtendedInfo -> {
                     if (filters[PropertyFilter.PLAYER_HITS]) {
-                        appendHitExtendedInfo(info)
+                        appendHitExtendedInfo(player, info)
                     }
                 }
                 is TintingExtendedInfo -> {
                     if (filters[PropertyFilter.PLAYER_TINTING]) {
                         group("TINTING") {
-                            appendTintingExtendedInfo(info)
+                            appendTintingExtendedInfo(player, info)
                         }
                     }
                 }
                 is SpotanimExtendedInfo -> {
                     if (filters[PropertyFilter.PLAYER_SPOTANIMS]) {
-                        appendSpotanimExtendedInfo(info)
+                        appendSpotanimExtendedInfo(player, info)
                     }
                 }
                 is FacePathingEntityExtendedInfo -> {
                     if (filters[PropertyFilter.PLAYER_FACE_PATHINGENTITY]) {
                         group("FACE_PATHINGENTITY") {
-                            appendFacePathingEntityExtendedInfo(info)
+                            appendFacePathingEntityExtendedInfo(player, info)
                         }
                     }
                 }
                 is AppearanceExtendedInfo -> {
                     if (filters[PropertyFilter.PLAYER_APPEARANCE]) {
                         group("APPEARANCE") {
-                            appendAppearanceExtendedInfo(info)
+                            appendAppearanceExtendedInfo(player, info)
                         }
                     }
                 }
@@ -396,7 +408,13 @@ public class BasePlayerInfoTranscriber(
         }
     }
 
-    private fun Property.appendChatExtendedInfo(info: ChatExtendedInfo) {
+    private fun Property.appendChatExtendedInfo(
+        player: Player,
+        info: ChatExtendedInfo,
+    ) {
+        if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+            player(player.index)
+        }
         string("text", info.text)
         filteredBoolean("autotyper", info.autotyper)
         filteredInt("colour", info.colour, 0)
@@ -405,7 +423,13 @@ public class BasePlayerInfoTranscriber(
         filteredString("pattern", info.pattern?.contentToString(), null)
     }
 
-    private fun Property.appendFaceAngleExtendedInfo(info: FaceAngleExtendedInfo) {
+    private fun Property.appendFaceAngleExtendedInfo(
+        player: Player,
+        info: FaceAngleExtendedInfo,
+    ) {
+        if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+            player(player.index)
+        }
         int("angle", info.angle)
     }
 
@@ -430,25 +454,55 @@ public class BasePlayerInfoTranscriber(
         }
     }
 
-    private fun Property.appendMoveSpeedExtendedInfo(info: MoveSpeedExtendedInfo) {
+    private fun Property.appendMoveSpeedExtendedInfo(
+        player: Player,
+        info: MoveSpeedExtendedInfo,
+    ) {
+        if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+            player(player.index)
+        }
         namedEnum("speed", getMoveSpeed(info.speed))
     }
 
-    private fun Property.appendTemporaryMoveSpeedExtendedInfo(info: TemporaryMoveSpeedExtendedInfo) {
+    private fun Property.appendTemporaryMoveSpeedExtendedInfo(
+        player: Player,
+        info: TemporaryMoveSpeedExtendedInfo,
+    ) {
+        if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+            player(player.index)
+        }
         namedEnum("speed", getMoveSpeed(info.speed))
     }
 
-    private fun Property.appendNameExtrasExtendedInfo(info: NameExtrasExtendedInfo) {
+    private fun Property.appendNameExtrasExtendedInfo(
+        player: Player,
+        info: NameExtrasExtendedInfo,
+    ) {
+        if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+            player(player.index)
+        }
         string("beforename", info.beforeName)
         string("aftername", info.afterName)
         string("afterlevel", info.afterCombatLevel)
     }
 
-    private fun Property.appendSayExtendedInfo(info: SayExtendedInfo) {
+    private fun Property.appendSayExtendedInfo(
+        player: Player,
+        info: SayExtendedInfo,
+    ) {
+        if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+            player(player.index)
+        }
         string("text", info.text)
     }
 
-    private fun Property.appendSequenceExtendedInfo(info: SequenceExtendedInfo) {
+    private fun Property.appendSequenceExtendedInfo(
+        player: Player,
+        info: SequenceExtendedInfo,
+    ) {
+        if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+            player(player.index)
+        }
         scriptVarType("id", ScriptVarType.SEQ, info.id.maxUShortToMinusOne())
         filteredInt("delay", info.delay, 0)
     }
@@ -457,6 +511,9 @@ public class BasePlayerInfoTranscriber(
         player: Player,
         info: ExactMoveExtendedInfo,
     ) {
+        if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+            player(player.index)
+        }
         val curX = player.coord.x
         val curZ = player.coord.z
         val level = player.coord.level
@@ -467,9 +524,15 @@ public class BasePlayerInfoTranscriber(
         int("angle", info.direction)
     }
 
-    private fun Property.appendHitExtendedInfo(info: HitExtendedInfo) {
+    private fun Property.appendHitExtendedInfo(
+        player: Player,
+        info: HitExtendedInfo,
+    ) {
         for (hit in info.hits) {
             group("HIT") {
+                if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+                    player(player.index)
+                }
                 scriptVarType("id", ScriptVarType.HITMARK, hit.type)
                 int("value", hit.value)
                 if (hit.soakType != -1) {
@@ -481,6 +544,9 @@ public class BasePlayerInfoTranscriber(
         }
         for (headbar in info.headbars) {
             group("HEADBAR") {
+                if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+                    player(player.index)
+                }
                 scriptVarType("id", ScriptVarType.HEADBAR, headbar.type)
                 int("type", headbar.type)
                 if (headbar.startFill == headbar.endFill) {
@@ -497,7 +563,13 @@ public class BasePlayerInfoTranscriber(
         }
     }
 
-    private fun Property.appendTintingExtendedInfo(info: TintingExtendedInfo) {
+    private fun Property.appendTintingExtendedInfo(
+        player: Player,
+        info: TintingExtendedInfo,
+    ) {
+        if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+            player(player.index)
+        }
         int("start", info.start)
         int("end", info.end)
         int("hue", info.hue)
@@ -506,9 +578,15 @@ public class BasePlayerInfoTranscriber(
         int("weight", info.weight)
     }
 
-    private fun Property.appendSpotanimExtendedInfo(info: SpotanimExtendedInfo) {
+    private fun Property.appendSpotanimExtendedInfo(
+        player: Player,
+        info: SpotanimExtendedInfo,
+    ) {
         for ((slot, spotanim) in info.spotanims) {
             group("SPOTANIM") {
+                if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+                    player(player.index)
+                }
                 filteredInt("slot", slot, 0)
                 scriptVarType("id", ScriptVarType.SPOTANIM, spotanim.id.maxUShortToMinusOne())
                 filteredInt("delay", spotanim.delay, 0)
@@ -517,7 +595,13 @@ public class BasePlayerInfoTranscriber(
         }
     }
 
-    private fun Property.appendFacePathingEntityExtendedInfo(info: FacePathingEntityExtendedInfo) {
+    private fun Property.appendFacePathingEntityExtendedInfo(
+        player: Player,
+        info: FacePathingEntityExtendedInfo,
+    ) {
+        if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+            player(player.index)
+        }
         if (info.index == 0xFFFFFF) {
             string("entity", null)
         } else {
@@ -545,7 +629,13 @@ public class BasePlayerInfoTranscriber(
         QUIVER(13, "quiver"),
     }
 
-    private fun Property.appendAppearanceExtendedInfo(info: AppearanceExtendedInfo) {
+    private fun Property.appendAppearanceExtendedInfo(
+        player: Player,
+        info: AppearanceExtendedInfo,
+    ) {
+        if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+            player(player.index)
+        }
         if (filters[PropertyFilter.PLAYER_APPEARANCE_DETAILS]) {
             group("DETAILS") {
                 string("name", info.name)

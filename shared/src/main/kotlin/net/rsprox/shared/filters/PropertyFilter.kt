@@ -139,6 +139,7 @@ public enum class PropertyFilter(
     PLAYER_SPOTANIM_SPECIFIC(SERVER_TO_CLIENT, SPECIFIC, "Player spotanims", true),
 
     PLAYER_INFO(SERVER_TO_CLIENT, INFO, "Player info", true),
+    PLAYER_EXT_INFO_INLINE(SERVER_TO_CLIENT, INFO, "Player extended info inline", false),
     PLAYER_OMIT_INDEX(SERVER_TO_CLIENT, INFO, "Player omit index", false),
     PLAYER_REMOVAL(SERVER_TO_CLIENT, INFO, "Player removal", false),
     PLAYER_INFO_OMIT_NO_EXTENDED_INFO(SERVER_TO_CLIENT, INFO, "Omit players w/o ext. info", true),
