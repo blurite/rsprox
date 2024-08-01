@@ -226,6 +226,11 @@ public class BasePlayerInfoTranscriber(
                             }
                         }
                         is PlayerUpdateType.HighResolutionMovement -> {
+                            if (filters[PropertyFilter.PLAYER_INFO_OMIT_NO_EXTENDED_INFO] &&
+                                update.extendedInfo.isEmpty()
+                            ) {
+                                continue
+                            }
                             val player = stateTracker.getPlayer(index)
                             val speed = getMoveSpeed(stateTracker.getMoveSpeed(index))
                             val label =
@@ -250,6 +255,11 @@ public class BasePlayerInfoTranscriber(
                             }
                         }
                         is PlayerUpdateType.LowResolutionToHighResolution -> {
+                            if (filters[PropertyFilter.PLAYER_INFO_OMIT_NO_EXTENDED_INFO] &&
+                                update.extendedInfo.isEmpty()
+                            ) {
+                                continue
+                            }
                             val player = stateTracker.getPlayer(index)
                             group("ADD") {
                                 player(index)
