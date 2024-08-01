@@ -7,6 +7,10 @@ public interface SessionMonitor<T> {
 
     public fun onLogout(header: T)
 
+    public fun onIncomingBytesPerSecondUpdate(bytesPerLastSecond: Long)
+
+    public fun onOutgoingBytesPerSecondUpdate(bytesPerLastSecond: Long)
+
     public fun onNameUpdate(name: String)
 
     public fun onTranscribe(

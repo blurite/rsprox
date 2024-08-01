@@ -44,6 +44,9 @@ public data class BinaryBlob(
     private var lastWriteSize = 0
     private val closed = AtomicBoolean(false)
     private var liveSession: LiveTranscriberSession? = null
+    private var lastBandwidthUpdate = TimeSource.Monotonic.markNow()
+    private var lastOutgoingBytes: Int = 0
+    private var lastIncomingBytes: Int = 0
 
     public fun append(
         direction: StreamDirection,
@@ -51,6 +54,22 @@ public data class BinaryBlob(
     ) {
         if (closed.get()) {
             throw IllegalStateException("Binary stream is closed.")
+        }
+        val bytes = packet.readableBytes()
+        if (direction == StreamDirection.SERVER_TO_CLIENT) {
+            lastIncomingBytes += bytes
+        } else {
+            lastOutgoingBytes += bytes
+        }
+        val elapsedMillis = lastBandwidthUpdate.elapsedNow().inWholeMilliseconds
+        if (elapsedMillis >= 1000) {
+            val incomingBytesPerSecond = lastIncomingBytes * 1000 / elapsedMillis
+            val outgoingBytesPerSecond = lastOutgoingBytes * 1000 / elapsedMillis
+            monitor.onIncomingBytesPerSecondUpdate(incomingBytesPerSecond)
+            monitor.onOutgoingBytesPerSecondUpdate(outgoingBytesPerSecond)
+            this.lastIncomingBytes = 0
+            this.lastOutgoingBytes = 0
+            this.lastBandwidthUpdate = TimeSource.Monotonic.markNow()
         }
         liveSession?.pass(direction, packet.copy())
         stream.append(

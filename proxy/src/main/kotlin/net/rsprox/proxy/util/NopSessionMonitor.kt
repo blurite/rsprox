@@ -11,6 +11,12 @@ public object NopSessionMonitor : SessionMonitor<BinaryHeader> {
     override fun onLogout(header: BinaryHeader) {
     }
 
+    override fun onIncomingBytesPerSecondUpdate(bytesPerLastSecond: Long) {
+    }
+
+    override fun onOutgoingBytesPerSecondUpdate(bytesPerLastSecond: Long) {
+    }
+
     override fun onNameUpdate(name: String) {
     }
 
