@@ -226,7 +226,7 @@ public class ProxyService(
         val binary = NativeClientDownloader.download(nativeClientType, progressBarNotifier)
         val extension = if (binary.extension.isNotEmpty()) ".${binary.extension}" else ""
         val stamp = System.currentTimeMillis()
-        val patched = TEMP_CLIENTS_DIRECTORY.resolve("${binary.nameWithoutExtension}-$stamp.$extension")
+        val patched = TEMP_CLIENTS_DIRECTORY.resolve("${binary.nameWithoutExtension}-$stamp$extension")
         progressBarNotifier.update(90, "Cloning native client")
         binary.copyTo(patched, overwrite = true)
 
