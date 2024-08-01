@@ -26,6 +26,7 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Sequence
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
 import net.rsprox.shared.ScriptVarType
+import net.rsprox.shared.filters.PropertyFilter
 import net.rsprox.shared.filters.PropertyFilterSet
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.property.ChildProperty
@@ -63,6 +64,10 @@ public class BaseNpcInfoTranscriber(
         get() = checkNotNull(stateTracker.root)
     private val filters: PropertyFilterSet
         get() = filterSetStore.getActive()
+
+    private fun omit() {
+        stateTracker.deleteRoot()
+    }
 
     private fun Property.entity(ambiguousIndex: Int): ChildProperty<*> {
         return if (ambiguousIndex > 0xFFFF) {
@@ -185,6 +190,7 @@ public class BaseNpcInfoTranscriber(
     }
 
     private fun npcInfoUpdate(message: NpcInfo) {
+        if (!filters[PropertyFilter.NPC_INFO]) return omit()
         val world = stateTracker.getActiveWorld()
         val group =
             root.group {
@@ -220,8 +226,10 @@ public class BaseNpcInfoTranscriber(
                             }
                         }
                         NpcUpdateType.HighResolutionToLowResolution -> {
-                            group("DEL") {
-                                npc(index)
+                            if (filters[PropertyFilter.NPC_REMOVAL]) {
+                                group("DEL") {
+                                    npc(index)
+                                }
                             }
                         }
                         is NpcUpdateType.LowResolutionToHighResolution -> {
@@ -245,6 +253,9 @@ public class BaseNpcInfoTranscriber(
         // If no children were added to the root group, it means no npcs are being updated
         // In this case, remove the empty line that the group is generating
         if (children.isEmpty()) {
+            if (filters[PropertyFilter.NPC_INFO_OMIT_EMPTY]) {
+                return omit()
+            }
             root.children.clear()
             return
         }
@@ -260,84 +271,118 @@ public class BaseNpcInfoTranscriber(
         for (info in extendedInfo) {
             when (info) {
                 is ExactMoveExtendedInfo -> {
-                    group("EXACT_MOVE") {
-                        exactMove(npc, info)
+                    if (filters[PropertyFilter.NPC_EXACTMOVE]) {
+                        group("EXACT_MOVE") {
+                            exactMove(npc, info)
+                        }
                     }
                 }
                 is FacePathingEntityExtendedInfo -> {
-                    group("FACE_PATHINGENTITY") {
-                        facePathingEntity(info)
+                    if (filters[PropertyFilter.NPC_FACE_PATHINGENTITY]) {
+                        group("FACE_PATHINGENTITY") {
+                            facePathingEntity(info)
+                        }
                     }
                 }
                 is HitExtendedInfo -> {
-                    hits(info)
+                    if (filters[PropertyFilter.NPC_HITS]) {
+                        hits(info)
+                    }
                 }
                 is SayExtendedInfo -> {
-                    group("SAY") {
-                        say(info)
+                    if (filters[PropertyFilter.NPC_SAY]) {
+                        group("SAY") {
+                            say(info)
+                        }
                     }
                 }
                 is SequenceExtendedInfo -> {
-                    group("SEQUENCE") {
-                        sequence(info)
+                    if (filters[PropertyFilter.NPC_SEQUENCE]) {
+                        group("SEQUENCE") {
+                            sequence(info)
+                        }
                     }
                 }
                 is TintingExtendedInfo -> {
-                    group("TINTING") {
-                        tinting(info)
+                    if (filters[PropertyFilter.NPC_TINTING]) {
+                        group("TINTING") {
+                            tinting(info)
+                        }
                     }
                 }
                 is SpotanimExtendedInfo -> {
-                    spotanim(info)
+                    if (filters[PropertyFilter.NPC_SPOTANIMS]) {
+                        spotanim(info)
+                    }
                 }
                 is OldSpotanimExtendedInfo -> {
-                    group("OLD_SPOTANIM") {
-                        oldSpotanim(info)
+                    if (filters[PropertyFilter.NPC_SPOTANIMS]) {
+                        group("OLD_SPOTANIM") {
+                            oldSpotanim(info)
+                        }
                     }
                 }
                 is BaseAnimationSetExtendedInfo -> {
-                    group("BAS") {
-                        baseAnimationSet(info)
+                    if (filters[PropertyFilter.NPC_BAS]) {
+                        group("BAS") {
+                            baseAnimationSet(info)
+                        }
                     }
                 }
                 is BodyCustomisationExtendedInfo -> {
-                    group("BODY_CUSTOMISATION") {
-                        bodyCustomisation(info)
+                    if (filters[PropertyFilter.NPC_BODY_CUSTOMISATION]) {
+                        group("BODY_CUSTOMISATION") {
+                            bodyCustomisation(info)
+                        }
                     }
                 }
                 is HeadCustomisationExtendedInfo -> {
-                    group("HEAD_CUSTOMISATION") {
-                        headCustomisation(info)
+                    if (filters[PropertyFilter.NPC_HEAD_CUSTOMISATION]) {
+                        group("HEAD_CUSTOMISATION") {
+                            headCustomisation(info)
+                        }
                     }
                 }
                 is CombatLevelChangeExtendedInfo -> {
-                    group("LEVEL_CHANGE") {
-                        combatLevelChange(info)
+                    if (filters[PropertyFilter.NPC_LEVEL_CHANGE]) {
+                        group("LEVEL_CHANGE") {
+                            combatLevelChange(info)
+                        }
                     }
                 }
                 is EnabledOpsExtendedInfo -> {
-                    group("ENABLED_OPS") {
-                        enabledOps(info)
+                    if (filters[PropertyFilter.NPC_ENABLED_OPS]) {
+                        group("ENABLED_OPS") {
+                            enabledOps(info)
+                        }
                     }
                 }
                 is FaceCoordExtendedInfo -> {
-                    group("FACE_COORD") {
-                        faceCoord(npc, info)
+                    if (filters[PropertyFilter.NPC_FACE_COORD]) {
+                        group("FACE_COORD") {
+                            faceCoord(npc, info)
+                        }
                     }
                 }
                 is NameChangeExtendedInfo -> {
-                    group("NAME_CHANGE") {
-                        nameChange(info)
+                    if (filters[PropertyFilter.NPC_NAME_CHANGE]) {
+                        group("NAME_CHANGE") {
+                            nameChange(info)
+                        }
                     }
                 }
                 is TransformationExtendedInfo -> {
-                    group("TRANSFORMATION") {
-                        transformation(info)
+                    if (filters[PropertyFilter.NPC_TRANSFORMATION]) {
+                        group("TRANSFORMATION") {
+                            transformation(info)
+                        }
                     }
                 }
                 is HeadIconCustomisationExtendedInfo -> {
-                    group("HEADICON_CUSTOMISATION") {
-                        headIconCustomisation(info)
+                    if (filters[PropertyFilter.NPC_HEADICON_CUSTOMISATION]) {
+                        group("HEADICON_CUSTOMISATION") {
+                            headIconCustomisation(info)
+                        }
                     }
                 }
             }
