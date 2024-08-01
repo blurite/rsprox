@@ -8,7 +8,10 @@ import net.rsprox.gui.App
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.progressbar.ProgressBarNotifier
 import net.rsprox.shared.SessionMonitor
-import net.rsprox.shared.property.RootProperty
+import net.rsprox.shared.property.*
+import net.rsprox.shared.property.regular.GroupProperty
+import net.rsprox.shared.property.regular.ListProperty
+import net.rsprox.shared.symbols.SymbolDictionaryProvider
 import org.jdesktop.swingx.JXTreeTable
 import org.jdesktop.swingx.decorator.ColorHighlighter
 import org.jdesktop.swingx.decorator.HighlightPredicate
@@ -18,6 +21,7 @@ import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel
 import java.awt.BorderLayout
 import java.awt.Color
+import java.text.SimpleDateFormat
 import java.util.concurrent.ForkJoinPool
 import javax.swing.BorderFactory
 import javax.swing.JPanel
@@ -40,7 +44,7 @@ public class SessionPanel(
     init {
         layout = BorderLayout()
 
-        tableModel.setColumnIdentifiers(listOf("ID", "Tick", "Message"))
+        tableModel.setColumnIdentifiers(listOf("#", "Content"))
         tableModel.setRoot(root)
 
         treeTable.treeTableModel = tableModel
@@ -55,20 +59,14 @@ public class SessionPanel(
         treeTable.searchable = TableSearchable(treeTable)
         treeTable.autoResizeMode = JXTreeTable.AUTO_RESIZE_LAST_COLUMN
 
-        treeTable.tableHeader.resizingColumn = treeTable.columnModel.getColumn(2)
+        treeTable.tableHeader.resizingColumn = treeTable.columnModel.getColumn(1)
 
         treeTable.columnModel.getColumn(0).apply {
-            preferredWidth = 100
-            minWidth = 100
-            maxWidth = 200
+            preferredWidth = 150
+            minWidth = 150
+            maxWidth = 250
         }
 
-
-        treeTable.columnModel.getColumn(1).apply {
-            preferredWidth = 50
-            minWidth = 50
-            maxWidth = 100
-        }
         val highlighter = ColorHighlighter(HighlightPredicate.ODD, getOddRowColor(), null)
         treeTable.addHighlighter(highlighter)
 
@@ -111,18 +109,6 @@ public class SessionPanel(
         sessionsPanel.syncSessionMetricsInfo(this)
     }
 
-    private fun createNode(id: Int, tick: Int, message: String): MessageTreeTableNode {
-        return MessageTreeTableNode(id, tick, message)
-    }
-
-    private fun createStreamNode(): DefaultMutableTreeTableNode {
-        return DefaultMutableTreeTableNode("Stream", true)
-    }
-
-    private fun createTickNode(tickNumber: Int): DefaultMutableTreeTableNode {
-        return DefaultMutableTreeTableNode("Tick $tickNumber", true)
-    }
-
     private fun getOddRowColor(): Color {
         val background = treeTable.background
         val alternateRowColor = if (FlatLaf.isLafDark())
@@ -134,10 +120,14 @@ public class SessionPanel(
 
     private inner class UiSessionMonitor : SessionMonitor<BinaryHeader> {
 
-        private var streamNode: DefaultMutableTreeTableNode? = null
-        private var tickNode: DefaultMutableTreeTableNode? = null
+        private var streamNode: StreamTreeTableNode? = null
+        private var tickNode: TickTreeTableNode? = null
         private var lastCycle = -1
-        private var id = 0
+        private val formatter = OmitFilteredPropertyTreeFormatter(
+            PropertyFormatterCollection.default(
+                SymbolDictionaryProvider.get()
+            )
+        )
 
         override fun onLogin(header: BinaryHeader) {
             // Update the session metrics data.
@@ -146,7 +136,7 @@ public class SessionPanel(
 
             // Create a new root node for the logged in session.
             SwingUtilities.invokeLater {
-                val streamNode = createStreamNode()
+                val streamNode = StreamTreeTableNode(header)
                 tableModel.insertNodeInto(streamNode, root, root.childCount)
                 this.streamNode = streamNode
             }
@@ -162,58 +152,147 @@ public class SessionPanel(
         }
 
         override fun onIncomingBytesPerSecondUpdate(bytesPerLastSecond: Long) {
+            metrics.bandInPerSec = bytesPerLastSecond.toInt()
+            notifyMetricsChanged()
         }
 
         override fun onOutgoingBytesPerSecondUpdate(bytesPerLastSecond: Long) {
+            metrics.bandOutPerSec = bytesPerLastSecond.toInt()
+            notifyMetricsChanged()
         }
 
         override fun onNameUpdate(name: String) {
             metrics.username = name
-            sessionsPanel.updateTabTitle(this@SessionPanel,name)
+            sessionsPanel.updateTabTitle(this@SessionPanel, name)
             notifyMetricsChanged()
         }
 
         override fun onTranscribe(cycle: Int, property: RootProperty<*>) {
-//            val streamNode = streamNode
-//                ?: error("Stream node is null")
-//            SwingUtilities.invokeLater {
-//                val tickNode: DefaultMutableTreeTableNode
-//                if (cycle != lastCycle) {
-//                    tickNode = createTickNode(cycle)
-//                    tableModel.insertNodeInto(tickNode, streamNode, streamNode.childCount)
-//                    this.tickNode = tickNode
-//                    lastCycle = cycle
-//                } else {
-//                    tickNode = this.tickNode
-//                        ?: error("Tick node is null")
-//                }
-//                tableModel.insertNodeInto(createNode(id++, cycle, message), tickNode, tickNode.childCount)
-//                val row = treeTable.rowCount - 1
-//                treeTable.expandRow(row)
-//                if (scrolledToLatest) {
-//                    scrollPane.verticalScrollBar.value = scrollPane.verticalScrollBar.maximum
-//                }
-//            }
+            val tickNode = findOrCreateTickNode(cycle)
+            createMessageNode(tickNode, cycle, property)
+        }
+
+        private fun createMessageNode(
+            tickNode: AbstractMutableTreeTableNode,
+            cycle: Int,
+            property: RootProperty<*>
+        ) {
+            val previewText = getPreviewText(property)
+            val rootNode = MessageTreeTableNode(cycle, previewText, property, property.prot)
+            tableModel.insertNodeInto(rootNode, tickNode, tickNode.childCount)
+            createMessageChildNodes(cycle, rootNode, property)
+        }
+
+        private fun getPreviewText(property: Property, indent: Int = 0): String {
+            val children = property.children
+            val previewProps = children.filter { it.children.isEmpty() }
+            val previewText = if (previewProps.isNotEmpty()) {
+                buildString {
+                    for (child in previewProps) {
+                        val linePrefix = if (child === previewProps.first()) null else ", "
+                        formatter.writeChild(child, this@buildString, indent, linePrefix)
+                    }
+                }
+            } else {
+                if (property is ChildProperty<*>) {
+                    property.propertyName
+                } else {
+                    ""
+                }
+            }
+            return previewText
+        }
+
+        private fun createMessageChildNodes(
+            cycle: Int,
+            parentNode: AbstractMutableTreeTableNode,
+            rootProperty: RootProperty<*>,
+            property: Property = rootProperty,
+            indent: Int = 0
+        ) {
+            for (child in property.children) {
+                if (child.children.isEmpty()) continue // they get consumed in preview
+                val previewText = getPreviewText(child, indent)
+                when (child) {
+                    is GroupProperty -> {
+                        val groupNode = MessageTreeTableNode(cycle, previewText, rootProperty, null)
+                        tableModel.insertNodeInto(groupNode, parentNode, parentNode.childCount)
+                        createMessageChildNodes(cycle, groupNode, rootProperty, child, indent + 1)
+                    }
+
+                    is ListProperty -> {
+
+                    }
+
+                    else -> {
+                        error("Unsupported property with children. Property type: ${child::class.simpleName}")
+                    }
+                }
+            }
+
+        }
+
+        private fun findOrCreateTickNode(tickNumber: Int): AbstractMutableTreeTableNode {
+            val streamNode = streamNode!!
+            var tickNode = tickNode
+            if (tickNode == null || lastCycle != tickNumber) {
+                lastCycle = tickNumber
+                tickNode = TickTreeTableNode(tickNumber)
+                this.tickNode = tickNode
+                tableModel.insertNodeInto(tickNode, streamNode, streamNode.childCount)
+            }
+            return tickNode
         }
     }
 
     private companion object {
-        private class MessageTreeTableNode(
-            private val id: Int,
-            private val tick: Int,
-            private val message: String
-        ) : AbstractMutableTreeTableNode() {
+        private class StreamTreeTableNode(
+            private val header: BinaryHeader
+        ) : SessionBaseTreeTableNode() {
 
             override fun getValueAt(column: Int) = when (column) {
-                0 -> id
-                1 -> tick
-                2 -> message
+                0 -> "Stream"
+                1 -> "${header.worldId} (${header.worldActivity}) at ${
+                    SimpleDateFormat.getTimeInstance().format(header.timestamp)
+                }"
+
                 else -> error("Invalid column index: $column")
             }
 
-            override fun getColumnCount() = 3
+            override fun getColumnCount() = 2
         }
 
-        val logger = InlineLogger()
+        private class TickTreeTableNode(
+            private val tickNumber: Int
+        ) : SessionBaseTreeTableNode() {
+
+            override fun getValueAt(column: Int) = when (column) {
+                0 -> "Tick $tickNumber"
+                1 -> null
+                else -> error("Invalid column index: $column")
+            }
+
+            override fun getColumnCount() = 2
+        }
+
+        private class MessageTreeTableNode(
+            private val tick: Int,
+            private val message: String,
+            private val rootProperty: RootProperty<*>,
+            private val prot: Any?
+        ) : SessionBaseTreeTableNode() {
+
+            override fun getValueAt(column: Int) = when (column) {
+                0 -> prot
+                1 -> message
+                else -> error("Invalid column index: $column")
+            }
+
+            override fun getColumnCount() = 2
+        }
+
+        private abstract class SessionBaseTreeTableNode() : AbstractMutableTreeTableNode(null, true)
+
+        private val logger = InlineLogger()
     }
 }
