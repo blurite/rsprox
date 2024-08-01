@@ -30,7 +30,7 @@ public class DefaultPropertyFilterSet(
     }
 
     override fun deleteBackingFile() {
-        path.deleteIfExists()
+        path.resolve("filters-$creationTime.txt").deleteIfExists()
     }
 
     override fun get(filter: PropertyFilter): Boolean {
@@ -137,7 +137,7 @@ public class DefaultPropertyFilterSet(
             var version: Int = -1
             var name: String? = null
             var creationTime: Long = 0
-            var active: Boolean = false
+            var active = false
             val properties: MutableMap<String, Boolean> = mutableMapOf()
             for (line in text.lineSequence()) {
                 if (line.startsWith("version=")) {
