@@ -137,6 +137,7 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjEnabledOps
 import net.rsprox.protocol.game.outgoing.model.zone.payload.SoundArea
 import net.rsprox.protocol.reflection.ReflectionCheck
 import net.rsprox.shared.ScriptVarType
+import net.rsprox.shared.filters.PropertyFilter
 import net.rsprox.shared.filters.PropertyFilterSet
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.property.ChildProperty
@@ -192,6 +193,10 @@ public class BaseServerPacketTranscriber(
         get() = checkNotNull(stateTracker.root)
     private val filters: PropertyFilterSet
         get() = filterSetStore.getActive()
+
+    private fun omit() {
+        stateTracker.deleteRoot()
+    }
 
     private fun Property.npc(index: Int): ChildProperty<*> {
         val npc = stateTracker.getActiveWorld().getNpcOrNull(index)
@@ -286,6 +291,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun camLookAt(message: CamLookAt) {
+        if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
         root.coordGrid(buildAreaCoordGrid(message.destinationXInBuildArea, message.destinationZInBuildArea))
         root.int("height", message.height)
         root.int("rate", message.speed)
@@ -293,6 +299,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun camLookAtEasedCoord(message: CamLookAtEasedCoord) {
+        if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
         root.coordGrid(buildAreaCoordGrid(message.destinationXInBuildArea, message.destinationZInBuildArea))
         root.int("height", message.height)
         root.int("cycles", message.duration)
@@ -300,10 +307,12 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun camMode(message: CamMode) {
+        if (!filters[PropertyFilter.CAM_MODE]) return omit()
         root.int("mode", message.mode)
     }
 
     override fun camMoveTo(message: CamMoveTo) {
+        if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
         root.coordGrid(buildAreaCoordGrid(message.destinationXInBuildArea, message.destinationZInBuildArea))
         root.int("height", message.height)
         root.int("rate", message.speed)
@@ -311,6 +320,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun camMoveToArc(message: CamMoveToArc) {
+        if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
         root.coordGrid(buildAreaCoordGrid(message.destinationXInBuildArea, message.destinationZInBuildArea))
         root.int("height", message.height)
         root.coordGrid("tertiarycoord", buildAreaCoordGrid(message.centerXInBuildArea, message.centerZInBuildArea))
@@ -320,6 +330,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun camMoveToCycles(message: CamMoveToCycles) {
+        if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
         root.coordGrid(buildAreaCoordGrid(message.destinationXInBuildArea, message.destinationZInBuildArea))
         root.int("height", message.height)
         root.int("cycles", message.duration)
@@ -328,9 +339,11 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun camReset(message: CamReset) {
+        if (!filters[PropertyFilter.CAM_RESET]) return omit()
     }
 
     override fun camRotateBy(message: CamRotateBy) {
+        if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
         root.int("pitch", message.xAngle)
         root.int("yaw", message.yAngle)
         root.int("cycles", message.duration)
@@ -338,6 +351,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun camRotateTo(message: CamRotateTo) {
+        if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
         root.int("pitch", message.xAngle)
         root.int("yaw", message.yAngle)
         root.int("cycles", message.duration)
@@ -345,6 +359,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun camShake(message: CamShake) {
+        if (!filters[PropertyFilter.CAM_SHAKE]) return omit()
         root.int("axis", message.type)
         root.int("random", message.randomAmount)
         root.int("amplitude", message.sineAmount)
@@ -352,6 +367,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun camSmoothReset(message: CamSmoothReset) {
+        if (!filters[PropertyFilter.CAM_RESET]) return omit()
         root.int("moveconstantspeed", message.cameraMoveConstantSpeed)
         root.int("moveproportionalspeed", message.cameraMoveProportionalSpeed)
         root.int("lookconstantspeed", message.cameraLookConstantSpeed)
@@ -359,6 +375,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun camTarget(message: CamTarget) {
+        if (!filters[PropertyFilter.CAM_TARGET]) return omit()
         when (val type = message.type) {
             is CamTarget.NpcCamTarget -> {
                 root.npc(type.index)
@@ -376,6 +393,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun camTargetOld(message: CamTargetOld) {
+        if (!filters[PropertyFilter.CAM_TARGET]) return omit()
         when (val type = message.type) {
             is CamTargetOld.NpcCamTarget -> {
                 root.npc(type.index)
@@ -390,10 +408,12 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun oculusSync(message: OculusSync) {
+        if (!filters[PropertyFilter.OCULUS_SYNC]) return omit()
         root.int("value", message.value)
     }
 
     override fun clanChannelDelta(message: ClanChannelDelta) {
+        if (!filters[PropertyFilter.CLANCHANNEL]) return omit()
         root.int("clantype", message.clanType)
         root.long("clanhash", message.clanHash)
         root.long("updatenum", message.updateNum)
@@ -439,6 +459,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun clanChannelFull(message: ClanChannelFull) {
+        if (!filters[PropertyFilter.CLANCHANNEL]) return omit()
         root.int("clantype", message.clanType)
         when (val update = message.update) {
             is ClanChannelFull.ClanChannelFullJoinUpdate -> {
@@ -469,6 +490,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun clanSettingsDelta(message: ClanSettingsDelta) {
+        if (!filters[PropertyFilter.CLANSETTINGS]) return omit()
         root.int("clantype", message.clanType)
         root.long("ownerhash", message.owner)
         root.int("updatenum", message.updateNum)
@@ -580,6 +602,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun clanSettingsFull(message: ClanSettingsFull) {
+        if (!filters[PropertyFilter.CLANSETTINGS_FULL_REQUEST]) return omit()
         root.int("clantype", message.clanType)
         when (val update = message.update) {
             is ClanSettingsFull.ClanSettingsFullJoinUpdate -> {
@@ -644,6 +667,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun messageClanChannel(message: MessageClanChannel) {
+        if (!filters[PropertyFilter.MESSAGE_CLANCHANNEL]) return omit()
         root.int("clantype", message.clanType)
         root.string("name", message.name)
         root.int("world", message.worldId)
@@ -653,6 +677,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun messageClanChannelSystem(message: MessageClanChannelSystem) {
+        if (!filters[PropertyFilter.MESSAGE_CLANCHANNEL]) return omit()
         root.int("clantype", message.clanType)
         root.int("world", message.worldId)
         root.int("mescount", message.worldMessageCounter)
@@ -660,6 +685,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun varClan(message: VarClan) {
+        if (!filters[PropertyFilter.VARCLAN]) return omit()
         root.int("id", message.id)
         when (val value = message.value) {
             is VarClan.UnknownVarClanData -> {
@@ -678,12 +704,15 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun varClanDisable(message: VarClanDisable) {
+        if (!filters[PropertyFilter.VARCLAN]) return omit()
     }
 
     override fun varClanEnable(message: VarClanEnable) {
+        if (!filters[PropertyFilter.VARCLAN]) return omit()
     }
 
     override fun messageFriendChannel(message: MessageFriendChannel) {
+        if (!filters[PropertyFilter.MESSAGE_FRIENDCHANNEL]) return omit()
         root.string("name", message.sender)
         root.string("channelname", message.channelName)
         root.int("world", message.worldId)
@@ -693,6 +722,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun updateFriendChatChannelFullV1(message: UpdateFriendChatChannelFullV1) {
+        if (!filters[PropertyFilter.UPDATE_FRIENDCHAT_CHANNEL_FULL]) return omit()
         when (val update = message.updateType) {
             is UpdateFriendChatChannelFullV1.JoinUpdate -> {
                 root.string("owner", update.channelOwner)
@@ -715,6 +745,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun updateFriendChatChannelFullV2(message: UpdateFriendChatChannelFullV2) {
+        if (!filters[PropertyFilter.UPDATE_FRIENDCHAT_CHANNEL_FULL]) return omit()
         when (val update = message.updateType) {
             is UpdateFriendChatChannelFullV2.JoinUpdate -> {
                 root.string("owner", update.channelOwner)
@@ -737,6 +768,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun updateFriendChatChannelSingleUser(message: UpdateFriendChatChannelSingleUser) {
+        if (!filters[PropertyFilter.UPDATE_FRIENDCHAT_CHANNEL_SINGLEUSER]) return omit()
         when (val user = message.user) {
             is UpdateFriendChatChannelSingleUser.AddedFriendChatUser -> {
                 root.string("type", "add")
@@ -755,6 +787,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun setNpcUpdateOrigin(message: SetNpcUpdateOrigin) {
+        if (!filters[PropertyFilter.SET_NPC_UPDATE_ORIGIN]) return omit()
         root.coordGrid(buildAreaCoordGrid(message.originX, message.originZ))
     }
 
@@ -834,6 +867,7 @@ public class BaseServerPacketTranscriber(
                 }
             }
         postWorldEntityUpdate(message)
+        if (!filters[PropertyFilter.WORLDENTITY_INFO]) return omit()
         val children = group.children
         // If no children were added to the root group, it means no worldentities are being updated
         // In this case, remove the empty line that the group is generating
@@ -847,12 +881,14 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun ifClearInv(message: IfClearInv) {
+        if (!filters[PropertyFilter.IF_CLEARINV]) return omit()
         root.com(message.interfaceId, message.componentId)
     }
 
     override fun ifCloseSub(message: IfCloseSub) {
         val interfaceId = stateTracker.getOpenInterface(message.combinedId)
         stateTracker.closeInterface(message.combinedId)
+        if (!filters[PropertyFilter.IF_CLOSESUB]) return omit()
         root.com(message.interfaceId, message.componentId)
         if (interfaceId != null) {
             root.inter(interfaceId)
@@ -862,6 +898,7 @@ public class BaseServerPacketTranscriber(
     override fun ifMoveSub(message: IfMoveSub) {
         val interfaceId = stateTracker.getOpenInterface(message.sourceCombinedId)
         stateTracker.moveInterface(message.sourceCombinedId, message.destinationCombinedId)
+        if (!filters[PropertyFilter.IF_MOVESUB]) return omit()
         root.com("sourcecom", message.sourceInterfaceId, message.sourceComponentId)
         root.com("destcom", message.destinationInterfaceId, message.destinationComponentId)
         if (interfaceId != null) {
@@ -887,6 +924,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun ifOpenSub(message: IfOpenSub) {
+        if (!filters[PropertyFilter.IF_OPENSUB]) return omit()
         root.com(message.destinationInterfaceId, message.destinationComponentId)
         root.inter(message.interfaceId)
         root.namedEnum("type", getIfType(message.type))
@@ -895,6 +933,7 @@ public class BaseServerPacketTranscriber(
     override fun ifOpenTop(message: IfOpenTop) {
         val existing = stateTracker.toplevelInterface
         stateTracker.toplevelInterface = message.interfaceId
+        if (!filters[PropertyFilter.IF_OPENTOP]) return omit()
         if (existing != -1) {
             root.inter("previousid", existing)
         }
@@ -958,6 +997,7 @@ public class BaseServerPacketTranscriber(
 
     override fun ifResync(message: IfResync) {
         stateTracker.toplevelInterface = message.topLevelInterface
+        if (!filters[PropertyFilter.IF_RESYNC]) return omit()
         root.inter(message.topLevelInterface)
         root.group("SUB_INTERFACES") {
             for (sub in message.subInterfaces) {
@@ -982,6 +1022,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun ifSetAngle(message: IfSetAngle) {
+        if (!filters[PropertyFilter.IF_SETANGLE]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.int("anglex", message.angleX)
         root.int("angley", message.angleY)
@@ -989,16 +1030,19 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun ifSetAnim(message: IfSetAnim) {
+        if (!filters[PropertyFilter.IF_SETANIM]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.scriptVarType("id", ScriptVarType.SEQ, message.anim)
     }
 
     override fun ifSetColour(message: IfSetColour) {
+        if (!filters[PropertyFilter.IF_SETCOLOUR]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.scriptVarType("colour", ScriptVarType.COLOUR, message.colour15BitPacked)
     }
 
     override fun ifSetEvents(message: IfSetEvents) {
+        if (!filters[PropertyFilter.IF_SETEVENTS]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.int("start", message.start.maxUShortToMinusOne())
         root.int("end", message.start.maxUShortToMinusOne())
@@ -1006,79 +1050,94 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun ifSetHide(message: IfSetHide) {
+        if (!filters[PropertyFilter.IF_SETHIDE]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.boolean("hide", message.hidden)
     }
 
     override fun ifSetModel(message: IfSetModel) {
+        if (!filters[PropertyFilter.IF_SETMODEL]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.scriptVarType("id", ScriptVarType.MODEL, message.model)
     }
 
     override fun ifSetNpcHead(message: IfSetNpcHead) {
+        if (!filters[PropertyFilter.IF_SETNPCHEAD]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.scriptVarType("id", ScriptVarType.NPC, message.npc)
     }
 
     override fun ifSetNpcHeadActive(message: IfSetNpcHeadActive) {
+        if (!filters[PropertyFilter.IF_SETNPCHEAD_ACTIVE]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.npc(message.index)
     }
 
     override fun ifSetObject(message: IfSetObject) {
+        if (!filters[PropertyFilter.IF_SETOBJECT]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.scriptVarType("id", ScriptVarType.OBJ, message.obj)
         root.int("zoomorcount", message.count)
     }
 
     override fun ifSetPlayerHead(message: IfSetPlayerHead) {
+        if (!filters[PropertyFilter.IF_SETPLAYERHEAD]) return omit()
         root.com(message.interfaceId, message.componentId)
     }
 
     override fun ifSetPlayerModelBaseColour(message: IfSetPlayerModelBaseColour) {
+        if (!filters[PropertyFilter.IF_SETPLAYERMODEL]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.int("index", message.index)
         root.scriptVarType("colour", ScriptVarType.COLOUR, message.colour)
     }
 
     override fun ifSetPlayerModelBodyType(message: IfSetPlayerModelBodyType) {
+        if (!filters[PropertyFilter.IF_SETPLAYERMODEL]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.int("bodytype", message.bodyType)
     }
 
     override fun ifSetPlayerModelObj(message: IfSetPlayerModelObj) {
+        if (!filters[PropertyFilter.IF_SETPLAYERMODEL]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.scriptVarType("id", ScriptVarType.OBJ, message.obj)
     }
 
     override fun ifSetPlayerModelSelf(message: IfSetPlayerModelSelf) {
+        if (!filters[PropertyFilter.IF_SETPLAYERMODEL]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.boolean("copyobjs", message.copyObjs)
     }
 
     override fun ifSetPosition(message: IfSetPosition) {
+        if (!filters[PropertyFilter.IF_SETPOSITION]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.int("x", message.x)
         root.int("y", message.y)
     }
 
     override fun ifSetRotateSpeed(message: IfSetRotateSpeed) {
+        if (!filters[PropertyFilter.IF_SETROTATESPEED]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.int("xspeed", message.xSpeed)
         root.int("yspeed", message.ySpeed)
     }
 
     override fun ifSetScrollPos(message: IfSetScrollPos) {
+        if (!filters[PropertyFilter.IF_SETSCROLLPOS]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.int("scrollpos", message.scrollPos)
     }
 
     override fun ifSetText(message: IfSetText) {
+        if (!filters[PropertyFilter.IF_SETTEXT]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.string("text", message.text)
     }
 
     override fun updateInvFull(message: UpdateInvFull) {
+        if (!filters[PropertyFilter.UPDATE_INV]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.scriptVarType("id", ScriptVarType.INV, message.inventoryId)
         root.group("OBJS") {
@@ -1092,6 +1151,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun updateInvPartial(message: UpdateInvPartial) {
+        if (!filters[PropertyFilter.UPDATE_INV]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.scriptVarType("id", ScriptVarType.INV, message.inventoryId)
         root.group("OBJS") {
@@ -1106,10 +1166,12 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun updateInvStopTransmit(message: UpdateInvStopTransmit) {
+        if (!filters[PropertyFilter.UPDATE_INV]) return omit()
         root.scriptVarType("id", ScriptVarType.INV, message.inventoryId)
     }
 
     override fun logout(message: Logout) {
+        if (!filters[PropertyFilter.LOGOUT]) return omit()
     }
 
     private enum class WorldFlag(
@@ -1164,6 +1226,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun logoutTransfer(message: LogoutTransfer) {
+        if (!filters[PropertyFilter.LOGOUT]) return omit()
         root.string("host", message.host)
         root.int("id", message.id)
         root.string("properties", WorldFlag.list(message.properties).toString())
@@ -1187,6 +1250,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun logoutWithReason(message: LogoutWithReason) {
+        if (!filters[PropertyFilter.LOGOUT]) return omit()
         root.namedEnum("reason", getLogoutReason(message.reason))
     }
 
@@ -1201,6 +1265,7 @@ public class BaseServerPacketTranscriber(
         stateTracker.localPlayerIndex = message.playerInfoInitBlock.localPlayerIndex
         val world = stateTracker.createWorld(-1)
         world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
+        if (!filters[PropertyFilter.REBUILD]) return omit()
         root.int("zonex", message.zoneX)
         root.int("zonez", message.zoneZ)
         root.int("worldarea", message.worldArea)
@@ -1230,6 +1295,7 @@ public class BaseServerPacketTranscriber(
     override fun rebuildNormal(message: RebuildNormal) {
         val world = stateTracker.getWorld(-1)
         world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
+        if (!filters[PropertyFilter.REBUILD]) return omit()
         root.int("zonex", message.zoneX)
         root.int("zonez", message.zoneZ)
         root.int("worldarea", message.worldArea)
@@ -1258,6 +1324,7 @@ public class BaseServerPacketTranscriber(
     override fun rebuildRegion(message: RebuildRegion) {
         val world = stateTracker.getWorld(-1)
         world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
+        if (!filters[PropertyFilter.REBUILD]) return omit()
         root.int("zonex", message.zoneX)
         root.int("zonez", message.zoneZ)
         root.boolean("reload", message.reload)
@@ -1299,6 +1366,7 @@ public class BaseServerPacketTranscriber(
     override fun rebuildWorldEntity(message: RebuildWorldEntity) {
         val world = stateTracker.getWorld(-1)
         world.rebuild(CoordGrid(0, (message.baseX - 6) shl 3, (message.baseZ - 6) shl 3))
+        if (!filters[PropertyFilter.REBUILD]) return omit()
         root.worldentity(message.index)
         root.int("zonex", message.baseX)
         root.int("zonez", message.baseZ)
@@ -1339,18 +1407,22 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun hideLocOps(message: HideLocOps) {
+        if (!filters[PropertyFilter.HIDEOPS]) return omit()
         root.boolean("hide", message.hidden)
     }
 
     override fun hideNpcOps(message: HideNpcOps) {
+        if (!filters[PropertyFilter.HIDEOPS]) return omit()
         root.boolean("hide", message.hidden)
     }
 
     override fun hidePlayerOps(message: HidePlayerOps) {
+        if (!filters[PropertyFilter.HIDEOPS]) return omit()
         root.boolean("hide", message.hidden)
     }
 
     override fun hintArrow(message: HintArrow) {
+        if (!filters[PropertyFilter.HINT_ARROW]) return omit()
         when (val type = message.type) {
             is HintArrow.NpcHintArrow -> {
                 root.npc(type.index)
@@ -1375,6 +1447,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun hiscoreReply(message: HiscoreReply) {
+        if (!filters[PropertyFilter.HISCORE_REPLY]) return omit()
         root.int("requestid", message.requestId)
         when (val type = message.response) {
             is HiscoreReply.FailedHiscoreReply -> {
@@ -1412,10 +1485,12 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun minimapToggle(message: MinimapToggle) {
+        if (!filters[PropertyFilter.MINIMAP_TOGGLE]) return omit()
         root.int("state", message.minimapState)
     }
 
     override fun reflectionChecker(message: ReflectionChecker) {
+        if (!filters[PropertyFilter.REFLECTION_CHECKER]) return omit()
         root.formattedInt("id", message.id)
         root.group("CHECKS") {
             for (check in message.checks) {
@@ -1467,34 +1542,42 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun resetAnims(message: ResetAnims) {
+        if (!filters[PropertyFilter.RESET_ANIMS]) return omit()
     }
 
     override fun sendPing(message: SendPing) {
+        if (!filters[PropertyFilter.SEND_PING]) return omit()
         root.int("value1", message.value1)
         root.int("value2", message.value2)
     }
 
     override fun serverTickEnd(message: ServerTickEnd) {
         stateTracker.incrementCycle()
+        if (!filters[PropertyFilter.SERVER_TICK_END]) return omit()
     }
 
     override fun setHeatmapEnabled(message: SetHeatmapEnabled) {
+        if (!filters[PropertyFilter.SET_HEATMAP_ENABLED]) return omit()
         root.boolean("enabled", message.enabled)
     }
 
     override fun siteSettings(message: SiteSettings) {
+        if (!filters[PropertyFilter.SITE_SETTINGS]) return omit()
         root.string("settings", message.settings)
     }
 
     override fun updateRebootTimer(message: UpdateRebootTimer) {
+        if (!filters[PropertyFilter.UPDATE_REBOOT_TIMER]) return omit()
         root.formattedInt("gamecycles", message.gameCycles)
     }
 
     override fun updateUid192(message: UpdateUid192) {
+        if (!filters[PropertyFilter.UPDATE_UID192]) return omit()
         root.string("uid", message.uid.toString(Charsets.UTF_8))
     }
 
     override fun urlOpen(message: UrlOpen) {
+        if (!filters[PropertyFilter.URL_OPEN]) return omit()
         root.string("url", message.url)
     }
 
@@ -1520,11 +1603,13 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun chatFilterSettings(message: ChatFilterSettings) {
+        if (!filters[PropertyFilter.CHAT_FILTER_SETTINGS]) return omit()
         root.namedEnum("public", getChatFilter(message.publicChatFilter))
         root.namedEnum("trade", getChatFilter(message.tradeChatFilter))
     }
 
     override fun chatFilterSettingsPrivateChat(message: ChatFilterSettingsPrivateChat) {
+        if (!filters[PropertyFilter.CHAT_FILTER_SETTINGS]) return omit()
         root.namedEnum("private", getChatFilter(message.privateChatFilter))
     }
 
@@ -1572,6 +1657,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun messageGame(message: MessageGame) {
+        if (!filters[PropertyFilter.MESSAGE_GAME]) return omit()
         val type = MessageType.entries.firstOrNull { it.id == message.type }
         if (type != null) {
             root.namedEnum("type", type)
@@ -1583,6 +1669,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun runClientScript(message: RunClientScript) {
+        if (!filters[PropertyFilter.RUNCLIENTSCRIPT]) return omit()
         root.script("id", message.id)
         if (message.types.isEmpty() || message.values.isEmpty()) {
             return
@@ -1604,6 +1691,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun setMapFlag(message: SetMapFlag) {
+        if (!filters[PropertyFilter.SET_MAP_FLAG]) return omit()
         if (message.xInBuildArea == 0xFF && message.zInBuildArea == 0xFF) {
             root.coordGrid(-1, -1, -1)
         } else {
@@ -1612,19 +1700,23 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun setPlayerOp(message: SetPlayerOp) {
+        if (!filters[PropertyFilter.SET_PLAYER_OP]) return omit()
         root.int("id", message.id)
         root.string("op", message.op ?: "null")
         root.filteredBoolean("priority", message.priority)
     }
 
     override fun triggerOnDialogAbort(message: TriggerOnDialogAbort) {
+        if (!filters[PropertyFilter.TRIGGER_ONDIALOGABORT]) return omit()
     }
 
     override fun updateRunEnergy(message: UpdateRunEnergy) {
+        if (!filters[PropertyFilter.UPDATE_RUNENERGY]) return omit()
         root.int("energy", message.runenergy)
     }
 
     override fun updateRunWeight(message: UpdateRunWeight) {
+        if (!filters[PropertyFilter.UPDATE_RUNWEIGHT]) return omit()
         root.formattedInt("weight", message.runweight, GRAM_NUMBER_FORMAT)
     }
 
@@ -1662,6 +1754,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun updateStat(message: UpdateStat) {
+        if (!filters[PropertyFilter.UPDATE_STAT]) return omit()
         root.namedEnum("stat", Stat.entries.first { it.id == message.stat })
         root.int("level", message.currentLevel)
         root.filteredInt("invisiblelevel", message.invisibleBoostedLevel, message.currentLevel)
@@ -1669,12 +1762,14 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun updateStatOld(message: UpdateStatOld) {
+        if (!filters[PropertyFilter.UPDATE_STAT]) return omit()
         root.namedEnum("stat", Stat.entries.first { it.id == message.stat })
         root.int("level", message.currentLevel)
         root.formattedInt("experience", message.experience)
     }
 
     override fun updateStockMarketSlot(message: UpdateStockMarketSlot) {
+        if (!filters[PropertyFilter.UPDATE_STOCKMARKET_SLOT]) return omit()
         root.int("slot", message.slot)
         when (val update = message.update) {
             UpdateStockMarketSlot.ResetStockMarketSlot -> {}
@@ -1690,6 +1785,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun updateTradingPost(message: UpdateTradingPost) {
+        if (!filters[PropertyFilter.DEPRECATED_SERVER]) return omit()
         when (val update = message.updateType) {
             UpdateTradingPost.ResetTradingPost -> {}
             is UpdateTradingPost.SetTradingPostOfferList -> {
@@ -1713,9 +1809,11 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun friendListLoaded(message: FriendListLoaded) {
+        if (!filters[PropertyFilter.FRIENDLIST_LOADED]) return omit()
     }
 
     override fun messagePrivate(message: MessagePrivate) {
+        if (!filters[PropertyFilter.MESSAGE_PRIVATE]) return omit()
         root.string("from", message.sender)
         root.int("world", message.worldId)
         root.int("mescount", message.worldMessageCounter)
@@ -1724,6 +1822,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun messagePrivateEcho(message: MessagePrivateEcho) {
+        if (!filters[PropertyFilter.MESSAGE_PRIVATE]) return omit()
         root.string("to", message.recipient)
         root.string("message", message.message)
     }
@@ -1738,6 +1837,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun updateFriendList(message: UpdateFriendList) {
+        if (!filters[PropertyFilter.UPDATE_FRIENDLIST]) return omit()
         for (friend in message.friends) {
             when (friend) {
                 is UpdateFriendList.OfflineFriend -> {
@@ -1769,6 +1869,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun updateIgnoreList(message: UpdateIgnoreList) {
+        if (!filters[PropertyFilter.UPDATE_IGNORELIST]) return omit()
         for (ignore in message.ignores) {
             when (ignore) {
                 is UpdateIgnoreList.AddedIgnoredEntry -> {
@@ -1789,6 +1890,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun midiJingle(message: MidiJingle) {
+        if (!filters[PropertyFilter.MIDI_JINGLE]) return omit()
         root.scriptVarType("id", ScriptVarType.JINGLE, message.id)
         if (message.lengthInMillis != 0) {
             root.formattedInt("length", message.lengthInMillis, MS_NUMBER_FORMAT)
@@ -1796,6 +1898,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun midiSong(message: MidiSong) {
+        if (!filters[PropertyFilter.MIDI_SONG]) return omit()
         root.scriptVarType("id", ScriptVarType.MIDI, message.id)
         root.int("fadeoutdelay", message.fadeOutDelay)
         root.int("fadeoutspeed", message.fadeOutSpeed)
@@ -1804,15 +1907,18 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun midiSongOld(message: MidiSongOld) {
+        if (!filters[PropertyFilter.MIDI_SONG]) return omit()
         root.scriptVarType("id", ScriptVarType.MIDI, message.id)
     }
 
     override fun midiSongStop(message: MidiSongStop) {
+        if (!filters[PropertyFilter.MIDI_SONG_STOP]) return omit()
         root.int("fadeoutdelay", message.fadeOutDelay)
         root.int("fadeoutspeed", message.fadeOutSpeed)
     }
 
     override fun midiSongWithSecondary(message: MidiSongWithSecondary) {
+        if (!filters[PropertyFilter.MIDI_SONG]) return omit()
         root.scriptVarType("primaryid", ScriptVarType.MIDI, message.primaryId)
         root.scriptVarType("secondaryid", ScriptVarType.MIDI, message.secondaryId)
         root.int("fadeoutdelay", message.fadeOutDelay)
@@ -1822,6 +1928,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun midiSwap(message: MidiSwap) {
+        if (!filters[PropertyFilter.MIDI_SWAP]) return omit()
         root.int("fadeoutdelay", message.fadeOutDelay)
         root.int("fadeoutspeed", message.fadeOutSpeed)
         root.int("fadeindelay", message.fadeInDelay)
@@ -1829,12 +1936,14 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun synthSound(message: SynthSound) {
+        if (!filters[PropertyFilter.SYNTH_SOUND]) return omit()
         root.scriptVarType("id", ScriptVarType.SYNTH, message.id.maxUShortToMinusOne())
         root.filteredInt("loops", message.loops, 1)
         root.filteredInt("delay", message.delay, 0)
     }
 
     override fun locAnimSpecific(message: LocAnimSpecific) {
+        if (!filters[PropertyFilter.LOC_ANIM_SPECIFIC]) return omit()
         root.scriptVarType("id", ScriptVarType.LOC, message.id)
         root.coordGrid(buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea))
         root.scriptVarType("shape", ScriptVarType.LOC_SHAPE, message.shape)
@@ -1842,6 +1951,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun mapAnimSpecific(message: MapAnimSpecific) {
+        if (!filters[PropertyFilter.MAP_ANIM_SPECIFIC]) return omit()
         root.scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
         root.filteredInt("delay", message.delay, 0)
         root.filteredInt("height", message.height, 0)
@@ -1849,12 +1959,14 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun npcAnimSpecific(message: NpcAnimSpecific) {
+        if (!filters[PropertyFilter.NPC_ANIM_SPECIFIC]) return omit()
         root.npc(message.index)
         root.scriptVarType("anim", ScriptVarType.SEQ, message.id)
         root.filteredInt("delay", message.delay, 0)
     }
 
     override fun npcHeadIconSpecific(message: NpcHeadIconSpecific) {
+        if (!filters[PropertyFilter.NPC_HEADICON_SPECIFIC]) return omit()
         root.npc(message.index)
         root.int("slot", message.headIconSlot)
         root.scriptVarType("graphic", ScriptVarType.GRAPHIC, message.spriteGroup)
@@ -1862,6 +1974,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun npcSpotAnimSpecific(message: NpcSpotAnimSpecific) {
+        if (!filters[PropertyFilter.NPC_SPOTANIM_SPECIFIC]) return omit()
         root.npc(message.index)
         root.int("slot", message.slot)
         root.scriptVarType("spotanim", ScriptVarType.SPOTANIM, message.id)
@@ -1870,11 +1983,13 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun playerAnimSpecific(message: PlayerAnimSpecific) {
+        if (!filters[PropertyFilter.PLAYER_ANIM_SPECIFIC]) return omit()
         root.scriptVarType("anim", ScriptVarType.SEQ, message.id)
         root.filteredInt("delay", message.delay, 0)
     }
 
     override fun playerSpotAnimSpecific(message: PlayerSpotAnimSpecific) {
+        if (!filters[PropertyFilter.PLAYER_SPOTANIM_SPECIFIC]) return omit()
         root.player(message.index)
         root.int("slot", message.slot)
         root.scriptVarType("spotanim", ScriptVarType.SPOTANIM, message.id)
@@ -1883,6 +1998,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun projAnimSpecific(message: ProjAnimSpecific) {
+        if (!filters[PropertyFilter.PROJANIM_SPECIFIC]) return omit()
         root.scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
         root.int("starttime", message.startTime)
         root.int("endtime", message.endTime)
@@ -1929,6 +2045,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun varpLarge(message: VarpLarge) {
+        if (!filters[PropertyFilter.VARP]) return omit()
         val oldValue = stateTracker.getVarp(message.id)
         val impactedVarbits = getImpactedVarbits(message.id, oldValue, message.value)
         stateTracker.setVarp(message.id, message.value)
@@ -1951,9 +2068,11 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun varpReset(message: VarpReset) {
+        if (!filters[PropertyFilter.VARP_RESET]) return omit()
     }
 
     override fun varpSmall(message: VarpSmall) {
+        if (!filters[PropertyFilter.VARP]) return omit()
         val oldValue = stateTracker.getVarp(message.id)
         val impactedVarbits = getImpactedVarbits(message.id, oldValue, message.value)
         stateTracker.setVarp(message.id, message.value)
@@ -1976,13 +2095,16 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun varpSync(message: VarpSync) {
+        if (!filters[PropertyFilter.VARP_SYNC]) return omit()
     }
 
     override fun clearEntities(message: ClearEntities) {
         stateTracker.destroyDynamicWorlds()
+        if (!filters[PropertyFilter.CLEAR_ENTITIES]) return omit()
     }
 
     override fun setActiveWorld(message: SetActiveWorld) {
+        if (!filters[PropertyFilter.SET_ACTIVE_WORLD]) return omit()
         when (val type = message.worldType) {
             is SetActiveWorld.DynamicWorldType -> {
                 root.worldentity(type.index)
@@ -1997,13 +2119,17 @@ public class BaseServerPacketTranscriber(
 
     override fun updateZoneFullFollows(message: UpdateZoneFullFollows) {
         stateTracker.getActiveWorld().setActiveZone(message.zoneX, message.zoneZ, message.level)
+        if (!filters[PropertyFilter.ZONE_HEADER]) return omit()
         root.coordGrid(buildAreaCoordGrid(message.zoneX, message.zoneZ, message.level))
     }
 
     override fun updateZonePartialEnclosed(message: UpdateZonePartialEnclosed) {
         stateTracker.getActiveWorld().setActiveZone(message.zoneX, message.zoneZ, message.level)
         root.coordGrid(buildAreaCoordGrid(message.zoneX, message.zoneZ, message.level))
-        if (message.packets.isEmpty()) return
+        if (message.packets.isEmpty()) {
+            if (!filters[PropertyFilter.ZONE_HEADER]) return omit()
+            return
+        }
         root.apply {
             for (event in message.packets) {
                 when (event) {
@@ -2069,50 +2195,62 @@ public class BaseServerPacketTranscriber(
 
     override fun updateZonePartialFollows(message: UpdateZonePartialFollows) {
         stateTracker.getActiveWorld().setActiveZone(message.zoneX, message.zoneZ, message.level)
+        if (!filters[PropertyFilter.ZONE_HEADER]) return omit()
         root.coordGrid(buildAreaCoordGrid(message.zoneX, message.zoneZ, message.level))
     }
 
     override fun locAddChange(message: LocAddChange) {
+        if (!filters[PropertyFilter.LOC_ADD_CHANGE]) return omit()
         root.buildLocAddChange(message)
     }
 
     override fun locAnim(message: LocAnim) {
+        if (!filters[PropertyFilter.LOC_ANIM]) return omit()
         root.buildLocAnim(message)
     }
 
     override fun locDel(message: LocDel) {
+        if (!filters[PropertyFilter.LOC_DEL]) return omit()
         root.buildLocDel(message)
     }
 
     override fun locMerge(message: LocMerge) {
+        if (!filters[PropertyFilter.LOC_MERGE]) return omit()
         root.buildLocMerge(message)
     }
 
     override fun mapAnim(message: MapAnim) {
+        if (!filters[PropertyFilter.MAP_ANIM]) return omit()
         root.buildMapAnim(message)
     }
 
     override fun mapProjAnim(message: MapProjAnim) {
+        if (!filters[PropertyFilter.MAP_PROJANIM]) return omit()
         root.buildMapProjAnim(message)
     }
 
     override fun objAdd(message: ObjAdd) {
+        if (!filters[PropertyFilter.OBJ_ADD]) return omit()
         root.buildObjAdd(message)
     }
 
     override fun objCount(message: ObjCount) {
+        if (!filters[PropertyFilter.OBJ_COUNT]) return omit()
         root.buildObjCount(message)
     }
 
     override fun objDel(message: ObjDel) {
+        if (!filters[PropertyFilter.OBJ_DEL]) return omit()
         root.buildObjDel(message)
     }
 
     override fun objEnabledOps(message: ObjEnabledOps) {
+        if (!filters[PropertyFilter.OBJ_ENABLED_OPS]) return omit()
         root.buildObjEnabledOps(message)
     }
 
     override fun soundArea(message: SoundArea) {
+        if (!filters[PropertyFilter.SOUND_AREA]) return omit()
         root.buildSoundArea(message)
     }
 

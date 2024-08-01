@@ -159,7 +159,7 @@ public enum class PropertyFilter(
     CAM_MOVETO(SERVER_TO_CLIENT, CAMERA, "Camera movement", true),
     CAM_LOOKAT(SERVER_TO_CLIENT, CAMERA, "Camera turning", true),
     CAM_MODE(SERVER_TO_CLIENT, CAMERA, "Camera mode", true),
-    CAM_TARGET(SERVER_TO_CLIENT, CAMERA, "Camera target", true),
+    CAM_TARGET(SERVER_TO_CLIENT, CAMERA, "Camera target", false),
     OCULUS_SYNC(SERVER_TO_CLIENT, CAMERA, "Oculys sync", true),
 
     UPDATE_INV(SERVER_TO_CLIENT, INVENTORIES, "Inventory updates", true),
