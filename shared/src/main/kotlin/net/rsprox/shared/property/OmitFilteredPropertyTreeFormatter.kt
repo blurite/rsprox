@@ -1,6 +1,7 @@
 package net.rsprox.shared.property
 
 import net.rsprox.shared.property.regular.GroupProperty
+import net.rsprox.shared.property.regular.ListProperty
 
 public class OmitFilteredPropertyTreeFormatter(
     private val propertyFormatterCollection: PropertyFormatterCollection,
@@ -63,15 +64,41 @@ public class OmitFilteredPropertyTreeFormatter(
             }
             return
         }
+        if (property is ListProperty) {
+            if (linePrefix != null) {
+                builder.append(linePrefix)
+            }
+            builder
+                .append(property.propertyName)
+                .append('=')
+                .append('[')
+            var count = 0
+            for (child in property.children) {
+                if (child.isExcluded()) {
+                    continue
+                }
+                val prefix =
+                    if (count++ == 0) {
+                        ""
+                    } else {
+                        SEPARATOR
+                    }
+                writeChild(child, builder, indent, prefix)
+            }
+            builder.append(']')
+            return
+        }
         if (linePrefix != null) {
             builder.append(linePrefix)
         }
         val formatter = propertyFormatterCollection.getTypedFormatter(property.javaClass)
         val value = formatter?.format(property) ?: property.value
-        builder
-            .append(property.propertyName)
-            .append('=')
-            .append(value)
+        if (property.propertyName.isNotEmpty()) {
+            builder
+                .append(property.propertyName)
+                .append('=')
+        }
+        builder.append(value)
         if (property.children.isNotEmpty()) {
             builder.appendLine()
             builder.append(INDENTATION.repeat(indent + 1))

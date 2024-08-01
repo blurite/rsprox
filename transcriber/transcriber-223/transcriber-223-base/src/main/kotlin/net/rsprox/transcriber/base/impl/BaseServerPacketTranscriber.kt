@@ -161,6 +161,7 @@ import net.rsprox.shared.property.identifiedPlayer
 import net.rsprox.shared.property.identifiedWorldEntity
 import net.rsprox.shared.property.int
 import net.rsprox.shared.property.inter
+import net.rsprox.shared.property.list
 import net.rsprox.shared.property.long
 import net.rsprox.shared.property.namedEnum
 import net.rsprox.shared.property.regular.ScriptVarTypeProperty
@@ -1685,6 +1686,30 @@ public class BaseServerPacketTranscriber(
         if (!filters[PropertyFilter.RUNCLIENTSCRIPT]) return omit()
         root.script("id", message.id)
         if (message.types.isEmpty() || message.values.isEmpty()) {
+            return
+        }
+        if (filters[PropertyFilter.INLINE_CLIENTSCRIPT_PARAMS]) {
+            root.list("types") {
+                for (i in message.types.indices) {
+                    val char = message.types[i]
+                    val type =
+                        ScriptVarType.entries.first { type ->
+                            type.char == char
+                        }
+                    enum("", type)
+                }
+            }
+            root.list("values") {
+                for (i in message.types.indices) {
+                    val char = message.types[i]
+                    val value = message.values[i].toString()
+                    val type =
+                        ScriptVarType.entries.first { type ->
+                            type.char == char
+                        }
+                    scriptVarType("", type, if (type == ScriptVarType.STRING) value else value.toInt())
+                }
+            }
             return
         }
         root.group("PARAMS") {

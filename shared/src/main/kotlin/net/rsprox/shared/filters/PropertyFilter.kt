@@ -204,6 +204,7 @@ public enum class PropertyFilter(
     UPDATE_STAT(SERVER_TO_CLIENT, OTHER, "Stat updates", true),
 
     RUNCLIENTSCRIPT(SERVER_TO_CLIENT, OTHER, "Clientscripts", true),
+    INLINE_CLIENTSCRIPT_PARAMS(SERVER_TO_CLIENT, OTHER, "Inline clientscript params", false),
     TRIGGER_ONDIALOGABORT(SERVER_TO_CLIENT, OTHER, "Dialog abort", false),
     MESSAGE_GAME(SERVER_TO_CLIENT, MESSAGING, "Game messages", true),
     CHAT_FILTER_SETTINGS(SERVER_TO_CLIENT, OTHER, "Chat filter settings", false),

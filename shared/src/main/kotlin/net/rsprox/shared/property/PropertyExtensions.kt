@@ -10,6 +10,7 @@ import net.rsprox.shared.property.regular.GroupProperty
 import net.rsprox.shared.property.regular.IdentifiedNpcProperty
 import net.rsprox.shared.property.regular.IdentifiedPlayerProperty
 import net.rsprox.shared.property.regular.IdentifiedWorldEntityProperty
+import net.rsprox.shared.property.regular.ListProperty
 import net.rsprox.shared.property.regular.NamedEnumProperty
 import net.rsprox.shared.property.regular.ScriptProperty
 import net.rsprox.shared.property.regular.ScriptVarTypeProperty
@@ -35,6 +36,17 @@ public fun Property.group(
 ): GroupProperty {
     contract { callsInPlace(builderAction, InvocationKind.EXACTLY_ONCE) }
     val group = GroupProperty(name)
+    builderAction(group)
+    return child(group)
+}
+
+@OptIn(ExperimentalContracts::class)
+public fun Property.list(
+    name: String,
+    builderAction: ListProperty.() -> Unit,
+): ListProperty {
+    contract { callsInPlace(builderAction, InvocationKind.EXACTLY_ONCE) }
+    val group = ListProperty(name)
     builderAction(group)
     return child(group)
 }
