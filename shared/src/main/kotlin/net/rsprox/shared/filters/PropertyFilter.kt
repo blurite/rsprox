@@ -145,6 +145,7 @@ public enum class PropertyFilter(
     PLAYER_INFO_OMIT_EMPTY(SERVER_TO_CLIENT, INFO, "Omit empty player info", true),
     PLAYER_INFO_LOCAL_PLAYER_ONLY(SERVER_TO_CLIENT, INFO, "Local player only", true),
     NPC_INFO(SERVER_TO_CLIENT, INFO, "Npc info", true),
+    NPC_EXT_INFO_INLINE(SERVER_TO_CLIENT, INFO, "Npc extended info inline", false),
     NPC_OMIT_INDEX(SERVER_TO_CLIENT, INFO, "Npc omit index", false),
     NPC_REMOVAL(SERVER_TO_CLIENT, INFO, "Npc removal", false),
     NPC_INFO_OMIT_NO_EXTENDED_INFO(SERVER_TO_CLIENT, INFO, "Omit npcs w/o ext. info", true),
