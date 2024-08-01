@@ -1,6 +1,7 @@
 package net.rsprox.transcriber.state
 
 import net.rsprot.protocol.Prot
+import net.rsprot.protocol.ServerProt
 import net.rsprot.protocol.util.CombinedId
 import net.rsprox.cache.api.type.VarBitType
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
@@ -20,7 +21,7 @@ public class StateTracker {
     public var toplevelInterface: Int = -1
     private val cachedVarps: IntArray = IntArray(10_000)
     private lateinit var varpToVarbitsMap: Map<Int, List<VarBitType>>
-    public var root: RootProperty<*>? = null
+    public var root: MutableList<RootProperty<*>> = mutableListOf()
     private val cachedMoveSpeeds: IntArray =
         IntArray(2048) {
             -1
@@ -28,7 +29,7 @@ public class StateTracker {
     private val tempMoveSpeeds: MutableMap<Int, Int> = HashMap()
 
     public fun setRoot() {
-        this.root =
+        this.root +=
             object : RootProperty<Prot> {
                 override val prot: Prot = currentProt
                 override val children: MutableList<ChildProperty<*>> = mutableListOf()
@@ -36,7 +37,23 @@ public class StateTracker {
     }
 
     public fun deleteRoot() {
-        this.root = null
+        this.root.clear()
+    }
+
+    public fun createFakeServerRoot(name: String) {
+        this.root +=
+            object : RootProperty<Prot> {
+                override val prot: Prot =
+                    object : ServerProt {
+                        override val opcode: Int = -1
+                        override val size: Int = -1
+
+                        override fun toString(): String {
+                            return name
+                        }
+                    }
+                override val children: MutableList<ChildProperty<*>> = mutableListOf()
+            }
     }
 
     public fun createWorld(id: Int): World {

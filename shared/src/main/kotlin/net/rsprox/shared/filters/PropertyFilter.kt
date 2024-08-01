@@ -153,6 +153,14 @@ public enum class PropertyFilter(
     REBUILD(SERVER_TO_CLIENT, MAP, "Rebuild map", false),
 
     VARP(SERVER_TO_CLIENT, ProtCategory.VARP, "Varps", true),
+    VARBITS(SERVER_TO_CLIENT, ProtCategory.VARP, "Varbits", true),
+    OMIT_VARP_FOR_VARBITS(
+        SERVER_TO_CLIENT,
+        ProtCategory.VARP,
+        "Omit varp for varbits",
+        true,
+        "Omits the varp packet header if all the bit changes can be explained by varbits.",
+    ),
     VARP_RESET(SERVER_TO_CLIENT, ProtCategory.VARP, "Varp reset", true),
     VARP_SYNC(SERVER_TO_CLIENT, ProtCategory.VARP, "Varp sync", true),
 

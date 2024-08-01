@@ -105,7 +105,7 @@ public open class BaseClientPacketTranscriber(
     private val filterSetStore: PropertyFilterSetStore,
 ) : ClientPacketTranscriber {
     private val root: RootProperty<*>
-        get() = checkNotNull(stateTracker.root)
+        get() = checkNotNull(stateTracker.root.last())
     private val filters: PropertyFilterSet
         get() = filterSetStore.getActive()
 

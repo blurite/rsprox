@@ -190,7 +190,7 @@ public class BaseServerPacketTranscriber(
     private val filterSetStore: PropertyFilterSetStore,
 ) : ServerPacketTranscriber {
     private val root: RootProperty<*>
-        get() = checkNotNull(stateTracker.root)
+        get() = checkNotNull(stateTracker.root.last())
     private val filters: PropertyFilterSet
         get() = filterSetStore.getActive()
 
@@ -2044,27 +2044,20 @@ public class BaseServerPacketTranscriber(
         }
     }
 
-    override fun varpLarge(message: VarpLarge) {
-        if (!filters[PropertyFilter.VARP]) return omit()
-        val oldValue = stateTracker.getVarp(message.id)
-        val impactedVarbits = getImpactedVarbits(message.id, oldValue, message.value)
-        stateTracker.setVarp(message.id, message.value)
-        root.varp("id", message.id)
-        root.int("oldvalue", oldValue)
-        root.int("newvalue", message.value)
-        if (impactedVarbits.isNotEmpty()) {
-            for (varbit in impactedVarbits) {
-                root.group("VARBIT") {
-                    varbit("id", varbit.id)
-                    val bitcount = (varbit.endbit - varbit.startbit) + 1
-                    val bitmask = varbit.bitmask(bitcount)
-                    val oldVarbitValue = oldValue ushr varbit.startbit and bitmask
-                    val newVarbitValue = message.value ushr varbit.startbit and bitmask
-                    int("oldValue", oldVarbitValue)
-                    int("newValue", newVarbitValue)
-                }
-            }
+    private fun remainingImpactedBits(
+        oldValue: Int,
+        newValue: Int,
+        impactedVarbits: List<VarBitType>,
+    ): Int {
+        return impactedVarbits.fold(oldValue and newValue.inv()) { remaining, varbit ->
+            val bitcount = (varbit.endbit - varbit.startbit) + 1
+            val bitmask = varbit.bitmask(bitcount) shl varbit.startbit
+            remaining and bitmask.inv()
         }
+    }
+
+    override fun varpLarge(message: VarpLarge) {
+        logVarp(message.id, message.value)
     }
 
     override fun varpReset(message: VarpReset) {
@@ -2072,23 +2065,55 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun varpSmall(message: VarpSmall) {
-        if (!filters[PropertyFilter.VARP]) return omit()
-        val oldValue = stateTracker.getVarp(message.id)
-        val impactedVarbits = getImpactedVarbits(message.id, oldValue, message.value)
-        stateTracker.setVarp(message.id, message.value)
-        root.varp("id", message.id)
+        logVarp(message.id, message.value)
+    }
+
+    private fun logVarp(
+        id: Int,
+        newValue: Int,
+    ) {
+        val oldValue = stateTracker.getVarp(id)
+        val impactedVarbits = getImpactedVarbits(id, oldValue, newValue)
+        stateTracker.setVarp(id, newValue)
+        root.varp("id", id)
         root.int("oldvalue", oldValue)
-        root.int("newvalue", message.value)
-        root.group("VARBITS") {
+        root.int("newvalue", newValue)
+        val varps = filters[PropertyFilter.VARP]
+        val varbits = filters[PropertyFilter.VARBITS]
+        // If not intereste in either, clear and stop
+        if (!varps && !varbits) {
+            return omit()
+        }
+        // If only wanting varps, stop here.
+        if (varps && !varbits) {
+            return
+        }
+        val omitVarpsForVarbits = filters[PropertyFilter.OMIT_VARP_FOR_VARBITS]
+        val remainingBits = remainingImpactedBits(oldValue, newValue, impactedVarbits)
+        // If only interested in varbits and varbits exist, create a varbit root
+        val printAsVarbits =
+            (!varps && impactedVarbits.isNotEmpty()) ||
+                (omitVarpsForVarbits && remainingBits == 0)
+        if (printAsVarbits) {
+            omit()
+        }
+        if (impactedVarbits.isNotEmpty()) {
             for (varbit in impactedVarbits) {
-                group {
-                    varbit("id", varbit.id)
-                    val bitcount = (varbit.endbit - varbit.startbit) + 1
-                    val bitmask = varbit.bitmask(bitcount)
-                    val oldVarbitValue = oldValue ushr varbit.startbit and bitmask
-                    val newVarbitValue = message.value ushr varbit.startbit and bitmask
-                    int("oldValue", oldVarbitValue)
-                    int("newValue", newVarbitValue)
+                val bitcount = (varbit.endbit - varbit.startbit) + 1
+                val bitmask = varbit.bitmask(bitcount)
+                val oldVarbitValue = oldValue ushr varbit.startbit and bitmask
+                val newVarbitValue = newValue ushr varbit.startbit and bitmask
+                if (printAsVarbits) {
+                    stateTracker.createFakeServerRoot("VARBIT")
+                    root.varbit("id", varbit.id)
+                    root.int("oldValue", oldVarbitValue)
+                    root.int("newValue", newVarbitValue)
+                } else {
+                    root.group("VARBIT") {
+                        varbit("id", varbit.id)
+                        int("oldValue", oldVarbitValue)
+                        int("newValue", newVarbitValue)
+                    }
                 }
             }
         }
