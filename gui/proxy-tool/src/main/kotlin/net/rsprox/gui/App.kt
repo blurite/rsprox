@@ -17,9 +17,14 @@ public class App {
     private val frame = JFrame()
     private val sessionsPanel = SessionsPanel(this)
     public val statusBar: StatusBar = StatusBar()
-    public val service: ProxyService = ProxyService(UnpooledByteBufAllocator.DEFAULT)
+    public lateinit var service: ProxyService
 
     public fun init() {
+        // We have to start before populating right now.
+        service = ProxyService(UnpooledByteBufAllocator.DEFAULT)
+        service.start()
+
+
         val defaultSize = UIScale.scale(Dimension(800, 600))
 
         // Configure the app frame.
@@ -45,7 +50,6 @@ public class App {
     public fun start() {
         frame.isVisible = true
         frame.setLocationRelativeTo(null)
-        service.start()
     }
 
     private fun setupMenuBar() {
@@ -66,7 +70,7 @@ public class App {
 
     private fun createSideBar() = SideBar().apply {
         addButton(AppIcons.Settings, "Sessions", JPanel())
-        addButton(AppIcons.Filter, "Filters", JPanel())
+        addButton(AppIcons.Filter, "Filters", FiltersSidePanel(service))
         selectedIndex = -1
     }
 

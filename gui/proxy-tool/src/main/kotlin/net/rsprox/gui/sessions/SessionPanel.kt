@@ -8,6 +8,7 @@ import net.rsprox.gui.App
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.progressbar.ProgressBarNotifier
 import net.rsprox.shared.SessionMonitor
+import net.rsprox.shared.property.RootProperty
 import org.jdesktop.swingx.JXTreeTable
 import org.jdesktop.swingx.decorator.ColorHighlighter
 import org.jdesktop.swingx.decorator.HighlightPredicate
@@ -160,33 +161,39 @@ public class SessionPanel(
             streamNode = null
         }
 
+        override fun onIncomingBytesPerSecondUpdate(bytesPerLastSecond: Long) {
+        }
+
+        override fun onOutgoingBytesPerSecondUpdate(bytesPerLastSecond: Long) {
+        }
+
         override fun onNameUpdate(name: String) {
             metrics.username = name
             sessionsPanel.updateTabTitle(this@SessionPanel,name)
             notifyMetricsChanged()
         }
 
-        override fun onTranscribe(cycle: Int, message: String) {
-            val streamNode = streamNode
-                ?: error("Stream node is null")
-            SwingUtilities.invokeLater {
-                val tickNode: DefaultMutableTreeTableNode
-                if (cycle != lastCycle) {
-                    tickNode = createTickNode(cycle)
-                    tableModel.insertNodeInto(tickNode, streamNode, streamNode.childCount)
-                    this.tickNode = tickNode
-                    lastCycle = cycle
-                } else {
-                    tickNode = this.tickNode
-                        ?: error("Tick node is null")
-                }
-                tableModel.insertNodeInto(createNode(id++, cycle, message), tickNode, tickNode.childCount)
-                val row = treeTable.rowCount - 1
-                treeTable.expandRow(row)
-                if (scrolledToLatest) {
-                    scrollPane.verticalScrollBar.value = scrollPane.verticalScrollBar.maximum
-                }
-            }
+        override fun onTranscribe(cycle: Int, property: RootProperty<*>) {
+//            val streamNode = streamNode
+//                ?: error("Stream node is null")
+//            SwingUtilities.invokeLater {
+//                val tickNode: DefaultMutableTreeTableNode
+//                if (cycle != lastCycle) {
+//                    tickNode = createTickNode(cycle)
+//                    tableModel.insertNodeInto(tickNode, streamNode, streamNode.childCount)
+//                    this.tickNode = tickNode
+//                    lastCycle = cycle
+//                } else {
+//                    tickNode = this.tickNode
+//                        ?: error("Tick node is null")
+//                }
+//                tableModel.insertNodeInto(createNode(id++, cycle, message), tickNode, tickNode.childCount)
+//                val row = treeTable.rowCount - 1
+//                treeTable.expandRow(row)
+//                if (scrolledToLatest) {
+//                    scrollPane.verticalScrollBar.value = scrollPane.verticalScrollBar.maximum
+//                }
+//            }
         }
     }
 

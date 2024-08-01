@@ -68,7 +68,8 @@ public class ProxyService(
     private lateinit var worldListProvider: WorldListProvider
     private lateinit var operatingSystem: OperatingSystem
     private lateinit var rsa: RSAPrivateCrtKeyParameters
-    private lateinit var filterSetStore: PropertyFilterSetStore
+    public lateinit var filterSetStore: PropertyFilterSetStore
+        private set
     private var properties: ProxyProperties by Delegates.notNull()
     private var availablePort: Int = -1
     private val processes: MutableMap<Int, Process> = mutableMapOf()

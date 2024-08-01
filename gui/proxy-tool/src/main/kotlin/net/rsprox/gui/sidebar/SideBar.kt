@@ -13,11 +13,7 @@ public class SideBar : FlatTabbedPane() {
     }
 
     public fun addButton(icon: Icon, tooltip: String, content: JPanel) {
-        addTab("", icon, JPanel().apply {
-            val label = FlatLabel()
-            label.text = tooltip
-            add(label)
-        }, tooltip)
+        addTab("", icon, content, tooltip)
     }
 
     override fun updateUI() {
