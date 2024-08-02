@@ -2114,8 +2114,8 @@ public class BaseServerPacketTranscriber(
         val impactedVarbits = getImpactedVarbits(id, oldValue, newValue)
         stateTracker.setVarp(id, newValue)
         root.varp("id", id)
-        root.int("oldvalue", oldValue)
-        root.int("newvalue", newValue)
+        root.int("old", oldValue)
+        root.int("new", newValue)
         val varps = filters[PropertyFilter.VARP]
         val varbits = filters[PropertyFilter.VARBITS]
         // If not intereste in either, clear and stop
@@ -2144,13 +2144,13 @@ public class BaseServerPacketTranscriber(
                 if (printAsVarbits) {
                     stateTracker.createFakeServerRoot("VARBIT")
                     root.varbit("id", varbit.id)
-                    root.int("oldValue", oldVarbitValue)
-                    root.int("newValue", newVarbitValue)
+                    root.int("old", oldVarbitValue)
+                    root.int("new", newVarbitValue)
                 } else {
                     root.group("VARBIT") {
                         varbit("id", varbit.id)
-                        int("oldValue", oldVarbitValue)
-                        int("newValue", newVarbitValue)
+                        int("old", oldVarbitValue)
+                        int("new", newVarbitValue)
                     }
                 }
             }
