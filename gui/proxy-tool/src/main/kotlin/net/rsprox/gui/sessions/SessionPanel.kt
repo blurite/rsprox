@@ -118,17 +118,21 @@ public class SessionPanel(
         clearAllButton.icon = AppIcons.Delete
         clearAllButton.toolTipText = "Clear all"
         clearAllButton.addActionListener {
+            val model = treeTable.treeTableModel as DefaultTreeTableModel
+
+            // Remove tick node content.
             streamNode?.let {
                 while (it.childCount > 0) {
-                    val node = it.getChildAt(it.childCount - 1) as AbstractMutableTreeTableNode
-                    it.remove(node)
+                    val tickNode = it.getChildAt(it.childCount - 1) as AbstractMutableTreeTableNode
+                    model.removeNodeFromParent(tickNode)
                 }
             }
+
+            // Remove other stream node content.
             for (i in root.childCount - 1 downTo 0) {
                 val node = root.getChildAt(i) as AbstractMutableTreeTableNode
-                if (node !== streamNode) {
-                    root.remove(node)
-                }
+                if (node === streamNode) continue
+                model.removeNodeFromParent(node)
             }
             this@SessionPanel.tickNode = null
         }
@@ -194,7 +198,9 @@ public class SessionPanel(
             notifyMetricsChanged()
 
             // Clear the stream node.
-            streamNode = null
+            SwingUtilities.invokeLater {
+                streamNode = null
+            }
         }
 
         override fun onIncomingBytesPerSecondUpdate(bytesPerLastSecond: Long) {
@@ -294,7 +300,11 @@ public class SessionPanel(
         }
     }
 
-    private fun addNodeAndExpand(newChild: AbstractMutableTreeTableNode, parent: AbstractMutableTreeTableNode, index: Int) {
+    private fun addNodeAndExpand(
+        newChild: AbstractMutableTreeTableNode,
+        parent: AbstractMutableTreeTableNode,
+        index: Int
+    ) {
         tableModel.insertNodeInto(newChild, parent, index)
         treeTable.expandRow(treeTable.rowCount - 1)
     }

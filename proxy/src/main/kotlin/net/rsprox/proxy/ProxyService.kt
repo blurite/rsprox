@@ -42,6 +42,7 @@ import java.math.BigInteger
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.copyTo
@@ -300,6 +301,19 @@ public class ProxyService(
         if (directory != null) {
             builder.directory(directory)
         }
+        builder.environment().putAll(Properties().let { props ->
+            val runeliteCreds = File(System.getProperty("user.home"), ".runelite")
+                .resolve("credentials.properties")
+            if (!runeliteCreds.exists()) {
+                logger.info { "Unable to find RuneLite credentials file: $runeliteCreds" }
+                emptyMap()
+            } else {
+                runeliteCreds.inputStream().use {
+                    props.load(it)
+                }
+                props.stringPropertyNames().associateWith { props.getProperty(it) }
+            }
+        })
         val process = builder.start()
         if (process.isAlive) {
             logger.debug { "Successfully launched $path" }
