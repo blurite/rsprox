@@ -8,16 +8,17 @@ public class DefaultPropertyFilterSetStore(
     private val rootPath: Path,
     private val filterSets: MutableList<PropertyFilterSet> = mutableListOf(),
 ) : PropertyFilterSetStore {
-    override fun create(index: Int): PropertyFilterSet {
-        if (index == 0) {
-            throw IllegalArgumentException("Element cannot be created at index 0.")
-        }
+
+    override val size: Int
+        get() = filterSets.size
+
+    override fun create(name: String): PropertyFilterSet {
         for (filter in filterSets) {
             if (filter is DefaultPropertyFilterSet) {
                 filter.setActive(false)
             }
         }
-        val filter = DefaultPropertyFilterSet.create(rootPath, "Unnamed")
+        val filter = DefaultPropertyFilterSet.create(rootPath, name)
         filterSets += filter
         return filter
     }

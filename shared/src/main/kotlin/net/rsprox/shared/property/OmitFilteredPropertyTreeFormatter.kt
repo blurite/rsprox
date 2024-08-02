@@ -26,7 +26,7 @@ public class OmitFilteredPropertyTreeFormatter(
         return value == filterValue
     }
 
-    private fun writeChild(
+    public fun writeChild(
         property: ChildProperty<*>,
         builder: StringBuilder,
         indent: Int,

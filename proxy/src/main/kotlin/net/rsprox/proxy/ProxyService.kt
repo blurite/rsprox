@@ -9,13 +9,7 @@ import net.rsprox.patch.PatchResult
 import net.rsprox.patch.native.NativePatcher
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.bootstrap.BootstrapFactory
-import net.rsprox.proxy.config.BINARY_PATH
-import net.rsprox.proxy.config.CACHES_DIRECTORY
-import net.rsprox.proxy.config.CLIENTS_DIRECTORY
-import net.rsprox.proxy.config.CONFIGURATION_PATH
-import net.rsprox.proxy.config.FILTERS_DIRECTORY
-import net.rsprox.proxy.config.JavConfig
-import net.rsprox.proxy.config.ProxyProperties
+import net.rsprox.proxy.config.*
 import net.rsprox.proxy.config.ProxyProperty.Companion.BINARY_WRITE_INTERVAL_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
@@ -23,8 +17,6 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_HTTP
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
-import net.rsprox.proxy.config.TEMP_CLIENTS_DIRECTORY
-import net.rsprox.proxy.config.registerConnection
 import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.downloader.NativeClientDownloader
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
@@ -50,6 +42,7 @@ import java.math.BigInteger
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.copyTo
@@ -68,7 +61,8 @@ public class ProxyService(
     private lateinit var worldListProvider: WorldListProvider
     private lateinit var operatingSystem: OperatingSystem
     private lateinit var rsa: RSAPrivateCrtKeyParameters
-    private lateinit var filterSetStore: PropertyFilterSetStore
+    public lateinit var filterSetStore: PropertyFilterSetStore
+        private set
     private var properties: ProxyProperties by Delegates.notNull()
     private var availablePort: Int = -1
     private val processes: MutableMap<Int, Process> = mutableMapOf()
@@ -127,21 +121,26 @@ public class ProxyService(
         }
     }
 
-    public fun killAliveProcesses() {
-        for ((port, process) in processes) {
-            if (process.isAlive) {
-                try {
-                    process.destroyForcibly().waitFor(5, TimeUnit.SECONDS)
-                } catch (t: Throwable) {
-                    logger.error(t) {
-                        "Unable to destroy process on port $port: ${process.info()}"
-                    }
-                    continue
+    public fun killAliveProcess(port: Int) {
+        val process = processes.remove(port) ?: return
+        if (process.isAlive) {
+            try {
+                process.destroyForcibly().waitFor(5, TimeUnit.SECONDS)
+            } catch (t: Throwable) {
+                logger.error(t) {
+                    "Unable to destroy process on port $port: ${process.info()}"
                 }
+                return
             }
-            logger.info {
-                "Destroyed process on port $port: ${process.info()}"
-            }
+        }
+        logger.info {
+            "Destroyed process on port $port: ${process.info()}"
+        }
+    }
+
+    public fun killAliveProcesses() {
+        for (port in processes.keys.toSet()) {
+            killAliveProcess(port)
         }
     }
 
@@ -190,8 +189,8 @@ public class ProxyService(
     public fun launchNativeClient(
         progressBarNotifier: ProgressBarNotifier,
         sessionMonitor: SessionMonitor<BinaryHeader>,
-    ) {
-        launchNativeClient(
+    ): Int {
+        return launchNativeClient(
             operatingSystem,
             rsa,
             progressBarNotifier,
@@ -204,14 +203,14 @@ public class ProxyService(
         rsa: RSAPrivateCrtKeyParameters,
         progressBarNotifier: ProgressBarNotifier,
         sessionMonitor: SessionMonitor<BinaryHeader>,
-    ) {
+    ): Int {
         val port = this.availablePort++
         progressBarNotifier.update(0, "Binding port $port")
         try {
             launchProxyServer(this.bootstrapFactory, this.worldListProvider, rsa, port)
         } catch (t: Throwable) {
             logger.error { "Unable to bind network port $port for native client." }
-            return
+            return - 1
         }
         progressBarNotifier.update(5, "Checking native client updates")
         val webPort = properties.getProperty(PROXY_PORT_HTTP)
@@ -255,6 +254,7 @@ public class ProxyService(
         progressBarNotifier.update(100, "Launching native client")
         launchExecutable(port, result.outputPath, os)
         this.connections.addSessionMonitor(port, sessionMonitor)
+        return port
     }
 
     private fun launchExecutable(
@@ -301,6 +301,19 @@ public class ProxyService(
         if (directory != null) {
             builder.directory(directory)
         }
+        builder.environment().putAll(Properties().let { props ->
+            val runeliteCreds = File(System.getProperty("user.home"), ".runelite")
+                .resolve("credentials.properties")
+            if (!runeliteCreds.exists()) {
+                logger.info { "Unable to find RuneLite credentials file: $runeliteCreds" }
+                emptyMap()
+            } else {
+                runeliteCreds.inputStream().use {
+                    props.load(it)
+                }
+                props.stringPropertyNames().associateWith { props.getProperty(it) }
+            }
+        })
         val process = builder.start()
         if (process.isAlive) {
             logger.debug { "Successfully launched $path" }
