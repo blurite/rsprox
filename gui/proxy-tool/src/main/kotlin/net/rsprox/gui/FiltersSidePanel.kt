@@ -32,7 +32,7 @@ public class FiltersSidePanel(
 
     init {
         layout = MigLayout("fill, ins panel, wrap 1, hidemode 3", "[grow]", "[][][][grow, fill]")
-        minimumSize = Dimension(225, 0)
+        minimumSize = Dimension(230, 0)
 
         presetsBox.addItemListener { e ->
             if (e.stateChange != ItemEvent.SELECTED) return@addItemListener
@@ -128,7 +128,9 @@ public class FiltersSidePanel(
     private fun createFilterPanel(serverToClient: StreamDirection): JScrollPane {
         val scrollPane = JScrollPane(FiltersPanel(serverToClient)).apply {
             horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
-            verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
+            verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
+            verticalScrollBar.unitIncrement = 16
+
             border = null
         }
         return scrollPane

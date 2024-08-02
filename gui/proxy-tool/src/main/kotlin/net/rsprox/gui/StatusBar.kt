@@ -10,10 +10,10 @@ public class StatusBar : JPanel() {
 
     private val userLabel = createIconLabel(AppIcons.User)
     private val worldLabel = createIconLabel(AppIcons.Web)
-    private val bandInLabel = createIconLabel(AppIcons.Push).apply {
+    private val bandInLabel = FlatLabel().apply {
         horizontalAlignment = FlatLabel.RIGHT
     }
-    private val bandOutLabel = createIconLabel(AppIcons.Update).apply {
+    private val bandOutLabel = FlatLabel().apply {
         horizontalAlignment = FlatLabel.RIGHT
     }
 
@@ -43,7 +43,7 @@ public class StatusBar : JPanel() {
     }
 
     public fun updateBandIn(bandIn: Int) {
-        updateBandIn(formatSpeed(bandIn))
+        updateBandIn("Down: ${formatSpeed(bandIn)}")
     }
 
     private fun updateBandIn(text: String) {
@@ -52,7 +52,7 @@ public class StatusBar : JPanel() {
     }
 
     public fun updateBandOut(bandOut: Int) {
-        updateBandOut(formatSpeed(bandOut))
+        updateBandOut("Up: ${formatSpeed(bandOut)}")
     }
 
     private fun updateBandOut(text: String) {

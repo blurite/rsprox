@@ -10,7 +10,10 @@ import net.rsprox.gui.sessions.SessionsPanel
 import net.rsprox.gui.sidebar.SideBar
 import net.rsprox.proxy.ProxyService
 import java.awt.Dimension
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
 import javax.swing.*
+import kotlin.system.exitProcess
 
 public class App {
 
@@ -29,10 +32,26 @@ public class App {
 
         // Configure the app frame.
         frame.title = "RSProx v${AppProperties.version}"
-        frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         frame.size = defaultSize
         frame.minimumSize = defaultSize
         frame.iconImages = FlatSVGUtils.createWindowIconImages("/favicon.svg")
+        frame.addWindowListener(object : WindowAdapter() {
+            override fun windowClosing(e: WindowEvent) {
+                val confirmed = sessionsPanel.tabCount < 1
+                    || JOptionPane.showConfirmDialog(
+                    frame, "Are you sure you want to exit?",
+                    "Exit",
+                    JOptionPane.YES_NO_OPTION
+                ) == JOptionPane.YES_OPTION
+                if (confirmed) {
+                    try {
+                        service.safeShutdown()
+                    } finally {
+                        exitProcess(0)
+                    }
+                }
+            }
+        })
 
         // Configure the app content.
         val content = JPanel()
@@ -54,7 +73,6 @@ public class App {
 
     private fun setupMenuBar() {
         val menuBar = FlatMenuBar()
-        menuBar.add(JMenu("RSProx"))
         menuBar.add(JMenu("Help").apply {
             val aboutItem = JMenuItem("About")
             aboutItem.accelerator = KeyStroke.getKeyStroke("F1")
@@ -69,7 +87,7 @@ public class App {
     }
 
     private fun createSideBar() = SideBar().apply {
-        addButton(AppIcons.Settings, "Sessions", JPanel())
+//        addButton(AppIcons.Settings, "Sessions", JPanel())
         addButton(AppIcons.Filter, "Filters", FiltersSidePanel(service))
         selectedIndex = -1
     }

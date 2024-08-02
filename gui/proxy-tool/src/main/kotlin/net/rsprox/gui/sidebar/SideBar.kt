@@ -1,6 +1,5 @@
 package net.rsprox.gui.sidebar
 
-import com.formdev.flatlaf.extras.components.FlatLabel
 import com.formdev.flatlaf.extras.components.FlatTabbedPane
 import javax.swing.Icon
 import javax.swing.JPanel

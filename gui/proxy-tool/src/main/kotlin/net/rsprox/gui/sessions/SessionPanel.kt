@@ -1,10 +1,13 @@
 package net.rsprox.gui.sessions
 
 import com.formdev.flatlaf.FlatLaf
+import com.formdev.flatlaf.extras.components.FlatButton
 import com.formdev.flatlaf.extras.components.FlatScrollPane
+import com.formdev.flatlaf.extras.components.FlatToolBar
 import com.formdev.flatlaf.util.ColorFunctions
 import com.github.michaelbull.logging.InlineLogger
 import net.rsprox.gui.App
+import net.rsprox.gui.AppIcons
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.progressbar.ProgressBarNotifier
 import net.rsprox.shared.SessionMonitor
@@ -21,6 +24,7 @@ import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel
 import java.awt.BorderLayout
 import java.awt.Color
+import java.awt.FlowLayout
 import java.text.SimpleDateFormat
 import java.util.concurrent.ForkJoinPool
 import javax.swing.BorderFactory
@@ -33,13 +37,17 @@ public class SessionPanel(
     private val app: App,
     private val sessionsPanel: SessionsPanel
 ) : JPanel() {
-
-    private var scrolledToLatest: Boolean = false
     private val treeTable = JXTreeTable()
     private val tableModel = DefaultTreeTableModel()
     private val root = DefaultMutableTreeTableNode("Root")
     private val scrollPane: FlatScrollPane
     public var metrics: SessionMetrics = SessionMetrics()
+    private var paused = false
+    private var streamNode: StreamTreeTableNode? = null
+    private var tickNode: TickTreeTableNode? = null
+    public val isActive: Boolean
+        get() = streamNode != null
+    private var portNumber: Int = -1
 
     init {
         layout = BorderLayout()
@@ -81,13 +89,53 @@ public class SessionPanel(
         scrollPane = FlatScrollPane().apply {
             border = BorderFactory.createEmptyBorder()
             viewportBorder = BorderFactory.createEmptyBorder()
+            verticalScrollBar.unitIncrement = 16
             setViewportView(treeTable)
-            verticalScrollBar.model.addChangeListener {
-                val model = it.source as javax.swing.BoundedRangeModel
-                scrolledToLatest = model.value == model.maximum - verticalScrollBar.visibleAmount
-            }
         }
         add(scrollPane, BorderLayout.CENTER)
+
+        val toolbar = FlatToolBar()
+        toolbar.layout = FlowLayout(FlowLayout.CENTER)
+        toolbar.isFloatable = false
+        toolbar.isRollover = true
+
+        // pause and resume buttons
+        val pauseButton = FlatButton()
+        pauseButton.buttonType = FlatButton.ButtonType.toolBarButton
+        pauseButton.icon = AppIcons.Pause
+        pauseButton.selectedIcon = AppIcons.Resume
+        pauseButton.isSelected = paused
+        pauseButton.toolTipText = if (paused) "Resume" else "Pause"
+        pauseButton.addActionListener {
+            paused = !paused
+            pauseButton.isSelected = paused
+            pauseButton.toolTipText = if (paused) "Resume" else "Pause"
+        }
+        toolbar.add(pauseButton)
+
+        val clearAllButton = FlatButton()
+        clearAllButton.buttonType = FlatButton.ButtonType.toolBarButton
+        clearAllButton.icon = AppIcons.Delete
+        clearAllButton.toolTipText = "Clear all"
+        clearAllButton.addActionListener {
+            streamNode?.let {
+                while (it.childCount > 0) {
+                    val node = it.getChildAt(it.childCount - 1) as AbstractMutableTreeTableNode
+                    it.remove(node)
+                }
+            }
+            for (i in root.childCount - 1 downTo 0) {
+                val node = root.getChildAt(i) as AbstractMutableTreeTableNode
+                if (node !== streamNode) {
+                    root.remove(node)
+                }
+            }
+            this@SessionPanel.tickNode = null
+        }
+        // make all buttons centered
+        toolbar.add(clearAllButton)
+
+        add(toolbar, BorderLayout.NORTH)
 
         launchClient()
     }
@@ -99,7 +147,7 @@ public class SessionPanel(
                 val notifier = ProgressBarNotifier { percentage, text ->
                     logger.info { "Native client progress: $percentage% - $text" }
                 }
-                app.service.launchNativeClient(notifier, UiSessionMonitor())
+                portNumber = app.service.launchNativeClient(notifier, UiSessionMonitor())
             }
             logger.info { "Native client started in $time" }
         }
@@ -120,8 +168,6 @@ public class SessionPanel(
 
     private inner class UiSessionMonitor : SessionMonitor<BinaryHeader> {
 
-        private var streamNode: StreamTreeTableNode? = null
-        private var tickNode: TickTreeTableNode? = null
         private var lastCycle = -1
         private val formatter = OmitFilteredPropertyTreeFormatter(
             PropertyFormatterCollection.default(
@@ -137,8 +183,8 @@ public class SessionPanel(
             // Create a new root node for the logged in session.
             SwingUtilities.invokeLater {
                 val streamNode = StreamTreeTableNode(header)
-                tableModel.insertNodeInto(streamNode, root, root.childCount)
-                this.streamNode = streamNode
+                addNodeAndExpand(streamNode, root, root.childCount)
+                this@SessionPanel.streamNode = streamNode
             }
         }
 
@@ -168,8 +214,11 @@ public class SessionPanel(
         }
 
         override fun onTranscribe(cycle: Int, property: RootProperty<*>) {
-            val tickNode = findOrCreateTickNode(cycle)
-            createMessageNode(tickNode, cycle, property)
+            if (paused) return
+            SwingUtilities.invokeLater {
+                val tickNode = findOrCreateTickNode(cycle)
+                createMessageNode(tickNode, cycle, property)
+            }
         }
 
         private fun createMessageNode(
@@ -179,8 +228,9 @@ public class SessionPanel(
         ) {
             val previewText = getPreviewText(property)
             val rootNode = MessageTreeTableNode(cycle, previewText, property, property.prot)
-            tableModel.insertNodeInto(rootNode, tickNode, tickNode.childCount)
+            addNodeAndExpand(rootNode, tickNode, tickNode.childCount)
             createMessageChildNodes(cycle, rootNode, property)
+            treeTable.scrollRowToVisible(treeTable.rowCount - 1)
         }
 
         private fun getPreviewText(property: Property, indent: Int = 0): String {
@@ -216,7 +266,7 @@ public class SessionPanel(
                 when (child) {
                     is GroupProperty -> {
                         val groupNode = MessageTreeTableNode(cycle, previewText, rootProperty, null)
-                        tableModel.insertNodeInto(groupNode, parentNode, parentNode.childCount)
+                        addNodeAndExpand(groupNode, parentNode, parentNode.childCount)
                         createMessageChildNodes(cycle, groupNode, rootProperty, child, indent + 1)
                     }
 
@@ -229,7 +279,6 @@ public class SessionPanel(
                     }
                 }
             }
-
         }
 
         private fun findOrCreateTickNode(tickNumber: Int): AbstractMutableTreeTableNode {
@@ -238,11 +287,21 @@ public class SessionPanel(
             if (tickNode == null || lastCycle != tickNumber) {
                 lastCycle = tickNumber
                 tickNode = TickTreeTableNode(tickNumber)
-                this.tickNode = tickNode
-                tableModel.insertNodeInto(tickNode, streamNode, streamNode.childCount)
+                this@SessionPanel.tickNode = tickNode
+                addNodeAndExpand(tickNode, streamNode, streamNode.childCount)
             }
             return tickNode
         }
+    }
+
+    private fun addNodeAndExpand(newChild: AbstractMutableTreeTableNode, parent: AbstractMutableTreeTableNode, index: Int) {
+        tableModel.insertNodeInto(newChild, parent, index)
+        treeTable.expandRow(treeTable.rowCount - 1)
+    }
+
+    public fun kill() {
+        if (portNumber == -1) return
+        app.service.killAliveProcess(portNumber)
     }
 
     private companion object {

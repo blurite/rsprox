@@ -27,6 +27,7 @@ public class SessionsPanel(
                 addActionListener {
                     val menu = JPopupMenu()
                     SessionType.entries.forEach { type ->
+                        if (type != SessionType.Native) return@forEach
                         val item = JMenuItem(type.name).apply {
                             icon = type.icon
                             addActionListener {
@@ -42,7 +43,20 @@ public class SessionsPanel(
     }
 
     private fun createSession(type: SessionType) {
-        addTab("Session ${++counter}", type.icon, SessionPanel(type, app, this), "")
+        val session = SessionPanel(type, app, this)
+        addTab("Session ${++counter}", type.icon, session, "")
+        setTabCloseCallback(tabCount - 1) { tabbedPane, tabIndex ->
+            val confirm = !session.isActive || JOptionPane.showConfirmDialog(
+                tabbedPane,
+                "Are you sure you want to close this session?",
+                "Close Session",
+                JOptionPane.YES_NO_OPTION
+            ) == JOptionPane.YES_OPTION
+            if (confirm) {
+                session.kill()
+                removeTabAt(tabIndex)
+            }
+        }
     }
 
     public fun syncSessionMetricsInfo(panel: SessionPanel) {
