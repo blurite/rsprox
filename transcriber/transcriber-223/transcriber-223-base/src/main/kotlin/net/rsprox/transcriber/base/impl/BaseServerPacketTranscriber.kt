@@ -339,7 +339,7 @@ public class BaseServerPacketTranscriber(
         root.int("height", message.height)
         root.coordGrid("tertiarycoord", buildAreaCoordGrid(message.centerXInBuildArea, message.centerZInBuildArea))
         root.int("cycles", message.duration)
-        root.boolean("ignoreterrain", message.maintainFixedAltitude)
+        root.boolean("ignoreterrain", message.ignoreTerrain)
         root.enum("easing", message.function)
     }
 
@@ -348,7 +348,7 @@ public class BaseServerPacketTranscriber(
         root.coordGrid(buildAreaCoordGrid(message.destinationXInBuildArea, message.destinationZInBuildArea))
         root.int("height", message.height)
         root.int("cycles", message.duration)
-        root.boolean("ignoreterrain", message.maintainFixedAltitude)
+        root.boolean("ignoreterrain", message.ignoreTerrain)
         root.enum("easing", message.function)
     }
 

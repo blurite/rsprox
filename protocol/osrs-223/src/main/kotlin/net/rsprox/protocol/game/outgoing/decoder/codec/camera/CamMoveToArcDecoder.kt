@@ -22,7 +22,7 @@ public class CamMoveToArcDecoder : ProxyMessageDecoder<CamMoveToArc> {
         val centerXInBuildArea = buffer.g1()
         val centerZInBuildArea = buffer.g1()
         val duration = buffer.g2()
-        val maintainFixedAltitude = !buffer.gboolean()
+        val maintainFixedAltitude = buffer.gboolean()
         val function = buffer.g1()
         return CamMoveToArc(
             centerXInBuildArea,

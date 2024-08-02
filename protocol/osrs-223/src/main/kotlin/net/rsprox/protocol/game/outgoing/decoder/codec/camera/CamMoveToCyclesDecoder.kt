@@ -20,7 +20,7 @@ public class CamMoveToCyclesDecoder : ProxyMessageDecoder<CamMoveToCycles> {
         val destinationZInBuildArea = buffer.g1()
         val height = buffer.g2()
         val duration = buffer.g2()
-        val maintainFixedAltitude = !buffer.gboolean()
+        val maintainFixedAltitude = buffer.gboolean()
         val function = buffer.g1()
         return CamMoveToCycles(
             destinationXInBuildArea,
