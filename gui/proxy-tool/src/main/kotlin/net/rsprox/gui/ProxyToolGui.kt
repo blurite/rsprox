@@ -1,6 +1,7 @@
+package net.rsprox.gui
+
 import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMaterialDeepOceanIJTheme
-import net.rsprox.gui.App
-import java.util.*
+import java.util.Locale
 import javax.swing.SwingUtilities
 
 public fun main() {
