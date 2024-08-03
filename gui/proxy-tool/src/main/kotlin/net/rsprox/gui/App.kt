@@ -111,6 +111,7 @@ public class App {
 
     private fun FlatMenuBar.createThemes() {
         val menu = JMenu("Themes")
+        menu.mnemonic = 'T'.code
 
         AppThemes.THEMES.forEach {
             val name = it.first
@@ -132,6 +133,7 @@ public class App {
     private fun FlatMenuBar.createHelpItems() {
         add(
             JMenu("Help").apply {
+                mnemonic = 'H'.code
                 val aboutItem = JMenuItem("About")
                 aboutItem.accelerator = KeyStroke.getKeyStroke("F1")
                 aboutItem.mnemonic = 'A'.code
