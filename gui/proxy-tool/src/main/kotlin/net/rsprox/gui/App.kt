@@ -121,7 +121,7 @@ public class App {
         menu.mnemonic = 'T'.code
 
         AppThemes.THEMES.forEach {
-            val name = it.first
+            val name = it.name
             menu.add(
                 JMenuItem(name).apply {
                     addActionListener {
