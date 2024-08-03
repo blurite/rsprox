@@ -57,7 +57,7 @@ public class SessionPanel(
     init {
         layout = BorderLayout()
 
-        tableModel.setColumnIdentifiers(listOf("#", "Content"))
+        tableModel.setColumnIdentifiers(listOf("Protocol", "Content"))
         tableModel.setRoot(root)
 
         treeTable.treeTableModel = tableModel
