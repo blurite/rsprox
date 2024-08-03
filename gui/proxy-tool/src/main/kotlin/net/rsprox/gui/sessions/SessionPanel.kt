@@ -91,8 +91,8 @@ public class SessionPanel(
             },
         )
 
-        addPropertyChangeListener { evt ->
-            if ("lookAndFeel" == evt.propertyName) {
+        treeTable.addPropertyChangeListener { evt ->
+            if ("UI" == evt.propertyName) {
                 highlighter.background = getOddRowColor()
                 treeTable.repaint()
             }
