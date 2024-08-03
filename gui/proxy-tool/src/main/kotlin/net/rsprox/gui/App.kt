@@ -19,16 +19,28 @@ import javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE
 import kotlin.system.exitProcess
 
 public class App {
-    private val frame = JFrame()
-    private val sessionsPanel = SessionsPanel(this)
-    public val statusBar: StatusBar = StatusBar()
-    public lateinit var service: ProxyService
 
-    public fun init() {
-        // We have to start before populating right now.
-        service = ProxyService(UnpooledByteBufAllocator.DEFAULT)
+    public var service: ProxyService = ProxyService(UnpooledByteBufAllocator.DEFAULT)
+
+    private val frame: JFrame
+    private val sessionsPanel: SessionsPanel
+    public val statusBar: StatusBar
+
+    init {
+        // Start the service right away so we can load the properties for app theme
+        // and presets data.
         service.start()
 
+        // Setup the theme before any components are created.
+        AppThemes.applyThemeEdt(service.getAppTheme())
+
+        // Create the main components.
+        frame = JFrame()
+        sessionsPanel = SessionsPanel(this)
+        statusBar = StatusBar()
+    }
+
+    public fun init() {
         val width = service.getAppWidth()
         val height = service.getAppHeight()
         val defaultSize = UIScale.scale(Dimension(width, height))
@@ -91,11 +103,6 @@ public class App {
 
         // Configure the app menu bar.
         setupMenuBar()
-
-        // Configure theme
-        AppThemes.applyTheme(service.getAppTheme()) {
-            SwingUtilities.updateComponentTreeUI(frame)
-        }
     }
 
     public fun start() {
@@ -118,10 +125,8 @@ public class App {
             menu.add(
                 JMenuItem(name).apply {
                     addActionListener {
-                        AppThemes.applyTheme(name) {
-                            SwingUtilities.updateComponentTreeUI(frame)
-                            service.setAppTheme(name)
-                        }
+                        service.setAppTheme(name)
+                        AppThemes.applyTheme(name)
                     }
                 },
             )
