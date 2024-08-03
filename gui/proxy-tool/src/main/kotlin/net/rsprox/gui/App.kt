@@ -37,7 +37,7 @@ public class App {
         frame.title = "RSProx v${AppProperties.version}"
         frame.defaultCloseOperation = DO_NOTHING_ON_CLOSE
         frame.size = defaultSize
-        frame.minimumSize = defaultSize
+        frame.minimumSize = UIScale.scale(Dimension(800, 600))
         frame.iconImages = FlatSVGUtils.createWindowIconImages("/favicon.svg")
         frame.addWindowListener(
             object : WindowAdapter() {
