@@ -2,6 +2,7 @@ package net.rsprox.gui
 
 import com.formdev.flatlaf.extras.FlatSVGUtils
 import com.formdev.flatlaf.extras.components.FlatMenuBar
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.*
 import com.formdev.flatlaf.util.UIScale
 import io.netty.buffer.UnpooledByteBufAllocator
 import net.miginfocom.swing.MigLayout
@@ -30,7 +31,7 @@ public class App {
         val defaultSize = UIScale.scale(Dimension(800, 600))
 
         // Configure the app frame.
-        frame.title = "RSProx v${AppProperties.version}"
+        frame.title = "RSProx v${service.getAppVersion()}"
         frame.defaultCloseOperation = DO_NOTHING_ON_CLOSE
         frame.size = defaultSize
         frame.minimumSize = defaultSize
@@ -68,6 +69,11 @@ public class App {
 
         // Configure the app menu bar.
         setupMenuBar()
+
+        // Configure theme
+        AppThemes.applyTheme(service.getAppTheme()) {
+            SwingUtilities.updateComponentTreeUI(frame)
+        }
     }
 
     public fun start() {
@@ -77,19 +83,44 @@ public class App {
 
     private fun setupMenuBar() {
         val menuBar = FlatMenuBar()
-        menuBar.add(
+        menuBar.createThemes()
+        menuBar.createHelpItems()
+        frame.jMenuBar = menuBar
+    }
+
+    private fun FlatMenuBar.createThemes() {
+        val menu = JMenu("Themes")
+
+        AppThemes.THEMES.forEach {
+            val name = it.first
+            menu.add(
+                JMenuItem(name).apply {
+                    addActionListener {
+                        AppThemes.applyTheme(name) {
+                            SwingUtilities.updateComponentTreeUI(frame)
+                            service.setAppTheme(name)
+                        }
+                    }
+                }
+            )
+        }
+
+        add(menu)
+    }
+
+    private fun FlatMenuBar.createHelpItems() {
+        add(
             JMenu("Help").apply {
                 val aboutItem = JMenuItem("About")
                 aboutItem.accelerator = KeyStroke.getKeyStroke("F1")
                 aboutItem.mnemonic = 'A'.code
                 aboutItem.addActionListener {
-                    val dialog = AboutDialog(frame)
+                    val dialog = AboutDialog(frame, service.getAppVersion())
                     dialog.isVisible = true
                 }
                 add(aboutItem)
             },
         )
-        frame.jMenuBar = menuBar
     }
 
     private fun createSideBar() =

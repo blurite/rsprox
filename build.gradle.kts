@@ -45,6 +45,7 @@ dependencies {
 }
 
 tasks.create<JavaExec>("proxy") {
+    environment("APP_VERSION", project.version)
     group = "run"
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("net.rsprox.gui.ProxyToolGuiKt")
