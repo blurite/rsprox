@@ -23,7 +23,6 @@ import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.transcriber.BaseMessageConsumerContainer
-import net.rsprox.transcriber.MessageConsumer
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
@@ -207,7 +206,7 @@ public data class BinaryBlob(
                 return
             }
             val transcriberProvider = pluginLoader.getTranscriberProvider(header.revision)
-            val consumers = BaseMessageConsumerContainer(listOf(MessageConsumer.STDOUT_CONSUMER))
+            val consumers = BaseMessageConsumerContainer(emptyList())
             val session = Session(header.localPlayerIndex, AttributeMap())
             val decodingSession = DecodingSession(this, latestPlugin)
             val runner =
