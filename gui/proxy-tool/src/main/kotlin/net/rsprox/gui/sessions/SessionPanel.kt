@@ -25,10 +25,13 @@ import org.jdesktop.swingx.treetable.DefaultTreeTableModel
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.FlowLayout
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
 import java.text.SimpleDateFormat
 import java.util.concurrent.ForkJoinPool
 import javax.swing.BorderFactory
 import javax.swing.JPanel
+import javax.swing.JScrollBar
 import javax.swing.SwingUtilities
 import kotlin.time.measureTime
 
@@ -48,6 +51,8 @@ public class SessionPanel(
     public val isActive: Boolean
         get() = streamNode != null
     private var portNumber: Int = -1
+    private var jumpToBottom: Boolean = true
+    private var scrollbarMax: Int = -1
 
     init {
         layout = BorderLayout()
@@ -78,6 +83,16 @@ public class SessionPanel(
         val highlighter = ColorHighlighter(HighlightPredicate.ODD, getOddRowColor(), null)
         treeTable.addHighlighter(highlighter)
 
+        treeTable.addComponentListener(
+            object : ComponentAdapter() {
+                override fun componentResized(e: ComponentEvent) {
+                    if (jumpToBottom) {
+                        treeTable.scrollRectToVisible(treeTable.getCellRect(treeTable.getRowCount() - 1, 0, true))
+                    }
+                }
+            },
+        )
+
         addPropertyChangeListener { evt ->
             if ("lookAndFeel" == evt.propertyName) {
                 highlighter.background = getOddRowColor()
@@ -93,6 +108,19 @@ public class SessionPanel(
                 verticalScrollBar.unitIncrement = 16
                 setViewportView(treeTable)
             }
+        scrollPane.verticalScrollBar.addAdjustmentListener { event ->
+            val scrollBar = event.adjustable as JScrollBar
+            val maximum = scrollBar.model.maximum
+            if (scrollbarMax == -1 || scrollbarMax != maximum) {
+                scrollbarMax = maximum
+                return@addAdjustmentListener
+            }
+            if (event.valueIsAdjusting) {
+                return@addAdjustmentListener
+            }
+            val extent = scrollBar.model.extent
+            jumpToBottom = extent + event.value == maximum
+        }
         add(scrollPane, BorderLayout.CENTER)
 
         val toolbar = FlatToolBar()
@@ -119,6 +147,8 @@ public class SessionPanel(
         clearAllButton.icon = AppIcons.Delete
         clearAllButton.toolTipText = "Clear all"
         clearAllButton.addActionListener {
+            scrollbarMax = -1
+            jumpToBottom = true
             val model = treeTable.treeTableModel as DefaultTreeTableModel
 
             // Remove tick node content.
@@ -244,7 +274,6 @@ public class SessionPanel(
             val rootNode = MessageTreeTableNode(cycle, previewText, property, property.prot)
             addNodeAndExpand(rootNode, tickNode, tickNode.childCount)
             createMessageChildNodes(cycle, rootNode, property)
-            treeTable.scrollRowToVisible(treeTable.rowCount - 1)
         }
 
         private fun getPreviewText(
