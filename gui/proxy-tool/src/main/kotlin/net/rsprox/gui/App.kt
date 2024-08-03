@@ -9,6 +9,8 @@ import net.rsprox.gui.dialogs.AboutDialog
 import net.rsprox.gui.sessions.SessionsPanel
 import net.rsprox.gui.sidebar.SideBar
 import net.rsprox.proxy.ProxyService
+import net.rsprox.proxy.config.BINARY_PATH
+import java.awt.Desktop
 import java.awt.Dimension
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
@@ -111,9 +113,46 @@ public class App {
 
     private fun setupMenuBar() {
         val menuBar = FlatMenuBar()
+        menuBar.createFileMenu()
         menuBar.createThemes()
         menuBar.createHelpItems()
         frame.jMenuBar = menuBar
+    }
+
+    private fun FlatMenuBar.createFileMenu() {
+        add(
+            JMenu("File").apply {
+                mnemonic = 'F'.code
+
+                val openLogsFolder = JMenuItem("Open Binary Logs Folder")
+                openLogsFolder.mnemonic = 'O'.code
+                openLogsFolder.addActionListener {
+                    val path = BINARY_PATH.toFile()
+                    if (path.exists()) {
+                        Desktop.getDesktop().open(path)
+                    } else {
+                        JOptionPane.showMessageDialog(
+                            frame,
+                            "You have not created any logs yet.",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE,
+                        )
+                    }
+                }
+                add(openLogsFolder)
+
+                addSeparator()
+
+                val exitItem = JMenuItem("Exit")
+                exitItem.mnemonic = 'X'.code
+                exitItem.accelerator = KeyStroke.getKeyStroke("alt F4")
+                exitItem.addActionListener {
+                    frame.dispatchEvent(WindowEvent(frame, WindowEvent.WINDOW_CLOSING))
+                }
+
+                add(exitItem)
+            },
+        )
     }
 
     private fun FlatMenuBar.createThemes() {

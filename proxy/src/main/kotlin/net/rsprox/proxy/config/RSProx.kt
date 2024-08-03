@@ -5,7 +5,7 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 
 internal val CONFIGURATION_PATH: Path = Path(System.getProperty("user.home"), ".rsprox")
-internal val BINARY_PATH: Path = CONFIGURATION_PATH.resolve("binary")
+public val BINARY_PATH: Path = CONFIGURATION_PATH.resolve("binary")
 internal val CLIENTS_DIRECTORY: Path = CONFIGURATION_PATH.resolve("clients")
 internal val PLUGINS_DIRECTORY: Path = CONFIGURATION_PATH.resolve("plugins")
 internal val TRANSCRIBERS_DIRECTORY: Path = CONFIGURATION_PATH.resolve("transcribers")
