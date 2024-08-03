@@ -9,7 +9,6 @@ import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.filters.PropertyFilter
 import net.rsprox.shared.filters.ProtCategory
 import java.awt.BorderLayout
-import java.awt.Dimension
 import java.awt.event.ActionListener
 import java.awt.event.ItemEvent
 import java.awt.event.MouseAdapter
@@ -26,10 +25,11 @@ public class FiltersSidePanel(
     private val createButton = createControlButton(AppIcons.Add, "Create new preset from default filters")
     private val deleteButton = createControlButton(AppIcons.Delete, "Delete selected preset")
     private val checkboxes = hashMapOf<PropertyFilter, JCheckBox>()
+    private val incomingPanel = FiltersPanel(StreamDirection.SERVER_TO_CLIENT)
+    private val outgoingPanel = FiltersPanel(StreamDirection.CLIENT_TO_SERVER)
 
     init {
         layout = MigLayout("fill, ins panel, wrap 1, hidemode 3", "[grow]", "[][][][grow, fill]")
-        minimumSize = Dimension(230, 0)
 
         presetsBox.addItemListener { e ->
             if (e.stateChange != ItemEvent.SELECTED) return@addItemListener
@@ -98,8 +98,26 @@ public class FiltersSidePanel(
         add(controlPanel, "growx")
 
         val tabbedGroup = FlatTabbedPane()
-        tabbedGroup.addTab("Incoming", createFilterPanel(StreamDirection.SERVER_TO_CLIENT))
-        tabbedGroup.addTab("Outgoing", createFilterPanel(StreamDirection.CLIENT_TO_SERVER))
+        tabbedGroup.addTab("Incoming", incomingPanel.wrapWithBorderlessScrollPane())
+        tabbedGroup.addTab("Outgoing", outgoingPanel.wrapWithBorderlessScrollPane())
+
+        tabbedGroup.addMouseListener(object : MouseAdapter() {
+            override fun mousePressed(e: MouseEvent) {
+                if (!SwingUtilities.isRightMouseButton(e)) return
+                if (presetsBox.selectedIndex == 0) return
+                val tabIndex = tabbedGroup.ui.tabForCoordinate(tabbedGroup, e.x, e.y)
+                if (tabIndex == -1) return
+                val panel = if (tabIndex == 0) incomingPanel else outgoingPanel
+                val menu = JPopupMenu()
+                val enableAll = JMenuItem("Enable All")
+                val disableAll = JMenuItem("Disable All")
+                enableAll.addActionListener { panel.setAll(true) }
+                disableAll.addActionListener { panel.setAll(false) }
+                menu.add(enableAll)
+                menu.add(disableAll)
+                menu.show(e.component, e.x, e.y)
+            }
+        })
 
         add(tabbedGroup, "grow, pushy")
 
@@ -113,6 +131,9 @@ public class FiltersSidePanel(
         for ((property, checkbox) in checkboxes) {
             checkbox.isSelected = active[property]
         }
+        incomingPanel.updateAllHeaderCheckboxes()
+        outgoingPanel.updateAllHeaderCheckboxes()
+
     }
 
     private fun updateButtonState() {
@@ -120,17 +141,6 @@ public class FiltersSidePanel(
         if (selectedIndex == -1) return
         deleteButton.isEnabled = selectedIndex != 0
         checkboxes.values.forEach { it.isEnabled = selectedIndex != 0 }
-    }
-
-    private fun createFilterPanel(serverToClient: StreamDirection): JScrollPane {
-        val scrollPane = JScrollPane(FiltersPanel(serverToClient)).apply {
-            horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
-            verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
-            verticalScrollBar.unitIncrement = 16
-
-            border = null
-        }
-        return scrollPane
     }
 
     private fun populatePresets() {
@@ -190,6 +200,7 @@ public class FiltersSidePanel(
 
             add(content)
 
+            updateHeaderCheckbox(category, properties)
         }
 
         private fun createCategoryHeaderPanel(
@@ -251,19 +262,24 @@ public class FiltersSidePanel(
                     }
                 }
             })
-
-            updateHeaderCheckbox(category, properties)
         }
 
         private fun updateHeaderCheckbox(category: ProtCategory, properties: List<PropertyFilter>) {
             val checkbox = headerCheckboxes[category] ?: return
             val active = proxyService.filterSetStore.getActive()
             val allSelected = properties.all { active[it] }
-            val allUnselected = properties.all { !active[it] }
+            val allUnselected = properties.none { active[it] }
             checkbox.state = when {
                 allSelected -> FlatTriStateCheckBox.State.SELECTED
                 allUnselected -> FlatTriStateCheckBox.State.UNSELECTED
                 else -> FlatTriStateCheckBox.State.INDETERMINATE
+            }
+        }
+
+        internal fun updateAllHeaderCheckboxes() {
+            for (category in headerCheckboxes.keys) {
+                val properties = PropertyFilter.entries.filter { it.direction == direction && it.category == category }
+                updateHeaderCheckbox(category, properties)
             }
         }
 
@@ -291,6 +307,28 @@ public class FiltersSidePanel(
 
             checkboxes[property] = checkbox
         }
+
+        fun setAll(selected: Boolean) {
+            val active = proxyService.filterSetStore.getActive()
+            for ((property, checkbox) in checkboxes) {
+                if (property.direction != direction) continue
+                checkbox.isSelected = selected
+                active[property] = selected
+            }
+            for ((_, headerCheckbox) in headerCheckboxes) {
+                headerCheckbox.isSelected = selected
+            }
+        }
+
+    }
+
+    private companion object {
+        private fun JComponent.wrapWithBorderlessScrollPane() = JScrollPane(this).apply {
+            horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+            verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
+            verticalScrollBar.unitIncrement = 16
+
+            border = null
+        }
     }
 }
-
