@@ -35,7 +35,7 @@ import kotlin.time.measureTime
 public class SessionPanel(
     private val type: SessionType,
     private val app: App,
-    private val sessionsPanel: SessionsPanel
+    private val sessionsPanel: SessionsPanel,
 ) : JPanel() {
     private val treeTable = JXTreeTable()
     private val tableModel = DefaultTreeTableModel()
@@ -86,12 +86,13 @@ public class SessionPanel(
         }
 
         treeTable.expandAll()
-        scrollPane = FlatScrollPane().apply {
-            border = BorderFactory.createEmptyBorder()
-            viewportBorder = BorderFactory.createEmptyBorder()
-            verticalScrollBar.unitIncrement = 16
-            setViewportView(treeTable)
-        }
+        scrollPane =
+            FlatScrollPane().apply {
+                border = BorderFactory.createEmptyBorder()
+                viewportBorder = BorderFactory.createEmptyBorder()
+                verticalScrollBar.unitIncrement = 16
+                setViewportView(treeTable)
+            }
         add(scrollPane, BorderLayout.CENTER)
 
         val toolbar = FlatToolBar()
@@ -147,12 +148,14 @@ public class SessionPanel(
     private fun launchClient() {
         ForkJoinPool.commonPool().submit {
             logger.info { "Native client thread: ${Thread.currentThread().name}" }
-            val time = measureTime {
-                val notifier = ProgressBarNotifier { percentage, text ->
-                    logger.info { "Native client progress: $percentage% - $text" }
+            val time =
+                measureTime {
+                    val notifier =
+                        ProgressBarNotifier { percentage, text ->
+                            logger.info { "Native client progress: $percentage% - $text" }
+                        }
+                    portNumber = app.service.launchNativeClient(notifier, UiSessionMonitor())
                 }
-                portNumber = app.service.launchNativeClient(notifier, UiSessionMonitor())
-            }
             logger.info { "Native client started in $time" }
         }
     }
@@ -163,21 +166,23 @@ public class SessionPanel(
 
     private fun getOddRowColor(): Color {
         val background = treeTable.background
-        val alternateRowColor = if (FlatLaf.isLafDark())
-            ColorFunctions.lighten(background, 0.05f)
-        else
-            ColorFunctions.darken(background, 0.05f)
+        val alternateRowColor =
+            if (FlatLaf.isLafDark()) {
+                ColorFunctions.lighten(background, 0.05f)
+            } else {
+                ColorFunctions.darken(background, 0.05f)
+            }
         return alternateRowColor
     }
 
     private inner class UiSessionMonitor : SessionMonitor<BinaryHeader> {
-
         private var lastCycle = -1
-        private val formatter = OmitFilteredPropertyTreeFormatter(
-            PropertyFormatterCollection.default(
-                SymbolDictionaryProvider.get()
+        private val formatter =
+            OmitFilteredPropertyTreeFormatter(
+                PropertyFormatterCollection.default(
+                    SymbolDictionaryProvider.get(),
+                ),
             )
-        )
 
         override fun onLogin(header: BinaryHeader) {
             // Update the session metrics data.
@@ -219,7 +224,10 @@ public class SessionPanel(
             notifyMetricsChanged()
         }
 
-        override fun onTranscribe(cycle: Int, property: RootProperty<*>) {
+        override fun onTranscribe(
+            cycle: Int,
+            property: RootProperty<*>,
+        ) {
             if (paused) return
             SwingUtilities.invokeLater {
                 val tickNode = findOrCreateTickNode(cycle)
@@ -230,7 +238,7 @@ public class SessionPanel(
         private fun createMessageNode(
             tickNode: AbstractMutableTreeTableNode,
             cycle: Int,
-            property: RootProperty<*>
+            property: RootProperty<*>,
         ) {
             val previewText = getPreviewText(property)
             val rootNode = MessageTreeTableNode(cycle, previewText, property, property.prot)
@@ -239,23 +247,27 @@ public class SessionPanel(
             treeTable.scrollRowToVisible(treeTable.rowCount - 1)
         }
 
-        private fun getPreviewText(property: Property, indent: Int = 0): String {
+        private fun getPreviewText(
+            property: Property,
+            indent: Int = 0,
+        ): String {
             val children = property.children
             val previewProps = children.filter { it.children.isEmpty() }
-            val previewText = if (previewProps.isNotEmpty()) {
-                buildString {
-                    for (child in previewProps) {
-                        val linePrefix = if (child === previewProps.first()) null else ", "
-                        formatter.writeChild(child, this@buildString, indent, linePrefix)
+            val previewText =
+                if (previewProps.isNotEmpty()) {
+                    buildString {
+                        for (child in previewProps) {
+                            val linePrefix = if (child === previewProps.first()) null else ", "
+                            formatter.writeChild(child, this@buildString, indent, linePrefix)
+                        }
+                    }
+                } else {
+                    if (property is ChildProperty<*>) {
+                        property.propertyName
+                    } else {
+                        ""
                     }
                 }
-            } else {
-                if (property is ChildProperty<*>) {
-                    property.propertyName
-                } else {
-                    ""
-                }
-            }
             return previewText
         }
 
@@ -264,7 +276,7 @@ public class SessionPanel(
             parentNode: AbstractMutableTreeTableNode,
             rootProperty: RootProperty<*>,
             property: Property = rootProperty,
-            indent: Int = 0
+            indent: Int = 0,
         ) {
             for (child in property.children) {
                 if (child.children.isEmpty()) continue // they get consumed in preview
@@ -277,7 +289,6 @@ public class SessionPanel(
                     }
 
                     is ListProperty -> {
-
                     }
 
                     else -> {
@@ -303,7 +314,7 @@ public class SessionPanel(
     private fun addNodeAndExpand(
         newChild: AbstractMutableTreeTableNode,
         parent: AbstractMutableTreeTableNode,
-        index: Int
+        index: Int,
     ) {
         tableModel.insertNodeInto(newChild, parent, index)
         treeTable.expandRow(treeTable.rowCount - 1)
@@ -316,30 +327,31 @@ public class SessionPanel(
 
     private companion object {
         private class StreamTreeTableNode(
-            private val header: BinaryHeader
+            private val header: BinaryHeader,
         ) : SessionBaseTreeTableNode() {
+            override fun getValueAt(column: Int) =
+                when (column) {
+                    0 -> "Stream"
+                    1 ->
+                        "${header.worldId} (${header.worldActivity}) at ${
+                            SimpleDateFormat.getTimeInstance().format(header.timestamp)
+                        }"
 
-            override fun getValueAt(column: Int) = when (column) {
-                0 -> "Stream"
-                1 -> "${header.worldId} (${header.worldActivity}) at ${
-                    SimpleDateFormat.getTimeInstance().format(header.timestamp)
-                }"
-
-                else -> error("Invalid column index: $column")
-            }
+                    else -> error("Invalid column index: $column")
+                }
 
             override fun getColumnCount() = 2
         }
 
         private class TickTreeTableNode(
-            private val tickNumber: Int
+            private val tickNumber: Int,
         ) : SessionBaseTreeTableNode() {
-
-            override fun getValueAt(column: Int) = when (column) {
-                0 -> "Tick $tickNumber"
-                1 -> null
-                else -> error("Invalid column index: $column")
-            }
+            override fun getValueAt(column: Int) =
+                when (column) {
+                    0 -> "Tick $tickNumber"
+                    1 -> null
+                    else -> error("Invalid column index: $column")
+                }
 
             override fun getColumnCount() = 2
         }
@@ -348,19 +360,19 @@ public class SessionPanel(
             private val tick: Int,
             private val message: String,
             private val rootProperty: RootProperty<*>,
-            private val prot: Any?
+            private val prot: Any?,
         ) : SessionBaseTreeTableNode() {
-
-            override fun getValueAt(column: Int) = when (column) {
-                0 -> prot
-                1 -> message
-                else -> error("Invalid column index: $column")
-            }
+            override fun getValueAt(column: Int) =
+                when (column) {
+                    0 -> prot?.toString()?.lowercase()
+                    1 -> message
+                    else -> error("Invalid column index: $column")
+                }
 
             override fun getColumnCount() = 2
         }
 
-        private abstract class SessionBaseTreeTableNode() : AbstractMutableTreeTableNode(null, true)
+        private abstract class SessionBaseTreeTableNode : AbstractMutableTreeTableNode(null, true)
 
         private val logger = InlineLogger()
     }

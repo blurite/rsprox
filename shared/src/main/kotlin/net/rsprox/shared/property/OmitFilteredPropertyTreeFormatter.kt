@@ -8,7 +8,7 @@ public class OmitFilteredPropertyTreeFormatter(
 ) : PropertyTreeFormatter {
     override fun format(property: RootProperty<*>): List<String> {
         val builder = StringBuilder()
-        builder.append('[').append(property.prot).append("] ")
+        builder.append('[').append(property.prot.toString().lowercase()).append("] ")
         var count = 0
         for (child in property.children) {
             if (child.isExcluded()) {
