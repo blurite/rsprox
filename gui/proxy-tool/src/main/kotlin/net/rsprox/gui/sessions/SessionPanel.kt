@@ -140,7 +140,7 @@ public class SessionPanel(
         // make all buttons centered
         toolbar.add(clearAllButton)
 
-        add(toolbar, BorderLayout.NORTH)
+        add(toolbar, BorderLayout.SOUTH)
 
         launchClient()
     }
