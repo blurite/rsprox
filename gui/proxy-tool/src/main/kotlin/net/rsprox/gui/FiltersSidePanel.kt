@@ -1,10 +1,7 @@
 package net.rsprox.gui
 
-import com.formdev.flatlaf.extras.components.FlatButton
+import com.formdev.flatlaf.extras.components.*
 import com.formdev.flatlaf.extras.components.FlatButton.ButtonType
-import com.formdev.flatlaf.extras.components.FlatLabel
-import com.formdev.flatlaf.extras.components.FlatSeparator
-import com.formdev.flatlaf.extras.components.FlatTabbedPane
 import net.miginfocom.swing.MigLayout
 import net.rsprox.gui.dialogs.Dialogs
 import net.rsprox.proxy.ProxyService
@@ -163,6 +160,9 @@ public class FiltersSidePanel(
     }
 
     private inner class FiltersPanel(private val direction: StreamDirection) : JPanel() {
+
+        private val headerCheckboxes = hashMapOf<ProtCategory, FlatTriStateCheckBox>()
+
         init {
             layout = MigLayout("flowy, ins 0, gap 0", "[grow]", "[]")
 
@@ -174,84 +174,123 @@ public class FiltersSidePanel(
                 add(createCategoryPanel(category, properties), "growx")
             }
         }
-    }
 
-    private fun createCategoryPanel(category: ProtCategory, properties: List<PropertyFilter>) = JPanel().apply {
-        layout = BoxLayout(this, BoxLayout.Y_AXIS)
+        private fun createCategoryPanel(category: ProtCategory, properties: List<PropertyFilter>) = JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
 
-        val content = JPanel()
-        content.border = null
-        content.layout = BoxLayout(content, BoxLayout.Y_AXIS)
-        for (property in properties) {
-            content.add(createPropertyFilterPanel(property))
-        }
-
-        add(createCategoryHeaderPanel(content, category))
-        add(FlatSeparator())
-
-        add(content)
-
-    }
-
-    private fun createCategoryHeaderPanel(content: JPanel, category: ProtCategory) = JPanel(BorderLayout()).apply {
-        val toggle = FlatButton()
-        toggle.toolTipText = "Collapse"
-        toggle.icon = AppIcons.Collapse
-        toggle.buttonType = ButtonType.toolBarButton
-
-        val collapseAction = ActionListener {
-            content.isVisible = !content.isVisible
-            toggle.icon = if (content.isVisible) AppIcons.Collapse else AppIcons.Expand
-            toggle.toolTipText = if (content.isVisible) "Collapse" else "Expand"
-        }
-
-        toggle.addActionListener(collapseAction)
-        add(toggle, BorderLayout.WEST)
-
-        val label = FlatLabel()
-        label.text = category.label
-        label.labelType = FlatLabel.LabelType.large
-        label.toolTipText = category.label
-        add(label, BorderLayout.CENTER)
-
-        label.addMouseListener(object : MouseAdapter() {
-
-            override fun mouseEntered(e: MouseEvent?) {
-                label.foreground = UIManager.getColor("Label.selectedForeground")
+            val content = JPanel()
+            content.border = null
+            content.layout = BoxLayout(content, BoxLayout.Y_AXIS)
+            for (property in properties) {
+                content.add(createPropertyFilterPanel(category, properties, property))
             }
 
-            override fun mouseExited(e: MouseEvent?) {
-                label.foreground = UIManager.getColor("Label.foreground")
+            add(createCategoryHeaderPanel(content, category, properties))
+            add(FlatSeparator())
+
+            add(content)
+
+        }
+
+        private fun createCategoryHeaderPanel(
+            content: JPanel,
+            category: ProtCategory,
+            properties: List<PropertyFilter>
+        ) = JPanel(BorderLayout()).apply {
+            val toggle = FlatButton()
+            toggle.toolTipText = "Collapse"
+            toggle.icon = AppIcons.Collapse
+            toggle.buttonType = ButtonType.toolBarButton
+
+            val collapseAction = ActionListener {
+                content.isVisible = !content.isVisible
+                toggle.icon = if (content.isVisible) AppIcons.Collapse else AppIcons.Expand
+                toggle.toolTipText = if (content.isVisible) "Collapse" else "Expand"
             }
 
-            override fun mouseReleased(e: MouseEvent) {
-                if (SwingUtilities.isLeftMouseButton(e)
-                    && e.x >= 0 && e.x <= label.width && e.y >= 0 && e.y <= label.height
-                ) {
-                    collapseAction.actionPerformed(null)
+            toggle.addActionListener(collapseAction)
+            add(toggle, BorderLayout.WEST)
+
+            val label = FlatLabel()
+            label.text = category.label
+            label.labelType = FlatLabel.LabelType.large
+            label.toolTipText = category.label
+            add(label, BorderLayout.CENTER)
+
+            val checkbox = FlatTriStateCheckBox()
+            checkbox.border = BorderFactory.createEmptyBorder(0, 0, 0, 7)
+            checkbox.isAllowIndeterminate = false
+
+            checkbox.addActionListener {
+                val active = proxyService.filterSetStore.getActive()
+                for (property in properties) {
+                    checkboxes[property]?.isSelected = checkbox.isSelected
+                    active[property] = checkbox.isSelected
                 }
+                updateButtonState()
+                updateHeaderCheckbox(category, properties)
             }
-        })
-    }
+            add(checkbox, BorderLayout.EAST)
+            headerCheckboxes[category] = checkbox
 
-    private fun createPropertyFilterPanel(property: PropertyFilter) = JPanel().apply {
-        layout = BorderLayout()
-        border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
+            label.addMouseListener(object : MouseAdapter() {
 
-        val checkbox = JCheckBox()
-        checkbox.addActionListener {
-            val active = proxyService.filterSetStore.getActive()
-            active[property] = checkbox.isSelected
+                override fun mouseEntered(e: MouseEvent?) {
+                    label.foreground = UIManager.getColor("Label.selectedForeground")
+                }
+
+                override fun mouseExited(e: MouseEvent?) {
+                    label.foreground = UIManager.getColor("Label.foreground")
+                }
+
+                override fun mouseReleased(e: MouseEvent) {
+                    if (SwingUtilities.isLeftMouseButton(e)
+                        && e.x >= 0 && e.x <= label.width && e.y >= 0 && e.y <= label.height
+                    ) {
+                        collapseAction.actionPerformed(null)
+                    }
+                }
+            })
+
+            updateHeaderCheckbox(category, properties)
         }
-        add(checkbox, BorderLayout.EAST)
 
-        val label = FlatLabel()
-        label.labelType = FlatLabel.LabelType.large
-        label.text = property.label
-        label.toolTipText = property.tooltip
-        add(label, BorderLayout.CENTER)
+        private fun updateHeaderCheckbox(category: ProtCategory, properties: List<PropertyFilter>) {
+            val checkbox = headerCheckboxes[category] ?: return
+            val active = proxyService.filterSetStore.getActive()
+            val allSelected = properties.all { active[it] }
+            val allUnselected = properties.all { !active[it] }
+            checkbox.state = when {
+                allSelected -> FlatTriStateCheckBox.State.SELECTED
+                allUnselected -> FlatTriStateCheckBox.State.UNSELECTED
+                else -> FlatTriStateCheckBox.State.INDETERMINATE
+            }
+        }
 
-        checkboxes[property] = checkbox
+        private fun createPropertyFilterPanel(
+            category: ProtCategory,
+            properties: List<PropertyFilter>,
+            property: PropertyFilter
+        ) = JPanel().apply {
+            layout = BorderLayout()
+            border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
+
+            val checkbox = JCheckBox()
+            checkbox.addActionListener {
+                val active = proxyService.filterSetStore.getActive()
+                active[property] = checkbox.isSelected
+                updateHeaderCheckbox(category, properties)
+            }
+            add(checkbox, BorderLayout.EAST)
+
+            val label = FlatLabel()
+            label.labelType = FlatLabel.LabelType.large
+            label.text = property.label
+            label.toolTipText = property.tooltip
+            add(label, BorderLayout.CENTER)
+
+            checkboxes[property] = checkbox
+        }
     }
 }
 
