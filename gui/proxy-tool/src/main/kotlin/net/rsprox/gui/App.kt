@@ -13,10 +13,10 @@ import java.awt.Dimension
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.*
+import javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE
 import kotlin.system.exitProcess
 
 public class App {
-
     private val frame = JFrame()
     private val sessionsPanel = SessionsPanel(this)
     public val statusBar: StatusBar = StatusBar()
@@ -27,31 +27,35 @@ public class App {
         service = ProxyService(UnpooledByteBufAllocator.DEFAULT)
         service.start()
 
-
         val defaultSize = UIScale.scale(Dimension(800, 600))
 
         // Configure the app frame.
         frame.title = "RSProx v${AppProperties.version}"
+        frame.defaultCloseOperation = DO_NOTHING_ON_CLOSE
         frame.size = defaultSize
         frame.minimumSize = defaultSize
         frame.iconImages = FlatSVGUtils.createWindowIconImages("/favicon.svg")
-        frame.addWindowListener(object : WindowAdapter() {
-            override fun windowClosing(e: WindowEvent) {
-                val confirmed = sessionsPanel.tabCount < 1
-                    || JOptionPane.showConfirmDialog(
-                    frame, "Are you sure you want to exit?",
-                    "Exit",
-                    JOptionPane.YES_NO_OPTION
-                ) == JOptionPane.YES_OPTION
-                if (confirmed) {
-                    try {
-                        service.safeShutdown()
-                    } finally {
-                        exitProcess(0)
+        frame.addWindowListener(
+            object : WindowAdapter() {
+                override fun windowClosing(e: WindowEvent) {
+                    val confirmed =
+                        sessionsPanel.tabCount < 1 ||
+                            JOptionPane.showConfirmDialog(
+                                frame,
+                                "Are you sure you want to exit?",
+                                "Exit",
+                                JOptionPane.YES_NO_OPTION,
+                            ) == JOptionPane.YES_OPTION
+                    if (confirmed) {
+                        try {
+                            service.safeShutdown()
+                        } finally {
+                            exitProcess(0)
+                        }
                     }
                 }
-            }
-        })
+            },
+        )
 
         // Configure the app content.
         val content = JPanel()
@@ -73,27 +77,31 @@ public class App {
 
     private fun setupMenuBar() {
         val menuBar = FlatMenuBar()
-        menuBar.add(JMenu("Help").apply {
-            val aboutItem = JMenuItem("About")
-            aboutItem.accelerator = KeyStroke.getKeyStroke("F1")
-            aboutItem.mnemonic = 'A'.code
-            aboutItem.addActionListener {
-                val dialog = AboutDialog(frame)
-                dialog.isVisible = true
-            }
-            add(aboutItem)
-        })
+        menuBar.add(
+            JMenu("Help").apply {
+                val aboutItem = JMenuItem("About")
+                aboutItem.accelerator = KeyStroke.getKeyStroke("F1")
+                aboutItem.mnemonic = 'A'.code
+                aboutItem.addActionListener {
+                    val dialog = AboutDialog(frame)
+                    dialog.isVisible = true
+                }
+                add(aboutItem)
+            },
+        )
         frame.jMenuBar = menuBar
     }
 
-    private fun createSideBar() = SideBar().apply {
+    private fun createSideBar() =
+        SideBar().apply {
 //        addButton(AppIcons.Settings, "Sessions", JPanel())
-        addButton(AppIcons.Filter, "Filters", FiltersSidePanel(service))
-        selectedIndex = -1
-    }
+            addButton(AppIcons.Filter, "Filters", FiltersSidePanel(service))
+            selectedIndex = -1
+        }
 
-    private fun createSessionsPanelContainer() = JPanel().apply {
-        layout = MigLayout("ins 0, gap 0", "[fill, grow]", "[fill, grow]")
-        add(sessionsPanel)
-    }
+    private fun createSessionsPanelContainer() =
+        JPanel().apply {
+            layout = MigLayout("ins 0, gap 0", "[fill, grow]", "[fill, grow]")
+            add(sessionsPanel)
+        }
 }
