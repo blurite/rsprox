@@ -19,5 +19,7 @@ public class ProxyProperty<T>(
         val APP_THEME = ProxyProperty("app.theme", StringProperty)
         val APP_WIDTH = ProxyProperty("app.width", IntProperty)
         val APP_HEIGHT = ProxyProperty("app.height", IntProperty)
+        val APP_POSITION_X = ProxyProperty("app.position.x", IntProperty)
+        val APP_POSITION_Y = ProxyProperty("app.position.y", IntProperty)
     }
 }

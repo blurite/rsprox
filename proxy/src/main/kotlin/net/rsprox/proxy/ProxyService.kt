@@ -11,6 +11,8 @@ import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.bootstrap.BootstrapFactory
 import net.rsprox.proxy.config.*
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_HEIGHT
+import net.rsprox.proxy.config.ProxyProperty.Companion.APP_POSITION_X
+import net.rsprox.proxy.config.ProxyProperty.Companion.APP_POSITION_Y
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_THEME
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_WIDTH
 import net.rsprox.proxy.config.ProxyProperty.Companion.BINARY_WRITE_INTERVAL_SECONDS
@@ -119,6 +121,23 @@ public class ProxyService(
     ) {
         properties.setProperty(APP_WIDTH, width)
         properties.setProperty(APP_HEIGHT, height)
+        properties.saveProperties(PROPERTIES_FILE)
+    }
+
+    public fun getAppPositionX(): Int? {
+        return properties.getPropertyOrNull(APP_POSITION_X)
+    }
+
+    public fun getAppPositionY(): Int? {
+        return properties.getPropertyOrNull(APP_POSITION_Y)
+    }
+
+    public fun setAppPosition(
+        x: Int,
+        y: Int,
+    ) {
+        properties.setProperty(APP_POSITION_X, x)
+        properties.setProperty(APP_POSITION_Y, y)
         properties.saveProperties(PROPERTIES_FILE)
     }
 

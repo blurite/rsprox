@@ -32,6 +32,13 @@ public class App {
         val width = service.getAppWidth()
         val height = service.getAppHeight()
         val defaultSize = UIScale.scale(Dimension(width, height))
+        val posX = service.getAppPositionX()
+        val posY = service.getAppPositionY()
+        if (posX != null && posY != null) {
+            frame.setLocation(posX, posY)
+        } else {
+            frame.setLocationRelativeTo(null)
+        }
 
         // Configure the app frame.
         frame.title = "RSProx v${AppProperties.version}"
@@ -66,6 +73,10 @@ public class App {
                 override fun componentResized(e: ComponentEvent) {
                     service.setAppSize(e.component.width, e.component.height)
                 }
+
+                override fun componentMoved(e: ComponentEvent) {
+                    service.setAppPosition(e.component.x, e.component.y)
+                }
             },
         )
 
@@ -89,7 +100,6 @@ public class App {
 
     public fun start() {
         frame.isVisible = true
-        frame.setLocationRelativeTo(null)
     }
 
     private fun setupMenuBar() {
