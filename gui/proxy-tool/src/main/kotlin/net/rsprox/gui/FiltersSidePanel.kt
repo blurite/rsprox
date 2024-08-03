@@ -42,7 +42,7 @@ public class FiltersSidePanel(
         }
 
         createButton.addActionListener {
-            val name = Dialogs.showInputString(parent = this, "Create new preset", "Enter preset name")
+            val name = Dialogs.showInputString(parent = createButton, "Create new preset", "Enter preset name")
                 ?: return@addActionListener
             if (presetsBoxModel.getIndexOf(name) != -1) {
                 Dialogs.showError(parent = this, message = "Preset with name '$name' already exists.")
@@ -58,7 +58,7 @@ public class FiltersSidePanel(
             if (selectedIndex == -1) return@addActionListener
             val presetName = presetsBox.selectedItem as String
             val result = JOptionPane.showConfirmDialog(
-                this,
+                deleteButton,
                 "Are you sure you want to delete the selected preset?",
                 "Delete '${presetName}' preset",
                 JOptionPane.YES_NO_OPTION,
@@ -72,7 +72,7 @@ public class FiltersSidePanel(
         copyButton.addActionListener {
             val selectedIndex = presetsBox.selectedIndex
             if (selectedIndex == -1) return@addActionListener
-            val name = Dialogs.showInputString(parent = this, "Copy preset", "Enter new preset name")
+            val name = Dialogs.showInputString(parent = copyButton, "Copy preset", "Enter new preset name")
                 ?: return@addActionListener
             if (presetsBoxModel.getIndexOf(name) != -1) {
                 Dialogs.showError(parent = this, message = "Preset with name '$name' already exists.")
