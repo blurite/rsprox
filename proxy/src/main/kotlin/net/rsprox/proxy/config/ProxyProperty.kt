@@ -16,7 +16,6 @@ public class ProxyProperty<T>(
         val BINARY_WRITE_INTERVAL_SECONDS = ProxyProperty("binary.write.interval.seconds", IntProperty)
 
         // gui
-        val APP_VERSION = ProxyProperty("app.version", StringProperty)
         val APP_THEME = ProxyProperty("app.theme", StringProperty)
         val APP_WIDTH = ProxyProperty("app.width", IntProperty)
         val APP_HEIGHT = ProxyProperty("app.height", IntProperty)

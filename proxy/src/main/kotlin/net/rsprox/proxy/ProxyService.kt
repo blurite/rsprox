@@ -12,7 +12,6 @@ import net.rsprox.proxy.bootstrap.BootstrapFactory
 import net.rsprox.proxy.config.*
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_HEIGHT
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_THEME
-import net.rsprox.proxy.config.ProxyProperty.Companion.APP_VERSION
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_WIDTH
 import net.rsprox.proxy.config.ProxyProperty.Companion.BINARY_WRITE_INTERVAL_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
@@ -100,10 +99,6 @@ public class ProxyService(
         launchHttpServer(this.bootstrapFactory, worldListProvider, updatedJavConfig)
         deleteTemporaryClients()
         setShutdownHook()
-    }
-
-    public fun getAppVersion(): String {
-        return properties.getProperty(APP_VERSION)
     }
 
     public fun getAppTheme(): String {

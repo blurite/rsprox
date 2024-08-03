@@ -2,7 +2,6 @@ package net.rsprox.gui
 
 import com.formdev.flatlaf.extras.FlatSVGUtils
 import com.formdev.flatlaf.extras.components.FlatMenuBar
-import com.formdev.flatlaf.intellijthemes.materialthemeuilite.*
 import com.formdev.flatlaf.util.UIScale
 import io.netty.buffer.UnpooledByteBufAllocator
 import net.miginfocom.swing.MigLayout
@@ -35,7 +34,7 @@ public class App {
         val defaultSize = UIScale.scale(Dimension(width, height))
 
         // Configure the app frame.
-        frame.title = "RSProx v${service.getAppVersion()}"
+        frame.title = "RSProx v${AppProperties.version}"
         frame.defaultCloseOperation = DO_NOTHING_ON_CLOSE
         frame.size = defaultSize
         frame.minimumSize = defaultSize
@@ -127,7 +126,7 @@ public class App {
                 aboutItem.accelerator = KeyStroke.getKeyStroke("F1")
                 aboutItem.mnemonic = 'A'.code
                 aboutItem.addActionListener {
-                    val dialog = AboutDialog(frame, service.getAppVersion())
+                    val dialog = AboutDialog(frame)
                     dialog.isVisible = true
                 }
                 add(aboutItem)

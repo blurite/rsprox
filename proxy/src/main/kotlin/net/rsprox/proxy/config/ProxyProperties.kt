@@ -2,7 +2,6 @@ package net.rsprox.proxy.config
 
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_HEIGHT
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_THEME
-import net.rsprox.proxy.config.ProxyProperty.Companion.APP_VERSION
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_WIDTH
 import net.rsprox.proxy.config.ProxyProperty.Companion.BINARY_WRITE_INTERVAL_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
@@ -88,7 +87,6 @@ public value class ProxyProperties private constructor(
             properties.setValue(WORLDLIST_REFRESH_SECONDS, 5)
             properties.setValue(BINARY_WRITE_INTERVAL_SECONDS, 5 * 60)
             // gui
-            properties.setValue(APP_VERSION, System.getenv("APP_VERSION"))
             properties.setValue(APP_THEME, "MaterialDeepOcean")
             properties.setValue(APP_WIDTH, 800)
             properties.setValue(APP_HEIGHT, 600)
