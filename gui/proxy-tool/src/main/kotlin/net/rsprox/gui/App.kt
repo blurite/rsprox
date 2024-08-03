@@ -85,11 +85,15 @@ public class App {
         frame.addComponentListener(
             object : ComponentAdapter() {
                 override fun componentResized(e: ComponentEvent) {
-                    service.setAppSize(e.component.width, e.component.height)
+                    if (frame.extendedState == JFrame.NORMAL) {
+                        service.setAppSize(e.component.width, e.component.height)
+                    }
                 }
 
                 override fun componentMoved(e: ComponentEvent) {
-                    service.setAppPosition(e.component.x, e.component.y)
+                    if (frame.extendedState == JFrame.NORMAL) {
+                        service.setAppPosition(e.component.x, e.component.y)
+                    }
                 }
             },
         )
