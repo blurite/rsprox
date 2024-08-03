@@ -29,6 +29,13 @@ internal inline fun <reified T> type(): Class<T> {
     return T::class.java
 }
 
+public fun ChildProperty<*>.isExcluded(): Boolean {
+    if (this !is FilteredProperty<*>) {
+        return false
+    }
+    return value == filterValue
+}
+
 @OptIn(ExperimentalContracts::class)
 public fun Property.group(
     name: String = "",

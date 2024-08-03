@@ -286,6 +286,9 @@ public class SessionPanel(
                 if (previewProps.isNotEmpty()) {
                     buildString {
                         for (child in previewProps) {
+                            if (child.isExcluded()) {
+                                continue
+                            }
                             val linePrefix = if (child === previewProps.first()) null else ", "
                             formatter.writeChild(child, this@buildString, indent, linePrefix)
                         }
@@ -308,6 +311,7 @@ public class SessionPanel(
             indent: Int = 0,
         ) {
             for (child in property.children) {
+                if (child.isExcluded()) continue
                 if (child.children.isEmpty()) continue // they get consumed in preview
                 when (child) {
                     is GroupProperty -> {

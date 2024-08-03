@@ -19,13 +19,6 @@ public class OmitFilteredPropertyTreeFormatter(
         return builder.lines()
     }
 
-    private fun ChildProperty<*>.isExcluded(): Boolean {
-        if (this !is FilteredProperty<*>) {
-            return false
-        }
-        return value == filterValue
-    }
-
     public fun writeChild(
         property: ChildProperty<*>,
         builder: StringBuilder,
