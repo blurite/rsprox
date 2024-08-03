@@ -45,24 +45,28 @@ dependencies {
 }
 
 tasks.create<JavaExec>("proxy") {
+    environment("APP_VERSION", project.version)
     group = "run"
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("net.rsprox.gui.ProxyToolGuiKt")
 }
 
 tasks.create<JavaExec>("download") {
+    environment("APP_VERSION", project.version)
     group = "run"
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("net.rsprox.proxy.cli.ClientDownloadCommandKt")
 }
 
 tasks.create<JavaExec>("tostring") {
+    environment("APP_VERSION", project.version)
     group = "run"
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("net.rsprox.proxy.cli.BinaryToStringCommandKt")
 }
 
 tasks.create<JavaExec>("transcribe") {
+    environment("APP_VERSION", project.version)
     group = "run"
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("net.rsprox.proxy.cli.TranscribeCommandKt")

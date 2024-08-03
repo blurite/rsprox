@@ -6,6 +6,7 @@ public class ProxyProperty<T>(
     public val type: PropertyType<T>,
 ) {
     internal companion object {
+        // proxy
         val PROXY_PORT_MIN = ProxyProperty("proxy.port.min", IntProperty)
         val PROXY_PORT_HTTP = ProxyProperty("proxy.port.http", IntProperty)
         val WORLDLIST_ENDPOINT = ProxyProperty("endpoints.worldlist", StringProperty)
@@ -13,5 +14,8 @@ public class ProxyProperty<T>(
         val BIND_TIMEOUT_SECONDS = ProxyProperty("bind.timeout.seconds", IntProperty)
         val WORLDLIST_REFRESH_SECONDS = ProxyProperty("worldlist.refresh.seconds", IntProperty)
         val BINARY_WRITE_INTERVAL_SECONDS = ProxyProperty("binary.write.interval.seconds", IntProperty)
+        // gui
+        val APP_VERSION = ProxyProperty("app.version", StringProperty)
+        val APP_THEME = ProxyProperty("app.theme", StringProperty)
     }
 }

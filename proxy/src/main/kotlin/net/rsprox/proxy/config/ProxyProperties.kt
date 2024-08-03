@@ -1,5 +1,7 @@
 package net.rsprox.proxy.config
 
+import net.rsprox.proxy.config.ProxyProperty.Companion.APP_THEME
+import net.rsprox.proxy.config.ProxyProperty.Companion.APP_VERSION
 import net.rsprox.proxy.config.ProxyProperty.Companion.BINARY_WRITE_INTERVAL_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
@@ -22,6 +24,14 @@ public value class ProxyProperties private constructor(
 
     public fun <T> getProperty(property: ProxyProperty<T>): T {
         return properties.getValue(property)
+    }
+
+    public fun <T> setProperty(property: ProxyProperty<T>, value: T) {
+        properties.setValue(property, value)
+    }
+
+    public fun saveProperties(path: Path) {
+        properties.store(path.toFile().bufferedWriter(DEFAULT_PROPERTIES_CHARSET), null)
     }
 
     public fun entryPairList(): List<Pair<Any, Any>> {
@@ -60,6 +70,7 @@ public value class ProxyProperties private constructor(
 
         private fun createDefaultProperties(): Properties {
             val properties = Properties()
+            // proxy
             properties.setValue(PROXY_PORT_MIN, 43601)
             properties.setValue(PROXY_PORT_HTTP, 43600)
             properties.setValue(WORLDLIST_ENDPOINT, "worldlist.ws")
@@ -67,6 +78,9 @@ public value class ProxyProperties private constructor(
             properties.setValue(BIND_TIMEOUT_SECONDS, 30)
             properties.setValue(WORLDLIST_REFRESH_SECONDS, 5)
             properties.setValue(BINARY_WRITE_INTERVAL_SECONDS, 5 * 60)
+            // gui
+            properties.setValue(APP_VERSION, System.getenv("APP_VERSION"))
+            properties.setValue(APP_THEME, "MaterialDeepOcean")
             return properties
         }
     }

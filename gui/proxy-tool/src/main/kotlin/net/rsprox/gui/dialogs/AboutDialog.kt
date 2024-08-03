@@ -4,7 +4,6 @@ import com.formdev.flatlaf.extras.FlatSVGUtils
 import com.formdev.flatlaf.extras.components.FlatButton
 import com.formdev.flatlaf.extras.components.FlatLabel
 import net.miginfocom.swing.MigLayout
-import net.rsprox.gui.AppProperties
 import java.awt.Cursor
 import java.awt.Desktop
 import java.awt.event.MouseAdapter
@@ -12,7 +11,7 @@ import java.awt.event.MouseEvent
 import java.net.URI
 import javax.swing.*
 
-public class AboutDialog(parent: JFrame) : JDialog() {
+public class AboutDialog(parent: JFrame, version: String) : JDialog() {
 
     init {
         title = "About RSProx"
@@ -27,7 +26,7 @@ public class AboutDialog(parent: JFrame) : JDialog() {
 
         panel.add(JLabel(ImageIcon(FlatSVGUtils.svg2image("/favicon.svg", 48, 48))))
         panel.add(FlatLabel().apply {
-            text = "RSProx v${AppProperties.version}"
+            text = "RSProx v${version}"
             labelType = FlatLabel.LabelType.h1
         })
 
