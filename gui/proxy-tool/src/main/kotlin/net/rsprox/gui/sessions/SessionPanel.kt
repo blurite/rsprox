@@ -61,9 +61,7 @@ public class SessionPanel(
         tableModel.setRoot(root)
 
         treeTable.treeTableModel = tableModel
-        treeTable.setLeafIcon(null)
-        treeTable.setOpenIcon(null)
-        treeTable.setClosedIcon(null)
+
         treeTable.isEditable = false
         treeTable.rowSelectionAllowed = true
         treeTable.isDoubleBuffered = true
