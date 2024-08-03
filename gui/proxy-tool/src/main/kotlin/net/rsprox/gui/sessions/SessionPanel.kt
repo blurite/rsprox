@@ -280,9 +280,9 @@ public class SessionPanel(
         ) {
             for (child in property.children) {
                 if (child.children.isEmpty()) continue // they get consumed in preview
-                val previewText = getPreviewText(child, indent)
                 when (child) {
                     is GroupProperty -> {
+                        val previewText = "    ".repeat(indent + 1) + getPreviewText(child, indent)
                         val groupNode = MessageTreeTableNode(cycle, previewText, rootProperty, null)
                         addNodeAndExpand(groupNode, parentNode, parentNode.childCount)
                         createMessageChildNodes(cycle, groupNode, rootProperty, child, indent + 1)
