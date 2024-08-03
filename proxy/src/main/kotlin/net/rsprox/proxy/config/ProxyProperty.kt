@@ -17,6 +17,7 @@ public class ProxyProperty<T>(
 
         // gui
         val APP_THEME = ProxyProperty("app.theme", StringProperty)
+        val APP_MAXIMIZED = ProxyProperty("app.maximized", BooleanProperty)
         val APP_WIDTH = ProxyProperty("app.width", IntProperty)
         val APP_HEIGHT = ProxyProperty("app.height", IntProperty)
         val APP_POSITION_X = ProxyProperty("app.position.x", IntProperty)

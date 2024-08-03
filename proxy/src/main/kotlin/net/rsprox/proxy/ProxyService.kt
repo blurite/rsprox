@@ -11,6 +11,7 @@ import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.bootstrap.BootstrapFactory
 import net.rsprox.proxy.config.*
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_HEIGHT
+import net.rsprox.proxy.config.ProxyProperty.Companion.APP_MAXIMIZED
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_POSITION_X
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_POSITION_Y
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_THEME
@@ -113,6 +114,15 @@ public class ProxyService(
 
     public fun getAppHeight(): Int {
         return properties.getPropertyOrNull(APP_HEIGHT) ?: 600
+    }
+
+    public fun setAppMaximized(maximized: Boolean) {
+        properties.setProperty(APP_MAXIMIZED, maximized)
+        properties.saveProperties(PROPERTIES_FILE)
+    }
+
+    public fun getAppMaximized(): Boolean? {
+        return properties.getPropertyOrNull(APP_MAXIMIZED)
     }
 
     public fun setAppSize(

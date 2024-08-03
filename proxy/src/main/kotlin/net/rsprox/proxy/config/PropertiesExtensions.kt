@@ -16,6 +16,7 @@ internal fun <T> Properties.getValue(property: ProxyProperty<T>): T {
         when (property.type) {
             IntProperty -> stringValue.toInt()
             StringProperty -> stringValue
+            BooleanProperty -> stringValue.toBoolean()
         }
     @Suppress("UNCHECKED_CAST")
     return result as T
@@ -27,6 +28,7 @@ internal fun <T> Properties.getValueOrNull(property: ProxyProperty<T>): T? {
         when (property.type) {
             IntProperty -> stringValue.toInt()
             StringProperty -> stringValue
+            BooleanProperty -> stringValue.toBoolean()
         }
     @Suppress("UNCHECKED_CAST")
     return result as? T

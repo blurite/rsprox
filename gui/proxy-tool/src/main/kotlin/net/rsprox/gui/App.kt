@@ -54,33 +54,43 @@ public class App {
             frame.setLocationRelativeTo(null)
         }
 
+        val maximized = service.getAppMaximized()
+        if (maximized != null) {
+            frame.extendedState = if (maximized) JFrame.MAXIMIZED_BOTH else JFrame.NORMAL
+        }
+
         // Configure the app frame.
         frame.title = "RSProx v${AppProperties.version}"
         frame.defaultCloseOperation = DO_NOTHING_ON_CLOSE
         frame.size = defaultSize
         frame.minimumSize = UIScale.scale(Dimension(800, 600))
         frame.iconImages = FlatSVGUtils.createWindowIconImages("/favicon.svg")
-        frame.addWindowListener(
-            object : WindowAdapter() {
-                override fun windowClosing(e: WindowEvent) {
-                    val confirmed =
-                        sessionsPanel.tabCount < 1 ||
-                            JOptionPane.showConfirmDialog(
-                                frame,
-                                "Are you sure you want to exit?",
-                                "Exit",
-                                JOptionPane.YES_NO_OPTION,
-                            ) == JOptionPane.YES_OPTION
-                    if (confirmed) {
-                        try {
-                            service.safeShutdown()
-                        } finally {
-                            exitProcess(0)
-                        }
+        val windowHandler = object : WindowAdapter() {
+            override fun windowClosing(e: WindowEvent) {
+                val confirmed =
+                    sessionsPanel.tabCount < 1 ||
+                        JOptionPane.showConfirmDialog(
+                            frame,
+                            "Are you sure you want to exit?",
+                            "Exit",
+                            JOptionPane.YES_NO_OPTION,
+                        ) == JOptionPane.YES_OPTION
+                if (confirmed) {
+                    try {
+                        service.safeShutdown()
+                    } finally {
+                        exitProcess(0)
                     }
                 }
-            },
-        )
+            }
+
+            override fun windowStateChanged(e: WindowEvent) {
+                service.setAppMaximized(e.newState == JFrame.MAXIMIZED_BOTH)
+            }
+        }
+
+        frame.addWindowListener(windowHandler)
+        frame.addWindowStateListener(windowHandler)
 
         frame.addComponentListener(
             object : ComponentAdapter() {
@@ -201,9 +211,8 @@ public class App {
             selectedIndex = -1
         }
 
-    private fun createSessionsPanelContainer() =
-        JPanel().apply {
-            layout = MigLayout("ins 0, gap 0", "[fill, grow]", "[fill, grow]")
-            add(sessionsPanel)
-        }
+    private fun createSessionsPanelContainer() = JPanel().apply {
+        layout = MigLayout("ins 0, gap 0", "[fill, grow]", "[fill, grow]")
+        add(sessionsPanel)
+    }
 }
