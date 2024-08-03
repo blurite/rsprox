@@ -1,7 +1,9 @@
 package net.rsprox.proxy.config
 
+import net.rsprox.proxy.config.ProxyProperty.Companion.APP_HEIGHT
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_THEME
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_VERSION
+import net.rsprox.proxy.config.ProxyProperty.Companion.APP_WIDTH
 import net.rsprox.proxy.config.ProxyProperty.Companion.BINARY_WRITE_INTERVAL_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
@@ -26,7 +28,14 @@ public value class ProxyProperties private constructor(
         return properties.getValue(property)
     }
 
-    public fun <T> setProperty(property: ProxyProperty<T>, value: T) {
+    public fun <T> getPropertyOrNull(property: ProxyProperty<T>): T? {
+        return properties.getValueOrNull(property)
+    }
+
+    public fun <T> setProperty(
+        property: ProxyProperty<T>,
+        value: T,
+    ) {
         properties.setValue(property, value)
     }
 
@@ -81,6 +90,8 @@ public value class ProxyProperties private constructor(
             // gui
             properties.setValue(APP_VERSION, System.getenv("APP_VERSION"))
             properties.setValue(APP_THEME, "MaterialDeepOcean")
+            properties.setValue(APP_WIDTH, 800)
+            properties.setValue(APP_HEIGHT, 600)
             return properties
         }
     }

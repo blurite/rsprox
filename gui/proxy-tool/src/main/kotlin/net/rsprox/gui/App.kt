@@ -11,6 +11,8 @@ import net.rsprox.gui.sessions.SessionsPanel
 import net.rsprox.gui.sidebar.SideBar
 import net.rsprox.proxy.ProxyService
 import java.awt.Dimension
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.*
@@ -28,7 +30,9 @@ public class App {
         service = ProxyService(UnpooledByteBufAllocator.DEFAULT)
         service.start()
 
-        val defaultSize = UIScale.scale(Dimension(800, 600))
+        val width = service.getAppWidth()
+        val height = service.getAppHeight()
+        val defaultSize = UIScale.scale(Dimension(width, height))
 
         // Configure the app frame.
         frame.title = "RSProx v${service.getAppVersion()}"
@@ -54,6 +58,14 @@ public class App {
                             exitProcess(0)
                         }
                     }
+                }
+            },
+        )
+
+        frame.addComponentListener(
+            object : ComponentAdapter() {
+                override fun componentResized(e: ComponentEvent) {
+                    service.setAppSize(e.component.width, e.component.height)
                 }
             },
         )
@@ -101,7 +113,7 @@ public class App {
                             service.setAppTheme(name)
                         }
                     }
-                }
+                },
             )
         }
 

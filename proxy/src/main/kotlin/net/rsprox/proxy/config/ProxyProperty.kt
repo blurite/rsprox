@@ -14,8 +14,11 @@ public class ProxyProperty<T>(
         val BIND_TIMEOUT_SECONDS = ProxyProperty("bind.timeout.seconds", IntProperty)
         val WORLDLIST_REFRESH_SECONDS = ProxyProperty("worldlist.refresh.seconds", IntProperty)
         val BINARY_WRITE_INTERVAL_SECONDS = ProxyProperty("binary.write.interval.seconds", IntProperty)
+
         // gui
         val APP_VERSION = ProxyProperty("app.version", StringProperty)
         val APP_THEME = ProxyProperty("app.theme", StringProperty)
+        val APP_WIDTH = ProxyProperty("app.width", IntProperty)
+        val APP_HEIGHT = ProxyProperty("app.height", IntProperty)
     }
 }

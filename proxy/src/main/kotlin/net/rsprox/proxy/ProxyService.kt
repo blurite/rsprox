@@ -10,8 +10,10 @@ import net.rsprox.patch.native.NativePatcher
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.bootstrap.BootstrapFactory
 import net.rsprox.proxy.config.*
+import net.rsprox.proxy.config.ProxyProperty.Companion.APP_HEIGHT
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_THEME
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_VERSION
+import net.rsprox.proxy.config.ProxyProperty.Companion.APP_WIDTH
 import net.rsprox.proxy.config.ProxyProperty.Companion.BINARY_WRITE_INTERVAL_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
@@ -101,11 +103,28 @@ public class ProxyService(
     }
 
     public fun getAppVersion(): String {
-        return properties.getProperty(APP_VERSION);
+        return properties.getProperty(APP_VERSION)
     }
 
     public fun getAppTheme(): String {
-        return properties.getProperty(APP_THEME);
+        return properties.getProperty(APP_THEME)
+    }
+
+    public fun getAppWidth(): Int {
+        return properties.getPropertyOrNull(APP_WIDTH) ?: 800
+    }
+
+    public fun getAppHeight(): Int {
+        return properties.getPropertyOrNull(APP_HEIGHT) ?: 600
+    }
+
+    public fun setAppSize(
+        width: Int,
+        height: Int,
+    ) {
+        properties.setProperty(APP_WIDTH, width)
+        properties.setProperty(APP_HEIGHT, height)
+        properties.saveProperties(PROPERTIES_FILE)
     }
 
     public fun setAppTheme(theme: String) {
@@ -225,7 +244,7 @@ public class ProxyService(
             launchProxyServer(this.bootstrapFactory, this.worldListProvider, rsa, port)
         } catch (t: Throwable) {
             logger.error { "Unable to bind network port $port for native client." }
-            return - 1
+            return -1
         }
         progressBarNotifier.update(5, "Checking native client updates")
         val webPort = properties.getProperty(PROXY_PORT_HTTP)
@@ -316,19 +335,22 @@ public class ProxyService(
         if (directory != null) {
             builder.directory(directory)
         }
-        builder.environment().putAll(Properties().let { props ->
-            val runeliteCreds = File(System.getProperty("user.home"), ".runelite")
-                .resolve("credentials.properties")
-            if (!runeliteCreds.exists()) {
-                logger.info { "Unable to find RuneLite credentials file: $runeliteCreds" }
-                emptyMap()
-            } else {
-                runeliteCreds.inputStream().use {
-                    props.load(it)
+        builder.environment().putAll(
+            Properties().let { props ->
+                val runeliteCreds =
+                    File(System.getProperty("user.home"), ".runelite")
+                        .resolve("credentials.properties")
+                if (!runeliteCreds.exists()) {
+                    logger.info { "Unable to find RuneLite credentials file: $runeliteCreds" }
+                    emptyMap()
+                } else {
+                    runeliteCreds.inputStream().use {
+                        props.load(it)
+                    }
+                    props.stringPropertyNames().associateWith { props.getProperty(it) }
                 }
-                props.stringPropertyNames().associateWith { props.getProperty(it) }
-            }
-        })
+            },
+        )
         val process = builder.start()
         if (process.isAlive) {
             logger.debug { "Successfully launched $path" }

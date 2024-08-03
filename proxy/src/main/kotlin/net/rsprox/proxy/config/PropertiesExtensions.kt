@@ -20,3 +20,14 @@ internal fun <T> Properties.getValue(property: ProxyProperty<T>): T {
     @Suppress("UNCHECKED_CAST")
     return result as T
 }
+
+internal fun <T> Properties.getValueOrNull(property: ProxyProperty<T>): T? {
+    val stringValue = getProperty(property.name) ?: return null
+    val result =
+        when (property.type) {
+            IntProperty -> stringValue.toInt()
+            StringProperty -> stringValue
+        }
+    @Suppress("UNCHECKED_CAST")
+    return result as? T
+}
