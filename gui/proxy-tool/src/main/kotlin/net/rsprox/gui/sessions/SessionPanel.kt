@@ -283,11 +283,12 @@ public class SessionPanel(
             val previewText =
                 if (previewProps.isNotEmpty()) {
                     buildString {
+                        var count = 0
                         for (child in previewProps) {
                             if (child.isExcluded()) {
                                 continue
                             }
-                            val linePrefix = if (child === previewProps.first()) null else ", "
+                            val linePrefix = if (count++ == 0) null else ", "
                             formatter.writeChild(child, this@buildString, indent, linePrefix)
                         }
                     }
