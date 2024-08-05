@@ -1,3 +1,9 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+plugins {
+    alias(libs.plugins.shadowjar)
+}
+
 dependencies {
     implementation(projects.gui)
     implementation(libs.bundles.flatlaf)
@@ -15,5 +21,20 @@ tasks.processResources {
         expand(
             "version" to project.version,
         )
+    }
+}
+
+tasks.withType<ShadowJar> {
+    archiveBaseName.set("rsprox")
+    archiveClassifier.set("")
+    archiveVersion.set("")
+
+    this.isZip64 = true
+    mergeServiceFiles()
+}
+
+tasks.withType<Jar> {
+    manifest {
+        attributes["Main-Class"] = "net.rsprox.gui.ProxyToolGuiKt"
     }
 }

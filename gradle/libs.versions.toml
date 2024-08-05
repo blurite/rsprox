@@ -13,6 +13,7 @@ clikt = "4.2.2"
 classgraph = "4.8.174"
 openrs2 = "0.1.0-20240627.193627-617"
 swingx = "1.6.5-1"
+shadowjar = "7.1.2"
 
 [libraries]
 netty-bom = { module = "io.netty:netty-bom", version.ref = "netty" }
@@ -47,6 +48,7 @@ swingx = { module = "org.swinglabs.swingx:swingx-all", version.ref = "swingx" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+shadowjar = { id = "com.github.johnrengelman.shadow", version.ref = "shadowjar" }
 
 [bundles]
 log4j = ["log4j-core", "log4j-api", "log4j-slf4j-impl", "inline-logger"]
