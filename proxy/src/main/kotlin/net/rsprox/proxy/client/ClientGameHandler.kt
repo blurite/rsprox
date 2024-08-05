@@ -18,9 +18,13 @@ public class ClientGameHandler(
         ctx: ChannelHandlerContext,
         msg: ClientPacket<GameClientProt>,
     ) {
-        serverChannel.writeAndFlush(msg.encode(ctx.alloc()))
-        eraseSensitiveContents(ctx, msg)
-        ctx.channel().getBinaryBlob().append(StreamDirection.CLIENT_TO_SERVER, msg.encode(ctx.alloc(), mod = false))
+        try {
+            serverChannel.writeAndFlush(msg.encode(ctx.alloc()))
+            eraseSensitiveContents(ctx, msg)
+            ctx.channel().getBinaryBlob().append(StreamDirection.CLIENT_TO_SERVER, msg.encode(ctx.alloc(), mod = false))
+        } finally {
+            msg.payload.release()
+        }
     }
 
     private fun eraseSensitiveContents(

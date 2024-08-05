@@ -36,12 +36,16 @@ public class ServerGameHandler(
         ctx: ChannelHandlerContext,
         msg: ServerPacket<GameServerProt>,
     ) {
-        clientChannel.writeAndFlush(redirectTraffic(ctx, msg).encode(ctx.alloc()))
-        eraseSensitiveContents(ctx, msg)
-        ctx.channel().getBinaryBlob().append(
-            StreamDirection.SERVER_TO_CLIENT,
-            msg.encode(ctx.alloc(), mod = false),
-        )
+        try {
+            clientChannel.writeAndFlush(redirectTraffic(ctx, msg).encode(ctx.alloc()))
+            eraseSensitiveContents(ctx, msg)
+            ctx.channel().getBinaryBlob().append(
+                StreamDirection.SERVER_TO_CLIENT,
+                msg.encode(ctx.alloc(), mod = false),
+            )
+        } finally {
+            msg.payload.release()
+        }
     }
 
     private fun redirectTraffic(
