@@ -9,7 +9,13 @@ import net.rsprox.patch.PatchResult
 import net.rsprox.patch.native.NativePatcher
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.bootstrap.BootstrapFactory
-import net.rsprox.proxy.config.*
+import net.rsprox.proxy.config.BINARY_PATH
+import net.rsprox.proxy.config.CACHES_DIRECTORY
+import net.rsprox.proxy.config.CLIENTS_DIRECTORY
+import net.rsprox.proxy.config.CONFIGURATION_PATH
+import net.rsprox.proxy.config.FILTERS_DIRECTORY
+import net.rsprox.proxy.config.JavConfig
+import net.rsprox.proxy.config.ProxyProperties
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_HEIGHT
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_MAXIMIZED
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_POSITION_X
@@ -23,13 +29,16 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_HTTP
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
+import net.rsprox.proxy.config.RUNELITE_LAUNCHER
+import net.rsprox.proxy.config.SOCKETS_DIRECTORY
+import net.rsprox.proxy.config.TEMP_CLIENTS_DIRECTORY
+import net.rsprox.proxy.config.registerConnection
 import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.downloader.NativeClientDownloader
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.futures.asCompletableFuture
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.plugin.PluginLoader
-import net.rsprox.proxy.progressbar.ProgressBarNotifier
 import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
 import net.rsprox.proxy.util.ClientType
@@ -42,13 +51,15 @@ import net.rsprox.proxy.worlds.WorldListProvider
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
+import org.newsclub.net.unix.AFUNIXServerSocket
+import org.newsclub.net.unix.AFUNIXSocketAddress
 import java.io.File
 import java.io.IOException
 import java.math.BigInteger
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.*
+import java.util.Properties
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.copyTo
@@ -82,6 +93,7 @@ public class ProxyService(
         createConfigurationDirectories(TEMP_CLIENTS_DIRECTORY)
         createConfigurationDirectories(CACHES_DIRECTORY)
         createConfigurationDirectories(FILTERS_DIRECTORY)
+        createConfigurationDirectories(SOCKETS_DIRECTORY)
         loadProperties()
         HuffmanProvider.load()
         this.rsa = loadRsa()
@@ -244,14 +256,27 @@ public class ProxyService(
         }
     }
 
-    public fun launchNativeClient(
-        progressBarNotifier: ProgressBarNotifier,
-        sessionMonitor: SessionMonitor<BinaryHeader>,
-    ): Int {
+    public fun launchRuneLiteClient(sessionMonitor: SessionMonitor<BinaryHeader>): Int {
+        val port = this.availablePort++
+        try {
+            launchProxyServer(this.bootstrapFactory, this.worldListProvider, rsa, port)
+        } catch (t: Throwable) {
+            logger.error { "Unable to bind network port $port for native client." }
+            return -1
+        }
+        this.connections.addSessionMonitor(port, sessionMonitor)
+        launchJar(
+            port,
+            RUNELITE_LAUNCHER,
+            operatingSystem,
+        )
+        return port
+    }
+
+    public fun launchNativeClient(sessionMonitor: SessionMonitor<BinaryHeader>): Int {
         return launchNativeClient(
             operatingSystem,
             rsa,
-            progressBarNotifier,
             sessionMonitor,
         )
     }
@@ -259,18 +284,15 @@ public class ProxyService(
     private fun launchNativeClient(
         os: OperatingSystem,
         rsa: RSAPrivateCrtKeyParameters,
-        progressBarNotifier: ProgressBarNotifier,
         sessionMonitor: SessionMonitor<BinaryHeader>,
     ): Int {
         val port = this.availablePort++
-        progressBarNotifier.update(0, "Binding port $port")
         try {
             launchProxyServer(this.bootstrapFactory, this.worldListProvider, rsa, port)
         } catch (t: Throwable) {
             logger.error { "Unable to bind network port $port for native client." }
             return -1
         }
-        progressBarNotifier.update(5, "Checking native client updates")
         val webPort = properties.getProperty(PROXY_PORT_HTTP)
         val javConfigEndpoint = properties.getProperty(JAV_CONFIG_ENDPOINT)
         val worldlistEndpoint = properties.getProperty(WORLDLIST_ENDPOINT)
@@ -280,11 +302,10 @@ public class ProxyService(
                 OperatingSystem.MAC -> NativeClientType.MAC
                 else -> throw IllegalStateException()
             }
-        val binary = NativeClientDownloader.download(nativeClientType, progressBarNotifier)
+        val binary = NativeClientDownloader.download(nativeClientType)
         val extension = if (binary.extension.isNotEmpty()) ".${binary.extension}" else ""
         val stamp = System.currentTimeMillis()
         val patched = TEMP_CLIENTS_DIRECTORY.resolve("${binary.nameWithoutExtension}-$stamp$extension")
-        progressBarNotifier.update(90, "Cloning native client")
         binary.copyTo(patched, overwrite = true)
 
         // For now, directly just download, patch and launch the C++ client
@@ -309,10 +330,68 @@ public class ProxyService(
                 BigInteger(result.oldModulus, 16),
             ),
         )
-        progressBarNotifier.update(100, "Launching native client")
         launchExecutable(port, result.outputPath, os)
         this.connections.addSessionMonitor(port, sessionMonitor)
         return port
+    }
+
+    private fun launchJar(
+        port: Int,
+        path: Path,
+        operatingSystem: OperatingSystem,
+    ) {
+        val timestamp = System.currentTimeMillis()
+        val socketFile = SOCKETS_DIRECTORY.resolve("$timestamp.socket").toFile()
+        val socket = AFUNIXServerSocket.newInstance()
+        logger.debug {
+            "Binding an AF UNIX Socket to ${socketFile.name}"
+        }
+        socket.bind(AFUNIXSocketAddress.of(socketFile))
+        try {
+            val directory = path.parent.toFile()
+            val absolutePath = path.absolutePathString()
+            val webPort = properties.getProperty(PROXY_PORT_HTTP)
+            val javConfigEndpoint = properties.getProperty(JAV_CONFIG_ENDPOINT)
+            createProcess(
+                listOf(
+                    "java",
+                    "-jar",
+                    absolutePath,
+                    "--port=$port",
+                    "--rsa=${rsa.publicKey.modulus.toString(16)}",
+                    "--jav_config=http://127.0.0.1:$webPort/$javConfigEndpoint",
+                    "--socket_id=$timestamp",
+                ),
+                directory,
+                path,
+                port,
+            )
+            logger.debug { "Waiting for client to connect to the server socket..." }
+            val channel = socket.accept()
+            logger.debug { "Client connected to server socket successfully." }
+            logger.debug { "Requesting old rsa modulus from the client..." }
+            val output = channel.outputStream
+            output.write("old-rsa-modulus:".encodeToByteArray())
+            output.flush()
+            val input = channel.inputStream
+
+            val buf = ByteArray(socket.getReceiveBufferSize())
+            val read = input.read(buf)
+            val oldModulus = String(buf, 0, read)
+            logger.debug { "Old RSA modulus received from the client: ${oldModulus.substring(0, 16)}..." }
+            registerConnection(
+                ConnectionInfo(
+                    ClientType.Native,
+                    operatingSystem,
+                    port,
+                    BigInteger(oldModulus, 16),
+                ),
+            )
+            socket.close()
+        } finally {
+            socket.close()
+            socketFile.delete()
+        }
     }
 
     private fun launchExecutable(
@@ -355,6 +434,7 @@ public class ProxyService(
         logger.debug { "Attempting to create process $command" }
         val builder =
             ProcessBuilder()
+                .inheritIO()
                 .command(command)
         if (directory != null) {
             builder.directory(directory)
@@ -479,6 +559,11 @@ public class ProxyService(
             val timeoutSeconds = properties.getProperty(BIND_TIMEOUT_SECONDS).toLong()
             httpServerBootstrap
                 .bind(port)
+                .asCompletableFuture()
+                .orTimeout(timeoutSeconds, TimeUnit.SECONDS)
+                .join()
+            httpServerBootstrap
+                .bind(80)
                 .asCompletableFuture()
                 .orTimeout(timeoutSeconds, TimeUnit.SECONDS)
                 .join()

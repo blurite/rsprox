@@ -30,6 +30,7 @@ dependencies {
     implementation(projects.cache)
     implementation(projects.cache.cacheApi)
     implementation(projects.shared)
+    implementation(libs.junixsocket)
 }
 
 tasks.build.configure {
