@@ -46,7 +46,7 @@ public class SessionsPanel(
         val session = SessionPanel(type, app, this)
         addTab("Session ${++counter}", type.icon, session, "")
         setTabCloseCallback(tabCount - 1) { tabbedPane, tabIndex ->
-            val confirm = !session.isActive || JOptionPane.showConfirmDialog(
+            val confirm = !session.isActive && JOptionPane.showConfirmDialog(
                 tabbedPane,
                 "Are you sure you want to close this session?",
                 "Close Session",
