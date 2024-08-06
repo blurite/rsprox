@@ -114,6 +114,36 @@ public class RuneLitePatcher : Patcher<Unit> {
                     val parentDir = outputFolder.toFile()
                     val manifestFile = parentDir.resolve("META-INF").resolve("MANIFEST.MF")
                     manifestFile.delete()
+
+                    val worldClientFile =
+                        parentDir
+                            .resolve("net")
+                            .resolve("runelite")
+                            .resolve("client")
+                            .resolve("game")
+                            .resolve("WorldClient.class")
+                    val resource =
+                        RuneLitePatcher::class.java
+                            .getResourceAsStream("WorldClient.class")
+                            ?.readAllBytes()
+                            ?: throw IllegalStateException("WorldClient.class resource not available")
+
+                    val originalResource =
+                        RuneLitePatcher::class.java
+                            .getResourceAsStream("Original WorldClient.class")
+                            ?.readAllBytes()
+                            ?: throw IllegalStateException("Original WorldClient.class resource not available.")
+
+                    val originalBytes = worldClientFile.readBytes()
+                    if (!originalBytes.contentEquals(originalResource)) {
+                        throw IllegalStateException("Unable to patch RuneLite WorldClient.class - out of date.")
+                    }
+
+                    // Overwrite the WorldClient.class file to read worlds from our proxied-list
+                    // This ensures that the world switcher still goes through the proxy tool,
+                    // instead of just connecting to RuneLite's own world list API.
+                    worldClientFile.writeBytes(resource)
+
                     val files = parentDir.walkTopDown().maxDepth(1)
                     logger.debug { "Building a patched jar." }
                     for (file in files) {
@@ -137,13 +167,19 @@ public class RuneLitePatcher : Patcher<Unit> {
         outputFolder: Path,
         port: Int,
     ) {
-        val inputPort = toByteArray(listOf(43594 ushr 8 and 0xFF, 43594 and 0xFF))
-        val outputPort = toByteArray(listOf(port ushr 8 and 0xFF, port and 0xFF))
-        logger.debug { "Patching port from 43594 to $port in client.class" }
-        val file = outputFolder.resolve("client.class").toFile()
-        val bytes = file.readBytes()
-        bytes.replaceBytes(inputPort, outputPort)
-        file.writeBytes(bytes)
+        val inputPort = toByteArray(listOf(3, 0, 0, 43594 ushr 8 and 0xFF, 43594 and 0xFF))
+        val outputPort = toByteArray(listOf(3, 0, 0, port ushr 8 and 0xFF, port and 0xFF))
+        for (file in outputFolder.toFile().walkTopDown()) {
+            if (!file.isFile) continue
+            val bytes = file.readBytes()
+            val index = bytes.indexOf(inputPort)
+            if (index == -1) {
+                continue
+            }
+            logger.debug { "Patching port from 43594 to $port in ${file.name}" }
+            bytes.replaceBytes(inputPort, outputPort)
+            file.writeBytes(bytes)
+        }
     }
 
     private fun toByteArray(list: List<Int>): ByteArray {
@@ -252,7 +288,6 @@ public class RuneLitePatcher : Patcher<Unit> {
         }
         val searchBytes = input.toByteArray(Charsets.UTF_8)
         val index = bytes.indexOf(searchBytes)
-        System.err.println("Replacing $input with $replacement at index $index")
         if (index == -1) {
             throw IllegalArgumentException("Unable to locate input $input")
         }
