@@ -1,0 +1,3 @@
+[submodule "launcher"]
+	path = runelite-launcher
+	url = git@github.com:runelite/launcher.git
