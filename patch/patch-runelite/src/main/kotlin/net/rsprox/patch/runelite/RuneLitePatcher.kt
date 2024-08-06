@@ -8,6 +8,7 @@ import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.copyTo
 import kotlin.io.path.deleteRecursively
 import kotlin.io.path.extension
 import kotlin.io.path.isRegularFile
@@ -15,6 +16,21 @@ import kotlin.io.path.nameWithoutExtension
 
 @Suppress("DuplicatedCode", "SameParameterValue")
 public class RuneLitePatcher : Patcher<Unit> {
+    public fun patch(
+        path: Path,
+        rsa: String,
+        port: Int,
+    ): PatchResult {
+        return patch(
+            path,
+            rsa,
+            "",
+            "",
+            port,
+            Unit,
+        )
+    }
+
     @OptIn(ExperimentalPathApi::class)
     override fun patch(
         path: Path,
@@ -29,34 +45,36 @@ public class RuneLitePatcher : Patcher<Unit> {
         }
         logger.debug { "Attempting to patch $path" }
         val time = System.currentTimeMillis()
-        val outputFolder = path.parent.resolve("runelite-client-$time")
+        val outputFolder = path.parent.resolve("runelite-injected-client-$time")
         val oldModulus: String
         val patchedJar: Path
         try {
             logger.debug { "Attempting to patch a jar." }
             Files.createDirectories(outputFolder)
-            val inputFile = ZipFile(path.toFile())
-            logger.debug { "Extracting existing classes from a zip file." }
-            inputFile.extractAll(outputFolder.toFile().absolutePath)
+            ZipFile(path.toFile()).use { inputFile ->
+                logger.debug { "Extracting existing classes from a zip file." }
+                inputFile.extractAll(outputFolder.toFile().absolutePath)
 
-            logger.debug { "Patching class files." }
-            oldModulus = overwriteModulus(outputFolder, rsa)
-            overwriteLocalHost(outputFolder)
-            patchPort(outputFolder, port)
-            patchedJar = path.parent.resolve(path.nameWithoutExtension + "-patched." + path.extension)
-            val outputFile = ZipFile(patchedJar.toFile())
-            val parentDir = outputFolder.toFile()
-            val files = parentDir.walkTopDown().maxDepth(1)
-            logger.debug { "Building a patched jar." }
-            for (file in files) {
-                if (file == parentDir) continue
-                if (file.isFile) {
-                    outputFile.addFile(file)
-                } else {
-                    outputFile.addFolder(file)
+                logger.debug { "Patching class files." }
+                oldModulus = overwriteModulus(outputFolder, rsa)
+                overwriteLocalHost(outputFolder)
+                patchPort(outputFolder, port)
+                patchedJar = path.parent.resolve(path.nameWithoutExtension + "-patched." + path.extension)
+                ZipFile(patchedJar.toFile()).use { outputFile ->
+                    val parentDir = outputFolder.toFile()
+                    val files = parentDir.walkTopDown().maxDepth(1)
+                    logger.debug { "Building a patched jar." }
+                    for (file in files) {
+                        if (file == parentDir) continue
+                        if (file.isFile) {
+                            outputFile.addFile(file)
+                        } else {
+                            outputFile.addFolder(file)
+                        }
+                    }
+                    outputFile.charset = inputFile.charset
                 }
             }
-            outputFile.charset = inputFile.charset
         } finally {
             logger.debug { "Deleting temporary extracted class files." }
             outputFolder.deleteRecursively()
@@ -66,6 +84,53 @@ public class RuneLitePatcher : Patcher<Unit> {
             oldModulus,
             patchedJar,
         )
+    }
+
+    @OptIn(ExperimentalPathApi::class)
+    public fun patchLocalHostSupport(path: Path): Path {
+        val inputPath = path.parent.resolve(path.nameWithoutExtension + "-patched." + path.extension)
+        val copy = path.copyTo(inputPath)
+        val time = System.currentTimeMillis()
+        val outputFolder = path.parent.resolve("runelite-client-$time")
+        try {
+            ZipFile(copy.toFile()).use { inputFile ->
+                inputFile.extractAll(outputFolder.toFile().absolutePath)
+                val clientLoader =
+                    outputFolder
+                        .resolve("net")
+                        .resolve("runelite")
+                        .resolve("client")
+                        .resolve("rs")
+                        .resolve("ClientLoader.class")
+                        .toFile()
+                val bytes = clientLoader.readBytes()
+                val replacement = replaceText(bytes, ".jagex.com", "")
+                clientLoader.writeBytes(replacement)
+
+                val patchedJar =
+                    path.parent
+                        .resolve(path.nameWithoutExtension + "-patched." + path.extension)
+                ZipFile(patchedJar.toFile()).use { outputFile ->
+                    val parentDir = outputFolder.toFile()
+                    val manifestFile = parentDir.resolve("META-INF").resolve("MANIFEST.MF")
+                    manifestFile.delete()
+                    val files = parentDir.walkTopDown().maxDepth(1)
+                    logger.debug { "Building a patched jar." }
+                    for (file in files) {
+                        if (file == parentDir) continue
+                        if (file.isFile) {
+                            outputFile.addFile(file)
+                        } else {
+                            outputFile.addFolder(file)
+                        }
+                    }
+                    outputFile.charset = inputFile.charset
+                }
+            }
+        } finally {
+            outputFolder.deleteRecursively()
+        }
+        return copy
     }
 
     private fun patchPort(
@@ -187,6 +252,7 @@ public class RuneLitePatcher : Patcher<Unit> {
         }
         val searchBytes = input.toByteArray(Charsets.UTF_8)
         val index = bytes.indexOf(searchBytes)
+        System.err.println("Replacing $input with $replacement at index $index")
         if (index == -1) {
             throw IllegalArgumentException("Unable to locate input $input")
         }

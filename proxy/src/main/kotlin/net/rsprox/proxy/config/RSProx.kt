@@ -12,6 +12,10 @@ internal val TRANSCRIBERS_DIRECTORY: Path = CONFIGURATION_PATH.resolve("transcri
 internal val TEMP_CLIENTS_DIRECTORY: Path = CLIENTS_DIRECTORY.resolve("temp")
 internal val CACHES_DIRECTORY: Path = CONFIGURATION_PATH.resolve("caches")
 internal val FILTERS_DIRECTORY: Path = CONFIGURATION_PATH.resolve("filters")
+internal val RUNELITE_LAUNCHER: Path =
+    CONFIGURATION_PATH
+        .resolve("runelite")
+        .resolve("runelite-launcher.jar")
 private val connections: MutableList<ConnectionInfo> = mutableListOf()
 
 internal fun registerConnection(info: ConnectionInfo) {
