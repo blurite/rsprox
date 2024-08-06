@@ -14,6 +14,7 @@ classgraph = "4.8.174"
 openrs2 = "0.1.0-20240627.193627-617"
 swingx = "1.6.5-1"
 shadowjar = "7.1.2"
+zip4j = "2.11.5"
 
 [libraries]
 netty-bom = { module = "io.netty:netty-bom", version.ref = "netty" }
@@ -45,6 +46,7 @@ classgraph = { module = "io.github.classgraph:classgraph", version.ref = "classg
 openrs2-buffer = { module = "org.openrs2:openrs2-buffer", version.ref = "openrs2"}
 openrs2-cache = { module = "org.openrs2:openrs2-cache", version.ref = "openrs2"}
 swingx = { module = "org.swinglabs.swingx:swingx-all", version.ref = "swingx" }
+zip4j = { module = "net.lingala.zip4j:zip4j", version.ref = "zip4j" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
