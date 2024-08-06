@@ -23,6 +23,8 @@ import net.rsprox.proxy.config.ProxyProperties
 import net.rsprox.proxy.config.ProxyProperty
 import net.rsprox.proxy.worlds.WorldListProvider
 import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
 
 public class HttpServerHandler(
     private val worldListProvider: WorldListProvider,
@@ -117,6 +119,15 @@ public class HttpServerHandler(
             }
 
             else -> {
+                if (uri.startsWith("/gamepack_")) {
+                    val forwarded = URL("http://oldschool1.runescape.com$uri")
+                    val con = forwarded.openConnection() as HttpURLConnection
+                    con.requestMethod = "GET"
+                    val result = con.inputStream.readAllBytes()
+                    val builder = StringBuilder()
+                    builder.append(result.toString(Charsets.ISO_8859_1))
+                    return builder
+                }
                 throw IllegalStateException("Unknown HTTP request: $uri")
             }
         }
