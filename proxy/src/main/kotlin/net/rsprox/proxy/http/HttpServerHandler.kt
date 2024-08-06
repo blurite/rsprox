@@ -1,5 +1,6 @@
 package net.rsprox.proxy.http
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.michaelbull.logging.InlineLogger
 import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.Unpooled
@@ -116,6 +117,14 @@ public class HttpServerHandler(
 
             "/${properties.getProperty(ProxyProperty.JAV_CONFIG_ENDPOINT)}" -> {
                 StringBuilder(javConfig.toString().encodeToByteArray().toString(Charsets.ISO_8859_1))
+            }
+
+            "/worlds.js" -> {
+                val provider = worldListProvider.get()
+                val runeLiteWorldList = provider.toRuneLiteWorldResult()
+                val mapper = jacksonObjectMapper()
+                val asString = mapper.writeValueAsString(runeLiteWorldList)
+                StringBuilder().append(asString)
             }
 
             else -> {
