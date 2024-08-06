@@ -57,8 +57,11 @@ internal class Js5Decoder(
             if (totalLen < 0) {
                 throw DecoderException("Total length exceeds maximum ByteBuf size")
             }
-
-            this.response = ctx.alloc().buffer(totalLen, totalLen)
+            try {
+                this.response = ctx.alloc().buffer(totalLen, totalLen)
+            } finally {
+                ctx.alloc().buffer().release()
+            }
             this.response.writeByte(this.compression)
             this.response.writeInt(this.size)
             this.state = State.RESPONSE_PAYLOAD
