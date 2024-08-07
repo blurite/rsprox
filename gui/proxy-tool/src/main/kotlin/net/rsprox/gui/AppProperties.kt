@@ -1,6 +1,6 @@
 package net.rsprox.gui
 
-import java.util.*
+import java.util.Properties
 
 public data object AppProperties {
     public val version: String

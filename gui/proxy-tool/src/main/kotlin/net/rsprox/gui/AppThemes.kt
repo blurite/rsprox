@@ -10,18 +10,18 @@ import javax.swing.UIManager
 import javax.swing.UIManager.LookAndFeelInfo
 
 public object AppThemes {
-
     private val log = InlineLogger()
 
     private val DEFAULT_THEME = FlatMaterialDarkerIJTheme::class.java.name
 
-    public val THEMES: List<LookAndFeelInfo> = buildList {
-        for (flatLafInfo in FlatAllIJThemes.INFOS) {
-            if (flatLafInfo.isDark) {
-                add(flatLafInfo)
+    public val THEMES: List<LookAndFeelInfo> =
+        buildList {
+            for (flatLafInfo in FlatAllIJThemes.INFOS) {
+                if (flatLafInfo.isDark) {
+                    add(flatLafInfo)
+                }
             }
         }
-    }
 
     public fun applyTheme(name: String) {
         EventQueue.invokeLater {

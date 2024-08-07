@@ -16,7 +16,13 @@ import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
-import javax.swing.*
+import javax.swing.BorderFactory
+import javax.swing.JFrame
+import javax.swing.JMenu
+import javax.swing.JMenuItem
+import javax.swing.JOptionPane
+import javax.swing.JPanel
+import javax.swing.KeyStroke
 import javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE
 import kotlin.system.exitProcess
 

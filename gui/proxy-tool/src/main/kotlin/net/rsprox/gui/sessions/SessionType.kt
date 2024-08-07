@@ -7,7 +7,8 @@ import javax.swing.Icon
 public enum class SessionType {
     Java,
     Native,
-    RuneLite;
+    RuneLite,
+    ;
 
     public val icon: Icon by lazy {
         when (this) {

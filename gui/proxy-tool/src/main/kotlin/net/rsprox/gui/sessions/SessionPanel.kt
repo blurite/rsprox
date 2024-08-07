@@ -10,7 +10,11 @@ import net.rsprox.gui.App
 import net.rsprox.gui.AppIcons
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.shared.SessionMonitor
-import net.rsprox.shared.property.*
+import net.rsprox.shared.property.OmitFilteredPropertyTreeFormatter
+import net.rsprox.shared.property.Property
+import net.rsprox.shared.property.PropertyFormatterCollection
+import net.rsprox.shared.property.RootProperty
+import net.rsprox.shared.property.isExcluded
 import net.rsprox.shared.property.regular.GroupProperty
 import net.rsprox.shared.property.regular.ListProperty
 import net.rsprox.shared.symbols.SymbolDictionaryProvider
@@ -36,7 +40,6 @@ import kotlin.time.measureTime
 
 public class SessionPanel(
     private val type: SessionType,
-    private val app: App,
     private val sessionsPanel: SessionsPanel,
 ) : JPanel() {
     private val treeTable = JXTreeTable()
@@ -277,7 +280,7 @@ public class SessionPanel(
             property: RootProperty<*>,
         ) {
             val previewText = getPreviewText(property)
-            val rootNode = MessageTreeTableNode(cycle, previewText, property, property.prot)
+            val rootNode = MessageTreeTableNode(previewText, property.prot)
             addNodeAndExpand(rootNode, tickNode, tickNode.childCount)
             createMessageChildNodes(cycle, rootNode, property)
         }
@@ -319,7 +322,7 @@ public class SessionPanel(
                 when (child) {
                     is GroupProperty -> {
                         val previewText = getPreviewText(child, indent)
-                        val groupNode = MessageTreeTableNode(cycle, previewText, rootProperty, child.propertyName)
+                        val groupNode = MessageTreeTableNode(previewText, child.propertyName)
                         addNodeAndExpand(groupNode, parentNode, parentNode.childCount)
                         createMessageChildNodes(cycle, groupNode, rootProperty, child, indent + 1)
                     }
@@ -393,9 +396,7 @@ public class SessionPanel(
         }
 
         private class MessageTreeTableNode(
-            private val tick: Int,
             private val message: String,
-            private val rootProperty: RootProperty<*>,
             private val prot: Any?,
         ) : SessionBaseTreeTableNode() {
             override fun getValueAt(column: Int) =

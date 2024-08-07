@@ -6,7 +6,12 @@ import com.formdev.flatlaf.extras.components.FlatTabbedPane
 import com.formdev.flatlaf.extras.components.FlatToolBar
 import net.rsprox.gui.App
 import net.rsprox.gui.AppIcons
-import javax.swing.*
+import javax.swing.BorderFactory
+import javax.swing.Box
+import javax.swing.JMenuItem
+import javax.swing.JOptionPane
+import javax.swing.JPopupMenu
+import javax.swing.SwingUtilities
 
 public class SessionsPanel(
     private val app: App,
@@ -46,7 +51,7 @@ public class SessionsPanel(
     }
 
     private fun createSession(type: SessionType) {
-        val session = SessionPanel(type, app, this)
+        val session = SessionPanel(type, this)
         addTab("Session ${++counter}", type.icon, session, "")
         setTabCloseCallback(tabCount - 1) { tabbedPane, tabIndex ->
             val confirm =

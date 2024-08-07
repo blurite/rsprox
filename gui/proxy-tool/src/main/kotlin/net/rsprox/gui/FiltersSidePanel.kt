@@ -1,7 +1,11 @@
 package net.rsprox.gui
 
-import com.formdev.flatlaf.extras.components.*
+import com.formdev.flatlaf.extras.components.FlatButton
 import com.formdev.flatlaf.extras.components.FlatButton.ButtonType
+import com.formdev.flatlaf.extras.components.FlatLabel
+import com.formdev.flatlaf.extras.components.FlatSeparator
+import com.formdev.flatlaf.extras.components.FlatTabbedPane
+import com.formdev.flatlaf.extras.components.FlatTriStateCheckBox
 import net.miginfocom.swing.MigLayout
 import net.rsprox.gui.dialogs.Dialogs
 import net.rsprox.proxy.ProxyService
@@ -13,7 +17,21 @@ import java.awt.event.ActionListener
 import java.awt.event.ItemEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.*
+import javax.swing.BorderFactory
+import javax.swing.BoxLayout
+import javax.swing.DefaultComboBoxModel
+import javax.swing.Icon
+import javax.swing.JCheckBox
+import javax.swing.JComboBox
+import javax.swing.JComponent
+import javax.swing.JMenuItem
+import javax.swing.JOptionPane
+import javax.swing.JPanel
+import javax.swing.JPopupMenu
+import javax.swing.JScrollPane
+import javax.swing.ScrollPaneConstants
+import javax.swing.SwingUtilities
+import javax.swing.UIManager
 
 public class FiltersSidePanel(
     private val proxyService: ProxyService,
@@ -310,7 +328,7 @@ public class FiltersSidePanel(
                 }
         }
 
-        internal fun updateAllHeaderCheckboxes() {
+        fun updateAllHeaderCheckboxes() {
             for (category in headerCheckboxes.keys) {
                 val properties = PropertyFilter.entries.filter { it.direction == direction && it.category == category }
                 updateHeaderCheckbox(category, properties)

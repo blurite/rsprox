@@ -10,7 +10,11 @@ import java.awt.Desktop
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.net.URI
-import javax.swing.*
+import javax.swing.ImageIcon
+import javax.swing.JDialog
+import javax.swing.JFrame
+import javax.swing.JLabel
+import javax.swing.JPanel
 
 public class AboutDialog(
     parent: JFrame,

@@ -6,7 +6,6 @@ import javax.imageio.ImageIO
 import javax.swing.ImageIcon
 
 public object AppIcons {
-
     public val Add: FlatSVGIcon = loadSvgIcon("add")
     public val Collapse: FlatSVGIcon = loadSvgIcon("collapse")
     public val Copy: FlatSVGIcon = loadSvgIcon("copy")
@@ -26,7 +25,6 @@ public object AppIcons {
 
     // favicons
     public val Favicon16: ImageIcon = ImageIcon(FlatSVGUtils.svg2image("/favicon.svg", 16, 16))
-
 
     private fun loadIcon(name: String): ImageIcon {
         val image = ImageIO.read(javaClass.getResource("/icons/$name.png"))
