@@ -632,11 +632,6 @@ public class ProxyService(
                 .asCompletableFuture()
                 .orTimeout(timeoutSeconds, TimeUnit.SECONDS)
                 .join()
-            httpServerBootstrap
-                .bind(80)
-                .asCompletableFuture()
-                .orTimeout(timeoutSeconds, TimeUnit.SECONDS)
-                .join()
             this.httpServerBootstrap = httpServerBootstrap
             logger.debug { "HTTP server bound to port $port" }
         }
