@@ -7,12 +7,19 @@ import net.rsprox.patch.Patcher
 import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
+import java.security.MessageDigest
 import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.Path
 import kotlin.io.path.copyTo
 import kotlin.io.path.deleteRecursively
+import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.nameWithoutExtension
+import kotlin.io.path.readBytes
+import kotlin.io.path.readText
+import kotlin.io.path.writeBytes
+import kotlin.io.path.writeText
 
 @Suppress("DuplicatedCode", "SameParameterValue")
 public class RuneLitePatcher : Patcher<Unit> {
@@ -86,9 +93,31 @@ public class RuneLitePatcher : Patcher<Unit> {
         )
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
+    public fun sha256Hash(bytes: ByteArray): String {
+        val messageDigest = MessageDigest.getInstance("SHA-256")
+        messageDigest.update(bytes)
+        return messageDigest.digest().toHexString(HexFormat.UpperCase)
+    }
+
     @OptIn(ExperimentalPathApi::class)
     public fun patchLocalHostSupport(path: Path): Path {
         val inputPath = path.parent.resolve(path.nameWithoutExtension + "-patched." + path.extension)
+        val configurationPath = Path(System.getProperty("user.home"), ".rsprox")
+        val runelitePath = configurationPath.resolve("runelite")
+        val shaPath = runelitePath.resolve("latest-runelite.sha256")
+        val existingClient = runelitePath.resolve("latest-runelite.jar")
+        val currentSha256 = sha256Hash(path.readBytes())
+        if (shaPath.exists(LinkOption.NOFOLLOW_LINKS) &&
+            existingClient.exists(LinkOption.NOFOLLOW_LINKS)
+        ) {
+            val existingSha256 = shaPath.readText(Charsets.UTF_8)
+            if (existingSha256 == currentSha256) {
+                logger.debug { "Using cached runelite-client as sha-256 matches" }
+                inputPath.writeBytes(existingClient.readBytes())
+                return inputPath
+            }
+        }
         val copy = path.copyTo(inputPath)
         val time = System.currentTimeMillis()
         val outputFolder = path.parent.resolve("runelite-client-$time")
@@ -156,6 +185,9 @@ public class RuneLitePatcher : Patcher<Unit> {
                     }
                     outputFile.charset = inputFile.charset
                 }
+                val jarFile = patchedJar.toFile()
+                jarFile.copyTo(existingClient.toFile())
+                shaPath.writeText(currentSha256, Charsets.UTF_8)
             }
         } finally {
             outputFolder.deleteRecursively()
