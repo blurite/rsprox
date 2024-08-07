@@ -39,6 +39,7 @@ import net.rsprox.shared.property.int
 import net.rsprox.shared.property.namedEnum
 import net.rsprox.shared.property.regular.ScriptVarTypeProperty
 import net.rsprox.shared.property.scriptVarType
+import net.rsprox.shared.property.shortPlayer
 import net.rsprox.shared.property.string
 import net.rsprox.shared.property.unidentifiedNpc
 import net.rsprox.shared.property.unidentifiedPlayer
@@ -115,6 +116,26 @@ public class BasePlayerInfoTranscriber(
             )
         } else {
             unidentifiedPlayer(index, name)
+        }
+    }
+
+    private fun Property.shortPlayer(
+        index: Int,
+        name: String = "player",
+    ): ChildProperty<*> {
+        val player = stateTracker.getPlayerOrNull(index)
+        return if (player != null) {
+            shortPlayer(
+                Int.MIN_VALUE,
+                player.name,
+                name,
+            )
+        } else {
+            shortPlayer(
+                index,
+                null,
+                name,
+            )
         }
     }
 
@@ -401,7 +422,7 @@ public class BasePlayerInfoTranscriber(
         info: ChatExtendedInfo,
     ) {
         if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
-            player(player.index)
+            shortPlayer(player.index)
         }
         string("text", info.text)
         filteredBoolean("autotyper", info.autotyper)
@@ -416,7 +437,7 @@ public class BasePlayerInfoTranscriber(
         info: FaceAngleExtendedInfo,
     ) {
         if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
-            player(player.index)
+            shortPlayer(player.index)
         }
         int("angle", info.angle)
     }
@@ -447,7 +468,7 @@ public class BasePlayerInfoTranscriber(
         info: MoveSpeedExtendedInfo,
     ) {
         if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
-            player(player.index)
+            shortPlayer(player.index)
         }
         namedEnum("speed", getMoveSpeed(info.speed))
     }
@@ -457,7 +478,7 @@ public class BasePlayerInfoTranscriber(
         info: TemporaryMoveSpeedExtendedInfo,
     ) {
         if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
-            player(player.index)
+            shortPlayer(player.index)
         }
         namedEnum("speed", getMoveSpeed(info.speed))
     }
@@ -467,7 +488,7 @@ public class BasePlayerInfoTranscriber(
         info: NameExtrasExtendedInfo,
     ) {
         if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
-            player(player.index)
+            shortPlayer(player.index)
         }
         string("beforename", info.beforeName)
         string("aftername", info.afterName)
@@ -479,7 +500,7 @@ public class BasePlayerInfoTranscriber(
         info: SayExtendedInfo,
     ) {
         if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
-            player(player.index)
+            shortPlayer(player.index)
         }
         string("text", info.text)
     }
@@ -489,7 +510,7 @@ public class BasePlayerInfoTranscriber(
         info: SequenceExtendedInfo,
     ) {
         if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
-            player(player.index)
+            shortPlayer(player.index)
         }
         scriptVarType("id", ScriptVarType.SEQ, info.id.maxUShortToMinusOne())
         filteredInt("delay", info.delay, 0)
@@ -500,7 +521,7 @@ public class BasePlayerInfoTranscriber(
         info: ExactMoveExtendedInfo,
     ) {
         if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
-            player(player.index)
+            shortPlayer(player.index)
         }
         val curX = player.coord.x
         val curZ = player.coord.z
@@ -519,7 +540,7 @@ public class BasePlayerInfoTranscriber(
         for (hit in info.hits) {
             group("HIT") {
                 if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
-                    player(player.index)
+                    shortPlayer(player.index)
                 }
                 scriptVarType("id", ScriptVarType.HITMARK, hit.type)
                 int("value", hit.value)
@@ -533,7 +554,7 @@ public class BasePlayerInfoTranscriber(
         for (headbar in info.headbars) {
             group("HEADBAR") {
                 if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
-                    player(player.index)
+                    shortPlayer(player.index)
                 }
                 scriptVarType("id", ScriptVarType.HEADBAR, headbar.type)
                 int("type", headbar.type)
@@ -556,7 +577,7 @@ public class BasePlayerInfoTranscriber(
         info: TintingExtendedInfo,
     ) {
         if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
-            player(player.index)
+            shortPlayer(player.index)
         }
         int("start", info.start)
         int("end", info.end)
@@ -573,7 +594,7 @@ public class BasePlayerInfoTranscriber(
         for ((slot, spotanim) in info.spotanims) {
             group("SPOTANIM") {
                 if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
-                    player(player.index)
+                    shortPlayer(player.index)
                 }
                 filteredInt("slot", slot, 0)
                 scriptVarType("id", ScriptVarType.SPOTANIM, spotanim.id.maxUShortToMinusOne())
@@ -588,7 +609,7 @@ public class BasePlayerInfoTranscriber(
         info: FacePathingEntityExtendedInfo,
     ) {
         if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
-            player(player.index)
+            shortPlayer(player.index)
         }
         if (info.index == 0xFFFFFF) {
             string("entity", null)
@@ -622,7 +643,7 @@ public class BasePlayerInfoTranscriber(
         info: AppearanceExtendedInfo,
     ) {
         if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
-            player(player.index)
+            shortPlayer(player.index)
         }
         if (filters[PropertyFilter.PLAYER_APPEARANCE_DETAILS]) {
             group("DETAILS") {
