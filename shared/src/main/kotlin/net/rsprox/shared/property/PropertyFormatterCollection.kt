@@ -10,6 +10,7 @@ import net.rsprox.shared.property.regular.IdentifiedNpcProperty
 import net.rsprox.shared.property.regular.NamedEnumProperty
 import net.rsprox.shared.property.regular.ScriptProperty
 import net.rsprox.shared.property.regular.ScriptVarTypeProperty
+import net.rsprox.shared.property.regular.ShortNpcProperty
 import net.rsprox.shared.property.regular.VarbitProperty
 import net.rsprox.shared.property.regular.VarpProperty
 import net.rsprox.shared.property.regular.ZoneCoordProperty
@@ -69,6 +70,9 @@ public class PropertyFormatterCollection private constructor(
                 } else {
                     "(index=${it.index}, $col, coord=(${it.x}, ${it.z}, ${it.level}))"
                 }
+            }
+            builder.add<ShortNpcProperty> {
+                dictionary.getScriptVarTypeName(it.id, ScriptVarType.NPC) ?: "(index=${it.index})"
             }
             builder.add<ScriptProperty> {
                 dictionary.getScriptName(it.value) ?: "${it.value}"

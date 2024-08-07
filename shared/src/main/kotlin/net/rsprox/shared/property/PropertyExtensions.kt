@@ -14,6 +14,7 @@ import net.rsprox.shared.property.regular.ListProperty
 import net.rsprox.shared.property.regular.NamedEnumProperty
 import net.rsprox.shared.property.regular.ScriptProperty
 import net.rsprox.shared.property.regular.ScriptVarTypeProperty
+import net.rsprox.shared.property.regular.ShortNpcProperty
 import net.rsprox.shared.property.regular.ShortPlayerProperty
 import net.rsprox.shared.property.regular.UnidentifiedNpcProperty
 import net.rsprox.shared.property.regular.UnidentifiedPlayerProperty
@@ -374,6 +375,20 @@ public fun Property.identifiedNpc(
             level,
             x,
             z,
+        ),
+    )
+}
+
+public fun Property.shortNpc(
+    index: Int,
+    id: Int,
+    propertyName: String = "npc",
+): ShortNpcProperty {
+    return child(
+        ShortNpcProperty(
+            propertyName,
+            index,
+            id,
         ),
     )
 }
