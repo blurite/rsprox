@@ -215,10 +215,6 @@ public class BaseNpcInfoTranscriber(
                                 continue
                             }
                             val npc = world.getNpc(index)
-                            if (filters[PropertyFilter.NPC_EXT_INFO_INLINE]) {
-                                appendExtendedInfo(npc, update.extendedInfo)
-                                continue
-                            }
                             val movementType =
                                 when (update.moveSpeed) {
                                     MoveSpeed.STATIONARY -> "ACTIVE"
@@ -260,10 +256,6 @@ public class BaseNpcInfoTranscriber(
                                 continue
                             }
                             val npc = world.getNpc(index)
-                            if (filters[PropertyFilter.NPC_EXT_INFO_INLINE]) {
-                                appendExtendedInfo(npc, update.extendedInfo)
-                                continue
-                            }
                             group("ADD") {
                                 npc(index)
                                 filteredInt("creationcycle", update.spawnCycle, 0)

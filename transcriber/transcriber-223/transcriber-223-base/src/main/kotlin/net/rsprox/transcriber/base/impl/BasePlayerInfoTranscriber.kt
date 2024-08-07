@@ -234,10 +234,6 @@ public class BasePlayerInfoTranscriber(
                                 return@group
                             }
                             val player = stateTracker.getPlayer(index)
-                            if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
-                                appendExtendedInfo(player, update.extendedInfo)
-                                continue
-                            }
                             group("IDLE") {
                                 player(index)
                                 appendExtendedInfo(player, update.extendedInfo)
@@ -250,10 +246,6 @@ public class BasePlayerInfoTranscriber(
                                 continue
                             }
                             val player = stateTracker.getPlayer(index)
-                            if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
-                                appendExtendedInfo(player, update.extendedInfo)
-                                continue
-                            }
                             val speed = getMoveSpeed(stateTracker.getMoveSpeed(index))
                             val label =
                                 when (speed) {
@@ -283,10 +275,6 @@ public class BasePlayerInfoTranscriber(
                                 continue
                             }
                             val player = stateTracker.getPlayer(index)
-                            if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
-                                appendExtendedInfo(player, update.extendedInfo)
-                                continue
-                            }
                             group("ADD") {
                                 player(index)
                                 appendExtendedInfo(player, update.extendedInfo)
