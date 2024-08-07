@@ -177,6 +177,7 @@ public class TranscriberPlugin(
             GameServerProt.REFLECTION_CHECKER -> pass(message, Transcriber::reflectionChecker)
             GameServerProt.SEND_PING -> pass(message, Transcriber::sendPing)
             GameServerProt.HISCORE_REPLY -> pass(message, Transcriber::hiscoreReply)
+            GameServerProt.RECONNECT -> pass(message, Transcriber::reconnect)
         }
     }
 

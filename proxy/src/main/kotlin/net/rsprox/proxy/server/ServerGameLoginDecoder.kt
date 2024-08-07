@@ -10,6 +10,7 @@ import io.netty.handler.codec.ByteToMessageDecoder
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.crypto.xtea.XteaKey
+import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.proxy.attributes.BINARY_BLOB
 import net.rsprox.proxy.attributes.BINARY_HEADER_BUILDER
 import net.rsprox.proxy.binary.BinaryBlob
@@ -20,6 +21,7 @@ import net.rsprox.proxy.channel.getClientToServerStreamCipher
 import net.rsprox.proxy.channel.getPort
 import net.rsprox.proxy.channel.getServerToClientStreamCipher
 import net.rsprox.proxy.channel.remove
+import net.rsprox.proxy.channel.removeBinaryBlob
 import net.rsprox.proxy.channel.replace
 import net.rsprox.proxy.client.ClientGameHandler
 import net.rsprox.proxy.client.ClientGenericDecoder
@@ -30,6 +32,7 @@ import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.server.prot.GameServerProtProvider
 import net.rsprox.proxy.util.UserUid
 import net.rsprox.proxy.worlds.WorldListProvider
+import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.filters.PropertyFilterSetStore
 
 public class ServerGameLoginDecoder(
@@ -52,6 +55,7 @@ public class ServerGameLoginDecoder(
         DISALLOWED_READ,
         TOKENS_READ_LENGTH,
         TOKENS_READ,
+        RECONNECT_OK_READ_DATA_LENGTH,
         RECONNECT_OK_READ_DATA,
     }
 
@@ -117,7 +121,7 @@ public class ServerGameLoginDecoder(
                     state = State.LOGIN_OK_READ_DATA_LENGTH
                 }
                 15 -> {
-                    state = State.RECONNECT_OK_READ_DATA
+                    state = State.RECONNECT_OK_READ_DATA_LENGTH
                 }
                 64 -> {
                     state = State.TOKENS_READ_LENGTH
@@ -214,6 +218,63 @@ public class ServerGameLoginDecoder(
                 throw IllegalStateException("Invalid ok login data size: $stateValue")
             }
             state = State.LOGIN_OK_READ_DATA
+        }
+        if (state == State.RECONNECT_OK_READ_DATA_LENGTH) {
+            if (!input.isReadable(2)) return
+            this.stateValue = input.g2()
+            writeToClient {
+                p2(stateValue)
+            }
+            state = State.RECONNECT_OK_READ_DATA
+        }
+        if (state == State.RECONNECT_OK_READ_DATA) {
+            if (!input.isReadable(this.stateValue)) return
+            val port = clientChannel.getPort()
+            val oldConnection =
+                connections
+                    .listConnections()
+                    .first { it.clientChannel.getPort() == port }
+            oldConnection.clientChannel.removeBinaryBlob()
+            oldConnection.serverChannel.removeBinaryBlob()
+            oldConnection.clientChannel.close()
+            oldConnection.serverChannel.close()
+            oldConnection.clientChannel = clientChannel
+            oldConnection.serverChannel = ctx.channel()
+
+            val blob = oldConnection.blob
+
+            val serverChannel = ctx.channel()
+            blob.reopen()
+            connections.addConnection(
+                clientChannel,
+                serverChannel,
+                blob,
+            )
+            // Set the binary blob in place, this will periodically flush & save on disk
+            serverChannel.attr(BINARY_BLOB).set(blob)
+            clientChannel.attr(BINARY_BLOB).set(blob)
+
+            val payload = input.buffer.readBytes(this.stateValue)
+            writeToClient {
+                pdata(payload.copy())
+            }
+            val packet =
+                ServerPacket(
+                    GameServerProt.RECONNECT,
+                    0,
+                    0,
+                    payload,
+                )
+            blob.append(StreamDirection.SERVER_TO_CLIENT, packet.encode(ctx.alloc(), mod = false))
+            val pipeline = ctx.pipeline()
+            pipeline.replace<ServerGameLoginDecoder>(
+                ServerGenericDecoder(
+                    serverChannel.getServerToClientStreamCipher(),
+                    GameServerProtProvider,
+                ),
+            )
+            pipeline.replace<ServerRelayHandler>(ServerGameHandler(clientChannel, worldListProvider))
+            switchClientToGameDecoding(ctx)
         }
         if (state == State.LOGIN_OK_READ_DATA) {
             if (!input.isReadable(stateValue)) {

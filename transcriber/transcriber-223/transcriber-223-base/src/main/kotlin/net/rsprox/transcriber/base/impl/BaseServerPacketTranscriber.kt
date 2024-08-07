@@ -68,6 +68,7 @@ import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
 import net.rsprox.protocol.game.outgoing.model.map.RebuildNormal
 import net.rsprox.protocol.game.outgoing.model.map.RebuildRegion
 import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntity
+import net.rsprox.protocol.game.outgoing.model.map.Reconnect
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideLocOps
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideNpcOps
 import net.rsprox.protocol.game.outgoing.model.misc.client.HidePlayerOps
@@ -1266,6 +1267,10 @@ public class BaseServerPacketTranscriber(
     override fun logoutWithReason(message: LogoutWithReason) {
         if (!filters[PropertyFilter.LOGOUT]) return omit()
         root.namedEnum("reason", getLogoutReason(message.reason))
+    }
+
+    override fun reconnect(message: Reconnect) {
+        root.coordGrid("localplayercoord", message.playerInfoInitBlock.localPlayerCoord)
     }
 
     override fun rebuildLogin(message: RebuildLogin) {

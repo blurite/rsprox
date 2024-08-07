@@ -63,6 +63,7 @@ import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
 import net.rsprox.protocol.game.outgoing.model.map.RebuildNormal
 import net.rsprox.protocol.game.outgoing.model.map.RebuildRegion
 import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntity
+import net.rsprox.protocol.game.outgoing.model.map.Reconnect
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideLocOps
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideNpcOps
 import net.rsprox.protocol.game.outgoing.model.misc.client.HidePlayerOps
@@ -250,6 +251,8 @@ public interface ServerPacketTranscriber {
     public fun logoutTransfer(message: LogoutTransfer)
 
     public fun logoutWithReason(message: LogoutWithReason)
+
+    public fun reconnect(message: Reconnect)
 
     public fun rebuildLogin(message: RebuildLogin)
 

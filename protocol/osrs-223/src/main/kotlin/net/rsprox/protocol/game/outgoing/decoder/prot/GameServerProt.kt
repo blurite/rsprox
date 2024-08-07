@@ -186,4 +186,6 @@ public enum class GameServerProt(
     REFLECTION_CHECKER(GameServerProtId.REFLECTION_CHECKER, Prot.VAR_SHORT),
     SEND_PING(GameServerProtId.SEND_PING, 8),
     HISCORE_REPLY(GameServerProtId.HISCORE_REPLY, Prot.VAR_SHORT),
+
+    RECONNECT(0xFF, Prot.VAR_SHORT),
 }

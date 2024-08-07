@@ -69,6 +69,10 @@ public fun Channel.getBinaryBlob(): BinaryBlob {
         ?: throw IllegalStateException("Binary blob not assigned to $this")
 }
 
+public fun Channel.removeBinaryBlob() {
+    attr(BINARY_BLOB).set(null)
+}
+
 public fun Channel.getPort(): Int {
     return (localAddress() as InetSocketAddress).port
 }

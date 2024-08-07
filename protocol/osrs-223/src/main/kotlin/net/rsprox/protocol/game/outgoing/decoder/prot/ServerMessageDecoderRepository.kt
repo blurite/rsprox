@@ -69,6 +69,7 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.logout.LogoutTransferDeco
 import net.rsprox.protocol.game.outgoing.decoder.codec.logout.LogoutWithReasonDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.map.RebuildRegionDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.map.RebuildWorldEntityDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.map.ReconnectDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.map.StaticRebuildDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.HideLocOpsDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.HideNpcOpsDecoder
@@ -219,6 +220,7 @@ public object ServerMessageDecoderRepository {
                 bind(LogoutTransferDecoder())
                 bind(LogoutWithReasonDecoder())
 
+                bind(ReconnectDecoder())
                 bind(StaticRebuildDecoder(huffmanCodec, cache))
                 bind(RebuildRegionDecoder())
                 bind(RebuildWorldEntityDecoder())

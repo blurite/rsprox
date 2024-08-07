@@ -68,6 +68,17 @@ public class PlayerInfoClient(
         }
     }
 
+    public fun reset() {
+        for (i in cachedPlayers.indices) {
+            cachedPlayers[i] = null
+        }
+        highResolutionCount = 0
+        lowResolutionCount = 0
+        unmodifiedFlags.fill(0)
+        lowResolutionPositions.fill(0)
+        lowResolutionIndices.fill(0)
+    }
+
     public fun decode(buffer: ByteBuf): PlayerInfo {
         extendedInfoCount = 0
         updateTypes.fill(UpdateType.LOW_RESOLUTION_IDLE)
