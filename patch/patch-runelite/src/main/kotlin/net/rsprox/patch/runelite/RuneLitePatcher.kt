@@ -4,6 +4,7 @@ import com.github.michaelbull.logging.InlineLogger
 import net.lingala.zip4j.ZipFile
 import net.rsprox.patch.PatchResult
 import net.rsprox.patch.Patcher
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
@@ -144,34 +145,31 @@ public class RuneLitePatcher : Patcher<Unit> {
                     val manifestFile = parentDir.resolve("META-INF").resolve("MANIFEST.MF")
                     manifestFile.delete()
 
-                    val worldClientFile =
+                    replaceClass(
                         parentDir
                             .resolve("net")
                             .resolve("runelite")
                             .resolve("client")
                             .resolve("game")
-                            .resolve("WorldClient.class")
-                    val resource =
-                        RuneLitePatcher::class.java
-                            .getResourceAsStream("WorldClient.class")
-                            ?.readAllBytes()
-                            ?: throw IllegalStateException("WorldClient.class resource not available")
+                            .resolve("WorldClient.class"),
+                        "Original WorldClient.class",
+                        "WorldClient.class",
+                    )
 
-                    val originalResource =
-                        RuneLitePatcher::class.java
-                            .getResourceAsStream("Original WorldClient.class")
-                            ?.readAllBytes()
-                            ?: throw IllegalStateException("Original WorldClient.class resource not available.")
+                    replaceClass(
+                        parentDir
+                            .resolve("net")
+                            .resolve("runelite")
+                            .resolve("client")
+                            .resolve("RuneLite.class"),
+                        "Original RuneLite.class",
+                        "RuneLite.class",
+                    )
 
-                    val originalBytes = worldClientFile.readBytes()
-                    if (!originalBytes.contentEquals(originalResource)) {
-                        throw IllegalStateException("Unable to patch RuneLite WorldClient.class - out of date.")
-                    }
-
-                    // Overwrite the WorldClient.class file to read worlds from our proxied-list
-                    // This ensures that the world switcher still goes through the proxy tool,
-                    // instead of just connecting to RuneLite's own world list API.
-                    worldClientFile.writeBytes(resource)
+                    writeFile("Varbits.class", parentDir)
+                    writeFile("VarPlayer.class", parentDir)
+                    writeFile("VarClientInt.class", parentDir)
+                    writeFile("VarClientStr.class", parentDir)
 
                     val files = parentDir.walkTopDown().maxDepth(1)
                     logger.debug { "Building a patched jar." }
@@ -193,6 +191,57 @@ public class RuneLitePatcher : Patcher<Unit> {
             outputFolder.deleteRecursively()
         }
         return copy
+    }
+
+    private fun writeFile(
+        name: String,
+        folder: File,
+    ) {
+        // In order for developer mode to work, we must re-add the Var*.class that
+        // RuneLite excludes from the API unless building from source
+        val classByteArray =
+            RuneLitePatcher::class.java
+                .getResourceAsStream(name)
+                ?.readAllBytes()
+                ?: throw IllegalStateException("$name resource not available.")
+
+        val apiDirectory =
+            folder
+                .toPath()
+                .resolve("net")
+                .resolve("runelite")
+                .resolve("api")
+        Files.createDirectories(apiDirectory)
+        val classPath = apiDirectory.resolve(name)
+        classPath.writeBytes(classByteArray)
+    }
+
+    private fun replaceClass(
+        classFile: File,
+        originalResource: String,
+        replacementResource: String,
+    ) {
+        val replacementResourceFile =
+            RuneLitePatcher::class.java
+                .getResourceAsStream(replacementResource)
+                ?.readAllBytes()
+                ?: throw IllegalStateException("$replacementResource resource not available")
+
+        val originalResourceFile =
+            RuneLitePatcher::class.java
+                .getResourceAsStream(originalResource)
+                ?.readAllBytes()
+                ?: throw IllegalStateException("$originalResource resource not available.")
+
+        val originalBytes = classFile.readBytes()
+        if (!originalBytes.contentEquals(originalResourceFile)) {
+            throw IllegalStateException("Unable to patch RuneLite $replacementResource - out of date.")
+        }
+
+        // Overwrite the WorldClient.class file to read worlds from our proxied-list
+        // This ensures that the world switcher still goes through the proxy tool,
+        // instead of just connecting to RuneLite's own world list API.
+        classFile.writeBytes(replacementResourceFile)
     }
 
     private fun patchPort(
