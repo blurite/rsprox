@@ -18,7 +18,7 @@ Below is a small task list showing a rough breakdown of what the tool will consi
   - [x] Native (Win)
     - [x] Supports Unix via `wine`
   - [ ] Native (Mac)
-  - [ ] RuneLite
+  - [x] RuneLite
   - [ ] RuneLite Forks
   - [ ] ~~HDOS~~ (Cancelled, too difficult to patch)
 - [x] World identification via localhost address
@@ -35,9 +35,8 @@ Below is a small task list showing a rough breakdown of what the tool will consi
   - [x] Login tokens in URL open packets
   - [x] 192-bit UID (linked to account recoveries)
   - [x] Site settings (linked to account recoveries)
-- [x] Minimal graphical User Interface (Proxy tool)
-- [ ] Expanded graphical User Interface (Proxy tool)
-- [ ] Graphical User Interface (Live Transcriber)
+- [x] Graphical User Interface (Proxy tool)
+- [x] Graphical User Interface (Live Transcriber)
 - [x] Live cache loading
 - [x] Historical cache loading
 - [ ] Public archive
