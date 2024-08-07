@@ -212,7 +212,9 @@ public data class BinaryBlob(
                 CacheProvider {
                     OldSchoolCache(LiveCacheResolver(info), masterIndex)
                 }
-            pluginLoader.loadTranscriberPlugins("osrs", provider)
+            if (pluginLoader.getPluginOrNull(header.revision) == null) {
+                pluginLoader.loadTranscriberPlugins("osrs", provider)
+            }
             val latestPlugin = pluginLoader.getPluginOrNull(header.revision)
             if (latestPlugin == null) {
                 logger.info { "Plugin for ${header.revision} missing, no live transcriber hooked." }
