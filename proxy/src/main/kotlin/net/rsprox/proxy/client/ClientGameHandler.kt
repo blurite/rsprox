@@ -31,12 +31,12 @@ public class ClientGameHandler(
         ctx: ChannelHandlerContext,
         msg: ClientPacket<GameClientProt>,
     ) {
-        // Nothing to erase unless the bank pin interface is currently open
-        if (ctx.channel().attr(INCOMING_BANK_PIN).get() != true) {
-            return
-        }
         when (msg.prot) {
             GameClientProt.RESUME_P_COUNTDIALOG -> {
+                // Nothing to erase unless the bank pin interface is currently open
+                if (ctx.channel().attr(INCOMING_BANK_PIN).get() != true) {
+                    return
+                }
                 ctx.channel().attr(INCOMING_BANK_PIN).set(null)
                 val replacement = ctx.alloc().buffer(4)
                 // Replace the real bank pin with a value of zero
@@ -55,9 +55,10 @@ public class ClientGameHandler(
                     buffer.g1Alt3() // Key
                     val delta = buffer.g3()
 
-                    // Erase any keypresses while the bank pin interface is open
-                    // This is because a lot of people use the keyboard bank pin plugin,
-                    // and this would allow the bank pins to be easily identified
+                    // Erase any keypresses in general
+                    // There is no value in keeping key presses in the logs, at best it helps bot developers,
+                    // at worst it leaks sensitive information like private message contents,
+                    // which could be re-assembled by going through keyboard events.
                     replacement.p1Alt3(0)
                     replacement.p3(delta)
                 }
