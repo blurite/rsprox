@@ -1,6 +1,7 @@
 package net.rsprox.patch.runelite
 
 import com.github.michaelbull.logging.InlineLogger
+import jdk.security.jarsigner.JarSigner
 import net.lingala.zip4j.ZipFile
 import net.rsprox.patch.PatchResult
 import net.rsprox.patch.Patcher
@@ -8,6 +9,9 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
+import java.security.KeyStore
+import java.security.KeyStore.PasswordProtection
+import java.security.KeyStore.PrivateKeyEntry
 import java.security.MessageDigest
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.Path
@@ -16,8 +20,8 @@ import kotlin.io.path.deleteRecursively
 import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.isRegularFile
+import kotlin.io.path.moveTo
 import kotlin.io.path.nameWithoutExtension
-import kotlin.io.path.pathString
 import kotlin.io.path.readBytes
 import kotlin.io.path.readText
 import kotlin.io.path.writeBytes
@@ -234,32 +238,18 @@ public class RuneLitePatcher : Patcher<Unit> {
     }
 
     private fun sign(path: Path) {
-        val signer =
-            Path(System.getProperty("java.home"))
-                .resolve("bin")
-                .resolve("jarsigner")
         val fakeCertificate =
             Path(System.getProperty("user.home"))
                 .resolve(".rsprox")
                 .resolve("signkey")
                 .resolve("fake-cert.jks")
-        val processBuilder =
-            ProcessBuilder()
-                .command(
-                    listOf(
-                        signer.pathString,
-                        "-keystore",
-                        fakeCertificate.pathString,
-                        "-storepass",
-                        "123456",
-                        path.pathString,
-                        "test",
-                    ),
-                )
-        processBuilder
-            .inheritIO()
-            .start()
-            .waitFor()
+        val password = "123456".toCharArray()
+        val store = KeyStore.getInstance(fakeCertificate.toFile(), password)
+        val entry = store.getEntry("test", PasswordProtection(password)) as PrivateKeyEntry
+        val signer = JarSigner.Builder(entry).build()
+        val output = path.parent.resolve(path.nameWithoutExtension + "-signed.${path.extension}")
+        signer.sign(java.util.zip.ZipFile(path.toFile()), output.toFile().outputStream())
+        output.moveTo(path, overwrite = true)
     }
 
     private fun writeFile(
