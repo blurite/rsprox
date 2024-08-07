@@ -64,6 +64,7 @@ import java.nio.file.LinkOption
 import java.nio.file.Path
 import java.util.Properties
 import java.util.concurrent.TimeUnit
+import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.copyTo
 import kotlin.io.path.exists
@@ -119,6 +120,7 @@ public class ProxyService(
 
         launchHttpServer(this.bootstrapFactory, worldListProvider, updatedJavConfig)
         deleteTemporaryClients()
+        deleteTemporaryRuneLiteJars()
         transferFakeCertificate()
         setShutdownHook()
     }
@@ -276,6 +278,27 @@ public class ProxyService(
                 // Doesn't really matter, we're just deleting to avoid growing infinitely
                 continue
             }
+        }
+    }
+
+    private fun deleteTemporaryRuneLiteJars() {
+        val path = Path(System.getProperty("user.home"), ".runelite", "repository2")
+        if (!path.exists(LinkOption.NOFOLLOW_LINKS)) return
+        val files = path.toFile().walkTopDown()
+        val namesToDelete =
+            listOf(
+                "client",
+                "injected-client",
+                "runelite-api",
+            )
+        for (file in files) {
+            if (!file.isFile) {
+                continue
+            }
+            val match = namesToDelete.any { file.name.startsWith(it) }
+            if (!match) continue
+            if (!file.name.endsWith("-patched.jar")) continue
+            file.delete()
         }
     }
 
