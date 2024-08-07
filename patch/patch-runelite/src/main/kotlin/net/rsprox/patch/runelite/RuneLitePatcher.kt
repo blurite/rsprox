@@ -211,6 +211,8 @@ public class RuneLitePatcher : Patcher<Unit> {
                     writeFile("VarPlayer.class", parentDir)
                     writeFile("VarClientInt.class", parentDir)
                     writeFile("VarClientStr.class", parentDir)
+                    writeFile("ComponentID.class", parentDir, "widgets")
+                    writeFile("InterfaceID.class", parentDir, "widgets")
 
                     val files = parentDir.walkTopDown().maxDepth(1)
                     logger.debug { "Building a patched API jar." }
@@ -263,6 +265,7 @@ public class RuneLitePatcher : Patcher<Unit> {
     private fun writeFile(
         name: String,
         folder: File,
+        subDir: String? = null,
     ) {
         // In order for developer mode to work, we must re-add the Var*.class that
         // RuneLite excludes from the API unless building from source
@@ -278,8 +281,14 @@ public class RuneLitePatcher : Patcher<Unit> {
                 .resolve("net")
                 .resolve("runelite")
                 .resolve("api")
-        Files.createDirectories(apiDirectory)
-        val classPath = apiDirectory.resolve(name)
+        val subApiDir =
+            if (subDir != null) {
+                apiDirectory.resolve(subDir)
+            } else {
+                apiDirectory
+            }
+        Files.createDirectories(subApiDir)
+        val classPath = subApiDir.resolve(name)
         classPath.writeBytes(classByteArray)
     }
 
