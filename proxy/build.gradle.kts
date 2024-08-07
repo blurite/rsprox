@@ -34,11 +34,11 @@ dependencies {
 }
 
 tasks.build.configure {
-    finalizedBy(*buildPluginTaskDependencies().toTypedArray())
+    finalizedBy(*(buildPluginTaskDependencies() + buildSideTaskDependencies()).toTypedArray())
 }
 
 tasks.compileKotlin.configure {
-    finalizedBy(*buildPluginTaskDependencies().toTypedArray())
+    finalizedBy(*(buildPluginTaskDependencies() + buildSideTaskDependencies()).toTypedArray())
 }
 
 fun buildPluginTaskDependencies(): List<String> {
@@ -55,6 +55,10 @@ fun buildPluginTaskDependencies(): List<String> {
                 task == ":transcriber:build"
         }
     return filteredTasks
+}
+
+fun buildSideTaskDependencies(): List<String> {
+    return listOf(":runelite-launcher:build")
 }
 
 fun buildSubprojectTree(projectName: String): List<String> {
