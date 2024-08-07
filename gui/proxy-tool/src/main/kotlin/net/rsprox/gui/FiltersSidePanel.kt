@@ -133,8 +133,14 @@ public class FiltersSidePanel(
 
     private fun updateFilterState() {
         val active = proxyService.filterSetStore.getActive()
+        val selectedIndex = presetsBox.selectedIndex
         for ((property, checkbox) in checkboxes) {
             checkbox.isSelected = active[property]
+            if (selectedIndex == 0) {
+                checkbox.toolTipText = "Create a new preset to change the filters"
+            } else {
+                checkbox.toolTipText = property.tooltip
+            }
         }
         incomingPanel.updateAllHeaderCheckboxes()
         outgoingPanel.updateAllHeaderCheckboxes()
@@ -291,6 +297,11 @@ public class FiltersSidePanel(
             val allSelected = properties.all { active[it] }
             val allUnselected = properties.none { active[it] }
             checkbox.isEnabled = presetsBox.selectedIndex != 0
+            if (presetsBox.selectedIndex == 0) {
+                checkbox.toolTipText = "Create a new preset to change the filters"
+            } else {
+                checkbox.toolTipText = null
+            }
             checkbox.state =
                 when {
                     allSelected -> FlatTriStateCheckBox.State.SELECTED
