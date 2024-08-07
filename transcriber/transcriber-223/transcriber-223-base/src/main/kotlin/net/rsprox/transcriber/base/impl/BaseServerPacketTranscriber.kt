@@ -1060,7 +1060,7 @@ public class BaseServerPacketTranscriber(
         if (!filters[PropertyFilter.IF_SETEVENTS]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.int("start", message.start.maxUShortToMinusOne())
-        root.int("end", message.start.maxUShortToMinusOne())
+        root.int("end", message.end.maxUShortToMinusOne())
         root.string("events", EventMask.list(message.events).toString())
     }
 
