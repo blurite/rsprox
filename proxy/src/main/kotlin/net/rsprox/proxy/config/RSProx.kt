@@ -19,7 +19,6 @@ internal val RUNELITE_LAUNCHER: Path =
     CONFIGURATION_PATH
         .resolve("runelite")
         .resolve("runelite-launcher.jar")
-internal const val RUNELITE_SYSTEM_SPEED: Int = 16384 + 16 + 1024
 internal const val CURRENT_REVISION: Int = 223
 private val connections: MutableList<ConnectionInfo> = mutableListOf()
 
