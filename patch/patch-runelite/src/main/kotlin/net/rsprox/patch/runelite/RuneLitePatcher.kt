@@ -235,7 +235,7 @@ public class RuneLitePatcher : Patcher<Unit> {
         val signer =
             Path(System.getProperty("java.home"))
                 .resolve("bin")
-                .resolve("jarsigner.exe")
+                .resolve("jarsigner")
         val fakeCertificate =
             Path(System.getProperty("user.home"))
                 .resolve(".rsprox")
