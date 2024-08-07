@@ -21,6 +21,7 @@ include(
     "transcriber",
     "cache",
     "shared",
+    "runelite-launcher",
 )
 
 includeSubprojects(":protocol")

@@ -9,7 +9,6 @@ import com.github.michaelbull.logging.InlineLogger
 import net.rsprox.gui.App
 import net.rsprox.gui.AppIcons
 import net.rsprox.proxy.binary.BinaryHeader
-import net.rsprox.proxy.progressbar.ProgressBarNotifier
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.property.*
 import net.rsprox.shared.property.regular.GroupProperty
@@ -175,16 +174,21 @@ public class SessionPanel(
 
     private fun launchClient() {
         ForkJoinPool.commonPool().submit {
-            logger.info { "Native client thread: ${Thread.currentThread().name}" }
+            logger.info { "$type client thread: ${Thread.currentThread().name}" }
             val time =
                 measureTime {
-                    val notifier =
-                        ProgressBarNotifier { percentage, text ->
-                            logger.info { "Native client progress: $percentage% - $text" }
+                    portNumber =
+                        when (type) {
+                            SessionType.Java -> TODO()
+                            SessionType.Native -> {
+                                app.service.launchNativeClient(UiSessionMonitor())
+                            }
+                            SessionType.RuneLite -> {
+                                app.service.launchRuneLiteClient(UiSessionMonitor())
+                            }
                         }
-                    portNumber = app.service.launchNativeClient(notifier, UiSessionMonitor())
                 }
-            logger.info { "Native client started in $time" }
+            logger.info { "$type client started in $time" }
         }
     }
 

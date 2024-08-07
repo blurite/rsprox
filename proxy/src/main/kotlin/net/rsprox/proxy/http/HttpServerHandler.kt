@@ -1,5 +1,6 @@
 package net.rsprox.proxy.http
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.michaelbull.logging.InlineLogger
 import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.Unpooled
@@ -23,6 +24,8 @@ import net.rsprox.proxy.config.ProxyProperties
 import net.rsprox.proxy.config.ProxyProperty
 import net.rsprox.proxy.worlds.WorldListProvider
 import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
 
 public class HttpServerHandler(
     private val worldListProvider: WorldListProvider,
@@ -116,7 +119,24 @@ public class HttpServerHandler(
                 StringBuilder(javConfig.toString().encodeToByteArray().toString(Charsets.ISO_8859_1))
             }
 
+            "/worlds.js" -> {
+                val provider = worldListProvider.get()
+                val runeLiteWorldList = provider.toRuneLiteWorldResult()
+                val mapper = jacksonObjectMapper()
+                val asString = mapper.writeValueAsString(runeLiteWorldList)
+                StringBuilder().append(asString)
+            }
+
             else -> {
+                if (uri.startsWith("/gamepack_")) {
+                    val forwarded = URL("http://oldschool1.runescape.com$uri")
+                    val con = forwarded.openConnection() as HttpURLConnection
+                    con.requestMethod = "GET"
+                    val result = con.inputStream.readAllBytes()
+                    val builder = StringBuilder()
+                    builder.append(result.toString(Charsets.ISO_8859_1))
+                    return builder
+                }
                 throw IllegalStateException("Unknown HTTP request: $uri")
             }
         }

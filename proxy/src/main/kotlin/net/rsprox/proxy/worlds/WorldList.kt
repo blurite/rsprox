@@ -32,6 +32,25 @@ public data class WorldList(
         return buffer
     }
 
+    public fun toRuneLiteWorldResult(): RuneLiteWorldResult {
+        return RuneLiteWorldResult(
+            buildList {
+                for (world in worlds) {
+                    add(
+                        RuneLiteWorld(
+                            world.id,
+                            RuneLiteWorldType.fromMask(world.properties),
+                            world.localHostAddress.toString(),
+                            world.activity,
+                            world.location,
+                            world.population,
+                        ),
+                    )
+                }
+            },
+        )
+    }
+
     public fun getWorld(address: LocalHostAddress): World? {
         return worlds.firstOrNull { world ->
             world.localHostAddress == address

@@ -5,6 +5,7 @@ import io.netty.buffer.Unpooled
 import io.netty.channel.Channel
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
+import net.rsprot.buffer.JagByteBuf
 import net.rsprot.buffer.extensions.p1
 import net.rsprot.buffer.extensions.p2
 import net.rsprot.buffer.extensions.pjstr
@@ -13,6 +14,7 @@ import net.rsprot.crypto.cipher.IsaacRandom
 import net.rsprot.crypto.cipher.NopStreamCipher
 import net.rsprot.crypto.cipher.StreamCipherPair
 import net.rsprot.crypto.rsa.decipherRsa
+import net.rsprot.crypto.xtea.xteaDecrypt
 import net.rsprox.proxy.attributes.SESSION_ENCODE_SEED
 import net.rsprox.proxy.attributes.STREAM_CIPHER_PAIR
 import net.rsprox.proxy.channel.addLastWithName
@@ -22,6 +24,9 @@ import net.rsprox.proxy.channel.getWorld
 import net.rsprox.proxy.channel.remove
 import net.rsprox.proxy.channel.replace
 import net.rsprox.proxy.client.prot.LoginClientProt
+import net.rsprox.proxy.client.util.HostPlatformStats
+import net.rsprox.proxy.client.util.LoginXteaBlock
+import net.rsprox.proxy.config.CURRENT_REVISION
 import net.rsprox.proxy.config.getConnection
 import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.js5.Js5MasterIndexArchive
@@ -34,6 +39,7 @@ import net.rsprox.proxy.server.ServerJs5LoginHandler
 import net.rsprox.proxy.server.ServerRelayHandler
 import net.rsprox.proxy.server.prot.LoginServerProtId
 import net.rsprox.proxy.server.prot.LoginServerProtProvider
+import net.rsprox.proxy.util.xteaEncrypt
 import net.rsprox.proxy.worlds.WorldListProvider
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
@@ -107,10 +113,13 @@ public class ClientLoginHandler(
         val builder = ctx.channel().getBinaryHeaderBuilder()
         val buffer = msg.payload.toJagByteBuf()
         val version = buffer.g4()
+        if (version != CURRENT_REVISION) {
+            throw IllegalStateException("Out of date revision: $version")
+        }
         val subVersion = buffer.g4()
         val clientType = buffer.g1()
         val platformType = buffer.g1()
-        buffer.skipRead(1)
+        buffer.g1()
 
         builder.revision(version)
         builder.subRevision(subVersion)
@@ -162,6 +171,16 @@ public class ClientLoginHandler(
             IntArray(encodeSeed.size) {
                 encodeSeed[it] + 50
             }
+        val xteaBuffer = xteaBlock.xteaDecrypt(encodeSeed).toJagByteBuf()
+
+        val loginXteaBlock = decodeLoginXteaBlock(xteaBuffer)
+        logger.debug {
+            "Original login xtea block: $loginXteaBlock"
+        }
+        val loginXteaBlockBuf = Unpooled.buffer()
+        encodeLoginXteaBlock(loginXteaBlock, loginXteaBlockBuf.toJagByteBuf())
+        val encryptedXteaBuf = loginXteaBlockBuf.xteaEncrypt(encodeSeed)
+
         // Encoding cipher is for server -> client
         val encodingCipher = IsaacRandom(encodeSeed)
         // Decoding seed is for client -> server
@@ -183,11 +202,170 @@ public class ClientLoginHandler(
             )
         encoded.p2(encrypted.readableBytes())
         encoded.writeBytes(encrypted)
-        encoded.writeBytes(xteaBlock)
+        encoded.writeBytes(encryptedXteaBuf)
         // Swap out the original login packet with the new one
         msg.replacePayload(encoded)
         // Relay packets for now, server will swap over to decoding once it's time
         switchClientToRelay(ctx)
+    }
+
+    private fun decodeLoginXteaBlock(buffer: JagByteBuf): LoginXteaBlock {
+        val username = buffer.gjstr()
+        val packedClientSettings = buffer.g1()
+        val width = buffer.g2()
+        val height = buffer.g2()
+        val uuid =
+            ByteArray(24) {
+                buffer.g1().toByte()
+            }
+        val siteSettings = buffer.gjstr()
+        val affiliate = buffer.g4()
+        val constZero = buffer.g1()
+        val hostPlatformStats = decodeHostPlatformStats(buffer)
+        val secondClientType = buffer.g1()
+        val crcBlockHeader = buffer.g4()
+        val crc = buffer.buffer.readBytes(buffer.readableBytes())
+        return LoginXteaBlock(
+            username,
+            packedClientSettings,
+            width,
+            height,
+            uuid,
+            siteSettings,
+            affiliate,
+            constZero,
+            hostPlatformStats,
+            secondClientType,
+            crcBlockHeader,
+            crc,
+        )
+    }
+
+    private fun encodeLoginXteaBlock(
+        block: LoginXteaBlock,
+        buffer: JagByteBuf,
+    ) {
+        buffer.pjstr(block.username)
+        buffer.p1(block.packedClientSettings)
+        buffer.p2(block.width)
+        buffer.p2(block.height)
+        for (num in block.uuid) {
+            buffer.p1(num.toInt())
+        }
+        buffer.pjstr(block.siteSettings)
+        buffer.p4(block.affiliate)
+        buffer.p1(block.constZero)
+        val hostBuf = Unpooled.buffer()
+        encodeHostPlatformStats(block.hostPlatformStats, hostBuf.toJagByteBuf())
+        try {
+            buffer.pdata(hostBuf)
+        } finally {
+            hostBuf.release()
+        }
+        buffer.p1(block.secondClientType)
+        buffer.p4(block.crcBlockHeader)
+        try {
+            buffer.pdata(block.crc)
+        } finally {
+            block.crc.release()
+        }
+    }
+
+    private fun decodeHostPlatformStats(buffer: JagByteBuf): HostPlatformStats {
+        val version = buffer.g1()
+        val osType = buffer.g1()
+        val os64Bit = buffer.g1()
+        val osVersion = buffer.g2()
+        val javaVendor = buffer.g1()
+        val javaVersionMajor = buffer.g1()
+        val javaVersionMinor = buffer.g1()
+        val javaVersionPatch = buffer.g1()
+        val applet = buffer.g1()
+        val javaMaxMemoryMb = buffer.g2()
+        val javaAvailableProcessors = buffer.g1()
+        val systemMemory = buffer.g3()
+        val systemSpeed = buffer.g2()
+        val gpuDxName = buffer.gjstr2()
+        val gpuGlName = buffer.gjstr2()
+        val gpuDxVersion = buffer.gjstr2()
+        val gpuGlVersion = buffer.gjstr2()
+        val gpuDriverMonth = buffer.g1()
+        val gpuDriverYear = buffer.g2()
+        val cpuManufacturer = buffer.gjstr2()
+        val cpuBrand = buffer.gjstr2()
+        val cpuCount1 = buffer.g1()
+        val cpuCount2 = buffer.g1()
+        val cpuFeatures =
+            IntArray(3) {
+                buffer.g4()
+            }
+        val cpuSignature = buffer.g4()
+        val clientName = buffer.gjstr2()
+        val deviceName = buffer.gjstr2()
+        return HostPlatformStats(
+            version,
+            osType,
+            os64Bit,
+            osVersion,
+            javaVendor,
+            javaVersionMajor,
+            javaVersionMinor,
+            javaVersionPatch,
+            applet,
+            javaMaxMemoryMb,
+            javaAvailableProcessors,
+            systemMemory,
+            systemSpeed,
+            gpuDxName,
+            gpuGlName,
+            gpuDxVersion,
+            gpuGlVersion,
+            gpuDriverMonth,
+            gpuDriverYear,
+            cpuManufacturer,
+            cpuBrand,
+            cpuCount1,
+            cpuCount2,
+            cpuFeatures,
+            cpuSignature,
+            clientName,
+            deviceName,
+        )
+    }
+
+    private fun encodeHostPlatformStats(
+        stats: HostPlatformStats,
+        buffer: JagByteBuf,
+    ) {
+        buffer.p1(stats.version)
+        buffer.p1(stats.osType)
+        buffer.p1(stats.os64Bit)
+        buffer.p2(stats.osVersion)
+        buffer.p1(stats.javaVendor)
+        buffer.p1(stats.javaVersionMajor)
+        buffer.p1(stats.javaVersionMinor)
+        buffer.p1(stats.javaVersionPatch)
+        buffer.p1(stats.applet)
+        buffer.p2(stats.javaMaxMemoryMb)
+        buffer.p1(stats.javaAvailableProcessors)
+        buffer.p3(stats.systemMemory)
+        buffer.p2(stats.systemSpeed)
+        buffer.pjstr2(stats.gpuDxName)
+        buffer.pjstr2(stats.gpuGlName)
+        buffer.pjstr2(stats.gpuDxVersion)
+        buffer.pjstr2(stats.gpuGlVersion)
+        buffer.p1(stats.gpuDriverMonth)
+        buffer.p2(stats.gpuDriverYear)
+        buffer.pjstr2(stats.cpuManufacturer)
+        buffer.pjstr2(stats.cpuBrand)
+        buffer.p1(stats.cpuCount1)
+        buffer.p1(stats.cpuCount2)
+        for (ft in stats.cpuFeatures) {
+            buffer.p4(ft)
+        }
+        buffer.p4(stats.cpuSignature)
+        buffer.pjstr2(stats.clientName)
+        buffer.pjstr2(stats.deviceName)
     }
 
     private fun invalidRsa(ctx: ChannelHandlerContext): Nothing {
