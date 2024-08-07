@@ -195,6 +195,9 @@ public class ProxyService(
         val process = processes.remove(port) ?: return
         if (process.isAlive) {
             try {
+                for (descendant in process.descendants()) {
+                    descendant.destroyForcibly()
+                }
                 process.destroyForcibly().waitFor(5, TimeUnit.SECONDS)
             } catch (t: Throwable) {
                 logger.error(t) {
