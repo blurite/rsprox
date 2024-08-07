@@ -27,7 +27,6 @@ import net.rsprox.proxy.client.prot.LoginClientProt
 import net.rsprox.proxy.client.util.HostPlatformStats
 import net.rsprox.proxy.client.util.LoginXteaBlock
 import net.rsprox.proxy.config.CURRENT_REVISION
-import net.rsprox.proxy.config.RUNELITE_SYSTEM_SPEED
 import net.rsprox.proxy.config.getConnection
 import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.js5.Js5MasterIndexArchive
@@ -178,24 +177,8 @@ public class ClientLoginHandler(
         logger.debug {
             "Original login xtea block: $loginXteaBlock"
         }
-        val replacementXteaBlock =
-            if (loginXteaBlock.hostPlatformStats.javaVersionMajor != 0) {
-                val replacementXteaBlock =
-                    loginXteaBlock.copy(
-                        hostPlatformStats =
-                            loginXteaBlock.hostPlatformStats.copy(
-                                systemSpeed = RUNELITE_SYSTEM_SPEED,
-                            ),
-                    )
-                logger.debug {
-                    "Replacement login xtea block: $replacementXteaBlock"
-                }
-                replacementXteaBlock
-            } else {
-                loginXteaBlock
-            }
         val loginXteaBlockBuf = Unpooled.buffer()
-        encodeLoginXteaBlock(replacementXteaBlock, loginXteaBlockBuf.toJagByteBuf())
+        encodeLoginXteaBlock(loginXteaBlock, loginXteaBlockBuf.toJagByteBuf())
         val encryptedXteaBuf = loginXteaBlockBuf.xteaEncrypt(encodeSeed)
 
         // Encoding cipher is for server -> client
