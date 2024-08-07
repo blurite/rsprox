@@ -25,6 +25,7 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.APP_THEME
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_WIDTH
 import net.rsprox.proxy.config.ProxyProperty.Companion.BINARY_WRITE_INTERVAL_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
+import net.rsprox.proxy.config.ProxyProperty.Companion.FILTERS_STATUS
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_HTTP
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
@@ -170,6 +171,15 @@ public class ProxyService(
 
     public fun getAppMaximized(): Boolean? {
         return properties.getPropertyOrNull(APP_MAXIMIZED)
+    }
+
+    public fun setFiltersStatus(status: Int) {
+        properties.setProperty(FILTERS_STATUS, status)
+        properties.saveProperties(PROPERTIES_FILE)
+    }
+
+    public fun getFiltersStatus(): Int {
+        return properties.getPropertyOrNull(FILTERS_STATUS) ?: 0
     }
 
     public fun setAppSize(

@@ -5,13 +5,16 @@ import javax.swing.Icon
 import javax.swing.JPanel
 
 public class SideBar : FlatTabbedPane() {
-
     init {
         tabPlacement = RIGHT
         selectedIndex = -1
     }
 
-    public fun addButton(icon: Icon, tooltip: String, content: JPanel) {
+    public fun addButton(
+        icon: Icon,
+        tooltip: String,
+        content: JPanel,
+    ) {
         addTab("", icon, content, tooltip)
     }
 

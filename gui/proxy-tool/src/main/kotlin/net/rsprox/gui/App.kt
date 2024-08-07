@@ -3,6 +3,7 @@ package net.rsprox.gui
 import com.formdev.flatlaf.extras.FlatSVGUtils
 import com.formdev.flatlaf.extras.components.FlatMenuBar
 import com.formdev.flatlaf.util.UIScale
+import io.netty.buffer.ByteBufAllocator
 import net.miginfocom.swing.MigLayout
 import net.rsprox.gui.dialogs.AboutDialog
 import net.rsprox.gui.sessions.SessionsPanel
@@ -19,9 +20,7 @@ import javax.swing.*
 import javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE
 import kotlin.system.exitProcess
 
-public class App(
-    public val service: ProxyService,
-) {
+public class App {
     private val frame: JFrame
     private val sessionsPanel: SessionsPanel
     public val statusBar: StatusBar
@@ -199,16 +198,21 @@ public class App(
         )
     }
 
-    private fun createSideBar() =
-        SideBar().apply {
-//        addButton(AppIcons.Settings, "Sessions", JPanel())
+    private fun createSideBar(): SideBar {
+        return SideBar().apply {
+            //        addButton(AppIcons.Settings, "Sessions", JPanel())
             addButton(AppIcons.Filter, "Filters", FiltersSidePanel(service))
-            selectedIndex = -1
+            selectedIndex = service.getFiltersStatus()
         }
+    }
 
     private fun createSessionsPanelContainer() =
         JPanel().apply {
             layout = MigLayout("ins 0, gap 0", "[fill, grow]", "[fill, grow]")
             add(sessionsPanel)
         }
+
+    public companion object {
+        public val service: ProxyService = ProxyService(ByteBufAllocator.DEFAULT)
+    }
 }

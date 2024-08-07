@@ -1,8 +1,6 @@
 package net.rsprox.gui
 
-import io.netty.buffer.ByteBufAllocator
 import net.rsprox.gui.splash.SplashScreen
-import net.rsprox.proxy.ProxyService
 import java.util.Locale
 import javax.swing.ImageIcon
 import javax.swing.SwingUtilities
@@ -12,8 +10,7 @@ public fun main() {
     Locale.setDefault(Locale.US)
     SplashScreen.init()
     SplashScreen.stage(0.0, "Preparing", "Setting up environment")
-    val service = ProxyService(ByteBufAllocator.DEFAULT)
-    service.start { percentage, actionText, subActionText, progressText ->
+    App.service.start { percentage, actionText, subActionText, progressText ->
         SplashScreen.stage(percentage, actionText, subActionText, progressText)
     }
     SplashScreen.stop()
@@ -24,7 +21,7 @@ public fun main() {
         UIManager.put("Tree.openIcon", emptyIcon)
         UIManager.put("Tree.closedIcon", emptyIcon)
 
-        val app = App(service)
+        val app = App()
         app.init()
         app.start()
     }

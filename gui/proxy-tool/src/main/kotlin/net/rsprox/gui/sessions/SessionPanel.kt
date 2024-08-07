@@ -181,10 +181,10 @@ public class SessionPanel(
                         when (type) {
                             SessionType.Java -> TODO()
                             SessionType.Native -> {
-                                app.service.launchNativeClient(UiSessionMonitor())
+                                App.service.launchNativeClient(UiSessionMonitor())
                             }
                             SessionType.RuneLite -> {
-                                app.service.launchRuneLiteClient(UiSessionMonitor())
+                                App.service.launchRuneLiteClient(UiSessionMonitor())
                             }
                         }
                 }
@@ -354,7 +354,7 @@ public class SessionPanel(
 
     public fun kill() {
         if (portNumber == -1) return
-        app.service.killAliveProcess(portNumber)
+        App.service.killAliveProcess(portNumber)
     }
 
     private companion object {
