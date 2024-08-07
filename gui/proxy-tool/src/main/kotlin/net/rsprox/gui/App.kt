@@ -3,7 +3,6 @@ package net.rsprox.gui
 import com.formdev.flatlaf.extras.FlatSVGUtils
 import com.formdev.flatlaf.extras.components.FlatMenuBar
 import com.formdev.flatlaf.util.UIScale
-import io.netty.buffer.UnpooledByteBufAllocator
 import net.miginfocom.swing.MigLayout
 import net.rsprox.gui.dialogs.AboutDialog
 import net.rsprox.gui.sessions.SessionsPanel
@@ -20,19 +19,14 @@ import javax.swing.*
 import javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE
 import kotlin.system.exitProcess
 
-public class App {
-
-    public var service: ProxyService = ProxyService(UnpooledByteBufAllocator.DEFAULT)
-
+public class App(
+    public val service: ProxyService,
+) {
     private val frame: JFrame
     private val sessionsPanel: SessionsPanel
     public val statusBar: StatusBar
 
     init {
-        // Start the service right away so we can load the properties for app theme
-        // and presets data.
-        service.start()
-
         // Setup the theme before any components are created.
         AppThemes.applyThemeEdt(service.getAppTheme())
 
@@ -65,29 +59,30 @@ public class App {
         frame.size = defaultSize
         frame.minimumSize = UIScale.scale(Dimension(800, 600))
         frame.iconImages = FlatSVGUtils.createWindowIconImages("/favicon.svg")
-        val windowHandler = object : WindowAdapter() {
-            override fun windowClosing(e: WindowEvent) {
-                val confirmed =
-                    sessionsPanel.tabCount < 1 ||
-                        JOptionPane.showConfirmDialog(
-                            frame,
-                            "Are you sure you want to exit?",
-                            "Exit",
-                            JOptionPane.YES_NO_OPTION,
-                        ) == JOptionPane.YES_OPTION
-                if (confirmed) {
-                    try {
-                        service.safeShutdown()
-                    } finally {
-                        exitProcess(0)
+        val windowHandler =
+            object : WindowAdapter() {
+                override fun windowClosing(e: WindowEvent) {
+                    val confirmed =
+                        sessionsPanel.tabCount < 1 ||
+                            JOptionPane.showConfirmDialog(
+                                frame,
+                                "Are you sure you want to exit?",
+                                "Exit",
+                                JOptionPane.YES_NO_OPTION,
+                            ) == JOptionPane.YES_OPTION
+                    if (confirmed) {
+                        try {
+                            service.safeShutdown()
+                        } finally {
+                            exitProcess(0)
+                        }
                     }
                 }
-            }
 
-            override fun windowStateChanged(e: WindowEvent) {
-                service.setAppMaximized(e.newState == JFrame.MAXIMIZED_BOTH)
+                override fun windowStateChanged(e: WindowEvent) {
+                    service.setAppMaximized(e.newState == JFrame.MAXIMIZED_BOTH)
+                }
             }
-        }
 
         frame.addWindowListener(windowHandler)
         frame.addWindowStateListener(windowHandler)
@@ -211,8 +206,9 @@ public class App {
             selectedIndex = -1
         }
 
-    private fun createSessionsPanelContainer() = JPanel().apply {
-        layout = MigLayout("ins 0, gap 0", "[fill, grow]", "[fill, grow]")
-        add(sessionsPanel)
-    }
+    private fun createSessionsPanelContainer() =
+        JPanel().apply {
+            layout = MigLayout("ins 0, gap 0", "[fill, grow]", "[fill, grow]")
+            add(sessionsPanel)
+        }
 }

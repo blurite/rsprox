@@ -46,6 +46,7 @@ import net.rsprox.proxy.rsa.readOrGenerateRsaKey
 import net.rsprox.proxy.util.ClientType
 import net.rsprox.proxy.util.ConnectionInfo
 import net.rsprox.proxy.util.OperatingSystem
+import net.rsprox.proxy.util.ProgressCallback
 import net.rsprox.proxy.util.getOperatingSystem
 import net.rsprox.proxy.worlds.DynamicWorldListProvider
 import net.rsprox.proxy.worlds.World
@@ -91,8 +92,9 @@ public class ProxyService(
     private val processes: MutableMap<Int, Process> = mutableMapOf()
     private val connections: ProxyConnectionContainer = ProxyConnectionContainer()
 
-    public fun start() {
+    public fun start(progressCallback: ProgressCallback) {
         logger.info { "Starting proxy service" }
+        progressCallback.update(0.05, "Proxy", "Creating directories")
         createConfigurationDirectories(CONFIGURATION_PATH)
         createConfigurationDirectories(BINARY_PATH)
         createConfigurationDirectories(CLIENTS_DIRECTORY)
@@ -101,15 +103,23 @@ public class ProxyService(
         createConfigurationDirectories(FILTERS_DIRECTORY)
         createConfigurationDirectories(SOCKETS_DIRECTORY)
         createConfigurationDirectories(SIGN_KEY_DIRECTORY)
+        progressCallback.update(0.10, "Proxy", "Loading properties")
         loadProperties()
+        progressCallback.update(0.15, "Proxy", "Loading Huffman")
         HuffmanProvider.load()
+        progressCallback.update(0.20, "Proxy", "Loading RSA")
         this.rsa = loadRsa()
+        progressCallback.update(0.25, "Proxy", "Loading property filters")
         this.filterSetStore = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY)
         this.availablePort = properties.getProperty(PROXY_PORT_MIN)
         this.bootstrapFactory = BootstrapFactory(allocator, properties)
+        progressCallback.update(0.35, "Proxy", "Loading jav config")
         val javConfig = loadJavConfig()
+        progressCallback.update(0.40, "Proxy", "Loading world list")
         this.worldListProvider = loadWorldListProvider(javConfig.getWorldListUrl())
+        progressCallback.update(0.50, "Proxy", "Replacing codebase")
         val replacementWorld = findCodebaseReplacementWorld(javConfig, worldListProvider)
+        progressCallback.update(0.60, "Proxy", "Rebuilding jav config")
         val updatedJavConfig = rebuildJavConfig(javConfig, replacementWorld)
 
         this.operatingSystem = getOperatingSystem()
@@ -117,11 +127,14 @@ public class ProxyService(
         if (operatingSystem == OperatingSystem.SOLARIS) {
             throw IllegalStateException("Operating system not supported for native: $operatingSystem")
         }
-
+        progressCallback.update(0.70, "Proxy", "Launching http server")
         launchHttpServer(this.bootstrapFactory, worldListProvider, updatedJavConfig)
+        progressCallback.update(0.80, "Proxy", "Deleting temporary files")
         deleteTemporaryClients()
         deleteTemporaryRuneLiteJars()
+        progressCallback.update(0.90, "Proxy", "Transferring certificate")
         transferFakeCertificate()
+        progressCallback.update(0.95, "Proxy", "Setting up safe shutdown")
         setShutdownHook()
     }
 
