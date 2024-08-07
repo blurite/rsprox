@@ -79,6 +79,7 @@ public class Js5GroupDownloader internal constructor(
         check(info.masterIndex.data contentEquals masterIndex.toByteArray()) {
             "Response contains a different master index from expectations"
         }
+        masterIndex.release()
     }
 
     internal fun resumeConnection(success: Boolean) {

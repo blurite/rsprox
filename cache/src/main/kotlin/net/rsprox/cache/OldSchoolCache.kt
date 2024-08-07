@@ -117,10 +117,15 @@ public class OldSchoolCache(
     ): Map<Int, ByteBuf> {
         val indexBuf = checkNotNull(resolver.get(masterIndex, MASTER_INDEX, archive))
         val groupBuf = checkNotNull(resolver.get(masterIndex, archive, group))
-        return Js5Compression.uncompress(indexBuf).use { uncompressedIndex ->
-            Js5Compression.uncompress(groupBuf).use { uncompressedGroup ->
-                Group.unpack(uncompressedGroup, checkNotNull(Js5Index.read(uncompressedIndex)[group]))
+        try {
+            return Js5Compression.uncompress(indexBuf).use { uncompressedIndex ->
+                Js5Compression.uncompress(groupBuf).use { uncompressedGroup ->
+                    Group.unpack(uncompressedGroup, checkNotNull(Js5Index.read(uncompressedIndex)[group]))
+                }
             }
+        } finally {
+            indexBuf.release()
+            groupBuf.release()
         }
     }
 
