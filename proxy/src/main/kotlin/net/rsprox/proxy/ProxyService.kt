@@ -557,7 +557,7 @@ public class ProxyService(
     }
 
     private fun loadJavConfig(): JavConfig {
-        val url = "https://oldschool.runescape.com/jav_config.ws"
+        val url = "http://oldschool.runescape.com/jav_config.ws"
         return runCatching("Failed to load jav_config.ws from $url") {
             val config = JavConfig(URL(url))
             logger.debug { "Jav config loaded from $url" }
