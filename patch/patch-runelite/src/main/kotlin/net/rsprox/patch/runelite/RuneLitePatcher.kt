@@ -68,7 +68,7 @@ public class RuneLitePatcher : Patcher<Unit> {
                 oldModulus = overwriteModulus(outputFolder, rsa)
                 overwriteLocalHost(outputFolder)
                 patchPort(outputFolder, port)
-                patchedJar = path.parent.resolve(path.nameWithoutExtension + "-patched." + path.extension)
+                patchedJar = path.parent.resolve(path.nameWithoutExtension + "-$time-patched." + path.extension)
                 ZipFile(patchedJar.toFile()).use { outputFile ->
                     val parentDir = outputFolder.toFile()
                     val files = parentDir.walkTopDown().maxDepth(1)
@@ -104,7 +104,8 @@ public class RuneLitePatcher : Patcher<Unit> {
 
     @OptIn(ExperimentalPathApi::class)
     public fun patchLocalHostSupport(path: Path): Path {
-        val inputPath = path.parent.resolve(path.nameWithoutExtension + "-patched." + path.extension)
+        val time = System.currentTimeMillis()
+        val inputPath = path.parent.resolve(path.nameWithoutExtension + "-$time-patched." + path.extension)
         val configurationPath = Path(System.getProperty("user.home"), ".rsprox")
         val runelitePath = configurationPath.resolve("runelite")
         val shaPath = runelitePath.resolve("latest-runelite.sha256")
@@ -121,7 +122,6 @@ public class RuneLitePatcher : Patcher<Unit> {
             }
         }
         val copy = path.copyTo(inputPath)
-        val time = System.currentTimeMillis()
         val outputFolder = path.parent.resolve("runelite-client-$time")
         try {
             ZipFile(copy.toFile()).use { inputFile ->
@@ -140,7 +140,7 @@ public class RuneLitePatcher : Patcher<Unit> {
 
                 val patchedJar =
                     path.parent
-                        .resolve(path.nameWithoutExtension + "-patched." + path.extension)
+                        .resolve(path.nameWithoutExtension + "-$time-patched." + path.extension)
                 ZipFile(patchedJar.toFile()).use { outputFile ->
                     val parentDir = outputFolder.toFile()
                     val metaInf = parentDir.resolve("META-INF")
@@ -194,16 +194,16 @@ public class RuneLitePatcher : Patcher<Unit> {
 
     @OptIn(ExperimentalPathApi::class)
     public fun patchRuneLiteApi(path: Path): Path {
-        val inputPath = path.parent.resolve(path.nameWithoutExtension + "-patched." + path.extension)
-        val copy = path.copyTo(inputPath)
         val time = System.currentTimeMillis()
+        val inputPath = path.parent.resolve(path.nameWithoutExtension + "-$time-patched." + path.extension)
+        val copy = path.copyTo(inputPath)
         val outputFolder = path.parent.resolve("runelite-api-$time")
         try {
             ZipFile(copy.toFile()).use { inputFile ->
                 inputFile.extractAll(outputFolder.toFile().absolutePath)
                 val patchedJar =
                     path.parent
-                        .resolve(path.nameWithoutExtension + "-patched." + path.extension)
+                        .resolve(path.nameWithoutExtension + "-$time-patched." + path.extension)
                 ZipFile(patchedJar.toFile()).use { outputFile ->
                     val parentDir = outputFolder.toFile()
 
