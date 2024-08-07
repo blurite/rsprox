@@ -215,8 +215,10 @@ public class SessionPanel(
                     SymbolDictionaryProvider.get(),
                 ),
             )
+        private var loginCount = 0
 
         override fun onLogin(header: BinaryHeader) {
+            loginCount++
             // Update the session metrics data.
             metrics.worldName = "World ${header.worldId} (${header.worldActivity})"
             notifyMetricsChanged()
@@ -230,6 +232,7 @@ public class SessionPanel(
         }
 
         override fun onLogout(header: BinaryHeader) {
+            if (--loginCount > 0) return
             // Update the session metrics data.
             metrics.username = ""
             notifyMetricsChanged()
