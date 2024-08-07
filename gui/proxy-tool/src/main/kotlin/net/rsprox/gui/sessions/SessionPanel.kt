@@ -72,9 +72,10 @@ public class SessionPanel(
         treeTable.tableHeader.resizingColumn = treeTable.columnModel.getColumn(1)
 
         treeTable.columnModel.getColumn(0).apply {
-            preferredWidth = 150
             minWidth = 150
             maxWidth = 250
+            preferredWidth = 200
+            width = preferredWidth
         }
 
         val highlighter = ColorHighlighter(HighlightPredicate.ODD, getOddRowColor(), null)
