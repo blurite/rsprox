@@ -13,6 +13,8 @@ internal val TEMP_CLIENTS_DIRECTORY: Path = CLIENTS_DIRECTORY.resolve("temp")
 internal val CACHES_DIRECTORY: Path = CONFIGURATION_PATH.resolve("caches")
 internal val FILTERS_DIRECTORY: Path = CONFIGURATION_PATH.resolve("filters")
 internal val SOCKETS_DIRECTORY: Path = CONFIGURATION_PATH.resolve("sockets")
+internal val SIGN_KEY_DIRECTORY: Path = CONFIGURATION_PATH.resolve("signkey")
+internal val FAKE_CERTIFICATE_FILE: Path = SIGN_KEY_DIRECTORY.resolve("fake-cert.jks")
 internal val RUNELITE_LAUNCHER: Path =
     CONFIGURATION_PATH
         .resolve("runelite")

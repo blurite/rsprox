@@ -13,6 +13,7 @@ import net.rsprox.proxy.config.BINARY_PATH
 import net.rsprox.proxy.config.CACHES_DIRECTORY
 import net.rsprox.proxy.config.CLIENTS_DIRECTORY
 import net.rsprox.proxy.config.CONFIGURATION_PATH
+import net.rsprox.proxy.config.FAKE_CERTIFICATE_FILE
 import net.rsprox.proxy.config.FILTERS_DIRECTORY
 import net.rsprox.proxy.config.JavConfig
 import net.rsprox.proxy.config.ProxyProperties
@@ -30,6 +31,7 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
 import net.rsprox.proxy.config.RUNELITE_LAUNCHER
+import net.rsprox.proxy.config.SIGN_KEY_DIRECTORY
 import net.rsprox.proxy.config.SOCKETS_DIRECTORY
 import net.rsprox.proxy.config.TEMP_CLIENTS_DIRECTORY
 import net.rsprox.proxy.config.registerConnection
@@ -58,13 +60,16 @@ import java.io.IOException
 import java.math.BigInteger
 import java.net.URL
 import java.nio.file.Files
+import java.nio.file.LinkOption
 import java.nio.file.Path
 import java.util.Properties
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.copyTo
+import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.nameWithoutExtension
+import kotlin.io.path.writeBytes
 import kotlin.properties.Delegates
 import kotlin.system.exitProcess
 
@@ -94,6 +99,7 @@ public class ProxyService(
         createConfigurationDirectories(CACHES_DIRECTORY)
         createConfigurationDirectories(FILTERS_DIRECTORY)
         createConfigurationDirectories(SOCKETS_DIRECTORY)
+        createConfigurationDirectories(SIGN_KEY_DIRECTORY)
         loadProperties()
         HuffmanProvider.load()
         this.rsa = loadRsa()
@@ -113,7 +119,21 @@ public class ProxyService(
 
         launchHttpServer(this.bootstrapFactory, worldListProvider, updatedJavConfig)
         deleteTemporaryClients()
+        transferFakeCertificate()
         setShutdownHook()
+    }
+
+    private fun transferFakeCertificate() {
+        if (FAKE_CERTIFICATE_FILE.exists(LinkOption.NOFOLLOW_LINKS)) {
+            return
+        }
+        logger.debug { "Copying fake certificate" }
+        val resource =
+            ProxyService::class.java
+                .getResourceAsStream("fake-cert.jks")
+                ?.readAllBytes()
+                ?: throw IllegalStateException("Unable to find fake-cert.jks")
+        FAKE_CERTIFICATE_FILE.writeBytes(resource)
     }
 
     public fun getAppTheme(): String {

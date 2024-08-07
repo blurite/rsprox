@@ -17,6 +17,7 @@ import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.nameWithoutExtension
+import kotlin.io.path.pathString
 import kotlin.io.path.readBytes
 import kotlin.io.path.readText
 import kotlin.io.path.writeBytes
@@ -142,8 +143,10 @@ public class RuneLitePatcher : Patcher<Unit> {
                         .resolve(path.nameWithoutExtension + "-patched." + path.extension)
                 ZipFile(patchedJar.toFile()).use { outputFile ->
                     val parentDir = outputFolder.toFile()
-                    val manifestFile = parentDir.resolve("META-INF").resolve("MANIFEST.MF")
-                    manifestFile.delete()
+                    val metaInf = parentDir.resolve("META-INF")
+                    metaInf.resolve("MANIFEST.MF").delete()
+                    metaInf.resolve("RL.RSA").delete()
+                    metaInf.resolve("RL.SF").delete()
 
                     replaceClass(
                         parentDir
@@ -166,11 +169,6 @@ public class RuneLitePatcher : Patcher<Unit> {
                         "RuneLite.class",
                     )
 
-                    writeFile("Varbits.class", parentDir)
-                    writeFile("VarPlayer.class", parentDir)
-                    writeFile("VarClientInt.class", parentDir)
-                    writeFile("VarClientStr.class", parentDir)
-
                     val files = parentDir.walkTopDown().maxDepth(1)
                     logger.debug { "Building a patched jar." }
                     for (file in files) {
@@ -184,6 +182,7 @@ public class RuneLitePatcher : Patcher<Unit> {
                     outputFile.charset = inputFile.charset
                 }
                 val jarFile = patchedJar.toFile()
+                sign(patchedJar)
                 jarFile.copyTo(existingClient.toFile())
                 shaPath.writeText(currentSha256, Charsets.UTF_8)
             }
@@ -191,6 +190,74 @@ public class RuneLitePatcher : Patcher<Unit> {
             outputFolder.deleteRecursively()
         }
         return copy
+    }
+
+    @OptIn(ExperimentalPathApi::class)
+    public fun patchRuneLiteApi(path: Path): Path {
+        val inputPath = path.parent.resolve(path.nameWithoutExtension + "-patched." + path.extension)
+        val copy = path.copyTo(inputPath)
+        val time = System.currentTimeMillis()
+        val outputFolder = path.parent.resolve("runelite-api-$time")
+        try {
+            ZipFile(copy.toFile()).use { inputFile ->
+                inputFile.extractAll(outputFolder.toFile().absolutePath)
+                val patchedJar =
+                    path.parent
+                        .resolve(path.nameWithoutExtension + "-patched." + path.extension)
+                ZipFile(patchedJar.toFile()).use { outputFile ->
+                    val parentDir = outputFolder.toFile()
+
+                    writeFile("Varbits.class", parentDir)
+                    writeFile("VarPlayer.class", parentDir)
+                    writeFile("VarClientInt.class", parentDir)
+                    writeFile("VarClientStr.class", parentDir)
+
+                    val files = parentDir.walkTopDown().maxDepth(1)
+                    logger.debug { "Building a patched API jar." }
+                    for (file in files) {
+                        if (file == parentDir) continue
+                        if (file.isFile) {
+                            outputFile.addFile(file)
+                        } else {
+                            outputFile.addFolder(file)
+                        }
+                    }
+                    outputFile.charset = inputFile.charset
+                }
+            }
+        } finally {
+            outputFolder.deleteRecursively()
+        }
+        return copy
+    }
+
+    private fun sign(path: Path) {
+        val signer =
+            Path(System.getProperty("java.home"))
+                .resolve("bin")
+                .resolve("jarsigner.exe")
+        val fakeCertificate =
+            Path(System.getProperty("user.home"))
+                .resolve(".rsprox")
+                .resolve("signkey")
+                .resolve("fake-cert.jks")
+        val processBuilder =
+            ProcessBuilder()
+                .command(
+                    listOf(
+                        signer.pathString,
+                        "-keystore",
+                        fakeCertificate.pathString,
+                        "-storepass",
+                        "123456",
+                        path.pathString,
+                        "test",
+                    ),
+                )
+        processBuilder
+            .inheritIO()
+            .start()
+            .waitFor()
     }
 
     private fun writeFile(
