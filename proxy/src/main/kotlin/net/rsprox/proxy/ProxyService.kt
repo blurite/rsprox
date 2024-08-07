@@ -364,6 +364,7 @@ public class ProxyService(
                     "--rsa=${rsa.publicKey.modulus.toString(16)}",
                     "--jav_config=http://127.0.0.1:$webPort/$javConfigEndpoint",
                     "--socket_id=$timestamp",
+                    "--developer-mode",
                 ),
                 directory,
                 path,
