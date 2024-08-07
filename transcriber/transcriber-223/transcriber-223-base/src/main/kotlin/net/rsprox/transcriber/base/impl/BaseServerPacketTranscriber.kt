@@ -2207,46 +2207,57 @@ public class BaseServerPacketTranscriber(
         for (event in packets) {
             when (event) {
                 is LocAddChange -> {
+                    if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
                     val root = stateTracker.createFakeServerRoot("LOC_ADD_CHANGE")
                     root.buildLocAddChange(event)
                 }
                 is LocAnim -> {
+                    if (!filters[PropertyFilter.LOC_ANIM]) continue
                     val root = stateTracker.createFakeServerRoot("LOC_ANIM")
                     root.buildLocAnim(event)
                 }
                 is LocDel -> {
+                    if (!filters[PropertyFilter.LOC_DEL]) continue
                     val root = stateTracker.createFakeServerRoot("LOC_DEL")
                     root.buildLocDel(event)
                 }
                 is LocMerge -> {
+                    if (!filters[PropertyFilter.LOC_MERGE]) continue
                     val root = stateTracker.createFakeServerRoot("LOC_MERGE")
                     root.buildLocMerge(event)
                 }
                 is MapAnim -> {
+                    if (!filters[PropertyFilter.MAP_ANIM]) continue
                     val root = stateTracker.createFakeServerRoot("MAP_ANIM")
                     root.buildMapAnim(event)
                 }
                 is MapProjAnim -> {
+                    if (!filters[PropertyFilter.MAP_PROJANIM]) continue
                     val root = stateTracker.createFakeServerRoot("MAP_PROJANIM")
                     root.buildMapProjAnim(event)
                 }
                 is ObjAdd -> {
+                    if (!filters[PropertyFilter.OBJ_ADD]) continue
                     val root = stateTracker.createFakeServerRoot("OBJ_ADD")
                     root.buildObjAdd(event)
                 }
                 is ObjCount -> {
+                    if (!filters[PropertyFilter.OBJ_COUNT]) continue
                     val root = stateTracker.createFakeServerRoot("OBJ_COUNT")
                     root.buildObjCount(event)
                 }
                 is ObjDel -> {
+                    if (!filters[PropertyFilter.OBJ_DEL]) continue
                     val root = stateTracker.createFakeServerRoot("OBJ_DEL")
                     root.buildObjDel(event)
                 }
                 is ObjEnabledOps -> {
+                    if (!filters[PropertyFilter.OBJ_ENABLED_OPS]) continue
                     val root = stateTracker.createFakeServerRoot("OBJ_ENABLED_OPS")
                     root.buildObjEnabledOps(event)
                 }
                 is SoundArea -> {
+                    if (!filters[PropertyFilter.SOUND_AREA]) continue
                     val root = stateTracker.createFakeServerRoot("SOUND_AREA")
                     root.buildSoundArea(event)
                 }
@@ -2262,56 +2273,67 @@ public class BaseServerPacketTranscriber(
             for (event in packets) {
                 when (event) {
                     is LocAddChange -> {
+                        if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
                         group("LOC_ADD_CHANGE") {
                             buildLocAddChange(event)
                         }
                     }
                     is LocAnim -> {
+                        if (!filters[PropertyFilter.LOC_ANIM]) continue
                         group("LOC_ANIM") {
                             buildLocAnim(event)
                         }
                     }
                     is LocDel -> {
+                        if (!filters[PropertyFilter.LOC_DEL]) continue
                         group("LOC_DEL") {
                             buildLocDel(event)
                         }
                     }
                     is LocMerge -> {
+                        if (!filters[PropertyFilter.LOC_MERGE]) continue
                         group("LOC_MERGE") {
                             buildLocMerge(event)
                         }
                     }
                     is MapAnim -> {
+                        if (!filters[PropertyFilter.MAP_ANIM]) continue
                         group("MAP_ANIM") {
                             buildMapAnim(event)
                         }
                     }
                     is MapProjAnim -> {
+                        if (!filters[PropertyFilter.MAP_PROJANIM]) continue
                         group("MAP_PROJANIM") {
                             buildMapProjAnim(event)
                         }
                     }
                     is ObjAdd -> {
+                        if (!filters[PropertyFilter.OBJ_ADD]) continue
                         group("OBJ_ADD") {
                             buildObjAdd(event)
                         }
                     }
                     is ObjCount -> {
+                        if (!filters[PropertyFilter.OBJ_COUNT]) continue
                         group("OBJ_COUNT") {
                             buildObjCount(event)
                         }
                     }
                     is ObjDel -> {
+                        if (!filters[PropertyFilter.OBJ_DEL]) continue
                         group("OBJ_DEL") {
                             buildObjDel(event)
                         }
                     }
                     is ObjEnabledOps -> {
+                        if (!filters[PropertyFilter.OBJ_ENABLED_OPS]) continue
                         group("OBJ_ENABLED_OPS") {
                             buildObjEnabledOps(event)
                         }
                     }
                     is SoundArea -> {
+                        if (!filters[PropertyFilter.SOUND_AREA]) continue
                         group("SOUND_AREA") {
                             buildSoundArea(event)
                         }
