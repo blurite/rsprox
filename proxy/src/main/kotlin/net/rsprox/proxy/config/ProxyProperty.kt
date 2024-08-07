@@ -8,7 +8,6 @@ public class ProxyProperty<T>(
     internal companion object {
         // proxy
         val PROXY_PORT_MIN = ProxyProperty("proxy.port.min", IntProperty)
-        val PROXY_PORT_HTTP = ProxyProperty("proxy.port.http", IntProperty)
         val WORLDLIST_ENDPOINT = ProxyProperty("endpoints.worldlist", StringProperty)
         val JAV_CONFIG_ENDPOINT = ProxyProperty("endpoints.javconfig", StringProperty)
         val BIND_TIMEOUT_SECONDS = ProxyProperty("bind.timeout.seconds", IntProperty)

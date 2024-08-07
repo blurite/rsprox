@@ -6,7 +6,6 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.APP_WIDTH
 import net.rsprox.proxy.config.ProxyProperty.Companion.BINARY_WRITE_INTERVAL_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
-import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_HTTP
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
@@ -80,7 +79,6 @@ public value class ProxyProperties private constructor(
             val properties = Properties()
             // proxy
             properties.setValue(PROXY_PORT_MIN, 43601)
-            properties.setValue(PROXY_PORT_HTTP, 43600)
             properties.setValue(WORLDLIST_ENDPOINT, "worldlist.ws")
             properties.setValue(JAV_CONFIG_ENDPOINT, "javconfig.ws")
             properties.setValue(BIND_TIMEOUT_SECONDS, 30)

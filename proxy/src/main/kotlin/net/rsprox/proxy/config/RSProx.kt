@@ -20,6 +20,12 @@ internal val RUNELITE_LAUNCHER: Path =
         .resolve("runelite")
         .resolve("runelite-launcher.jar")
 internal const val CURRENT_REVISION: Int = 223
+
+/**
+ * Http server port needs to be hard-coded as we modify it in a few RuneLite classes directly.
+ * If it wasn't for that, it could be user-configurable.
+ */
+internal const val HTTP_SERVER_PORT: Int = 43600
 private val connections: MutableList<ConnectionInfo> = mutableListOf()
 
 internal fun registerConnection(info: ConnectionInfo) {

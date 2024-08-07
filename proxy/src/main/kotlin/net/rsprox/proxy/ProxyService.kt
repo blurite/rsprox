@@ -15,6 +15,7 @@ import net.rsprox.proxy.config.CLIENTS_DIRECTORY
 import net.rsprox.proxy.config.CONFIGURATION_PATH
 import net.rsprox.proxy.config.FAKE_CERTIFICATE_FILE
 import net.rsprox.proxy.config.FILTERS_DIRECTORY
+import net.rsprox.proxy.config.HTTP_SERVER_PORT
 import net.rsprox.proxy.config.JavConfig
 import net.rsprox.proxy.config.ProxyProperties
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_HEIGHT
@@ -27,7 +28,6 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.BINARY_WRITE_INTERVAL_SEC
 import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.FILTERS_STATUS
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
-import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_HTTP
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
@@ -362,7 +362,6 @@ public class ProxyService(
             logger.error { "Unable to bind network port $port for native client." }
             return -1
         }
-        val webPort = properties.getProperty(PROXY_PORT_HTTP)
         val javConfigEndpoint = properties.getProperty(JAV_CONFIG_ENDPOINT)
         val worldlistEndpoint = properties.getProperty(WORLDLIST_ENDPOINT)
         val nativeClientType =
@@ -383,8 +382,8 @@ public class ProxyService(
             patcher.patch(
                 patched,
                 rsa.publicKey.modulus.toString(16),
-                "http://127.0.0.1:$webPort/$javConfigEndpoint",
-                "http://127.0.0.1:$webPort/$worldlistEndpoint",
+                "http://127.0.0.1:$HTTP_SERVER_PORT/$javConfigEndpoint",
+                "http://127.0.0.1:$HTTP_SERVER_PORT/$worldlistEndpoint",
                 port,
                 nativeClientType,
             )
@@ -419,7 +418,6 @@ public class ProxyService(
         try {
             val directory = path.parent.toFile()
             val absolutePath = path.absolutePathString()
-            val webPort = properties.getProperty(PROXY_PORT_HTTP)
             val javConfigEndpoint = properties.getProperty(JAV_CONFIG_ENDPOINT)
             createProcess(
                 listOf(
@@ -428,7 +426,7 @@ public class ProxyService(
                     absolutePath,
                     "--port=$port",
                     "--rsa=${rsa.publicKey.modulus.toString(16)}",
-                    "--jav_config=http://127.0.0.1:$webPort/$javConfigEndpoint",
+                    "--jav_config=http://127.0.0.1:$HTTP_SERVER_PORT/$javConfigEndpoint",
                     "--socket_id=$timestamp",
                     "--developer-mode",
                 ),
@@ -601,7 +599,7 @@ public class ProxyService(
         return runCatching("Failed to rebuild jav_config.ws") {
             val oldWorldList = javConfig.getWorldListUrl()
             val oldCodebase = javConfig.getCodebase()
-            val changedWorldListUrl = "http://127.0.0.1:${properties.getProperty(PROXY_PORT_HTTP)}/worldlist.ws"
+            val changedWorldListUrl = "http://127.0.0.1:$HTTP_SERVER_PORT/worldlist.ws"
             val changedCodebase = "http://${replacementWorld.localHostAddress}/"
             val updated =
                 javConfig
@@ -625,15 +623,14 @@ public class ProxyService(
                     worldListProvider,
                     javConfig,
                 )
-            val port = properties.getProperty(PROXY_PORT_HTTP)
             val timeoutSeconds = properties.getProperty(BIND_TIMEOUT_SECONDS).toLong()
             httpServerBootstrap
-                .bind(port)
+                .bind(HTTP_SERVER_PORT)
                 .asCompletableFuture()
                 .orTimeout(timeoutSeconds, TimeUnit.SECONDS)
                 .join()
             this.httpServerBootstrap = httpServerBootstrap
-            logger.debug { "HTTP server bound to port $port" }
+            logger.debug { "HTTP server bound to port $HTTP_SERVER_PORT" }
         }
     }
 
