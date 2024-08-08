@@ -36,6 +36,7 @@ import net.rsprox.proxy.config.SIGN_KEY_DIRECTORY
 import net.rsprox.proxy.config.SOCKETS_DIRECTORY
 import net.rsprox.proxy.config.TEMP_CLIENTS_DIRECTORY
 import net.rsprox.proxy.config.registerConnection
+import net.rsprox.proxy.connection.ClientTypeDictionary
 import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.downloader.NativeClientDownloader
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
@@ -339,6 +340,7 @@ public class ProxyService(
             return -1
         }
         this.connections.addSessionMonitor(port, sessionMonitor)
+        ClientTypeDictionary[port] = "RuneLite (${operatingSystem.shortName})"
         launchJar(
             port,
             RUNELITE_LAUNCHER,
@@ -403,8 +405,9 @@ public class ProxyService(
                 BigInteger(result.oldModulus, 16),
             ),
         )
-        launchExecutable(port, result.outputPath, os)
+        ClientTypeDictionary[port] = "Native (${os.shortName})"
         this.connections.addSessionMonitor(port, sessionMonitor)
+        launchExecutable(port, result.outputPath, os)
         return port
     }
 

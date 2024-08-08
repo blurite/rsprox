@@ -9,8 +9,10 @@ import net.rsprox.proxy.attributes.BINARY_HEADER_BUILDER
 import net.rsprox.proxy.attributes.WORLD_ATTRIBUTE
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.bootstrap.BootstrapFactory
+import net.rsprox.proxy.channel.getPort
 import net.rsprox.proxy.channel.setAutoRead
 import net.rsprox.proxy.client.prot.LoginClientProtProvider
+import net.rsprox.proxy.connection.ClientTypeDictionary
 import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.util.ChannelConnectionHandler
@@ -78,8 +80,8 @@ public class ClientLoginInitializer(
                 clientChannel.pipeline().addLast(ChannelConnectionHandler(serverChannel))
                 serverChannel.pipeline().addLast(ChannelConnectionHandler(clientChannel))
                 val builder = BinaryHeader.Builder()
-                // TODO: Client name must be passed on from the patcher eventually
-                builder.clientName("Deobfuscated Java Client")
+                val name = ClientTypeDictionary[clientChannel.getPort()]
+                builder.clientName(name)
                 builder.headerVersion(BinaryHeader.HEADER_VERSION)
                 builder.world(world)
                 clientChannel.attr(WORLD_ATTRIBUTE).set(world)
