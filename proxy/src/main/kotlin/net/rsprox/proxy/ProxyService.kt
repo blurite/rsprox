@@ -268,6 +268,7 @@ public class ProxyService(
             closeActiveChannel(connection.serverChannel)
             try {
                 connection.blob.close()
+                connection.blob.shutdown()
             } catch (t: Throwable) {
                 logger.error(t) {
                     "Unable to close blob ${connection.blob}"

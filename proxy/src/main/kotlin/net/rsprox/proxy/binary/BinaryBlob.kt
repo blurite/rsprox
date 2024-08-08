@@ -28,8 +28,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.io.path.Path
 import kotlin.time.TimeSource
@@ -93,19 +91,20 @@ public data class BinaryBlob(
             return
         }
         write()
-        executorService.schedule(
-            Runnable {
-                if (!closed.get()) return@Runnable
-                liveSession?.shutdown()
-                this.monitor.onLogout(header)
-            },
-            15000,
-            TimeUnit.MILLISECONDS,
-        )
+        this.lastIncomingBytes = 0
+        this.lastOutgoingBytes = 0
+        this.monitor.onIncomingBytesPerSecondUpdate(0)
+        this.monitor.onOutgoingBytesPerSecondUpdate(0)
+        this.monitor.onLogout(header)
+    }
+
+    public fun shutdown() {
+        liveSession?.shutdown()
     }
 
     public fun reopen() {
         closed.set(false)
+        this.monitor.onLogin(header)
     }
 
     private fun write() {
@@ -247,7 +246,6 @@ public data class BinaryBlob(
     public companion object {
         private const val PORT: Int = 43_594
         private val logger = InlineLogger()
-        private val executorService = Executors.newSingleThreadScheduledExecutor()
 
         public fun decode(
             path: Path,
