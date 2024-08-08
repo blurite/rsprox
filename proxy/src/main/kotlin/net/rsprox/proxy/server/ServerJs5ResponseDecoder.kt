@@ -71,7 +71,12 @@ public class ServerJs5ResponseDecoder(
             buffer.p2(this.group)
             buffer.p1(this.compression)
             buffer.p4(this.size)
-            buffer.writeBytes(input.readBytes(size))
+            val payload = input.readBytes(size)
+            try {
+                buffer.writeBytes(payload)
+            } finally {
+                payload.release()
+            }
             val copy = buffer.copy()
             val array = ByteArray(buffer.readableBytes())
             try {
