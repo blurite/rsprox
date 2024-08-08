@@ -202,7 +202,11 @@ public class ClientLoginHandler(
             )
         encoded.p2(encrypted.readableBytes())
         encoded.writeBytes(encrypted)
-        encoded.writeBytes(encryptedXteaBuf)
+        try {
+            encoded.writeBytes(encryptedXteaBuf)
+        } finally {
+            encryptedXteaBuf.release()
+        }
         // Swap out the original login packet with the new one
         msg.replacePayload(encoded)
         // Relay packets for now, server will swap over to decoding once it's time
