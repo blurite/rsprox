@@ -997,9 +997,30 @@ public class BaseServerPacketTranscriber(
         ;
 
         companion object {
+            private val firstBlockEntries = entries.filter { it < DEPTH1 }
+            private val depthEntries = entries.filter { it in DEPTH1..DEPTH7 }.reversed()
+            private val lastBlockEntries = entries.filter { it > DEPTH7 }
+
             fun list(mask: Int): List<EventMask> {
                 return buildList {
-                    for (entry in entries) {
+                    for (entry in firstBlockEntries) {
+                        if (mask and entry.mask != entry.mask) {
+                            continue
+                        }
+                        add(entry)
+                    }
+                    // Depth entries get checked in reverse
+                    // Only a single depth entry can be flagged as the bits are overlapping
+                    // If we just allow the normal 0..31 bits logic to take place,
+                    // we would flag depths 1, 4 and 5 when in reality only depth 5 is flagged
+                    for (entry in depthEntries) {
+                        if (mask and entry.mask != entry.mask) {
+                            continue
+                        }
+                        add(entry)
+                        break
+                    }
+                    for (entry in lastBlockEntries) {
                         if (mask and entry.mask != entry.mask) {
                             continue
                         }
