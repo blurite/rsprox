@@ -143,7 +143,7 @@ Below is a small task list showing a rough breakdown of what the tool will consi
 - [x] Transcriber
 - [ ] Launchers
   - [ ] Proxy launcher/updater
-  - [ ] RuneLite launcher (necessary to avoid detection)
+  - [x] RuneLite launcher (necessary to avoid detection)
 
 [actions-badge]: https://github.com/blurite/rsprox/actions/workflows/ci.yml/badge.svg
 [actions]: https://github.com/blurite/rsprox/actions
