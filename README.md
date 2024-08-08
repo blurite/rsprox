@@ -27,6 +27,10 @@ run the following git command
 git submodule update --init --recursive
 ```
 
+After initializing the submodule, make sure to run `./gradlew --refresh-dependencies clean build`.
+This will properly download the submodules and rebuild the project, ensuring
+that all the files that are necessary to run, will be available.
+
 ### Launching
 RSProx project can be launched by either running the class
 `net.rsprox.gui.ProxyToolGuiKt` directly in gui/proxy-tool module,
