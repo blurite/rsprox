@@ -61,6 +61,11 @@ public class StatusBar : JPanel() {
         bandOutLabel.text = text
     }
 
+    public fun hideBandwidth() {
+        bandInLabel.isVisible = false
+        bandOutLabel.isVisible = false
+    }
+
     private companion object {
         private const val DEFAULT_USER_TEXT = "Disconnected"
 

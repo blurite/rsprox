@@ -80,8 +80,12 @@ public class SessionsPanel(
                 val metrics = selectedSession.metrics
                 statusBar.updateUser(metrics.username)
                 statusBar.updateWorld(metrics.worldName)
-                statusBar.updateBandIn(metrics.bandInPerSec)
-                statusBar.updateBandOut(metrics.bandOutPerSec)
+                if (metrics.bandInPerSec == -1 && metrics.bandOutPerSec == -1) {
+                    statusBar.hideBandwidth()
+                } else {
+                    statusBar.updateBandIn(metrics.bandInPerSec)
+                    statusBar.updateBandOut(metrics.bandOutPerSec)
+                }
             }
         }
     }

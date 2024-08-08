@@ -93,8 +93,8 @@ public data class BinaryBlob(
         write()
         this.lastIncomingBytes = 0
         this.lastOutgoingBytes = 0
-        this.monitor.onIncomingBytesPerSecondUpdate(0)
-        this.monitor.onOutgoingBytesPerSecondUpdate(0)
+        this.monitor.onIncomingBytesPerSecondUpdate(-1)
+        this.monitor.onOutgoingBytesPerSecondUpdate(-1)
         this.monitor.onLogout(header)
     }
 
