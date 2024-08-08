@@ -121,13 +121,12 @@ Below is a small task list showing a rough breakdown of what the tool will consi
 - [x] Binary header building
 - [x] Binary blob reader/writer
 - [x] Privacy concerns
-  - [x] Bank Pin erasure
-    - [x] Erases the full 4-digit code sent after entering
-    - [x] Erases any keyboard presses while bank pin interface is open
+  - [x] Bank Pin erasure (4-digit code)
   - [x] Private message content erasure
   - [x] Login tokens in URL open packets
   - [x] 192-bit UID (linked to account recoveries)
   - [x] Site settings (linked to account recoveries)
+  - [x] Erases all keyboard presses
 - [x] Graphical User Interface (Proxy tool)
 - [x] Graphical User Interface (Live Transcriber)
 - [x] Live cache loading
