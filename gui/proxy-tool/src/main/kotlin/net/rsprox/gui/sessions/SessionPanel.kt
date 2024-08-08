@@ -181,16 +181,22 @@ public class SessionPanel(
             logger.info { "$type client thread: ${Thread.currentThread().name}" }
             val time =
                 measureTime {
-                    portNumber =
-                        when (type) {
-                            SessionType.Java -> TODO()
-                            SessionType.Native -> {
-                                App.service.launchNativeClient(UiSessionMonitor())
+                    try {
+                        portNumber =
+                            when (type) {
+                                SessionType.Java -> TODO()
+                                SessionType.Native -> {
+                                    App.service.launchNativeClient(UiSessionMonitor())
+                                }
+                                SessionType.RuneLite -> {
+                                    App.service.launchRuneLiteClient(UiSessionMonitor())
+                                }
                             }
-                            SessionType.RuneLite -> {
-                                App.service.launchRuneLiteClient(UiSessionMonitor())
-                            }
+                    } catch (e: Exception) {
+                        logger.error(e) {
+                            "Unable to launch $type client (initialize git submodules, gradle refresh)"
                         }
+                    }
                 }
             logger.info { "$type client started in $time" }
         }

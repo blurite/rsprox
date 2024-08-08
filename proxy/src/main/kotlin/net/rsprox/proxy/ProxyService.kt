@@ -76,6 +76,7 @@ import kotlin.io.path.writeBytes
 import kotlin.properties.Delegates
 import kotlin.system.exitProcess
 
+@Suppress("DuplicatedCode")
 public class ProxyService(
     private val allocator: ByteBufAllocator,
 ) {
@@ -230,7 +231,7 @@ public class ProxyService(
         )
     }
 
-    public fun hasAliveProcesses(): Boolean {
+    private fun hasAliveProcesses(): Boolean {
         return processes.values.any { process ->
             process.isAlive
         }
@@ -256,7 +257,7 @@ public class ProxyService(
         }
     }
 
-    public fun killAliveProcesses() {
+    private fun killAliveProcesses() {
         for (port in processes.keys.toSet()) {
             killAliveProcess(port)
         }
@@ -327,6 +328,9 @@ public class ProxyService(
     }
 
     public fun launchRuneLiteClient(sessionMonitor: SessionMonitor<BinaryHeader>): Int {
+        if (!RUNELITE_LAUNCHER.exists(LinkOption.NOFOLLOW_LINKS)) {
+            throw IllegalStateException("RuneLite Launcher jar could not be found in $RUNELITE_LAUNCHER")
+        }
         val port = this.availablePort++
         try {
             launchProxyServer(this.bootstrapFactory, this.worldListProvider, rsa, port)
