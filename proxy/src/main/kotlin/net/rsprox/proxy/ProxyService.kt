@@ -514,7 +514,8 @@ public class ProxyService(
                     File(System.getProperty("user.home"), ".runelite")
                         .resolve("credentials.properties")
                 if (!runeliteCreds.exists()) {
-                    logger.info { "Unable to find RuneLite credentials file: $runeliteCreds" }
+                    logger.info { "(Jagex Account) RuneLite credentials could not be located in: $runeliteCreds" }
+                    logger.info { "(Jagex Account) Using regular username/e-mail & password login box" }
                     emptyMap()
                 } else {
                     runeliteCreds.inputStream().use {
