@@ -13,6 +13,11 @@ public interface SessionMonitor<T> {
 
     public fun onNameUpdate(name: String)
 
+    public fun onUserInformationUpdate(
+        userId: Long,
+        userHash: Long,
+    )
+
     public fun onTranscribe(
         cycle: Int,
         property: RootProperty<*>,

@@ -264,6 +264,17 @@ public class SessionPanel(
             metrics.username = name
             sessionsPanel.updateTabTitle(this@SessionPanel, name)
             notifyMetricsChanged()
+            if (metrics.userId != -1L && metrics.userHash != -1L) {
+                App.service.updateCredentials(name, metrics.userId, metrics.userHash)
+            }
+        }
+
+        override fun onUserInformationUpdate(
+            userId: Long,
+            userHash: Long,
+        ) {
+            metrics.userId = userId
+            metrics.userHash = userHash
         }
 
         override fun onTranscribe(

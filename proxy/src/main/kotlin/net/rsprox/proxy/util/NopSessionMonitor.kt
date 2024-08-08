@@ -20,6 +20,12 @@ public object NopSessionMonitor : SessionMonitor<BinaryHeader> {
     override fun onNameUpdate(name: String) {
     }
 
+    override fun onUserInformationUpdate(
+        userId: Long,
+        userHash: Long,
+    ) {
+    }
+
     override fun onTranscribe(
         cycle: Int,
         property: RootProperty<*>,

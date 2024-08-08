@@ -310,6 +310,7 @@ public class ServerGameLoginDecoder(
             val port = clientChannel.getPort()
             val sessionMonitor = connections.getSessionMonitor(port)
             sessionMonitor.onLogin(header)
+            sessionMonitor.onUserInformationUpdate(userId, userHash)
             val blob = BinaryBlob(header, stream, binaryWriteInterval, sessionMonitor, filters)
             blob.hookLiveTranscriber(key, pluginLoader)
             val serverChannel = ctx.channel()

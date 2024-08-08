@@ -8,7 +8,10 @@ import net.rsprox.patch.NativeClientType
 import net.rsprox.patch.PatchResult
 import net.rsprox.patch.native.NativePatcher
 import net.rsprox.proxy.binary.BinaryHeader
+import net.rsprox.proxy.binary.credentials.BinaryCredentials
+import net.rsprox.proxy.binary.credentials.BinaryCredentialsStore
 import net.rsprox.proxy.bootstrap.BootstrapFactory
+import net.rsprox.proxy.config.BINARY_CREDENTIALS_FOLDER
 import net.rsprox.proxy.config.BINARY_PATH
 import net.rsprox.proxy.config.CACHES_DIRECTORY
 import net.rsprox.proxy.config.CLIENTS_DIRECTORY
@@ -94,6 +97,7 @@ public class ProxyService(
     private var availablePort: Int = -1
     private val processes: MutableMap<Int, Process> = mutableMapOf()
     private val connections: ProxyConnectionContainer = ProxyConnectionContainer()
+    private lateinit var credentials: BinaryCredentialsStore
 
     public fun start(progressCallback: ProgressCallback) {
         logger.info { "Starting proxy service" }
@@ -106,6 +110,7 @@ public class ProxyService(
         createConfigurationDirectories(FILTERS_DIRECTORY)
         createConfigurationDirectories(SOCKETS_DIRECTORY)
         createConfigurationDirectories(SIGN_KEY_DIRECTORY)
+        createConfigurationDirectories(BINARY_CREDENTIALS_FOLDER)
         progressCallback.update(0.10, "Proxy", "Loading properties")
         loadProperties()
         progressCallback.update(0.15, "Proxy", "Loading Huffman")
@@ -124,6 +129,8 @@ public class ProxyService(
         val replacementWorld = findCodebaseReplacementWorld(javConfig, worldListProvider)
         progressCallback.update(0.60, "Proxy", "Rebuilding jav config")
         val updatedJavConfig = rebuildJavConfig(javConfig, replacementWorld)
+        progressCallback.update(0.65, "Proxy", "Reading binary credentials")
+        this.credentials = BinaryCredentialsStore.read()
 
         this.operatingSystem = getOperatingSystem()
         logger.debug { "Proxy launched on $operatingSystem" }
@@ -139,6 +146,14 @@ public class ProxyService(
         transferFakeCertificate()
         progressCallback.update(0.95, "Proxy", "Setting up safe shutdown")
         setShutdownHook()
+    }
+
+    public fun updateCredentials(
+        name: String,
+        userId: Long,
+        userHash: Long,
+    ) {
+        this.credentials.append(BinaryCredentials(name, userId, userHash))
     }
 
     private fun transferFakeCertificate() {
