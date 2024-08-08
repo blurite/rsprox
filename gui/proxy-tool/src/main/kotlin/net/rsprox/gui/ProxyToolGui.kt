@@ -23,6 +23,9 @@ public fun main() {
 
         val app = App()
         app.init()
+        // Apply the theme here, as applying it too early causes some artefacting
+        // This ensures that the theme you see is the same on initial boot as well as swapping back and forth
+        AppThemes.applyThemeEdt(App.service.getAppTheme())
         app.start()
     }
 }

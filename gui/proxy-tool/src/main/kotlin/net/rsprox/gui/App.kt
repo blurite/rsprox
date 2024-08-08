@@ -27,19 +27,9 @@ import javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE
 import kotlin.system.exitProcess
 
 public class App {
-    private val frame: JFrame
-    private val sessionsPanel: SessionsPanel
-    public val statusBar: StatusBar
-
-    init {
-        // Setup the theme before any components are created.
-        AppThemes.applyThemeEdt(service.getAppTheme())
-
-        // Create the main components.
-        frame = JFrame()
-        sessionsPanel = SessionsPanel(this)
-        statusBar = StatusBar()
-    }
+    private val frame: JFrame = JFrame()
+    private val sessionsPanel: SessionsPanel = SessionsPanel(this)
+    public val statusBar: StatusBar = StatusBar()
 
     public fun init() {
         val width = service.getAppWidth()
@@ -172,6 +162,15 @@ public class App {
     private fun FlatMenuBar.createThemes() {
         val menu = JMenu("Themes")
         menu.mnemonic = 'T'.code
+
+        menu.add(
+            JMenuItem("RuneLite (default)").apply {
+                addActionListener {
+                    service.setAppTheme("RuneLite")
+                    AppThemes.applyTheme("RuneLite")
+                }
+            },
+        )
 
         AppThemes.THEMES.forEach {
             val name = it.name

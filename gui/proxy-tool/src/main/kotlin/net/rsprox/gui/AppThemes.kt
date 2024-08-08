@@ -1,9 +1,9 @@
 package net.rsprox.gui
 
 import com.formdev.flatlaf.FlatLaf
+import com.formdev.flatlaf.IntelliJTheme
 import com.formdev.flatlaf.extras.FlatAnimatedLafChange
 import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes
-import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMaterialDarkerIJTheme
 import com.github.michaelbull.logging.InlineLogger
 import java.awt.EventQueue
 import javax.swing.UIManager
@@ -11,8 +11,6 @@ import javax.swing.UIManager.LookAndFeelInfo
 
 public object AppThemes {
     private val log = InlineLogger()
-
-    private val DEFAULT_THEME = FlatMaterialDarkerIJTheme::class.java.name
 
     public val THEMES: List<LookAndFeelInfo> =
         buildList {
@@ -33,11 +31,24 @@ public object AppThemes {
         check(EventQueue.isDispatchThread()) { "Must be called on the EDT" }
         try {
             val isCurrentLaf = UIManager.getLookAndFeel() is FlatLaf
-            val lafClass = THEMES.firstOrNull { it.name == name }?.className ?: DEFAULT_THEME
+            val lafClass = THEMES.firstOrNull { it.name == name }?.className
             if (isCurrentLaf) {
                 FlatAnimatedLafChange.showSnapshot()
             }
-            UIManager.setLookAndFeel(lafClass)
+            if (lafClass != null) {
+                UIManager.setLookAndFeel(lafClass)
+            } else {
+                // The L&F must be re-loaded every time or artefacting will occur
+                UIManager.setLookAndFeel(
+                    IntelliJTheme.createLaf(
+                        IntelliJTheme(
+                            App::class.java.getResourceAsStream(
+                                "RuneLite.theme.json",
+                            ),
+                        ),
+                    ),
+                )
+            }
             FlatLaf.updateUI()
             if (isCurrentLaf) {
                 FlatAnimatedLafChange.hideSnapshotWithAnimation()

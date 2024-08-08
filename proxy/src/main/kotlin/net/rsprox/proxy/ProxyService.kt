@@ -153,7 +153,7 @@ public class ProxyService(
     }
 
     public fun getAppTheme(): String {
-        return properties.getProperty(APP_THEME)
+        return properties.getPropertyOrNull(APP_THEME) ?: "RuneLite"
     }
 
     public fun getAppWidth(): Int {
