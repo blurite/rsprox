@@ -104,7 +104,11 @@ public class ClientLoginHandler(
                 switchClientToRelay(ctx)
             }
         }
-        serverChannel.writeAndFlush(msg.encode(ctx.alloc()))
+        try {
+            serverChannel.writeAndFlush(msg.encode(ctx.alloc()))
+        } finally {
+            msg.payload.release()
+        }
     }
 
     private fun handleLogin(
