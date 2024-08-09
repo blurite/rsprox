@@ -39,6 +39,7 @@ import net.rsprox.proxy.server.ServerJs5LoginHandler
 import net.rsprox.proxy.server.ServerRelayHandler
 import net.rsprox.proxy.server.prot.LoginServerProtId
 import net.rsprox.proxy.server.prot.LoginServerProtProvider
+import net.rsprox.proxy.util.ChannelConnectionHandler
 import net.rsprox.proxy.util.xteaEncrypt
 import net.rsprox.proxy.worlds.WorldListProvider
 import net.rsprox.shared.filters.PropertyFilterSetStore
@@ -405,6 +406,7 @@ public class ClientLoginHandler(
         val pipeline = serverChannel.pipeline()
         pipeline.addLastWithName(ServerGenericDecoder(NopStreamCipher, LoginServerProtProvider))
         pipeline.addLastWithName(ServerJs5LoginHandler(ctx.channel()))
+        pipeline.addLastWithName(ChannelConnectionHandler(serverChannel))
     }
 
     private fun switchServerToGameLoginDecoding(ctx: ChannelHandlerContext) {
@@ -420,6 +422,7 @@ public class ClientLoginHandler(
             ),
         )
         pipeline.addLastWithName(ServerRelayHandler(ctx.channel()))
+        pipeline.addLastWithName(ChannelConnectionHandler(serverChannel))
     }
 
     private companion object {

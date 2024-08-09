@@ -1,5 +1,6 @@
 package net.rsprox.proxy.server
 
+import com.github.michaelbull.logging.InlineLogger
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
 import io.netty.channel.Channel
@@ -30,6 +31,7 @@ import net.rsprox.proxy.client.prot.GameClientProtProvider
 import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.server.prot.GameServerProtProvider
+import net.rsprox.proxy.server.prot.LoginServerProt
 import net.rsprox.proxy.util.UserUid
 import net.rsprox.proxy.worlds.WorldListProvider
 import net.rsprox.shared.StreamDirection
@@ -146,8 +148,15 @@ public class ServerGameLoginDecoder(
                     return
                 }
                 else -> {
-                    // login error
-                    throw IllegalStateException("Client disconnected (opcode: ${this.stateValue})")
+                    val prot =
+                        LoginServerProt.entries.firstOrNull { it.opcode == this.stateValue }
+                            ?: throw IllegalStateException("Client disconnected (opcode: ${this.stateValue})")
+                    logger.warn {
+                        "Login failed with response code: $prot (opcode ${this.stateValue})"
+                    }
+                    clientChannel.close()
+                    ctx.close().await()
+                    return
                 }
             }
         }
@@ -360,5 +369,9 @@ public class ServerGameLoginDecoder(
         val buffer = clientChannel.alloc().buffer().toJagByteBuf()
         function(buffer)
         return clientChannel.writeAndFlush(buffer.buffer)
+    }
+
+    private companion object {
+        private val logger = InlineLogger()
     }
 }
