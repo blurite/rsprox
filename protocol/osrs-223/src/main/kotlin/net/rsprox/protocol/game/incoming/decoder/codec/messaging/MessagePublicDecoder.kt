@@ -30,9 +30,16 @@ public class MessagePublicDecoder(
             } else {
                 null
             }
-        val message = huffman.decode(buffer)
+        val hasTrailingByte = type == CLAN_MAIN_CHANNEL_TYPE
+        val huffmanSlice =
+            if (hasTrailingByte) {
+                buffer.buffer.readSlice(buffer.readableBytes() - 1)
+            } else {
+                buffer.buffer
+            }
+        val message = huffman.decode(huffmanSlice)
         val clanType =
-            if (type == CLAN_MAIN_CHANNEL_TYPE) {
+            if (hasTrailingByte) {
                 buffer.g1()
             } else {
                 -1
