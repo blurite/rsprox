@@ -27,6 +27,11 @@ run the following git command
 git submodule update --init --recursive
 ```
 
+> [!IMPORTANT]
+> If you run into an error stating `fatal: destination path '*' already exists and is not an empty directory.`,
+> you will have to run `git submodule deinit -f runelite-launcher` and re-initialize it
+> as shown above.
+
 After initializing the submodule, make sure to run `./gradlew --refresh-dependencies clean build`.
 This will properly download the submodules and rebuild the project, ensuring
 that all the files that are necessary to run, will be available.
