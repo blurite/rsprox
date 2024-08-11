@@ -1,8 +1,11 @@
 package net.rsprox.transcriber.indexer
 
 import net.rsprot.protocol.Prot
+import net.rsprot.protocol.util.CombinedId
 import net.rsprox.cache.api.Cache
 import net.rsprox.cache.api.CacheProvider
+import net.rsprox.cache.api.type.VarBitType
+import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.incoming.model.buttons.If1Button
 import net.rsprox.protocol.game.incoming.model.buttons.If3Button
 import net.rsprox.protocol.game.incoming.model.buttons.IfButtonD
@@ -96,9 +99,36 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChanne
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV2
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelSingleUser
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcInfo
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcUpdateType
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.BaseAnimationSetExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.BodyCustomisationExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.CombatLevelChangeExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.EnabledOpsExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.FaceCoordExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.HeadCustomisationExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.HeadIconCustomisationExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.NameChangeExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.OldSpotanimExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.TransformationExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerUpdateType
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.AppearanceExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.ChatExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.FaceAngleExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.MoveSpeedExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.NameExtrasExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.TemporaryMoveSpeedExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FacePathingEntityExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HitExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SayExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SequenceExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfo
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityUpdateType
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfMoveSub
@@ -201,11 +231,18 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjCount
 import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjDel
 import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjEnabledOps
 import net.rsprox.protocol.game.outgoing.model.zone.payload.SoundArea
+import net.rsprox.shared.BaseVarType
+import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.indexing.BinaryIndex
+import net.rsprox.shared.indexing.IndexedType
+import net.rsprox.shared.indexing.increment
 import net.rsprox.transcriber.Transcriber
+import net.rsprox.transcriber.state.Npc
+import net.rsprox.transcriber.state.Player
 import net.rsprox.transcriber.state.StateTracker
 
+@Suppress("DuplicatedCode")
 public class IndexerTranscriber private constructor(
     private val stateTracker: StateTracker,
     cacheProvider: CacheProvider,
@@ -224,6 +261,18 @@ public class IndexerTranscriber private constructor(
         binaryIndex,
     )
 
+    private fun getNpcInAnyWorld(index: Int): Npc? {
+        for (world in stateTracker.getAllWorlds()) {
+            val npc = world.getNpcOrNull(index)
+            if (npc != null) {
+                return npc
+            }
+        }
+        return null
+    }
+
+    private var lastConnection: Int = 0
+
     override val cache: Cache = cacheProvider.get()
 
     override fun setCurrentProt(prot: Prot) {
@@ -236,16 +285,31 @@ public class IndexerTranscriber private constructor(
     override fun onTranscribeEnd() {
     }
 
+    private fun incrementComponent(combinedId: CombinedId) {
+        incrementInterfaceId(combinedId.interfaceId)
+    }
+
+    private fun incrementInterfaceId(interfaceId: Int) {
+        if (interfaceId == -1) return
+        binaryIndex.increment(IndexedType.INTERFACE, interfaceId)
+    }
+
     override fun if1Button(message: If1Button) {
+        incrementInterfaceId(message.interfaceId)
     }
 
     override fun if3Button(message: If3Button) {
+        incrementInterfaceId(message.interfaceId)
     }
 
     override fun ifButtonD(message: IfButtonD) {
+        incrementInterfaceId(message.selectedInterfaceId)
+        incrementInterfaceId(message.targetInterfaceId)
     }
 
     override fun ifButtonT(message: IfButtonT) {
+        incrementInterfaceId(message.selectedInterfaceId)
+        incrementInterfaceId(message.targetInterfaceId)
     }
 
     override fun affinedClanSettingsAddBannedFromChannel(message: AffinedClanSettingsAddBannedFromChannel) {
@@ -297,12 +361,15 @@ public class IndexerTranscriber private constructor(
     }
 
     override fun opLoc(message: OpLoc) {
+        binaryIndex.increment(IndexedType.LOC, message.id)
     }
 
     override fun opLoc6(message: OpLoc6) {
+        binaryIndex.increment(IndexedType.LOC, message.id)
     }
 
     override fun opLocT(message: OpLocT) {
+        binaryIndex.increment(IndexedType.LOC, message.id)
     }
 
     override fun messagePrivateClient(message: MessagePrivate) {
@@ -381,21 +448,29 @@ public class IndexerTranscriber private constructor(
     }
 
     override fun opNpc(message: OpNpc) {
+        val npc = getNpcInAnyWorld(message.index) ?: return
+        binaryIndex.increment(IndexedType.NPC, npc.id)
     }
 
     override fun opNpc6(message: OpNpc6) {
+        binaryIndex.increment(IndexedType.NPC, message.id)
     }
 
     override fun opNpcT(message: OpNpcT) {
+        val npc = getNpcInAnyWorld(message.index) ?: return
+        binaryIndex.increment(IndexedType.NPC, npc.id)
     }
 
     override fun opObj(message: OpObj) {
+        binaryIndex.increment(IndexedType.OBJ, message.id)
     }
 
     override fun opObj6(message: OpObj6) {
+        binaryIndex.increment(IndexedType.OBJ, message.id)
     }
 
     override fun opObjT(message: OpObjT) {
+        binaryIndex.increment(IndexedType.OBJ, message.id)
     }
 
     override fun opPlayer(message: OpPlayer) {
@@ -405,6 +480,7 @@ public class IndexerTranscriber private constructor(
     }
 
     override fun resumePauseButton(message: ResumePauseButton) {
+        incrementComponent(CombinedId(message.interfaceId, message.componentId))
     }
 
     override fun resumePCountDialog(message: ResumePCountDialog) {
@@ -515,85 +591,197 @@ public class IndexerTranscriber private constructor(
     override fun setNpcUpdateOrigin(message: SetNpcUpdateOrigin) {
     }
 
+    private fun preWorldEntityUpdate(message: WorldEntityInfo) {
+        for ((index, update) in message.updates) {
+            when (update) {
+                is WorldEntityUpdateType.Active -> {
+                }
+                WorldEntityUpdateType.HighResolutionToLowResolution -> {
+                }
+                is WorldEntityUpdateType.LowResolutionToHighResolution -> {
+                    val world = stateTracker.createWorld(index)
+                    world.sizeX = update.sizeX
+                    world.sizeZ = update.sizeZ
+                    world.angle = update.angle
+                    world.unknownProperty = update.unknownProperty
+                    world.coord = update.coordGrid
+                }
+                WorldEntityUpdateType.Idle -> {
+                    // noop
+                }
+            }
+        }
+    }
+
+    private fun postWorldEntityUpdate(message: WorldEntityInfo) {
+        for ((index, update) in message.updates) {
+            when (update) {
+                is WorldEntityUpdateType.Active -> {
+                    val world = stateTracker.getWorld(index)
+                    world.angle = update.angle
+                    world.coord = update.coordGrid
+                    world.moveSpeed = update.moveSpeed
+                }
+                WorldEntityUpdateType.HighResolutionToLowResolution -> {
+                    stateTracker.destroyWorld(index)
+                }
+                is WorldEntityUpdateType.LowResolutionToHighResolution -> {
+                }
+                WorldEntityUpdateType.Idle -> {
+                    // noop
+                }
+            }
+        }
+    }
+
     override fun worldEntityInfo(message: WorldEntityInfo) {
+        preWorldEntityUpdate(message)
+        postWorldEntityUpdate(message)
     }
 
     override fun ifClearInv(message: IfClearInv) {
+        incrementInterfaceId(message.interfaceId)
     }
 
     override fun ifCloseSub(message: IfCloseSub) {
+        incrementComponent(message.combinedId)
+        stateTracker.closeInterface(message.combinedId)
     }
 
     override fun ifMoveSub(message: IfMoveSub) {
+        incrementComponent(message.sourceCombinedId)
+        incrementComponent(message.destinationCombinedId)
+        stateTracker.moveInterface(message.sourceCombinedId, message.destinationCombinedId)
     }
 
     override fun ifOpenSub(message: IfOpenSub) {
+        incrementInterfaceId(message.interfaceId)
+        incrementComponent(message.destinationCombinedId)
+        stateTracker.openInterface(message.interfaceId, message.destinationCombinedId)
     }
 
     override fun ifOpenTop(message: IfOpenTop) {
+        incrementInterfaceId(message.interfaceId)
+        stateTracker.toplevelInterface = message.interfaceId
     }
 
     override fun ifResync(message: IfResync) {
+        stateTracker.toplevelInterface = message.topLevelInterface
+        for (sub in message.subInterfaces) {
+            stateTracker.openInterface(sub.interfaceId, sub.destinationCombinedId)
+        }
     }
 
     override fun ifSetAngle(message: IfSetAngle) {
+        incrementComponent(message.combinedId)
     }
 
     override fun ifSetAnim(message: IfSetAnim) {
+        incrementComponent(message.combinedId)
+        binaryIndex.increment(IndexedType.SEQ, message.anim)
     }
 
     override fun ifSetColour(message: IfSetColour) {
+        incrementComponent(message.combinedId)
     }
 
     override fun ifSetEvents(message: IfSetEvents) {
+        incrementComponent(message.combinedId)
     }
 
     override fun ifSetHide(message: IfSetHide) {
+        incrementComponent(message.combinedId)
     }
 
     override fun ifSetModel(message: IfSetModel) {
+        incrementComponent(message.combinedId)
     }
 
     override fun ifSetNpcHead(message: IfSetNpcHead) {
+        incrementComponent(message.combinedId)
+        binaryIndex.increment(IndexedType.NPC, message.npc)
     }
 
     override fun ifSetNpcHeadActive(message: IfSetNpcHeadActive) {
+        incrementComponent(message.combinedId)
+        val npc = getNpcInAnyWorld(message.index) ?: return
+        binaryIndex.increment(IndexedType.NPC, npc.id)
     }
 
     override fun ifSetObject(message: IfSetObject) {
+        incrementComponent(message.combinedId)
+        if (message.obj != -1) {
+            binaryIndex.increment(IndexedType.OBJ, message.obj)
+        }
     }
 
     override fun ifSetPlayerHead(message: IfSetPlayerHead) {
+        incrementComponent(message.combinedId)
     }
 
     override fun ifSetPlayerModelBaseColour(message: IfSetPlayerModelBaseColour) {
+        incrementComponent(message.combinedId)
     }
 
     override fun ifSetPlayerModelBodyType(message: IfSetPlayerModelBodyType) {
+        incrementComponent(message.combinedId)
     }
 
     override fun ifSetPlayerModelObj(message: IfSetPlayerModelObj) {
+        incrementComponent(message.combinedId)
     }
 
     override fun ifSetPlayerModelSelf(message: IfSetPlayerModelSelf) {
+        incrementComponent(message.combinedId)
     }
 
     override fun ifSetPosition(message: IfSetPosition) {
+        incrementComponent(message.combinedId)
     }
 
     override fun ifSetRotateSpeed(message: IfSetRotateSpeed) {
+        incrementComponent(message.combinedId)
     }
 
     override fun ifSetScrollPos(message: IfSetScrollPos) {
+        incrementComponent(message.combinedId)
     }
 
     override fun ifSetText(message: IfSetText) {
+        incrementComponent(message.combinedId)
+        binaryIndex.increment(IndexedType.TEXT, message.text)
+    }
+
+    private fun isInvExcludedFromObjs(invId: Int): Boolean {
+        // Skip trade, inventory, equipment, bank, ge
+        return invId == 90 ||
+            invId == 93 ||
+            invId == 94 ||
+            invId == 95 ||
+            invId in 518..523 ||
+            invId in 539..540
     }
 
     override fun updateInvFull(message: UpdateInvFull) {
+        incrementComponent(message.combinedId)
+        if (!isInvExcludedFromObjs(message.inventoryId)) {
+            for (obj in message.objs) {
+                if (obj.id != -1) {
+                    binaryIndex.increment(IndexedType.OBJ, obj.id)
+                }
+            }
+        }
     }
 
     override fun updateInvPartial(message: UpdateInvPartial) {
+        incrementComponent(message.combinedId)
+        if (!isInvExcludedFromObjs(message.inventoryId)) {
+            for (obj in message.objs) {
+                if (obj.id != -1) {
+                    binaryIndex.increment(IndexedType.OBJ, obj.id)
+                }
+            }
+        }
     }
 
     override fun updateInvStopTransmit(message: UpdateInvStopTransmit) {
@@ -609,18 +797,91 @@ public class IndexerTranscriber private constructor(
     }
 
     override fun reconnect(message: Reconnect) {
+        lastConnection = stateTracker.cycle
     }
 
     override fun rebuildLogin(message: RebuildLogin) {
+        stateTracker.overridePlayer(
+            Player(
+                message.playerInfoInitBlock.localPlayerIndex,
+                "uninitialized",
+                message.playerInfoInitBlock.localPlayerCoord,
+            ),
+        )
+        stateTracker.localPlayerIndex = message.playerInfoInitBlock.localPlayerIndex
+        val world = stateTracker.createWorld(-1)
+        world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
+
+        val minMapsquareX = (message.zoneX - 6) ushr 3
+        val maxMapsquareX = (message.zoneX + 6) ushr 3
+        val minMapsquareZ = (message.zoneZ - 6) ushr 3
+        val maxMapsquareZ = (message.zoneZ + 6) ushr 3
+        for (mapsquareX in minMapsquareX..maxMapsquareX) {
+            for (mapsquareZ in minMapsquareZ..maxMapsquareZ) {
+                val mapsquareId = (mapsquareX shl 8) or mapsquareZ
+                binaryIndex.increment(IndexedType.MAPSQUARE, mapsquareId)
+            }
+        }
     }
 
     override fun rebuildNormal(message: RebuildNormal) {
+        val world = stateTracker.getWorld(-1)
+        world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
+
+        val minMapsquareX = (message.zoneX - 6) ushr 3
+        val maxMapsquareX = (message.zoneX + 6) ushr 3
+        val minMapsquareZ = (message.zoneZ - 6) ushr 3
+        val maxMapsquareZ = (message.zoneZ + 6) ushr 3
+        for (mapsquareX in minMapsquareX..maxMapsquareX) {
+            for (mapsquareZ in minMapsquareZ..maxMapsquareZ) {
+                val mapsquareId = (mapsquareX shl 8) or mapsquareZ
+                binaryIndex.increment(IndexedType.MAPSQUARE, mapsquareId)
+            }
+        }
     }
 
     override fun rebuildRegion(message: RebuildRegion) {
+        val world = stateTracker.getWorld(-1)
+        world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
+
+        val startZoneX = message.zoneX - 6
+        val startZoneZ = message.zoneZ - 6
+        val mapsquares = mutableSetOf<Int>()
+        for (level in 0..<4) {
+            for (zoneX in startZoneX..(message.zoneX + 6)) {
+                for (zoneZ in startZoneZ..(message.zoneZ + 6)) {
+                    val block = message.buildArea[level, zoneX - startZoneX, zoneZ - startZoneZ]
+                    // Invalid zone
+                    if (block.mapsquareId == 32767) continue
+                    mapsquares += block.mapsquareId
+                }
+            }
+        }
+        for (mapsquare in mapsquares) {
+            binaryIndex.increment(IndexedType.MAPSQUARE, mapsquare)
+        }
     }
 
     override fun rebuildWorldEntity(message: RebuildWorldEntity) {
+        val world = stateTracker.getWorld(message.index)
+        world.rebuild(CoordGrid(0, (message.baseX - 6) shl 3, (message.baseZ - 6) shl 3))
+
+        val startZoneX = message.baseX - 6
+        val startZoneZ = message.baseZ - 6
+        val mapsquares = mutableSetOf<Int>()
+        for (level in 0..<4) {
+            for (zoneX in startZoneX..(message.baseX + 6)) {
+                for (zoneZ in startZoneZ..(message.baseZ + 6)) {
+                    val block = message.buildArea[level, zoneX - startZoneX, zoneZ - startZoneZ]
+                    // Invalid zone
+                    if (block.mapsquareId == 32767) continue
+                    mapsquares += block.mapsquareId
+                }
+            }
+        }
+        for (mapsquare in mapsquares) {
+            binaryIndex.increment(IndexedType.MAPSQUARE, mapsquare)
+        }
     }
 
     override fun hideLocOps(message: HideLocOps) {
@@ -651,6 +912,7 @@ public class IndexerTranscriber private constructor(
     }
 
     override fun serverTickEnd(message: ServerTickEnd) {
+        stateTracker.incrementCycle()
     }
 
     override fun setHeatmapEnabled(message: SetHeatmapEnabled) {
@@ -675,9 +937,42 @@ public class IndexerTranscriber private constructor(
     }
 
     override fun messageGame(message: MessageGame) {
+        binaryIndex.increment(IndexedType.MESSAGE_GAME, message.message)
     }
 
     override fun runClientScript(message: RunClientScript) {
+        binaryIndex.increment(IndexedType.CLIENTSCRIPTS, message.id)
+        for (i in message.types.indices) {
+            val char = message.types[i]
+            val type =
+                ScriptVarType.entries.first { type ->
+                    type.char == char
+                }
+            if (type == ScriptVarType.STRING) {
+                binaryIndex.increment(IndexedType.TEXT, message.values[i].toString())
+            }
+            if (type.baseVarType != BaseVarType.INTEGER) {
+                continue
+            }
+            val value = message.values[i].toString().toInt()
+            if (value == -1) {
+                continue
+            }
+            val indexedType =
+                when (type) {
+                    ScriptVarType.NPC -> IndexedType.NPC
+                    ScriptVarType.OBJ -> IndexedType.OBJ
+                    ScriptVarType.VERIFY_OBJECT -> IndexedType.OBJ
+                    ScriptVarType.INTERFACE -> IndexedType.INTERFACE
+                    ScriptVarType.SEQ -> IndexedType.SEQ
+                    ScriptVarType.SPOTANIM -> IndexedType.SPOTANIM
+                    ScriptVarType.MIDI -> IndexedType.MIDI
+                    ScriptVarType.SYNTH -> IndexedType.SYNTH
+                    ScriptVarType.JINGLE -> IndexedType.JINGLE
+                    else -> continue
+                }
+            binaryIndex.increment(indexedType, value)
+        }
     }
 
     override fun setMapFlag(message: SetMapFlag) {
@@ -723,113 +1018,520 @@ public class IndexerTranscriber private constructor(
     }
 
     override fun midiJingle(message: MidiJingle) {
+        binaryIndex.increment(IndexedType.JINGLE, message.id)
     }
 
     override fun midiSong(message: MidiSong) {
+        binaryIndex.increment(IndexedType.MIDI, message.id)
     }
 
     override fun midiSongOld(message: MidiSongOld) {
+        binaryIndex.increment(IndexedType.MIDI, message.id)
     }
 
     override fun midiSongStop(message: MidiSongStop) {
     }
 
     override fun midiSongWithSecondary(message: MidiSongWithSecondary) {
+        binaryIndex.increment(IndexedType.MIDI, message.primaryId)
+        binaryIndex.increment(IndexedType.MIDI, message.secondaryId)
     }
 
     override fun midiSwap(message: MidiSwap) {
     }
 
     override fun synthSound(message: SynthSound) {
+        binaryIndex.increment(IndexedType.SYNTH, message.id)
     }
 
     override fun locAnimSpecific(message: LocAnimSpecific) {
+        binaryIndex.increment(IndexedType.SEQ, message.id)
     }
 
     override fun mapAnimSpecific(message: MapAnimSpecific) {
+        appendCheckedSpotanim(message.id)
     }
 
     override fun npcAnimSpecific(message: NpcAnimSpecific) {
+        binaryIndex.increment(IndexedType.SEQ, message.id)
+        val npc = getNpcInAnyWorld(message.index) ?: return
+        binaryIndex.increment(IndexedType.NPC, npc.id)
     }
 
     override fun npcHeadIconSpecific(message: NpcHeadIconSpecific) {
+        val npc = getNpcInAnyWorld(message.index) ?: return
+        binaryIndex.increment(IndexedType.NPC, npc.id)
     }
 
     override fun npcSpotAnimSpecific(message: NpcSpotAnimSpecific) {
+        appendCheckedSpotanim(message.id)
+        val npc = getNpcInAnyWorld(message.index) ?: return
+        binaryIndex.increment(IndexedType.NPC, npc.id)
     }
 
     override fun playerAnimSpecific(message: PlayerAnimSpecific) {
+        binaryIndex.increment(IndexedType.SEQ, message.id)
     }
 
     override fun playerSpotAnimSpecific(message: PlayerSpotAnimSpecific) {
+        appendCheckedSpotanim(message.id)
     }
 
     override fun projAnimSpecific(message: ProjAnimSpecific) {
+        appendCheckedSpotanim(message.id)
     }
 
     override fun varpLarge(message: VarpLarge) {
+        logVarp(message.id, message.value)
     }
 
     override fun varpReset(message: VarpReset) {
     }
 
     override fun varpSmall(message: VarpSmall) {
+        logVarp(message.id, message.value)
+    }
+
+    private fun getImpactedVarbits(
+        basevar: Int,
+        oldValue: Int,
+        newValue: Int,
+    ): List<VarBitType> {
+        if (!stateTracker.varbitsLoaded()) {
+            stateTracker.associateVarbits(cache.listVarBitTypes())
+        }
+        return stateTracker.getAssociatedVarbits(basevar).filter { type ->
+            val bitcount = (type.endbit - type.startbit) + 1
+            val bitmask = type.bitmask(bitcount)
+            val oldVarbitValue = oldValue ushr type.startbit and bitmask
+            val newVarbitValue = newValue ushr type.startbit and bitmask
+            oldVarbitValue != newVarbitValue
+        }
+    }
+
+    private fun logVarp(
+        id: Int,
+        newValue: Int,
+    ) {
+        val oldValue = stateTracker.getVarp(id)
+        val impactedVarbits = getImpactedVarbits(id, oldValue, newValue)
+        stateTracker.setVarp(id, newValue)
+        // Ignore any varbits and varps set on tick 0
+        if (stateTracker.cycle == lastConnection) {
+            return
+        }
+        binaryIndex.increment(IndexedType.VARP, id)
+        for (bit in impactedVarbits) {
+            binaryIndex.increment(IndexedType.VARBIT, bit.id)
+        }
     }
 
     override fun varpSync(message: VarpSync) {
     }
 
     override fun clearEntities(message: ClearEntities) {
+        stateTracker.destroyDynamicWorlds()
     }
 
     override fun setActiveWorld(message: SetActiveWorld) {
     }
 
     override fun updateZoneFullFollows(message: UpdateZoneFullFollows) {
+        stateTracker.getActiveWorld().setActiveZone(message.zoneX, message.zoneZ, message.level)
     }
 
     override fun updateZonePartialEnclosed(message: UpdateZonePartialEnclosed) {
+        stateTracker.getActiveWorld().setActiveZone(message.zoneX, message.zoneZ, message.level)
+        for (update in message.packets) {
+            when (update) {
+                is LocAddChange -> {
+                    binaryIndex.increment(IndexedType.LOC, update.id)
+                }
+                is LocAnim -> {
+                    binaryIndex.increment(IndexedType.SEQ, update.id)
+                }
+                is LocDel -> {
+                }
+                is LocMerge -> {
+                    binaryIndex.increment(IndexedType.LOC, update.id)
+                }
+                is MapAnim -> {
+                    appendCheckedSpotanim(update.id)
+                }
+                is MapProjAnim -> {
+                    appendCheckedSpotanim(update.id)
+                }
+                is ObjAdd -> {
+                    binaryIndex.increment(IndexedType.OBJ, update.id)
+                }
+                is ObjCount -> {
+                    binaryIndex.increment(IndexedType.OBJ, update.id)
+                }
+                is ObjDel -> {
+                    binaryIndex.increment(IndexedType.OBJ, update.id)
+                }
+                is ObjEnabledOps -> {
+                    binaryIndex.increment(IndexedType.OBJ, update.id)
+                }
+                is SoundArea -> {
+                    binaryIndex.increment(IndexedType.SYNTH, update.id)
+                }
+            }
+        }
     }
 
     override fun updateZonePartialFollows(message: UpdateZonePartialFollows) {
+        stateTracker.getActiveWorld().setActiveZone(message.zoneX, message.zoneZ, message.level)
     }
 
     override fun locAddChange(message: LocAddChange) {
+        binaryIndex.increment(IndexedType.LOC, message.id)
     }
 
     override fun locAnim(message: LocAnim) {
+        binaryIndex.increment(IndexedType.SEQ, message.id)
     }
 
     override fun locDel(message: LocDel) {
     }
 
     override fun locMerge(message: LocMerge) {
+        binaryIndex.increment(IndexedType.LOC, message.id)
     }
 
     override fun mapAnim(message: MapAnim) {
+        appendCheckedSpotanim(message.id)
     }
 
     override fun mapProjAnim(message: MapProjAnim) {
+        appendCheckedSpotanim(message.id)
     }
 
     override fun objAdd(message: ObjAdd) {
+        binaryIndex.increment(IndexedType.OBJ, message.id)
     }
 
     override fun objCount(message: ObjCount) {
+        binaryIndex.increment(IndexedType.OBJ, message.id)
     }
 
     override fun objDel(message: ObjDel) {
+        binaryIndex.increment(IndexedType.OBJ, message.id)
     }
 
     override fun objEnabledOps(message: ObjEnabledOps) {
+        binaryIndex.increment(IndexedType.OBJ, message.id)
     }
 
     override fun soundArea(message: SoundArea) {
+        binaryIndex.increment(IndexedType.SYNTH, message.id)
     }
 
     override fun playerInfo(message: PlayerInfo) {
+        stateTracker.clearTempMoveSpeeds()
+        // Assign the coord and name of each player that is being added
+        preloadPlayerInfo(message)
+
+        for ((_, update) in message.updates) {
+            when (update) {
+                is PlayerUpdateType.LowResolutionToHighResolution -> {
+                    processPlayerExtendedInfo(update.extendedInfo)
+                }
+                is PlayerUpdateType.HighResolutionIdle -> {
+                    processPlayerExtendedInfo(update.extendedInfo)
+                }
+                is PlayerUpdateType.HighResolutionMovement -> {
+                    processPlayerExtendedInfo(update.extendedInfo)
+                }
+                else -> {
+                }
+            }
+        }
+
+        // Update the last known coord and name of each player being processed
+        postPlayerInfo(message)
+    }
+
+    private fun preloadPlayerInfo(message: PlayerInfo) {
+        for ((index, update) in message.updates) {
+            when (update) {
+                is PlayerUpdateType.LowResolutionToHighResolution -> {
+                    val name = loadPlayerName(index, update.extendedInfo)
+                    stateTracker.overridePlayer(Player(index, name, update.coord))
+                    preprocessExtendedInfo(index, update.extendedInfo)
+                }
+                is PlayerUpdateType.HighResolutionIdle -> {
+                    val name = loadPlayerName(index, update.extendedInfo)
+                    val player = stateTracker.getPlayer(index)
+                    stateTracker.overridePlayer(Player(index, name, player.coord))
+                    preprocessExtendedInfo(index, update.extendedInfo)
+                }
+                is PlayerUpdateType.HighResolutionMovement -> {
+                    val name = loadPlayerName(index, update.extendedInfo)
+                    val player = stateTracker.getPlayer(index)
+                    stateTracker.overridePlayer(Player(index, name, player.coord))
+                    preprocessExtendedInfo(index, update.extendedInfo)
+                }
+                else -> {
+                    // No-op, no info to preload
+                }
+            }
+        }
+    }
+
+    private fun preprocessExtendedInfo(
+        index: Int,
+        extendedInfo: List<ExtendedInfo>,
+    ) {
+        val moveSpeed = extendedInfo.firstOfInstanceOfNull<MoveSpeedExtendedInfo>()
+        if (moveSpeed != null) {
+            stateTracker.setCachedMoveSpeed(index, moveSpeed.speed)
+        }
+        val tempMoveSpeed = extendedInfo.firstOfInstanceOfNull<TemporaryMoveSpeedExtendedInfo>()
+        if (tempMoveSpeed != null) {
+            stateTracker.setTempMoveSpeed(index, tempMoveSpeed.speed)
+        }
+        if (index == stateTracker.localPlayerIndex) {
+            val appearance = extendedInfo.firstOfInstanceOfNull<AppearanceExtendedInfo>()
+            if (appearance != null) {
+                monitor.onNameUpdate(appearance.name)
+            }
+        }
+    }
+
+    private fun processPlayerExtendedInfo(infos: List<ExtendedInfo>) {
+        for (info in infos) {
+            when (info) {
+                is ChatExtendedInfo -> {
+                }
+                is FaceAngleExtendedInfo -> {
+                }
+                is MoveSpeedExtendedInfo -> {
+                }
+                is TemporaryMoveSpeedExtendedInfo -> {
+                }
+                is NameExtrasExtendedInfo -> {
+                }
+                is SayExtendedInfo -> {
+                }
+                is SequenceExtendedInfo -> {
+                    binaryIndex.increment(IndexedType.SEQ, info.id)
+                }
+                is ExactMoveExtendedInfo -> {
+                }
+                is HitExtendedInfo -> {
+                }
+                is TintingExtendedInfo -> {
+                }
+                is SpotanimExtendedInfo -> {
+                    for (spotanim in info.spotanims.values) {
+                        appendCheckedSpotanim(spotanim.id)
+                    }
+                }
+                is FacePathingEntityExtendedInfo -> {
+                }
+                is AppearanceExtendedInfo -> {
+                    appendCheckedSeq(info.runAnim)
+                    appendCheckedSeq(info.readyAnim)
+                    appendCheckedSeq(info.turnAnim)
+                    appendCheckedSeq(info.walkAnim)
+                    appendCheckedSeq(info.walkAnimBack)
+                    appendCheckedSeq(info.walkAnimLeft)
+                    appendCheckedSeq(info.walkAnimRight)
+                }
+                else -> error("Unknown extended info: $info")
+            }
+        }
+    }
+
+    private fun appendCheckedSeq(id: Int?) {
+        if (id == null || id == -1 || id == 0xFFFF) {
+            return
+        }
+        binaryIndex.increment(IndexedType.SEQ, id)
+    }
+
+    private fun appendCheckedSpotanim(id: Int?) {
+        if (id == null || id == -1 || id == 0xFFFF) {
+            return
+        }
+        binaryIndex.increment(IndexedType.SPOTANIM, id)
+    }
+
+    private fun postPlayerInfo(message: PlayerInfo) {
+        for ((index, update) in message.updates) {
+            when (update) {
+                is PlayerUpdateType.LowResolutionToHighResolution -> {
+                    val name = loadPlayerName(index, update.extendedInfo)
+                    stateTracker.overridePlayer(Player(index, name, update.coord))
+                }
+                is PlayerUpdateType.HighResolutionIdle -> {
+                    val oldPlayer = stateTracker.getPlayerOrNull(index) ?: return
+                    val name = loadPlayerName(index, update.extendedInfo)
+                    stateTracker.overridePlayer(Player(index, name, oldPlayer.coord))
+                }
+                is PlayerUpdateType.HighResolutionMovement -> {
+                    val name = loadPlayerName(index, update.extendedInfo)
+                    stateTracker.overridePlayer(Player(index, name, update.coord))
+                }
+                else -> {
+                    // No-op, no info to preload
+                }
+            }
+        }
+    }
+
+    private inline fun <reified S> List<*>.firstOfInstanceOfNull(): S? {
+        return firstOrNull { it is S } as? S
+    }
+
+    private fun loadPlayerName(
+        index: Int,
+        extendedInfo: List<ExtendedInfo>,
+    ): String {
+        val appearance =
+            extendedInfo
+                .filterIsInstance<AppearanceExtendedInfo>()
+                .singleOrNull()
+        return appearance?.name
+            ?: stateTracker.getLastKnownPlayerName(index)
+            ?: "null"
     }
 
     override fun npcInfo(message: NpcInfo) {
+        val world = stateTracker.getActiveWorld()
+        prenpcinfo(message)
+        for ((index, update) in message.updates) {
+            when (update) {
+                is NpcUpdateType.Active -> {
+                    processNpcExtendedInfo(update.extendedInfo)
+                }
+                NpcUpdateType.HighResolutionToLowResolution -> {
+                }
+                is NpcUpdateType.LowResolutionToHighResolution -> {
+                    processNpcExtendedInfo(update.extendedInfo)
+                    // Only log the amount of times a npc was added to high res
+                    // Other information isn't very useful and could add bloat to the indexing
+                    val npc = world.getNpcOrNull(index) ?: continue
+                    binaryIndex.increment(IndexedType.NPC, npc.id)
+                }
+                NpcUpdateType.Idle -> {
+                    // noop
+                }
+            }
+        }
+        postnpcinfo(message)
+    }
+
+    private fun prenpcinfo(message: NpcInfo) {
+        val world = stateTracker.getActiveWorld()
+        for ((index, update) in message.updates) {
+            when (update) {
+                is NpcUpdateType.Active -> {
+                }
+                NpcUpdateType.HighResolutionToLowResolution -> {
+                }
+                is NpcUpdateType.LowResolutionToHighResolution -> {
+                    val name = cache.getNpcType(update.id)?.name
+                    world.createNpc(
+                        index,
+                        update.id,
+                        name,
+                        update.spawnCycle,
+                        CoordGrid(update.level, update.x, update.z),
+                    )
+                }
+                NpcUpdateType.Idle -> {
+                    // noop
+                }
+            }
+        }
+    }
+
+    private fun postnpcinfo(message: NpcInfo) {
+        val world = stateTracker.getActiveWorld()
+        for ((index, update) in message.updates) {
+            when (update) {
+                is NpcUpdateType.Active -> {
+                    world.updateNpc(index, CoordGrid(update.level, update.x, update.z))
+                    val blocks = update.extendedInfo.filterIsInstance<TransformationExtendedInfo>()
+                    if (blocks.isNotEmpty()) {
+                        val npc = world.getNpc(index)
+                        val transform = blocks.single()
+                        world.updateNpcName(npc.index, cache.getNpcType(transform.id)?.name)
+                    }
+                }
+                NpcUpdateType.HighResolutionToLowResolution -> {
+                    world.removeNpc(index)
+                }
+                is NpcUpdateType.LowResolutionToHighResolution -> {
+                }
+                NpcUpdateType.Idle -> {
+                    // noop
+                }
+            }
+        }
+    }
+
+    private fun processNpcExtendedInfo(infos: List<ExtendedInfo>) {
+        for (info in infos) {
+            when (info) {
+                is ExactMoveExtendedInfo -> {
+                }
+                is FacePathingEntityExtendedInfo -> {
+                }
+                is HitExtendedInfo -> {
+                }
+                is SayExtendedInfo -> {
+                }
+                is SequenceExtendedInfo -> {
+                    binaryIndex.increment(IndexedType.SEQ, info.id)
+                }
+                is TintingExtendedInfo -> {
+                }
+                is SpotanimExtendedInfo -> {
+                    for (spotanim in info.spotanims.values) {
+                        appendCheckedSpotanim(spotanim.id)
+                    }
+                }
+                is OldSpotanimExtendedInfo -> {
+                    appendCheckedSpotanim(info.id)
+                }
+                is BaseAnimationSetExtendedInfo -> {
+                    appendCheckedSeq(info.turnLeftAnim)
+                    appendCheckedSeq(info.turnRightAnim)
+                    appendCheckedSeq(info.walkAnim)
+                    appendCheckedSeq(info.walkAnimBack)
+                    appendCheckedSeq(info.walkAnimLeft)
+                    appendCheckedSeq(info.walkAnimRight)
+                    appendCheckedSeq(info.runAnim)
+                    appendCheckedSeq(info.runAnimBack)
+                    appendCheckedSeq(info.runAnimLeft)
+                    appendCheckedSeq(info.runAnimRight)
+                    appendCheckedSeq(info.crawlAnim)
+                    appendCheckedSeq(info.crawlAnimBack)
+                    appendCheckedSeq(info.crawlAnimLeft)
+                    appendCheckedSeq(info.crawlAnimRight)
+                    appendCheckedSeq(info.readyAnim)
+                }
+                is BodyCustomisationExtendedInfo -> {
+                }
+                is HeadCustomisationExtendedInfo -> {
+                }
+                is CombatLevelChangeExtendedInfo -> {
+                }
+                is EnabledOpsExtendedInfo -> {
+                }
+                is FaceCoordExtendedInfo -> {
+                }
+                is NameChangeExtendedInfo -> {
+                }
+                is TransformationExtendedInfo -> {
+                    binaryIndex.increment(IndexedType.NPC, info.id)
+                }
+                is HeadIconCustomisationExtendedInfo -> {
+                }
+            }
+        }
     }
 }

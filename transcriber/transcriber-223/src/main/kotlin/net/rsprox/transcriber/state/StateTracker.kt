@@ -40,6 +40,10 @@ public class StateTracker {
         this.root.clear()
     }
 
+    public fun getAllWorlds(): Collection<World> {
+        return worlds.values
+    }
+
     public fun createFakeServerRoot(name: String): RootProperty<*> {
         val property =
             object : RootProperty<Prot> {

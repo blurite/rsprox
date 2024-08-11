@@ -1711,9 +1711,6 @@ public class BaseServerPacketTranscriber(
 
     override fun runClientScript(message: RunClientScript) {
         if (!filters[PropertyFilter.RUNCLIENTSCRIPT]) return omit()
-        if (message.id == 2498 || message.id == 4518 || message.id == 4517 || message.id == 4721) {
-            return omit()
-        }
         root.script("id", message.id)
         if (message.types.isEmpty() || message.values.isEmpty()) {
             return
@@ -2143,7 +2140,6 @@ public class BaseServerPacketTranscriber(
         val oldValue = stateTracker.getVarp(id)
         val impactedVarbits = getImpactedVarbits(id, oldValue, newValue)
         stateTracker.setVarp(id, newValue)
-        if (id == 3079) return omit()
         root.varp("id", id)
         root.int("old", oldValue)
         root.int("new", newValue)
@@ -2168,9 +2164,6 @@ public class BaseServerPacketTranscriber(
         }
         if (impactedVarbits.isNotEmpty()) {
             for (varbit in impactedVarbits) {
-                if (varbit.id == 12391 || varbit.id == 12392) {
-                    continue
-                }
                 val bitcount = (varbit.endbit - varbit.startbit) + 1
                 val bitmask = varbit.bitmask(bitcount)
                 val oldVarbitValue = oldValue ushr varbit.startbit and bitmask
