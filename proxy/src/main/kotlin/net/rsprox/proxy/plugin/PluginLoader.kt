@@ -13,11 +13,12 @@ import net.rsprox.proxy.config.TRANSCRIBERS_DIRECTORY
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.transcriber.TranscriberProvider
 import java.io.File
+import java.io.InputStream
 import java.net.URLClassLoader
 
 public class PluginLoader {
     private val plugins: MutableMap<Int, DecoderPlugin> = mutableMapOf()
-    private val transcribers: MutableMap<Int, TranscriberProvider> = mutableMapOf()
+    private val transcribers: MutableMap<String?, MutableMap<Int, TranscriberProvider>> = mutableMapOf()
 
     public fun loadDecoderPlugins(
         type: String,
@@ -135,21 +136,25 @@ public class PluginLoader {
                 .toFile()
                 .walkTopDown()
                 .filter { it.isFile }
+        val revisions = mutableSetOf<Int>()
         for (file in plugins) {
             try {
                 val match = transcriberRegex.find(file.name) ?: continue
                 val (revisionString, name) = match.destructured
-                loadTranscriberPlugin(cache, file, revisionString.toInt())
+                revisions += revisionString.toInt()
+                loadTranscriberPlugin(file, revisionString.toInt())
             } catch (t: Throwable) {
                 logger.error(t) {
                     "Error loading transcriber $file"
                 }
             }
         }
+        for (rev in revisions) {
+            loadDecoderPlugin(cache, this::class.java.classLoader, rev)
+        }
     }
 
     private fun loadTranscriberPlugin(
-        cache: CacheProvider,
         file: File,
         revision: Int,
     ) {
@@ -159,7 +164,6 @@ public class PluginLoader {
                 arrayOf(file.toURI().toURL()),
                 this::class.java.classLoader,
             )
-        loadDecoderPlugin(cache, loader, revision)
         val scanner = ClassGraph()
         val result =
             scanner
@@ -180,11 +184,33 @@ public class PluginLoader {
         // For now only accept first. In the future, perhaps allow loading multiple from a single jar?
         val clazz = plugin.first().loadClass()
         val instance = clazz.getDeclaredConstructor().newInstance() as TranscriberProvider
-        transcribers[revision] = instance
+        val metainf = loader.getResourceAsStream("TRANSCRIBER-METAINF")
+        transcribers.getOrPut(parseType(metainf), ::mutableMapOf)[revision] = instance
+    }
+
+    private fun parseType(inputStream: InputStream?): String? {
+        if (inputStream == null) {
+            return null
+        }
+        val lines = inputStream.reader(Charsets.UTF_8).readLines()
+        val type = lines.firstOrNull { it.startsWith("type=") } ?: return null
+        return type.substringAfter("type=")
     }
 
     public fun getTranscriberProvider(revision: Int): TranscriberProvider {
-        return transcribers.getValue(revision)
+        val customTranscriber = transcribers[null]?.get(revision)
+        if (customTranscriber != null) {
+            return customTranscriber
+        }
+        return transcribers
+            .getValue("base")
+            .getValue(revision)
+    }
+
+    public fun getIndexerProvider(revision: Int): TranscriberProvider {
+        return transcribers
+            .getValue("indexer")
+            .getValue(revision)
     }
 
     private companion object {

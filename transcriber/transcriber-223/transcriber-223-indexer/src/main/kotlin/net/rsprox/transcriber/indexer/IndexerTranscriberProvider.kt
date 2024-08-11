@@ -1,19 +1,16 @@
-package net.rsprox.transcriber.base
+package net.rsprox.transcriber.indexer
 
 import net.rsprox.cache.api.CacheProvider
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.indexing.BinaryIndex
-import net.rsprox.shared.property.OmitFilteredPropertyTreeFormatter
-import net.rsprox.shared.property.PropertyFormatterCollection
-import net.rsprox.shared.symbols.SymbolDictionaryProvider
 import net.rsprox.transcriber.BaseMessageConsumerContainer
 import net.rsprox.transcriber.TranscriberPlugin
 import net.rsprox.transcriber.TranscriberProvider
 import net.rsprox.transcriber.TranscriberRunner
 import net.rsprox.transcriber.state.StateTracker
 
-public class BaseTranscriberProvider : TranscriberProvider {
+public class IndexerTranscriberProvider : TranscriberProvider {
     override fun provide(
         container: BaseMessageConsumerContainer,
         cacheProvider: CacheProvider,
@@ -21,23 +18,13 @@ public class BaseTranscriberProvider : TranscriberProvider {
         filters: PropertyFilterSetStore,
         binaryIndex: BinaryIndex,
     ): TranscriberRunner {
-        val dictionary = SymbolDictionaryProvider.get()
         val stateTracker = StateTracker()
-        val formatter =
-            OmitFilteredPropertyTreeFormatter(
-                PropertyFormatterCollection.default(
-                    dictionary,
-                ),
-            )
-        val monitoredContainer = MonitoredMessageConsumerContainer(container, monitor)
         return TranscriberPlugin(
-            BaseTranscriber(
+            IndexerTranscriber(
                 cacheProvider,
                 monitor,
                 stateTracker,
-                monitoredContainer,
-                formatter,
-                filters,
+                binaryIndex,
             ),
         )
     }

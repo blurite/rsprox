@@ -72,6 +72,13 @@ tasks.create<JavaExec>("transcribe") {
     mainClass.set("net.rsprox.proxy.cli.TranscribeCommandKt")
 }
 
+tasks.create<JavaExec>("index") {
+    environment("APP_VERSION", project.version)
+    group = "run"
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("net.rsprox.proxy.cli.IndexerCommandKt")
+}
+
 // fixes some weird error with "Entry classpath.index is a duplicate but no duplicate handling strategy has been set"
 // see https://github.com/gradle/gradle/issues/17236
 gradle.taskGraph.whenReady {

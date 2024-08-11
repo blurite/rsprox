@@ -15,12 +15,9 @@ import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.util.NopSessionMonitor
 import net.rsprox.shared.StreamDirection
-import net.rsprox.shared.indexing.NopBinaryIndex
-import net.rsprox.shared.property.PropertyTreeFormatter
-import net.rsprox.shared.property.RootProperty
+import net.rsprox.shared.indexing.MultiMapBinaryIndex
 import net.rsprox.transcriber.BaseMessageConsumerContainer
-import net.rsprox.transcriber.MessageConsumer
-import java.io.BufferedWriter
+import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Locale
 import kotlin.io.path.bufferedWriter
@@ -29,7 +26,7 @@ import kotlin.io.path.nameWithoutExtension
 import kotlin.time.measureTime
 
 @Suppress("DuplicatedCode")
-public class TranscribeCommand : CliktCommand(name = "transcribe") {
+public class IndexerCommand : CliktCommand(name = "index") {
     private val name by option("-name")
 
     override fun run() {
@@ -50,7 +47,7 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
                 measureTime {
                     stdoutTranscribe(file, pluginLoader, provider)
                 }
-            logger.debug { "$file took $time to transcribe." }
+            logger.debug { "$file took $time to index." }
         } else {
             val fileTreeWalk =
                 BINARY_PATH
@@ -62,7 +59,7 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
                     measureTime {
                         stdoutTranscribe(bin.toPath(), pluginLoader, provider)
                     }
-                logger.debug { "${bin.name} took $time to transcribe." }
+                logger.debug { "${bin.name} took $time to index." }
             }
         }
     }
@@ -81,78 +78,57 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
             ),
         )
         val latestPlugin = pluginLoader.getPlugin(binary.header.revision)
-        val transcriberProvider = pluginLoader.getTranscriberProvider(binary.header.revision)
+        val transcriberProvider = pluginLoader.getIndexerProvider(binary.header.revision)
         val session = DecodingSession(binary, latestPlugin)
-        val writer = binaryPath.parent.resolve(binaryPath.nameWithoutExtension + ".txt").bufferedWriter()
-        val consumers = BaseMessageConsumerContainer(listOf(createBufferedWriterConsumer(writer)))
+        val folder = binaryPath.parent.resolve("indexed")
+        Files.createDirectories(folder)
+        val consumers = BaseMessageConsumerContainer(emptyList())
+        val index = MultiMapBinaryIndex()
         val runner =
             transcriberProvider.provide(
                 consumers,
                 statefulCacheProvider,
                 NopSessionMonitor,
                 filters,
-                NopBinaryIndex,
+                index,
             )
 
-        writer.appendLine("------------------")
-        writer.appendLine("Header information")
-        writer.appendLine("version: ${binary.header.revision}.${binary.header.subRevision}")
-        writer.appendLine("client type: ${binary.header.clientType}")
-        writer.appendLine("platform type: ${binary.header.platformType}")
-        writer.appendLine(
-            "world: ${binary.header.worldId}, host: ${binary.header.worldHost}, " +
-                "flags: ${binary.header.worldFlags}, location: ${binary.header.worldLocation}, " +
-                "activity: ${binary.header.worldActivity}",
-        )
-        writer.appendLine("local player index: ${binary.header.localPlayerIndex}")
-        writer.appendLine("-------------------")
+        folder.resolve(binaryPath.nameWithoutExtension + ".txt").bufferedWriter().use { writer ->
+            writer.appendLine("------------------")
+            writer.appendLine("Header information")
+            writer.appendLine("version: ${binary.header.revision}.${binary.header.subRevision}")
+            writer.appendLine("client type: ${binary.header.clientType}")
+            writer.appendLine("platform type: ${binary.header.platformType}")
+            writer.appendLine(
+                "world: ${binary.header.worldId}, host: ${binary.header.worldHost}, " +
+                    "flags: ${binary.header.worldFlags}, location: ${binary.header.worldLocation}, " +
+                    "activity: ${binary.header.worldActivity}",
+            )
+            writer.appendLine("local player index: ${binary.header.localPlayerIndex}")
+            writer.appendLine("-------------------")
 
-        for ((direction, prot, packet) in session.sequence()) {
-            try {
-                when (direction) {
-                    StreamDirection.CLIENT_TO_SERVER -> {
-                        runner.onClientProt(prot, packet)
+            for ((direction, prot, packet) in session.sequence()) {
+                try {
+                    when (direction) {
+                        StreamDirection.CLIENT_TO_SERVER -> {
+                            runner.onClientProt(prot, packet)
+                        }
+                        StreamDirection.SERVER_TO_CLIENT -> {
+                            runner.onServerPacket(prot, packet)
+                        }
                     }
-                    StreamDirection.SERVER_TO_CLIENT -> {
-                        runner.onServerPacket(prot, packet)
-                    }
-                }
-            } catch (t: NotImplementedError) {
-                continue
-            }
-        }
-        consumers.close()
-    }
-
-    private fun createBufferedWriterConsumer(writer: BufferedWriter): MessageConsumer {
-        return object : MessageConsumer {
-            var lastCycle = -1
-
-            override fun consume(
-                formatter: PropertyTreeFormatter,
-                cycle: Int,
-                property: RootProperty<*>,
-            ) {
-                if (cycle != lastCycle) {
-                    if (lastCycle != -1) {
-                        writer.newLine()
-                    }
-                    lastCycle = cycle
-                    writer.write("[$cycle]")
-                    writer.newLine()
-                }
-                val result = formatter.format(property)
-                for (line in result) {
-                    // Add four space indentation due to the cycle header
-                    writer.write("    ")
-                    writer.write(line)
-                    writer.newLine()
+                } catch (t: NotImplementedError) {
+                    continue
                 }
             }
+            consumers.close()
 
-            override fun close() {
-                writer.flush()
-                writer.close()
+            val results = index.results()
+            for ((type, counts) in results) {
+                writer.appendLine("Indexing results for $type:")
+                for ((key, count) in counts) {
+                    writer.appendLine("    $key = $count")
+                }
             }
         }
     }

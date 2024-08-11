@@ -22,6 +22,7 @@ import net.rsprox.proxy.util.NopSessionMonitor
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.filters.PropertyFilterSetStore
+import net.rsprox.shared.indexing.NopBinaryIndex
 import net.rsprox.transcriber.BaseMessageConsumerContainer
 import java.net.URL
 import java.nio.file.Files
@@ -229,6 +230,7 @@ public data class BinaryBlob(
                     provider,
                     monitor,
                     filters,
+                    NopBinaryIndex,
                 )
             this.liveSession =
                 LiveTranscriberSession(

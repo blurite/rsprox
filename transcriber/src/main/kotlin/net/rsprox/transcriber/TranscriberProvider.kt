@@ -3,6 +3,7 @@ package net.rsprox.transcriber
 import net.rsprox.cache.api.CacheProvider
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.filters.PropertyFilterSetStore
+import net.rsprox.shared.indexing.BinaryIndex
 
 public fun interface TranscriberProvider {
     public fun provide(
@@ -10,5 +11,6 @@ public fun interface TranscriberProvider {
         cacheProvider: CacheProvider,
         monitor: SessionMonitor<*>,
         filters: PropertyFilterSetStore,
+        binaryIndex: BinaryIndex,
     ): TranscriberRunner
 }
