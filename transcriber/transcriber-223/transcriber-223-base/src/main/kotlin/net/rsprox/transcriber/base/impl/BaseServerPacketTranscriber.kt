@@ -939,6 +939,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun ifOpenSub(message: IfOpenSub) {
+        stateTracker.openInterface(message.interfaceId, message.destinationCombinedId)
         if (!filters[PropertyFilter.IF_OPENSUB]) return omit()
         root.com(message.destinationInterfaceId, message.destinationComponentId)
         root.inter(message.interfaceId)
