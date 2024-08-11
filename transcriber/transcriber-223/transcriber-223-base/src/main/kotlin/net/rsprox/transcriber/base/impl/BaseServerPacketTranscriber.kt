@@ -1405,7 +1405,7 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun rebuildWorldEntity(message: RebuildWorldEntity) {
-        val world = stateTracker.getWorld(-1)
+        val world = stateTracker.getWorld(message.index)
         world.rebuild(CoordGrid(0, (message.baseX - 6) shl 3, (message.baseZ - 6) shl 3))
         if (!filters[PropertyFilter.REBUILD]) return omit()
         root.worldentity(message.index)
