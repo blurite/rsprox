@@ -584,15 +584,6 @@ public class ProxyService(
         }
     }
 
-    private fun loadJavConfig(): JavConfig {
-        val url = "http://oldschool.runescape.com/jav_config.ws"
-        return runCatching("Failed to load jav_config.ws from $url") {
-            val config = JavConfig(URL(url))
-            logger.debug { "Jav config loaded from $url" }
-            config
-        }
-    }
-
     private fun loadWorldListProvider(url: String): WorldListProvider {
         return runCatching("Failed to instantiate world list provider") {
             val provider =
@@ -689,22 +680,31 @@ public class ProxyService(
         logger.debug { "Proxy server bound to port $port" }
     }
 
-    private inline fun <T> runCatching(
-        errorMessage: String,
-        block: () -> T,
-    ): T {
-        try {
-            return block()
-        } catch (t: Throwable) {
-            logger.error(t) {
-                errorMessage
-            }
-            exitProcess(-1)
-        }
-    }
-
     public companion object {
         private val logger = InlineLogger()
         private val PROPERTIES_FILE = CONFIGURATION_PATH.resolve("proxy.properties")
+
+        public fun loadJavConfig(): JavConfig {
+            val url = "http://oldschool.runescape.com/jav_config.ws"
+            return runCatching("Failed to load jav_config.ws from $url") {
+                val config = JavConfig(URL(url))
+                logger.debug { "Jav config loaded from $url" }
+                config
+            }
+        }
+
+        private inline fun <T> runCatching(
+            errorMessage: String,
+            block: () -> T,
+        ): T {
+            try {
+                return block()
+            } catch (t: Throwable) {
+                logger.error(t) {
+                    errorMessage
+                }
+                exitProcess(-1)
+            }
+        }
     }
 }

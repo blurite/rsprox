@@ -13,8 +13,8 @@ import net.rsprox.cache.live.LiveConnectionInfo
 import net.rsprox.cache.resolver.LiveCacheResolver
 import net.rsprox.protocol.session.AttributeMap
 import net.rsprox.protocol.session.Session
+import net.rsprox.proxy.ProxyService.Companion.loadJavConfig
 import net.rsprox.proxy.config.BINARY_PATH
-import net.rsprox.proxy.config.JavConfig
 import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.transcriber.LiveTranscriberSession
@@ -24,7 +24,6 @@ import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.indexing.NopBinaryIndex
 import net.rsprox.transcriber.BaseMessageConsumerContainer
-import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
@@ -167,15 +166,6 @@ public data class BinaryBlob(
         }
     }
 
-    private fun loadJavConfig(): JavConfig? {
-        val url = "https://oldschool.runescape.com/jav_config.ws"
-        return runCatching {
-            val config = JavConfig(URL(url))
-            logger.debug { "Jav config loaded from $url" }
-            config
-        }.getOrNull()
-    }
-
     public fun hookLiveTranscriber(
         key: XteaKey,
         pluginLoader: PluginLoader,
@@ -195,11 +185,10 @@ public data class BinaryBlob(
             val javConfig = loadJavConfig()
             val host =
                 javConfig
-                    ?.getCodebase()
-                    ?.removePrefix("http://")
-                    ?.removePrefix("https://")
-                    ?.removeSuffix("/")
-                    ?: "oldschool67.runescape.com"
+                    .getCodebase()
+                    .removePrefix("http://")
+                    .removePrefix("https://")
+                    .removeSuffix("/")
             val info =
                 LiveConnectionInfo(
                     host,
