@@ -38,7 +38,12 @@ public class NativePatcher {
         }
 
         for (patternString in criteria.patternStrings) {
-            priorityProcessors += patternString.priority to PatternStringSliceProcessor(client, patternString)
+            priorityProcessors += patternString.priority to
+                PatternStringSliceProcessor(
+                    client,
+                    criteria.type,
+                    patternString,
+                )
         }
 
         for (sequence in criteria.bytePatternSlices) {

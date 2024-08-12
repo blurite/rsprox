@@ -13,7 +13,7 @@ import java.util.zip.GZIPInputStream
 import kotlin.io.path.exists
 import kotlin.io.path.readText
 
-public data object NativeClientDownloader {
+public data object JagexNativeClientDownloader {
     private val logger = InlineLogger()
 
     @OptIn(ExperimentalStdlibApi::class)

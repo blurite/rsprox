@@ -25,24 +25,15 @@ public data class NativePatchCriteria(
             val replacementPort = intToHexStringLE(port)
             when (type) {
                 NativeClientType.WIN -> {
-                    // JS5 port starts with the 'ecx' instruction, followed by 4 bytes for the 32-bit const
                     wildcardByteSequence(
-                        hexPattern("${ECX}$originalPort"),
-                        hexPattern("${ECX}$replacementPort"),
+                        hexPattern(originalPort),
+                        hexPattern(replacementPort),
                         FailureBehaviour.ERROR,
-                        DuplicateReplacementBehaviour.ERROR_ON_DUPLICATES,
-                    )
-                    // Game port starts with the 'eax' instruction, followed by 4 bytes for the 32-bit const
-                    wildcardByteSequence(
-                        hexPattern("${EAX}$originalPort"),
-                        hexPattern("${EAX}$replacementPort"),
-                        FailureBehaviour.ERROR,
-                        DuplicateReplacementBehaviour.ERROR_ON_DUPLICATES,
+                        DuplicateReplacementBehaviour.REPLACE_ALL_OCCURRENCES,
                     )
                 }
 
                 NativeClientType.MAC -> {
-                    // Macs only have a single port constant, starting with the opcode 0xBE
                     wildcardByteSequence(
                         hexPattern("BE$originalPort"),
                         hexPattern("BE$replacementPort"),
@@ -55,12 +46,43 @@ public data class NativePatchCriteria(
         }
 
         public fun acceptAllLoopbackAddresses(): Builder {
-            constString(
-                "/127.0.0.1",
-                "/127.",
-                FailureBehaviour.ERROR,
-                DuplicateReplacementBehaviour.ERROR_ON_DUPLICATES,
-            )
+            when (type) {
+                NativeClientType.WIN -> {
+                    constString(
+                        "127.0.0.1",
+                        "127.",
+                        FailureBehaviour.ERROR,
+                        DuplicateReplacementBehaviour.ERROR_ON_DUPLICATES,
+                    )
+                }
+                NativeClientType.MAC -> {
+                    wildcardByteSequence(
+                        hexPattern("0F85????????E9????????4C3B????0F84????????49"),
+                        hexPattern("0F84????????E9????????4C3B????0F84????????49"),
+                    )
+                }
+            }
+            return this
+        }
+
+        public fun acceptAllHosts(): Builder {
+            when (type) {
+                NativeClientType.WIN -> {
+                    constString(
+                        "127.0.0.1",
+                        "",
+                        FailureBehaviour.ERROR,
+                        DuplicateReplacementBehaviour.ERROR_ON_DUPLICATES,
+                    )
+                }
+                NativeClientType.MAC -> {
+                    wildcardByteSequence(
+                        hexPattern("0F85????????E9????????4C3B????0F84????????49"),
+                        hexPattern("0F84????????E9????????4C3B????0F84????????49"),
+                        priority = HIGH_PRIORITY,
+                    )
+                }
+            }
             return this
         }
 
@@ -86,9 +108,12 @@ public data class NativePatchCriteria(
             return this
         }
 
-        public fun varpCount(count: Int): Builder {
-            val input = intToHexStringLE(5000)
-            val replacement = intToHexStringLE(count)
+        public fun varpCount(
+            expectedVarpCount: Int,
+            replacementVarpCount: Int,
+        ): Builder {
+            val input = intToHexStringLE(expectedVarpCount)
+            val replacement = intToHexStringLE(replacementVarpCount)
             wildcardByteSequence(
                 hexPattern("BA${input}E8"),
                 hexPattern("BA${replacement}E8"),
@@ -235,8 +260,6 @@ public data class NativePatchCriteria(
         public const val LOW_PRIORITY: Int = 0
         private const val DEFAULT_PORT: Int = 43594
         private const val OSRS_MODULUS_LEN: Int = 256
-        private const val ECX: String = "B9"
-        private const val EAX: String = "B8"
         private const val DEFAULT_JAVCONFIG_URL: String = "http://oldschool.runescape.com/jav_config.ws?m=0"
         private const val DEFAULT_WORLDLIST_URL: String = "https://oldschool.runescape.com/slr.ws?order=LPWM"
 

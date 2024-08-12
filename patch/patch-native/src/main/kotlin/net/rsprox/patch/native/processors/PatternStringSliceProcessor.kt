@@ -1,6 +1,7 @@
 package net.rsprox.patch.native.processors
 
 import com.github.michaelbull.logging.InlineLogger
+import net.rsprox.patch.NativeClientType
 import net.rsprox.patch.native.Client
 import net.rsprox.patch.native.DuplicateReplacementBehaviour
 import net.rsprox.patch.native.FailureBehaviour
@@ -10,6 +11,7 @@ import net.rsprox.patch.native.processors.utils.indexOf
 @Suppress("DuplicatedCode")
 public class PatternStringSliceProcessor(
     private val client: Client,
+    private val nativeClientType: NativeClientType,
     private val slice: PatternStringSlice,
 ) : ClientProcessor<List<String>> {
     override fun process(): List<String> {
@@ -61,8 +63,8 @@ public class PatternStringSliceProcessor(
             if (index == -1) {
                 throw IllegalStateException("Unexpected error")
             }
-            val range = index..<index + (result.value.length)
-            val bytes = client.bytes.sliceArray(range)
+            val rangeWithTerminators = index..<index + (result.value.length)
+            val bytes = client.bytes.sliceArray(rangeWithTerminators)
             val text = bytes.toString(Charsets.UTF_8)
             val replaced = text.replace(pattern, slice.replacement)
             logger.info {
@@ -70,7 +72,17 @@ public class PatternStringSliceProcessor(
             }
             val replacementBytes = replaced.toByteArray(Charsets.UTF_8)
             for (i in replacementBytes.indices) {
-                client.bytes[range.first + i] = replacementBytes[i]
+                client.bytes[rangeWithTerminators.first + i] = replacementBytes[i]
+            }
+            // Native client will break if strings aren't the same length
+            // This appears to be due to how the string implementation under the hood works,
+            // where it joins multiple smaller char arrays together to build strings.
+            // If there are any unexpected terminators, there's a chance it will crash.
+            // (Above explanation is a rough guess at what goes on - no guarantees)
+            if (nativeClientType == NativeClientType.MAC) {
+                for (i in replacementBytes.indices.last..<bytes.size - 1) {
+                    client.bytes[rangeWithTerminators.first + i] = ' '.code.toByte()
+                }
             }
             text
         }

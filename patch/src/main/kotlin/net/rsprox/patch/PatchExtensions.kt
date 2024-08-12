@@ -57,12 +57,12 @@ public fun findBoyerMooreIgnoreNulls(
     val m = pattern.size
     if (m == 0) return 0
     val last =
-        IntArray(256) {
+        IntArray(257) {
             -1
         }
     for (i in 0 until m) {
-        val byte = pattern[i] ?: continue
-        last[byte.toInt() and 0xFF] = i
+        val byte = pattern[i]
+        last[(byte?.toInt() ?: 256) and 0xFF] = i
     }
     var i = offset + m - 1
     var k = m - 1

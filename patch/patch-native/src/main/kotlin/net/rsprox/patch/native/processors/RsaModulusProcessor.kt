@@ -16,7 +16,7 @@ internal class RsaModulusProcessor(
             throw IllegalStateException("Unable to locate exponent 10001")
         }
         val sliceIndices =
-            client.bytes.firstSliceIndices(index + 5) { byte ->
+            client.bytes.firstSliceIndices(index + 5, 256) { byte ->
                 isHex(byte.toInt().toChar())
             }
         val slice = client.bytes.sliceArray(sliceIndices)
@@ -42,28 +42,35 @@ internal class RsaModulusProcessor(
 
     private fun ByteArray.firstSliceIndices(
         startIndex: Int,
+        length: Int = -1,
         condition: (Byte) -> Boolean,
     ): IntRange {
         var start = startIndex
         val size = this.size
-        // First locate the starting index where a byte is being accepted
-        while (start < size) {
-            val byte = this[start]
-            if (condition(byte)) {
-                break
+        while (true) {
+            // First locate the starting index where a byte is being accepted
+            while (start < size) {
+                val byte = this[start]
+                if (condition(byte)) {
+                    break
+                }
+                start++
             }
-            start++
-        }
-        var end = start + 1
-        // Now find the end index where a byte is not being accepted
-        while (end < size) {
-            val byte = this[end]
-            if (!condition(byte)) {
-                break
+            var end = start + 1
+            // Now find the end index where a byte is not being accepted
+            while (end < size) {
+                val byte = this[end]
+                if (!condition(byte)) {
+                    break
+                }
+                end++
             }
-            end++
+            if (length != -1 && end - start < length) {
+                start = end
+                continue
+            }
+            return start..<end
         }
-        return start..<end
     }
 
     private fun isHex(char: Char): Boolean {

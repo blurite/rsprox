@@ -42,7 +42,7 @@ import net.rsprox.proxy.config.TEMP_CLIENTS_DIRECTORY
 import net.rsprox.proxy.config.registerConnection
 import net.rsprox.proxy.connection.ClientTypeDictionary
 import net.rsprox.proxy.connection.ProxyConnectionContainer
-import net.rsprox.proxy.downloader.NativeClientDownloader
+import net.rsprox.proxy.downloader.JagexNativeClientDownloader
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.futures.asCompletableFuture
 import net.rsprox.proxy.huffman.HuffmanProvider
@@ -393,7 +393,7 @@ public class ProxyService(
                 OperatingSystem.MAC -> NativeClientType.MAC
                 else -> throw IllegalStateException()
             }
-        val binary = NativeClientDownloader.download(nativeClientType)
+        val binary = JagexNativeClientDownloader.download(nativeClientType)
         val extension = if (binary.extension.isNotEmpty()) ".${binary.extension}" else ""
         val stamp = System.currentTimeMillis()
         val patched = TEMP_CLIENTS_DIRECTORY.resolve("${binary.nameWithoutExtension}-$stamp$extension")

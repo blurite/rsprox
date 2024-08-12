@@ -4,7 +4,7 @@ import com.github.ajalt.clikt.completion.CompletionCandidates
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
 import net.rsprox.patch.NativeClientType
-import net.rsprox.proxy.downloader.NativeClientDownloader
+import net.rsprox.proxy.downloader.JagexNativeClientDownloader
 
 public class ClientDownloadCommand : CliktCommand(name = "download") {
     private val type by argument(
@@ -20,10 +20,10 @@ public class ClientDownloadCommand : CliktCommand(name = "download") {
     override fun run() {
         when (type) {
             "native-win" -> {
-                NativeClientDownloader.download(NativeClientType.WIN)
+                JagexNativeClientDownloader.download(NativeClientType.WIN)
             }
             "native-mac" -> {
-                NativeClientDownloader.download(NativeClientType.MAC)
+                JagexNativeClientDownloader.download(NativeClientType.MAC)
             }
             else -> {
                 echo("Invalid type provided: $type")
