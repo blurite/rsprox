@@ -19,7 +19,7 @@ public class StateTracker {
     public var localPlayerIndex: Int = -1
     private val openInterfaces: MutableMap<CombinedId, Int> = mutableMapOf()
     public var toplevelInterface: Int = -1
-    private val cachedVarps: IntArray = IntArray(10_000)
+    private val cachedVarps: IntArray = IntArray(15_000)
     private lateinit var varpToVarbitsMap: Map<Int, List<VarBitType>>
     public var root: MutableList<RootProperty<*>> = mutableListOf()
     private val cachedMoveSpeeds: IntArray =
