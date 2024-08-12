@@ -5,6 +5,7 @@ import jdk.security.jarsigner.JarSigner
 import net.lingala.zip4j.ZipFile
 import net.rsprox.patch.PatchResult
 import net.rsprox.patch.Patcher
+import net.rsprox.patch.findBoyerMoore
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.LinkOption
@@ -523,24 +524,7 @@ public class RuneLitePatcher : Patcher<Unit> {
         require(startIndex >= 0) {
             "Start index is negative"
         }
-        var matchOffset = 0
-        var start = startIndex
-        var offset = startIndex
-        val size = size
-        while (offset < size) {
-            if (this[offset] == search[matchOffset]) {
-                if (matchOffset++ == 0) {
-                    start = offset
-                }
-                if (matchOffset == search.size) {
-                    return start
-                }
-            } else {
-                matchOffset = 0
-            }
-            offset++
-        }
-        return -1
+        return findBoyerMoore(this, search, startIndex)
     }
 
     private fun isHex(char: Char): Boolean {
