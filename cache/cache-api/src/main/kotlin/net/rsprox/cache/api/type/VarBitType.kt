@@ -11,6 +11,12 @@ public interface VarBitType {
         return BITMASKS[bitcount]
     }
 
+    public fun extract(packedInteger: Int): Int {
+        val bitcount = (endbit - startbit) + 1
+        val bitmask = bitmask(bitcount)
+        return packedInteger ushr startbit and bitmask
+    }
+
     private companion object {
         private val BITMASKS: IntArray = generateBitmasks()
 

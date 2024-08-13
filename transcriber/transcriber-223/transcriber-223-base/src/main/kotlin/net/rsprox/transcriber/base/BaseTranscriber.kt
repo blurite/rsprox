@@ -29,6 +29,7 @@ public class BaseTranscriber private constructor(
 ) : Transcriber,
     ClientPacketTranscriber by BaseClientPacketTranscriber(
         stateTracker,
+        cacheProvider.get(),
         filterSetStore,
     ),
     ServerPacketTranscriber by BaseServerPacketTranscriber(
@@ -39,6 +40,7 @@ public class BaseTranscriber private constructor(
     PlayerInfoTranscriber by BasePlayerInfoTranscriber(
         stateTracker,
         monitor,
+        cacheProvider.get(),
         filterSetStore,
     ),
     NpcInfoTranscriber by BaseNpcInfoTranscriber(

@@ -3,6 +3,8 @@ package net.rsprox.transcriber.state
 import net.rsprot.protocol.Prot
 import net.rsprot.protocol.ServerProt
 import net.rsprot.protocol.util.CombinedId
+import net.rsprox.cache.api.Cache
+import net.rsprox.cache.api.type.NpcType
 import net.rsprox.cache.api.type.VarBitType
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.shared.property.ChildProperty
@@ -162,6 +164,11 @@ public class StateTracker {
         cachedVarps[id] = value
     }
 
+    public fun getVarBit(varBit: VarBitType): Int {
+        val varpValue = getVarp(varBit.basevar)
+        return varBit.extract(varpValue)
+    }
+
     public fun varbitsLoaded(): Boolean {
         return this::varpToVarbitsMap.isInitialized
     }
@@ -199,6 +206,31 @@ public class StateTracker {
     public fun getMoveSpeed(index: Int): Int {
         return tempMoveSpeeds[index] ?: cachedMoveSpeeds[index]
     }
+
+    public fun resolveMultinpc(baseId: Int, cache: Cache): NpcType? =
+        cache.getNpcType(baseId)?.resolveMultinpc(cache)
+
+    private fun NpcType.resolveMultinpc(cache: Cache): NpcType? =
+        when {
+            multivar in 1..<65535 -> {
+                val state = getVarp(multivar)
+                val multi = multinpc.getOrNull(state) ?: multinpc.last()
+                cache.getNpcType(multi)
+            }
+
+            multivarbit in 1..<65535 -> {
+                val varBit = cache.getVarBitType(multivarbit)
+                if (varBit == null) {
+                    null
+                } else {
+                    val state = getVarBit(varBit)
+                    val multi = multinpc.getOrNull(state) ?: multinpc.last()
+                    cache.getNpcType(multi)
+                }
+            }
+
+            else -> null
+        }
 
     public companion object {
         public const val ROOT_WORLD: Int = -1
