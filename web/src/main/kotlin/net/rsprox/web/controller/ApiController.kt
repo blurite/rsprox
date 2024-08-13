@@ -10,7 +10,10 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
+import java.nio.file.AtomicMoveNotSupportedException
+import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 import java.util.*
 
 @RestController
@@ -60,7 +63,13 @@ public class ApiController(
         ).let { repo.save(it) }
 
         runCatching {
-            file.transferTo(Path.of(props.uploadDir, "${submission.id}.$FILE_EXTENSION"))
+            val p = Path.of(props.uploadDir, "${submission.id}.tmp")
+            file.transferTo(p)
+            try {
+                Files.move(p, Path.of(props.uploadDir, "${submission.id}.bin"), StandardCopyOption.ATOMIC_MOVE)
+            } catch (e: AtomicMoveNotSupportedException) {
+                Files.move(p, Path.of(props.uploadDir, "${submission.id}.bin"))
+            }
         }.onFailure {
             log.error { "Failed to save file: ${it.message}" }
             return Result.failure(ResultMessage.FAILURE_TO_SAVE)
