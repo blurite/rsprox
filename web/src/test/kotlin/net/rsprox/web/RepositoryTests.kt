@@ -21,6 +21,7 @@ class RepositoryTests @Autowired constructor(
             processed = false,
             delayed = false,
             accountHash = "hash",
+            fileChecksum = "checksum",
         )
         entityManager.persist(submission)
         entityManager.flush()

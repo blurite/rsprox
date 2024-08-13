@@ -6,6 +6,8 @@ import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.web.ApplicationProperties
 import net.rsprox.web.db.Submission
 import net.rsprox.web.db.SubmissionRepository
+import net.rsprox.web.util.checksum
+import net.rsprox.web.util.toBase64
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -14,7 +16,6 @@ import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
-import java.util.*
 
 @RestController
 public class ApiController(
@@ -43,6 +44,12 @@ public class ApiController(
     }
 
     private fun processFile(file: MultipartFile, delayed: Boolean): Result {
+        val checksum = file.bytes.checksum()
+
+        repo.findByFileChecksum(checksum)?.let {
+            return Result.failure(ResultMessage.DUPLICATE)
+        }
+
         val blobResult = runCatching {
             BinaryBlob.decode(
                 file.bytes, DefaultPropertyFilterSetStore(
@@ -59,7 +66,8 @@ public class ApiController(
 
         val submission = Submission(
             delayed = delayed,
-            accountHash = Base64.getEncoder().encodeToString(blob.header.accountHash)
+            accountHash = blob.header.accountHash.toBase64(),
+            fileChecksum = checksum
         ).let { repo.save(it) }
 
         runCatching {
@@ -94,7 +102,8 @@ public class ApiController(
         FILE_TOO_LARGE,
         FILE_CONTENT_TYPE_INVALID,
         FAILURE_TO_DECODE,
-        FAILURE_TO_SAVE
+        FAILURE_TO_SAVE,
+        DUPLICATE,
     }
 
     private companion object {

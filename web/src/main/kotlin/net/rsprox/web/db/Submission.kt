@@ -12,5 +12,6 @@ public data class Submission(
     public var createdAt: LocalDateTime = LocalDateTime.now(),
     public var processed: Boolean = false,
     public var delayed: Boolean,
-    public var accountHash: String
+    public var accountHash: String,
+    public var fileChecksum: String
 )

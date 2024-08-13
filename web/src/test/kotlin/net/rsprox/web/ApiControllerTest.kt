@@ -3,6 +3,8 @@ package net.rsprox.web
 import net.rsprox.web.controller.ApiController
 import net.rsprox.web.db.Submission
 import net.rsprox.web.db.SubmissionRepository
+import net.rsprox.web.util.checksum
+import net.rsprox.web.util.toBase64
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -23,7 +25,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.util.unit.DataSize
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.*
 
 @ExtendWith(SpringExtension::class)
 @SpringBootTest
@@ -111,18 +112,11 @@ class ApiControllerTest {
     }
 
     @Test
-    fun `should upload and process file successfully`() {
+    fun `when uploading duplicate bin`() {
         Mockito.`when`(applicationProperties.maxFileDataSize).thenReturn(DataSize.ofMegabytes(100))
 
         val tempDir: Path = Files.createTempDirectory("testDir")
         Mockito.`when`(applicationProperties.uploadDir).thenReturn(tempDir.toString())
-
-        val submission = Submission(
-            id = 500,
-            delayed = false,
-            accountHash = Base64.getEncoder().encodeToString(ByteArray(32))
-        )
-        Mockito.`when`(repo.save(any(Submission::class.java))).thenReturn(submission)
 
         val file = ClassPathResource("test.bin")
         val mockFile = MockMultipartFile(
@@ -131,6 +125,49 @@ class ApiControllerTest {
             "application/octet-stream",
             file.inputStream
         )
+
+        val checksum = mockFile.bytes.checksum()
+
+        val submission = Submission(
+            id = 500,
+            delayed = false,
+            accountHash = ByteArray(32).toBase64(),
+            fileChecksum = checksum
+        )
+        Mockito.`when`(repo.findByFileChecksum(checksum)).thenReturn(submission)
+
+        mockMvc.perform(
+            multipart("/api/submit")
+                .file(mockFile)
+                .param("delayed", "false")
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+        ).andExpect(status().isOk)
+            .andExpect(jsonPath("$.success").value(false))
+            .andExpect(jsonPath("$.message").value(ApiController.ResultMessage.DUPLICATE.name))
+    }
+
+    @Test
+    fun `should upload and process file successfully`() {
+        Mockito.`when`(applicationProperties.maxFileDataSize).thenReturn(DataSize.ofMegabytes(100))
+
+        val tempDir: Path = Files.createTempDirectory("testDir")
+        Mockito.`when`(applicationProperties.uploadDir).thenReturn(tempDir.toString())
+
+        val file = ClassPathResource("test.bin")
+        val mockFile = MockMultipartFile(
+            "file",
+            file.filename,
+            "application/octet-stream",
+            file.inputStream
+        )
+
+        val submission = Submission(
+            id = 500,
+            delayed = false,
+            accountHash = ByteArray(32).toBase64(),
+            fileChecksum = mockFile.bytes.checksum()
+        )
+        Mockito.`when`(repo.save(any(Submission::class.java))).thenReturn(submission)
 
         mockMvc.perform(
             multipart("/api/submit")
