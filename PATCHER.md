@@ -38,17 +38,17 @@ Below is an example CLI usage to create a revision 223 windows native client
 that works for localhost, with the varp count being increased from 5,000 to
 15,000, using the public RSA modulus shown below.
 
-> [!NOTE]
-> Clicking the green arrow below inside IntelliJ will fail as the command uses
-> quotation marks which get translated to `&quot;`, breaking the command itself.
-> Copy the command below and run it from a CLI manually!
-
 Below is an example CLI command to create a patched client. In this example,
 we change the javconfig to our own provided URL, we change the worldlist url
 that is used to initially boot up, we modify the varp count in the client from
 5,000 to 15,000, we change any urls of `runescape.com` to `rsprox.net`, and lastly,
 we rename any indication of `RuneScape`, `OldSchool RuneScape`, `oldschool` and
 any other variation of it to ´RSProx`.
+
+> [!NOTE]
+> Clicking the green arrow below inside IntelliJ will fail as the command uses
+> quotation marks which get translated to `&quot;`, breaking the command itself.
+> Copy the command below and run it from a CLI manually!
 
 `./gradlew patch --args="-version=223.3 -type=win -javconfig=https://cdn.rsprox.net/example_javconfig.ws -worldlist=https://cdn.rsprox.net/example_worldlist.ws -varpcount=15000 -siteurl=rsprox.net -name=RSProx -modulus=b565bcfee5f4e6b71732c20dc755ac6e39a4e47ecee3baf31cc1f3e256e078b572daa57a5da23e46bd622557dd3676816ff66c72d93b1b0aee44e2e65190f3cdd957f5aaa8f07b7da2945e8cba2da1125a4d21a070f38f95e20c4fe8a31e4f8df25832a79127800b0a8c32c5d80270ab358157f4bbda9e42bff78568d751"`
 
