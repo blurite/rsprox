@@ -19,6 +19,7 @@ import org.springframework.http.MediaType
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -178,6 +179,34 @@ class ApiControllerTest {
             .andExpect(jsonPath("$.success").value(true))
 
         assertTrue(Files.exists(tempDir.resolve("${submission.id}.bin")))
+    }
+
+    @Test
+    fun `when getting user submissions`() {
+        val accountHash = ByteArray(32).toBase64()
+
+        val submission = Submission(
+            id = 500,
+            delayed = false,
+            accountHash = accountHash,
+            fileChecksum = ByteArray(20).toBase64()
+        )
+        Mockito.`when`(repo.findByAccountHash(accountHash)).thenReturn(listOf(submission))
+
+        mockMvc.perform(
+            get("/api/submissions").param("accountHash", accountHash)
+        ).andExpect(status().isOk)
+            .andExpect(jsonPath("$.submissions").isArray)
+            .andExpect(jsonPath("$.submissions.length()").value(1))
+            .andExpect(jsonPath("$.submissions[0].id").value(submission.id))
+            .andExpect(jsonPath("$.submissions[0].removable").value(!submission.delayed))
+            .andExpect(jsonPath("$.submissions[0].fileChecksum").value(submission.fileChecksum))
+
+        mockMvc.perform(
+            get("/api/submissions").param("accountHash", "invalidHash")
+        ).andExpect(status().isOk)
+            .andExpect(jsonPath("$.submissions").isArray)
+            .andExpect(jsonPath("$.submissions.length()").value(0))
     }
 
 }

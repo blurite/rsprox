@@ -8,6 +8,7 @@ import net.rsprox.web.db.Submission
 import net.rsprox.web.db.SubmissionRepository
 import net.rsprox.web.util.checksum
 import net.rsprox.web.util.toBase64
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -23,6 +24,22 @@ public class ApiController(
     private val repo: SubmissionRepository
 ) {
     private val log = InlineLogger()
+
+    @GetMapping("/api/submissions")
+    public fun getSubmissions(
+        @RequestParam("accountHash") accountHash: String
+    ): Map<String, Any> {
+        return mapOf(
+            "submissions" to repo.findByAccountHash(accountHash).map {
+                mapOf(
+                    "id" to it.id,
+                    "date" to it.createdAt,
+                    "removable" to !it.processed,
+                    "fileChecksum" to it.fileChecksum
+                )
+            }
+        )
+    }
 
     @PostMapping("/api/submit")
     public fun submit(
