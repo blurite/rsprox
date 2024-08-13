@@ -135,7 +135,13 @@ class ApiControllerTest {
             id = 500,
             delayed = false,
             accountHash = ByteArray(32).toBase64(),
-            fileChecksum = checksum
+            fileChecksum = checksum,
+            fileSize = mockFile.size,
+            revision = 1,
+            subRevision = 1,
+            clientType = 1,
+            platformType = 1,
+            worldActivity = "test"
         )
         Mockito.`when`(repo.findByFileChecksum(checksum)).thenReturn(submission)
 
@@ -168,7 +174,13 @@ class ApiControllerTest {
             id = 500,
             delayed = false,
             accountHash = ByteArray(32).toBase64(),
-            fileChecksum = mockFile.bytes.checksum()
+            fileChecksum = mockFile.bytes.checksum(),
+            fileSize = mockFile.size,
+            revision = 1,
+            subRevision = 1,
+            clientType = 1,
+            platformType = 1,
+            worldActivity = "test"
         )
         Mockito.`when`(repo.save(any(Submission::class.java))).thenReturn(submission)
 
@@ -191,7 +203,13 @@ class ApiControllerTest {
             id = 500,
             delayed = false,
             accountHash = accountHash,
-            fileChecksum = ByteArray(20).toBase64()
+            fileChecksum = ByteArray(20).toBase64(),
+            fileSize = 20,
+            revision = 1,
+            subRevision = 1,
+            clientType = 1,
+            platformType = 1,
+            worldActivity = "test"
         )
         Mockito.`when`(repo.findByAccountHash(accountHash)).thenReturn(listOf(submission))
 
@@ -218,7 +236,13 @@ class ApiControllerTest {
             delayed = false,
             processed = true,
             accountHash = "",
-            fileChecksum = ""
+            fileChecksum = "",
+            fileSize = 0,
+            revision = 1,
+            subRevision = 1,
+            clientType = 1,
+            platformType = 1,
+            worldActivity = "test"
         )
 
         Mockito.`when`(repo.findById(1)).thenReturn(Optional.of(submission))
@@ -236,7 +260,13 @@ class ApiControllerTest {
             delayed = false,
             processed = false,
             accountHash = "",
-            fileChecksum = ""
+            fileChecksum = "",
+            fileSize = 0,
+            revision = 1,
+            subRevision = 1,
+            clientType = 1,
+            platformType = 1,
+            worldActivity = "test"
         )
 
         Mockito.`when`(repo.findById(1)).thenReturn(Optional.of(submission))

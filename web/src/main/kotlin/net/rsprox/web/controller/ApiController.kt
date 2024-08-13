@@ -99,7 +99,13 @@ public class ApiController(
         val submission = Submission(
             delayed = delayed,
             accountHash = blob.header.accountHash.toBase64(),
-            fileChecksum = checksum
+            fileChecksum = checksum,
+            fileSize = file.size,
+            revision = blob.header.revision,
+            subRevision = blob.header.subRevision,
+            clientType = blob.header.clientType,
+            platformType = blob.header.platformType,
+            worldActivity = blob.header.worldActivity
         ).let { repo.save(it) }
 
         runCatching {
