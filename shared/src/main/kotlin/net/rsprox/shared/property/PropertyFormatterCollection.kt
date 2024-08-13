@@ -6,6 +6,7 @@ import net.rsprox.shared.property.filtered.FilteredNamedEnumProperty
 import net.rsprox.shared.property.filtered.FilteredScriptVarTypeProperty
 import net.rsprox.shared.property.formatted.FormattedIntProperty
 import net.rsprox.shared.property.regular.EnumProperty
+import net.rsprox.shared.property.regular.IdentifiedMultinpcProperty
 import net.rsprox.shared.property.regular.IdentifiedNpcProperty
 import net.rsprox.shared.property.regular.NamedEnumProperty
 import net.rsprox.shared.property.regular.ScriptProperty
@@ -74,6 +75,27 @@ public class PropertyFormatterCollection private constructor(
                     "($col, coord=(${it.x}, ${it.z}, ${it.level}))"
                 } else {
                     "(index=${it.index}, $col, coord=(${it.x}, ${it.z}, ${it.level}))"
+                }
+            }
+            builder.add<IdentifiedMultinpcProperty> {
+                val base = dictionary.getScriptVarTypeName(it.baseId, ScriptVarType.NPC)
+                val baseCol =
+                    if (base != null) {
+                        "id=$base"
+                    } else {
+                        "id=${it.baseId}"
+                    }
+                val multinpc = dictionary.getScriptVarTypeName(it.multinpcId, ScriptVarType.NPC)
+                val multinpcCol =
+                    when {
+                        multinpc != null -> "multinpc=$multinpc"
+                        it.npcName != "null" -> "multinpc=${it.npcName}"
+                        else -> "multinpc=${it.multinpcId}"
+                    }
+                if (it.index == Int.MIN_VALUE) {
+                    "($baseCol, $multinpcCol, coord=(${it.x}, ${it.z}, ${it.level}))"
+                } else {
+                    "(index=${it.index}, $baseCol, $multinpcCol, coord=(${it.x}, ${it.z}, ${it.level}))"
                 }
             }
             builder.add<ShortNpcProperty> {

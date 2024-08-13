@@ -157,6 +157,7 @@ import net.rsprox.shared.property.filteredNamedEnum
 import net.rsprox.shared.property.filteredString
 import net.rsprox.shared.property.formattedInt
 import net.rsprox.shared.property.group
+import net.rsprox.shared.property.identifiedMultinpc
 import net.rsprox.shared.property.identifiedNpc
 import net.rsprox.shared.property.identifiedPlayer
 import net.rsprox.shared.property.identifiedWorldEntity
@@ -211,14 +212,26 @@ public class BaseServerPacketTranscriber(
                 index
             }
         val multinpc = stateTracker.resolveMultinpc(npc.id, cache)
-        return identifiedNpc(
-            finalIndex,
-            npc.id,
-            multinpc?.name ?: npc.name ?: "null",
-            npc.coord.level,
-            npc.coord.x,
-            npc.coord.z,
-        )
+        return if (multinpc != null) {
+            identifiedMultinpc(
+                finalIndex,
+                npc.id,
+                multinpc.id,
+                multinpc.name,
+                npc.coord.level,
+                npc.coord.x,
+                npc.coord.z,
+            )
+        } else {
+            identifiedNpc(
+                finalIndex,
+                npc.id,
+                npc.name ?: "null",
+                npc.coord.level,
+                npc.coord.x,
+                npc.coord.z,
+            )
+        }
     }
 
     private fun Property.player(

@@ -7,6 +7,7 @@ import net.rsprox.shared.property.filtered.FilteredScriptVarTypeProperty
 import net.rsprox.shared.property.formatted.FormattedIntProperty
 import net.rsprox.shared.property.regular.EnumProperty
 import net.rsprox.shared.property.regular.GroupProperty
+import net.rsprox.shared.property.regular.IdentifiedMultinpcProperty
 import net.rsprox.shared.property.regular.IdentifiedNpcProperty
 import net.rsprox.shared.property.regular.IdentifiedPlayerProperty
 import net.rsprox.shared.property.regular.IdentifiedWorldEntityProperty
@@ -371,6 +372,30 @@ public fun Property.identifiedNpc(
             propertyName,
             index,
             id,
+            name,
+            level,
+            x,
+            z,
+        ),
+    )
+}
+
+public fun Property.identifiedMultinpc(
+    index: Int,
+    baseId: Int,
+    multinpc: Int,
+    name: String,
+    level: Int,
+    x: Int,
+    z: Int,
+    propertyName: String = "npc",
+): IdentifiedMultinpcProperty {
+    return child(
+        IdentifiedMultinpcProperty(
+            propertyName,
+            index,
+            baseId,
+            multinpc,
             name,
             level,
             x,
