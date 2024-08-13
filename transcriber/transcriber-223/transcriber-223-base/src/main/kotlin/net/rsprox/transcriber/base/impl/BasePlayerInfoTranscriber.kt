@@ -1,5 +1,6 @@
 package net.rsprox.transcriber.base.impl
 
+import net.rsprox.cache.api.Cache
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerUpdateType
@@ -53,6 +54,7 @@ import net.rsprox.transcriber.state.StateTracker
 public class BasePlayerInfoTranscriber(
     private val stateTracker: StateTracker,
     private val monitor: SessionMonitor<*>,
+    private val cache: Cache,
     private val filterSetStore: PropertyFilterSetStore,
 ) : PlayerInfoTranscriber {
     private val root: RootProperty<*>
@@ -73,25 +75,23 @@ public class BasePlayerInfoTranscriber(
     }
 
     private fun Property.npc(index: Int): ChildProperty<*> {
-        val npc = stateTracker.getActiveWorld().getNpcOrNull(index)
+        val world = stateTracker.getActiveWorld()
+        val npc = world.getNpcOrNull(index) ?: return unidentifiedNpc(index)
         val finalIndex =
             if (filters[PropertyFilter.NPC_OMIT_INDEX]) {
                 Int.MIN_VALUE
             } else {
                 index
             }
-        return if (npc != null) {
-            identifiedNpc(
-                finalIndex,
-                npc.id,
-                npc.name ?: "null",
-                npc.coord.level,
-                npc.coord.x,
-                npc.coord.z,
-            )
-        } else {
-            unidentifiedNpc(index)
-        }
+        val multinpc = stateTracker.resolveMultinpc(npc.id, cache)
+        return identifiedNpc(
+            finalIndex,
+            npc.id,
+            multinpc?.name ?: npc.name ?: "null",
+            npc.coord.level,
+            npc.coord.x,
+            npc.coord.z,
+        )
     }
 
     private fun Property.player(

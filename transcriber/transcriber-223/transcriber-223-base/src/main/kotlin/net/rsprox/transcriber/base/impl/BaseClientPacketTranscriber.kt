@@ -1,5 +1,6 @@
 package net.rsprox.transcriber.base.impl
 
+import net.rsprox.cache.api.Cache
 import net.rsprox.protocol.game.incoming.model.buttons.If1Button
 import net.rsprox.protocol.game.incoming.model.buttons.If3Button
 import net.rsprox.protocol.game.incoming.model.buttons.IfButtonD
@@ -102,6 +103,7 @@ import java.text.NumberFormat
 @Suppress("SpellCheckingInspection", "DuplicatedCode")
 public open class BaseClientPacketTranscriber(
     private val stateTracker: StateTracker,
+    private val cache: Cache,
     private val filterSetStore: PropertyFilterSetStore,
 ) : ClientPacketTranscriber {
     private val root: RootProperty<*>
@@ -114,25 +116,23 @@ public open class BaseClientPacketTranscriber(
     }
 
     private fun Property.npc(index: Int): ChildProperty<*> {
-        val npc = stateTracker.getActiveWorld().getNpcOrNull(index)
+        val world = stateTracker.getActiveWorld()
+        val npc = world.getNpcOrNull(index) ?: return unidentifiedNpc(index)
         val finalIndex =
             if (filters[PropertyFilter.NPC_OMIT_INDEX]) {
                 Int.MIN_VALUE
             } else {
                 index
             }
-        return if (npc != null) {
-            identifiedNpc(
-                finalIndex,
-                npc.id,
-                npc.name ?: "null",
-                npc.coord.level,
-                npc.coord.x,
-                npc.coord.z,
-            )
-        } else {
-            unidentifiedNpc(index)
-        }
+        val multinpc = stateTracker.resolveMultinpc(npc.id, cache)
+        return identifiedNpc(
+            finalIndex,
+            npc.id,
+            multinpc?.name ?: npc.name ?: "null",
+            npc.coord.level,
+            npc.coord.x,
+            npc.coord.z,
+        )
     }
 
     private fun Property.player(index: Int): ChildProperty<*> {
