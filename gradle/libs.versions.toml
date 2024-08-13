@@ -16,6 +16,11 @@ swingx = "1.6.5-1"
 shadowjar = "7.1.2"
 zip4j = "2.11.5"
 junixsocket = "2.10.0"
+spring-boot = "3.3.2"
+spring-dependency-management = "1.1.6"
+flyway = "10.17.0"
+postgresql = "42.7.3"
+h2 = "2.3.232"
 
 [libraries]
 netty-bom = { module = "io.netty:netty-bom", version.ref = "netty" }
@@ -44,19 +49,36 @@ flatlaf-intellij-themes = { module = "com.formdev:flatlaf-intellij-themes", vers
 mig-layout = { module = "com.miglayout:miglayout-swing", version.ref = "miglayout" }
 clikt = { module = "com.github.ajalt.clikt:clikt-jvm", version.ref = "clikt" }
 classgraph = { module = "io.github.classgraph:classgraph", version.ref = "classgraph" }
-openrs2-buffer = { module = "org.openrs2:openrs2-buffer", version.ref = "openrs2"}
-openrs2-cache = { module = "org.openrs2:openrs2-cache", version.ref = "openrs2"}
+openrs2-buffer = { module = "org.openrs2:openrs2-buffer", version.ref = "openrs2" }
+openrs2-cache = { module = "org.openrs2:openrs2-cache", version.ref = "openrs2" }
 swingx = { module = "org.swinglabs.swingx:swingx-all", version.ref = "swingx" }
 zip4j = { module = "net.lingala.zip4j:zip4j", version.ref = "zip4j" }
-junixsocket = { module = "com.kohlschutter.junixsocket:junixsocket-core", version.ref = "junixsocket"}
+junixsocket = { module = "com.kohlschutter.junixsocket:junixsocket-core", version.ref = "junixsocket" }
+spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa", version.ref = "spring-boot" }
+spring-boot-starter-thymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf", version.ref = "spring-boot" }
+spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "spring-boot" }
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test", version.ref="spring-boot" }
+kotlin-test-junit5 = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "kotlin" }
+h2 = { module = "com.h2database:h2", version.ref = "h2" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 shadowjar = { id = "com.github.johnrengelman.shadow", version.ref = "shadowjar" }
+kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
+kotlin-jpa = { id = "org.jetbrains.kotlin.plugin.jpa", version.ref = "kotlin" }
+allopen = { id = "org.jetbrains.kotlin.plugin.allopen", version.ref = "kotlin" }
 
 [bundles]
 log4j = ["log4j-core", "log4j-api", "log4j-slf4j-impl", "inline-logger"]
 bouncycastle = ["bouncycastle-pkix", "bouncycastle-provider"]
 jackson = ["jackson-annotations", "jackson-dataformat-yaml", "jackson-module-kotlin"]
 openrs2 = ["openrs2-buffer", "openrs2-cache"]
-flatlaf = [ "flatlaf", "flatlaf-extras", "flatlaf-intellij-themes" ]
+flatlaf = ["flatlaf", "flatlaf-extras", "flatlaf-intellij-themes"]
+spring = ["spring-boot-starter-data-jpa", "spring-boot-starter-thymeleaf", "spring-boot-starter-web"]

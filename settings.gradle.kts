@@ -22,6 +22,7 @@ include(
     "cache",
     "shared",
     "runelite-launcher",
+    "web",
 )
 
 includeSubprojects(":protocol")
