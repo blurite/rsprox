@@ -246,10 +246,18 @@ public data class BinaryBlob(
             if (!file.isFile) {
                 throw IllegalArgumentException("Path does not point to a file: $path")
             }
-            val buffer = Unpooled.wrappedBuffer(file.readBytes())
+            return decode(file.readBytes(), filters)
+        }
+
+        public fun decode(
+            buf: ByteArray,
+            filters: PropertyFilterSetStore,
+        ): BinaryBlob {
+            val buffer = Unpooled.wrappedBuffer(buf)
             val header = BinaryHeader.decode(buffer.toJagByteBuf())
             val stream = BinaryStream(buffer.slice())
             return BinaryBlob(header, stream, 0, NopSessionMonitor, filters)
         }
     }
+
 }
