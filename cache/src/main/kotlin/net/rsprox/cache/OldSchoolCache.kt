@@ -80,7 +80,7 @@ public class OldSchoolCache(
     }
 
     private fun resolveVarBits() {
-        check(!this::npcs.isInitialized) {
+        check(!this::varbits.isInitialized) {
             "VarBits already initialized."
         }
         try {
