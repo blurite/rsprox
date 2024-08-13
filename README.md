@@ -142,7 +142,7 @@ Below is a small task list showing a rough breakdown of what the tool will consi
 - [x] Historical cache loading
 - [ ] Public archive
   - [ ] Automated binary blob uploading at the end of a session
-  - [ ] Indexing of binary files
+  - [x] Indexing of binary files
   - [ ] Ability to download any binary blobs
 - [x] Decoders
   - [x] Plugin system for decoders, with each revision acting as its own plugin
