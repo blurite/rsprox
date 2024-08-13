@@ -3,7 +3,10 @@ package net.rsprox.web.controller
 import com.github.michaelbull.logging.InlineLogger
 import net.rsprox.proxy.binary.BinaryBlob
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
+import net.rsprox.shared.indexing.IndexedType
 import net.rsprox.web.ApplicationProperties
+import net.rsprox.web.db.IntRepository
+import net.rsprox.web.db.StringRepository
 import net.rsprox.web.db.Submission
 import net.rsprox.web.db.SubmissionRepository
 import net.rsprox.web.util.checksum
@@ -23,7 +26,9 @@ import java.nio.file.StandardCopyOption
 @RestController
 public class ApiController(
     private val props: ApplicationProperties,
-    private val repo: SubmissionRepository
+    private val repo: SubmissionRepository,
+    private val intRepo: IntRepository,
+    private val stringRepo: StringRepository
 ) {
     private val log = InlineLogger()
 
@@ -38,6 +43,23 @@ public class ApiController(
         }
         repo.delete(submission)
         return mapOf("success" to true)
+    }
+
+    @GetMapping("/api/search")
+    public fun search(
+        @RequestParam("type") type: Int,
+        @RequestParam("value") value: String
+    ): Set<Submission> {
+        val submissions: Set<Submission> = when (type) {
+            IndexedType.MESSAGE_GAME.id, IndexedType.TEXT.id -> {
+                stringRepo.findByValueContainingIgnoreCase(value).map { it.submission }.toSet()
+            }
+
+            else -> {
+                intRepo.findByValue(value.toInt()).map { it.submission }.toSet()
+            }
+        }
+        return submissions
     }
 
     @GetMapping("/api/submissions")

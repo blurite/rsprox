@@ -8,7 +8,7 @@ public abstract class BaseIndex(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public open var id: Int = 0,
     public open var type: Int,
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "submission_id", nullable = false)
     public open var submission: Submission
 )
