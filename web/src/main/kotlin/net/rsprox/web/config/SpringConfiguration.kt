@@ -2,6 +2,8 @@ package net.rsprox.web.config
 
 import jakarta.servlet.MultipartConfigElement
 import net.rsprox.web.ApplicationProperties
+import net.rsprox.web.service.FileUploader
+import net.rsprox.web.service.S3FileUploader
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.servlet.MultipartConfigFactory
 import org.springframework.context.annotation.Bean
@@ -17,6 +19,11 @@ public class SpringConfiguration(@Autowired private val props: ApplicationProper
         val factory = MultipartConfigFactory()
         factory.setMaxFileSize(props.maxFileDataSize)
         return factory.createMultipartConfig()
+    }
+
+    @Bean
+    public fun fileUploader(): FileUploader {
+        return S3FileUploader(props)
     }
 
 }
