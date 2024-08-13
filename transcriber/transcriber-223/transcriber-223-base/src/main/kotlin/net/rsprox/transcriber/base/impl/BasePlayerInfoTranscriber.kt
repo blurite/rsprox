@@ -65,8 +65,8 @@ public class BasePlayerInfoTranscriber(
     }
 
     private fun Property.entity(ambiguousIndex: Int): ChildProperty<*> {
-        return if (ambiguousIndex > 0xFFFF) {
-            player(ambiguousIndex - 0xFFFF)
+        return if (ambiguousIndex >= 0x10000) {
+            player(ambiguousIndex - 0x10000)
         } else {
             npc(ambiguousIndex)
         }
