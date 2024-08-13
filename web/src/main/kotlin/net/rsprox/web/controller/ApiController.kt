@@ -8,6 +8,8 @@ import net.rsprox.web.db.Submission
 import net.rsprox.web.db.SubmissionRepository
 import net.rsprox.web.util.checksum
 import net.rsprox.web.util.toBase64
+import org.springframework.data.repository.findByIdOrNull
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -24,6 +26,19 @@ public class ApiController(
     private val repo: SubmissionRepository
 ) {
     private val log = InlineLogger()
+
+    @DeleteMapping("/api/submission")
+    public fun deleteSubmission(
+        @RequestParam("id") id: Long
+    ): Map<String, Any> {
+        val submission = repo.findByIdOrNull(id) ?: return mapOf("success" to false)
+        // dont allow to delete processed submissions
+        if (submission.processed) {
+            return mapOf("success" to false)
+        }
+        repo.delete(submission)
+        return mapOf("success" to true)
+    }
 
     @GetMapping("/api/submissions")
     public fun getSubmissions(

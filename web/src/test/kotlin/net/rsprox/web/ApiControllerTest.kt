@@ -19,13 +19,13 @@ import org.springframework.http.MediaType
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.util.unit.DataSize
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.*
 
 @ExtendWith(SpringExtension::class)
 @SpringBootTest
@@ -207,6 +207,42 @@ class ApiControllerTest {
         ).andExpect(status().isOk)
             .andExpect(jsonPath("$.submissions").isArray)
             .andExpect(jsonPath("$.submissions.length()").value(0))
+    }
+
+    @Test
+    fun `when deleting processed submission`() {
+        val submission = Submission(
+            id = 1,
+            delayed = false,
+            processed = true,
+            accountHash = "",
+            fileChecksum = ""
+        )
+
+        Mockito.`when`(repo.findById(1)).thenReturn(Optional.of(submission))
+
+        mockMvc.perform(
+            delete("/api/submission").param("id", "1")
+        ).andExpect(status().isOk)
+            .andExpect(jsonPath("$.success").value(false))
+    }
+
+    @Test
+    fun `when deleting unprocessed submissions`() {
+        val submission = Submission(
+            id = 1,
+            delayed = false,
+            processed = false,
+            accountHash = "",
+            fileChecksum = ""
+        )
+
+        Mockito.`when`(repo.findById(1)).thenReturn(Optional.of(submission))
+
+        mockMvc.perform(
+            delete("/api/submission").param("id", "1")
+        ).andExpect(status().isOk)
+            .andExpect(jsonPath("$.success").value(true))
     }
 
 }
