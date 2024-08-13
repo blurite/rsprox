@@ -12,4 +12,22 @@ create table "submissions"
 	"client_type"    int          not null,
 	"platform_type"  int          not null,
 	"world_activity" varchar(255) not null
-)
+);
+
+create table "int_indexes"
+(
+	"id"            serial primary key,
+	"type"          int not null,
+	"value"         int not null,
+	"submission_id" int NOT NULL,
+	FOREIGN KEY ("submission_id") REFERENCES "submissions" ("id") ON DELETE CASCADE
+);
+
+create table "string_indexes"
+(
+	"id"            serial primary key,
+	"type"          int  not null,
+	"value"         text not null,
+	"submission_id" int  NOT NULL,
+	FOREIGN KEY ("submission_id") REFERENCES "submissions" ("id") ON DELETE CASCADE
+);
