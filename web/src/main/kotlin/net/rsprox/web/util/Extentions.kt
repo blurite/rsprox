@@ -10,5 +10,5 @@ public fun ByteArray.checksum(): String {
 }
 
 public fun ByteArray.toBase64(): String {
-    return Base64.getEncoder().encodeToString(this)
+    return Base64.getUrlEncoder().encodeToString(this)
 }
