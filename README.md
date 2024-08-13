@@ -119,8 +119,8 @@ Below is a small task list showing a rough breakdown of what the tool will consi
 - [ ] Patch Tool
   - [x] Native (Win)
     - [x] Supports Unix via `wine`
-  - [ ] Native (Mac)
-  - [x] RuneLite
+  - [ ] ~~Native (Mac)~~ (Automated patching too fragile)
+  - [x] RuneLite (All Operating systems)
   - [ ] RuneLite Forks
   - [ ] ~~HDOS~~ (Cancelled, too difficult to patch)
 - [x] World identification via localhost address

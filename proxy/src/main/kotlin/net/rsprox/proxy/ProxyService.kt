@@ -90,7 +90,8 @@ public class ProxyService(
     private lateinit var serverBootstrap: ServerBootstrap
     private lateinit var httpServerBootstrap: ServerBootstrap
     private lateinit var worldListProvider: WorldListProvider
-    private lateinit var operatingSystem: OperatingSystem
+    public lateinit var operatingSystem: OperatingSystem
+        private set
     private lateinit var rsa: RSAPrivateCrtKeyParameters
     public lateinit var filterSetStore: PropertyFilterSetStore
         private set

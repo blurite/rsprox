@@ -6,6 +6,7 @@ import com.formdev.flatlaf.extras.components.FlatTabbedPane
 import com.formdev.flatlaf.extras.components.FlatToolBar
 import net.rsprox.gui.App
 import net.rsprox.gui.AppIcons
+import net.rsprox.proxy.util.OperatingSystem
 import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.JMenuItem
@@ -32,8 +33,15 @@ public class SessionsPanel(
                         icon = AppIcons.Add
                         addActionListener {
                             val menu = JPopupMenu()
-                            SessionType.entries.forEach { type ->
-                                if (type == SessionType.Java) return@forEach
+                            for (type in SessionType.entries) {
+                                // Custom java is not yet offered
+                                if (type == SessionType.Java) {
+                                    continue
+                                }
+                                // Mac native patcher is too fragile, so just disable the button on MacOS.
+                                if (App.service.operatingSystem == OperatingSystem.MAC && type == SessionType.Native) {
+                                    continue
+                                }
                                 val item =
                                     JMenuItem(type.name).apply {
                                         icon = type.icon
