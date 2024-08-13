@@ -22,6 +22,7 @@ dependencies {
     implementation(libs.flyway.core)
     implementation(libs.flyway.database.postgresql)
     implementation(libs.kotlin.reflect)
+    implementation(libs.aws.s3)
     runtimeClasspath(libs.postgresql)
     testImplementation(libs.spring.boot.starter.test)
     testRuntimeOnly(libs.h2)

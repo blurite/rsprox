@@ -21,6 +21,7 @@ spring-dependency-management = "1.1.6"
 flyway = "10.17.0"
 postgresql = "42.7.3"
 h2 = "2.3.232"
+aws-s3 = "2.27.3"
 
 [libraries]
 netty-bom = { module = "io.netty:netty-bom", version.ref = "netty" }
@@ -65,6 +66,7 @@ spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-star
 kotlin-test-junit5 = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "kotlin" }
 h2 = { module = "com.h2database:h2", version.ref = "h2" }
+aws-s3 = { module = "software.amazon.awssdk:s3", version.ref = "aws-s3" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
