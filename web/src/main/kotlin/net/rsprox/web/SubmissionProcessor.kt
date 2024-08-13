@@ -2,17 +2,10 @@ package net.rsprox.web
 
 import com.github.michaelbull.logging.InlineLogger
 import net.rsprox.web.db.SubmissionRepository
-import net.rsprox.web.util.zip
+import net.rsprox.web.service.FileUploader
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
-import software.amazon.awssdk.core.exception.SdkClientException
-import software.amazon.awssdk.core.sync.RequestBody
-import software.amazon.awssdk.regions.Region
-import software.amazon.awssdk.services.s3.S3Client
-import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.LocalDateTime
@@ -20,21 +13,10 @@ import java.time.LocalDateTime
 @Component
 public class SubmissionProcessor(
     @Autowired private val props: ApplicationProperties,
-    @Autowired private val repo: SubmissionRepository
+    @Autowired private val repo: SubmissionRepository,
+    @Autowired private val fileUploader: FileUploader
 ) {
     private val log = InlineLogger()
-
-    private val s3 = S3Client.builder()
-        .region(Region.of(props.s3.region))
-        .credentialsProvider(
-            StaticCredentialsProvider.create(
-                AwsBasicCredentials.create(
-                    props.s3.accessKey,
-                    props.s3.secretKey
-                )
-            )
-        )
-        .build()
 
     @Scheduled(fixedRate = 60_000)
     public fun processSubmissions() {
@@ -59,24 +41,8 @@ public class SubmissionProcessor(
 
             // TODO process the indexes
 
-            val objectRequest = PutObjectRequest.builder()
-                .bucket(props.s3.bucket)
-                .key("${submission.id}.zip")
-                .tagging("public=true") // Makes the object public
-                .build()
-
-            log.trace { "Uploading to S3: ${submission.id}" }
-
-            try {
-                val response = s3.putObject(objectRequest, RequestBody.fromBytes(buf.zip(submission.id.toString())))
-                if (!response.sdkHttpResponse().isSuccessful) {
-                    val statusCode = response.sdkHttpResponse().statusCode()
-                    val statusText = response.sdkHttpResponse().statusText().orElse("Unknown error")
-                    log.error { "Failed to upload to S3: $statusCode $statusText" }
-                    continue
-                }
-            } catch (e: SdkClientException) {
-                log.trace { "Failed to upload to S3: ${e.message}" }
+            if (!fileUploader.uploadFile(buf, submission)) {
+                log.trace { "Failed to upload ${submission.id}" }
                 continue
             }
 
