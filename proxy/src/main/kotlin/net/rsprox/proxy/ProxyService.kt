@@ -404,6 +404,7 @@ public class ProxyService(
         val criteria =
             NativePatchCriteria
                 .Builder(nativeClientType)
+                .acceptAllLoopbackAddresses()
                 .rsaModulus(rsa.publicKey.modulus.toString(16))
                 .javConfig("http://127.0.0.1:$HTTP_SERVER_PORT/$javConfigEndpoint")
                 .worldList("http://127.0.0.1:$HTTP_SERVER_PORT/$worldlistEndpoint")
