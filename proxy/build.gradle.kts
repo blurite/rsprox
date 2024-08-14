@@ -3,7 +3,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.streams.toList
 
-private val latestDecoder = projects.protocol.osrs223
+private val latestDecoder = projects.protocol.osrs224
 dependencies {
     implementation(platform(rootProject.libs.netty.bom))
     implementation(rootProject.libs.netty.buffer)

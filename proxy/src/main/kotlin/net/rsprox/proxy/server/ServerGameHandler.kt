@@ -138,9 +138,9 @@ public class ServerGameHandler(
             GameServerProt.IF_OPENSUB -> {
                 // Note(revision): This block changes in each revision and must be updated
                 val buf = msg.payload.toJagByteBuf()
-                buf.skipRead(1)
-                val interfaceId = buf.g2Alt1()
+                val interfaceId = buf.g2Alt3()
                 val targetComponent = buf.gCombinedId()
+                buf.skipRead(1)
                 if (interfaceId == BANK_PIN_INTERFACE) {
                     this.bankPinComponent = targetComponent
                     clientChannel.attr(INCOMING_BANK_PIN).set(true)

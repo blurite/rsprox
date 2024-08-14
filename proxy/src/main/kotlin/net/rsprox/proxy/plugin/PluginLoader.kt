@@ -8,6 +8,7 @@ import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.ClientPacketDecoder
 import net.rsprox.protocol.ProtProvider
 import net.rsprox.protocol.ServerPacketDecoder
+import net.rsprox.proxy.config.LATEST_SUPPORTED_PLUGIN
 import net.rsprox.proxy.config.PLUGINS_DIRECTORY
 import net.rsprox.proxy.config.TRANSCRIBERS_DIRECTORY
 import net.rsprox.proxy.huffman.HuffmanProvider
@@ -36,7 +37,9 @@ public class PluginLoader {
                 if (name != type) {
                     continue
                 }
-                loadDecoderPlugin(cache, file, revisionString.toInt())
+                val rev = revisionString.toInt()
+                if (rev > LATEST_SUPPORTED_PLUGIN) continue
+                loadDecoderPlugin(cache, file, rev)
             } catch (t: Throwable) {
                 logger.error(t) {
                     "Error loading plugin $file"
@@ -141,8 +144,10 @@ public class PluginLoader {
             try {
                 val match = transcriberRegex.find(file.name) ?: continue
                 val (revisionString, name) = match.destructured
+                val rev = revisionString.toInt()
+                if (rev > LATEST_SUPPORTED_PLUGIN) continue
                 revisions += revisionString.toInt()
-                loadTranscriberPlugin(file, revisionString.toInt())
+                loadTranscriberPlugin(file, rev)
             } catch (t: Throwable) {
                 logger.error(t) {
                     "Error loading transcriber $file"

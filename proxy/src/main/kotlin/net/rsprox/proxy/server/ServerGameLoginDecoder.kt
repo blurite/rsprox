@@ -28,6 +28,8 @@ import net.rsprox.proxy.client.ClientGameHandler
 import net.rsprox.proxy.client.ClientGenericDecoder
 import net.rsprox.proxy.client.ClientRelayHandler
 import net.rsprox.proxy.client.prot.GameClientProtProvider
+import net.rsprox.proxy.config.CURRENT_REVISION
+import net.rsprox.proxy.config.LATEST_SUPPORTED_PLUGIN
 import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.server.prot.GameServerProtProvider
@@ -321,7 +323,10 @@ public class ServerGameLoginDecoder(
             sessionMonitor.onLogin(header)
             sessionMonitor.onUserInformationUpdate(userId, userHash)
             val blob = BinaryBlob(header, stream, binaryWriteInterval, sessionMonitor, filters)
-            blob.hookLiveTranscriber(key, pluginLoader)
+            @Suppress("KotlinConstantConditions")
+            if (LATEST_SUPPORTED_PLUGIN >= CURRENT_REVISION) {
+                blob.hookLiveTranscriber(key, pluginLoader)
+            }
             val serverChannel = ctx.channel()
             connections.addConnection(
                 clientChannel,
