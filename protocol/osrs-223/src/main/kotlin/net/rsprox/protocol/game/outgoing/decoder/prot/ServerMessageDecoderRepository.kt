@@ -73,7 +73,7 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.map.ReconnectDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.map.StaticRebuildDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.HideLocOpsDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.HideNpcOpsDecoder
-import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.HidePlayerOpsDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.HideObjOpsDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.HintArrowDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.HiscoreReplyDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.MinimapToggleDecoder
@@ -228,7 +228,7 @@ public object ServerMessageDecoderRepository {
                 bind(SetHeatmapEnabledDecoder())
                 bind(HideLocOpsDecoder())
                 bind(HideNpcOpsDecoder())
-                bind(HidePlayerOpsDecoder())
+                bind(HideObjOpsDecoder())
                 bind(HintArrowDecoder())
                 bind(HiscoreReplyDecoder())
                 bind(MinimapToggleDecoder())

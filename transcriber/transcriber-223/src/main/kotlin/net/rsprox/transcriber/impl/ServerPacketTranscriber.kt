@@ -66,7 +66,7 @@ import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntity
 import net.rsprox.protocol.game.outgoing.model.map.Reconnect
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideLocOps
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideNpcOps
-import net.rsprox.protocol.game.outgoing.model.misc.client.HidePlayerOps
+import net.rsprox.protocol.game.outgoing.model.misc.client.HideObjOps
 import net.rsprox.protocol.game.outgoing.model.misc.client.HintArrow
 import net.rsprox.protocol.game.outgoing.model.misc.client.HiscoreReply
 import net.rsprox.protocol.game.outgoing.model.misc.client.MinimapToggle
@@ -266,7 +266,7 @@ public interface ServerPacketTranscriber {
 
     public fun hideNpcOps(message: HideNpcOps)
 
-    public fun hidePlayerOps(message: HidePlayerOps)
+    public fun hideObjOps(message: HideObjOps)
 
     public fun hintArrow(message: HintArrow)
 

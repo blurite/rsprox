@@ -71,7 +71,7 @@ import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntity
 import net.rsprox.protocol.game.outgoing.model.map.Reconnect
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideLocOps
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideNpcOps
-import net.rsprox.protocol.game.outgoing.model.misc.client.HidePlayerOps
+import net.rsprox.protocol.game.outgoing.model.misc.client.HideObjOps
 import net.rsprox.protocol.game.outgoing.model.misc.client.HintArrow
 import net.rsprox.protocol.game.outgoing.model.misc.client.HiscoreReply
 import net.rsprox.protocol.game.outgoing.model.misc.client.MinimapToggle
@@ -1468,7 +1468,7 @@ public class BaseServerPacketTranscriber(
         root.boolean("hide", message.hidden)
     }
 
-    override fun hidePlayerOps(message: HidePlayerOps) {
+    override fun hideObjOps(message: HideObjOps) {
         if (!filters[PropertyFilter.HIDEOPS]) return omit()
         root.boolean("hide", message.hidden)
     }

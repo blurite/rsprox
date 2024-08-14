@@ -5,18 +5,18 @@ import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.metadata.Consistent
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
-import net.rsprox.protocol.game.outgoing.model.misc.client.HidePlayerOps
+import net.rsprox.protocol.game.outgoing.model.misc.client.HideObjOps
 import net.rsprox.protocol.session.Session
 
 @Consistent
-public class HidePlayerOpsDecoder : ProxyMessageDecoder<HidePlayerOps> {
-    override val prot: ClientProt = GameServerProt.HIDEPLAYEROPS
+public class HideObjOpsDecoder : ProxyMessageDecoder<HideObjOps> {
+    override val prot: ClientProt = GameServerProt.HIDEOBJOPS
 
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
-    ): HidePlayerOps {
+    ): HideObjOps {
         val hidden = buffer.gboolean()
-        return HidePlayerOps(hidden)
+        return HideObjOps(hidden)
     }
 }

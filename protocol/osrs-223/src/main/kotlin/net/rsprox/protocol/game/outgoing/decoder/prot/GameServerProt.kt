@@ -176,7 +176,7 @@ public enum class GameServerProt(
     MINIMAP_TOGGLE(GameServerProtId.MINIMAP_TOGGLE, 1),
     SERVER_TICK_END(GameServerProtId.SERVER_TICK_END, 0),
     HIDENPCOPS(GameServerProtId.HIDENPCOPS, 1),
-    HIDEPLAYEROPS(GameServerProtId.HIDEPLAYEROPS, 1),
+    HIDEOBJOPS(GameServerProtId.HIDEOBJOPS, 1),
     HIDELOCOPS(GameServerProtId.HIDELOCOPS, 1),
 
     // Misc. client packets
