@@ -15,7 +15,5 @@ public class CloseModalDecoder : ProxyMessageDecoder<CloseModal> {
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
-    ): CloseModal {
-        return CloseModal
-    }
+    ): CloseModal = CloseModal
 }

@@ -15,8 +15,8 @@ public class ResumePauseButtonDecoder : ProxyMessageDecoder<ResumePauseButton> {
         buffer: JagByteBuf,
         session: Session,
     ): ResumePauseButton {
+        val sub = buffer.g2()
         val combinedId = buffer.gCombinedIdAlt2()
-        val sub = buffer.g2Alt2()
         return ResumePauseButton(
             combinedId,
             sub,

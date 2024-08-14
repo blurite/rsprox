@@ -15,7 +15,5 @@ public class OculusLeaveDecoder : ProxyMessageDecoder<OculusLeave> {
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
-    ): OculusLeave {
-        return OculusLeave
-    }
+    ): OculusLeave = OculusLeave
 }

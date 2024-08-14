@@ -15,7 +15,5 @@ public class MapBuildCompleteDecoder : ProxyMessageDecoder<MapBuildComplete> {
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
-    ): MapBuildComplete {
-        return MapBuildComplete
-    }
+    ): MapBuildComplete = MapBuildComplete
 }

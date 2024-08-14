@@ -14,9 +14,9 @@ public class OpObj6Decoder : ProxyMessageDecoder<OpObj6> {
         buffer: JagByteBuf,
         session: Session,
     ): OpObj6 {
-        val x = buffer.g2Alt2()
-        val id = buffer.g2()
         val z = buffer.g2()
+        val id = buffer.g2Alt2()
+        val x = buffer.g2Alt1()
         return OpObj6(
             id,
             x,

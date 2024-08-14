@@ -15,9 +15,9 @@ public class MoveMinimapClickDecoder : ProxyMessageDecoder<MoveMinimapClick> {
         session: Session,
     ): MoveMinimapClick {
         // The x, z and keyCombination get scrambled between revisions
-        val z = buffer.g2Alt1()
         val keyCombination = buffer.g1()
-        val x = buffer.g2Alt2()
+        val z = buffer.g2Alt1()
+        val x = buffer.g2()
 
         // The arguments below are consistent across revisions
         val minimapWidth = buffer.g1()

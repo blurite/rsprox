@@ -15,7 +15,5 @@ public class IdleDecoder : ProxyMessageDecoder<Idle> {
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
-    ): Idle {
-        return Idle
-    }
+    ): Idle = Idle
 }

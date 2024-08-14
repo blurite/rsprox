@@ -14,10 +14,10 @@ public class SendPingReplyDecoder : ProxyMessageDecoder<SendPingReply> {
         buffer: JagByteBuf,
         session: Session,
     ): SendPingReply {
-        val gcPercentTime = buffer.g1Alt3()
-        val value1 = buffer.g4Alt1()
-        val value2 = buffer.g4()
+        val value1 = buffer.g4Alt2()
+        val value2 = buffer.g4Alt3()
         val fps = buffer.g1Alt1()
+        val gcPercentTime = buffer.g1Alt3()
         return SendPingReply(
             fps,
             gcPercentTime,

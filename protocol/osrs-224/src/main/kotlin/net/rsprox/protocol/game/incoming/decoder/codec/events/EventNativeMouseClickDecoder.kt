@@ -14,9 +14,9 @@ public class EventNativeMouseClickDecoder : ProxyMessageDecoder<EventNativeMouse
         buffer: JagByteBuf,
         session: Session,
     ): EventNativeMouseClick {
-        val packedCoord = buffer.g4Alt3()
-        val code = buffer.g1Alt3()
-        val lastTransmittedMouseClick = buffer.g2Alt3()
+        val packedCoord = buffer.g4()
+        val lastTransmittedMouseClick = buffer.g2Alt1()
+        val code = buffer.g1()
         return EventNativeMouseClick(
             lastTransmittedMouseClick,
             code,

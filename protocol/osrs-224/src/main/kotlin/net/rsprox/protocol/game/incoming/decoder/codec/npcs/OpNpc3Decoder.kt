@@ -14,7 +14,7 @@ public class OpNpc3Decoder : ProxyMessageDecoder<OpNpc> {
         buffer: JagByteBuf,
         session: Session,
     ): OpNpc {
-        val index = buffer.g2Alt3()
+        val index = buffer.g2Alt1()
         val controlKey = buffer.g1Alt3() == 1
         return OpNpc(
             index,

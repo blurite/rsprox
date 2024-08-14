@@ -15,11 +15,11 @@ public class IfCrmViewClickDecoder : ProxyMessageDecoder<IfCrmViewClick> {
         buffer: JagByteBuf,
         session: Session,
     ): IfCrmViewClick {
-        val combinedId = buffer.gCombinedIdAlt1()
         val sub = buffer.g2Alt1()
-        val behaviour2 = buffer.g4Alt3()
+        val behaviour2 = buffer.g4()
         val serverTarget = buffer.g4Alt3()
-        val behaviour1 = buffer.g4Alt1()
+        val behaviour1 = buffer.g4Alt2()
+        val combinedId = buffer.gCombinedIdAlt1()
         val behaviour3 = buffer.g4Alt1()
         return IfCrmViewClick(
             serverTarget,

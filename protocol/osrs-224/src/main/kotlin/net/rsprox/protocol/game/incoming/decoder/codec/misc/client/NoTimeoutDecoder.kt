@@ -15,7 +15,5 @@ public class NoTimeoutDecoder : ProxyMessageDecoder<NoTimeout> {
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
-    ): NoTimeout {
-        return NoTimeout
-    }
+    ): NoTimeout = NoTimeout
 }
