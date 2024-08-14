@@ -2,7 +2,7 @@ package net.rsprox.protocol.game.outgoing.decoder.codec.interfaces
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.util.gCombinedIdAlt3
+import net.rsprot.protocol.util.gCombinedIdAlt1
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetHide
@@ -15,8 +15,8 @@ public class IfSetHideDecoder : ProxyMessageDecoder<IfSetHide> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetHide {
-        val combinedId = buffer.gCombinedIdAlt3()
-        val hidden = buffer.g1() == 1
+        val hidden = buffer.g1Alt1() == 1
+        val combinedId = buffer.gCombinedIdAlt1()
         return IfSetHide(
             combinedId.interfaceId,
             combinedId.componentId,

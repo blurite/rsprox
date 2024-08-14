@@ -17,7 +17,7 @@ public class LocDelDecoder : ProxyMessageDecoder<LocDel> {
         session: Session,
     ): LocDel {
         val coordInZone = CoordInZone(buffer.g1())
-        val locProperties = LocProperties(buffer.g1Alt2())
+        val locProperties = LocProperties(buffer.g1Alt3())
         return LocDel(
             coordInZone,
             locProperties,

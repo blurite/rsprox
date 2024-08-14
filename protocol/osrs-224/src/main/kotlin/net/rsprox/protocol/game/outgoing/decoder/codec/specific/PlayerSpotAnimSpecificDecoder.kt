@@ -14,10 +14,10 @@ public class PlayerSpotAnimSpecificDecoder : ProxyMessageDecoder<PlayerSpotAnimS
         buffer: JagByteBuf,
         session: Session,
     ): PlayerSpotAnimSpecific {
-        val slot = buffer.g1Alt3()
         val id = buffer.g2()
-        val index = buffer.g2Alt3()
-        val packed = buffer.g4Alt1()
+        val packed = buffer.g4()
+        val slot = buffer.g1Alt1()
+        val index = buffer.g2Alt2()
         val height = packed ushr 16
         val delay = packed and 0xFFFF
         return PlayerSpotAnimSpecific(

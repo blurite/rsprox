@@ -18,9 +18,9 @@ public class LocAddChangeDecoder : ProxyMessageDecoder<LocAddChange> {
         session: Session,
     ): LocAddChange {
         val locProperties = LocProperties(buffer.g1Alt2())
-        val opFlags = OpFlags(buffer.g1Alt3())
-        val coordInZone = CoordInZone(buffer.g1Alt3())
-        val id = buffer.g2Alt2()
+        val coordInZone = CoordInZone(buffer.g1())
+        val opFlags = OpFlags(buffer.g1Alt2())
+        val id = buffer.g2Alt1()
         return LocAddChange(
             id,
             coordInZone,

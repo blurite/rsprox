@@ -2,7 +2,7 @@ package net.rsprox.protocol.game.outgoing.decoder.codec.interfaces
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.util.gCombinedIdAlt3
+import net.rsprot.protocol.util.gCombinedIdAlt2
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetNpcHeadActive
@@ -15,8 +15,8 @@ public class IfSetNpcHeadActiveDecoder : ProxyMessageDecoder<IfSetNpcHeadActive>
         buffer: JagByteBuf,
         session: Session,
     ): IfSetNpcHeadActive {
-        val combinedId = buffer.gCombinedIdAlt3()
-        val index = buffer.g2Alt3()
+        val index = buffer.g2Alt2()
+        val combinedId = buffer.gCombinedIdAlt2()
         return IfSetNpcHeadActive(
             combinedId.interfaceId,
             combinedId.componentId,
