@@ -316,9 +316,9 @@ public class PlayerInfoClient(
             decodeFacePathingEntity(buffer, blocks)
         }
         if (flags and APPEARANCE != 0) {
-            val len = buffer.g1Alt3()
+            val len = buffer.g1Alt1()
             val data = ByteArray(len)
-            buffer.gdataAlt2(data)
+            buffer.gdataAlt3(data)
             decodeAppearance(Unpooled.wrappedBuffer(data).toJagByteBuf(), blocks)
         }
         if (flags and FACE_ANGLE != 0) {

@@ -22,7 +22,7 @@ internal val RUNELITE_LAUNCHER: Path =
         .resolve("runelite")
         .resolve("runelite-launcher.jar")
 internal const val CURRENT_REVISION: Int = 224
-internal const val LATEST_SUPPORTED_PLUGIN: Int = 223
+internal const val LATEST_SUPPORTED_PLUGIN: Int = 224
 
 /**
  * Http server port needs to be hard-coded as we modify it in a few RuneLite classes directly.

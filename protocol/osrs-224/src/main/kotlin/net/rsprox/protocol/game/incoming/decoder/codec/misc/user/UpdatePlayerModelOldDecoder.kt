@@ -9,7 +9,7 @@ import net.rsprox.protocol.game.incoming.model.misc.user.UpdatePlayerModelOld
 import net.rsprox.protocol.session.Session
 
 @Consistent
-public class UpdatePlayerModelDecoderOld : ProxyMessageDecoder<UpdatePlayerModelOld> {
+public class UpdatePlayerModelOldDecoder : ProxyMessageDecoder<UpdatePlayerModelOld> {
     override val prot: ClientProt = GameClientProt.UPDATE_PLAYER_MODEL_OLD
 
     override fun decode(
