@@ -214,7 +214,7 @@ public class StateTracker {
         when {
             multivar in 1..<65535 -> {
                 val state = getVarp(multivar)
-                val multi = multinpc.getOrNull(state) ?: multinpc.last()
+                val multi = resolveMultinpcId(state)
                 cache.getNpcType(multi)
             }
 
@@ -224,7 +224,7 @@ public class StateTracker {
                     null
                 } else {
                     val state = getVarBit(varBit)
-                    val multi = multinpc.getOrNull(state) ?: multinpc.last()
+                    val multi = resolveMultinpcId(state)
                     cache.getNpcType(multi)
                 }
             }
@@ -234,5 +234,12 @@ public class StateTracker {
 
     public companion object {
         public const val ROOT_WORLD: Int = -1
+
+        private fun NpcType.resolveMultinpcId(varState: Int): Int =
+            when {
+                varState !in multinpc.indices -> multinpc.last()
+                multinpc[varState] == -1 -> multinpc.last()
+                else -> multinpc[varState]
+            }
     }
 }

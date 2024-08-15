@@ -12,8 +12,8 @@ public interface VarBitType {
     }
 
     public fun extract(packedInteger: Int): Int {
-        val bitcount = (endbit - startbit) + 1
-        val bitmask = bitmask(bitcount)
+        val bitcount = endbit - startbit
+        val bitmask = BITMASKS[bitcount]
         return packedInteger ushr startbit and bitmask
     }
 
