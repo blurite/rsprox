@@ -8,16 +8,20 @@ public interface VarBitType {
     public val endbit: Int
 
     public fun bitmask(bitcount: Int): Int {
-        return BITMASKS[bitcount]
+        require(bitcount in VALID_32BIT_INT_BITCOUNTS) {
+            "Invalid bitcount: $bitcount"
+        }
+        return BITMASKS[bitcount - 1]
     }
 
     public fun extract(packedInteger: Int): Int {
-        val bitcount = endbit - startbit
-        val bitmask = BITMASKS[bitcount]
+        val bitcount = (endbit - startbit) + 1
+        val bitmask = bitmask(bitcount)
         return packedInteger ushr startbit and bitmask
     }
 
     private companion object {
+        private val VALID_32BIT_INT_BITCOUNTS: IntRange = 1..32
         private val BITMASKS: IntArray = generateBitmasks()
 
         private fun generateBitmasks(): IntArray {
