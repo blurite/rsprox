@@ -135,56 +135,56 @@ public class NpcInfoClient(
 
             this.extendedInfoBlocks[index] = blocks
 
-            if (flag and BAS_CHANGE != 0) {
-                decodeBaseAnimationSet(buffer, blocks)
-            }
-            if (flag and HITS != 0) {
-                decodeHits(buffer, blocks)
-            }
-            if (flag and SPOTANIM != 0) {
-                decodeSpotanim(buffer, blocks)
-            }
-            if (flag and SEQUENCE != 0) {
-                decodeSequence(buffer, blocks)
+            if (flag and FACE_PATHINGENTITY != 0) {
+                decodeFacePathingEntity(buffer, blocks)
             }
             if (flag and LEVEL_CHANGE != 0) {
                 decodeCombatLevelChange(buffer, blocks)
             }
+            if (flag and BAS_CHANGE != 0) {
+                decodeBaseAnimationSet(buffer, blocks)
+            }
             if (flag and TINTING != 0) {
                 decodeTinting(buffer, blocks)
-            }
-            if (flag and TRANSFORMATION != 0) {
-                decodeTransformation(buffer, blocks, npc)
-            }
-            if (flag and OPS != 0) {
-                decodeEnabledOps(buffer, blocks)
-            }
-            if (flag and FACE_PATHINGENTITY != 0) {
-                decodeFacePathingEntity(buffer, blocks)
-            }
-            if (flag and BODY_CUSTOMISATION != 0) {
-                decodeBodyCustomisation(npc.id, buffer, blocks)
-            }
-            if (flag and HEAD_CUSTOMISATION != 0) {
-                decodeHeadCustomisation(npc.id, buffer, blocks)
-            }
-            if (flag and SAY != 0) {
-                decodeSay(buffer, blocks)
-            }
-            if (flag and EXACT_MOVE != 0) {
-                decodeExactMove(buffer, blocks)
-            }
-            if (flag and NAME_CHANGE != 0) {
-                decodeNameChange(buffer, blocks)
-            }
-            if (flag and OLD_SPOTANIM != 0) {
-                decodeOldSpotanim(buffer, blocks)
             }
             if (flag and HEADICON_CUSTOMISATION != 0) {
                 decodeHeadiconCustomisation(buffer, blocks)
             }
+            if (flag and BODY_CUSTOMISATION != 0) {
+                decodeBodyCustomisation(npc.id, buffer, blocks)
+            }
+            if (flag and SPOTANIM != 0) {
+                decodeSpotanim(buffer, blocks)
+            }
+            if (flag and NAME_CHANGE != 0) {
+                decodeNameChange(buffer, blocks)
+            }
             if (flag and FACE_COORD != 0) {
                 decodeFaceCoord(buffer, blocks)
+            }
+            if (flag and HITS != 0) {
+                decodeHits(buffer, blocks)
+            }
+            if (flag and EXACT_MOVE != 0) {
+                decodeExactMove(buffer, blocks)
+            }
+            if (flag and HEAD_CUSTOMISATION != 0) {
+                decodeHeadCustomisation(npc.id, buffer, blocks)
+            }
+            if (flag and TRANSFORMATION != 0) {
+                decodeTransformation(buffer, blocks, npc)
+            }
+            if (flag and SEQUENCE != 0) {
+                decodeSequence(buffer, blocks)
+            }
+            if (flag and OLD_SPOTANIM != 0) {
+                decodeOldSpotanim(buffer, blocks)
+            }
+            if (flag and OPS != 0) {
+                decodeEnabledOps(buffer, blocks)
+            }
+            if (flag and SAY != 0) {
+                decodeSay(buffer, blocks)
             }
         }
     }
