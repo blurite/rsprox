@@ -13,7 +13,7 @@ public class MonitoredMessageConsumerContainer(
     override fun publish(
         formatter: PropertyTreeFormatter,
         cycle: Int,
-        property: RootProperty<*>,
+        property: RootProperty,
     ) {
         root.publish(formatter, cycle, property)
         monitor.onTranscribe(cycle, property)

@@ -131,7 +131,7 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
             override fun consume(
                 formatter: PropertyTreeFormatter,
                 cycle: Int,
-                property: RootProperty<*>,
+                property: RootProperty,
             ) {
                 if (cycle != lastCycle) {
                     if (lastCycle != -1) {

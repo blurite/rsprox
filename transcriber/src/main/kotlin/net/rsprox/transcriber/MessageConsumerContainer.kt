@@ -7,7 +7,7 @@ public interface MessageConsumerContainer {
     public fun publish(
         formatter: PropertyTreeFormatter,
         cycle: Int,
-        property: RootProperty<*>,
+        property: RootProperty,
     )
 
     public fun close()

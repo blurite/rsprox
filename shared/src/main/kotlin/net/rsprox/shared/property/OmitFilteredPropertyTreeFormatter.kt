@@ -6,9 +6,9 @@ import net.rsprox.shared.property.regular.ListProperty
 public class OmitFilteredPropertyTreeFormatter(
     private val propertyFormatterCollection: PropertyFormatterCollection,
 ) : PropertyTreeFormatter {
-    override fun format(property: RootProperty<*>): List<String> {
+    override fun format(property: RootProperty): List<String> {
         val builder = StringBuilder()
-        builder.append('[').append(property.prot.toString().lowercase()).append("] ")
+        builder.append('[').append(property.prot.lowercase()).append("] ")
         var count = 0
         for (child in property.children) {
             if (child.isExcluded()) {

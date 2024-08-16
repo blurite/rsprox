@@ -278,7 +278,7 @@ public class IndexerTranscriber private constructor(
     override val cache: Cache = cacheProvider.get()
 
     override fun setCurrentProt(prot: Prot) {
-        stateTracker.currentProt = prot
+        stateTracker.currentProt = prot.toString()
     }
 
     override fun onTranscribeStart() {

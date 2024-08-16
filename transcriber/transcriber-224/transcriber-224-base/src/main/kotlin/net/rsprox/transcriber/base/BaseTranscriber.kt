@@ -67,7 +67,7 @@ public class BaseTranscriber private constructor(
     override val cache: Cache = cacheProvider.get()
 
     override fun setCurrentProt(prot: Prot) {
-        stateTracker.currentProt = prot
+        stateTracker.currentProt = prot.toString()
     }
 
     override fun onTranscribeStart() {
@@ -79,7 +79,7 @@ public class BaseTranscriber private constructor(
         if (root.isEmpty()) return
         var cycle = stateTracker.cycle
         // Decrement the cycle if we're logging server tick end
-        if (stateTracker.currentProt == GameServerProt.SERVER_TICK_END) {
+        if (stateTracker.currentProt == GameServerProt.SERVER_TICK_END.name) {
             cycle--
         }
         for (property in root) {

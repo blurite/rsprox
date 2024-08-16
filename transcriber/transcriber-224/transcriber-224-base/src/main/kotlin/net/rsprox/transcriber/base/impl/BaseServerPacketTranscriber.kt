@@ -194,7 +194,7 @@ public class BaseServerPacketTranscriber(
     private val cache: Cache,
     private val filterSetStore: PropertyFilterSetStore,
 ) : ServerPacketTranscriber {
-    private val root: RootProperty<*>
+    private val root: RootProperty
         get() = checkNotNull(stateTracker.root.last())
     private val filters: PropertyFilterSet
         get() = filterSetStore.getActive()
@@ -2305,7 +2305,7 @@ public class BaseServerPacketTranscriber(
     }
 
     private fun createChildZoneProts(
-        root: RootProperty<*>,
+        root: RootProperty,
         packets: List<IncomingZoneProt>,
     ) {
         root.apply {

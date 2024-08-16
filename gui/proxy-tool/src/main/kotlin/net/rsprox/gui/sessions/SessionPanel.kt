@@ -279,7 +279,7 @@ public class SessionPanel(
 
         override fun onTranscribe(
             cycle: Int,
-            property: RootProperty<*>,
+            property: RootProperty,
         ) {
             if (paused) return
             SwingUtilities.invokeLater {
@@ -291,7 +291,7 @@ public class SessionPanel(
         private fun createMessageNode(
             tickNode: AbstractMutableTreeTableNode,
             cycle: Int,
-            property: RootProperty<*>,
+            property: RootProperty,
         ) {
             val previewText = getPreviewText(property)
             val rootNode = MessageTreeTableNode(previewText, property.prot)
@@ -326,7 +326,7 @@ public class SessionPanel(
         private fun createMessageChildNodes(
             cycle: Int,
             parentNode: AbstractMutableTreeTableNode,
-            rootProperty: RootProperty<*>,
+            rootProperty: RootProperty,
             property: Property = rootProperty,
             indent: Int = 0,
         ) {
