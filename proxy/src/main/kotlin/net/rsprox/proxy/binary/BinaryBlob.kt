@@ -91,6 +91,7 @@ public data class BinaryBlob(
             return
         }
         write()
+        liveSession?.flush()
         this.lastIncomingBytes = 0
         this.lastOutgoingBytes = 0
         this.monitor.onIncomingBytesPerSecondUpdate(-1)
@@ -103,6 +104,7 @@ public data class BinaryBlob(
     }
 
     public fun reopen() {
+        liveSession?.flush()
         closed.set(false)
         this.monitor.onLogin(header)
     }
@@ -259,5 +261,4 @@ public data class BinaryBlob(
             return BinaryBlob(header, stream, 0, NopSessionMonitor, filters)
         }
     }
-
 }
