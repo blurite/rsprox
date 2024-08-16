@@ -28,11 +28,11 @@ public interface NpcType {
     public val retexsource: List<Int>
     public val retexdest: List<Int>
     public val op: List<String?>
-    public val visonmap: Boolean
+    public val minimap: Boolean
     public val vislevel: Int
     public val resizeh: Int
     public val resizev: Int
-    public val drawpriority: Boolean
+    public val alwaysontop: Boolean
     public val ambient: Int
     public val contrast: Int
     public val turnspeed: Int
