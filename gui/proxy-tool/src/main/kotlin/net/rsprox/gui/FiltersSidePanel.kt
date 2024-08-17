@@ -52,7 +52,7 @@ public class FiltersSidePanel(
     private val searchBox = JTextField(SEARCH)
 
     init {
-        layout = MigLayout("fill, ins panel, wrap 1, hidemode 3", "[grow]", "[][][][grow, fill]")
+        layout = MigLayout("fill, ins panel, wrap 1, hidemode 3", "[grow]", "[][][][22][grow, fill]")
 
         presetsBox.addItemListener { e ->
             if (e.stateChange != ItemEvent.SELECTED) return@addItemListener
@@ -144,7 +144,7 @@ public class FiltersSidePanel(
                         }
                     }
                 }
-            }
+            },
         )
         searchBox.document.addDocumentListener(
             object : DocumentListener {
@@ -169,7 +169,7 @@ public class FiltersSidePanel(
                         checkbox.parent.isVisible = filter.label.lowercase().contains(keyword)
                     }
                 }
-            }
+            },
         )
         add(searchBox, "growx")
 
