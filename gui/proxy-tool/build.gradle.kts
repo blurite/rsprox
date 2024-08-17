@@ -5,7 +5,6 @@ plugins {
 }
 
 dependencies {
-    implementation(projects.gui)
     implementation(libs.bundles.flatlaf)
     implementation(libs.mig.layout)
     implementation(projects.proxy)
