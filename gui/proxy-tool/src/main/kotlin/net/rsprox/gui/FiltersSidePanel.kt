@@ -137,9 +137,6 @@ public class FiltersSidePanel(
                     if (searchBox.text.isNullOrEmpty()) {
                         searchBox.text = SEARCH
                         checkboxes.forEach { (_, checkbox) ->
-                            if (!checkbox.isVisible) {
-                                checkbox.isVisible = true
-                            }
                             val parent = checkbox.parent
                             if (!parent.isVisible) {
                                 parent.isVisible = true
@@ -169,9 +166,7 @@ public class FiltersSidePanel(
                         return
                     }
                     checkboxes.forEach { (filter, checkbox) ->
-                        val visible = filter.label.lowercase().contains(keyword)
-                        checkbox.isVisible = visible
-                        checkbox.parent.isVisible = visible
+                        checkbox.parent.isVisible = filter.label.lowercase().contains(keyword)
                     }
                 }
             }
