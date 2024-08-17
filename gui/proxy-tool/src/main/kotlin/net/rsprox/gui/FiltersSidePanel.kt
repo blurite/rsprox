@@ -14,6 +14,8 @@ import net.rsprox.shared.filters.PropertyFilter
 import net.rsprox.shared.filters.ProtCategory
 import java.awt.BorderLayout
 import java.awt.event.ActionListener
+import java.awt.event.FocusEvent
+import java.awt.event.FocusListener
 import java.awt.event.ItemEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -29,9 +31,12 @@ import javax.swing.JOptionPane
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.JScrollPane
+import javax.swing.JTextField
 import javax.swing.ScrollPaneConstants
 import javax.swing.SwingUtilities
 import javax.swing.UIManager
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
 
 public class FiltersSidePanel(
     private val proxyService: ProxyService,
@@ -44,6 +49,7 @@ public class FiltersSidePanel(
     private val checkboxes = hashMapOf<PropertyFilter, JCheckBox>()
     private val incomingPanel = FiltersPanel(StreamDirection.SERVER_TO_CLIENT)
     private val outgoingPanel = FiltersPanel(StreamDirection.CLIENT_TO_SERVER)
+    private val searchBox = JTextField(SEARCH)
 
     init {
         layout = MigLayout("fill, ins panel, wrap 1, hidemode 3", "[grow]", "[][][][grow, fill]")
@@ -117,6 +123,60 @@ public class FiltersSidePanel(
             }
 
         add(controlPanel, "growx")
+
+        searchBox.addFocusListener(
+            object : FocusListener {
+                override fun focusGained(e: FocusEvent?) {
+                    val text = searchBox.text ?: ""
+                    if (text == SEARCH) {
+                        searchBox.text = ""
+                    }
+                }
+
+                override fun focusLost(e: FocusEvent?) {
+                    if (searchBox.text.isNullOrEmpty()) {
+                        searchBox.text = SEARCH
+                        checkboxes.forEach { (_, checkbox) ->
+                            if (!checkbox.isVisible) {
+                                checkbox.isVisible = true
+                            }
+                            val parent = checkbox.parent
+                            if (!parent.isVisible) {
+                                parent.isVisible = true
+                            }
+                        }
+                    }
+                }
+            }
+        )
+        searchBox.document.addDocumentListener(
+            object : DocumentListener {
+                override fun insertUpdate(e: DocumentEvent?) {
+                    search()
+                }
+
+                override fun removeUpdate(e: DocumentEvent?) {
+                    search()
+                }
+
+                override fun changedUpdate(e: DocumentEvent?) {
+                    search()
+                }
+
+                private fun search() {
+                    val keyword = searchBox.text.lowercase().trim()
+                    if (keyword.contentEquals(SEARCH.lowercase())) {
+                        return
+                    }
+                    checkboxes.forEach { (filter, checkbox) ->
+                        val visible = filter.label.lowercase().contains(keyword)
+                        checkbox.isVisible = visible
+                        checkbox.parent.isVisible = visible
+                    }
+                }
+            }
+        )
+        add(searchBox, "growx")
 
         val tabbedGroup = FlatTabbedPane()
         tabbedGroup.addTab("Incoming", incomingPanel.wrapWithBorderlessScrollPane())
@@ -374,6 +434,8 @@ public class FiltersSidePanel(
     }
 
     private companion object {
+        private const val SEARCH: String = "Search filters..."
+
         private fun JComponent.wrapWithBorderlessScrollPane() =
             JScrollPane(this).apply {
                 horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
