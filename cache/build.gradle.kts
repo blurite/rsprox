@@ -5,7 +5,10 @@ dependencies {
     implementation(rootProject.libs.netty.handler)
     implementation(rootProject.libs.netty.codec.http)
     implementation(rootProject.libs.rsprot.crypto)
-    implementation(libs.bundles.openrs2)
+    implementation(libs.bundles.openrs2) {
+        // excluded due to artifact size + not used
+        exclude(group = "org.xerial", module = "sqlite-jdbc")
+    }
     implementation(libs.bundles.jackson)
     implementation(libs.inline.logger)
     implementation(libs.rsprot.buffer)
