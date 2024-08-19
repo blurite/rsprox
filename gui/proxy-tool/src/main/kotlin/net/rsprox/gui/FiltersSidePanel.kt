@@ -165,8 +165,10 @@ public class FiltersSidePanel(
                     if (keyword.contentEquals(SEARCH.lowercase())) {
                         return
                     }
+                    val splitSearch = keyword.split(' ', '_')
                     checkboxes.forEach { (filter, checkbox) ->
-                        checkbox.parent.isVisible = filter.label.lowercase().contains(keyword)
+                        val searchTerms = filter.searchTerms
+                        checkbox.parent.isVisible = splitSearch.all { it in searchTerms }
                     }
                 }
             },
