@@ -142,6 +142,8 @@ public class FiltersSidePanel(
                                 parent.isVisible = true
                             }
                         }
+                        incomingPanel.refreshHeaderPanelStatus()
+                        outgoingPanel.refreshHeaderPanelStatus()
                     }
                 }
             },
@@ -170,6 +172,8 @@ public class FiltersSidePanel(
                         val searchTerms = filter.searchTerms
                         checkbox.parent.isVisible = splitSearch.all { it in searchTerms }
                     }
+                    incomingPanel.refreshHeaderPanelStatus()
+                    outgoingPanel.refreshHeaderPanelStatus()
                 }
             },
         )
@@ -272,6 +276,27 @@ public class FiltersSidePanel(
 
             for ((category, properties) in filteredProperties) {
                 add(createCategoryPanel(category, properties), "growx")
+            }
+        }
+
+        fun refreshHeaderPanelStatus() {
+            val properties =
+                PropertyFilter.entries
+                    .filter { it.direction == direction }
+                    .groupBy { it.category }
+                    .values
+                    .flatten()
+            for ((category, checkbox) in headerCheckboxes) {
+                val props = properties.filter { it.category == category }
+                val visible = props.any { checkboxes.getValue(it).parent.isVisible }
+                checkbox.parent.isVisible = visible
+                checkbox.parent.parent.isVisible = visible
+                val separators =
+                    checkbox.parent.parent.components
+                        .filterIsInstance<FlatSeparator>()
+                for (separator in separators) {
+                    separator.isVisible = visible
+                }
             }
         }
 
