@@ -18,6 +18,7 @@ import kotlin.io.path.bufferedWriter
 import kotlin.io.path.exists
 import kotlin.io.path.nameWithoutExtension
 
+@Suppress("DuplicatedCode")
 public class BinaryToStringCommand : CliktCommand(name = "tostring") {
     private val name by option("-name")
 
@@ -25,6 +26,7 @@ public class BinaryToStringCommand : CliktCommand(name = "tostring") {
         val pluginLoader = PluginLoader()
         HuffmanProvider.load()
         val provider = StatefulCacheProvider(HistoricCacheResolver())
+        val filters = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY)
         val fileName = this.name
         if (fileName != null) {
             val binaryName = if (fileName.endsWith(".bin")) fileName else "$fileName.bin"
@@ -33,29 +35,35 @@ public class BinaryToStringCommand : CliktCommand(name = "tostring") {
                 echo("Unable to locate file $fileName in $BINARY_PATH")
                 return
             }
-            simpleTranscribe(file, pluginLoader, provider)
+            val binary = BinaryBlob.decode(file, filters)
+            simpleTranscribe(file, binary, pluginLoader, provider)
         } else {
+            // Sort all the binaries according to revision, so we don't end up loading and unloading plugins
+            // repeatedly for the same things, as we can only have one plugin available at a time
+            // to avoid classloading problems
             val fileTreeWalk =
                 BINARY_PATH
                     .toFile()
                     .walkTopDown()
                     .filter { it.extension == "bin" }
-            for (bin in fileTreeWalk) {
-                if (BINARY_PATH.resolve(bin.nameWithoutExtension + ".txt").exists()) {
+                    .map { it.toPath() }
+                    .map { it to BinaryBlob.decode(it, filters) }
+                    .sortedBy { it.second.header.revision }
+            for ((path, blob) in fileTreeWalk) {
+                if (BINARY_PATH.resolve(path.nameWithoutExtension + ".txt").exists()) {
                     continue
                 }
-                simpleTranscribe(bin.toPath(), pluginLoader, provider)
+                simpleTranscribe(path, blob, pluginLoader, provider)
             }
         }
     }
 
     private fun simpleTranscribe(
         binaryPath: Path,
+        binary: BinaryBlob,
         pluginLoader: PluginLoader,
         statefulCacheProvider: StatefulCacheProvider,
     ) {
-        val filters = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY)
-        val binary = BinaryBlob.decode(binaryPath, filters)
         statefulCacheProvider.update(
             Js5MasterIndex.trimmed(
                 binary.header.revision,

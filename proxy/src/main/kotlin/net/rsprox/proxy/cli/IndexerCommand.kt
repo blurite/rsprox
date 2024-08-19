@@ -15,6 +15,7 @@ import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.util.NopSessionMonitor
 import net.rsprox.shared.StreamDirection
+import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.indexing.MultiMapBinaryIndex
 import net.rsprox.transcriber.BaseMessageConsumerContainer
 import java.nio.file.Files
@@ -22,6 +23,7 @@ import java.nio.file.Path
 import java.util.Locale
 import kotlin.io.path.bufferedWriter
 import kotlin.io.path.exists
+import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 import kotlin.time.measureTime
 
@@ -34,6 +36,7 @@ public class IndexerCommand : CliktCommand(name = "index") {
         val pluginLoader = PluginLoader()
         HuffmanProvider.load()
         val provider = StatefulCacheProvider(HistoricCacheResolver())
+        val filters = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY)
         val fileName = this.name
         if (fileName != null) {
             val binaryName = if (fileName.endsWith(".bin")) fileName else "$fileName.bin"
@@ -42,34 +45,41 @@ public class IndexerCommand : CliktCommand(name = "index") {
                 echo("Unable to locate file $fileName in $BINARY_PATH")
                 return
             }
+            val binary = BinaryBlob.decode(file, filters)
             val time =
                 measureTime {
-                    stdoutTranscribe(file, pluginLoader, provider)
+                    index(file, binary, pluginLoader, provider, filters)
                 }
             logger.debug { "$file took $time to index." }
         } else {
+            // Sort all the binaries according to revision, so we don't end up loading and unloading plugins
+            // repeatedly for the same things, as we can only have one plugin available at a time
+            // to avoid classloading problems
             val fileTreeWalk =
                 BINARY_PATH
                     .toFile()
                     .walkTopDown()
                     .filter { it.extension == "bin" }
-            for (bin in fileTreeWalk) {
+                    .map { it.toPath() }
+                    .map { it to BinaryBlob.decode(it, filters) }
+                    .sortedBy { it.second.header.revision }
+            for ((path, blob) in fileTreeWalk) {
                 val time =
                     measureTime {
-                        stdoutTranscribe(bin.toPath(), pluginLoader, provider)
+                        index(path, blob, pluginLoader, provider, filters)
                     }
-                logger.debug { "${bin.name} took $time to index." }
+                logger.debug { "${path.name} took $time to index." }
             }
         }
     }
 
-    private fun stdoutTranscribe(
+    private fun index(
         binaryPath: Path,
+        binary: BinaryBlob,
         pluginLoader: PluginLoader,
         statefulCacheProvider: StatefulCacheProvider,
+        filters: PropertyFilterSetStore,
     ) {
-        val filters = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY)
-        val binary = BinaryBlob.decode(binaryPath, filters)
         statefulCacheProvider.update(
             Js5MasterIndex.trimmed(
                 binary.header.revision,
