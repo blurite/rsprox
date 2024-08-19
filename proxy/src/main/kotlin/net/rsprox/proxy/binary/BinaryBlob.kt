@@ -204,7 +204,7 @@ public data class BinaryBlob(
                     OldSchoolCache(LiveCacheResolver(info), masterIndex)
                 }
             if (pluginLoader.getPluginOrNull(header.revision) == null) {
-                pluginLoader.loadTranscriberPlugins("osrs", provider)
+                pluginLoader.load("osrs", header.revision, provider)
             }
             val latestPlugin = pluginLoader.getPluginOrNull(header.revision)
             if (latestPlugin == null) {

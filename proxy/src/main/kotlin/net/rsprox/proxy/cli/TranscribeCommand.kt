@@ -37,7 +37,6 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
         val pluginLoader = PluginLoader()
         HuffmanProvider.load()
         val provider = StatefulCacheProvider(HistoricCacheResolver())
-        pluginLoader.loadTranscriberPlugins("osrs", provider)
         val fileName = this.name
         if (fileName != null) {
             val binaryName = if (fileName.endsWith(".bin")) fileName else "$fileName.bin"
@@ -80,6 +79,7 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
                 binary.header.js5MasterIndex,
             ),
         )
+        pluginLoader.load("osrs", binary.header.revision, statefulCacheProvider)
         val latestPlugin = pluginLoader.getPlugin(binary.header.revision)
         val transcriberProvider = pluginLoader.getTranscriberProvider(binary.header.revision)
         val session = DecodingSession(binary, latestPlugin)
@@ -163,5 +163,5 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
 }
 
 public fun main(args: Array<String>) {
-    IndexerCommand().main(args)
+    TranscribeCommand().main(args)
 }

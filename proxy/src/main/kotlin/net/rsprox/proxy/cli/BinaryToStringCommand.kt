@@ -25,7 +25,6 @@ public class BinaryToStringCommand : CliktCommand(name = "tostring") {
         val pluginLoader = PluginLoader()
         HuffmanProvider.load()
         val provider = StatefulCacheProvider(HistoricCacheResolver())
-        pluginLoader.loadDecoderPlugins("osrs", provider)
         val fileName = this.name
         if (fileName != null) {
             val binaryName = if (fileName.endsWith(".bin")) fileName else "$fileName.bin"
@@ -63,6 +62,7 @@ public class BinaryToStringCommand : CliktCommand(name = "tostring") {
                 binary.header.js5MasterIndex,
             ),
         )
+        pluginLoader.load("osrs", binary.header.revision, statefulCacheProvider)
         val latestPlugin = pluginLoader.getPlugin(binary.header.revision)
         val session = DecodingSession(binary, latestPlugin)
         var tick = 0

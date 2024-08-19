@@ -26,7 +26,6 @@ public class BinaryIndexer {
     public fun initialize() {
         Locale.setDefault(Locale.US)
         HuffmanProvider.load()
-        pluginLoader.loadTranscriberPlugins("osrs", statefulCacheProvider)
     }
 
     public fun index(binaryPath: Path): Map<IndexedType, Map<IndexedKey, Int>> {
@@ -38,6 +37,7 @@ public class BinaryIndexer {
                 binary.header.js5MasterIndex,
             ),
         )
+        pluginLoader.load("osrs", binary.header.revision, statefulCacheProvider)
         val latestPlugin = pluginLoader.getPlugin(binary.header.revision)
         val transcriberProvider = pluginLoader.getIndexerProvider(binary.header.revision)
         val session = DecodingSession(binary, latestPlugin)

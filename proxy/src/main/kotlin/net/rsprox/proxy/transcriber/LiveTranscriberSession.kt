@@ -4,7 +4,6 @@ import com.github.michaelbull.logging.InlineLogger
 import io.netty.buffer.ByteBuf
 import net.rsprot.buffer.extensions.toByteArray
 import net.rsprox.protocol.exceptions.DecodeError
-import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.session.Session
 import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.shared.StreamDirection
@@ -52,7 +51,7 @@ public class LiveTranscriberSession(
                     session,
                 )
             packetList += Packet(unidentified.direction, result.prot, result.message)
-            if (result.prot == GameServerProt.SERVER_TICK_END) {
+            if (result.prot.toString() == "SERVER_TICK_END") {
                 executeRunner(runner.preprocess(packetList))
                 packetList.clear()
             }
