@@ -16,8 +16,13 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
 
+    # TODO aws credentials
+
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
+
+    - name: Publish maven artifacts
+      run: ./gradlew publish
 
     - name: Upload jars to S3
       run: ./gradlew uploadJarsToS3

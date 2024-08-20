@@ -9,12 +9,16 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import java.security.MessageDigest
 import kotlin.io.path.fileSize
 
+val s3Bucket = "cdn.rsprox.net"
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    `maven-publish`
 }
 
 allprojects {
+    apply(plugin = "maven-publish")
+
     group = "net.rsprox"
     version = "1.0"
 
@@ -43,6 +47,20 @@ allprojects {
             explicitApi()
         }
     }
+
+    afterEvaluate {
+        publishing {
+            repositories {
+                maven {
+                    url = uri("s3://$s3Bucket/maven")
+                    credentials(AwsCredentials::class.java) {
+                        accessKey = System.getenv("AWS_ACCESS_KEY_ID")
+                        secretKey = System.getenv("AWS_SECRET_ACCESS_KEY")
+                    }
+                }
+            }
+        }
+    }
 }
 
 subprojects {
@@ -58,6 +76,7 @@ buildscript {
     dependencies {
         classpath(libs.bundles.jackson)
         classpath(libs.aws.sdk.kotlin.s3)
+        classpath(libs.jaxb.api) // s3 maven-publish dependency
     }
 }
 
@@ -85,15 +104,15 @@ suspend fun uploadToS3(
 ): Artifact {
     val request =
         PutObjectRequest {
-            bucket = "cdn.rsprox.net"
+            bucket = s3Bucket
             key = s3Path
             body = file.asByteStream()
         }
     s3Client.putObject(request)
-    println("Uploaded $file to s3://cdn.rsprox.net/dependencies/$s3Path")
+    println("Uploaded $file to s3://$s3Bucket/dependencies/$s3Path")
     return Artifact(
         file.name,
-        "https://cdn.rsprox.net/$s3Path",
+        "https://$s3Bucket/$s3Path",
         file.toPath().fileSize(),
         sha256Hash(file.readBytes()),
     )
