@@ -16,6 +16,7 @@ swingx = "1.6.5-1"
 shadowjar = "7.1.2"
 zip4j = "2.11.5"
 junixsocket = "2.10.0"
+runelite-launcher = "2.7.3"
 
 [libraries]
 netty-bom = { module = "io.netty:netty-bom", version.ref = "netty" }
@@ -49,6 +50,7 @@ openrs2-cache = { module = "org.openrs2:openrs2-cache", version.ref = "openrs2"}
 swingx = { module = "org.swinglabs.swingx:swingx-all", version.ref = "swingx" }
 zip4j = { module = "net.lingala.zip4j:zip4j", version.ref = "zip4j" }
 junixsocket = { module = "com.kohlschutter.junixsocket:junixsocket-core", version.ref = "junixsocket"}
+runelite-launcher = { module = "net.runelite:launcher", version.ref = "runelite-launcher"}
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

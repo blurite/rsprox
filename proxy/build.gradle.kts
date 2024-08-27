@@ -18,6 +18,7 @@ dependencies {
     implementation(rootProject.libs.bundles.bouncycastle)
     implementation(rootProject.libs.java.jwt)
     implementation(rootProject.libs.bundles.jackson)
+    implementation(rootProject.libs.runelite.launcher)
     implementation(projects.patch)
     implementation(projects.patch.patchNative)
     implementation(projects.patch.patchRunelite)
@@ -32,11 +33,11 @@ dependencies {
 }
 
 tasks.build.configure {
-    finalizedBy(*(buildPluginTaskDependencies() + buildSideTaskDependencies()).toTypedArray())
+    finalizedBy(buildPluginTaskDependencies().toTypedArray())
 }
 
 tasks.compileKotlin.configure {
-    finalizedBy(*(buildPluginTaskDependencies() + buildSideTaskDependencies()).toTypedArray())
+    finalizedBy(buildPluginTaskDependencies().toTypedArray())
 }
 
 fun buildPluginTaskDependencies(): List<String> {
@@ -52,10 +53,6 @@ fun buildPluginTaskDependencies(): List<String> {
                 task == ":transcriber:build"
         }
     return filteredTasks
-}
-
-fun buildSideTaskDependencies(): List<String> {
-    return listOf(":runelite-launcher:build")
 }
 
 fun buildSubprojectTree(projectName: String): List<String> {
