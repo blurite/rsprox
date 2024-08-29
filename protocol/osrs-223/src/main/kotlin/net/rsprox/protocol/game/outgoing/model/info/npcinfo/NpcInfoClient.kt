@@ -463,7 +463,6 @@ public class NpcInfoClient(
                     mirror,
                 ),
             )
-        throw IllegalStateException("Body customisation not supported due to lack of cache loading!")
     }
 
     private fun decodeHeadCustomisation(
@@ -533,7 +532,6 @@ public class NpcInfoClient(
                     mirror,
                 ),
             )
-        throw IllegalStateException("Head customisation not supported due to lack of cache loading!")
     }
 
     private fun decodeSay(
