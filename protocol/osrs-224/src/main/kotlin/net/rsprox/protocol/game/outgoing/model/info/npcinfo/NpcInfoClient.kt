@@ -608,7 +608,7 @@ public class NpcInfoClient(
         blocks: MutableList<ExtendedInfo>,
     ) {
         val x = buffer.g2Alt1()
-        val z = buffer.g2Alt2()
+        val z = buffer.g2Alt3()
         val instant = buffer.g1Alt3() == 1
         blocks += FaceCoordExtendedInfo(x, z, instant)
     }
