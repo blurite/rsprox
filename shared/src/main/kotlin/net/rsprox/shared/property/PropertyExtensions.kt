@@ -5,6 +5,7 @@ import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.property.filtered.FilteredNamedEnumProperty
 import net.rsprox.shared.property.filtered.FilteredScriptVarTypeProperty
 import net.rsprox.shared.property.formatted.FormattedIntProperty
+import net.rsprox.shared.property.regular.AnyProperty
 import net.rsprox.shared.property.regular.EnumProperty
 import net.rsprox.shared.property.regular.GroupProperty
 import net.rsprox.shared.property.regular.IdentifiedMultinpcProperty
@@ -323,6 +324,19 @@ public inline fun <reified T> Property.enum(
 ): EnumProperty<T> where T : Enum<T> {
     return child(
         EnumProperty(
+            name,
+            value,
+            T::class.java,
+        ),
+    )
+}
+
+public inline fun <reified T> Property.any(
+    name: String,
+    value: T,
+): AnyProperty<T> {
+    return child(
+        AnyProperty(
             name,
             value,
             T::class.java,
