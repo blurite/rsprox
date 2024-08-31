@@ -342,6 +342,9 @@ public class SessionPanel(
                     }
 
                     is ListProperty -> {
+                        val previewText = getPreviewText(child, indent)
+                        val groupNode = MessageTreeTableNode(previewText, child.propertyName)
+                        addNodeAndExpand(groupNode, parentNode, parentNode.childCount)
                     }
 
                     else -> {
