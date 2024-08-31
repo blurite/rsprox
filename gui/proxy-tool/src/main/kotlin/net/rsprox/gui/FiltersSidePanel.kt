@@ -177,7 +177,7 @@ public class FiltersSidePanel(
                 }
             },
         )
-        add(searchBox, "growx")
+        add(searchBox, "growx, wmin 230px")
 
         val tabbedGroup = FlatTabbedPane()
         tabbedGroup.addTab("Incoming", incomingPanel.wrapWithBorderlessScrollPane())
