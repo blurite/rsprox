@@ -147,6 +147,7 @@ import net.rsprox.shared.property.ChildProperty
 import net.rsprox.shared.property.NamedEnum
 import net.rsprox.shared.property.Property
 import net.rsprox.shared.property.RootProperty
+import net.rsprox.shared.property.any
 import net.rsprox.shared.property.boolean
 import net.rsprox.shared.property.com
 import net.rsprox.shared.property.coordGrid
@@ -1064,7 +1065,7 @@ public class BaseServerPacketTranscriber(
                     com(event.interfaceId, event.componentId)
                     int("start", event.start.maxUShortToMinusOne())
                     int("end", event.end.maxUShortToMinusOne())
-                    string("events", EventMask.list(event.events).toString())
+                    any("events", EventMask.list(event.events).toString())
                 }
             }
         }
@@ -1095,7 +1096,7 @@ public class BaseServerPacketTranscriber(
         root.com(message.interfaceId, message.componentId)
         root.int("start", message.start.maxUShortToMinusOne())
         root.int("end", message.end.maxUShortToMinusOne())
-        root.string("events", EventMask.list(message.events).toString())
+        root.any("events", EventMask.list(message.events).toString())
     }
 
     override fun ifSetHide(message: IfSetHide) {
