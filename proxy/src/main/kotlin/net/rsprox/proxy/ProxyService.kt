@@ -36,6 +36,7 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
 import net.rsprox.proxy.config.RUNELITE_LAUNCHER
+import net.rsprox.proxy.config.SETTINGS_DIRECTORY
 import net.rsprox.proxy.config.SIGN_KEY_DIRECTORY
 import net.rsprox.proxy.config.SOCKETS_DIRECTORY
 import net.rsprox.proxy.config.TEMP_CLIENTS_DIRECTORY
@@ -49,6 +50,7 @@ import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
+import net.rsprox.proxy.settings.DefaultSettingSetStore
 import net.rsprox.proxy.util.ClientType
 import net.rsprox.proxy.util.ConnectionInfo
 import net.rsprox.proxy.util.OperatingSystem
@@ -59,6 +61,7 @@ import net.rsprox.proxy.worlds.World
 import net.rsprox.proxy.worlds.WorldListProvider
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.filters.PropertyFilterSetStore
+import net.rsprox.shared.settings.SettingSetStore
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
 import org.newsclub.net.unix.AFUNIXServerSocket
 import org.newsclub.net.unix.AFUNIXSocketAddress
@@ -95,6 +98,8 @@ public class ProxyService(
     private lateinit var rsa: RSAPrivateCrtKeyParameters
     public lateinit var filterSetStore: PropertyFilterSetStore
         private set
+    public lateinit var settingsStore: SettingSetStore
+        private set
     private var properties: ProxyProperties by Delegates.notNull()
     private var availablePort: Int = -1
     private val processes: MutableMap<Int, Process> = mutableMapOf()
@@ -110,6 +115,7 @@ public class ProxyService(
         createConfigurationDirectories(TEMP_CLIENTS_DIRECTORY)
         createConfigurationDirectories(CACHES_DIRECTORY)
         createConfigurationDirectories(FILTERS_DIRECTORY)
+        createConfigurationDirectories(SETTINGS_DIRECTORY)
         createConfigurationDirectories(SOCKETS_DIRECTORY)
         createConfigurationDirectories(SIGN_KEY_DIRECTORY)
         createConfigurationDirectories(BINARY_CREDENTIALS_FOLDER)
@@ -121,6 +127,7 @@ public class ProxyService(
         this.rsa = loadRsa()
         progressCallback.update(0.25, "Proxy", "Loading property filters")
         this.filterSetStore = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY)
+        this.settingsStore = DefaultSettingSetStore.load(SETTINGS_DIRECTORY)
         this.availablePort = properties.getProperty(PROXY_PORT_MIN)
         this.bootstrapFactory = BootstrapFactory(allocator, properties)
         progressCallback.update(0.35, "Proxy", "Loading jav config")
