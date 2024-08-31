@@ -678,6 +678,7 @@ public class ProxyService(
                 properties.getProperty(BINARY_WRITE_INTERVAL_SECONDS),
                 connections,
                 filterSetStore,
+                settingsStore,
             )
         val timeoutSeconds = properties.getProperty(BIND_TIMEOUT_SECONDS).toLong()
         serverBootstrap

@@ -11,7 +11,21 @@ public enum class Setting(
         SettingGroup.LOGGING,
         SettingCategory.PREFS,
         "Prefer single quote",
-        true,
+        false,
         "When enabled, uses single quote whenever logging string-types. Otherwise, sticks to double quote.",
+    ),
+    HIDE_UNNECESSARY_VARPS(
+        SettingGroup.LOGGING,
+        SettingCategory.MISC,
+        "Hide Unnecessary Varps",
+        true,
+        "Hides the varp packet header if all the bit changes can be explained by varbits.",
+    ),
+    COLLAPSE_CLIENTSCRIPT_PARAMS(
+        SettingGroup.LOGGING,
+        SettingCategory.MISC,
+        "Collapse Clientscript Params",
+        true,
+        "Collapses clientscript params & types by putting them all in one line.",
     ),
 }

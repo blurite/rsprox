@@ -223,6 +223,7 @@ public class SessionPanel(
             OmitFilteredPropertyTreeFormatter(
                 PropertyFormatterCollection.default(
                     SymbolDictionaryProvider.get(),
+                    App.service.settingsStore,
                 ),
             )
 

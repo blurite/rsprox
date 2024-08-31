@@ -918,14 +918,6 @@ public enum class PropertyFilter(
         true,
         searchTerms = "varbit,player,varbs,variables,varps",
     ),
-    OMIT_VARP_FOR_VARBITS(
-        SERVER_TO_CLIENT,
-        ProtCategory.VARP,
-        "Hide Varp For Varbits",
-        true,
-        "Hides the varp packet header if all the bit changes can be explained by varbits.",
-        searchTerms = "hide,varp,varbits,no,changes",
-    ),
     VARP_RESET(
         SERVER_TO_CLIENT,
         ProtCategory.VARP,
@@ -1129,13 +1121,6 @@ public enum class PropertyFilter(
         "Clientscripts",
         true,
         searchTerms = "run,clientscripts,cs2s,proc,script,interfaces,ifs",
-    ),
-    INLINE_CLIENTSCRIPT_PARAMS(
-        SERVER_TO_CLIENT,
-        OTHER,
-        "Inline Clientscript Params",
-        false,
-        searchTerms = "inline,cs2s,parameters,params,clientscripts",
     ),
     TRIGGER_ONDIALOGABORT(
         SERVER_TO_CLIENT,

@@ -8,10 +8,12 @@ import net.rsprox.proxy.binary.BinaryBlob
 import net.rsprox.proxy.cache.StatefulCacheProvider
 import net.rsprox.proxy.config.BINARY_PATH
 import net.rsprox.proxy.config.FILTERS_DIRECTORY
+import net.rsprox.proxy.config.SETTINGS_DIRECTORY
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.proxy.plugin.PluginLoader
+import net.rsprox.proxy.settings.DefaultSettingSetStore
 import net.rsprox.shared.StreamDirection
 import java.nio.file.Path
 import kotlin.io.path.bufferedWriter
@@ -27,6 +29,7 @@ public class BinaryToStringCommand : CliktCommand(name = "tostring") {
         HuffmanProvider.load()
         val provider = StatefulCacheProvider(HistoricCacheResolver())
         val filters = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY)
+        val settings = DefaultSettingSetStore.load(SETTINGS_DIRECTORY)
         val fileName = this.name
         if (fileName != null) {
             val binaryName = if (fileName.endsWith(".bin")) fileName else "$fileName.bin"
@@ -35,7 +38,7 @@ public class BinaryToStringCommand : CliktCommand(name = "tostring") {
                 echo("Unable to locate file $fileName in $BINARY_PATH")
                 return
             }
-            val binary = BinaryBlob.decode(file, filters)
+            val binary = BinaryBlob.decode(file, filters, settings)
             simpleTranscribe(file, binary, pluginLoader, provider)
         } else {
             // Sort all the binaries according to revision, so we don't end up loading and unloading plugins
@@ -47,7 +50,7 @@ public class BinaryToStringCommand : CliktCommand(name = "tostring") {
                     .walkTopDown()
                     .filter { it.extension == "bin" }
                     .map { it.toPath() }
-                    .map { it to BinaryBlob.decode(it, filters) }
+                    .map { it to BinaryBlob.decode(it, filters, settings) }
                     .sortedBy { it.second.header.revision }
             for ((path, blob) in fileTreeWalk) {
                 if (BINARY_PATH.resolve(path.nameWithoutExtension + ".txt").exists()) {

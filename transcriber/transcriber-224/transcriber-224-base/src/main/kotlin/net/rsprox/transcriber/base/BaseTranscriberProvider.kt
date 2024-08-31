@@ -6,6 +6,7 @@ import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.indexing.BinaryIndex
 import net.rsprox.shared.property.OmitFilteredPropertyTreeFormatter
 import net.rsprox.shared.property.PropertyFormatterCollection
+import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.shared.symbols.SymbolDictionaryProvider
 import net.rsprox.transcriber.BaseMessageConsumerContainer
 import net.rsprox.transcriber.TranscriberPlugin
@@ -19,6 +20,7 @@ public class BaseTranscriberProvider : TranscriberProvider {
         cacheProvider: CacheProvider,
         monitor: SessionMonitor<*>,
         filters: PropertyFilterSetStore,
+        settings: SettingSetStore,
         binaryIndex: BinaryIndex,
     ): TranscriberRunner {
         val dictionary = SymbolDictionaryProvider.get()
@@ -27,6 +29,7 @@ public class BaseTranscriberProvider : TranscriberProvider {
             OmitFilteredPropertyTreeFormatter(
                 PropertyFormatterCollection.default(
                     dictionary,
+                    settings,
                 ),
             )
         val monitoredContainer = MonitoredMessageConsumerContainer(container, monitor)
@@ -38,6 +41,7 @@ public class BaseTranscriberProvider : TranscriberProvider {
                 monitoredContainer,
                 formatter,
                 filters,
+                settings,
             ),
         )
     }

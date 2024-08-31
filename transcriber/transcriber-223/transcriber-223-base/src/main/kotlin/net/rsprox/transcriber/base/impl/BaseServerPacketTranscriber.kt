@@ -178,6 +178,9 @@ import net.rsprox.shared.property.unidentifiedWorldEntity
 import net.rsprox.shared.property.varbit
 import net.rsprox.shared.property.varp
 import net.rsprox.shared.property.zoneCoordGrid
+import net.rsprox.shared.settings.Setting
+import net.rsprox.shared.settings.SettingSet
+import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.base.maxUShortToMinusOne
 import net.rsprox.transcriber.impl.ServerPacketTranscriber
 import net.rsprox.transcriber.state.Player
@@ -193,11 +196,14 @@ public class BaseServerPacketTranscriber(
     private val stateTracker: StateTracker,
     private val cache: Cache,
     private val filterSetStore: PropertyFilterSetStore,
+    private val settingSetStore: SettingSetStore,
 ) : ServerPacketTranscriber {
     private val root: RootProperty
         get() = checkNotNull(stateTracker.root.last())
     private val filters: PropertyFilterSet
         get() = filterSetStore.getActive()
+    private val settings: SettingSet
+        get() = settingSetStore.getActive()
 
     private fun omit() {
         stateTracker.deleteRoot()
@@ -1727,7 +1733,7 @@ public class BaseServerPacketTranscriber(
         if (message.types.isEmpty() || message.values.isEmpty()) {
             return
         }
-        if (filters[PropertyFilter.INLINE_CLIENTSCRIPT_PARAMS]) {
+        if (settings[Setting.COLLAPSE_CLIENTSCRIPT_PARAMS]) {
             root.list("types") {
                 for (i in message.types.indices) {
                     val char = message.types[i]
@@ -2165,7 +2171,7 @@ public class BaseServerPacketTranscriber(
         if (varps && !varbits) {
             return
         }
-        val omitVarpsForVarbits = filters[PropertyFilter.OMIT_VARP_FOR_VARBITS]
+        val omitVarpsForVarbits = settings[Setting.HIDE_UNNECESSARY_VARPS]
         val remainingBits = remainingImpactedBits(oldValue, newValue, impactedVarbits)
         // If only interested in varbits and varbits exist, create a varbit root
         val printAsVarbits =

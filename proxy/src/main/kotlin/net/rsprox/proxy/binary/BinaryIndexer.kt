@@ -4,10 +4,12 @@ import net.rsprox.cache.Js5MasterIndex
 import net.rsprox.cache.resolver.HistoricCacheResolver
 import net.rsprox.proxy.cache.StatefulCacheProvider
 import net.rsprox.proxy.config.FILTERS_DIRECTORY
+import net.rsprox.proxy.config.SETTINGS_DIRECTORY
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.proxy.plugin.PluginLoader
+import net.rsprox.proxy.settings.DefaultSettingSetStore
 import net.rsprox.proxy.util.NopSessionMonitor
 import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.indexing.IndexedKey
@@ -30,7 +32,8 @@ public class BinaryIndexer {
 
     public fun index(binaryPath: Path): Map<IndexedType, Map<IndexedKey, Int>> {
         val filters = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY)
-        val binary = BinaryBlob.decode(binaryPath, filters)
+        val settings = DefaultSettingSetStore.load(SETTINGS_DIRECTORY)
+        val binary = BinaryBlob.decode(binaryPath, filters, settings)
         statefulCacheProvider.update(
             Js5MasterIndex.trimmed(
                 binary.header.revision,
@@ -51,6 +54,7 @@ public class BinaryIndexer {
                 statefulCacheProvider,
                 NopSessionMonitor,
                 filters,
+                settings,
                 index,
             )
 
