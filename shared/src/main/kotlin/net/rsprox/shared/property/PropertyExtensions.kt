@@ -272,6 +272,44 @@ public fun <V> Property.scriptVarType(
     return result as ScriptVarTypeProperty<V>
 }
 
+public fun <V> createScriptVarType(
+    name: String,
+    type: ScriptVarType,
+    value: V,
+): ScriptVarTypeProperty<V> {
+    val result =
+        when (type.baseVarType) {
+            BaseVarType.INTEGER -> {
+                ScriptVarTypeProperty(
+                    Int::class.java,
+                    type,
+                    name,
+                    value as Int,
+                )
+            }
+
+            BaseVarType.LONG -> {
+                ScriptVarTypeProperty(
+                    Long::class.java,
+                    type,
+                    name,
+                    value as Long,
+                )
+            }
+
+            BaseVarType.STRING -> {
+                ScriptVarTypeProperty(
+                    type(),
+                    type,
+                    name,
+                    value as? String?,
+                )
+            }
+        }
+    @Suppress("UNCHECKED_CAST")
+    return result as ScriptVarTypeProperty<V>
+}
+
 public fun <V> Property.filteredScriptVarType(
     name: String,
     type: ScriptVarType,

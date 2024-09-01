@@ -146,11 +146,13 @@ import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.property.ChildProperty
 import net.rsprox.shared.property.NamedEnum
 import net.rsprox.shared.property.Property
+import net.rsprox.shared.property.PropertyFormatterCollection
 import net.rsprox.shared.property.RootProperty
 import net.rsprox.shared.property.any
 import net.rsprox.shared.property.boolean
 import net.rsprox.shared.property.com
 import net.rsprox.shared.property.coordGrid
+import net.rsprox.shared.property.createScriptVarType
 import net.rsprox.shared.property.enum
 import net.rsprox.shared.property.filteredBoolean
 import net.rsprox.shared.property.filteredInt
@@ -198,6 +200,7 @@ public class BaseServerPacketTranscriber(
     private val cache: Cache,
     private val filterSetStore: PropertyFilterSetStore,
     private val settingSetStore: SettingSetStore,
+    private val formatterCollection: PropertyFormatterCollection,
 ) : ServerPacketTranscriber {
     private val root: RootProperty
         get() = checkNotNull(stateTracker.root.last())
@@ -1736,6 +1739,45 @@ public class BaseServerPacketTranscriber(
             return
         }
         if (settings[Setting.COLLAPSE_CLIENTSCRIPT_PARAMS]) {
+            val types =
+                message.types.joinToString { char ->
+                    val type =
+                        ScriptVarType.entries.first { type ->
+                            type.char == char
+                        }
+                    type.fullName
+                }
+            val values = mutableListOf<String>()
+            for (i in message.types.indices) {
+                val char = message.types[i]
+                val value = message.values[i].toString()
+                val type =
+                    ScriptVarType.entries.first { type ->
+                        type.char == char
+                    }
+                val property =
+                    createScriptVarType(
+                        "",
+                        type,
+                        if (type ==
+                            ScriptVarType.STRING
+                        ) {
+                            value
+                        } else {
+                            value.toInt()
+                        },
+                    )
+                val formatter = formatterCollection.getTypedFormatter(property.javaClass)
+                val result = formatter?.format(property) ?: property.value
+                values += result.toString()
+            }
+            val valuesString = values.toString()
+            val length = types.length + valuesString.length
+            if (length <= 75) {
+                root.any("types", "[$types]")
+                root.any("values", valuesString)
+                return
+            }
             root.list("types") {
                 for (i in message.types.indices) {
                     val char = message.types[i]

@@ -6,6 +6,7 @@ import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.filters.PropertyFilterSetStore
+import net.rsprox.shared.property.OmitFilteredPropertyTreeFormatter
 import net.rsprox.shared.property.PropertyTreeFormatter
 import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.MessageConsumerContainer
@@ -40,6 +41,7 @@ public class BaseTranscriber private constructor(
         cacheProvider.get(),
         filterSetStore,
         settingSetStore,
+        (formatter as OmitFilteredPropertyTreeFormatter).propertyFormatterCollection, // Unsafe but works for now
     ),
     PlayerInfoTranscriber by BasePlayerInfoTranscriber(
         stateTracker,
