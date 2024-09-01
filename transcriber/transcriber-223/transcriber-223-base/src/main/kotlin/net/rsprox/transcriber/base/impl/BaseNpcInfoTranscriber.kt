@@ -158,14 +158,6 @@ public class BaseNpcInfoTranscriber(
     }
 
     private fun Property.coordGrid(
-        name: String,
-        coordGrid: CoordGrid,
-    ): ScriptVarTypeProperty<*> {
-        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(coordGrid)
-        return coordGridProperty(coord.level, coord.x, coord.z, name)
-    }
-
-    private fun Property.coordGrid(
         level: Int,
         x: Int,
         z: Int,
@@ -462,12 +454,13 @@ public class BaseNpcInfoTranscriber(
         if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
             shortNpc(npc.index)
         }
-        val curX = npc.coord.x
-        val curZ = npc.coord.z
-        val level = npc.coord.level
-        coordGrid("to1", CoordGrid(level, curX - info.deltaX2, curZ - info.deltaZ2))
+        val activeWorld = stateTracker.getActiveWorld()
+        val baseCoord = activeWorld.getInstancedCoordOrSelf(npc.coord)
+        val to1 = CoordGrid(baseCoord.level, baseCoord.x - info.deltaX2, baseCoord.z - info.deltaZ2)
+        coordGridProperty(to1.level, to1.x, to1.z, "to1")
         int("delay1", info.delay1)
-        coordGrid("to2", CoordGrid(level, curX - info.deltaX1, curZ - info.deltaZ1))
+        val to2 = CoordGrid(baseCoord.level, baseCoord.x - info.deltaX1, baseCoord.z - info.deltaZ1)
+        coordGridProperty(to2.level, to2.x, to2.z, "to2")
         int("delay2", info.delay2)
         int("angle", info.direction)
     }

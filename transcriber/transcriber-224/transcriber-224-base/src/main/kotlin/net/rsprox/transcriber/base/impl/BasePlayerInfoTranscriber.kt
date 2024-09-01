@@ -547,12 +547,13 @@ public class BasePlayerInfoTranscriber(
         if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
             shortPlayer(player.index)
         }
-        val curX = player.coord.x
-        val curZ = player.coord.z
-        val level = player.coord.level
-        coordGrid("to1", CoordGrid(level, curX - info.deltaX2, curZ - info.deltaZ2))
+        val activeWorld = stateTracker.getActiveWorld()
+        val baseCoord = activeWorld.getInstancedCoordOrSelf(player.coord)
+        val to1 = CoordGrid(baseCoord.level, baseCoord.x - info.deltaX2, baseCoord.z - info.deltaZ2)
+        coordGridProperty(to1.level, to1.x, to1.z, "to1")
         int("delay1", info.delay1)
-        coordGrid("to2", CoordGrid(level, curX - info.deltaX1, curZ - info.deltaZ1))
+        val to2 = CoordGrid(baseCoord.level, baseCoord.x - info.deltaX1, baseCoord.z - info.deltaZ1)
+        coordGridProperty(to2.level, to2.x, to2.z, "to2")
         int("delay2", info.delay2)
         int("angle", info.direction)
     }

@@ -457,10 +457,10 @@ public class PlayerInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val deltaX1 = buffer.g1()
-        val deltaZ1 = buffer.g1Alt2()
-        val deltaX2 = buffer.g1Alt2()
-        val deltaZ2 = buffer.g1Alt1()
+        val deltaX1 = buffer.g1s()
+        val deltaZ1 = buffer.g1sAlt2()
+        val deltaX2 = buffer.g1sAlt2()
+        val deltaZ2 = buffer.g1sAlt1()
         val delay1 = buffer.g2Alt2()
         val delay2 = buffer.g2Alt2()
         val direction = buffer.g2Alt3()

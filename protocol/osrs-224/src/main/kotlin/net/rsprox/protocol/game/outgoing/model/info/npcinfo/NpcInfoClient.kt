@@ -546,10 +546,10 @@ public class NpcInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val deltaX1 = buffer.g1Alt1()
-        val deltaZ1 = buffer.g1Alt3()
-        val deltaX2 = buffer.g1Alt3()
-        val deltaZ2 = buffer.g1Alt3()
+        val deltaX1 = buffer.g1sAlt1()
+        val deltaZ1 = buffer.g1sAlt3()
+        val deltaX2 = buffer.g1sAlt3()
+        val deltaZ2 = buffer.g1sAlt3()
         val delay1 = buffer.g2Alt3()
         val delay2 = buffer.g2Alt1()
         val direction = buffer.g2Alt1()
