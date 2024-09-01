@@ -32,7 +32,7 @@ public enum class Setting(
     PLAYER_EXT_INFO_INLINE(
         SettingGroup.LOGGING,
         SettingCategory.PLAYER_INFO,
-        "Player Extended Info Inline",
+        "Ext. Info Player Indicator",
         false,
         "Adds a short entry in-front of any extended info blocks, indicating the player on whom it is applied.",
     ),
@@ -71,5 +71,41 @@ public enum class Setting(
         "Local Player Only",
         true,
         "Only show player info updates for the local player - everyone else shall be skipped.",
+    ),
+    NPC_EXT_INFO_INDICATOR(
+        SettingGroup.LOGGING,
+        SettingCategory.NPC_INFO,
+        "Ext. Info NPC Indicator",
+        false,
+        "Adds a short entry in-front of any extended info blocks, indicating the NPC on whom it is applied.",
+    ),
+    HIDE_NPC_INDICES(
+        SettingGroup.LOGGING,
+        SettingCategory.NPC_INFO,
+        "Hide NPC Indices",
+        false,
+        "Hides the index property in NPC info logs for all NPCs.",
+    ),
+    NPC_REMOVAL(
+        SettingGroup.LOGGING,
+        SettingCategory.NPC_INFO,
+        "Npc Removal",
+        false,
+        "Whether to log NPCs being being removed from your view.",
+    ),
+    NPC_INFO_HIDE_INACTIVE_NPCS(
+        SettingGroup.LOGGING,
+        SettingCategory.NPC_INFO,
+        "Hide Inactive NPCs",
+        true,
+        "Hides any NPCs who do not have an active extended info block applied. " +
+            "This will hide NPCs that are moving if they do not have extended info applied.",
+    ),
+    NPC_INFO_HIDE_EMPTY(
+        SettingGroup.LOGGING,
+        SettingCategory.NPC_INFO,
+        "Hide Empty Npc Info",
+        true,
+        "Hides the NPC info packet entry if there are no logged entries to show.",
     ),
 }

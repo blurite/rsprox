@@ -86,7 +86,7 @@ public class BasePlayerInfoTranscriber(
         val world = stateTracker.getActiveWorld()
         val npc = world.getNpcOrNull(index) ?: return unidentifiedNpc(index)
         val finalIndex =
-            if (filters[PropertyFilter.NPC_OMIT_INDEX]) {
+            if (settings[Setting.HIDE_NPC_INDICES]) {
                 Int.MIN_VALUE
             } else {
                 index

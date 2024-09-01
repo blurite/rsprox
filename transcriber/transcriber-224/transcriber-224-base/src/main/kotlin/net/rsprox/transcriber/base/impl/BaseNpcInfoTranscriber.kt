@@ -89,7 +89,7 @@ public class BaseNpcInfoTranscriber(
         val world = stateTracker.getActiveWorld()
         val npc = world.getNpcOrNull(index) ?: return unidentifiedNpc(index)
         val finalIndex =
-            if (filters[PropertyFilter.NPC_OMIT_INDEX]) {
+            if (settings[Setting.HIDE_NPC_INDICES]) {
                 Int.MIN_VALUE
             } else {
                 index
@@ -239,7 +239,7 @@ public class BaseNpcInfoTranscriber(
                 for ((index, update) in message.updates) {
                     when (update) {
                         is NpcUpdateType.Active -> {
-                            if (filters[PropertyFilter.NPC_INFO_OMIT_NO_EXTENDED_INFO] &&
+                            if (settings[Setting.NPC_INFO_HIDE_INACTIVE_NPCS] &&
                                 update.extendedInfo.isEmpty()
                             ) {
                                 continue
@@ -273,14 +273,14 @@ public class BaseNpcInfoTranscriber(
                             }
                         }
                         NpcUpdateType.HighResolutionToLowResolution -> {
-                            if (filters[PropertyFilter.NPC_REMOVAL]) {
+                            if (settings[Setting.NPC_REMOVAL]) {
                                 group("DEL") {
                                     npc(index)
                                 }
                             }
                         }
                         is NpcUpdateType.LowResolutionToHighResolution -> {
-                            if (filters[PropertyFilter.NPC_INFO_OMIT_NO_EXTENDED_INFO] &&
+                            if (settings[Setting.NPC_INFO_HIDE_INACTIVE_NPCS] &&
                                 update.extendedInfo.isEmpty()
                             ) {
                                 continue
@@ -305,7 +305,7 @@ public class BaseNpcInfoTranscriber(
         // If no children were added to the root group, it means no npcs are being updated
         // In this case, remove the empty line that the group is generating
         if (children.isEmpty()) {
-            if (filters[PropertyFilter.NPC_INFO_OMIT_EMPTY]) {
+            if (settings[Setting.NPC_INFO_HIDE_EMPTY]) {
                 return omit()
             }
             root.children.clear()
@@ -445,7 +445,7 @@ public class BaseNpcInfoTranscriber(
         npc: Npc,
         info: ExactMoveExtendedInfo,
     ) {
-        if (filters[PropertyFilter.NPC_EXT_INFO_INLINE]) {
+        if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
             shortNpc(npc.index)
         }
         val curX = npc.coord.x
@@ -462,7 +462,7 @@ public class BaseNpcInfoTranscriber(
         npc: Npc,
         info: FacePathingEntityExtendedInfo,
     ) {
-        if (filters[PropertyFilter.NPC_EXT_INFO_INLINE]) {
+        if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
             shortNpc(npc.index)
         }
         if (info.index == 0xFFFFFF) {
@@ -478,7 +478,7 @@ public class BaseNpcInfoTranscriber(
     ) {
         for (hit in info.hits) {
             group("HIT") {
-                if (filters[PropertyFilter.NPC_EXT_INFO_INLINE]) {
+                if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
                     shortNpc(npc.index)
                 }
                 scriptVarType("id", ScriptVarType.HITMARK, hit.type)
@@ -492,7 +492,7 @@ public class BaseNpcInfoTranscriber(
         }
         for (headbar in info.headbars) {
             group("HEADBAR") {
-                if (filters[PropertyFilter.NPC_EXT_INFO_INLINE]) {
+                if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
                     shortNpc(npc.index)
                 }
                 scriptVarType("id", ScriptVarType.HEADBAR, headbar.type)
@@ -514,7 +514,7 @@ public class BaseNpcInfoTranscriber(
         npc: Npc,
         info: SayExtendedInfo,
     ) {
-        if (filters[PropertyFilter.NPC_EXT_INFO_INLINE]) {
+        if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
             shortNpc(npc.index)
         }
         string("text", info.text)
@@ -524,7 +524,7 @@ public class BaseNpcInfoTranscriber(
         npc: Npc,
         info: SequenceExtendedInfo,
     ) {
-        if (filters[PropertyFilter.NPC_EXT_INFO_INLINE]) {
+        if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
             shortNpc(npc.index)
         }
         scriptVarType("id", ScriptVarType.SEQ, info.id.maxUShortToMinusOne())
@@ -535,7 +535,7 @@ public class BaseNpcInfoTranscriber(
         npc: Npc,
         info: TintingExtendedInfo,
     ) {
-        if (filters[PropertyFilter.NPC_EXT_INFO_INLINE]) {
+        if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
             shortNpc(npc.index)
         }
         int("start", info.start)
@@ -552,7 +552,7 @@ public class BaseNpcInfoTranscriber(
     ) {
         for ((slot, spotanim) in info.spotanims) {
             group("SPOTANIM") {
-                if (filters[PropertyFilter.NPC_EXT_INFO_INLINE]) {
+                if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
                     shortNpc(npc.index)
                 }
                 filteredInt("slot", slot, 0)
@@ -567,7 +567,7 @@ public class BaseNpcInfoTranscriber(
         npc: Npc,
         info: OldSpotanimExtendedInfo,
     ) {
-        if (filters[PropertyFilter.NPC_EXT_INFO_INLINE]) {
+        if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
             shortNpc(npc.index)
         }
         scriptVarType("id", ScriptVarType.SPOTANIM, info.id.maxUShortToMinusOne())
@@ -579,7 +579,7 @@ public class BaseNpcInfoTranscriber(
         npc: Npc,
         info: BaseAnimationSetExtendedInfo,
     ) {
-        if (filters[PropertyFilter.NPC_EXT_INFO_INLINE]) {
+        if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
             shortNpc(npc.index)
         }
         val turnleft = info.turnLeftAnim
@@ -648,7 +648,7 @@ public class BaseNpcInfoTranscriber(
         npc: Npc,
         info: BodyCustomisationExtendedInfo,
     ) {
-        if (filters[PropertyFilter.NPC_EXT_INFO_INLINE]) {
+        if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
             shortNpc(npc.index)
         }
         when (val type = info.type) {
@@ -691,7 +691,7 @@ public class BaseNpcInfoTranscriber(
         npc: Npc,
         info: HeadCustomisationExtendedInfo,
     ) {
-        if (filters[PropertyFilter.NPC_EXT_INFO_INLINE]) {
+        if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
             shortNpc(npc.index)
         }
         when (val type = info.type) {
@@ -734,7 +734,7 @@ public class BaseNpcInfoTranscriber(
         npc: Npc,
         info: CombatLevelChangeExtendedInfo,
     ) {
-        if (filters[PropertyFilter.NPC_EXT_INFO_INLINE]) {
+        if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
             shortNpc(npc.index)
         }
         formattedInt("level", info.level)
@@ -744,7 +744,7 @@ public class BaseNpcInfoTranscriber(
         npc: Npc,
         info: EnabledOpsExtendedInfo,
     ) {
-        if (filters[PropertyFilter.NPC_EXT_INFO_INLINE]) {
+        if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
             shortNpc(npc.index)
         }
         string("opflags", info.value.toFullBinaryString(5))
@@ -754,7 +754,7 @@ public class BaseNpcInfoTranscriber(
         npc: Npc,
         info: FaceCoordExtendedInfo,
     ) {
-        if (filters[PropertyFilter.NPC_EXT_INFO_INLINE]) {
+        if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
             shortNpc(npc.index)
         }
         coordGrid(npc.coord.level, info.x, info.z)
@@ -765,7 +765,7 @@ public class BaseNpcInfoTranscriber(
         npc: Npc,
         info: NameChangeExtendedInfo,
     ) {
-        if (filters[PropertyFilter.NPC_EXT_INFO_INLINE]) {
+        if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
             shortNpc(npc.index)
         }
         string("name", info.name)
@@ -775,7 +775,7 @@ public class BaseNpcInfoTranscriber(
         npc: Npc,
         info: TransformationExtendedInfo,
     ) {
-        if (filters[PropertyFilter.NPC_EXT_INFO_INLINE]) {
+        if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
             shortNpc(npc.index)
         }
         scriptVarType("id", ScriptVarType.NPC, info.id)
@@ -792,7 +792,7 @@ public class BaseNpcInfoTranscriber(
                 continue
             }
             group("HEADICON") {
-                if (filters[PropertyFilter.NPC_EXT_INFO_INLINE]) {
+                if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
                     shortNpc(npc.index)
                 }
                 scriptVarType("id", ScriptVarType.GRAPHIC, group)
