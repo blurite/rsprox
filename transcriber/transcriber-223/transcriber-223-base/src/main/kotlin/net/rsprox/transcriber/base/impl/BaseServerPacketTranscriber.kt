@@ -1846,7 +1846,12 @@ public class BaseServerPacketTranscriber(
     override fun setPlayerOp(message: SetPlayerOp) {
         if (!filters[PropertyFilter.SET_PLAYER_OP]) return omit()
         root.int("id", message.id)
-        root.string("op", message.op ?: "null")
+        val op = message.op
+        if (op != null) {
+            root.string("op", op)
+        } else {
+            root.any<Any>("op", null)
+        }
         root.filteredBoolean("priority", message.priority)
     }
 
