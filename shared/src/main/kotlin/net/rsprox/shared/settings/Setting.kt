@@ -10,7 +10,7 @@ public enum class Setting(
     PREFER_SINGLE_QUOTE_ON_STRINGS(
         SettingGroup.LOGGING,
         SettingCategory.PREFS,
-        "Prefer single quote",
+        "Prefer Single Quote",
         false,
         "When enabled, uses single quote whenever logging string-types. Otherwise, sticks to double quote.",
     ),
