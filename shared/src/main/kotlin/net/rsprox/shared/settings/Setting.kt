@@ -28,6 +28,13 @@ public enum class Setting(
         true,
         "Hides the varp packet header if all the bit changes can be explained by varbits.",
     ),
+    HIDE_SAME_VALUE_VARPS(
+        SettingGroup.LOGGING,
+        SettingCategory.MISC,
+        "Hide Same Value Varps",
+        true,
+        "Hides varp entries if the old and new values are the same",
+    ),
     COLLAPSE_CLIENTSCRIPT_PARAMS(
         SettingGroup.LOGGING,
         SettingCategory.MISC,
