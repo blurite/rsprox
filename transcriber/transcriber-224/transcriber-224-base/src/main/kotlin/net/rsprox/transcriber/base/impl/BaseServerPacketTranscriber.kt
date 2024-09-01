@@ -2237,10 +2237,8 @@ public class BaseServerPacketTranscriber(
         val omitVarpsForVarbits = settings[Setting.HIDE_UNNECESSARY_VARPS]
         val remainingBits = remainingImpactedBits(oldValue, newValue, impactedVarbits)
         // If only interested in varbits and varbits exist, create a varbit root
-        val printAsVarbits =
-            (!varps && impactedVarbits.isNotEmpty()) ||
-                (omitVarpsForVarbits && remainingBits == 0)
-        if (printAsVarbits) {
+        val printAsVarbits = impactedVarbits.isNotEmpty() && omitVarpsForVarbits && remainingBits == 0
+        if (!varps || printAsVarbits) {
             omit()
         }
         if (impactedVarbits.isNotEmpty()) {
