@@ -96,6 +96,9 @@ import net.rsprox.shared.property.scriptVarType
 import net.rsprox.shared.property.string
 import net.rsprox.shared.property.unidentifiedNpc
 import net.rsprox.shared.property.unidentifiedPlayer
+import net.rsprox.shared.settings.Setting
+import net.rsprox.shared.settings.SettingSet
+import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.impl.ClientPacketTranscriber
 import net.rsprox.transcriber.state.StateTracker
 import java.awt.event.KeyEvent
@@ -107,11 +110,14 @@ public open class BaseClientPacketTranscriber(
     private val stateTracker: StateTracker,
     private val cache: Cache,
     private val filterSetStore: PropertyFilterSetStore,
+    private val settingSetStore: SettingSetStore,
 ) : ClientPacketTranscriber {
     private val root: RootProperty
         get() = checkNotNull(stateTracker.root.last())
     private val filters: PropertyFilterSet
         get() = filterSetStore.getActive()
+    private val settings: SettingSet
+        get() = settingSetStore.getActive()
 
     private fun omit() {
         stateTracker.deleteRoot()
@@ -152,7 +158,7 @@ public open class BaseClientPacketTranscriber(
     private fun Property.player(index: Int): ChildProperty<*> {
         val npc = stateTracker.getPlayerOrNull(index)
         val finalIndex =
-            if (filters[PropertyFilter.PLAYER_OMIT_INDEX]) {
+            if (settings[Setting.PLAYER_HIDE_INDEX]) {
                 Int.MIN_VALUE
             } else {
                 index

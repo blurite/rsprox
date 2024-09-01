@@ -33,6 +33,7 @@ public class BaseTranscriber private constructor(
         stateTracker,
         cacheProvider.get(),
         filterSetStore,
+        settingSetStore,
     ),
     ServerPacketTranscriber by BaseServerPacketTranscriber(
         stateTracker,
@@ -45,11 +46,13 @@ public class BaseTranscriber private constructor(
         monitor,
         cacheProvider.get(),
         filterSetStore,
+        settingSetStore,
     ),
     NpcInfoTranscriber by BaseNpcInfoTranscriber(
         stateTracker,
         cacheProvider.get(),
         filterSetStore,
+        settingSetStore,
     ) {
     public constructor(
         cacheProvider: CacheProvider,

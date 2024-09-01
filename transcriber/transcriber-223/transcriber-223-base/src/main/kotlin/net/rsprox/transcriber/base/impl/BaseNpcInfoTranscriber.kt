@@ -50,6 +50,9 @@ import net.rsprox.shared.property.shortNpc
 import net.rsprox.shared.property.string
 import net.rsprox.shared.property.unidentifiedNpc
 import net.rsprox.shared.property.unidentifiedPlayer
+import net.rsprox.shared.settings.Setting
+import net.rsprox.shared.settings.SettingSet
+import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.base.maxUShortToMinusOne
 import net.rsprox.transcriber.base.toFullBinaryString
 import net.rsprox.transcriber.impl.NpcInfoTranscriber
@@ -61,11 +64,14 @@ public class BaseNpcInfoTranscriber(
     private val stateTracker: StateTracker,
     private val cache: Cache,
     private val filterSetStore: PropertyFilterSetStore,
+    private val settingSetStore: SettingSetStore,
 ) : NpcInfoTranscriber {
     private val root: RootProperty
         get() = checkNotNull(stateTracker.root.last())
     private val filters: PropertyFilterSet
         get() = filterSetStore.getActive()
+    private val settings: SettingSet
+        get() = settingSetStore.getActive()
 
     private fun omit() {
         stateTracker.deleteRoot()
@@ -129,7 +135,7 @@ public class BaseNpcInfoTranscriber(
     ): ChildProperty<*> {
         val player = stateTracker.getPlayerOrNull(index)
         val finalIndex =
-            if (filters[PropertyFilter.PLAYER_OMIT_INDEX]) {
+            if (settings[Setting.PLAYER_HIDE_INDEX]) {
                 Int.MIN_VALUE
             } else {
                 index

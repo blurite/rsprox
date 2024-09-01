@@ -247,7 +247,7 @@ public class BaseServerPacketTranscriber(
     ): ChildProperty<*> {
         val player = stateTracker.getPlayerOrNull(index)
         val finalIndex =
-            if (filters[PropertyFilter.PLAYER_OMIT_INDEX]) {
+            if (settings[Setting.PLAYER_HIDE_INDEX]) {
                 Int.MIN_VALUE
             } else {
                 index
