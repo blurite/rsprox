@@ -8,6 +8,7 @@ import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.property.OmitFilteredPropertyTreeFormatter
 import net.rsprox.shared.property.PropertyTreeFormatter
+import net.rsprox.shared.property.RootProperty
 import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.MessageConsumerContainer
 import net.rsprox.transcriber.Transcriber
@@ -93,8 +94,35 @@ public class BaseTranscriber private constructor(
             cycle--
         }
         for (property in root) {
+            if (isRegexSkipped(property)) continue
             consumers.publish(formatter, cycle, property)
         }
         root.clear()
+    }
+
+    private fun isRegexSkipped(property: RootProperty): Boolean {
+        val filters =
+            filterSetStore
+                .getActive()
+                .getRegexFilters()
+                .filter { it.protName == property.prot.lowercase() }
+        if (filters.isNotEmpty()) {
+            val formatted = formatter.format(property)
+            for (filter in filters) {
+                if (filter.perLine) {
+                    for (line in formatted) {
+                        if (filter.regex.containsMatchIn(line)) {
+                            return true
+                        }
+                    }
+                } else {
+                    val combined = formatted.joinToString(separator = System.lineSeparator())
+                    if (filter.regex.containsMatchIn(combined)) {
+                        return true
+                    }
+                }
+            }
+        }
+        return false
     }
 }

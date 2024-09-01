@@ -31,4 +31,12 @@ public interface PropertyFilterSet {
     public fun setAll(enabled: Boolean)
 
     public fun setDefaults()
+
+    public fun getRegexFilters(): List<RegexFilter>
+
+    public fun addRegexFilter(regexFilter: RegexFilter)
+
+    public fun removeRegexFilter(regexFilter: RegexFilter)
+
+    public fun clearRegexFilters()
 }
