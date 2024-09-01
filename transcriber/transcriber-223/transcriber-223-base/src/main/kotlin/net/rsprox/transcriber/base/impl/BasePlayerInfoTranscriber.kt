@@ -27,6 +27,7 @@ import net.rsprox.shared.property.ChildProperty
 import net.rsprox.shared.property.NamedEnum
 import net.rsprox.shared.property.Property
 import net.rsprox.shared.property.RootProperty
+import net.rsprox.shared.property.any
 import net.rsprox.shared.property.boolean
 import net.rsprox.shared.property.coordGrid
 import net.rsprox.shared.property.filteredBoolean
@@ -632,7 +633,7 @@ public class BasePlayerInfoTranscriber(
             shortPlayer(player.index)
         }
         if (info.index == 0xFFFFFF) {
-            string("entity", null)
+            any<Any>("entity", null)
         } else {
             entity(info.index)
         }

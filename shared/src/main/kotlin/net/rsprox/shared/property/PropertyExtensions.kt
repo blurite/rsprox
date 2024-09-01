@@ -29,6 +29,7 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
+@PublishedApi
 internal inline fun <reified T> type(): Class<T> {
     return T::class.java
 }
@@ -371,13 +372,13 @@ public inline fun <reified T> Property.enum(
 
 public inline fun <reified T> Property.any(
     name: String,
-    value: T,
-): AnyProperty<T> {
+    value: T?,
+): AnyProperty<T?> {
     return child(
         AnyProperty(
             name,
             value,
-            T::class.java,
+            type(),
         ),
     )
 }
