@@ -29,7 +29,7 @@ import net.rsprox.shared.property.Property
 import net.rsprox.shared.property.RootProperty
 import net.rsprox.shared.property.any
 import net.rsprox.shared.property.boolean
-import net.rsprox.shared.property.coordGrid
+import net.rsprox.shared.property.coordGridProperty
 import net.rsprox.shared.property.filteredBoolean
 import net.rsprox.shared.property.filteredInt
 import net.rsprox.shared.property.filteredScriptVarType
@@ -93,24 +93,25 @@ public class BasePlayerInfoTranscriber(
                 index
             }
         val multinpc = stateTracker.resolveMultinpc(npc.id, cache)
+        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(npc.coord)
         return if (multinpc != null) {
             identifiedMultinpc(
                 finalIndex,
                 npc.id,
                 multinpc.id,
                 multinpc.name,
-                npc.coord.level,
-                npc.coord.x,
-                npc.coord.z,
+                coord.level,
+                coord.x,
+                coord.z,
             )
         } else {
             identifiedNpc(
                 finalIndex,
                 npc.id,
                 npc.name ?: "null",
-                npc.coord.level,
-                npc.coord.x,
-                npc.coord.z,
+                coord.level,
+                coord.x,
+                coord.z,
             )
         }
     }
@@ -127,12 +128,13 @@ public class BasePlayerInfoTranscriber(
                 index
             }
         return if (player != null) {
+            val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(player.coord)
             identifiedPlayer(
                 finalIndex,
                 player.name,
-                player.coord.level,
-                player.coord.x,
-                player.coord.z,
+                coord.level,
+                coord.x,
+                coord.z,
                 name,
             )
         } else {
@@ -164,7 +166,8 @@ public class BasePlayerInfoTranscriber(
         name: String,
         coordGrid: CoordGrid,
     ): ScriptVarTypeProperty<*> {
-        return coordGrid(coordGrid.level, coordGrid.x, coordGrid.z, name)
+        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(coordGrid)
+        return coordGridProperty(coord.level, coord.x, coord.z, name)
     }
 
     private fun loadPlayerName(

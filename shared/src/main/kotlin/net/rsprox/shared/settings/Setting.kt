@@ -14,6 +14,13 @@ public enum class Setting(
         false,
         "When enabled, uses single quote whenever logging string-types. Otherwise, sticks to double quote.",
     ),
+    TRANSLATE_INSTANCED_COORDS(
+        SettingGroup.LOGGING,
+        SettingCategory.MISC,
+        "Translate Instanced Coords",
+        true,
+        "Translates instanced coords to the static counterparts if possible.",
+    ),
     HIDE_UNNECESSARY_VARPS(
         SettingGroup.LOGGING,
         SettingCategory.MISC,

@@ -92,7 +92,7 @@ public fun Property.inter(
     return scriptVarType(name, ScriptVarType.INTERFACE, id)
 }
 
-public fun Property.coordGrid(
+public fun Property.coordGridProperty(
     level: Int,
     x: Int,
     z: Int,

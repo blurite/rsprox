@@ -151,7 +151,7 @@ import net.rsprox.shared.property.RootProperty
 import net.rsprox.shared.property.any
 import net.rsprox.shared.property.boolean
 import net.rsprox.shared.property.com
-import net.rsprox.shared.property.coordGrid
+import net.rsprox.shared.property.coordGridProperty
 import net.rsprox.shared.property.createScriptVarType
 import net.rsprox.shared.property.enum
 import net.rsprox.shared.property.filteredBoolean
@@ -224,24 +224,25 @@ public class BaseServerPacketTranscriber(
                 index
             }
         val multinpc = stateTracker.resolveMultinpc(npc.id, cache)
+        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(npc.coord)
         return if (multinpc != null) {
             identifiedMultinpc(
                 finalIndex,
                 npc.id,
                 multinpc.id,
                 multinpc.name,
-                npc.coord.level,
-                npc.coord.x,
-                npc.coord.z,
+                coord.level,
+                coord.x,
+                coord.z,
             )
         } else {
             identifiedNpc(
                 finalIndex,
                 npc.id,
                 npc.name ?: "null",
-                npc.coord.level,
-                npc.coord.x,
-                npc.coord.z,
+                coord.level,
+                coord.x,
+                coord.z,
             )
         }
     }
@@ -258,12 +259,13 @@ public class BaseServerPacketTranscriber(
                 index
             }
         return if (player != null) {
+            val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(player.coord)
             identifiedPlayer(
                 finalIndex,
                 player.name,
-                player.coord.level,
-                player.coord.x,
-                player.coord.z,
+                coord.level,
+                coord.x,
+                coord.z,
                 name,
             )
         } else {
@@ -299,24 +301,37 @@ public class BaseServerPacketTranscriber(
         zInBuildArea: Int,
         level: Int = -1,
     ): CoordGrid {
-        return stateTracker
-            .getActiveWorld()
-            .relativizeBuildAreaCoord(
+        val world = stateTracker.getActiveWorld()
+        val coord =
+            world.relativizeBuildAreaCoord(
                 xInBuildArea,
                 zInBuildArea,
                 if (level == -1) stateTracker.level() else level,
             )
+        return world.getInstancedCoordOrSelf(coord)
     }
 
     private fun Property.coordGrid(coordGrid: CoordGrid): ScriptVarTypeProperty<*> {
-        return coordGrid(coordGrid.level, coordGrid.x, coordGrid.z)
+        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(coordGrid)
+        return coordGridProperty(coord.level, coord.x, coord.z)
     }
 
     private fun Property.coordGrid(
         name: String,
         coordGrid: CoordGrid,
     ): ScriptVarTypeProperty<*> {
-        return coordGrid(coordGrid.level, coordGrid.x, coordGrid.z, name)
+        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(coordGrid)
+        return coordGridProperty(coord.level, coord.x, coord.z, name)
+    }
+
+    private fun Property.coordGrid(
+        level: Int,
+        x: Int,
+        z: Int,
+        name: String = "coord",
+    ): ScriptVarTypeProperty<*> {
+        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(CoordGrid(level, x, z))
+        return coordGridProperty(coord.level, coord.x, coord.z, name)
     }
 
     private fun Property.zoneCoord(
@@ -1329,6 +1344,7 @@ public class BaseServerPacketTranscriber(
         stateTracker.localPlayerIndex = message.playerInfoInitBlock.localPlayerIndex
         val world = stateTracker.createWorld(-1)
         world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
+        world.setBuildArea(null)
         if (!filters[PropertyFilter.REBUILD]) return omit()
         root.int("zonex", message.zoneX)
         root.int("zonez", message.zoneZ)
@@ -1359,6 +1375,7 @@ public class BaseServerPacketTranscriber(
     override fun rebuildNormal(message: RebuildNormal) {
         val world = stateTracker.getWorld(-1)
         world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
+        world.setBuildArea(null)
         if (!filters[PropertyFilter.REBUILD]) return omit()
         root.int("zonex", message.zoneX)
         root.int("zonez", message.zoneZ)
@@ -1388,6 +1405,7 @@ public class BaseServerPacketTranscriber(
     override fun rebuildRegion(message: RebuildRegion) {
         val world = stateTracker.getWorld(-1)
         world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
+        world.setBuildArea(message.buildArea)
         if (!filters[PropertyFilter.REBUILD]) return omit()
         root.int("zonex", message.zoneX)
         root.int("zonez", message.zoneZ)
@@ -1430,6 +1448,7 @@ public class BaseServerPacketTranscriber(
     override fun rebuildWorldEntity(message: RebuildWorldEntity) {
         val world = stateTracker.getWorld(message.index)
         world.rebuild(CoordGrid(0, (message.baseX - 6) shl 3, (message.baseZ - 6) shl 3))
+        world.setBuildArea(message.buildArea)
         if (!filters[PropertyFilter.REBUILD]) return omit()
         root.worldentity(message.index)
         root.int("zonex", message.baseX)

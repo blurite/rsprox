@@ -35,7 +35,7 @@ import net.rsprox.shared.property.Property
 import net.rsprox.shared.property.RootProperty
 import net.rsprox.shared.property.any
 import net.rsprox.shared.property.boolean
-import net.rsprox.shared.property.coordGrid
+import net.rsprox.shared.property.coordGridProperty
 import net.rsprox.shared.property.filteredBoolean
 import net.rsprox.shared.property.filteredInt
 import net.rsprox.shared.property.formattedInt
@@ -86,38 +86,6 @@ public class BaseNpcInfoTranscriber(
         }
     }
 
-    private fun Property.npc(index: Int): ChildProperty<*> {
-        val world = stateTracker.getActiveWorld()
-        val npc = world.getNpcOrNull(index) ?: return unidentifiedNpc(index)
-        val finalIndex =
-            if (settings[Setting.HIDE_NPC_INDICES]) {
-                Int.MIN_VALUE
-            } else {
-                index
-            }
-        val multinpc = stateTracker.resolveMultinpc(npc.id, cache)
-        return if (multinpc != null) {
-            identifiedMultinpc(
-                finalIndex,
-                npc.id,
-                multinpc.id,
-                multinpc.name,
-                npc.coord.level,
-                npc.coord.x,
-                npc.coord.z,
-            )
-        } else {
-            identifiedNpc(
-                finalIndex,
-                npc.id,
-                npc.name ?: "null",
-                npc.coord.level,
-                npc.coord.x,
-                npc.coord.z,
-            )
-        }
-    }
-
     private fun Property.shortNpc(
         index: Int,
         name: String = "npc",
@@ -128,6 +96,39 @@ public class BaseNpcInfoTranscriber(
             npc?.id ?: -1,
             name,
         )
+    }
+
+    private fun Property.npc(index: Int): ChildProperty<*> {
+        val world = stateTracker.getActiveWorld()
+        val npc = world.getNpcOrNull(index) ?: return unidentifiedNpc(index)
+        val finalIndex =
+            if (settings[Setting.HIDE_NPC_INDICES]) {
+                Int.MIN_VALUE
+            } else {
+                index
+            }
+        val multinpc = stateTracker.resolveMultinpc(npc.id, cache)
+        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(npc.coord)
+        return if (multinpc != null) {
+            identifiedMultinpc(
+                finalIndex,
+                npc.id,
+                multinpc.id,
+                multinpc.name,
+                coord.level,
+                coord.x,
+                coord.z,
+            )
+        } else {
+            identifiedNpc(
+                finalIndex,
+                npc.id,
+                npc.name ?: "null",
+                coord.level,
+                coord.x,
+                coord.z,
+            )
+        }
     }
 
     private fun Property.player(
@@ -142,12 +143,13 @@ public class BaseNpcInfoTranscriber(
                 index
             }
         return if (player != null) {
+            val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(player.coord)
             identifiedPlayer(
                 finalIndex,
                 player.name,
-                player.coord.level,
-                player.coord.x,
-                player.coord.z,
+                coord.level,
+                coord.x,
+                coord.z,
                 name,
             )
         } else {
@@ -159,7 +161,18 @@ public class BaseNpcInfoTranscriber(
         name: String,
         coordGrid: CoordGrid,
     ): ScriptVarTypeProperty<*> {
-        return coordGrid(coordGrid.level, coordGrid.x, coordGrid.z, name)
+        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(coordGrid)
+        return coordGridProperty(coord.level, coord.x, coord.z, name)
+    }
+
+    private fun Property.coordGrid(
+        level: Int,
+        x: Int,
+        z: Int,
+        name: String = "coord",
+    ): ScriptVarTypeProperty<*> {
+        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(CoordGrid(level, x, z))
+        return coordGridProperty(coord.level, coord.x, coord.z, name)
     }
 
     private fun prenpcinfo(message: NpcInfo) {

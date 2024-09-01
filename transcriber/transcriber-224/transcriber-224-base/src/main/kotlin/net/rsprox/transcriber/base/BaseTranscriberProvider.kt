@@ -24,7 +24,7 @@ public class BaseTranscriberProvider : TranscriberProvider {
         binaryIndex: BinaryIndex,
     ): TranscriberRunner {
         val dictionary = SymbolDictionaryProvider.get()
-        val stateTracker = StateTracker()
+        val stateTracker = StateTracker(settings)
         val formatter =
             OmitFilteredPropertyTreeFormatter(
                 PropertyFormatterCollection.default(

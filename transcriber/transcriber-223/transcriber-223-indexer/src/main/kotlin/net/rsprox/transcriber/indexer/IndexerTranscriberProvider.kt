@@ -20,7 +20,7 @@ public class IndexerTranscriberProvider : TranscriberProvider {
         settings: SettingSetStore,
         binaryIndex: BinaryIndex,
     ): TranscriberRunner {
-        val stateTracker = StateTracker()
+        val stateTracker = StateTracker(settings)
         return TranscriberPlugin(
             IndexerTranscriber(
                 cacheProvider,

@@ -7,8 +7,11 @@ import net.rsprox.cache.api.type.VarBitType
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.shared.property.ChildProperty
 import net.rsprox.shared.property.RootProperty
+import net.rsprox.shared.settings.SettingSetStore
 
-public class StateTracker {
+public class StateTracker(
+    private val settingSetStore: SettingSetStore,
+) {
     public var cycle: Int = 0
         private set
     private var activeWorldId: Int = ROOT_WORLD
@@ -55,7 +58,7 @@ public class StateTracker {
     }
 
     public fun createWorld(id: Int): World {
-        val newWorld = World(id)
+        val newWorld = World(id, settingSetStore)
         val old = worlds.put(id, newWorld)
         check(old == null) {
             "Overriding existing world: $old"

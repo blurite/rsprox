@@ -1,6 +1,7 @@
 package net.rsprox.transcriber.base.impl
 
 import net.rsprox.cache.api.Cache
+import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.incoming.model.buttons.If1Button
 import net.rsprox.protocol.game.incoming.model.buttons.If3Button
 import net.rsprox.protocol.game.incoming.model.buttons.IfButtonD
@@ -77,7 +78,7 @@ import net.rsprox.shared.property.Property
 import net.rsprox.shared.property.RootProperty
 import net.rsprox.shared.property.boolean
 import net.rsprox.shared.property.com
-import net.rsprox.shared.property.coordGrid
+import net.rsprox.shared.property.coordGridProperty
 import net.rsprox.shared.property.filteredBoolean
 import net.rsprox.shared.property.filteredInt
 import net.rsprox.shared.property.filteredNamedEnum
@@ -91,6 +92,7 @@ import net.rsprox.shared.property.identifiedPlayer
 import net.rsprox.shared.property.int
 import net.rsprox.shared.property.long
 import net.rsprox.shared.property.namedEnum
+import net.rsprox.shared.property.regular.ScriptVarTypeProperty
 import net.rsprox.shared.property.scriptVarType
 import net.rsprox.shared.property.string
 import net.rsprox.shared.property.unidentifiedNpc
@@ -132,47 +134,63 @@ public open class BaseClientPacketTranscriber(
                 index
             }
         val multinpc = stateTracker.resolveMultinpc(npc.id, cache)
+        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(npc.coord)
         return if (multinpc != null) {
             identifiedMultinpc(
                 finalIndex,
                 npc.id,
                 multinpc.id,
                 multinpc.name,
-                npc.coord.level,
-                npc.coord.x,
-                npc.coord.z,
+                coord.level,
+                coord.x,
+                coord.z,
             )
         } else {
             identifiedNpc(
                 finalIndex,
                 npc.id,
                 npc.name ?: "null",
-                npc.coord.level,
-                npc.coord.x,
-                npc.coord.z,
+                coord.level,
+                coord.x,
+                coord.z,
             )
         }
     }
 
-    private fun Property.player(index: Int): ChildProperty<*> {
-        val npc = stateTracker.getPlayerOrNull(index)
+    private fun Property.player(
+        index: Int,
+        name: String = "player",
+    ): ChildProperty<*> {
+        val player = stateTracker.getPlayerOrNull(index)
         val finalIndex =
             if (settings[Setting.PLAYER_HIDE_INDEX]) {
                 Int.MIN_VALUE
             } else {
                 index
             }
-        return if (npc != null) {
+        return if (player != null) {
+            val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(player.coord)
             identifiedPlayer(
                 finalIndex,
-                npc.name,
-                npc.coord.level,
-                npc.coord.x,
-                npc.coord.z,
+                player.name,
+                coord.level,
+                coord.x,
+                coord.z,
+                name,
             )
         } else {
-            unidentifiedPlayer(index)
+            unidentifiedPlayer(index, name)
         }
+    }
+
+    private fun Property.coordGrid(
+        level: Int,
+        x: Int,
+        z: Int,
+        name: String = "coord",
+    ): ScriptVarTypeProperty<*> {
+        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(CoordGrid(level, x, z))
+        return coordGridProperty(coord.level, coord.x, coord.z, name)
     }
 
     override fun if1Button(message: If1Button) {
