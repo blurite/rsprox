@@ -1839,7 +1839,7 @@ public class BaseServerPacketTranscriber(
     override fun setMapFlag(message: SetMapFlag) {
         if (!filters[PropertyFilter.SET_MAP_FLAG]) return omit()
         if (message.xInBuildArea == 0xFF && message.zInBuildArea == 0xFF) {
-            root.coordGrid(-1, -1, -1)
+            root.any<Any>("coord", null)
         } else {
             root.coordGrid(buildAreaCoordGrid(message.xInBuildArea, message.zInBuildArea))
         }
