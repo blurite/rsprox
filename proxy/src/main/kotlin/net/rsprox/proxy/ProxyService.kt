@@ -74,6 +74,7 @@ import java.nio.file.LinkOption
 import java.nio.file.Path
 import java.util.Properties
 import java.util.concurrent.TimeUnit
+import kotlin.concurrent.thread
 import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.copyTo
@@ -265,11 +266,16 @@ public class ProxyService(
     public fun killAliveProcess(port: Int) {
         val process = processes.remove(port) ?: return
         if (process.isAlive) {
+            // It is possible for the below process to get stuck in a weird state
+            // which requires taskkill to be performed. This is not particularly user-friendly,
+            // so we shall launch a separate daemon thread to forcibly exit the application after
+            // a long enough time period
+            launchDaemonWatcherThread(5, TimeUnit.SECONDS)
             try {
                 for (descendant in process.descendants()) {
                     descendant.destroyForcibly()
                 }
-                process.destroyForcibly().waitFor(5, TimeUnit.SECONDS)
+                process.destroyForcibly().waitFor(3, TimeUnit.SECONDS)
             } catch (t: Throwable) {
                 logger.error(t) {
                     "Unable to destroy process on port $port: ${process.info()}"
@@ -279,6 +285,19 @@ public class ProxyService(
         }
         logger.info {
             "Destroyed process on port $port: ${process.info()}"
+        }
+    }
+
+    @Suppress("SameParameterValue")
+    private fun launchDaemonWatcherThread(
+        timeout: Long,
+        unit: TimeUnit,
+    ) {
+        thread(isDaemon = true) {
+            Thread.sleep(unit.toMillis(timeout))
+            // Print to system.err as logger will not necessarily flush it due to caching
+            System.err.println("Process is still alive after $timeout ${unit.name.lowercase()} - forcibly killing it.")
+            exitProcess(-1)
         }
     }
 
