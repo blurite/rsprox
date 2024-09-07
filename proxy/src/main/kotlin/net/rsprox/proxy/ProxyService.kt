@@ -266,11 +266,6 @@ public class ProxyService(
     public fun killAliveProcess(port: Int) {
         val process = processes.remove(port) ?: return
         if (process.isAlive) {
-            // It is possible for the below process to get stuck in a weird state
-            // which requires taskkill to be performed. This is not particularly user-friendly,
-            // so we shall launch a separate daemon thread to forcibly exit the application after
-            // a long enough time period
-            launchDaemonWatcherThread(5, TimeUnit.SECONDS)
             try {
                 for (descendant in process.descendants()) {
                     descendant.destroyForcibly()
@@ -302,6 +297,13 @@ public class ProxyService(
     }
 
     private fun killAliveProcesses() {
+        if (processes.isNotEmpty()) {
+            // It is possible for the below process to get stuck in a weird state
+            // which requires taskkill to be performed. This is not particularly user-friendly,
+            // so we shall launch a separate daemon thread to forcibly exit the application after
+            // a long enough time period
+            launchDaemonWatcherThread(5, TimeUnit.SECONDS)
+        }
         for (port in processes.keys.toSet()) {
             killAliveProcess(port)
         }
