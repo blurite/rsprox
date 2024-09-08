@@ -3,6 +3,7 @@ package net.rsprox.web.controller
 import com.github.michaelbull.logging.InlineLogger
 import net.rsprox.proxy.binary.BinaryBlob
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
+import net.rsprox.proxy.settings.DefaultSettingSetStore
 import net.rsprox.shared.indexing.IndexedType
 import net.rsprox.web.ApplicationProperties
 import net.rsprox.web.db.IntRepository
@@ -12,11 +13,7 @@ import net.rsprox.web.db.SubmissionRepository
 import net.rsprox.web.util.checksum
 import net.rsprox.web.util.toBase64
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Files
@@ -31,6 +28,8 @@ public class ApiController(
     private val stringRepo: StringRepository
 ) {
     private val log = InlineLogger()
+    private val filters = DefaultPropertyFilterSetStore.load(Path.of(""))
+    private val settings = DefaultSettingSetStore.load(Path.of(""))
 
     @DeleteMapping("/api/submission")
     public fun deleteSubmission(
@@ -106,10 +105,9 @@ public class ApiController(
 
         val blobResult = runCatching {
             BinaryBlob.decode(
-                file.bytes, DefaultPropertyFilterSetStore(
-                    Path.of(""),
-                    mutableListOf()
-                )
+                file.bytes,
+                filters,
+                settings
             )
         }
 
