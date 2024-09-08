@@ -1,12 +1,12 @@
-<header class="bg-blue-950 border-b border-gray-500 border-solid" th:fragment="header">
-	<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-		<h1 class="text-3xl font-bold text-gray-300">RSProx</h1>
-		<nav>
-			<ul class="flex space-x-4">
-				<li><a href="/" class="text-gray-300 hover:text-blue-600">Home</a></li>
-				<li><a href="/search" class="text-gray-300 hover:text-blue-600">Search</a></li>
-				<li><a href="https://github.com/blurite/rsprox" class="text-gray-300 hover:text-blue-600"><img width="30" height="30" src="/static/img/icons8-github-30.png" alt="github"/></a></li>
-			</ul>
-		</nav>
+<div class="navbar bg-base-100" th:fragment="header">
+	<div class="flex-1">
+		<a class="btn btn-ghost text-xl" href="/">RSProx</a>
 	</div>
-</header>
+	<div class="flex-none">
+		<ul class="menu menu-horizontal px-1">
+			<li><a href="/">Home</a></li>
+			<li><a href="/database">Database</a></li>
+			<li><a href="https://github.com/blurite/rsprox"><img alt="github logo" th:src="@{/static/img/icons8-github-24.png}"></a></li>
+		</ul>
+	</div>
+</div>

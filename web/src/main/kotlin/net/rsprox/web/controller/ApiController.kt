@@ -48,15 +48,15 @@ public class ApiController(
     @GetMapping("/api/search")
     public fun search(
         @RequestParam("type") type: Int,
-        @RequestParam("value") value: String
+        @RequestParam("query") query: String
     ): Set<Submission> {
         val submissions: Set<Submission> = when (type) {
             IndexedType.MESSAGE_GAME.id, IndexedType.TEXT.id -> {
-                stringRepo.findByValueContainingIgnoreCase(value).map { it.submission }.toSet()
+                stringRepo.findByValueContainingIgnoreCase(query).map { it.submission }.toSet()
             }
 
             else -> {
-                intRepo.findByValue(value.toInt()).map { it.submission }.toSet()
+                intRepo.findByValue(query.toInt()).map { it.submission }.toSet()
             }
         }
         return submissions

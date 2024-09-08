@@ -16,5 +16,6 @@ public data class S3Properties(
     public val region: String,
     public val accessKey: String,
     public val secretKey: String,
-    public val bucket: String
+    public val bucket: String,
+    public val url: String
 )
