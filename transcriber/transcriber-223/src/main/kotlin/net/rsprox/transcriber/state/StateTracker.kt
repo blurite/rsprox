@@ -1,7 +1,5 @@
 package net.rsprox.transcriber.state
 
-import net.rsprot.protocol.Prot
-import net.rsprot.protocol.ServerProt
 import net.rsprot.protocol.util.CombinedId
 import net.rsprox.cache.api.Cache
 import net.rsprox.cache.api.type.NpcType
@@ -9,31 +7,35 @@ import net.rsprox.cache.api.type.VarBitType
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.shared.property.ChildProperty
 import net.rsprox.shared.property.RootProperty
+import net.rsprox.shared.settings.SettingSetStore
 
-public class StateTracker {
+public class StateTracker(
+    private val settingSetStore: SettingSetStore,
+) {
     public var cycle: Int = 0
         private set
     private var activeWorldId: Int = ROOT_WORLD
     private val worlds: MutableMap<Int, World> = mutableMapOf()
     private val players: MutableMap<Int, Player> = mutableMapOf()
     private val lastKnownPlayerNames: MutableMap<Int, String> = mutableMapOf()
-    public var currentProt: Prot = GameServerProt.REBUILD_NORMAL
+    public var currentProt: String = GameServerProt.REBUILD_NORMAL.name
     public var localPlayerIndex: Int = -1
     private val openInterfaces: MutableMap<CombinedId, Int> = mutableMapOf()
     public var toplevelInterface: Int = -1
     private val cachedVarps: IntArray = IntArray(15_000)
     private lateinit var varpToVarbitsMap: Map<Int, List<VarBitType>>
-    public var root: MutableList<RootProperty<*>> = mutableListOf()
+    public var root: MutableList<RootProperty> = mutableListOf()
     private val cachedMoveSpeeds: IntArray =
         IntArray(2048) {
             -1
         }
     private val tempMoveSpeeds: MutableMap<Int, Int> = HashMap()
+    private val experience: MutableMap<Int, Int> = HashMap()
 
     public fun setRoot() {
         this.root +=
-            object : RootProperty<Prot> {
-                override val prot: Prot = currentProt
+            object : RootProperty {
+                override val prot: String = currentProt
                 override val children: MutableList<ChildProperty<*>> = mutableListOf()
             }
     }
@@ -46,18 +48,10 @@ public class StateTracker {
         return worlds.values
     }
 
-    public fun createFakeServerRoot(name: String): RootProperty<*> {
+    public fun createFakeServerRoot(name: String): RootProperty {
         val property =
-            object : RootProperty<Prot> {
-                override val prot: Prot =
-                    object : ServerProt {
-                        override val opcode: Int = -1
-                        override val size: Int = -1
-
-                        override fun toString(): String {
-                            return name
-                        }
-                    }
+            object : RootProperty {
+                override val prot: String = name
                 override val children: MutableList<ChildProperty<*>> = mutableListOf()
             }
         this.root += property
@@ -65,7 +59,7 @@ public class StateTracker {
     }
 
     public fun createWorld(id: Int): World {
-        val newWorld = World(id)
+        val newWorld = World(id, settingSetStore)
         val old = worlds.put(id, newWorld)
         check(old == null) {
             "Overriding existing world: $old"
@@ -207,8 +201,21 @@ public class StateTracker {
         return tempMoveSpeeds[index] ?: cachedMoveSpeeds[index]
     }
 
-    public fun resolveMultinpc(baseId: Int, cache: Cache): NpcType? =
-        cache.getNpcType(baseId)?.resolveMultinpc(cache)
+    public fun getExperience(skill: Int): Int? {
+        return experience[skill]
+    }
+
+    public fun setExperience(
+        skill: Int,
+        experience: Int,
+    ) {
+        this.experience[skill] = experience
+    }
+
+    public fun resolveMultinpc(
+        baseId: Int,
+        cache: Cache,
+    ): NpcType? = cache.getNpcType(baseId)?.resolveMultinpc(cache)
 
     private fun NpcType.resolveMultinpc(cache: Cache): NpcType? =
         when {

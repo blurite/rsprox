@@ -13,4 +13,8 @@ public interface TranscriberRunner {
         prot: Prot,
         message: IncomingMessage,
     )
+
+    public fun preprocess(packets: List<Packet>): List<Packet> {
+        return packets
+    }
 }

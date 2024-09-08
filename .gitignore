@@ -5,9 +5,10 @@ build/
 !**/src/test/**/build/
 
 ### IntelliJ IDEA ###
+/.idea/*
 !/.idea/fileTemplates/*
 !/.idea/dictionaries/*
-.idea/
+!/.idea/icon.png
 *.iws
 *.iml
 *.ipr

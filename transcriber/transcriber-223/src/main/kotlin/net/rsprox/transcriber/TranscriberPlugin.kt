@@ -169,7 +169,7 @@ public class TranscriberPlugin(
             GameServerProt.MINIMAP_TOGGLE -> pass(message, Transcriber::minimapToggle)
             GameServerProt.SERVER_TICK_END -> pass(message, Transcriber::serverTickEnd)
             GameServerProt.HIDENPCOPS -> pass(message, Transcriber::hideNpcOps)
-            GameServerProt.HIDEPLAYEROPS -> pass(message, Transcriber::hidePlayerOps)
+            GameServerProt.HIDEOBJOPS -> pass(message, Transcriber::hideObjOps)
             GameServerProt.HIDELOCOPS -> pass(message, Transcriber::hideLocOps)
             GameServerProt.URL_OPEN -> pass(message, Transcriber::urlOpen)
             GameServerProt.SITE_SETTINGS -> pass(message, Transcriber::siteSettings)

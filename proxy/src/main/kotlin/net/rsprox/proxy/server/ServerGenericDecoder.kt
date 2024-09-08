@@ -7,10 +7,9 @@ import net.rsprot.buffer.extensions.g1
 import net.rsprot.buffer.extensions.g2
 import net.rsprot.crypto.cipher.StreamCipher
 import net.rsprot.protocol.Prot
-import net.rsprot.protocol.ServerProt
 import net.rsprox.protocol.ProtProvider
 
-public class ServerGenericDecoder<out T : ServerProt>(
+public class ServerGenericDecoder<out T : Prot>(
     private val cipher: StreamCipher,
     private val protProvider: ProtProvider<T>,
 ) : ByteToMessageDecoder() {

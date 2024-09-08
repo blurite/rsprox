@@ -166,7 +166,7 @@ import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntity
 import net.rsprox.protocol.game.outgoing.model.map.Reconnect
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideLocOps
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideNpcOps
-import net.rsprox.protocol.game.outgoing.model.misc.client.HidePlayerOps
+import net.rsprox.protocol.game.outgoing.model.misc.client.HideObjOps
 import net.rsprox.protocol.game.outgoing.model.misc.client.HintArrow
 import net.rsprox.protocol.game.outgoing.model.misc.client.HiscoreReply
 import net.rsprox.protocol.game.outgoing.model.misc.client.MinimapToggle
@@ -276,7 +276,7 @@ public class IndexerTranscriber private constructor(
     override val cache: Cache = cacheProvider.get()
 
     override fun setCurrentProt(prot: Prot) {
-        stateTracker.currentProt = prot
+        stateTracker.currentProt = prot.toString()
     }
 
     override fun onTranscribeStart() {
@@ -890,7 +890,7 @@ public class IndexerTranscriber private constructor(
     override fun hideNpcOps(message: HideNpcOps) {
     }
 
-    override fun hidePlayerOps(message: HidePlayerOps) {
+    override fun hideObjOps(message: HideObjOps) {
     }
 
     override fun hintArrow(message: HintArrow) {

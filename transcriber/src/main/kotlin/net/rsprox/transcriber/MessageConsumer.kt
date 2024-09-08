@@ -7,7 +7,7 @@ public interface MessageConsumer {
     public fun consume(
         formatter: PropertyTreeFormatter,
         cycle: Int,
-        property: RootProperty<*>,
+        property: RootProperty,
     )
 
     public fun close()
@@ -20,7 +20,7 @@ public interface MessageConsumer {
                 override fun consume(
                     formatter: PropertyTreeFormatter,
                     cycle: Int,
-                    property: RootProperty<*>,
+                    property: RootProperty,
                 ) {
                     if (cycle != lastCycle) {
                         lastCycle = cycle

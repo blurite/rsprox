@@ -223,6 +223,7 @@ public class SessionPanel(
             OmitFilteredPropertyTreeFormatter(
                 PropertyFormatterCollection.default(
                     SymbolDictionaryProvider.get(),
+                    App.service.settingsStore,
                 ),
             )
 
@@ -279,7 +280,7 @@ public class SessionPanel(
 
         override fun onTranscribe(
             cycle: Int,
-            property: RootProperty<*>,
+            property: RootProperty,
         ) {
             if (paused) return
             SwingUtilities.invokeLater {
@@ -291,7 +292,7 @@ public class SessionPanel(
         private fun createMessageNode(
             tickNode: AbstractMutableTreeTableNode,
             cycle: Int,
-            property: RootProperty<*>,
+            property: RootProperty,
         ) {
             val previewText = getPreviewText(property)
             val rootNode = MessageTreeTableNode(previewText, property.prot)
@@ -326,7 +327,7 @@ public class SessionPanel(
         private fun createMessageChildNodes(
             cycle: Int,
             parentNode: AbstractMutableTreeTableNode,
-            rootProperty: RootProperty<*>,
+            rootProperty: RootProperty,
             property: Property = rootProperty,
             indent: Int = 0,
         ) {
@@ -342,6 +343,9 @@ public class SessionPanel(
                     }
 
                     is ListProperty -> {
+                        val previewText = getPreviewText(child, indent)
+                        val groupNode = MessageTreeTableNode(previewText, child.propertyName)
+                        addNodeAndExpand(groupNode, parentNode, parentNode.childCount)
                     }
 
                     else -> {

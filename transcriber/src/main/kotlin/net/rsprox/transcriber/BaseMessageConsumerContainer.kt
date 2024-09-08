@@ -10,7 +10,7 @@ public open class BaseMessageConsumerContainer(
     override fun publish(
         formatter: PropertyTreeFormatter,
         cycle: Int,
-        property: RootProperty<*>,
+        property: RootProperty,
     ) {
         for (consumer in consumers) {
             try {

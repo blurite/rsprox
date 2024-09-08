@@ -5,6 +5,7 @@ import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.property.filtered.FilteredNamedEnumProperty
 import net.rsprox.shared.property.filtered.FilteredScriptVarTypeProperty
 import net.rsprox.shared.property.formatted.FormattedIntProperty
+import net.rsprox.shared.property.regular.AnyProperty
 import net.rsprox.shared.property.regular.EnumProperty
 import net.rsprox.shared.property.regular.GroupProperty
 import net.rsprox.shared.property.regular.IdentifiedMultinpcProperty
@@ -28,6 +29,7 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
+@PublishedApi
 internal inline fun <reified T> type(): Class<T> {
     return T::class.java
 }
@@ -90,7 +92,7 @@ public fun Property.inter(
     return scriptVarType(name, ScriptVarType.INTERFACE, id)
 }
 
-public fun Property.coordGrid(
+public fun Property.coordGridProperty(
     level: Int,
     x: Int,
     z: Int,
@@ -271,6 +273,44 @@ public fun <V> Property.scriptVarType(
     return result as ScriptVarTypeProperty<V>
 }
 
+public fun <V> createScriptVarType(
+    name: String,
+    type: ScriptVarType,
+    value: V,
+): ScriptVarTypeProperty<V> {
+    val result =
+        when (type.baseVarType) {
+            BaseVarType.INTEGER -> {
+                ScriptVarTypeProperty(
+                    Int::class.java,
+                    type,
+                    name,
+                    value as Int,
+                )
+            }
+
+            BaseVarType.LONG -> {
+                ScriptVarTypeProperty(
+                    Long::class.java,
+                    type,
+                    name,
+                    value as Long,
+                )
+            }
+
+            BaseVarType.STRING -> {
+                ScriptVarTypeProperty(
+                    type(),
+                    type,
+                    name,
+                    value as? String?,
+                )
+            }
+        }
+    @Suppress("UNCHECKED_CAST")
+    return result as ScriptVarTypeProperty<V>
+}
+
 public fun <V> Property.filteredScriptVarType(
     name: String,
     type: ScriptVarType,
@@ -326,6 +366,19 @@ public inline fun <reified T> Property.enum(
             name,
             value,
             T::class.java,
+        ),
+    )
+}
+
+public inline fun <reified T> Property.any(
+    name: String,
+    value: T?,
+): AnyProperty<T?> {
+    return child(
+        AnyProperty(
+            name,
+            value,
+            type(),
         ),
     )
 }

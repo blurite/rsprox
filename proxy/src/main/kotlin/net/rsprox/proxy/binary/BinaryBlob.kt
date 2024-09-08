@@ -23,6 +23,7 @@ import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.indexing.NopBinaryIndex
+import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.BaseMessageConsumerContainer
 import java.nio.file.Files
 import java.nio.file.Path
@@ -38,6 +39,7 @@ public data class BinaryBlob(
     public val writeIntervalSeconds: Int,
     private val monitor: SessionMonitor<BinaryHeader>,
     private val filters: PropertyFilterSetStore,
+    private val settings: SettingSetStore,
 ) {
     private var lastWrite = TimeSource.Monotonic.markNow()
     private var lastWriteSize = 0
@@ -91,6 +93,7 @@ public data class BinaryBlob(
             return
         }
         write()
+        liveSession?.flush()
         this.lastIncomingBytes = 0
         this.lastOutgoingBytes = 0
         this.monitor.onIncomingBytesPerSecondUpdate(-1)
@@ -103,6 +106,7 @@ public data class BinaryBlob(
     }
 
     public fun reopen() {
+        liveSession?.flush()
         closed.set(false)
         this.monitor.onLogin(header)
     }
@@ -202,7 +206,7 @@ public data class BinaryBlob(
                     OldSchoolCache(LiveCacheResolver(info), masterIndex)
                 }
             if (pluginLoader.getPluginOrNull(header.revision) == null) {
-                pluginLoader.loadTranscriberPlugins("osrs", provider)
+                pluginLoader.load("osrs", header.revision, provider)
             }
             val latestPlugin = pluginLoader.getPluginOrNull(header.revision)
             if (latestPlugin == null) {
@@ -219,6 +223,7 @@ public data class BinaryBlob(
                     provider,
                     monitor,
                     filters,
+                    settings,
                     NopBinaryIndex,
                 )
             this.liveSession =
@@ -241,23 +246,24 @@ public data class BinaryBlob(
         public fun decode(
             path: Path,
             filters: PropertyFilterSetStore,
+            settings: SettingSetStore,
         ): BinaryBlob {
             val file = path.toFile()
             if (!file.isFile) {
                 throw IllegalArgumentException("Path does not point to a file: $path")
             }
-            return decode(file.readBytes(), filters)
+            return decode(file.readBytes(), filters, settings)
         }
 
         public fun decode(
             buf: ByteArray,
             filters: PropertyFilterSetStore,
+            settings: SettingSetStore,
         ): BinaryBlob {
             val buffer = Unpooled.wrappedBuffer(buf)
             val header = BinaryHeader.decode(buffer.toJagByteBuf())
             val stream = BinaryStream(buffer.slice())
-            return BinaryBlob(header, stream, 0, NopSessionMonitor, filters)
+            return BinaryBlob(header, stream, 0, NopSessionMonitor, filters, settings)
         }
     }
-
 }

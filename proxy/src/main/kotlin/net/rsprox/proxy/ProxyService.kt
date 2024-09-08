@@ -36,6 +36,7 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
 import net.rsprox.proxy.config.RUNELITE_LAUNCHER
+import net.rsprox.proxy.config.SETTINGS_DIRECTORY
 import net.rsprox.proxy.config.SIGN_KEY_DIRECTORY
 import net.rsprox.proxy.config.SOCKETS_DIRECTORY
 import net.rsprox.proxy.config.TEMP_CLIENTS_DIRECTORY
@@ -49,6 +50,7 @@ import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
+import net.rsprox.proxy.settings.DefaultSettingSetStore
 import net.rsprox.proxy.util.ClientType
 import net.rsprox.proxy.util.ConnectionInfo
 import net.rsprox.proxy.util.OperatingSystem
@@ -59,6 +61,7 @@ import net.rsprox.proxy.worlds.World
 import net.rsprox.proxy.worlds.WorldListProvider
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.filters.PropertyFilterSetStore
+import net.rsprox.shared.settings.SettingSetStore
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
 import org.newsclub.net.unix.AFUNIXServerSocket
 import org.newsclub.net.unix.AFUNIXSocketAddress
@@ -71,6 +74,7 @@ import java.nio.file.LinkOption
 import java.nio.file.Path
 import java.util.Properties
 import java.util.concurrent.TimeUnit
+import kotlin.concurrent.thread
 import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.copyTo
@@ -90,9 +94,12 @@ public class ProxyService(
     private lateinit var serverBootstrap: ServerBootstrap
     private lateinit var httpServerBootstrap: ServerBootstrap
     private lateinit var worldListProvider: WorldListProvider
-    private lateinit var operatingSystem: OperatingSystem
+    public lateinit var operatingSystem: OperatingSystem
+        private set
     private lateinit var rsa: RSAPrivateCrtKeyParameters
     public lateinit var filterSetStore: PropertyFilterSetStore
+        private set
+    public lateinit var settingsStore: SettingSetStore
         private set
     private var properties: ProxyProperties by Delegates.notNull()
     private var availablePort: Int = -1
@@ -109,6 +116,7 @@ public class ProxyService(
         createConfigurationDirectories(TEMP_CLIENTS_DIRECTORY)
         createConfigurationDirectories(CACHES_DIRECTORY)
         createConfigurationDirectories(FILTERS_DIRECTORY)
+        createConfigurationDirectories(SETTINGS_DIRECTORY)
         createConfigurationDirectories(SOCKETS_DIRECTORY)
         createConfigurationDirectories(SIGN_KEY_DIRECTORY)
         createConfigurationDirectories(BINARY_CREDENTIALS_FOLDER)
@@ -120,6 +128,7 @@ public class ProxyService(
         this.rsa = loadRsa()
         progressCallback.update(0.25, "Proxy", "Loading property filters")
         this.filterSetStore = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY)
+        this.settingsStore = DefaultSettingSetStore.load(SETTINGS_DIRECTORY)
         this.availablePort = properties.getProperty(PROXY_PORT_MIN)
         this.bootstrapFactory = BootstrapFactory(allocator, properties)
         progressCallback.update(0.35, "Proxy", "Loading jav config")
@@ -261,7 +270,7 @@ public class ProxyService(
                 for (descendant in process.descendants()) {
                     descendant.destroyForcibly()
                 }
-                process.destroyForcibly().waitFor(5, TimeUnit.SECONDS)
+                process.destroyForcibly().waitFor(3, TimeUnit.SECONDS)
             } catch (t: Throwable) {
                 logger.error(t) {
                     "Unable to destroy process on port $port: ${process.info()}"
@@ -274,7 +283,27 @@ public class ProxyService(
         }
     }
 
+    @Suppress("SameParameterValue")
+    private fun launchDaemonWatcherThread(
+        timeout: Long,
+        unit: TimeUnit,
+    ) {
+        thread(isDaemon = true) {
+            Thread.sleep(unit.toMillis(timeout))
+            // Print to system.err as logger will not necessarily flush it due to caching
+            System.err.println("Process is still alive after $timeout ${unit.name.lowercase()} - forcibly killing it.")
+            exitProcess(-1)
+        }
+    }
+
     private fun killAliveProcesses() {
+        if (processes.isNotEmpty()) {
+            // It is possible for the below process to get stuck in a weird state
+            // which requires taskkill to be performed. This is not particularly user-friendly,
+            // so we shall launch a separate daemon thread to forcibly exit the application after
+            // a long enough time period
+            launchDaemonWatcherThread(5, TimeUnit.SECONDS)
+        }
         for (port in processes.keys.toSet()) {
             killAliveProcess(port)
         }
@@ -404,6 +433,7 @@ public class ProxyService(
         val criteria =
             NativePatchCriteria
                 .Builder(nativeClientType)
+                .acceptAllLoopbackAddresses()
                 .rsaModulus(rsa.publicKey.modulus.toString(16))
                 .javConfig("http://127.0.0.1:$HTTP_SERVER_PORT/$javConfigEndpoint")
                 .worldList("http://127.0.0.1:$HTTP_SERVER_PORT/$worldlistEndpoint")
@@ -669,6 +699,7 @@ public class ProxyService(
                 properties.getProperty(BINARY_WRITE_INTERVAL_SECONDS),
                 connections,
                 filterSetStore,
+                settingsStore,
             )
         val timeoutSeconds = properties.getProperty(BIND_TIMEOUT_SECONDS).toLong()
         serverBootstrap

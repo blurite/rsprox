@@ -7,6 +7,7 @@ import net.rsprox.protocol.exceptions.DecodeError
 import net.rsprox.protocol.session.Session
 import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.shared.StreamDirection
+import net.rsprox.transcriber.Packet
 import net.rsprox.transcriber.TranscriberRunner
 import java.util.Queue
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -18,10 +19,12 @@ public class LiveTranscriberSession(
 ) {
     @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
     private val lock: Object = Object()
-    private val queue: Queue<Packet> = ConcurrentLinkedQueue()
+    private val queue: Queue<UnidentifiedPacket> = ConcurrentLinkedQueue()
 
     @Volatile
     private var running: Boolean = true
+
+    private val packetList: MutableList<Packet> = mutableListOf()
 
     init {
         launchThread()
@@ -32,28 +35,30 @@ public class LiveTranscriberSession(
         payload: ByteBuf,
     ) {
         if (!running) return
-        queue.offer(Packet(direction, payload))
+        queue.offer(UnidentifiedPacket(direction, payload))
         synchronized(lock) {
             lock.notifyAll()
         }
     }
 
-    private fun decode(packet: Packet) {
-        val index = packet.payload.readerIndex()
+    private fun decode(unidentified: UnidentifiedPacket) {
+        val index = unidentified.payload.readerIndex()
         try {
-            val result = decodingSession.decodePacket(packet.direction, packet.payload, session)
-            when (packet.direction) {
-                StreamDirection.CLIENT_TO_SERVER -> {
-                    runner.onClientProt(result.prot, result.message)
-                }
-                StreamDirection.SERVER_TO_CLIENT -> {
-                    runner.onServerPacket(result.prot, result.message)
-                }
+            val result =
+                decodingSession.decodePacket(
+                    unidentified.direction,
+                    unidentified.payload,
+                    session,
+                )
+            packetList += Packet(unidentified.direction, result.prot, result.message)
+            if (result.prot.toString() == "SERVER_TICK_END") {
+                executeRunner(runner.preprocess(packetList))
+                packetList.clear()
             }
         } catch (t: Throwable) {
-            packet.payload.readerIndex(index)
+            unidentified.payload.readerIndex(index)
             logger.error(t) {
-                "Error decoding packet: ${packet.payload.toByteArray().contentToString()}"
+                "Error decoding packet: ${unidentified.payload.toByteArray().contentToString()}"
             }
             // Decode error is a special error we cannot recover from
             // If this is hit, the state becomes corrupted and the decoding cannot continue.
@@ -62,7 +67,20 @@ public class LiveTranscriberSession(
                 throw t
             }
         } finally {
-            packet.payload.release()
+            unidentified.payload.release()
+        }
+    }
+
+    private fun executeRunner(results: List<Packet>) {
+        for (packet in results) {
+            when (packet.direction) {
+                StreamDirection.CLIENT_TO_SERVER -> {
+                    runner.onClientProt(packet.prot, packet.message)
+                }
+                StreamDirection.SERVER_TO_CLIENT -> {
+                    runner.onServerPacket(packet.prot, packet.message)
+                }
+            }
         }
     }
 
@@ -83,6 +101,13 @@ public class LiveTranscriberSession(
         return thread
     }
 
+    public fun flush() {
+        synchronized(lock) {
+            executeRunner(runner.preprocess(packetList))
+            packetList.clear()
+        }
+    }
+
     public fun shutdown() {
         this.running = false
         synchronized(lock) {
@@ -90,7 +115,7 @@ public class LiveTranscriberSession(
         }
     }
 
-    private class Packet(
+    private class UnidentifiedPacket(
         val direction: StreamDirection,
         val payload: ByteBuf,
     )

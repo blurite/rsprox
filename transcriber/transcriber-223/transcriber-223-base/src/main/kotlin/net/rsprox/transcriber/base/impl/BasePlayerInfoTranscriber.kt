@@ -27,8 +27,9 @@ import net.rsprox.shared.property.ChildProperty
 import net.rsprox.shared.property.NamedEnum
 import net.rsprox.shared.property.Property
 import net.rsprox.shared.property.RootProperty
+import net.rsprox.shared.property.any
 import net.rsprox.shared.property.boolean
-import net.rsprox.shared.property.coordGrid
+import net.rsprox.shared.property.coordGridProperty
 import net.rsprox.shared.property.filteredBoolean
 import net.rsprox.shared.property.filteredInt
 import net.rsprox.shared.property.filteredScriptVarType
@@ -45,6 +46,9 @@ import net.rsprox.shared.property.shortPlayer
 import net.rsprox.shared.property.string
 import net.rsprox.shared.property.unidentifiedNpc
 import net.rsprox.shared.property.unidentifiedPlayer
+import net.rsprox.shared.settings.Setting
+import net.rsprox.shared.settings.SettingSet
+import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.base.firstOfInstanceOfNull
 import net.rsprox.transcriber.base.maxUShortToMinusOne
 import net.rsprox.transcriber.impl.PlayerInfoTranscriber
@@ -57,11 +61,15 @@ public class BasePlayerInfoTranscriber(
     private val monitor: SessionMonitor<*>,
     private val cache: Cache,
     private val filterSetStore: PropertyFilterSetStore,
+    private val settingSetStore: SettingSetStore,
 ) : PlayerInfoTranscriber {
-    private val root: RootProperty<*>
+    private val root: RootProperty
         get() = checkNotNull(stateTracker.root.last())
     private val filters: PropertyFilterSet
         get() = filterSetStore.getActive()
+
+    private val settings: SettingSet
+        get() = settingSetStore.getActive()
 
     private fun omit() {
         stateTracker.deleteRoot()
@@ -79,30 +87,31 @@ public class BasePlayerInfoTranscriber(
         val world = stateTracker.getActiveWorld()
         val npc = world.getNpcOrNull(index) ?: return unidentifiedNpc(index)
         val finalIndex =
-            if (filters[PropertyFilter.NPC_OMIT_INDEX]) {
+            if (settings[Setting.HIDE_NPC_INDICES]) {
                 Int.MIN_VALUE
             } else {
                 index
             }
         val multinpc = stateTracker.resolveMultinpc(npc.id, cache)
+        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(npc.coord)
         return if (multinpc != null) {
             identifiedMultinpc(
                 finalIndex,
                 npc.id,
                 multinpc.id,
                 multinpc.name,
-                npc.coord.level,
-                npc.coord.x,
-                npc.coord.z,
+                coord.level,
+                coord.x,
+                coord.z,
             )
         } else {
             identifiedNpc(
                 finalIndex,
                 npc.id,
                 npc.name ?: "null",
-                npc.coord.level,
-                npc.coord.x,
-                npc.coord.z,
+                coord.level,
+                coord.x,
+                coord.z,
             )
         }
     }
@@ -113,18 +122,19 @@ public class BasePlayerInfoTranscriber(
     ): ChildProperty<*> {
         val player = stateTracker.getPlayerOrNull(index)
         val finalIndex =
-            if (filters[PropertyFilter.PLAYER_OMIT_INDEX]) {
+            if (settings[Setting.PLAYER_HIDE_INDEX]) {
                 Int.MIN_VALUE
             } else {
                 index
             }
         return if (player != null) {
+            val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(player.coord)
             identifiedPlayer(
                 finalIndex,
                 player.name,
-                player.coord.level,
-                player.coord.x,
-                player.coord.z,
+                coord.level,
+                coord.x,
+                coord.z,
                 name,
             )
         } else {
@@ -156,7 +166,8 @@ public class BasePlayerInfoTranscriber(
         name: String,
         coordGrid: CoordGrid,
     ): ScriptVarTypeProperty<*> {
-        return coordGrid(coordGrid.level, coordGrid.x, coordGrid.z, name)
+        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(coordGrid)
+        return coordGridProperty(coord.level, coord.x, coord.z, name)
     }
 
     private fun loadPlayerName(
@@ -254,7 +265,7 @@ public class BasePlayerInfoTranscriber(
 
     private fun logPlayerInfo(message: PlayerInfo) {
         if (!filters[PropertyFilter.PLAYER_INFO]) return omit()
-        val localPlayerOnly = filters[PropertyFilter.PLAYER_INFO_LOCAL_PLAYER_ONLY]
+        val localPlayerOnly = settings[Setting.PLAYER_INFO_LOCAL_PLAYER_ONLY]
         val group =
             root.group {
                 for ((index, update) in message.updates) {
@@ -274,7 +285,7 @@ public class BasePlayerInfoTranscriber(
                             }
                         }
                         is PlayerUpdateType.HighResolutionMovement -> {
-                            if (filters[PropertyFilter.PLAYER_INFO_OMIT_NO_EXTENDED_INFO] &&
+                            if (settings[Setting.PLAYER_INFO_HIDE_INACTIVE_PLAYERS] &&
                                 update.extendedInfo.isEmpty()
                             ) {
                                 continue
@@ -296,14 +307,14 @@ public class BasePlayerInfoTranscriber(
                             }
                         }
                         is PlayerUpdateType.HighResolutionToLowResolution -> {
-                            if (filters[PropertyFilter.PLAYER_REMOVAL]) {
+                            if (settings[Setting.PLAYER_REMOVAL]) {
                                 group("DEL") {
                                     player(index)
                                 }
                             }
                         }
                         is PlayerUpdateType.LowResolutionToHighResolution -> {
-                            if (filters[PropertyFilter.PLAYER_INFO_OMIT_NO_EXTENDED_INFO] &&
+                            if (settings[Setting.PLAYER_INFO_HIDE_INACTIVE_PLAYERS] &&
                                 update.extendedInfo.isEmpty()
                             ) {
                                 continue
@@ -321,7 +332,7 @@ public class BasePlayerInfoTranscriber(
         // If no children were added to the root group, it means no players are being updated
         // In this case, remove the empty line that the group is generating
         if (children.isEmpty()) {
-            if (filters[PropertyFilter.PLAYER_INFO_OMIT_EMPTY]) {
+            if (settings[Setting.PLAYER_INFO_HIDE_EMPTY]) {
                 return omit()
             }
             root.children.clear()
@@ -434,7 +445,7 @@ public class BasePlayerInfoTranscriber(
         player: Player,
         info: ChatExtendedInfo,
     ) {
-        if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+        if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
             shortPlayer(player.index)
         }
         string("text", info.text)
@@ -449,7 +460,7 @@ public class BasePlayerInfoTranscriber(
         player: Player,
         info: FaceAngleExtendedInfo,
     ) {
-        if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+        if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
             shortPlayer(player.index)
         }
         int("angle", info.angle)
@@ -480,7 +491,7 @@ public class BasePlayerInfoTranscriber(
         player: Player,
         info: MoveSpeedExtendedInfo,
     ) {
-        if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+        if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
             shortPlayer(player.index)
         }
         namedEnum("speed", getMoveSpeed(info.speed))
@@ -490,7 +501,7 @@ public class BasePlayerInfoTranscriber(
         player: Player,
         info: TemporaryMoveSpeedExtendedInfo,
     ) {
-        if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+        if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
             shortPlayer(player.index)
         }
         namedEnum("speed", getMoveSpeed(info.speed))
@@ -500,7 +511,7 @@ public class BasePlayerInfoTranscriber(
         player: Player,
         info: NameExtrasExtendedInfo,
     ) {
-        if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+        if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
             shortPlayer(player.index)
         }
         string("beforename", info.beforeName)
@@ -512,7 +523,7 @@ public class BasePlayerInfoTranscriber(
         player: Player,
         info: SayExtendedInfo,
     ) {
-        if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+        if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
             shortPlayer(player.index)
         }
         string("text", info.text)
@@ -522,7 +533,7 @@ public class BasePlayerInfoTranscriber(
         player: Player,
         info: SequenceExtendedInfo,
     ) {
-        if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+        if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
             shortPlayer(player.index)
         }
         scriptVarType("id", ScriptVarType.SEQ, info.id.maxUShortToMinusOne())
@@ -533,15 +544,16 @@ public class BasePlayerInfoTranscriber(
         player: Player,
         info: ExactMoveExtendedInfo,
     ) {
-        if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+        if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
             shortPlayer(player.index)
         }
-        val curX = player.coord.x
-        val curZ = player.coord.z
-        val level = player.coord.level
-        coordGrid("to1", CoordGrid(level, curX - info.deltaX2, curZ - info.deltaZ2))
+        val activeWorld = stateTracker.getActiveWorld()
+        val baseCoord = activeWorld.getInstancedCoordOrSelf(player.coord)
+        val to1 = CoordGrid(baseCoord.level, baseCoord.x - info.deltaX2, baseCoord.z - info.deltaZ2)
+        coordGridProperty(to1.level, to1.x, to1.z, "to1")
         int("delay1", info.delay1)
-        coordGrid("to2", CoordGrid(level, curX - info.deltaX1, curZ - info.deltaZ1))
+        val to2 = CoordGrid(baseCoord.level, baseCoord.x - info.deltaX1, baseCoord.z - info.deltaZ1)
+        coordGridProperty(to2.level, to2.x, to2.z, "to2")
         int("delay2", info.delay2)
         int("angle", info.direction)
     }
@@ -552,7 +564,7 @@ public class BasePlayerInfoTranscriber(
     ) {
         for (hit in info.hits) {
             group("HIT") {
-                if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+                if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
                     shortPlayer(player.index)
                 }
                 scriptVarType("id", ScriptVarType.HITMARK, hit.type)
@@ -566,7 +578,7 @@ public class BasePlayerInfoTranscriber(
         }
         for (headbar in info.headbars) {
             group("HEADBAR") {
-                if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+                if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
                     shortPlayer(player.index)
                 }
                 scriptVarType("id", ScriptVarType.HEADBAR, headbar.type)
@@ -589,7 +601,7 @@ public class BasePlayerInfoTranscriber(
         player: Player,
         info: TintingExtendedInfo,
     ) {
-        if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+        if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
             shortPlayer(player.index)
         }
         int("start", info.start)
@@ -606,7 +618,7 @@ public class BasePlayerInfoTranscriber(
     ) {
         for ((slot, spotanim) in info.spotanims) {
             group("SPOTANIM") {
-                if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+                if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
                     shortPlayer(player.index)
                 }
                 filteredInt("slot", slot, 0)
@@ -621,11 +633,11 @@ public class BasePlayerInfoTranscriber(
         player: Player,
         info: FacePathingEntityExtendedInfo,
     ) {
-        if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+        if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
             shortPlayer(player.index)
         }
         if (info.index == 0xFFFFFF) {
-            string("entity", null)
+            any<Any>("entity", null)
         } else {
             entity(info.index)
         }
@@ -655,7 +667,7 @@ public class BasePlayerInfoTranscriber(
         player: Player,
         info: AppearanceExtendedInfo,
     ) {
-        if (filters[PropertyFilter.PLAYER_EXT_INFO_INLINE]) {
+        if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
             shortPlayer(player.index)
         }
         if (filters[PropertyFilter.PLAYER_APPEARANCE_DETAILS]) {

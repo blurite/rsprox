@@ -28,7 +28,7 @@ public object NopSessionMonitor : SessionMonitor<BinaryHeader> {
 
     override fun onTranscribe(
         cycle: Int,
-        property: RootProperty<*>,
+        property: RootProperty,
     ) {
     }
 }

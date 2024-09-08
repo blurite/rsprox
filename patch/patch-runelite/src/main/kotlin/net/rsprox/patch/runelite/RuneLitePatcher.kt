@@ -17,6 +17,7 @@ import java.security.MessageDigest
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.Path
 import kotlin.io.path.copyTo
+import kotlin.io.path.deleteIfExists
 import kotlin.io.path.deleteRecursively
 import kotlin.io.path.exists
 import kotlin.io.path.extension
@@ -126,6 +127,7 @@ public class RuneLitePatcher : Patcher<Unit> {
                 return inputPath
             }
         }
+        existingClient.deleteIfExists()
         val copy = path.copyTo(inputPath)
         val outputFolder = path.parent.resolve("runelite-client-$time")
         try {

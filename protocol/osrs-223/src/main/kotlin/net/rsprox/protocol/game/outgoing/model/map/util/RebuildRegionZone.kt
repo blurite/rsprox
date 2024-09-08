@@ -24,7 +24,8 @@ public value class RebuildRegionZone(
         get() = packed ushr 3 and 0x7FF
     public val level: Int
         get() = packed ushr 24 and 0x3
-
+    public val invalid: Boolean
+        get() = packed == -1
     public val mapsquareId: Int
         get() = ((zoneX ushr 3) shl 8) or (zoneZ ushr 3)
 

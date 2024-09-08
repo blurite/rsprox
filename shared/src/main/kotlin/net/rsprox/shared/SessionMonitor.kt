@@ -20,6 +20,6 @@ public interface SessionMonitor<T> {
 
     public fun onTranscribe(
         cycle: Int,
-        property: RootProperty<*>,
+        property: RootProperty,
     )
 }

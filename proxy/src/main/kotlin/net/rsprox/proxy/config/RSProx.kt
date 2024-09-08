@@ -12,6 +12,7 @@ internal val TRANSCRIBERS_DIRECTORY: Path = CONFIGURATION_PATH.resolve("transcri
 internal val TEMP_CLIENTS_DIRECTORY: Path = CLIENTS_DIRECTORY.resolve("temp")
 internal val CACHES_DIRECTORY: Path = CONFIGURATION_PATH.resolve("caches")
 internal val FILTERS_DIRECTORY: Path = CONFIGURATION_PATH.resolve("filters")
+internal val SETTINGS_DIRECTORY: Path = CONFIGURATION_PATH.resolve("settings")
 internal val SOCKETS_DIRECTORY: Path = CONFIGURATION_PATH.resolve("sockets")
 internal val SIGN_KEY_DIRECTORY: Path = CONFIGURATION_PATH.resolve("signkey")
 internal val BINARY_CREDENTIALS_FOLDER: Path = CONFIGURATION_PATH.resolve("credentials")
@@ -21,7 +22,8 @@ internal val RUNELITE_LAUNCHER: Path =
     CONFIGURATION_PATH
         .resolve("runelite")
         .resolve("runelite-launcher.jar")
-internal const val CURRENT_REVISION: Int = 223
+internal const val CURRENT_REVISION: Int = 224
+internal const val LATEST_SUPPORTED_PLUGIN: Int = 224
 
 /**
  * Http server port needs to be hard-coded as we modify it in a few RuneLite classes directly.
