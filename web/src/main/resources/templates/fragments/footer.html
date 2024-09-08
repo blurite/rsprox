@@ -1,0 +1,9 @@
+<footer class="py-8" th:fragment="footer">
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-400">
+		<p>&copy;  <span th:text="${#dates.format(T(java.time.LocalDate).now(), 'yyyy')}"></span> Z-Kris</p>
+		<div class="mt-4 space-x-6">
+			<a href="#" class="hover:text-white"></a>
+			<a href="#" class="hover:text-white"></a>
+		</div>
+	</div>
+</footer>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+	<meta charSet="utf-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<title>RSProt</title>
+
+	<link rel="stylesheet" type="text/css" th:href="@{/static/css/output.css}" />
+</head>
+
+<body class="bg-blue-950">
+	<div th:replace="~{fragments/header :: header}"></div>
+
+	<!-- Hero Section -->
+	<section class="bg-blue-900">
+		<div class="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8 flex flex-col-reverse lg:flex-row items-center">
+			<div class="lg:w-1/2">
+				<h2 class="text-4xl font-extrabold text-white sm:text-5xl">
+					OSRS Proxy Tool
+				</h2>
+				<p class="mt-4 text-lg leading-6 text-blue-200">
+					RSProx is a locally hosted proxy server intended to act as a middleman between the clients and servers in Old School RuneScape.
+				</p>
+				<div class="mt-8 flex space-x-4">
+					<a href="https://github.com/blurite/rsprox/releases" class="bg-amber-500 text-blue-950 hover:bg-amber-100 py-3 px-5 rounded-lg shadow-lg font-bold">
+						<img src="/static/img/icons8-download-50.png" class="inline w-6 h-6 mr-2" alt="download button"/> Download
+					</a>
+				</div>
+			</div>
+			<div class="lg:w-1/2 mb-8 lg:mb-0">
+				<img src="/static/img/rsprox.png" alt="App Screenshot" class="mx-auto rounded-lg shadow-lg">
+			</div>
+		</div>
+	</section>
+
+	<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+
+</html>
