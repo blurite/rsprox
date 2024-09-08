@@ -30,6 +30,7 @@ public class StateTracker(
             -1
         }
     private val tempMoveSpeeds: MutableMap<Int, Int> = HashMap()
+    private val experience: MutableMap<Int, Int> = HashMap()
 
     public fun setRoot() {
         this.root +=
@@ -198,6 +199,17 @@ public class StateTracker(
 
     public fun getMoveSpeed(index: Int): Int {
         return tempMoveSpeeds[index] ?: cachedMoveSpeeds[index]
+    }
+
+    public fun getExperience(skill: Int): Int? {
+        return experience[skill]
+    }
+
+    public fun setExperience(
+        skill: Int,
+        experience: Int,
+    ) {
+        this.experience[skill] = experience
     }
 
     public fun resolveMultinpc(

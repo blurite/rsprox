@@ -1905,18 +1905,22 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun updateStat(message: UpdateStat) {
+        val oldXp = stateTracker.getExperience(message.stat)
+        stateTracker.setExperience(message.stat, message.experience)
         if (!filters[PropertyFilter.UPDATE_STAT]) return omit()
         root.namedEnum("stat", Stat.entries.first { it.id == message.stat })
         root.int("level", message.currentLevel)
         root.filteredInt("invisiblelevel", message.invisibleBoostedLevel, message.currentLevel)
-        root.formattedInt("experience", message.experience)
+        root.formattedInt("experience", message.experience - (oldXp ?: 0))
     }
 
     override fun updateStatOld(message: UpdateStatOld) {
+        val oldXp = stateTracker.getExperience(message.stat)
+        stateTracker.setExperience(message.stat, message.experience)
         if (!filters[PropertyFilter.UPDATE_STAT]) return omit()
         root.namedEnum("stat", Stat.entries.first { it.id == message.stat })
         root.int("level", message.currentLevel)
-        root.formattedInt("experience", message.experience)
+        root.formattedInt("experience", message.experience - (oldXp ?: 0))
     }
 
     override fun updateStockMarketSlot(message: UpdateStockMarketSlot) {
