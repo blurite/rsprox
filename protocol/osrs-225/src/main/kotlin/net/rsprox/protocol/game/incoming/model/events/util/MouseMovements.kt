@@ -49,6 +49,12 @@ public value class MouseMovements(
      * mouse goes outside the client window, the value will be -1.
      * @property yDelta the y coordinate delta of the mouse, in pixels. If the
      * mouse goes outside the client window, the value will be -1.
+     * @property lastMouseButton the last mouse button that was clicked shortly
+     * before the mouse movement. Value 0 means no recent click, 2 means left
+     * mouse click, 8 means right mouse click and 14 means middle mouse click.
+     * Other buttons are unknown but may also be possible.
+     * The value is 0xFFFF if no mouse button property is included, which is
+     * the case for the java variant of this packet.
      */
     @Suppress("MemberVisibilityCanBePrivate")
     @JvmInline
@@ -60,10 +66,23 @@ public value class MouseMovements(
             xDelta: Int,
             yDelta: Int,
         ) : this(
+            timeDelta,
+            xDelta,
+            yDelta,
+            -1,
+        )
+
+        public constructor(
+            timeDelta: Int,
+            xDelta: Int,
+            yDelta: Int,
+            lastMouseButton: Int,
+        ) : this(
             (timeDelta and 0xFFFF)
                 .toLong()
                 .or(xDelta.toLong() and 0xFFFF shl 16)
-                .or(yDelta.toLong() and 0xFFFF shl 32),
+                .or(yDelta.toLong() and 0xFFFF shl 32)
+                .or(lastMouseButton.toLong() and 0xFFFF shl 48),
         )
 
         public val timeDelta: Int
@@ -72,12 +91,15 @@ public value class MouseMovements(
             get() = (packed ushr 16 and 0xFFFF).toShort().toInt()
         public val yDelta: Int
             get() = (packed ushr 32 and 0xFFFF).toShort().toInt()
+        public val lastMouseButton: Int
+            get() = (packed ushr 48 and 0xFFFF).toInt()
 
         override fun toString(): String {
             return "MousePosChange(" +
                 "timeDelta=$timeDelta, " +
                 "xDelta=$xDelta, " +
                 "yDelta=$yDelta" +
+                (if (lastMouseButton != 0xFFFF) "lastMouseButton=$lastMouseButton" else "") +
                 ")"
         }
     }
