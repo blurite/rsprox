@@ -2,7 +2,7 @@ package net.rsprox.protocol.game.incoming.decoder.codec.resumed
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.util.gCombinedIdAlt2
+import net.rsprot.protocol.util.gCombinedIdAlt3
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.incoming.decoder.prot.GameClientProt
 import net.rsprox.protocol.game.incoming.model.resumed.ResumePauseButton
@@ -15,8 +15,8 @@ public class ResumePauseButtonDecoder : ProxyMessageDecoder<ResumePauseButton> {
         buffer: JagByteBuf,
         session: Session,
     ): ResumePauseButton {
-        val sub = buffer.g2()
-        val combinedId = buffer.gCombinedIdAlt2()
+        val sub = buffer.g2Alt3()
+        val combinedId = buffer.gCombinedIdAlt3()
         return ResumePauseButton(
             combinedId,
             sub,

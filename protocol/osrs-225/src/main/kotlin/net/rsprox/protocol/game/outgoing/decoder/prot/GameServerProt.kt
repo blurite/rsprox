@@ -63,14 +63,20 @@ public enum class GameServerProt(
     SOUND_AREA(GameServerProtId.SOUND_AREA, 7),
 
     // Specific packets
-    PROJANIM_SPECIFIC(GameServerProtId.PROJANIM_SPECIFIC, 19),
+    PROJANIM_SPECIFIC(GameServerProtId.PROJANIM_SPECIFIC, 22),
+
+    @Deprecated(
+        "Deprecated as a new variant that supports source index was introduced.",
+        replaceWith = ReplaceWith("PROJANIM_SPECIFIC"),
+    )
+    PROJANIM_SPECIFIC_OLD(GameServerProtId.PROJANIM_SPECIFIC_OLD, 19),
 
     @Deprecated(
         "Deprecated as it is bugged(size: 17; payload: 18) and " +
             "a newer variant with greater property ranges is introduced",
         replaceWith = ReplaceWith("PROJANIM_SPECIFIC"),
     )
-    PROJANIM_SPECIFIC_OLD(GameServerProtId.PROJANIM_SPECIFIC_OLD, 17),
+    PROJANIM_SPECIFIC_OLD_OLD(GameServerProtId.PROJANIM_SPECIFIC_OLD_OLD, 17),
     MAP_ANIM_SPECIFIC(GameServerProtId.MAP_ANIM_SPECIFIC, 8),
     LOC_ANIM_SPECIFIC(GameServerProtId.LOC_ANIM_SPECIFIC, 6),
     NPC_HEADICON_SPECIFIC(GameServerProtId.NPC_HEADICON_SPECIFIC, 9),
@@ -89,6 +95,12 @@ public enum class GameServerProt(
     CLEAR_ENTITIES(GameServerProtId.CLEAR_ENTITIES, 0),
     SET_ACTIVE_WORLD(GameServerProtId.SET_ACTIVE_WORLD, 4),
     WORLDENTITY_INFO(GameServerProtId.WORLDENTITY_INFO, Prot.VAR_SHORT),
+
+    @Deprecated(
+        "Deprecated as a new variant that supports fine height was introduced.",
+        replaceWith = ReplaceWith("WORLDENTITY_INFO"),
+    )
+    WORLDENTITY_INFO_OLD(GameServerProtId.WORLDENTITY_INFO_OLD, Prot.VAR_SHORT),
 
     // Map packets
     REBUILD_NORMAL(GameServerProtId.REBUILD_NORMAL, Prot.VAR_SHORT),

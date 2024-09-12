@@ -1,7 +1,7 @@
 package net.rsprox.protocol.game.incoming.decoder.codec.messaging
 
 import net.rsprot.buffer.JagByteBuf
-import net.rsprot.compression.HuffmanCodec
+import net.rsprot.compression.provider.HuffmanCodecProvider
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.metadata.Consistent
 import net.rsprox.protocol.ProxyMessageDecoder
@@ -11,7 +11,7 @@ import net.rsprox.protocol.session.Session
 
 @Consistent
 public class MessagePublicDecoder(
-    private val huffmanCodec: HuffmanCodec,
+    private val huffmanCodecProvider: HuffmanCodecProvider,
 ) : ProxyMessageDecoder<MessagePublic> {
     override val prot: ClientProt = GameClientProt.MESSAGE_PUBLIC
 
@@ -30,6 +30,7 @@ public class MessagePublicDecoder(
             } else {
                 null
             }
+        val huffman = huffmanCodecProvider.provide()
         val hasTrailingByte = type == CLAN_MAIN_CHANNEL_TYPE
         val huffmanSlice =
             if (hasTrailingByte) {
@@ -37,7 +38,7 @@ public class MessagePublicDecoder(
             } else {
                 buffer.buffer
             }
-        val message = huffmanCodec.decode(huffmanSlice)
+        val message = huffman.decode(huffmanSlice)
         val clanType =
             if (hasTrailingByte) {
                 buffer.g1()

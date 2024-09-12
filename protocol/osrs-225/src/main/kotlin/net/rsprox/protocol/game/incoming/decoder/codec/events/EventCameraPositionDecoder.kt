@@ -14,8 +14,8 @@ public class EventCameraPositionDecoder : ProxyMessageDecoder<EventCameraPositio
         buffer: JagByteBuf,
         session: Session,
     ): EventCameraPosition {
-        val angleY = buffer.g2Alt2()
-        val angleX = buffer.g2()
+        val angleX = buffer.g2Alt1()
+        val angleY = buffer.g2Alt1()
         return EventCameraPosition(
             angleX,
             angleY,
