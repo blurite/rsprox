@@ -14,9 +14,9 @@ public class UpdateStatOldDecoder : ProxyMessageDecoder<UpdateStatOld> {
         buffer: JagByteBuf,
         session: Session,
     ): UpdateStatOld {
-        val experience = buffer.g4()
-        val stat = buffer.g1Alt2()
-        val currentLevel = buffer.g1Alt3()
+        val experience = buffer.g4Alt2()
+        val currentLevel = buffer.g1Alt2()
+        val stat = buffer.g1()
         return UpdateStatOld(
             stat,
             currentLevel,

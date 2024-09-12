@@ -14,7 +14,7 @@ public class PlayerSpotAnimSpecificDecoder : ProxyMessageDecoder<PlayerSpotAnimS
         buffer: JagByteBuf,
         session: Session,
     ): PlayerSpotAnimSpecific {
-        val id = buffer.g2()
+        val id = buffer.g2Alt1()
         val packed = buffer.g4()
         val slot = buffer.g1Alt1()
         val index = buffer.g2Alt2()

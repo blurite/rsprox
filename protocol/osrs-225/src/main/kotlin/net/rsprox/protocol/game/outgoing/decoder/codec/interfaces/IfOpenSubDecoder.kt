@@ -2,7 +2,7 @@ package net.rsprox.protocol.game.outgoing.decoder.codec.interfaces
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.util.gCombinedId
+import net.rsprot.protocol.util.gCombinedIdAlt2
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfOpenSub
@@ -16,7 +16,7 @@ public class IfOpenSubDecoder : ProxyMessageDecoder<IfOpenSub> {
         session: Session,
     ): IfOpenSub {
         val interfaceId = buffer.g2Alt3()
-        val combinedId = buffer.gCombinedId()
+        val combinedId = buffer.gCombinedIdAlt2()
         val type = buffer.g1Alt3()
         return IfOpenSub(
             combinedId.interfaceId,

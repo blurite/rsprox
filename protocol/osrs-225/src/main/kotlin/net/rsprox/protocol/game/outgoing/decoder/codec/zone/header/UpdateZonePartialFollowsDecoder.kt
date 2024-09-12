@@ -15,8 +15,8 @@ public class UpdateZonePartialFollowsDecoder : ProxyMessageDecoder<UpdateZonePar
         session: Session,
     ): UpdateZonePartialFollows {
         val zoneX = buffer.g1()
-        val zoneZ = buffer.g1Alt3()
-        val level = buffer.g1()
+        val level = buffer.g1Alt1()
+        val zoneZ = buffer.g1Alt1()
         return UpdateZonePartialFollows(
             zoneX,
             zoneZ,

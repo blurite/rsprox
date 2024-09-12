@@ -16,9 +16,9 @@ public class MapAnimDecoder : ProxyMessageDecoder<MapAnim> {
         session: Session,
     ): MapAnim {
         val coordInZone = CoordInZone(buffer.g1Alt3())
-        val height = buffer.g1Alt2()
-        val id = buffer.g2()
-        val delay = buffer.g2()
+        val id = buffer.g2Alt2()
+        val height = buffer.g1Alt3()
+        val delay = buffer.g2Alt2()
         return MapAnim(
             id,
             delay,

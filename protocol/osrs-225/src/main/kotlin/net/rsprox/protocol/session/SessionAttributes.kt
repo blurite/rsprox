@@ -3,6 +3,7 @@ package net.rsprox.protocol.session
 import net.rsprot.compression.HuffmanCodec
 import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.common.CoordGrid
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerInfoClient
 import net.rsprox.protocol.reflection.ReflectionCheck
 import net.rsprox.protocol.world.World
 
@@ -10,6 +11,7 @@ private var Session.reflectionCheckMap: MutableMap<Int, List<ReflectionCheck>>? 
 private var Session.trackedWorldMap: MutableMap<Int, World>? by attribute()
 private var Session.currentActiveWorld: Int? by attribute()
 private var Session.activeNpcInfoBaseCoord: CoordGrid? by attribute()
+private var Session.rootPlayerInfoClient: PlayerInfoClient? by attribute()
 
 internal fun Session.getReflectionChecks(): MutableMap<Int, List<ReflectionCheck>> {
     val existingChecks = this.reflectionCheckMap
@@ -28,8 +30,6 @@ internal fun Session.getWorld(index: Int): World {
 
 internal fun Session.allocateWorld(
     worldIndex: Int,
-    localPlayerIndex: Int,
-    huffmanCodec: HuffmanCodec,
     cache: CacheProvider,
 ): World {
     var worldMap = this.trackedWorldMap
@@ -37,9 +37,22 @@ internal fun Session.allocateWorld(
         worldMap = mutableMapOf()
         this.trackedWorldMap = worldMap
     }
-    val world = World(localPlayerIndex, huffmanCodec, cache)
+    val world = World(cache)
     worldMap[worldIndex] = world
     return world
+}
+
+internal fun Session.allocatePlayerInfoClient(
+    localPlayerIndex: Int,
+    huffmanCodec: HuffmanCodec,
+): PlayerInfoClient {
+    val client = PlayerInfoClient(localPlayerIndex, huffmanCodec)
+    this.rootPlayerInfoClient = client
+    return client
+}
+
+internal fun Session.getPlayerInfoClient(): PlayerInfoClient {
+    return checkNotNull(rootPlayerInfoClient)
 }
 
 internal fun Session.getActiveWorld(): Int {

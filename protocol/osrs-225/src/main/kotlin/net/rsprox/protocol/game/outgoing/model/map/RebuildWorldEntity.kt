@@ -2,7 +2,6 @@ package net.rsprox.protocol.game.outgoing.model.map
 
 import net.rsprot.crypto.xtea.XteaKey
 import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
-import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
 import net.rsprox.protocol.game.outgoing.model.map.util.BuildArea
 
 /**
@@ -13,7 +12,6 @@ import net.rsprox.protocol.game.outgoing.model.map.util.BuildArea
  * @property baseZ the absolute base z coordinate of the world entity in the instance land
  * @property buildArea the list of zones that will be built into the root world
  * @property keys the xtea keys needed to decrypt the map in build area
- * @property playerInfoInitBlock the player info initialization block for the world entity
  */
 public class RebuildWorldEntity(
     private val _index: UShort,
@@ -21,7 +19,6 @@ public class RebuildWorldEntity(
     private val _baseZ: UShort,
     public val buildArea: BuildArea,
     public val keys: List<XteaKey>,
-    public val playerInfoInitBlock: PlayerInfoInitBlock,
 ) : IncomingServerGameMessage {
     public constructor(
         index: Int,
@@ -29,14 +26,12 @@ public class RebuildWorldEntity(
         baseZ: Int,
         buildArea: BuildArea,
         keys: List<XteaKey>,
-        playerInfoInitBlock: PlayerInfoInitBlock,
     ) : this(
         index.toUShort(),
         baseX.toUShort(),
         baseZ.toUShort(),
         buildArea,
         keys,
-        playerInfoInitBlock,
     )
 
     public val index: Int
@@ -57,7 +52,6 @@ public class RebuildWorldEntity(
         if (_baseZ != other._baseZ) return false
         if (buildArea != other.buildArea) return false
         if (keys != other.keys) return false
-        if (playerInfoInitBlock != other.playerInfoInitBlock) return false
 
         return true
     }
@@ -68,7 +62,6 @@ public class RebuildWorldEntity(
         result = 31 * result + _baseZ.hashCode()
         result = 31 * result + buildArea.hashCode()
         result = 31 * result + keys.hashCode()
-        result = 31 * result + playerInfoInitBlock.hashCode()
         return result
     }
 
@@ -78,8 +71,7 @@ public class RebuildWorldEntity(
             "baseX=$baseX, " +
             "baseZ=$baseZ, " +
             "buildArea=$buildArea, " +
-            "keys=$keys, " +
-            "playerInfoInitBlock=$playerInfoInitBlock" +
+            "keys=$keys" +
             ")"
     }
 }

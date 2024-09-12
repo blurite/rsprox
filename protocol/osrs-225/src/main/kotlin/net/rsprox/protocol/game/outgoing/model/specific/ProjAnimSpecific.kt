@@ -34,6 +34,10 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildAre
  * and set the value of this property to 128 - ensuring that the projectile
  * will appear to fly completely vertically, with no horizontal movement whatsoever.
  * In the event inspector, this property is called 'distanceOffset'.
+ * @property sourceIndex the index of the pathing entity from whom the projectile is shot.
+ * If the value is 0, the projectile will not be locked to any source entity.
+ * If the source avatar is a player, add 0x10000 to the real index value (0-2048).
+ * If the source avatar is a NPC, set the index as it is.
  * @property targetIndex the index of the pathing entity at whom the projectile is shot.
  * If the value is 0, the projectile will not be locked to any target entity.
  * If the target avatar is a player, add 0x10000 to the real index value (0-2048).
@@ -68,6 +72,7 @@ public class ProjAnimSpecific private constructor(
     private val _endTime: UShort,
     private val _angle: UByte,
     private val _progress: UShort,
+    public val sourceIndex: Int,
     public val targetIndex: Int,
     public val coordInBuildArea: CoordInBuildArea,
     private val _deltaX: Byte,
@@ -81,6 +86,7 @@ public class ProjAnimSpecific private constructor(
         endTime: Int,
         angle: Int,
         progress: Int,
+        sourceIndex: Int,
         targetIndex: Int,
         zoneX: Int,
         xInZone: Int,
@@ -96,6 +102,7 @@ public class ProjAnimSpecific private constructor(
         endTime.toUShort(),
         angle.toUByte(),
         progress.toUShort(),
+        sourceIndex,
         targetIndex,
         CoordInBuildArea(
             zoneX,
@@ -115,6 +122,7 @@ public class ProjAnimSpecific private constructor(
         endTime: Int,
         angle: Int,
         progress: Int,
+        sourceIndex: Int,
         targetIndex: Int,
         xInBuildArea: Int,
         zInBuildArea: Int,
@@ -128,6 +136,7 @@ public class ProjAnimSpecific private constructor(
         endTime.toUShort(),
         angle.toUByte(),
         progress.toUShort(),
+        sourceIndex,
         targetIndex,
         CoordInBuildArea(
             xInBuildArea,
@@ -145,6 +154,7 @@ public class ProjAnimSpecific private constructor(
         endTime: Int,
         angle: Int,
         progress: Int,
+        sourceIndex: Int,
         targetIndex: Int,
         coordInBuildArea: CoordInBuildArea,
         deltaX: Int,
@@ -157,6 +167,7 @@ public class ProjAnimSpecific private constructor(
         endTime.toUShort(),
         angle.toUByte(),
         progress.toUShort(),
+        sourceIndex,
         targetIndex,
         coordInBuildArea,
         deltaX.toByte(),
@@ -206,6 +217,7 @@ public class ProjAnimSpecific private constructor(
         if (_endTime != other._endTime) return false
         if (_angle != other._angle) return false
         if (_progress != other._progress) return false
+        if (sourceIndex != other.sourceIndex) return false
         if (targetIndex != other.targetIndex) return false
         if (coordInBuildArea != other.coordInBuildArea) return false
         if (_deltaX != other._deltaX) return false
@@ -222,6 +234,7 @@ public class ProjAnimSpecific private constructor(
         result = 31 * result + _endTime.hashCode()
         result = 31 * result + _angle.hashCode()
         result = 31 * result + _progress.hashCode()
+        result = 31 * result + sourceIndex
         result = 31 * result + targetIndex
         result = 31 * result + coordInBuildArea.hashCode()
         result = 31 * result + _deltaX
@@ -238,6 +251,7 @@ public class ProjAnimSpecific private constructor(
             "endTime=$endTime, " +
             "angle=$angle, " +
             "progress=$progress, " +
+            "sourceIndex=$sourceIndex, " +
             "targetIndex=$targetIndex, " +
             "zoneX=$zoneX, " +
             "xInZone=$xInZone, " +

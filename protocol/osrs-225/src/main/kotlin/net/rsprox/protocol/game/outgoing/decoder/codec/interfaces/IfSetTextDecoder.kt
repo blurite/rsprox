@@ -15,8 +15,8 @@ public class IfSetTextDecoder : ProxyMessageDecoder<IfSetText> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetText {
-        val combinedId = buffer.gCombinedId()
         val text = buffer.gjstr()
+        val combinedId = buffer.gCombinedId()
         return IfSetText(
             combinedId.interfaceId,
             combinedId.componentId,

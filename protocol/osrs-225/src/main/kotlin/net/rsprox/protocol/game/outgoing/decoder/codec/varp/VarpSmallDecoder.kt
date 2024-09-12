@@ -14,8 +14,8 @@ public class VarpSmallDecoder : ProxyMessageDecoder<VarpSmall> {
         buffer: JagByteBuf,
         session: Session,
     ): VarpSmall {
-        val value = buffer.g1()
-        val id = buffer.g2()
+        val value = buffer.g1Alt3()
+        val id = buffer.g2Alt3()
         return VarpSmall(
             id,
             value,

@@ -14,6 +14,7 @@ import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
 import net.rsprox.protocol.game.outgoing.model.map.RebuildNormal
 import net.rsprox.protocol.game.outgoing.model.map.StaticRebuildMessage
 import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.session.allocatePlayerInfoClient
 import net.rsprox.protocol.session.allocateWorld
 import net.rsprox.protocol.session.getWorld
 
@@ -73,16 +74,15 @@ public class StaticRebuildDecoder(
                     keys,
                     playerInfoInitBlock,
                 )
+            val info = session.allocatePlayerInfoClient(session.localPlayerIndex, huffmanCodec)
             val world =
                 session.allocateWorld(
                     -1,
-                    session.localPlayerIndex,
-                    huffmanCodec,
                     cache,
                 )
             world.baseX = (zoneX - 6) * 8
             world.baseZ = (zoneZ - 6) * 8
-            world.playerInfo.gpiInit(playerInfoInitBlock)
+            info.gpiInit(playerInfoInitBlock)
             message
         } else {
             val world = session.getWorld(-1)

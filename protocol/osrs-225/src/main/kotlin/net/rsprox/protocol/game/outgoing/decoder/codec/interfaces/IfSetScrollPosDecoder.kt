@@ -2,7 +2,7 @@ package net.rsprox.protocol.game.outgoing.decoder.codec.interfaces
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.util.gCombinedIdAlt3
+import net.rsprot.protocol.util.gCombinedIdAlt1
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetScrollPos
@@ -15,8 +15,8 @@ public class IfSetScrollPosDecoder : ProxyMessageDecoder<IfSetScrollPos> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetScrollPos {
-        val combinedId = buffer.gCombinedIdAlt3()
-        val scrollPos = buffer.g2Alt3()
+        val combinedId = buffer.gCombinedIdAlt1()
+        val scrollPos = buffer.g2Alt2()
         return IfSetScrollPos(
             combinedId.interfaceId,
             combinedId.componentId,
