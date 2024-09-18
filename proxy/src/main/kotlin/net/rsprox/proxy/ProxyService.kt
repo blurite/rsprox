@@ -715,7 +715,7 @@ public class ProxyService(
         private val logger = InlineLogger()
         private val PROPERTIES_FILE = CONFIGURATION_PATH.resolve("proxy.properties")
 
-        public fun loadJavConfig(): JavConfig {
+        private fun loadJavConfig(): JavConfig {
             val url = "http://oldschool.runescape.com/jav_config.ws"
             return runCatching("Failed to load jav_config.ws from $url") {
                 val config = JavConfig(URL(url))

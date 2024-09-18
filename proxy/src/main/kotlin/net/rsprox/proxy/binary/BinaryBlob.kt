@@ -13,7 +13,6 @@ import net.rsprox.cache.live.LiveConnectionInfo
 import net.rsprox.cache.resolver.LiveCacheResolver
 import net.rsprox.protocol.session.AttributeMap
 import net.rsprox.protocol.session.Session
-import net.rsprox.proxy.ProxyService.Companion.loadJavConfig
 import net.rsprox.proxy.config.BINARY_PATH
 import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.proxy.plugin.PluginLoader
@@ -186,16 +185,10 @@ public data class BinaryBlob(
                     header.revision,
                     header.js5MasterIndex,
                 )
-            val javConfig = loadJavConfig()
-            val host =
-                javConfig
-                    .getCodebase()
-                    .removePrefix("http://")
-                    .removePrefix("https://")
-                    .removeSuffix("/")
+            val world = header.worldId
             val info =
                 LiveConnectionInfo(
-                    host,
+                    "oldschool${world - 300}.runescape.com",
                     PORT,
                     header.revision,
                     key,

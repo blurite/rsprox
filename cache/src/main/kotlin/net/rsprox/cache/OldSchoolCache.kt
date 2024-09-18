@@ -71,7 +71,7 @@ public class OldSchoolCache(
                         }
                 }
             logger.debug { "${buffers.size} npc types decoded in $time" }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             this.npcs = emptyMap()
             logger.warn(e) {
                 "Unable to look up npc types. Decoding may result in failures!"
@@ -102,7 +102,7 @@ public class OldSchoolCache(
             logger.debug {
                 "${buffers.size} varbits decoded in $time"
             }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             this.varbits = emptyMap()
             logger.debug(e) {
                 "Unable to look up var bit types. Decoding will be unaware of affected varbits."
