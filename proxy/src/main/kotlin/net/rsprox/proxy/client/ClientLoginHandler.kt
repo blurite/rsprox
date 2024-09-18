@@ -41,6 +41,7 @@ import net.rsprox.proxy.server.prot.LoginServerProtId
 import net.rsprox.proxy.server.prot.LoginServerProtProvider
 import net.rsprox.proxy.util.ChannelConnectionHandler
 import net.rsprox.proxy.util.xteaEncrypt
+import net.rsprox.proxy.worlds.WorldFlag
 import net.rsprox.proxy.worlds.WorldListProvider
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.settings.SettingSetStore
@@ -100,6 +101,7 @@ public class ClientLoginHandler(
                 logger.debug {
                     "Remaining beta archive CRCs received"
                 }
+                switchClientToRelay(ctx)
             }
             LoginClientProt.SSL_WEB_CONNECTION -> {
                 logger.debug { "SSL Web connection received, switching to relay" }
@@ -216,8 +218,10 @@ public class ClientLoginHandler(
         }
         // Swap out the original login packet with the new one
         msg.replacePayload(encoded)
-        // Relay packets for now, server will swap over to decoding once it's time
-        switchClientToRelay(ctx)
+        if (!world.hasFlag(WorldFlag.BETA_WORLD)) {
+            // Relay packets for now, server will swap over to decoding once it's time
+            switchClientToRelay(ctx)
+        }
     }
 
     private fun decodeLoginXteaBlock(buffer: JagByteBuf): LoginXteaBlock {
