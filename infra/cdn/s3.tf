@@ -29,3 +29,29 @@ data "aws_iam_policy_document" "allow_cloudfront" {
     ]
   }
 }
+
+resource "aws_s3_bucket_ownership_controls" "cdn" {
+  bucket = aws_s3_bucket.bucket_origin.id
+  rule {
+    object_ownership = "ObjectWriter"
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "cdn" {
+  bucket = aws_s3_bucket.bucket_origin.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
+resource "aws_s3_bucket_acl" "cdn" {
+  depends_on = [
+    aws_s3_bucket_ownership_controls.cdn,
+    aws_s3_bucket_public_access_block.cdn,
+  ]
+
+  bucket = aws_s3_bucket.bucket_origin.id
+  acl    = "public-read"
+}
