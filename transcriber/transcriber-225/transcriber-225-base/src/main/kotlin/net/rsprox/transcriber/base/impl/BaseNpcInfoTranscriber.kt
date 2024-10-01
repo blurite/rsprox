@@ -764,7 +764,15 @@ public class BaseNpcInfoTranscriber(
         if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
             shortNpc(npc.index)
         }
-        coordGrid(npc.coord.level, info.x, info.z)
+        var x = info.x
+        if (x == 65535) {
+            x = 16383
+        }
+        var z = info.z
+        if (z == 65535) {
+            z = 16383
+        }
+        coordGrid(npc.coord.level, x, z)
         filteredBoolean("instant", info.instant)
     }
 
