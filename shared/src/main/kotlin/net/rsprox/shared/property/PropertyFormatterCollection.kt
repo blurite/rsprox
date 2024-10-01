@@ -142,8 +142,10 @@ public class PropertyFormatterCollection private constructor(
                                 return@PropertyFormatter "null"
                             }
                             val level = value ushr 28
-                            val x = value ushr 14 and 0x3FFF
-                            val z = value and 0x3FFF
+                            var x = value ushr 14 and 0x3FFF
+                            if (x == 0x3FFF) x = -1
+                            var z = value and 0x3FFF
+                            if (z == 0x3FFF) z = -1
                             "($x, $z, $level)"
                         }
                         ScriptVarType.COMPONENT -> {
