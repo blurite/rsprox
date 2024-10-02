@@ -20,6 +20,8 @@ public fun main() {
         UIManager.put("Tree.leafIcon", emptyIcon)
         UIManager.put("Tree.openIcon", emptyIcon)
         UIManager.put("Tree.closedIcon", emptyIcon)
+        UIManager.put("Component.focusWidth", 0)
+        UIManager.put("Component.innerOutlineWidth", 0)
 
         val app = App()
         app.init()

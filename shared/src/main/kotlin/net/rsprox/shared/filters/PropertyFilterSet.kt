@@ -38,5 +38,7 @@ public interface PropertyFilterSet {
 
     public fun removeRegexFilter(regexFilter: RegexFilter)
 
+    public fun replaceRegexFilter(oldRegexFilter: RegexFilter, newRegexFilter: RegexFilter)
+
     public fun clearRegexFilters()
 }
