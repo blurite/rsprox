@@ -80,6 +80,7 @@ public class RegexFilterPanel(
                 regexUpdated()
             }
         })
+        regexTextField.columns = 15
         add(regexTextField, "growx")
 
         // Add a checkbox for matching per line.
@@ -102,6 +103,7 @@ public class RegexFilterPanel(
                     editor.text = label.text
                     editor.placeholderText = label.text
                     editor.border = null
+                    // do not let it grow over the parent
                     editor.selectAll()
 
                     remove(label)
