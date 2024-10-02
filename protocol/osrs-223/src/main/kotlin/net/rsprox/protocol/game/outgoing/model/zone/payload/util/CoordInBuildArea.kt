@@ -17,7 +17,10 @@ public value class CoordInBuildArea private constructor(
     private val packedShort: UShort,
 ) {
     public constructor(packed: Int) : this(
-        packed.toUShort(),
+        packed ushr 16 and 0xFF,
+        packed ushr 4 and 0x7,
+        packed ushr 8 and 0xFF,
+        packed and 0x7,
     )
 
     public constructor(
