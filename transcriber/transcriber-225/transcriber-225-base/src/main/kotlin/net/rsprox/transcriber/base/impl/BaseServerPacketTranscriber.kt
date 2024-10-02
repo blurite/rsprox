@@ -2098,7 +2098,7 @@ public class BaseServerPacketTranscriber(
 
     override fun locAnimSpecific(message: LocAnimSpecific) {
         if (!filters[PropertyFilter.LOC_ANIM_SPECIFIC]) return omit()
-        root.scriptVarType("id", ScriptVarType.LOC, message.id)
+        root.scriptVarType("id", ScriptVarType.SEQ, message.id)
         root.coordGrid(buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea))
         root.scriptVarType("shape", ScriptVarType.LOC_SHAPE, message.shape)
         root.int("rotation", message.rotation)
