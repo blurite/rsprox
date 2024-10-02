@@ -99,6 +99,13 @@ public class DefaultPropertyFilterSet(
         save()
     }
 
+    override fun replaceRegexFilter(oldRegexFilter: RegexFilter, newRegexFilter: RegexFilter) {
+        val index = regexFilters.indexOf(oldRegexFilter)
+        if (index == -1) return
+        regexFilters[index] = newRegexFilter
+        save()
+    }
+
     override fun clearRegexFilters() {
         regexFilters.clear()
         save()
@@ -144,6 +151,7 @@ public class DefaultPropertyFilterSet(
             builder.append("version=").append(propertyFilterSet.version).appendLine()
             builder.append("creationtime=").append(propertyFilterSet.creationTime).appendLine()
             builder.append("name=").append(propertyFilterSet.name).appendLine()
+            builder.append("active=").append(propertyFilterSet.active).appendLine()
             for ((k, v) in propertyFilterSet.filters) {
                 builder
                     .append(k)
