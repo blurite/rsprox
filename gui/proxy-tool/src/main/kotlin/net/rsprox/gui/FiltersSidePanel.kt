@@ -51,7 +51,11 @@ public class FiltersSidePanel(
     private val checkboxes = hashMapOf<PropertyFilter, JCheckBox>()
     private val incomingPanel = FiltersPanel(StreamDirection.SERVER_TO_CLIENT)
     private val outgoingPanel = FiltersPanel(StreamDirection.CLIENT_TO_SERVER)
-    private val regexPanel = JPanel()
+    private val regexPanel = JPanel().apply {
+        layout = BorderLayout()
+        border = BorderFactory.createEmptyBorder(0, 0, 0, 0)
+    }
+
     private val searchBox = JTextField(SEARCH)
 
     init {
@@ -186,7 +190,7 @@ public class FiltersSidePanel(
         val tabbedGroup = FlatTabbedPane()
         tabbedGroup.addTab("Incoming", incomingPanel.wrapWithBorderlessScrollPane())
         tabbedGroup.addTab("Outgoing", outgoingPanel.wrapWithBorderlessScrollPane())
-        tabbedGroup.addTab("Regex", regexPanel.wrapWithBorderlessScrollPane(verticalPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED))
+        tabbedGroup.addTab("Regex", regexPanel.wrapWithBorderlessScrollPane())
 
         tabbedGroup.addMouseListener(
             object : MouseAdapter() {
@@ -216,12 +220,10 @@ public class FiltersSidePanel(
     }
 
     private fun buildRegexPanel() {
-        regexPanel.layout = BorderLayout()
-        regexPanel.border = BorderFactory.createEmptyBorder(0, 0, 0, 0)
         regexPanel.removeAll()
 
         val regexFiltersContainer = JPanel()
-        regexFiltersContainer.layout = MigLayout("ins 5, hidemode 3", "[grow, fill]", "[]")
+        regexFiltersContainer.layout = MigLayout("ins 5", "[grow, fill]", "[]")
         regexFiltersContainer.border = BorderFactory.createEmptyBorder(0, 0, 0, 0)
         regexPanel.add(regexFiltersContainer, BorderLayout.CENTER)
 
@@ -232,6 +234,7 @@ public class FiltersSidePanel(
         val regexLabel = FlatLabel().apply {
             text = "Regex Filters"
             labelType = FlatLabel.LabelType.large
+            isEnabled = presetsBox.selectedIndex != 0
         }
         actionsPanel.add(regexLabel, BorderLayout.WEST)
 
@@ -244,7 +247,11 @@ public class FiltersSidePanel(
                 val regexFilter = RegexFilter("prot_name", Regex(""), true)
                 filterStore.addRegexFilter(regexFilter)
                 regexFiltersContainer.addRegexFilterPanel(regexFilter)
+
+                regexPanel.revalidate()
+                regexPanel.repaint()
             }
+            isEnabled = presetsBox.selectedIndex != 0
         }, BorderLayout.EAST)
         regexPanel.add(actionsPanel, BorderLayout.NORTH)
 
@@ -253,13 +260,14 @@ public class FiltersSidePanel(
         active.getRegexFilters().forEach { regexFilter ->
             regexFiltersContainer.addRegexFilterPanel(regexFilter)
         }
+
+        revalidate()
     }
 
     private fun JPanel.addRegexFilterPanel(filter: RegexFilter) {
         val filterStore = proxyService.filterSetStore.getActive()
         val regexFilterPanel = RegexFilterPanel(filterStore, filter)
-        add(regexFilterPanel, "wrap")
-        regexPanel.revalidate()
+        add(regexFilterPanel, "wrap", 0)
     }
 
     private fun updateFilterState() {

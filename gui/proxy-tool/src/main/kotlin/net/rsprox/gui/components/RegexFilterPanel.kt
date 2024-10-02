@@ -12,6 +12,8 @@ import net.rsprox.shared.filters.PropertyFilterSet
 import net.rsprox.shared.filters.RegexFilter
 import java.awt.event.FocusAdapter
 import java.awt.event.FocusEvent
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.util.regex.PatternSyntaxException
@@ -21,6 +23,7 @@ import javax.swing.JSeparator
 import javax.swing.JTextField
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
+import javax.swing.undo.UndoManager
 
 public class RegexFilterPanel(
     private val filterSet: PropertyFilterSet,
@@ -32,14 +35,14 @@ public class RegexFilterPanel(
     private val perLineCheckbox = FlatCheckBox()
 
     init {
-        layout = MigLayout("fill, gap 5", "[grow][]", "[][][]")
+        layout = MigLayout("gap 5", "[grow, fill][]", "[][][]")
         putClientProperty(FlatClientProperties.STYLE, "background: darken(${'$'}Panel.background,2%)")
 
         // Add a label for the filter name.
         protNameLabel.text = currentFilter.protName
         protNameLabel.toolTipText = "The name of the filter."
         installNameEditor(protNameLabel)
-        add(protNameLabel, "growx")
+        add(protNameLabel)
 
         // Add a delete button to remove the filter.
         add(FlatButton().apply {
@@ -61,7 +64,7 @@ public class RegexFilterPanel(
             }
         }, "wrap")
 
-        add(JSeparator(), "span, growx, wrap")
+        add(JSeparator(), "span, wrap")
 
         // Add a text field for the regular expression.
         regexTextField.toolTipText = "The regular expression to match."
@@ -80,8 +83,16 @@ public class RegexFilterPanel(
                 regexUpdated()
             }
         })
-        regexTextField.columns = 15
-        add(regexTextField, "growx")
+
+        // Add undo/redo support to the text field.
+        val undoManager = UndoManager()
+        regexTextField.document.addUndoableEditListener(undoManager)
+        regexTextField.addKeyListener(UndoRedoKeyListener(undoManager))
+
+        // Set the columns to 1 to prevent the text field from growing and resizing the parent.
+        regexTextField.columns = 1
+
+        add(regexTextField)
 
         // Add a checkbox for matching per line.
         perLineCheckbox.toolTipText = "Whether to match per line of output."
@@ -107,7 +118,7 @@ public class RegexFilterPanel(
                     editor.selectAll()
 
                     remove(label)
-                    add(editor, "growx", 0)
+                    add(editor, 0)
 
                     revalidate()
                     repaint()
@@ -147,7 +158,7 @@ public class RegexFilterPanel(
 
         // Remove the editor and add the label back.
         remove(editor)
-        add(label, "growx", 0)
+        add(label, 0)
 
         // Revalidate and repaint the panel.
         revalidate()
@@ -170,6 +181,25 @@ public class RegexFilterPanel(
                 true
             } catch (_: PatternSyntaxException) {
                 false
+            }
+        }
+    }
+
+    private class UndoRedoKeyListener(private val undoManager: UndoManager) : KeyAdapter() {
+        override fun keyPressed(e: KeyEvent) {
+            if (e.isControlDown) {
+                when {
+                    e.keyCode == KeyEvent.VK_Z -> {
+                        if (undoManager.canUndo()) {
+                            undoManager.undo()
+                        }
+                    }
+                    e.keyCode == KeyEvent.VK_Y -> {
+                        if (undoManager.canRedo()) {
+                            undoManager.redo()
+                        }
+                    }
+                }
             }
         }
     }
