@@ -193,6 +193,7 @@ import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.concurrent.TimeUnit
+import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildArea
 
 @Suppress("SpellCheckingInspection", "DuplicatedCode")
 public class BaseServerPacketTranscriber(
@@ -345,7 +346,15 @@ public class BaseServerPacketTranscriber(
 
     override fun camLookAt(message: CamLookAt) {
         if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
-        root.coordGrid(buildAreaCoordGrid(message.destinationXInBuildArea, message.destinationZInBuildArea))
+        val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
+        if (coordInBuildArea.invalid()) {
+            root.any("outofboundsbuildareacoord",
+                "[zoneX=${coordInBuildArea.zoneX}, xInZone=${coordInBuildArea.xInZone}, " +
+                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]"
+            )
+        } else {
+            root.coordGrid(buildAreaCoordGrid(coordInBuildArea.xInBuildArea, coordInBuildArea.zInBuildArea))
+        }
         root.int("height", message.height)
         root.int("rate", message.speed)
         root.int("rate2", message.acceleration)
@@ -353,7 +362,15 @@ public class BaseServerPacketTranscriber(
 
     override fun camLookAtEasedCoord(message: CamLookAtEasedCoord) {
         if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
-        root.coordGrid(buildAreaCoordGrid(message.destinationXInBuildArea, message.destinationZInBuildArea))
+        val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
+        if (coordInBuildArea.invalid()) {
+            root.any("outofboundsbuildareacoord",
+                "[zoneX=${coordInBuildArea.zoneX}, xInZone=${coordInBuildArea.xInZone}, " +
+                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]"
+            )
+        } else {
+            root.coordGrid(buildAreaCoordGrid(coordInBuildArea.xInBuildArea, coordInBuildArea.zInBuildArea))
+        }
         root.int("height", message.height)
         root.int("cycles", message.duration)
         root.enum("easing", message.function)
@@ -366,7 +383,15 @@ public class BaseServerPacketTranscriber(
 
     override fun camMoveTo(message: CamMoveTo) {
         if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
-        root.coordGrid(buildAreaCoordGrid(message.destinationXInBuildArea, message.destinationZInBuildArea))
+        val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
+        if (coordInBuildArea.invalid()) {
+            root.any("outofboundsbuildareacoord",
+                "[zoneX=${coordInBuildArea.zoneX}, xInZone=${coordInBuildArea.xInZone}, " +
+                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]"
+            )
+        } else {
+            root.coordGrid(buildAreaCoordGrid(coordInBuildArea.xInBuildArea, coordInBuildArea.zInBuildArea))
+        }
         root.int("height", message.height)
         root.int("rate", message.speed)
         root.int("rate2", message.acceleration)
@@ -374,7 +399,15 @@ public class BaseServerPacketTranscriber(
 
     override fun camMoveToArc(message: CamMoveToArc) {
         if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
-        root.coordGrid(buildAreaCoordGrid(message.destinationXInBuildArea, message.destinationZInBuildArea))
+        val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
+        if (coordInBuildArea.invalid()) {
+            root.any("outofboundsbuildareacoord",
+                "[zoneX=${coordInBuildArea.zoneX}, xInZone=${coordInBuildArea.xInZone}, " +
+                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]"
+            )
+        } else {
+            root.coordGrid(buildAreaCoordGrid(coordInBuildArea.xInBuildArea, coordInBuildArea.zInBuildArea))
+        }
         root.int("height", message.height)
         root.coordGrid("tertiarycoord", buildAreaCoordGrid(message.centerXInBuildArea, message.centerZInBuildArea))
         root.int("cycles", message.duration)
@@ -384,7 +417,15 @@ public class BaseServerPacketTranscriber(
 
     override fun camMoveToCycles(message: CamMoveToCycles) {
         if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
-        root.coordGrid(buildAreaCoordGrid(message.destinationXInBuildArea, message.destinationZInBuildArea))
+        val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
+        if (coordInBuildArea.invalid()) {
+            root.any("outofboundsbuildareacoord",
+                "[zoneX=${coordInBuildArea.zoneX}, xInZone=${coordInBuildArea.xInZone}, " +
+                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]"
+            )
+        } else {
+            root.coordGrid(buildAreaCoordGrid(coordInBuildArea.xInBuildArea, coordInBuildArea.zInBuildArea))
+        }
         root.int("height", message.height)
         root.int("cycles", message.duration)
         root.boolean("ignoreterrain", message.ignoreTerrain)
@@ -2100,7 +2141,14 @@ public class BaseServerPacketTranscriber(
     override fun locAnimSpecific(message: LocAnimSpecific) {
         if (!filters[PropertyFilter.LOC_ANIM_SPECIFIC]) return omit()
         root.scriptVarType("id", ScriptVarType.SEQ, message.id)
-        root.coordGrid(buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea))
+        if (message.coordInBuildArea.invalid()) {
+            root.any("outofboundsbuildareacoord",
+                "[zoneX=${message.coordInBuildArea.zoneX}, xInZone=${message.coordInBuildArea.xInZone}, " +
+                    "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]"
+            )
+        } else {
+            root.coordGrid(buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea))
+        }
         root.scriptVarType("shape", ScriptVarType.LOC_SHAPE, message.shape)
         root.int("rotation", message.rotation)
     }
@@ -2110,7 +2158,14 @@ public class BaseServerPacketTranscriber(
         root.scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
         root.filteredInt("delay", message.delay, 0)
         root.filteredInt("height", message.height, 0)
-        root.coordGrid(buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea))
+        if (message.coordInBuildArea.invalid()) {
+            root.any("outofboundsbuildareacoord",
+                "[zoneX=${message.coordInBuildArea.zoneX}, xInZone=${message.coordInBuildArea.xInZone}, " +
+                    "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]"
+            )
+        } else {
+            root.coordGrid(buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea))
+        }
     }
 
     override fun npcAnimSpecific(message: NpcAnimSpecific) {
@@ -2162,15 +2217,30 @@ public class BaseServerPacketTranscriber(
         root.int("startheight", message.startHeight)
         root.int("endheight", message.endHeight)
         root.group("SOURCE") {
-            coordGrid(buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea))
+            if (message.coordInBuildArea.invalid()) {
+                any("outofboundsbuildareacoord",
+                    "[zoneX=${message.coordInBuildArea.zoneX}, xInZone=${message.coordInBuildArea.xInZone}, " +
+                        "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]"
+                )
+            } else {
+                coordGrid(buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea))
+            }
         }
         root.group("TARGET") {
-            coordGrid(
-                buildAreaCoordGrid(
-                    message.coordInBuildArea.xInBuildArea + message.deltaX,
-                    message.coordInBuildArea.zInBuildArea + message.deltaZ,
-                ),
-            )
+            if (message.coordInBuildArea.invalid()) {
+                any(
+                    "outofboundsbuildareacoord",
+                    "[zoneX=${message.coordInBuildArea.zoneX}, xInZone=${message.coordInBuildArea.xInZone}, " +
+                        "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]"
+                )
+            } else {
+                coordGrid(
+                    buildAreaCoordGrid(
+                        message.coordInBuildArea.xInBuildArea + message.deltaX,
+                        message.coordInBuildArea.zInBuildArea + message.deltaZ,
+                    ),
+                )
+            }
             val ambiguousIndex = message.targetIndex
             if (ambiguousIndex != 0) {
                 if (ambiguousIndex > 0) {

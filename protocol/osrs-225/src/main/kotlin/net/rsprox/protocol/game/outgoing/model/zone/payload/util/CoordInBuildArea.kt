@@ -64,6 +64,10 @@ public value class CoordInBuildArea private constructor(
                 .or(xInZone shl 4)
                 .or(zInZone)
 
+    public fun invalid(): Boolean {
+        return xInBuildArea >= 104 || zInBuildArea >= 104
+    }
+
     override fun toString(): String {
         return "CoordInBuildArea(" +
             "xInBuildArea=$xInBuildArea, " +
