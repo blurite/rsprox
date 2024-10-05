@@ -37,9 +37,6 @@ public class DefaultJagexAccountStore(
                 selectedCharacterId = null
             }
         }
-        if (selectedCharacterId == null && characters.isNotEmpty()) {
-            selectedCharacterId = characters.first().accountId
-        }
     }
 
     override fun add(account: JagexAccount) {

@@ -76,6 +76,7 @@ import java.net.URL
 import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
+import java.util.Properties
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 import kotlin.io.path.Path
@@ -551,6 +552,7 @@ public class ProxyService(
                 val absolutePath = path.absolutePathString()
                 createProcess(listOf(absolutePath), directory, path, port, character)
             }
+
             OperatingSystem.MAC -> {
                 // The patched file is at /.rsprox/clients/osclient.app/Contents/MacOS/osclient-patched
                 // We need to however execute the /.rsprox/clients/osclient.app "file"
@@ -558,6 +560,7 @@ public class ProxyService(
                 val absolutePath = "${File.separator}${rootDirection.absolutePathString()}"
                 createProcess(listOf("open", absolutePath), null, path, port, character)
             }
+
             OperatingSystem.UNIX -> {
                 try {
                     val directory = path.parent.toFile()
@@ -567,6 +570,7 @@ public class ProxyService(
                     throw RuntimeException("wine is required to run the enhanced client on unix", e)
                 }
             }
+
             OperatingSystem.SOLARIS -> throw IllegalStateException("Solaris not supported yet.")
         }
     }
@@ -595,6 +599,24 @@ public class ProxyService(
                 builder.environment()["JX_DISPLAY_NAME"] = character.displayName ?: ""
                 builder.environment()["JX_ACCESS_TOKEN"] = ""
             }
+        } else {
+            builder.environment().putAll(
+                Properties().let { props ->
+                    val runeliteCreds =
+                        File(System.getProperty("user.home"), ".runelite")
+                            .resolve("credentials.properties")
+                    if (!runeliteCreds.exists()) {
+                        logger.info { "(Jagex Account) RuneLite credentials could not be located in: $runeliteCreds" }
+                        logger.info { "(Jagex Account) Using regular username/e-mail & password login box" }
+                        emptyMap()
+                    } else {
+                        runeliteCreds.inputStream().use {
+                            props.load(it)
+                        }
+                        props.stringPropertyNames().associateWith { props.getProperty(it) }
+                    }
+                },
+            )
         }
         val process = builder.start()
         if (process.isAlive) {

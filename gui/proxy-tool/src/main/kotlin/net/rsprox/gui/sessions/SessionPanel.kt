@@ -42,7 +42,7 @@ import kotlin.time.measureTime
 public class SessionPanel(
     private val type: SessionType,
     private val sessionsPanel: SessionsPanel,
-    character: JagexCharacter,
+    character: JagexCharacter?,
 ) : JPanel() {
     private val treeTable = JXTreeTable()
     private val tableModel = DefaultTreeTableModel()
@@ -178,7 +178,7 @@ public class SessionPanel(
         launchClient(character)
     }
 
-    private fun launchClient(character: JagexCharacter) {
+    private fun launchClient(character: JagexCharacter?) {
         ForkJoinPool.commonPool().submit {
             logger.info { "$type client thread: ${Thread.currentThread().name}" }
             val time =

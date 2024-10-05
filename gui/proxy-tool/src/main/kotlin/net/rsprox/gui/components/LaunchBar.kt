@@ -58,6 +58,16 @@ public class LaunchBar(
                     val child = characterDropdown.getAccessibleContext().getAccessibleChild(0)
                     if (child is BasicComboPopup) {
                         child.removeAll()
+                        val default =
+                            JMenuItem("Default").apply {
+                                addActionListener {
+                                    characterDropdown.selectedItem = DEFAULT_CHARACTER
+                                    App.service.jagexAccountStore.selectedCharacterId = null
+                                }
+                            }
+
+                        child.add(default)
+
                         App.service.jagexAccountStore.accounts.forEach { account ->
                             if (child.subElements.size > 0) {
                                 child.addSeparator()
@@ -116,13 +126,16 @@ public class LaunchBar(
 
     public fun refreshCharacters() {
         charactersModel.removeAllElements()
+
+        charactersModel.addElement(DEFAULT_CHARACTER)
+
         App.service.jagexAccountStore.accounts
             .flatMap { it.characters }
             .forEach { charactersModel.addElement(it) }
 
         val selectedCharacterId = App.service.jagexAccountStore.selectedCharacterId
         if (selectedCharacterId == null) {
-            charactersModel.selectedItem = null
+            charactersModel.selectedItem = DEFAULT_CHARACTER
         } else {
             charactersModel.selectedItem =
                 App.service.jagexAccountStore.accounts
@@ -136,7 +149,11 @@ public class LaunchBar(
             return
         }
         val sessionType = sessionTypesModel.selectedItem as SessionType
-        val character = charactersModel.selectedItem as JagexCharacter
+        val character =
+            when (val character = charactersModel.selectedItem) {
+                DEFAULT_CHARACTER -> null
+                else -> character as JagexCharacter
+            }
         sessionsPanel.createSession(sessionType, character)
     }
 
@@ -172,5 +189,9 @@ public class LaunchBar(
                 text = value.safeDisplayName
             }
         }
+    }
+
+    private companion object {
+        private val DEFAULT_CHARACTER = JagexCharacter(-1, "Default", -1L)
     }
 }

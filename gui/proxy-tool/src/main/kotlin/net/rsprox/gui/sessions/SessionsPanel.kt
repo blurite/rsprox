@@ -20,7 +20,7 @@ public class SessionsPanel(
 
     public fun createSession(
         type: SessionType,
-        character: JagexCharacter,
+        character: JagexCharacter?,
     ) {
         val session = SessionPanel(type, this, character)
         addTab("Session ${++counter}", type.icon, session, "")
