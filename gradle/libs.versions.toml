@@ -11,12 +11,13 @@ flatlaf = "3.5"
 miglayout = "11.4"
 clikt = "4.2.2"
 classgraph = "4.8.174"
+okhttp3 = "4.12.0"
 openrs2 = "0.1.0-SNAPSHOT"
 swingx = "1.6.5-1"
 shadowjar = "7.1.2"
 zip4j = "2.11.5"
 junixsocket = "2.10.0"
-runelite-launcher = "2.7.3"
+gson = "2.11.0"
 
 [libraries]
 netty-bom = { module = "io.netty:netty-bom", version.ref = "netty" }
@@ -45,12 +46,13 @@ flatlaf-intellij-themes = { module = "com.formdev:flatlaf-intellij-themes", vers
 mig-layout = { module = "com.miglayout:miglayout-swing", version.ref = "miglayout" }
 clikt = { module = "com.github.ajalt.clikt:clikt-jvm", version.ref = "clikt" }
 classgraph = { module = "io.github.classgraph:classgraph", version.ref = "classgraph" }
+okhttp3 = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp3" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 openrs2-buffer = { module = "org.openrs2:openrs2-buffer", version.ref = "openrs2"}
 openrs2-cache = { module = "org.openrs2:openrs2-cache", version.ref = "openrs2"}
 swingx = { module = "org.swinglabs.swingx:swingx-all", version.ref = "swingx" }
 zip4j = { module = "net.lingala.zip4j:zip4j", version.ref = "zip4j" }
 junixsocket = { module = "com.kohlschutter.junixsocket:junixsocket-core", version.ref = "junixsocket"}
-runelite-launcher = { module = "net.runelite:launcher", version.ref = "runelite-launcher"}
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

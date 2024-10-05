@@ -18,7 +18,6 @@ dependencies {
     implementation(rootProject.libs.bundles.bouncycastle)
     implementation(rootProject.libs.java.jwt)
     implementation(rootProject.libs.bundles.jackson)
-    implementation(rootProject.libs.runelite.launcher)
     implementation(projects.patch)
     implementation(projects.patch.patchNative)
     implementation(projects.patch.patchRunelite)
@@ -30,6 +29,8 @@ dependencies {
     implementation(projects.cache.cacheApi)
     implementation(projects.shared)
     implementation(libs.junixsocket)
+    implementation(libs.okhttp3)
+    implementation(libs.gson)
 }
 
 tasks.build.configure {
