@@ -9,16 +9,19 @@ import net.rsprox.proxy.binary.BinaryBlob
 import net.rsprox.proxy.cache.StatefulCacheProvider
 import net.rsprox.proxy.config.BINARY_PATH
 import net.rsprox.proxy.config.FILTERS_DIRECTORY
+import net.rsprox.proxy.config.SETTINGS_DIRECTORY
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.proxy.plugin.PluginLoader
+import net.rsprox.proxy.settings.DefaultSettingSetStore
 import net.rsprox.proxy.util.NopSessionMonitor
 import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.indexing.NopBinaryIndex
 import net.rsprox.shared.property.PropertyTreeFormatter
 import net.rsprox.shared.property.RootProperty
+import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.BaseMessageConsumerContainer
 import net.rsprox.transcriber.MessageConsumer
 import java.io.BufferedWriter
@@ -40,6 +43,7 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
         HuffmanProvider.load()
         val provider = StatefulCacheProvider(HistoricCacheResolver())
         val filters = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY)
+        val settings = DefaultSettingSetStore.load(SETTINGS_DIRECTORY)
         val fileName = this.name
         if (fileName != null) {
             val binaryName = if (fileName.endsWith(".bin")) fileName else "$fileName.bin"
@@ -48,10 +52,10 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
                 echo("Unable to locate file $fileName in $BINARY_PATH")
                 return
             }
-            val binary = BinaryBlob.decode(file, filters)
+            val binary = BinaryBlob.decode(file, filters, settings)
             val time =
                 measureTime {
-                    fileTranscribe(file, binary, pluginLoader, provider, filters)
+                    fileTranscribe(file, binary, pluginLoader, provider, filters, settings)
                 }
             logger.debug { "$file took $time to transcribe." }
         } else {
@@ -64,12 +68,12 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
                     .walkTopDown()
                     .filter { it.extension == "bin" }
                     .map { it.toPath() }
-                    .map { it to BinaryBlob.decode(it, filters) }
+                    .map { it to BinaryBlob.decode(it, filters, settings) }
                     .sortedBy { it.second.header.revision }
             for ((path, blob) in fileTreeWalk) {
                 val time =
                     measureTime {
-                        fileTranscribe(path, blob, pluginLoader, provider, filters)
+                        fileTranscribe(path, blob, pluginLoader, provider, filters, settings)
                     }
                 logger.debug { "${path.name} took $time to transcribe." }
             }
@@ -82,6 +86,7 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
         pluginLoader: PluginLoader,
         statefulCacheProvider: StatefulCacheProvider,
         filters: PropertyFilterSetStore,
+        settings: SettingSetStore,
     ) {
         statefulCacheProvider.update(
             Js5MasterIndex.trimmed(
@@ -101,6 +106,7 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
                 statefulCacheProvider,
                 NopSessionMonitor,
                 filters,
+                settings,
                 NopBinaryIndex,
             )
 

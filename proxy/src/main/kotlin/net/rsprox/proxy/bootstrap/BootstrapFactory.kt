@@ -21,6 +21,7 @@ import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.server.ServerConnectionInitializer
 import net.rsprox.proxy.worlds.WorldListProvider
 import net.rsprox.shared.filters.PropertyFilterSetStore
+import net.rsprox.shared.settings.SettingSetStore
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
 
 public class BootstrapFactory(
@@ -38,6 +39,7 @@ public class BootstrapFactory(
         binaryWriteInterval: Int,
         connections: ProxyConnectionContainer,
         filters: PropertyFilterSetStore,
+        settings: SettingSetStore,
     ): ServerBootstrap {
         return ServerBootstrap()
             .group(group(PARENT_GROUP_THREADS), group(CHILD_GROUP_THREADS))
@@ -58,6 +60,7 @@ public class BootstrapFactory(
                     binaryWriteInterval,
                     connections,
                     filters,
+                    settings,
                 ),
             )
     }

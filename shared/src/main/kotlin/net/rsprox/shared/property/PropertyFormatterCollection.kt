@@ -15,6 +15,8 @@ import net.rsprox.shared.property.regular.ShortNpcProperty
 import net.rsprox.shared.property.regular.VarbitProperty
 import net.rsprox.shared.property.regular.VarpProperty
 import net.rsprox.shared.property.regular.ZoneCoordProperty
+import net.rsprox.shared.settings.Setting
+import net.rsprox.shared.settings.SettingSetStore
 
 public class PropertyFormatterCollection private constructor(
     private val formatters: Map<Class<*>, PropertyFormatter<*>>,
@@ -52,7 +54,11 @@ public class PropertyFormatterCollection private constructor(
     }
 
     public companion object {
-        public fun default(dictionary: SymbolDictionary): PropertyFormatterCollection {
+        public fun default(
+            dictionary: SymbolDictionary,
+            settingStore: SettingSetStore,
+        ): PropertyFormatterCollection {
+            val settings = settingStore.getActive()
             val builder = Builder()
             val enumPropertyFormatter =
                 PropertyFormatter<NamedEnumProperty<*>> {
@@ -120,7 +126,11 @@ public class PropertyFormatterCollection private constructor(
                 PropertyFormatter<ScriptVarTypeProperty<*>> {
                     val vartype = it.scriptVarType.baseVarType
                     if (vartype == BaseVarType.STRING) {
-                        return@PropertyFormatter "'${it.value}'"
+                        return@PropertyFormatter if (settings[Setting.PREFER_SINGLE_QUOTE_ON_STRINGS]) {
+                            "'${it.value}'"
+                        } else {
+                            "\"${it.value}\""
+                        }
                     }
                     if (vartype != BaseVarType.INTEGER) {
                         return@PropertyFormatter it.value.toString()
@@ -132,8 +142,10 @@ public class PropertyFormatterCollection private constructor(
                                 return@PropertyFormatter "null"
                             }
                             val level = value ushr 28
-                            val x = value ushr 14 and 0x3FFF
-                            val z = value and 0x3FFF
+                            var x = value ushr 14 and 0x3FFF
+                            if (x == 0x3FFF) x = -1
+                            var z = value and 0x3FFF
+                            if (z == 0x3FFF) z = -1
                             "($x, $z, $level)"
                         }
                         ScriptVarType.COMPONENT -> {

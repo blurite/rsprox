@@ -4,6 +4,7 @@ import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.filters.PropertyFilter
 import net.rsprox.shared.filters.PropertyFilterSet
 import net.rsprox.shared.filters.ProtCategory
+import net.rsprox.shared.filters.RegexFilter
 
 public class UnmodifiablePropertyFilterSet : PropertyFilterSet {
     override fun getCreationTime(): Long {
@@ -46,5 +47,21 @@ public class UnmodifiablePropertyFilterSet : PropertyFilterSet {
     }
 
     override fun setDefaults() {
+    }
+
+    override fun getRegexFilters(): List<RegexFilter> {
+        return emptyList()
+    }
+
+    override fun addRegexFilter(regexFilter: RegexFilter) {
+    }
+
+    override fun removeRegexFilter(regexFilter: RegexFilter) {
+    }
+
+    override fun replaceRegexFilter(oldRegexFilter: RegexFilter, newRegexFilter: RegexFilter) {
+    }
+
+    override fun clearRegexFilters() {
     }
 }

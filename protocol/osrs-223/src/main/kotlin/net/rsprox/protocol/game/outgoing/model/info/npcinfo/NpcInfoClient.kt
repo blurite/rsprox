@@ -463,7 +463,6 @@ public class NpcInfoClient(
                     mirror,
                 ),
             )
-        throw IllegalStateException("Body customisation not supported due to lack of cache loading!")
     }
 
     private fun decodeHeadCustomisation(
@@ -533,7 +532,6 @@ public class NpcInfoClient(
                     mirror,
                 ),
             )
-        throw IllegalStateException("Head customisation not supported due to lack of cache loading!")
     }
 
     private fun decodeSay(
@@ -548,10 +546,10 @@ public class NpcInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val deltaX1 = buffer.g1Alt2()
-        val deltaZ1 = buffer.g1Alt1()
-        val deltaX2 = buffer.g1Alt2()
-        val deltaZ2 = buffer.g1Alt2()
+        val deltaX1 = buffer.g1sAlt2()
+        val deltaZ1 = buffer.g1sAlt1()
+        val deltaX2 = buffer.g1sAlt2()
+        val deltaZ2 = buffer.g1sAlt2()
         val delay1 = buffer.g2()
         val delay2 = buffer.g2()
         val direction = buffer.g2Alt1()

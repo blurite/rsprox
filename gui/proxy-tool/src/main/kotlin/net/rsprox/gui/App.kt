@@ -205,7 +205,7 @@ public class App {
 
     private fun createSideBar(): SideBar {
         return SideBar().apply {
-            //        addButton(AppIcons.Settings, "Sessions", JPanel())
+            addButton(AppIcons.Settings, "Settings", SettingsSidePanel(service))
             addButton(AppIcons.Filter, "Filters", FiltersSidePanel(service))
             selectedIndex = service.getFiltersStatus()
         }
