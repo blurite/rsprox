@@ -9,19 +9,24 @@ import net.rsprox.proxy.binary.BinaryBlob
 import net.rsprox.proxy.cache.StatefulCacheProvider
 import net.rsprox.proxy.config.BINARY_PATH
 import net.rsprox.proxy.config.FILTERS_DIRECTORY
+import net.rsprox.proxy.config.SETTINGS_DIRECTORY
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.proxy.plugin.PluginLoader
+import net.rsprox.proxy.settings.DefaultSettingSetStore
 import net.rsprox.proxy.util.NopSessionMonitor
 import net.rsprox.shared.StreamDirection
+import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.indexing.MultiMapBinaryIndex
+import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.BaseMessageConsumerContainer
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Locale
 import kotlin.io.path.bufferedWriter
 import kotlin.io.path.exists
+import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 import kotlin.time.measureTime
 
@@ -34,7 +39,8 @@ public class IndexerCommand : CliktCommand(name = "index") {
         val pluginLoader = PluginLoader()
         HuffmanProvider.load()
         val provider = StatefulCacheProvider(HistoricCacheResolver())
-        pluginLoader.loadTranscriberPlugins("osrs", provider)
+        val filters = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY)
+        val settings = DefaultSettingSetStore.load(SETTINGS_DIRECTORY)
         val fileName = this.name
         if (fileName != null) {
             val binaryName = if (fileName.endsWith(".bin")) fileName else "$fileName.bin"
@@ -43,40 +49,49 @@ public class IndexerCommand : CliktCommand(name = "index") {
                 echo("Unable to locate file $fileName in $BINARY_PATH")
                 return
             }
+            val binary = BinaryBlob.decode(file, filters, settings)
             val time =
                 measureTime {
-                    stdoutTranscribe(file, pluginLoader, provider)
+                    index(file, binary, pluginLoader, provider, filters, settings)
                 }
             logger.debug { "$file took $time to index." }
         } else {
+            // Sort all the binaries according to revision, so we don't end up loading and unloading plugins
+            // repeatedly for the same things, as we can only have one plugin available at a time
+            // to avoid classloading problems
             val fileTreeWalk =
                 BINARY_PATH
                     .toFile()
                     .walkTopDown()
                     .filter { it.extension == "bin" }
-            for (bin in fileTreeWalk) {
+                    .map { it.toPath() }
+                    .map { it to BinaryBlob.decode(it, filters, settings) }
+                    .sortedBy { it.second.header.revision }
+            for ((path, blob) in fileTreeWalk) {
                 val time =
                     measureTime {
-                        stdoutTranscribe(bin.toPath(), pluginLoader, provider)
+                        index(path, blob, pluginLoader, provider, filters, settings)
                     }
-                logger.debug { "${bin.name} took $time to index." }
+                logger.debug { "${path.name} took $time to index." }
             }
         }
     }
 
-    private fun stdoutTranscribe(
+    private fun index(
         binaryPath: Path,
+        binary: BinaryBlob,
         pluginLoader: PluginLoader,
         statefulCacheProvider: StatefulCacheProvider,
+        filters: PropertyFilterSetStore,
+        settings: SettingSetStore,
     ) {
-        val filters = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY)
-        val binary = BinaryBlob.decode(binaryPath, filters)
         statefulCacheProvider.update(
             Js5MasterIndex.trimmed(
                 binary.header.revision,
                 binary.header.js5MasterIndex,
             ),
         )
+        pluginLoader.load("osrs", binary.header.revision, statefulCacheProvider)
         val latestPlugin = pluginLoader.getPlugin(binary.header.revision)
         val transcriberProvider = pluginLoader.getIndexerProvider(binary.header.revision)
         val session = DecodingSession(binary, latestPlugin)
@@ -90,6 +105,7 @@ public class IndexerCommand : CliktCommand(name = "index") {
                 statefulCacheProvider,
                 NopSessionMonitor,
                 filters,
+                settings,
                 index,
             )
 

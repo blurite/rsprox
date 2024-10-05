@@ -20,9 +20,26 @@ import java.net.URLClassLoader
 public class PluginLoader {
     private val plugins: MutableMap<Int, DecoderPlugin> = mutableMapOf()
     private val transcribers: MutableMap<String?, MutableMap<Int, TranscriberProvider>> = mutableMapOf()
+    private val classloaders: MutableList<URLClassLoader> = mutableListOf()
 
-    public fun loadDecoderPlugins(
+    public fun load(
         type: String,
+        revision: Int,
+        cache: CacheProvider,
+    ) {
+        if (plugins.containsKey(revision)) {
+            return
+        }
+        for (loader in classloaders) {
+            loader.close()
+        }
+        classloaders.clear()
+        loadDecoderPlugin(revision, cache)
+        loadTranscriberPlugins(type, revision)
+    }
+
+    private fun loadDecoderPlugin(
+        revision: Int,
         cache: CacheProvider,
     ) {
         val plugins =
@@ -33,11 +50,9 @@ public class PluginLoader {
         for (file in plugins) {
             try {
                 val match = pluginRegex.find(file.name) ?: continue
-                val (name, revisionString) = match.destructured
-                if (name != type) {
-                    continue
-                }
+                val (_, revisionString) = match.destructured
                 val rev = revisionString.toInt()
+                if (rev != revision) continue
                 if (rev > LATEST_SUPPORTED_PLUGIN) continue
                 loadDecoderPlugin(cache, file, rev)
             } catch (t: Throwable) {
@@ -59,6 +74,7 @@ public class PluginLoader {
                 arrayOf(file.toURI().toURL()),
                 this::class.java.classLoader,
             )
+        classloaders += jarLoader
         loadDecoderPlugin(cache, jarLoader, revision)
         logger.debug { "Loaded ${file.nameWithoutExtension} plugin." }
     }
@@ -130,32 +146,28 @@ public class PluginLoader {
     }
 
     @Suppress("UNUSED_VARIABLE")
-    public fun loadTranscriberPlugins(
+    private fun loadTranscriberPlugins(
         @Suppress("UNUSED_PARAMETER") type: String,
-        cache: CacheProvider,
+        revision: Int,
     ) {
         val plugins =
             TRANSCRIBERS_DIRECTORY
                 .toFile()
                 .walkTopDown()
                 .filter { it.isFile }
-        val revisions = mutableSetOf<Int>()
         for (file in plugins) {
             try {
                 val match = transcriberRegex.find(file.name) ?: continue
                 val (revisionString, name) = match.destructured
                 val rev = revisionString.toInt()
+                if (rev != revision) continue
                 if (rev > LATEST_SUPPORTED_PLUGIN) continue
-                revisions += revisionString.toInt()
                 loadTranscriberPlugin(file, rev)
             } catch (t: Throwable) {
                 logger.error(t) {
                     "Error loading transcriber $file"
                 }
             }
-        }
-        for (rev in revisions) {
-            loadDecoderPlugin(cache, this::class.java.classLoader, rev)
         }
     }
 
@@ -164,11 +176,14 @@ public class PluginLoader {
         revision: Int,
     ) {
         logger.debug { "Attempting to load ${file.nameWithoutExtension}." }
+        // Decoder is always loaded first so we add it as a "dependency"
+        val decoderClassLoader = classloaders.first()
         val loader =
             URLClassLoader(
                 arrayOf(file.toURI().toURL()),
-                this::class.java.classLoader,
+                decoderClassLoader,
             )
+        classloaders += loader
         val scanner = ClassGraph()
         val result =
             scanner

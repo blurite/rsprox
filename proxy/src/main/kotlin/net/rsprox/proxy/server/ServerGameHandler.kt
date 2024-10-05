@@ -18,7 +18,7 @@ import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.crypto.crc.CyclicRedundancyCheck
 import net.rsprot.protocol.util.CombinedId
 import net.rsprot.protocol.util.gCombinedId
-import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
+import net.rsprot.protocol.util.gCombinedIdAlt2
 import net.rsprox.proxy.attributes.INCOMING_BANK_PIN
 import net.rsprox.proxy.channel.getBinaryBlob
 import net.rsprox.proxy.channel.getServerToClientStreamCipher
@@ -29,12 +29,12 @@ import net.rsprox.shared.StreamDirection
 public class ServerGameHandler(
     private val clientChannel: Channel,
     private val worldListProvider: WorldListProvider,
-) : SimpleChannelInboundHandler<ServerPacket<GameServerProt>>() {
+) : SimpleChannelInboundHandler<ServerPacket<*>>() {
     private var bankPinComponent: CombinedId? = null
 
     override fun channelRead0(
         ctx: ChannelHandlerContext,
-        msg: ServerPacket<GameServerProt>,
+        msg: ServerPacket<*>,
     ) {
         try {
             clientChannel.writeAndFlush(redirectTraffic(ctx, msg).encode(ctx.alloc()))
@@ -50,9 +50,9 @@ public class ServerGameHandler(
 
     private fun redirectTraffic(
         ctx: ChannelHandlerContext,
-        msg: ServerPacket<GameServerProt>,
-    ): ServerPacket<GameServerProt> {
-        if (msg.prot != GameServerProt.LOGOUT_TRANSFER) {
+        msg: ServerPacket<*>,
+    ): ServerPacket<*> {
+        if (msg.prot.toString() != "LOGOUT_TRANSFER") {
             return msg
         }
         val buf = msg.payload.toJagByteBuf()
@@ -74,13 +74,13 @@ public class ServerGameHandler(
 
     private fun eraseSensitiveContents(
         ctx: ChannelHandlerContext,
-        msg: ServerPacket<GameServerProt>,
+        msg: ServerPacket<*>,
     ) {
         val prot = msg.prot
         // Both the message private and message private echo follow the same consistent structure
         // of [String: name, EncodedString: contents]
-        when (prot) {
-            GameServerProt.MESSAGE_PRIVATE_ECHO -> {
+        when (prot.toString()) {
+            "MESSAGE_PRIVATE_ECHO" -> {
                 val payload = msg.payload
                 val readableBytes = payload.readableBytes()
                 val name = payload.gjstr()
@@ -92,7 +92,7 @@ public class ServerGameHandler(
                 huffman.encode(replacement, "*".repeat(contents.length))
                 msg.replacePayload(replacement)
             }
-            GameServerProt.MESSAGE_PRIVATE -> {
+            "MESSAGE_PRIVATE" -> {
                 val payload = msg.payload
                 val readableBytes = payload.readableBytes()
                 val name = payload.gjstr()
@@ -110,7 +110,7 @@ public class ServerGameHandler(
                 huffman.encode(replacement, "*".repeat(contents.length))
                 msg.replacePayload(replacement)
             }
-            GameServerProt.URL_OPEN -> {
+            "URL_OPEN" -> {
                 val array = ByteArray(msg.payload.readableBytes())
                 msg.payload.readBytes(array)
                 val isaac = ctx.channel().getServerToClientStreamCipher()
@@ -135,25 +135,25 @@ public class ServerGameHandler(
                 output.pjstr(safeUrl)
                 msg.replacePayload(output)
             }
-            GameServerProt.IF_OPENSUB -> {
+            "IF_OPENSUB" -> {
                 // Note(revision): This block changes in each revision and must be updated
                 val buf = msg.payload.toJagByteBuf()
                 val interfaceId = buf.g2Alt3()
-                val targetComponent = buf.gCombinedId()
+                val targetComponent = buf.gCombinedIdAlt2()
                 buf.skipRead(1)
                 if (interfaceId == BANK_PIN_INTERFACE) {
                     this.bankPinComponent = targetComponent
                     clientChannel.attr(INCOMING_BANK_PIN).set(true)
                 }
             }
-            GameServerProt.IF_CLOSESUB -> {
+            "IF_CLOSESUB" -> {
                 val combinedId = msg.payload.toJagByteBuf().gCombinedId()
                 if (combinedId == this.bankPinComponent) {
                     this.bankPinComponent = null
                     clientChannel.attr(INCOMING_BANK_PIN).set(null)
                 }
             }
-            GameServerProt.UPDATE_UID192 -> {
+            "UPDATE_UID192" -> {
                 // Erase all the UID data
                 // We shouldn't keep it as this could bear some relevance when it comes to
                 // account recovery, as it is another piece of information that can be
@@ -165,7 +165,7 @@ public class ServerGameHandler(
                 buffer.p4(crc)
                 msg.replacePayload(buffer)
             }
-            GameServerProt.SITE_SETTINGS -> {
+            "SITE_SETTINGS" -> {
                 val old = msg.payload.gjstr()
                 // Similarly to update uid192, since both of them are linked, this can be followed
                 // back to account recovery system.

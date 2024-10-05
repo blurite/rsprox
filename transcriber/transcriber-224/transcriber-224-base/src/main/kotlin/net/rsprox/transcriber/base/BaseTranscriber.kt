@@ -6,7 +6,10 @@ import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.filters.PropertyFilterSetStore
+import net.rsprox.shared.property.OmitFilteredPropertyTreeFormatter
 import net.rsprox.shared.property.PropertyTreeFormatter
+import net.rsprox.shared.property.RootProperty
+import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.MessageConsumerContainer
 import net.rsprox.transcriber.Transcriber
 import net.rsprox.transcriber.base.impl.BaseClientPacketTranscriber
@@ -26,27 +29,33 @@ public class BaseTranscriber private constructor(
     private val consumers: MessageConsumerContainer,
     private val formatter: PropertyTreeFormatter,
     private val filterSetStore: PropertyFilterSetStore,
+    private val settingSetStore: SettingSetStore,
 ) : Transcriber,
     ClientPacketTranscriber by BaseClientPacketTranscriber(
         stateTracker,
         cacheProvider.get(),
         filterSetStore,
+        settingSetStore,
     ),
     ServerPacketTranscriber by BaseServerPacketTranscriber(
         stateTracker,
         cacheProvider.get(),
         filterSetStore,
+        settingSetStore,
+        (formatter as OmitFilteredPropertyTreeFormatter).propertyFormatterCollection, // Unsafe but works for now
     ),
     PlayerInfoTranscriber by BasePlayerInfoTranscriber(
         stateTracker,
         monitor,
         cacheProvider.get(),
         filterSetStore,
+        settingSetStore,
     ),
     NpcInfoTranscriber by BaseNpcInfoTranscriber(
         stateTracker,
         cacheProvider.get(),
         filterSetStore,
+        settingSetStore,
     ) {
     public constructor(
         cacheProvider: CacheProvider,
@@ -55,6 +64,7 @@ public class BaseTranscriber private constructor(
         consumers: MessageConsumerContainer,
         formatter: PropertyTreeFormatter,
         filters: PropertyFilterSetStore,
+        settings: SettingSetStore,
     ) : this(
         stateTracker,
         cacheProvider,
@@ -62,6 +72,7 @@ public class BaseTranscriber private constructor(
         consumers,
         formatter,
         filters,
+        settings,
     )
 
     override val cache: Cache = cacheProvider.get()
@@ -83,8 +94,35 @@ public class BaseTranscriber private constructor(
             cycle--
         }
         for (property in root) {
+            if (isRegexSkipped(property)) continue
             consumers.publish(formatter, cycle, property)
         }
         root.clear()
+    }
+
+    private fun isRegexSkipped(property: RootProperty): Boolean {
+        val filters =
+            filterSetStore
+                .getActive()
+                .getRegexFilters()
+                .filter { it.protName == property.prot.lowercase() }
+        if (filters.isNotEmpty()) {
+            val formatted = formatter.format(property)
+            for (filter in filters) {
+                if (filter.perLine) {
+                    for (line in formatted) {
+                        if (filter.regex.containsMatchIn(line)) {
+                            return true
+                        }
+                    }
+                } else {
+                    val combined = formatted.joinToString(separator = System.lineSeparator())
+                    if (filter.regex.containsMatchIn(combined)) {
+                        return true
+                    }
+                }
+            }
+        }
+        return false
     }
 }

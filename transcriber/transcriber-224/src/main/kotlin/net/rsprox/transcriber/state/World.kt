@@ -2,9 +2,14 @@ package net.rsprox.transcriber.state
 
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityMoveSpeed
+import net.rsprox.protocol.game.outgoing.model.map.util.BuildArea
+import net.rsprox.shared.settings.Setting
+import net.rsprox.shared.settings.SettingSet
+import net.rsprox.shared.settings.SettingSetStore
 
 public class World(
     public val id: Int,
+    private val settingSetStore: SettingSetStore,
 ) {
     private var buildAreaSouthWestCoord: CoordGrid = CoordGrid.INVALID
     private var activeZoneSouthWestCoord: CoordGrid = CoordGrid.INVALID
@@ -15,6 +20,14 @@ public class World(
     public var coord: CoordGrid = CoordGrid.INVALID
     public var moveSpeed: WorldEntityMoveSpeed = WorldEntityMoveSpeed.ZERO
     private val npcs: MutableMap<Int, Npc> = mutableMapOf()
+    private var rebuildRegionBuildArea: BuildArea? = null
+
+    private val settings: SettingSet
+        get() = settingSetStore.getActive()
+
+    public fun setBuildArea(buildArea: BuildArea?) {
+        this.rebuildRegionBuildArea = buildArea
+    }
 
     public fun rebuild(southWestCoord: CoordGrid) {
         this.buildAreaSouthWestCoord = southWestCoord
@@ -54,6 +67,49 @@ public class World(
             buildAreaSouthWestCoord.x + xInBuildArea,
             buildAreaSouthWestCoord.z + zInBuildArea,
         )
+    }
+
+    public fun getInstancedCoordOrSelf(coordGrid: CoordGrid): CoordGrid {
+        return instanceCoord(coordGrid) ?: coordGrid
+    }
+
+    public fun instanceCoord(coordGrid: CoordGrid): CoordGrid? {
+        val buildArea = this.rebuildRegionBuildArea
+        if (buildArea == null || coordGrid.x < 6400 || !settings[Setting.TRANSLATE_INSTANCED_COORDS]) {
+            return null
+        }
+        val localX = coordGrid.x - buildAreaSouthWestCoord.x
+        val localZ = coordGrid.z - buildAreaSouthWestCoord.z
+        if (localX < 0 || localX >= 104 || localZ < 0 || localZ >= 104) {
+            return null
+        }
+        val localZoneX = localX ushr 3
+        val localZoneZ = localZ ushr 3
+        val template = buildArea[coordGrid.level, localZoneX, localZoneZ]
+        if (template.invalid) return null
+        val copiedRotation = template.rotation
+        val copiedZoneX = template.zoneX
+        val copiedZoneZ = template.zoneZ
+        val copiedLevel = template.level
+        val unrotatedX = (copiedZoneX shl 3) or (localX and 0x7)
+        val unrotatedZ = (copiedZoneZ shl 3) or (localZ and 0x7)
+        return rotate(CoordGrid(copiedLevel, unrotatedX, unrotatedZ), copiedRotation)
+    }
+
+    private fun rotate(
+        coordGrid: CoordGrid,
+        rotation: Int,
+    ): CoordGrid {
+        val zoneAbsX = coordGrid.x and 0x7.inv()
+        val zoneAbsZ = coordGrid.z and 0x7.inv()
+        val xInZone = coordGrid.x and 0x7
+        val zInZone = coordGrid.z and 0x7
+        return when (rotation) {
+            1 -> CoordGrid(coordGrid.level, zoneAbsX + zInZone, zoneAbsZ + (7 - xInZone))
+            2 -> CoordGrid(coordGrid.level, zoneAbsX + (7 - xInZone), zoneAbsZ + (7 - zInZone))
+            3 -> CoordGrid(coordGrid.level, zoneAbsX + (7 - zInZone), zoneAbsZ + xInZone)
+            else -> coordGrid
+        }
     }
 
     public fun getNpc(index: Int): Npc {

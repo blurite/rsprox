@@ -1,6 +1,7 @@
 package net.rsprox.transcriber.base.impl
 
 import net.rsprox.cache.api.Cache
+import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.incoming.model.buttons.If1Button
 import net.rsprox.protocol.game.incoming.model.buttons.If3Button
 import net.rsprox.protocol.game.incoming.model.buttons.IfButtonD
@@ -78,7 +79,7 @@ import net.rsprox.shared.property.Property
 import net.rsprox.shared.property.RootProperty
 import net.rsprox.shared.property.boolean
 import net.rsprox.shared.property.com
-import net.rsprox.shared.property.coordGrid
+import net.rsprox.shared.property.coordGridProperty
 import net.rsprox.shared.property.filteredBoolean
 import net.rsprox.shared.property.filteredInt
 import net.rsprox.shared.property.filteredNamedEnum
@@ -92,10 +93,14 @@ import net.rsprox.shared.property.identifiedPlayer
 import net.rsprox.shared.property.int
 import net.rsprox.shared.property.long
 import net.rsprox.shared.property.namedEnum
+import net.rsprox.shared.property.regular.ScriptVarTypeProperty
 import net.rsprox.shared.property.scriptVarType
 import net.rsprox.shared.property.string
 import net.rsprox.shared.property.unidentifiedNpc
 import net.rsprox.shared.property.unidentifiedPlayer
+import net.rsprox.shared.settings.Setting
+import net.rsprox.shared.settings.SettingSet
+import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.impl.ClientPacketTranscriber
 import net.rsprox.transcriber.state.StateTracker
 import java.awt.event.KeyEvent
@@ -107,11 +112,14 @@ public open class BaseClientPacketTranscriber(
     private val stateTracker: StateTracker,
     private val cache: Cache,
     private val filterSetStore: PropertyFilterSetStore,
+    private val settingSetStore: SettingSetStore,
 ) : ClientPacketTranscriber {
     private val root: RootProperty
         get() = checkNotNull(stateTracker.root.last())
     private val filters: PropertyFilterSet
         get() = filterSetStore.getActive()
+    private val settings: SettingSet
+        get() = settingSetStore.getActive()
 
     private fun omit() {
         stateTracker.deleteRoot()
@@ -121,7 +129,7 @@ public open class BaseClientPacketTranscriber(
         val world = stateTracker.getActiveWorld()
         val npc = world.getNpcOrNull(index) ?: return unidentifiedNpc(index)
         val finalIndex =
-            if (filters[PropertyFilter.NPC_OMIT_INDEX]) {
+            if (settings[Setting.HIDE_NPC_INDICES]) {
                 Int.MIN_VALUE
             } else {
                 index
@@ -152,7 +160,7 @@ public open class BaseClientPacketTranscriber(
     private fun Property.player(index: Int): ChildProperty<*> {
         val npc = stateTracker.getPlayerOrNull(index)
         val finalIndex =
-            if (filters[PropertyFilter.PLAYER_OMIT_INDEX]) {
+            if (settings[Setting.PLAYER_HIDE_INDEX]) {
                 Int.MIN_VALUE
             } else {
                 index
@@ -168,6 +176,16 @@ public open class BaseClientPacketTranscriber(
         } else {
             unidentifiedPlayer(index)
         }
+    }
+
+    private fun Property.coordGrid(
+        level: Int,
+        x: Int,
+        z: Int,
+        name: String = "coord",
+    ): ScriptVarTypeProperty<*> {
+        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(CoordGrid(level, x, z))
+        return coordGridProperty(coord.level, coord.x, coord.z, name)
     }
 
     override fun if1Button(message: If1Button) {

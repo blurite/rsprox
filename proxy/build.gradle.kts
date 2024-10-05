@@ -3,7 +3,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.streams.toList
 
-private val latestDecoder = projects.protocol.osrs224
 dependencies {
     implementation(platform(rootProject.libs.netty.bom))
     implementation(rootProject.libs.netty.buffer)
@@ -26,7 +25,6 @@ dependencies {
     implementation(projects.transcriber)
     implementation(rootProject.libs.clikt)
     implementation(rootProject.libs.classgraph)
-    implementation(latestDecoder)
     implementation(projects.cache)
     implementation(projects.cache.cacheApi)
     implementation(projects.shared)
@@ -50,8 +48,7 @@ fun buildPluginTaskDependencies(): List<String> {
     // dependencies block
     val filteredTasks =
         buildTasks.filterNot { task ->
-            ":${this.latestDecoder.name}:" in task ||
-                task == ":protocol:build" ||
+            task == ":protocol:build" ||
                 task == ":transcriber:build"
         }
     return filteredTasks

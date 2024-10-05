@@ -223,6 +223,7 @@ public class SessionPanel(
             OmitFilteredPropertyTreeFormatter(
                 PropertyFormatterCollection.default(
                     SymbolDictionaryProvider.get(),
+                    App.service.settingsStore,
                 ),
             )
 
@@ -342,6 +343,9 @@ public class SessionPanel(
                     }
 
                     is ListProperty -> {
+                        val previewText = getPreviewText(child, indent)
+                        val groupNode = MessageTreeTableNode(previewText, child.propertyName)
+                        addNodeAndExpand(groupNode, parentNode, parentNode.childCount)
                     }
 
                     else -> {

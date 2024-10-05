@@ -4,6 +4,7 @@ import net.rsprox.cache.api.CacheProvider
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.indexing.BinaryIndex
+import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.BaseMessageConsumerContainer
 import net.rsprox.transcriber.TranscriberPlugin
 import net.rsprox.transcriber.TranscriberProvider
@@ -16,9 +17,10 @@ public class IndexerTranscriberProvider : TranscriberProvider {
         cacheProvider: CacheProvider,
         monitor: SessionMonitor<*>,
         filters: PropertyFilterSetStore,
+        settings: SettingSetStore,
         binaryIndex: BinaryIndex,
     ): TranscriberRunner {
-        val stateTracker = StateTracker()
+        val stateTracker = StateTracker(settings)
         return TranscriberPlugin(
             IndexerTranscriber(
                 cacheProvider,

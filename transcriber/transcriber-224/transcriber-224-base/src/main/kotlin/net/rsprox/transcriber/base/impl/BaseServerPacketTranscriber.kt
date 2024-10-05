@@ -146,10 +146,13 @@ import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.property.ChildProperty
 import net.rsprox.shared.property.NamedEnum
 import net.rsprox.shared.property.Property
+import net.rsprox.shared.property.PropertyFormatterCollection
 import net.rsprox.shared.property.RootProperty
+import net.rsprox.shared.property.any
 import net.rsprox.shared.property.boolean
 import net.rsprox.shared.property.com
-import net.rsprox.shared.property.coordGrid
+import net.rsprox.shared.property.coordGridProperty
+import net.rsprox.shared.property.createScriptVarType
 import net.rsprox.shared.property.enum
 import net.rsprox.shared.property.filteredBoolean
 import net.rsprox.shared.property.filteredInt
@@ -178,6 +181,9 @@ import net.rsprox.shared.property.unidentifiedWorldEntity
 import net.rsprox.shared.property.varbit
 import net.rsprox.shared.property.varp
 import net.rsprox.shared.property.zoneCoordGrid
+import net.rsprox.shared.settings.Setting
+import net.rsprox.shared.settings.SettingSet
+import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.base.maxUShortToMinusOne
 import net.rsprox.transcriber.impl.ServerPacketTranscriber
 import net.rsprox.transcriber.state.Player
@@ -187,17 +193,23 @@ import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.concurrent.TimeUnit
+import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildArea
 
 @Suppress("SpellCheckingInspection", "DuplicatedCode")
 public class BaseServerPacketTranscriber(
     private val stateTracker: StateTracker,
     private val cache: Cache,
     private val filterSetStore: PropertyFilterSetStore,
+    private val settingSetStore: SettingSetStore,
+    private val formatterCollection: PropertyFormatterCollection,
 ) : ServerPacketTranscriber {
     private val root: RootProperty
         get() = checkNotNull(stateTracker.root.last())
     private val filters: PropertyFilterSet
         get() = filterSetStore.getActive()
+
+    private val settings: SettingSet
+        get() = settingSetStore.getActive()
 
     private fun omit() {
         stateTracker.deleteRoot()
@@ -207,30 +219,31 @@ public class BaseServerPacketTranscriber(
         val world = stateTracker.getActiveWorld()
         val npc = world.getNpcOrNull(index) ?: return unidentifiedNpc(index)
         val finalIndex =
-            if (filters[PropertyFilter.NPC_OMIT_INDEX]) {
+            if (settings[Setting.HIDE_NPC_INDICES]) {
                 Int.MIN_VALUE
             } else {
                 index
             }
         val multinpc = stateTracker.resolveMultinpc(npc.id, cache)
+        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(npc.coord)
         return if (multinpc != null) {
             identifiedMultinpc(
                 finalIndex,
                 npc.id,
                 multinpc.id,
                 multinpc.name,
-                npc.coord.level,
-                npc.coord.x,
-                npc.coord.z,
+                coord.level,
+                coord.x,
+                coord.z,
             )
         } else {
             identifiedNpc(
                 finalIndex,
                 npc.id,
                 npc.name ?: "null",
-                npc.coord.level,
-                npc.coord.x,
-                npc.coord.z,
+                coord.level,
+                coord.x,
+                coord.z,
             )
         }
     }
@@ -241,18 +254,19 @@ public class BaseServerPacketTranscriber(
     ): ChildProperty<*> {
         val player = stateTracker.getPlayerOrNull(index)
         val finalIndex =
-            if (filters[PropertyFilter.PLAYER_OMIT_INDEX]) {
+            if (settings[Setting.PLAYER_HIDE_INDEX]) {
                 Int.MIN_VALUE
             } else {
                 index
             }
         return if (player != null) {
+            val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(player.coord)
             identifiedPlayer(
                 finalIndex,
                 player.name,
-                player.coord.level,
-                player.coord.x,
-                player.coord.z,
+                coord.level,
+                coord.x,
+                coord.z,
                 name,
             )
         } else {
@@ -288,24 +302,37 @@ public class BaseServerPacketTranscriber(
         zInBuildArea: Int,
         level: Int = -1,
     ): CoordGrid {
-        return stateTracker
-            .getActiveWorld()
-            .relativizeBuildAreaCoord(
+        val world = stateTracker.getActiveWorld()
+        val coord =
+            world.relativizeBuildAreaCoord(
                 xInBuildArea,
                 zInBuildArea,
                 if (level == -1) stateTracker.level() else level,
             )
+        return world.getInstancedCoordOrSelf(coord)
     }
 
     private fun Property.coordGrid(coordGrid: CoordGrid): ScriptVarTypeProperty<*> {
-        return coordGrid(coordGrid.level, coordGrid.x, coordGrid.z)
+        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(coordGrid)
+        return coordGridProperty(coord.level, coord.x, coord.z)
     }
 
     private fun Property.coordGrid(
         name: String,
         coordGrid: CoordGrid,
     ): ScriptVarTypeProperty<*> {
-        return coordGrid(coordGrid.level, coordGrid.x, coordGrid.z, name)
+        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(coordGrid)
+        return coordGridProperty(coord.level, coord.x, coord.z, name)
+    }
+
+    private fun Property.coordGrid(
+        level: Int,
+        x: Int,
+        z: Int,
+        name: String = "coord",
+    ): ScriptVarTypeProperty<*> {
+        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(CoordGrid(level, x, z))
+        return coordGridProperty(coord.level, coord.x, coord.z, name)
     }
 
     private fun Property.zoneCoord(
@@ -319,7 +346,15 @@ public class BaseServerPacketTranscriber(
 
     override fun camLookAt(message: CamLookAt) {
         if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
-        root.coordGrid(buildAreaCoordGrid(message.destinationXInBuildArea, message.destinationZInBuildArea))
+        val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
+        if (coordInBuildArea.invalid()) {
+            root.any("outofboundsbuildareacoord",
+                "[zoneX=${coordInBuildArea.zoneX}, xInZone=${coordInBuildArea.xInZone}, " +
+                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]"
+            )
+        } else {
+            root.coordGrid(buildAreaCoordGrid(coordInBuildArea.xInBuildArea, coordInBuildArea.zInBuildArea))
+        }
         root.int("height", message.height)
         root.int("rate", message.speed)
         root.int("rate2", message.acceleration)
@@ -327,7 +362,15 @@ public class BaseServerPacketTranscriber(
 
     override fun camLookAtEasedCoord(message: CamLookAtEasedCoord) {
         if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
-        root.coordGrid(buildAreaCoordGrid(message.destinationXInBuildArea, message.destinationZInBuildArea))
+        val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
+        if (coordInBuildArea.invalid()) {
+            root.any("outofboundsbuildareacoord",
+                "[zoneX=${coordInBuildArea.zoneX}, xInZone=${coordInBuildArea.xInZone}, " +
+                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]"
+            )
+        } else {
+            root.coordGrid(buildAreaCoordGrid(coordInBuildArea.xInBuildArea, coordInBuildArea.zInBuildArea))
+        }
         root.int("height", message.height)
         root.int("cycles", message.duration)
         root.enum("easing", message.function)
@@ -340,7 +383,15 @@ public class BaseServerPacketTranscriber(
 
     override fun camMoveTo(message: CamMoveTo) {
         if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
-        root.coordGrid(buildAreaCoordGrid(message.destinationXInBuildArea, message.destinationZInBuildArea))
+        val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
+        if (coordInBuildArea.invalid()) {
+            root.any("outofboundsbuildareacoord",
+                "[zoneX=${coordInBuildArea.zoneX}, xInZone=${coordInBuildArea.xInZone}, " +
+                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]"
+            )
+        } else {
+            root.coordGrid(buildAreaCoordGrid(coordInBuildArea.xInBuildArea, coordInBuildArea.zInBuildArea))
+        }
         root.int("height", message.height)
         root.int("rate", message.speed)
         root.int("rate2", message.acceleration)
@@ -348,7 +399,15 @@ public class BaseServerPacketTranscriber(
 
     override fun camMoveToArc(message: CamMoveToArc) {
         if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
-        root.coordGrid(buildAreaCoordGrid(message.destinationXInBuildArea, message.destinationZInBuildArea))
+        val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
+        if (coordInBuildArea.invalid()) {
+            root.any("outofboundsbuildareacoord",
+                "[zoneX=${coordInBuildArea.zoneX}, xInZone=${coordInBuildArea.xInZone}, " +
+                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]"
+            )
+        } else {
+            root.coordGrid(buildAreaCoordGrid(coordInBuildArea.xInBuildArea, coordInBuildArea.zInBuildArea))
+        }
         root.int("height", message.height)
         root.coordGrid("tertiarycoord", buildAreaCoordGrid(message.centerXInBuildArea, message.centerZInBuildArea))
         root.int("cycles", message.duration)
@@ -358,7 +417,15 @@ public class BaseServerPacketTranscriber(
 
     override fun camMoveToCycles(message: CamMoveToCycles) {
         if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
-        root.coordGrid(buildAreaCoordGrid(message.destinationXInBuildArea, message.destinationZInBuildArea))
+        val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
+        if (coordInBuildArea.invalid()) {
+            root.any("outofboundsbuildareacoord",
+                "[zoneX=${coordInBuildArea.zoneX}, xInZone=${coordInBuildArea.xInZone}, " +
+                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]"
+            )
+        } else {
+            root.coordGrid(buildAreaCoordGrid(coordInBuildArea.xInBuildArea, coordInBuildArea.zInBuildArea))
+        }
         root.int("height", message.height)
         root.int("cycles", message.duration)
         root.boolean("ignoreterrain", message.ignoreTerrain)
@@ -1064,7 +1131,7 @@ public class BaseServerPacketTranscriber(
                     com(event.interfaceId, event.componentId)
                     int("start", event.start.maxUShortToMinusOne())
                     int("end", event.end.maxUShortToMinusOne())
-                    string("events", EventMask.list(event.events).toString())
+                    any("events", EventMask.list(event.events).toString())
                 }
             }
         }
@@ -1095,7 +1162,7 @@ public class BaseServerPacketTranscriber(
         root.com(message.interfaceId, message.componentId)
         root.int("start", message.start.maxUShortToMinusOne())
         root.int("end", message.end.maxUShortToMinusOne())
-        root.string("events", EventMask.list(message.events).toString())
+        root.any("events", EventMask.list(message.events).toString())
     }
 
     override fun ifSetHide(message: IfSetHide) {
@@ -1318,6 +1385,7 @@ public class BaseServerPacketTranscriber(
         stateTracker.localPlayerIndex = message.playerInfoInitBlock.localPlayerIndex
         val world = stateTracker.createWorld(-1)
         world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
+        world.setBuildArea(null)
         if (!filters[PropertyFilter.REBUILD]) return omit()
         root.int("zonex", message.zoneX)
         root.int("zonez", message.zoneZ)
@@ -1348,6 +1416,7 @@ public class BaseServerPacketTranscriber(
     override fun rebuildNormal(message: RebuildNormal) {
         val world = stateTracker.getWorld(-1)
         world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
+        world.setBuildArea(null)
         if (!filters[PropertyFilter.REBUILD]) return omit()
         root.int("zonex", message.zoneX)
         root.int("zonez", message.zoneZ)
@@ -1377,6 +1446,7 @@ public class BaseServerPacketTranscriber(
     override fun rebuildRegion(message: RebuildRegion) {
         val world = stateTracker.getWorld(-1)
         world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
+        world.setBuildArea(message.buildArea)
         if (!filters[PropertyFilter.REBUILD]) return omit()
         root.int("zonex", message.zoneX)
         root.int("zonez", message.zoneZ)
@@ -1419,6 +1489,7 @@ public class BaseServerPacketTranscriber(
     override fun rebuildWorldEntity(message: RebuildWorldEntity) {
         val world = stateTracker.getWorld(message.index)
         world.rebuild(CoordGrid(0, (message.baseX - 6) shl 3, (message.baseZ - 6) shl 3))
+        world.setBuildArea(message.buildArea)
         if (!filters[PropertyFilter.REBUILD]) return omit()
         root.worldentity(message.index)
         root.int("zonex", message.baseX)
@@ -1727,7 +1798,46 @@ public class BaseServerPacketTranscriber(
         if (message.types.isEmpty() || message.values.isEmpty()) {
             return
         }
-        if (filters[PropertyFilter.INLINE_CLIENTSCRIPT_PARAMS]) {
+        if (settings[Setting.COLLAPSE_CLIENTSCRIPT_PARAMS]) {
+            val types =
+                message.types.joinToString { char ->
+                    val type =
+                        ScriptVarType.entries.first { type ->
+                            type.char == char
+                        }
+                    type.fullName
+                }
+            val values = mutableListOf<String>()
+            for (i in message.types.indices) {
+                val char = message.types[i]
+                val value = message.values[i].toString()
+                val type =
+                    ScriptVarType.entries.first { type ->
+                        type.char == char
+                    }
+                val property =
+                    createScriptVarType(
+                        "",
+                        type,
+                        if (type ==
+                            ScriptVarType.STRING
+                        ) {
+                            value
+                        } else {
+                            value.toInt()
+                        },
+                    )
+                val formatter = formatterCollection.getTypedFormatter(property.javaClass)
+                val result = formatter?.format(property) ?: property.value
+                values += result.toString()
+            }
+            val valuesString = values.toString()
+            val length = types.length + valuesString.length
+            if (length <= 75) {
+                root.any("types", "[$types]")
+                root.any("values", valuesString)
+                return
+            }
             root.list("types") {
                 for (i in message.types.indices) {
                     val char = message.types[i]
@@ -1770,7 +1880,7 @@ public class BaseServerPacketTranscriber(
     override fun setMapFlag(message: SetMapFlag) {
         if (!filters[PropertyFilter.SET_MAP_FLAG]) return omit()
         if (message.xInBuildArea == 0xFF && message.zInBuildArea == 0xFF) {
-            root.coordGrid(-1, -1, -1)
+            root.any<Any>("coord", null)
         } else {
             root.coordGrid(buildAreaCoordGrid(message.xInBuildArea, message.zInBuildArea))
         }
@@ -1779,7 +1889,12 @@ public class BaseServerPacketTranscriber(
     override fun setPlayerOp(message: SetPlayerOp) {
         if (!filters[PropertyFilter.SET_PLAYER_OP]) return omit()
         root.int("id", message.id)
-        root.string("op", message.op ?: "null")
+        val op = message.op
+        if (op != null) {
+            root.string("op", op)
+        } else {
+            root.any<Any>("op", null)
+        }
         root.filteredBoolean("priority", message.priority)
     }
 
@@ -1831,18 +1946,22 @@ public class BaseServerPacketTranscriber(
     }
 
     override fun updateStat(message: UpdateStat) {
+        val oldXp = stateTracker.getExperience(message.stat)
+        stateTracker.setExperience(message.stat, message.experience)
         if (!filters[PropertyFilter.UPDATE_STAT]) return omit()
         root.namedEnum("stat", Stat.entries.first { it.id == message.stat })
         root.int("level", message.currentLevel)
         root.filteredInt("invisiblelevel", message.invisibleBoostedLevel, message.currentLevel)
-        root.formattedInt("experience", message.experience)
+        root.formattedInt("experience", message.experience - (oldXp ?: 0))
     }
 
     override fun updateStatOld(message: UpdateStatOld) {
+        val oldXp = stateTracker.getExperience(message.stat)
+        stateTracker.setExperience(message.stat, message.experience)
         if (!filters[PropertyFilter.UPDATE_STAT]) return omit()
         root.namedEnum("stat", Stat.entries.first { it.id == message.stat })
         root.int("level", message.currentLevel)
-        root.formattedInt("experience", message.experience)
+        root.formattedInt("experience", message.experience - (oldXp ?: 0))
     }
 
     override fun updateStockMarketSlot(message: UpdateStockMarketSlot) {
@@ -2021,8 +2140,15 @@ public class BaseServerPacketTranscriber(
 
     override fun locAnimSpecific(message: LocAnimSpecific) {
         if (!filters[PropertyFilter.LOC_ANIM_SPECIFIC]) return omit()
-        root.scriptVarType("id", ScriptVarType.LOC, message.id)
-        root.coordGrid(buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea))
+        root.scriptVarType("id", ScriptVarType.SEQ, message.id)
+        if (message.coordInBuildArea.invalid()) {
+            root.any("outofboundsbuildareacoord",
+                "[zoneX=${message.coordInBuildArea.zoneX}, xInZone=${message.coordInBuildArea.xInZone}, " +
+                    "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]"
+            )
+        } else {
+            root.coordGrid(buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea))
+        }
         root.scriptVarType("shape", ScriptVarType.LOC_SHAPE, message.shape)
         root.int("rotation", message.rotation)
     }
@@ -2032,7 +2158,14 @@ public class BaseServerPacketTranscriber(
         root.scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
         root.filteredInt("delay", message.delay, 0)
         root.filteredInt("height", message.height, 0)
-        root.coordGrid(buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea))
+        if (message.coordInBuildArea.invalid()) {
+            root.any("outofboundsbuildareacoord",
+                "[zoneX=${message.coordInBuildArea.zoneX}, xInZone=${message.coordInBuildArea.xInZone}, " +
+                    "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]"
+            )
+        } else {
+            root.coordGrid(buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea))
+        }
     }
 
     override fun npcAnimSpecific(message: NpcAnimSpecific) {
@@ -2084,15 +2217,30 @@ public class BaseServerPacketTranscriber(
         root.int("startheight", message.startHeight)
         root.int("endheight", message.endHeight)
         root.group("SOURCE") {
-            coordGrid(buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea))
+            if (message.coordInBuildArea.invalid()) {
+                any("outofboundsbuildareacoord",
+                    "[zoneX=${message.coordInBuildArea.zoneX}, xInZone=${message.coordInBuildArea.xInZone}, " +
+                        "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]"
+                )
+            } else {
+                coordGrid(buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea))
+            }
         }
         root.group("TARGET") {
-            coordGrid(
-                buildAreaCoordGrid(
-                    message.coordInBuildArea.xInBuildArea + message.deltaX,
-                    message.coordInBuildArea.zInBuildArea + message.deltaZ,
-                ),
-            )
+            if (message.coordInBuildArea.invalid()) {
+                any(
+                    "outofboundsbuildareacoord",
+                    "[zoneX=${message.coordInBuildArea.zoneX}, xInZone=${message.coordInBuildArea.xInZone}, " +
+                        "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]"
+                )
+            } else {
+                coordGrid(
+                    buildAreaCoordGrid(
+                        message.coordInBuildArea.xInBuildArea + message.deltaX,
+                        message.coordInBuildArea.zInBuildArea + message.deltaZ,
+                    ),
+                )
+            }
             val ambiguousIndex = message.targetIndex
             if (ambiguousIndex != 0) {
                 if (ambiguousIndex > 0) {
@@ -2165,13 +2313,11 @@ public class BaseServerPacketTranscriber(
         if (varps && !varbits) {
             return
         }
-        val omitVarpsForVarbits = filters[PropertyFilter.OMIT_VARP_FOR_VARBITS]
+        val omitVarpsForVarbits = settings[Setting.HIDE_UNNECESSARY_VARPS]
         val remainingBits = remainingImpactedBits(oldValue, newValue, impactedVarbits)
         // If only interested in varbits and varbits exist, create a varbit root
-        val printAsVarbits =
-            (!varps && impactedVarbits.isNotEmpty()) ||
-                (omitVarpsForVarbits && remainingBits == 0)
-        if (printAsVarbits) {
+        val printAsVarbits = impactedVarbits.isNotEmpty() && omitVarpsForVarbits && remainingBits == 0
+        if (!varps || (settings[Setting.HIDE_SAME_VALUE_VARPS] && oldValue == newValue) || printAsVarbits) {
             omit()
         }
         if (impactedVarbits.isNotEmpty()) {
