@@ -38,6 +38,11 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
+import net.rsprox.proxy.config.SETTINGS_DIRECTORY
+import net.rsprox.proxy.config.SIGN_KEY_DIRECTORY
+import net.rsprox.proxy.config.SOCKETS_DIRECTORY
+import net.rsprox.proxy.config.TEMP_CLIENTS_DIRECTORY
+import net.rsprox.proxy.config.registerConnection
 import net.rsprox.proxy.connection.ClientTypeDictionary
 import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.downloader.JagexNativeClientDownloader
