@@ -78,6 +78,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 import kotlin.io.path.*
 import kotlin.properties.Delegates
+import kotlin.streams.toList
 import kotlin.system.exitProcess
 
 @Suppress("DuplicatedCode")
@@ -100,7 +101,7 @@ public class ProxyService(
         private set
     private var properties: ProxyProperties by Delegates.notNull()
     private var availablePort: Int = -1
-    private val processes: MutableMap<Int, Process> = mutableMapOf()
+    private val processes: MutableMap<Int, List<ProcessHandle>> = mutableMapOf()
     private val connections: ProxyConnectionContainer = ProxyConnectionContainer()
     private lateinit var credentials: BinaryCredentialsStore
 
@@ -258,29 +259,33 @@ public class ProxyService(
     }
 
     private fun hasAliveProcesses(): Boolean {
-        return processes.values.any { process ->
-            process.isAlive
+        return processes.values.any { processList ->
+            processList.any { it.isAlive }
         }
     }
 
     public fun killAliveProcess(port: Int) {
-        val process = processes.remove(port) ?: return
-        if (process.isAlive) {
+        val processList = processes.remove(port) ?: return
+        for (process in processList) {
             try {
-                for (descendant in process.descendants()) {
-                    descendant.destroyForcibly()
-                }
-                process.destroyForcibly().waitFor(3, TimeUnit.SECONDS)
+                kill(process)
             } catch (t: Throwable) {
                 logger.error(t) {
                     "Unable to destroy process on port $port: ${process.info()}"
                 }
-                return
+                continue
+            }
+            logger.info {
+                "Destroyed process on port $port: ${process.info()}"
             }
         }
-        logger.info {
-            "Destroyed process on port $port: ${process.info()}"
+    }
+
+    private fun kill(process: ProcessHandle) {
+        for (descendant in process.descendants()) {
+            kill(descendant)
         }
+        process.destroyForcibly()
     }
 
     @Suppress("SameParameterValue")
@@ -487,7 +492,7 @@ public class ProxyService(
                     port,
                     rsa.publicKey.modulus.toString(16),
                     javConfig = "http://127.0.0.1:$HTTP_SERVER_PORT/$javConfigEndpoint",
-                    socket = timestamp.toString()
+                    socket = timestamp.toString(),
                 ),
                 directory = null,
                 path = null,
@@ -603,7 +608,7 @@ public class ProxyService(
         val process = builder.start()
         if (process.isAlive) {
             if (path != null) logger.debug { "Successfully launched $path" }
-            processes[port] = process
+            processes[port] = process.children().toList() + process.toHandle()
         } else {
             if (path != null) logger.warn { "Unable to successfully launch $path" }
         }
