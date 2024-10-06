@@ -22,7 +22,6 @@ import net.rsprox.proxy.config.FAKE_CERTIFICATE_FILE
 import net.rsprox.proxy.config.FILTERS_DIRECTORY
 import net.rsprox.proxy.config.HTTP_SERVER_PORT
 import net.rsprox.proxy.config.JAGEX_ACCOUNTS_FILE
-import net.rsprox.proxy.config.RUNELITE_LAUNCHER_REPO_DIRECTORY
 import net.rsprox.proxy.config.JavConfig
 import net.rsprox.proxy.config.ProxyProperties
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_HEIGHT
@@ -38,6 +37,7 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
+import net.rsprox.proxy.config.RUNELITE_LAUNCHER_REPO_DIRECTORY
 import net.rsprox.proxy.config.SETTINGS_DIRECTORY
 import net.rsprox.proxy.config.SIGN_KEY_DIRECTORY
 import net.rsprox.proxy.config.SOCKETS_DIRECTORY
@@ -381,13 +381,13 @@ public class ProxyService(
     public fun launchRuneLiteClient(
         sessionMonitor: SessionMonitor<BinaryHeader>,
         character: JagexCharacter?,
-    ): Int {
-        val port = this.availablePort++
+        port: Int,
+    ) {
         try {
             launchProxyServer(this.bootstrapFactory, this.worldListProvider, rsa, port)
         } catch (t: Throwable) {
-            logger.error { "Unable to bind network port $port for native client." }
-            return -1
+            logger.error(t) { "Unable to bind network port $port for native client." }
+            return
         }
         this.connections.addSessionMonitor(port, sessionMonitor)
         ClientTypeDictionary[port] = "RuneLite (${operatingSystem.shortName})"
@@ -396,18 +396,23 @@ public class ProxyService(
             operatingSystem,
             character,
         )
-        return port
+    }
+
+    public fun allocatePort(): Int {
+        return this.availablePort++
     }
 
     public fun launchNativeClient(
         sessionMonitor: SessionMonitor<BinaryHeader>,
         character: JagexCharacter?,
-    ): Int {
-        return launchNativeClient(
+        port: Int,
+    ) {
+        launchNativeClient(
             operatingSystem,
             rsa,
             sessionMonitor,
             character,
+            port,
         )
     }
 
@@ -416,13 +421,13 @@ public class ProxyService(
         rsa: RSAPrivateCrtKeyParameters,
         sessionMonitor: SessionMonitor<BinaryHeader>,
         character: JagexCharacter?,
-    ): Int {
-        val port = this.availablePort++
+        port: Int,
+    ) {
         try {
             launchProxyServer(this.bootstrapFactory, this.worldListProvider, rsa, port)
         } catch (t: Throwable) {
-            logger.error { "Unable to bind network port $port for native client." }
-            return -1
+            logger.error(t) { "Unable to bind network port $port for native client." }
+            return
         }
         val javConfigEndpoint = properties.getProperty(JAV_CONFIG_ENDPOINT)
         val worldlistEndpoint = properties.getProperty(WORLDLIST_ENDPOINT)
@@ -469,7 +474,6 @@ public class ProxyService(
         ClientTypeDictionary[port] = "Native (${os.shortName})"
         this.connections.addSessionMonitor(port, sessionMonitor)
         launchExecutable(port, result.outputPath, os, character)
-        return port
     }
 
     private fun launchJar(
