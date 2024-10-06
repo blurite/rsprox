@@ -10,6 +10,7 @@ import net.rsprox.gui.App
 import net.rsprox.gui.AppIcons
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.shared.SessionMonitor
+import net.rsprox.shared.account.JagexCharacter
 import net.rsprox.shared.property.OmitFilteredPropertyTreeFormatter
 import net.rsprox.shared.property.Property
 import net.rsprox.shared.property.PropertyFormatterCollection
@@ -41,6 +42,7 @@ import kotlin.time.measureTime
 public class SessionPanel(
     private val type: SessionType,
     private val sessionsPanel: SessionsPanel,
+    character: JagexCharacter?,
 ) : JPanel() {
     private val treeTable = JXTreeTable()
     private val tableModel = DefaultTreeTableModel()
@@ -173,10 +175,10 @@ public class SessionPanel(
 
         add(toolbar, BorderLayout.SOUTH)
 
-        launchClient()
+        launchClient(character)
     }
 
-    private fun launchClient() {
+    private fun launchClient(character: JagexCharacter?) {
         ForkJoinPool.commonPool().submit {
             logger.info { "$type client thread: ${Thread.currentThread().name}" }
             val time =
@@ -186,10 +188,10 @@ public class SessionPanel(
                             when (type) {
                                 SessionType.Java -> TODO()
                                 SessionType.Native -> {
-                                    App.service.launchNativeClient(UiSessionMonitor())
+                                    App.service.launchNativeClient(UiSessionMonitor(), character)
                                 }
                                 SessionType.RuneLite -> {
-                                    App.service.launchRuneLiteClient(UiSessionMonitor())
+                                    App.service.launchRuneLiteClient(UiSessionMonitor(), character)
                                 }
                             }
                     } catch (e: Exception) {
