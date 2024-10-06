@@ -172,7 +172,7 @@ public class RuneliteLauncher() {
 
         private fun getCertificate(): Certificate {
             val factory = CertificateFactory.getInstance("X.509")
-            return factory.generateCertificate(RuneliteLauncher::class.java.getResourceAsStream("runelite.crt"))
+            return factory.generateCertificate(RuneliteLauncher::class.java.getResourceAsStream("launcher.crt"))
         }
     }
 
