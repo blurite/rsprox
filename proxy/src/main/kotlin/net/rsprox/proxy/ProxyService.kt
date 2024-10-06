@@ -37,7 +37,7 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
-import net.rsprox.proxy.config.RUNELITE_LAUNCHER
+import net.rsprox.proxy.config.RUNELITE_LAUNCHER_REPO_DIRECTORY
 import net.rsprox.proxy.config.SETTINGS_DIRECTORY
 import net.rsprox.proxy.config.SIGN_KEY_DIRECTORY
 import net.rsprox.proxy.config.SOCKETS_DIRECTORY
@@ -52,12 +52,9 @@ import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
+import net.rsprox.proxy.runelite.RuneliteLauncher
 import net.rsprox.proxy.settings.DefaultSettingSetStore
-import net.rsprox.proxy.util.ClientType
-import net.rsprox.proxy.util.ConnectionInfo
-import net.rsprox.proxy.util.OperatingSystem
-import net.rsprox.proxy.util.ProgressCallback
-import net.rsprox.proxy.util.getOperatingSystem
+import net.rsprox.proxy.util.*
 import net.rsprox.proxy.worlds.DynamicWorldListProvider
 import net.rsprox.proxy.worlds.World
 import net.rsprox.proxy.worlds.WorldListProvider
@@ -76,17 +73,12 @@ import java.net.URL
 import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
-import java.util.Properties
+import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
-import kotlin.io.path.Path
-import kotlin.io.path.absolutePathString
-import kotlin.io.path.copyTo
-import kotlin.io.path.exists
-import kotlin.io.path.extension
-import kotlin.io.path.nameWithoutExtension
-import kotlin.io.path.writeBytes
+import kotlin.io.path.*
 import kotlin.properties.Delegates
+import kotlin.streams.toList
 import kotlin.system.exitProcess
 
 @Suppress("DuplicatedCode")
@@ -109,7 +101,7 @@ public class ProxyService(
         private set
     private var properties: ProxyProperties by Delegates.notNull()
     private var availablePort: Int = -1
-    private val processes: MutableMap<Int, Process> = mutableMapOf()
+    private val processes: MutableMap<Int, List<ProcessHandle>> = mutableMapOf()
     private val connections: ProxyConnectionContainer = ProxyConnectionContainer()
     private lateinit var credentials: BinaryCredentialsStore
 
@@ -126,6 +118,7 @@ public class ProxyService(
         createConfigurationDirectories(SOCKETS_DIRECTORY)
         createConfigurationDirectories(SIGN_KEY_DIRECTORY)
         createConfigurationDirectories(BINARY_CREDENTIALS_FOLDER)
+        createConfigurationDirectories(RUNELITE_LAUNCHER_REPO_DIRECTORY)
         progressCallback.update(0.10, "Proxy", "Loading properties")
         loadProperties()
         progressCallback.update(0.15, "Proxy", "Loading Huffman")
@@ -266,29 +259,33 @@ public class ProxyService(
     }
 
     private fun hasAliveProcesses(): Boolean {
-        return processes.values.any { process ->
-            process.isAlive
+        return processes.values.any { processList ->
+            processList.any { it.isAlive }
         }
     }
 
     public fun killAliveProcess(port: Int) {
-        val process = processes.remove(port) ?: return
-        if (process.isAlive) {
+        val processList = processes.remove(port) ?: return
+        for (process in processList) {
             try {
-                for (descendant in process.descendants()) {
-                    descendant.destroyForcibly()
-                }
-                process.destroyForcibly().waitFor(3, TimeUnit.SECONDS)
+                kill(process)
             } catch (t: Throwable) {
                 logger.error(t) {
                     "Unable to destroy process on port $port: ${process.info()}"
                 }
-                return
+                continue
+            }
+            logger.info {
+                "Destroyed process on port $port: ${process.info()}"
             }
         }
-        logger.info {
-            "Destroyed process on port $port: ${process.info()}"
+    }
+
+    private fun kill(process: ProcessHandle) {
+        for (descendant in process.descendants()) {
+            kill(descendant)
         }
+        process.destroyForcibly()
     }
 
     @Suppress("SameParameterValue")
@@ -384,37 +381,38 @@ public class ProxyService(
     public fun launchRuneLiteClient(
         sessionMonitor: SessionMonitor<BinaryHeader>,
         character: JagexCharacter?,
-    ): Int {
-        if (!RUNELITE_LAUNCHER.exists(LinkOption.NOFOLLOW_LINKS)) {
-            throw IllegalStateException("RuneLite Launcher jar could not be found in $RUNELITE_LAUNCHER")
-        }
-        val port = this.availablePort++
+        port: Int,
+    ) {
         try {
             launchProxyServer(this.bootstrapFactory, this.worldListProvider, rsa, port)
         } catch (t: Throwable) {
-            logger.error { "Unable to bind network port $port for native client." }
-            return -1
+            logger.error(t) { "Unable to bind network port $port for native client." }
+            return
         }
         this.connections.addSessionMonitor(port, sessionMonitor)
         ClientTypeDictionary[port] = "RuneLite (${operatingSystem.shortName})"
         launchJar(
             port,
-            RUNELITE_LAUNCHER,
             operatingSystem,
             character,
         )
-        return port
+    }
+
+    public fun allocatePort(): Int {
+        return this.availablePort++
     }
 
     public fun launchNativeClient(
         sessionMonitor: SessionMonitor<BinaryHeader>,
         character: JagexCharacter?,
-    ): Int {
-        return launchNativeClient(
+        port: Int,
+    ) {
+        launchNativeClient(
             operatingSystem,
             rsa,
             sessionMonitor,
             character,
+            port,
         )
     }
 
@@ -423,13 +421,13 @@ public class ProxyService(
         rsa: RSAPrivateCrtKeyParameters,
         sessionMonitor: SessionMonitor<BinaryHeader>,
         character: JagexCharacter?,
-    ): Int {
-        val port = this.availablePort++
+        port: Int,
+    ) {
         try {
             launchProxyServer(this.bootstrapFactory, this.worldListProvider, rsa, port)
         } catch (t: Throwable) {
-            logger.error { "Unable to bind network port $port for native client." }
-            return -1
+            logger.error(t) { "Unable to bind network port $port for native client." }
+            return
         }
         val javConfigEndpoint = properties.getProperty(JAV_CONFIG_ENDPOINT)
         val worldlistEndpoint = properties.getProperty(WORLDLIST_ENDPOINT)
@@ -476,12 +474,10 @@ public class ProxyService(
         ClientTypeDictionary[port] = "Native (${os.shortName})"
         this.connections.addSessionMonitor(port, sessionMonitor)
         launchExecutable(port, result.outputPath, os, character)
-        return port
     }
 
     private fun launchJar(
         port: Int,
-        path: Path,
         operatingSystem: OperatingSystem,
         character: JagexCharacter?,
     ) {
@@ -493,23 +489,18 @@ public class ProxyService(
         }
         socket.bind(AFUNIXSocketAddress.of(socketFile))
         try {
-            val directory = path.parent.toFile()
-            val absolutePath = path.absolutePathString()
             val javConfigEndpoint = properties.getProperty(JAV_CONFIG_ENDPOINT)
+            val launcher = RuneliteLauncher()
             createProcess(
-                listOf(
-                    "java",
-                    "-jar",
-                    absolutePath,
-                    "--port=$port",
-                    "--rsa=${rsa.publicKey.modulus.toString(16)}",
-                    "--jav_config=http://127.0.0.1:$HTTP_SERVER_PORT/$javConfigEndpoint",
-                    "--socket_id=$timestamp",
-                    "--developer-mode",
+                launcher.getLaunchArgs(
+                    port,
+                    rsa.publicKey.modulus.toString(16),
+                    javConfig = "http://127.0.0.1:$HTTP_SERVER_PORT/$javConfigEndpoint",
+                    socket = timestamp.toString(),
                 ),
-                directory,
-                path,
-                port,
+                directory = null,
+                path = null,
+                port = port,
                 character,
             )
             logger.debug { "Waiting for client to connect to the server socket..." }
@@ -521,13 +512,13 @@ public class ProxyService(
             output.flush()
             val input = channel.inputStream
 
-            val buf = ByteArray(socket.getReceiveBufferSize())
+            val buf = ByteArray(socket.receiveBufferSize)
             val read = input.read(buf)
             val oldModulus = String(buf, 0, read)
             logger.debug { "Old RSA modulus received from the client: ${oldModulus.substring(0, 16)}..." }
             registerConnection(
                 ConnectionInfo(
-                    ClientType.Native,
+                    ClientType.RuneLite,
                     operatingSystem,
                     port,
                     BigInteger(oldModulus, 16),
@@ -578,7 +569,7 @@ public class ProxyService(
     private fun createProcess(
         command: List<String>,
         directory: File?,
-        path: Path,
+        path: Path?,
         port: Int,
         character: JagexCharacter?,
     ) {
@@ -620,10 +611,10 @@ public class ProxyService(
         }
         val process = builder.start()
         if (process.isAlive) {
-            logger.debug { "Successfully launched $path" }
-            processes[port] = process
+            if (path != null) logger.debug { "Successfully launched $path" }
+            processes[port] = process.children().toList() + process.toHandle()
         } else {
-            logger.warn { "Unable to successfully launch $path" }
+            if (path != null) logger.warn { "Unable to successfully launch $path" }
         }
     }
 

@@ -184,16 +184,25 @@ public class SessionPanel(
             val time =
                 measureTime {
                     try {
-                        portNumber =
-                            when (type) {
-                                SessionType.Java -> TODO()
-                                SessionType.Native -> {
-                                    App.service.launchNativeClient(UiSessionMonitor(), character)
-                                }
-                                SessionType.RuneLite -> {
-                                    App.service.launchRuneLiteClient(UiSessionMonitor(), character)
-                                }
+                        portNumber = App.service.allocatePort()
+                        when (type) {
+                            SessionType.Java -> TODO()
+                            SessionType.Native -> {
+                                App.service.launchNativeClient(
+                                    UiSessionMonitor(),
+                                    character,
+                                    portNumber,
+                                )
                             }
+
+                            SessionType.RuneLite -> {
+                                App.service.launchRuneLiteClient(
+                                    UiSessionMonitor(),
+                                    character,
+                                    portNumber,
+                                )
+                            }
+                        }
                     } catch (e: Exception) {
                         logger.error(e) {
                             "Unable to launch $type client (initialize git submodules, gradle refresh)"
