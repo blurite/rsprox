@@ -107,7 +107,11 @@ public class LaunchBar(
             FlatComboBox<SessionType>().apply {
                 model = sessionTypesModel
                 renderer = SessionTypeCellRenderer()
+                selectedIndex = App.service.getSelectedClient()
             }
+        launchModeDropdown.addActionListener { e ->
+            App.service.setSelectedClient(launchModeDropdown.selectedIndex)
+        }
 
         launchModeDropdown.minimumWidth = 120
         add(launchModeDropdown, "growx")

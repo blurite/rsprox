@@ -35,6 +35,7 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.FILTERS_STATUS
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
+import net.rsprox.proxy.config.ProxyProperty.Companion.SELECTED_CLIENT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
 import net.rsprox.proxy.config.RUNELITE_LAUNCHER_REPO_DIRECTORY
@@ -208,6 +209,15 @@ public class ProxyService(
 
     public fun getFiltersStatus(): Int {
         return properties.getPropertyOrNull(FILTERS_STATUS) ?: 0
+    }
+
+    public fun setSelectedClient(index: Int) {
+        properties.setProperty(SELECTED_CLIENT, index)
+        properties.saveProperties(PROPERTIES_FILE)
+    }
+
+    public fun getSelectedClient(): Int {
+        return properties.getPropertyOrNull(SELECTED_CLIENT) ?: 0
     }
 
     public fun setAppSize(
