@@ -29,6 +29,8 @@ dependencies {
     implementation(projects.cache.cacheApi)
     implementation(projects.shared)
     implementation(libs.junixsocket)
+    implementation(libs.okhttp3)
+    implementation(libs.gson)
 }
 
 tasks.build.configure {

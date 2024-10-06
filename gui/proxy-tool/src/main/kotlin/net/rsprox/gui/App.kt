@@ -5,6 +5,7 @@ import com.formdev.flatlaf.extras.components.FlatMenuBar
 import com.formdev.flatlaf.util.UIScale
 import io.netty.buffer.ByteBufAllocator
 import net.miginfocom.swing.MigLayout
+import net.rsprox.gui.components.LaunchBar
 import net.rsprox.gui.dialogs.AboutDialog
 import net.rsprox.gui.sessions.SessionsPanel
 import net.rsprox.gui.sidebar.SideBar
@@ -29,6 +30,7 @@ import kotlin.system.exitProcess
 public class App {
     private val frame: JFrame = JFrame()
     private val sessionsPanel: SessionsPanel = SessionsPanel(this)
+    private val launchBar: LaunchBar = LaunchBar(sessionsPanel)
     public val statusBar: StatusBar = StatusBar()
 
     public fun init() {
@@ -213,7 +215,8 @@ public class App {
 
     private fun createSessionsPanelContainer() =
         JPanel().apply {
-            layout = MigLayout("ins 0, gap 0", "[fill, grow]", "[fill, grow]")
+            layout = MigLayout("ins 0, gap 0", "[fill, grow]", "[fill][fill, grow]")
+            add(launchBar, "wrap")
             add(sessionsPanel)
         }
 

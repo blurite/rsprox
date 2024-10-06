@@ -8,6 +8,7 @@ import net.rsprox.patch.NativeClientType
 import net.rsprox.patch.PatchResult
 import net.rsprox.patch.native.NativePatchCriteria
 import net.rsprox.patch.native.NativePatcher
+import net.rsprox.proxy.accounts.DefaultJagexAccountStore
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.binary.credentials.BinaryCredentials
 import net.rsprox.proxy.binary.credentials.BinaryCredentialsStore
@@ -20,6 +21,7 @@ import net.rsprox.proxy.config.CONFIGURATION_PATH
 import net.rsprox.proxy.config.FAKE_CERTIFICATE_FILE
 import net.rsprox.proxy.config.FILTERS_DIRECTORY
 import net.rsprox.proxy.config.HTTP_SERVER_PORT
+import net.rsprox.proxy.config.JAGEX_ACCOUNTS_FILE
 import net.rsprox.proxy.config.JavConfig
 import net.rsprox.proxy.config.ProxyProperties
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_HEIGHT
@@ -60,6 +62,8 @@ import net.rsprox.proxy.worlds.DynamicWorldListProvider
 import net.rsprox.proxy.worlds.World
 import net.rsprox.proxy.worlds.WorldListProvider
 import net.rsprox.shared.SessionMonitor
+import net.rsprox.shared.account.JagexAccountStore
+import net.rsprox.shared.account.JagexCharacter
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.settings.SettingSetStore
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
@@ -97,6 +101,8 @@ public class ProxyService(
     public lateinit var operatingSystem: OperatingSystem
         private set
     private lateinit var rsa: RSAPrivateCrtKeyParameters
+    public lateinit var jagexAccountStore: JagexAccountStore
+        private set
     public lateinit var filterSetStore: PropertyFilterSetStore
         private set
     public lateinit var settingsStore: SettingSetStore
@@ -126,7 +132,9 @@ public class ProxyService(
         HuffmanProvider.load()
         progressCallback.update(0.20, "Proxy", "Loading RSA")
         this.rsa = loadRsa()
-        progressCallback.update(0.25, "Proxy", "Loading property filters")
+        progressCallback.update(0.25, "Proxy", "Loading jagex accounts")
+        this.jagexAccountStore = DefaultJagexAccountStore.load(JAGEX_ACCOUNTS_FILE)
+        progressCallback.update(0.30, "Proxy", "Loading property filters")
         this.filterSetStore = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY)
         this.settingsStore = DefaultSettingSetStore.load(SETTINGS_DIRECTORY)
         this.availablePort = properties.getProperty(PROXY_PORT_MIN)
@@ -373,7 +381,10 @@ public class ProxyService(
         }
     }
 
-    public fun launchRuneLiteClient(sessionMonitor: SessionMonitor<BinaryHeader>): Int {
+    public fun launchRuneLiteClient(
+        sessionMonitor: SessionMonitor<BinaryHeader>,
+        character: JagexCharacter?,
+    ): Int {
         if (!RUNELITE_LAUNCHER.exists(LinkOption.NOFOLLOW_LINKS)) {
             throw IllegalStateException("RuneLite Launcher jar could not be found in $RUNELITE_LAUNCHER")
         }
@@ -390,15 +401,20 @@ public class ProxyService(
             port,
             RUNELITE_LAUNCHER,
             operatingSystem,
+            character,
         )
         return port
     }
 
-    public fun launchNativeClient(sessionMonitor: SessionMonitor<BinaryHeader>): Int {
+    public fun launchNativeClient(
+        sessionMonitor: SessionMonitor<BinaryHeader>,
+        character: JagexCharacter?,
+    ): Int {
         return launchNativeClient(
             operatingSystem,
             rsa,
             sessionMonitor,
+            character,
         )
     }
 
@@ -406,6 +422,7 @@ public class ProxyService(
         os: OperatingSystem,
         rsa: RSAPrivateCrtKeyParameters,
         sessionMonitor: SessionMonitor<BinaryHeader>,
+        character: JagexCharacter?,
     ): Int {
         val port = this.availablePort++
         try {
@@ -458,7 +475,7 @@ public class ProxyService(
         )
         ClientTypeDictionary[port] = "Native (${os.shortName})"
         this.connections.addSessionMonitor(port, sessionMonitor)
-        launchExecutable(port, result.outputPath, os)
+        launchExecutable(port, result.outputPath, os, character)
         return port
     }
 
@@ -466,6 +483,7 @@ public class ProxyService(
         port: Int,
         path: Path,
         operatingSystem: OperatingSystem,
+        character: JagexCharacter?,
     ) {
         val timestamp = System.currentTimeMillis()
         val socketFile = SOCKETS_DIRECTORY.resolve("$timestamp.socket").toFile()
@@ -492,6 +510,7 @@ public class ProxyService(
                 directory,
                 path,
                 port,
+                character,
             )
             logger.debug { "Waiting for client to connect to the server socket..." }
             val channel = socket.accept()
@@ -525,29 +544,33 @@ public class ProxyService(
         port: Int,
         path: Path,
         operatingSystem: OperatingSystem,
+        character: JagexCharacter?,
     ) {
         when (operatingSystem) {
             OperatingSystem.WINDOWS -> {
                 val directory = path.parent.toFile()
                 val absolutePath = path.absolutePathString()
-                createProcess(listOf(absolutePath), directory, path, port)
+                createProcess(listOf(absolutePath), directory, path, port, character)
             }
+
             OperatingSystem.MAC -> {
                 // The patched file is at /.rsprox/clients/osclient.app/Contents/MacOS/osclient-patched
                 // We need to however execute the /.rsprox/clients/osclient.app "file"
                 val rootDirection = path.parent.parent.parent
                 val absolutePath = "${File.separator}${rootDirection.absolutePathString()}"
-                createProcess(listOf("open", absolutePath), null, path, port)
+                createProcess(listOf("open", absolutePath), null, path, port, character)
             }
+
             OperatingSystem.UNIX -> {
                 try {
                     val directory = path.parent.toFile()
                     val absolutePath = path.absolutePathString()
-                    createProcess(listOf("wine", absolutePath), directory, path, port)
+                    createProcess(listOf("wine", absolutePath), directory, path, port, character)
                 } catch (e: IOException) {
                     throw RuntimeException("wine is required to run the enhanced client on unix", e)
                 }
             }
+
             OperatingSystem.SOLARIS -> throw IllegalStateException("Solaris not supported yet.")
         }
     }
@@ -557,6 +580,7 @@ public class ProxyService(
         directory: File?,
         path: Path,
         port: Int,
+        character: JagexCharacter?,
     ) {
         logger.debug { "Attempting to create process $command" }
         val builder =
@@ -566,23 +590,34 @@ public class ProxyService(
         if (directory != null) {
             builder.directory(directory)
         }
-        builder.environment().putAll(
-            Properties().let { props ->
-                val runeliteCreds =
-                    File(System.getProperty("user.home"), ".runelite")
-                        .resolve("credentials.properties")
-                if (!runeliteCreds.exists()) {
-                    logger.info { "(Jagex Account) RuneLite credentials could not be located in: $runeliteCreds" }
-                    logger.info { "(Jagex Account) Using regular username/e-mail & password login box" }
-                    emptyMap()
-                } else {
-                    runeliteCreds.inputStream().use {
-                        props.load(it)
+        if (character != null) {
+            val account = jagexAccountStore.accounts.firstOrNull { it.characters.contains(character) }
+            if (account != null) {
+                builder.environment()["JX_CHARACTER_ID"] = character.accountId.toString()
+                builder.environment()["JX_SESSION_ID"] = account.sessionId
+                builder.environment()["JX_REFRESH_TOKEN"] = ""
+                builder.environment()["JX_DISPLAY_NAME"] = character.displayName ?: ""
+                builder.environment()["JX_ACCESS_TOKEN"] = ""
+            }
+        } else {
+            builder.environment().putAll(
+                Properties().let { props ->
+                    val runeliteCreds =
+                        File(System.getProperty("user.home"), ".runelite")
+                            .resolve("credentials.properties")
+                    if (!runeliteCreds.exists()) {
+                        logger.info { "(Jagex Account) RuneLite credentials could not be located in: $runeliteCreds" }
+                        logger.info { "(Jagex Account) Using regular username/e-mail & password login box" }
+                        emptyMap()
+                    } else {
+                        runeliteCreds.inputStream().use {
+                            props.load(it)
+                        }
+                        props.stringPropertyNames().associateWith { props.getProperty(it) }
                     }
-                    props.stringPropertyNames().associateWith { props.getProperty(it) }
-                }
-            },
-        )
+                },
+            )
+        }
         val process = builder.start()
         if (process.isAlive) {
             logger.debug { "Successfully launched $path" }
