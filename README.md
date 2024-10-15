@@ -82,15 +82,22 @@ categories.
 > your PC.
 
 ### Jagex Accounts
-Jagex Accounts are currently supported in a preliminary fashion.
-In order to make use of Jagex Accounts, you must export the credentials via
-RuneLite. This can be done following the tutorial
-[here](https://github.com/runelite/runelite/wiki/Using-Jagex-Accounts).
+Jagex Accounts are now fully supported. There are two ways of using a Jagex
+account:
 
+1. Using the built-in authentication system. RSProx allows you to login via
+your browser to authenticate yourself for the proxy tool, allowing easy access
+to all the characters under that Jagex account. You can also link multiple
+different Jagex accounts to make the process of switching accounts easier.
+2. The Default, legacy behaviour. In this mode, you need to export the
+credentials.properties file in `user.home/.runelite/credentials.properties` via
+[this](https://github.com/runelite/runelite/wiki/Using-Jagex-Accounts).
 Once you have exported the credentials.properties as shown in the tutorial,
 the RSProx tool will always load them up from `user.home/.runelite/credentials.properties`.
-If you wish to stop using a Jagex Account, simply delete the credentials file.
-In the future, support will be added for a more granular control over Jagex Accounts.
+If you wish to stop using a Jagex Account in this Default mode,
+simply delete the credentials file. In this Default mode, you may only have
+one character/account, as it always reads from the same file when launching
+the client.
 
 ### Security
 We have taken many measures to ensure the players can securely use this tool,

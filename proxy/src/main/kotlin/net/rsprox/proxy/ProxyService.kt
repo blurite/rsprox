@@ -8,6 +8,7 @@ import net.rsprox.patch.NativeClientType
 import net.rsprox.patch.PatchResult
 import net.rsprox.patch.native.NativePatchCriteria
 import net.rsprox.patch.native.NativePatcher
+import net.rsprox.proxy.accounts.DefaultJagexAccountStore
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.binary.credentials.BinaryCredentials
 import net.rsprox.proxy.binary.credentials.BinaryCredentialsStore
@@ -20,6 +21,7 @@ import net.rsprox.proxy.config.CONFIGURATION_PATH
 import net.rsprox.proxy.config.FAKE_CERTIFICATE_FILE
 import net.rsprox.proxy.config.FILTERS_DIRECTORY
 import net.rsprox.proxy.config.HTTP_SERVER_PORT
+import net.rsprox.proxy.config.JAGEX_ACCOUNTS_FILE
 import net.rsprox.proxy.config.JavConfig
 import net.rsprox.proxy.config.ProxyProperties
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_HEIGHT
@@ -33,9 +35,10 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.FILTERS_STATUS
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
+import net.rsprox.proxy.config.ProxyProperty.Companion.SELECTED_CLIENT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
-import net.rsprox.proxy.config.RUNELITE_LAUNCHER
+import net.rsprox.proxy.config.RUNELITE_LAUNCHER_REPO_DIRECTORY
 import net.rsprox.proxy.config.SETTINGS_DIRECTORY
 import net.rsprox.proxy.config.SIGN_KEY_DIRECTORY
 import net.rsprox.proxy.config.SOCKETS_DIRECTORY
@@ -50,16 +53,15 @@ import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
+import net.rsprox.proxy.runelite.RuneliteLauncher
 import net.rsprox.proxy.settings.DefaultSettingSetStore
-import net.rsprox.proxy.util.ClientType
-import net.rsprox.proxy.util.ConnectionInfo
-import net.rsprox.proxy.util.OperatingSystem
-import net.rsprox.proxy.util.ProgressCallback
-import net.rsprox.proxy.util.getOperatingSystem
+import net.rsprox.proxy.util.*
 import net.rsprox.proxy.worlds.DynamicWorldListProvider
 import net.rsprox.proxy.worlds.World
 import net.rsprox.proxy.worlds.WorldListProvider
 import net.rsprox.shared.SessionMonitor
+import net.rsprox.shared.account.JagexAccountStore
+import net.rsprox.shared.account.JagexCharacter
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.settings.SettingSetStore
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
@@ -72,17 +74,12 @@ import java.net.URL
 import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
-import java.util.Properties
+import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
-import kotlin.io.path.Path
-import kotlin.io.path.absolutePathString
-import kotlin.io.path.copyTo
-import kotlin.io.path.exists
-import kotlin.io.path.extension
-import kotlin.io.path.nameWithoutExtension
-import kotlin.io.path.writeBytes
+import kotlin.io.path.*
 import kotlin.properties.Delegates
+import kotlin.streams.toList
 import kotlin.system.exitProcess
 
 @Suppress("DuplicatedCode")
@@ -97,13 +94,15 @@ public class ProxyService(
     public lateinit var operatingSystem: OperatingSystem
         private set
     private lateinit var rsa: RSAPrivateCrtKeyParameters
+    public lateinit var jagexAccountStore: JagexAccountStore
+        private set
     public lateinit var filterSetStore: PropertyFilterSetStore
         private set
     public lateinit var settingsStore: SettingSetStore
         private set
     private var properties: ProxyProperties by Delegates.notNull()
     private var availablePort: Int = -1
-    private val processes: MutableMap<Int, Process> = mutableMapOf()
+    private val processes: MutableMap<Int, List<ProcessHandle>> = mutableMapOf()
     private val connections: ProxyConnectionContainer = ProxyConnectionContainer()
     private lateinit var credentials: BinaryCredentialsStore
 
@@ -120,13 +119,16 @@ public class ProxyService(
         createConfigurationDirectories(SOCKETS_DIRECTORY)
         createConfigurationDirectories(SIGN_KEY_DIRECTORY)
         createConfigurationDirectories(BINARY_CREDENTIALS_FOLDER)
+        createConfigurationDirectories(RUNELITE_LAUNCHER_REPO_DIRECTORY)
         progressCallback.update(0.10, "Proxy", "Loading properties")
         loadProperties()
         progressCallback.update(0.15, "Proxy", "Loading Huffman")
         HuffmanProvider.load()
         progressCallback.update(0.20, "Proxy", "Loading RSA")
         this.rsa = loadRsa()
-        progressCallback.update(0.25, "Proxy", "Loading property filters")
+        progressCallback.update(0.25, "Proxy", "Loading jagex accounts")
+        this.jagexAccountStore = DefaultJagexAccountStore.load(JAGEX_ACCOUNTS_FILE)
+        progressCallback.update(0.30, "Proxy", "Loading property filters")
         this.filterSetStore = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY)
         this.settingsStore = DefaultSettingSetStore.load(SETTINGS_DIRECTORY)
         this.availablePort = properties.getProperty(PROXY_PORT_MIN)
@@ -209,6 +211,15 @@ public class ProxyService(
         return properties.getPropertyOrNull(FILTERS_STATUS) ?: 0
     }
 
+    public fun setSelectedClient(index: Int) {
+        properties.setProperty(SELECTED_CLIENT, index)
+        properties.saveProperties(PROPERTIES_FILE)
+    }
+
+    public fun getSelectedClient(): Int {
+        return properties.getPropertyOrNull(SELECTED_CLIENT) ?: 0
+    }
+
     public fun setAppSize(
         width: Int,
         height: Int,
@@ -258,29 +269,33 @@ public class ProxyService(
     }
 
     private fun hasAliveProcesses(): Boolean {
-        return processes.values.any { process ->
-            process.isAlive
+        return processes.values.any { processList ->
+            processList.any { it.isAlive }
         }
     }
 
     public fun killAliveProcess(port: Int) {
-        val process = processes.remove(port) ?: return
-        if (process.isAlive) {
+        val processList = processes.remove(port) ?: return
+        for (process in processList) {
             try {
-                for (descendant in process.descendants()) {
-                    descendant.destroyForcibly()
-                }
-                process.destroyForcibly().waitFor(3, TimeUnit.SECONDS)
+                kill(process)
             } catch (t: Throwable) {
                 logger.error(t) {
                     "Unable to destroy process on port $port: ${process.info()}"
                 }
-                return
+                continue
+            }
+            logger.info {
+                "Destroyed process on port $port: ${process.info()}"
             }
         }
-        logger.info {
-            "Destroyed process on port $port: ${process.info()}"
+    }
+
+    private fun kill(process: ProcessHandle) {
+        for (descendant in process.descendants()) {
+            kill(descendant)
         }
+        process.destroyForcibly()
     }
 
     @Suppress("SameParameterValue")
@@ -373,32 +388,41 @@ public class ProxyService(
         }
     }
 
-    public fun launchRuneLiteClient(sessionMonitor: SessionMonitor<BinaryHeader>): Int {
-        if (!RUNELITE_LAUNCHER.exists(LinkOption.NOFOLLOW_LINKS)) {
-            throw IllegalStateException("RuneLite Launcher jar could not be found in $RUNELITE_LAUNCHER")
-        }
-        val port = this.availablePort++
+    public fun launchRuneLiteClient(
+        sessionMonitor: SessionMonitor<BinaryHeader>,
+        character: JagexCharacter?,
+        port: Int,
+    ) {
         try {
             launchProxyServer(this.bootstrapFactory, this.worldListProvider, rsa, port)
         } catch (t: Throwable) {
-            logger.error { "Unable to bind network port $port for native client." }
-            return -1
+            logger.error(t) { "Unable to bind network port $port for native client." }
+            return
         }
         this.connections.addSessionMonitor(port, sessionMonitor)
         ClientTypeDictionary[port] = "RuneLite (${operatingSystem.shortName})"
         launchJar(
             port,
-            RUNELITE_LAUNCHER,
             operatingSystem,
+            character,
         )
-        return port
     }
 
-    public fun launchNativeClient(sessionMonitor: SessionMonitor<BinaryHeader>): Int {
-        return launchNativeClient(
+    public fun allocatePort(): Int {
+        return this.availablePort++
+    }
+
+    public fun launchNativeClient(
+        sessionMonitor: SessionMonitor<BinaryHeader>,
+        character: JagexCharacter?,
+        port: Int,
+    ) {
+        launchNativeClient(
             operatingSystem,
             rsa,
             sessionMonitor,
+            character,
+            port,
         )
     }
 
@@ -406,13 +430,14 @@ public class ProxyService(
         os: OperatingSystem,
         rsa: RSAPrivateCrtKeyParameters,
         sessionMonitor: SessionMonitor<BinaryHeader>,
-    ): Int {
-        val port = this.availablePort++
+        character: JagexCharacter?,
+        port: Int,
+    ) {
         try {
             launchProxyServer(this.bootstrapFactory, this.worldListProvider, rsa, port)
         } catch (t: Throwable) {
-            logger.error { "Unable to bind network port $port for native client." }
-            return -1
+            logger.error(t) { "Unable to bind network port $port for native client." }
+            return
         }
         val javConfigEndpoint = properties.getProperty(JAV_CONFIG_ENDPOINT)
         val worldlistEndpoint = properties.getProperty(WORLDLIST_ENDPOINT)
@@ -458,14 +483,13 @@ public class ProxyService(
         )
         ClientTypeDictionary[port] = "Native (${os.shortName})"
         this.connections.addSessionMonitor(port, sessionMonitor)
-        launchExecutable(port, result.outputPath, os)
-        return port
+        launchExecutable(port, result.outputPath, os, character)
     }
 
     private fun launchJar(
         port: Int,
-        path: Path,
         operatingSystem: OperatingSystem,
+        character: JagexCharacter?,
     ) {
         val timestamp = System.currentTimeMillis()
         val socketFile = SOCKETS_DIRECTORY.resolve("$timestamp.socket").toFile()
@@ -475,23 +499,19 @@ public class ProxyService(
         }
         socket.bind(AFUNIXSocketAddress.of(socketFile))
         try {
-            val directory = path.parent.toFile()
-            val absolutePath = path.absolutePathString()
             val javConfigEndpoint = properties.getProperty(JAV_CONFIG_ENDPOINT)
+            val launcher = RuneliteLauncher()
             createProcess(
-                listOf(
-                    "java",
-                    "-jar",
-                    absolutePath,
-                    "--port=$port",
-                    "--rsa=${rsa.publicKey.modulus.toString(16)}",
-                    "--jav_config=http://127.0.0.1:$HTTP_SERVER_PORT/$javConfigEndpoint",
-                    "--socket_id=$timestamp",
-                    "--developer-mode",
+                launcher.getLaunchArgs(
+                    port,
+                    rsa.publicKey.modulus.toString(16),
+                    javConfig = "http://127.0.0.1:$HTTP_SERVER_PORT/$javConfigEndpoint",
+                    socket = timestamp.toString(),
                 ),
-                directory,
-                path,
-                port,
+                directory = null,
+                path = null,
+                port = port,
+                character,
             )
             logger.debug { "Waiting for client to connect to the server socket..." }
             val channel = socket.accept()
@@ -502,13 +522,13 @@ public class ProxyService(
             output.flush()
             val input = channel.inputStream
 
-            val buf = ByteArray(socket.getReceiveBufferSize())
+            val buf = ByteArray(socket.receiveBufferSize)
             val read = input.read(buf)
             val oldModulus = String(buf, 0, read)
             logger.debug { "Old RSA modulus received from the client: ${oldModulus.substring(0, 16)}..." }
             registerConnection(
                 ConnectionInfo(
-                    ClientType.Native,
+                    ClientType.RuneLite,
                     operatingSystem,
                     port,
                     BigInteger(oldModulus, 16),
@@ -525,29 +545,33 @@ public class ProxyService(
         port: Int,
         path: Path,
         operatingSystem: OperatingSystem,
+        character: JagexCharacter?,
     ) {
         when (operatingSystem) {
             OperatingSystem.WINDOWS -> {
                 val directory = path.parent.toFile()
                 val absolutePath = path.absolutePathString()
-                createProcess(listOf(absolutePath), directory, path, port)
+                createProcess(listOf(absolutePath), directory, path, port, character)
             }
+
             OperatingSystem.MAC -> {
                 // The patched file is at /.rsprox/clients/osclient.app/Contents/MacOS/osclient-patched
                 // We need to however execute the /.rsprox/clients/osclient.app "file"
                 val rootDirection = path.parent.parent.parent
                 val absolutePath = "${File.separator}${rootDirection.absolutePathString()}"
-                createProcess(listOf("open", absolutePath), null, path, port)
+                createProcess(listOf("open", absolutePath), null, path, port, character)
             }
+
             OperatingSystem.UNIX -> {
                 try {
                     val directory = path.parent.toFile()
                     val absolutePath = path.absolutePathString()
-                    createProcess(listOf("wine", absolutePath), directory, path, port)
+                    createProcess(listOf("wine", absolutePath), directory, path, port, character)
                 } catch (e: IOException) {
                     throw RuntimeException("wine is required to run the enhanced client on unix", e)
                 }
             }
+
             OperatingSystem.SOLARIS -> throw IllegalStateException("Solaris not supported yet.")
         }
     }
@@ -555,8 +579,9 @@ public class ProxyService(
     private fun createProcess(
         command: List<String>,
         directory: File?,
-        path: Path,
+        path: Path?,
         port: Int,
+        character: JagexCharacter?,
     ) {
         logger.debug { "Attempting to create process $command" }
         val builder =
@@ -566,29 +591,40 @@ public class ProxyService(
         if (directory != null) {
             builder.directory(directory)
         }
-        builder.environment().putAll(
-            Properties().let { props ->
-                val runeliteCreds =
-                    File(System.getProperty("user.home"), ".runelite")
-                        .resolve("credentials.properties")
-                if (!runeliteCreds.exists()) {
-                    logger.info { "(Jagex Account) RuneLite credentials could not be located in: $runeliteCreds" }
-                    logger.info { "(Jagex Account) Using regular username/e-mail & password login box" }
-                    emptyMap()
-                } else {
-                    runeliteCreds.inputStream().use {
-                        props.load(it)
+        if (character != null) {
+            val account = jagexAccountStore.accounts.firstOrNull { it.characters.contains(character) }
+            if (account != null) {
+                builder.environment()["JX_CHARACTER_ID"] = character.accountId.toString()
+                builder.environment()["JX_SESSION_ID"] = account.sessionId
+                builder.environment()["JX_REFRESH_TOKEN"] = ""
+                builder.environment()["JX_DISPLAY_NAME"] = character.displayName ?: ""
+                builder.environment()["JX_ACCESS_TOKEN"] = ""
+            }
+        } else {
+            builder.environment().putAll(
+                Properties().let { props ->
+                    val runeliteCreds =
+                        File(System.getProperty("user.home"), ".runelite")
+                            .resolve("credentials.properties")
+                    if (!runeliteCreds.exists()) {
+                        logger.info { "(Jagex Account) RuneLite credentials could not be located in: $runeliteCreds" }
+                        logger.info { "(Jagex Account) Using regular username/e-mail & password login box" }
+                        emptyMap()
+                    } else {
+                        runeliteCreds.inputStream().use {
+                            props.load(it)
+                        }
+                        props.stringPropertyNames().associateWith { props.getProperty(it) }
                     }
-                    props.stringPropertyNames().associateWith { props.getProperty(it) }
-                }
-            },
-        )
+                },
+            )
+        }
         val process = builder.start()
         if (process.isAlive) {
-            logger.debug { "Successfully launched $path" }
-            processes[port] = process
+            if (path != null) logger.debug { "Successfully launched $path" }
+            processes[port] = process.children().toList() + process.toHandle()
         } else {
-            logger.warn { "Unable to successfully launch $path" }
+            if (path != null) logger.warn { "Unable to successfully launch $path" }
         }
     }
 

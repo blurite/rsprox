@@ -18,10 +18,8 @@ internal val SIGN_KEY_DIRECTORY: Path = CONFIGURATION_PATH.resolve("signkey")
 internal val BINARY_CREDENTIALS_FOLDER: Path = CONFIGURATION_PATH.resolve("credentials")
 internal val BINARY_CREDENTIALS: Path = BINARY_CREDENTIALS_FOLDER.resolve("binary.credentials")
 internal val FAKE_CERTIFICATE_FILE: Path = SIGN_KEY_DIRECTORY.resolve("fake-cert.jks")
-internal val RUNELITE_LAUNCHER: Path =
-    CONFIGURATION_PATH
-        .resolve("runelite")
-        .resolve("runelite-launcher.jar")
+internal val JAGEX_ACCOUNTS_FILE: Path = CONFIGURATION_PATH.resolve("jagex-accounts.properties")
+internal val RUNELITE_LAUNCHER_REPO_DIRECTORY: Path = CONFIGURATION_PATH.resolve("runelite-launcher")
 internal const val CURRENT_REVISION: Int = 225
 internal const val LATEST_SUPPORTED_PLUGIN: Int = 225
 
