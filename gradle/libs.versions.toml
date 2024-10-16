@@ -18,6 +18,8 @@ shadowjar = "7.1.2"
 zip4j = "2.11.5"
 junixsocket = "2.10.0"
 gson = "2.11.0"
+aws-sdk-kotlin = "1.3.13"
+jaxb-api = "2.3.1"
 
 [libraries]
 netty-bom = { module = "io.netty:netty-bom", version.ref = "netty" }
@@ -53,6 +55,8 @@ openrs2-cache = { module = "org.openrs2:openrs2-cache", version.ref = "openrs2"}
 swingx = { module = "org.swinglabs.swingx:swingx-all", version.ref = "swingx" }
 zip4j = { module = "net.lingala.zip4j:zip4j", version.ref = "zip4j" }
 junixsocket = { module = "com.kohlschutter.junixsocket:junixsocket-core", version.ref = "junixsocket"}
+aws-sdk-kotlin-s3 = { module = "aws.sdk.kotlin:s3", version.ref = "aws-sdk-kotlin" }
+jaxb-api = { module = "javax.xml.bind:jaxb-api", version.ref = "jaxb-api" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
