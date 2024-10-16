@@ -16,7 +16,12 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
 
-    # TODO aws credentials
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-1
 
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
@@ -25,4 +30,13 @@ jobs:
       run: ./gradlew publish
 
     - name: Upload jars to S3
-      run: ./gradlew uploadJarsToS3
+      run: ./gradlew :gui:build uploadJarsToS3
+
+    - name: Upload bootstrap
+      run: aws s3 cp bootstrap.json s3://cdn.rsprox.net/launcher/
+
+    - name: Invalidate CloudFront
+      run: |
+        aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION --paths "/launcher/*" "/dependencies/*" "/maven/*"
+      env:
+        CLOUDFRONT_DISTRIBUTION: ${{ secrets.CLOUDFRONT_DISTRIBUTION }}

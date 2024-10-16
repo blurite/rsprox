@@ -120,7 +120,7 @@ suspend fun uploadToS3(
 
 tasks.register("uploadJarsToS3") {
     doLast {
-        val outputFile = file("dependencies.json")
+        val outputFile = file("bootstrap.json")
         val project = project(":gui")
         val artifacts = mutableListOf<Artifact>()
 
