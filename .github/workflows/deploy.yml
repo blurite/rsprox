@@ -32,11 +32,18 @@ jobs:
     - name: Build gui
       run: ./gradlew :gui:build
 
-    - name: Upload jars to S3
+    - name: Deploy to S3
       run: ./gradlew uploadJarsToS3
 
+    - name: Generate bootstrap signature
+      run: 'echo "$SIGNING_PRIVATE_KEY" > private.pem && openssl dgst -sha256 -sign private.pem -out bootstrap.json.sha256 bootstrap.json'
+      env:
+        SIGNING_PRIVATE_KEY: ${{ secrets.SIGNING_PRIVATE_KEY }}
+
     - name: Upload bootstrap
-      run: aws s3 cp bootstrap.json s3://cdn.rsprox.net/launcher/
+      run: |
+        aws s3 cp bootstrap.json s3://cdn.rsprox.net/launcher/
+        aws s3 cp bootstrap.json.sha256 s3://cdn.rsprox.net/launcher/
 
     - name: Invalidate CloudFront
       run: |
