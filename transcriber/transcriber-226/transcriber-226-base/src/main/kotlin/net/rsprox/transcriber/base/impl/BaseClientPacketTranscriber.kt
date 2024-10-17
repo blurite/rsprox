@@ -105,6 +105,7 @@ import net.rsprox.transcriber.state.StateTracker
 import java.awt.event.KeyEvent
 import java.text.DecimalFormat
 import java.text.NumberFormat
+import net.rsprox.protocol.game.incoming.model.misc.user.SetHeading
 import net.rsprox.protocol.game.incoming.model.misc.user.UpdatePlayerModelV1
 
 @Suppress("SpellCheckingInspection", "DuplicatedCode")
@@ -816,6 +817,11 @@ public open class BaseClientPacketTranscriber(
     override fun ignoreListDel(message: IgnoreListDel) {
         if (!filters[PropertyFilter.IGNORELIST_DEL]) return omit()
         root.string("name", message.name)
+    }
+
+    override fun setHeading(message: SetHeading) {
+        if (!filters[PropertyFilter.SET_HEADING]) return omit()
+        root.int("heading", message.heading)
     }
 
     private companion object {

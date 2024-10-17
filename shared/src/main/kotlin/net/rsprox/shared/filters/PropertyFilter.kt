@@ -448,6 +448,13 @@ public enum class PropertyFilter(
         false,
         searchTerms = "window,status,width,height,mode",
     ),
+    SET_HEADING(
+      CLIENT_TO_SERVER,
+        OTHER,
+        "Set Heading",
+        false,
+        searchTerms = "setheading,worldentity,ship,direction",
+    ),
 
     IF_RESYNC(
         SERVER_TO_CLIENT,
@@ -695,6 +702,13 @@ public enum class PropertyFilter(
         "Obj Enabled Ops",
         true,
         searchTerms = "objs,enabled,ops,click,options,take,taking,items,zone",
+    ),
+    OBJ_CUSTOMISE(
+        SERVER_TO_CLIENT,
+        ZONES,
+        "Obj Customise",
+        true,
+        searchTerms = "objs,customise,model,recolour,recolor,retexture,zone,items"
     ),
     MAP_ANIM(
         SERVER_TO_CLIENT,
@@ -1122,6 +1136,13 @@ public enum class PropertyFilter(
         "Hide Entity Ops",
         true,
         searchTerms = "hide,entity,ops,locs,objs,items,npcs,options,cutscenes",
+    ),
+    SET_INTERACTION_MODE(
+        SERVER_TO_CLIENT,
+        OTHER,
+        "Set Interaction Mode",
+        true,
+        searchTerms = "setinteractionmode,worldentity,ship",
     ),
 
     URL_OPEN(

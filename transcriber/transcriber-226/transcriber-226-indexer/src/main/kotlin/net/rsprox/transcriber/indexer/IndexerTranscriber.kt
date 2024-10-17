@@ -53,6 +53,7 @@ import net.rsprox.protocol.game.incoming.model.misc.user.MoveMinimapClick
 import net.rsprox.protocol.game.incoming.model.misc.user.OculusLeave
 import net.rsprox.protocol.game.incoming.model.misc.user.SendSnapshot
 import net.rsprox.protocol.game.incoming.model.misc.user.SetChatFilterSettings
+import net.rsprox.protocol.game.incoming.model.misc.user.SetHeading
 import net.rsprox.protocol.game.incoming.model.misc.user.Teleport
 import net.rsprox.protocol.game.incoming.model.misc.user.UpdatePlayerModelV1
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpc
@@ -173,9 +174,11 @@ import net.rsprox.protocol.game.outgoing.model.misc.client.HiscoreReply
 import net.rsprox.protocol.game.outgoing.model.misc.client.MinimapToggle
 import net.rsprox.protocol.game.outgoing.model.misc.client.ReflectionChecker
 import net.rsprox.protocol.game.outgoing.model.misc.client.ResetAnims
+import net.rsprox.protocol.game.outgoing.model.misc.client.ResetInteractionMode
 import net.rsprox.protocol.game.outgoing.model.misc.client.SendPing
 import net.rsprox.protocol.game.outgoing.model.misc.client.ServerTickEnd
 import net.rsprox.protocol.game.outgoing.model.misc.client.SetHeatmapEnabled
+import net.rsprox.protocol.game.outgoing.model.misc.client.SetInteractionMode
 import net.rsprox.protocol.game.outgoing.model.misc.client.SiteSettings
 import net.rsprox.protocol.game.outgoing.model.misc.client.UpdateRebootTimer
 import net.rsprox.protocol.game.outgoing.model.misc.client.UpdateUid192
@@ -230,8 +233,10 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.MapAnim
 import net.rsprox.protocol.game.outgoing.model.zone.payload.MapProjAnim
 import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjAdd
 import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjCount
+import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjCustomise
 import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjDel
 import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjEnabledOps
+import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjUncustomise
 import net.rsprox.protocol.game.outgoing.model.zone.payload.SoundArea
 import net.rsprox.shared.BaseVarType
 import net.rsprox.shared.ScriptVarType
@@ -511,6 +516,9 @@ public class IndexerTranscriber private constructor(
     }
 
     override fun ignoreListDel(message: IgnoreListDel) {
+    }
+
+    override fun setHeading(message: SetHeading) {
     }
 
     override fun camLookAt(message: CamLookAt) {
@@ -1235,6 +1243,20 @@ public class IndexerTranscriber private constructor(
     }
 
     override fun unknownString(message: UnknownString) {
+    }
+
+    override fun objCustomise(message: ObjCustomise) {
+        binaryIndex.increment(IndexedType.OBJ, message.id)
+    }
+
+    override fun objUncustomise(message: ObjUncustomise) {
+        binaryIndex.increment(IndexedType.OBJ, message.id)
+    }
+
+    override fun setInteractionMode(message: SetInteractionMode) {
+    }
+
+    override fun resetInteractionMode(message: ResetInteractionMode) {
     }
 
     override fun playerInfo(message: PlayerInfo) {

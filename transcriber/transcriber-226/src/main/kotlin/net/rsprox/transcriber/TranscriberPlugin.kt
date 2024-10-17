@@ -184,10 +184,10 @@ public class TranscriberPlugin(
             GameServerProt.UNKNOWN_STRING -> pass(message, Transcriber::unknownString)
             GameServerProt.NPC_INFO_SMALL_V4 -> throw IllegalArgumentException("Unimplemented packet")
             GameServerProt.NPC_INFO_LARGE_V4 -> throw IllegalArgumentException("Unimplemented packet")
-            GameServerProt.OBJ_CUSTOMISE -> TODO()
-            GameServerProt.OBJ_UNCUSTOMISE -> TODO()
-            GameServerProt.SET_INTERACTION_MODE -> TODO()
-            GameServerProt.RESET_INTERACTION_MODE -> TODO()
+            GameServerProt.OBJ_CUSTOMISE -> pass(message, Transcriber::objCustomise)
+            GameServerProt.OBJ_UNCUSTOMISE -> pass(message, Transcriber::objUncustomise)
+            GameServerProt.SET_INTERACTION_MODE -> pass(message, Transcriber::setInteractionMode)
+            GameServerProt.RESET_INTERACTION_MODE -> pass(message, Transcriber::resetInteractionMode)
         }
     }
 
@@ -306,7 +306,7 @@ public class TranscriberPlugin(
             }
             GameClientProt.SOUND_JINGLEEND -> pass(message, Transcriber::soundJingleEnd)
             GameClientProt.WINDOW_STATUS -> pass(message, Transcriber::windowStatus)
-            GameClientProt.SET_HEADING -> TODO()
+            GameClientProt.SET_HEADING -> pass(message, Transcriber::setHeading)
         }
     }
 }

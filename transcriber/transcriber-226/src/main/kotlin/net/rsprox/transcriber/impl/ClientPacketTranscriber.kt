@@ -47,6 +47,7 @@ import net.rsprox.protocol.game.incoming.model.misc.user.MoveMinimapClick
 import net.rsprox.protocol.game.incoming.model.misc.user.OculusLeave
 import net.rsprox.protocol.game.incoming.model.misc.user.SendSnapshot
 import net.rsprox.protocol.game.incoming.model.misc.user.SetChatFilterSettings
+import net.rsprox.protocol.game.incoming.model.misc.user.SetHeading
 import net.rsprox.protocol.game.incoming.model.misc.user.Teleport
 import net.rsprox.protocol.game.incoming.model.misc.user.UpdatePlayerModelV1
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpc
@@ -199,4 +200,6 @@ public interface ClientPacketTranscriber {
     public fun ignoreListAdd(message: IgnoreListAdd)
 
     public fun ignoreListDel(message: IgnoreListDel)
+
+    public fun setHeading(message: SetHeading)
 }

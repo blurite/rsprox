@@ -188,11 +188,15 @@ import java.util.concurrent.TimeUnit
 import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV1
 import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV2
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV3
+import net.rsprox.protocol.game.outgoing.model.misc.client.ResetInteractionMode
+import net.rsprox.protocol.game.outgoing.model.misc.client.SetInteractionMode
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV1
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV2
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV1
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV2
 import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV3
+import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjCustomise
+import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjUncustomise
 import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildArea
 
 @Suppress("SpellCheckingInspection", "DuplicatedCode")
@@ -2455,6 +2459,16 @@ public class BaseServerPacketTranscriber(
                     val root = stateTracker.createFakeServerRoot("OBJ_ENABLED_OPS")
                     root.buildObjEnabledOps(event)
                 }
+                is ObjCustomise -> {
+                    if (!filters[PropertyFilter.OBJ_CUSTOMISE]) continue
+                    val root = stateTracker.createFakeServerRoot("OBJ_ENABLED_OPS")
+                    root.buildObjCustomise(event)
+                }
+                is ObjUncustomise -> {
+                    if (!filters[PropertyFilter.OBJ_CUSTOMISE]) continue
+                    val root = stateTracker.createFakeServerRoot("OBJ_ENABLED_OPS")
+                    root.buildObjUncustomise(event)
+                }
                 is SoundArea -> {
                     if (!filters[PropertyFilter.SOUND_AREA]) continue
                     val root = stateTracker.createFakeServerRoot("SOUND_AREA")
@@ -2529,6 +2543,18 @@ public class BaseServerPacketTranscriber(
                         if (!filters[PropertyFilter.OBJ_ENABLED_OPS]) continue
                         group("OBJ_ENABLED_OPS") {
                             buildObjEnabledOps(event)
+                        }
+                    }
+                    is ObjCustomise -> {
+                        if (!filters[PropertyFilter.OBJ_CUSTOMISE]) continue
+                        group("OBJ_CUSTOMISE") {
+                            buildObjCustomise(event)
+                        }
+                    }
+                    is ObjUncustomise -> {
+                        if (!filters[PropertyFilter.OBJ_CUSTOMISE]) continue
+                        group("OBJ_UNCUSTOMISE") {
+                            buildObjUncustomise(event)
                         }
                     }
                     is SoundArea -> {
@@ -2731,6 +2757,22 @@ public class BaseServerPacketTranscriber(
         coordGrid(coordInZone(message.xInZone, message.zInZone))
     }
 
+    private fun Property.buildObjCustomise(message: ObjCustomise) {
+        scriptVarType("id", ScriptVarType.OBJ, message.id.maxUShortToMinusOne())
+        int("count", message.quantity)
+        int("recolindex", message.recolIndex)
+        int("recol", message.recol)
+        int("retexindex", message.retexIndex)
+        int("retex", message.retex)
+        coordGrid(coordInZone(message.xInZone, message.zInZone))
+    }
+
+    private fun Property.buildObjUncustomise(message: ObjUncustomise) {
+        scriptVarType("id", ScriptVarType.OBJ, message.id.maxUShortToMinusOne())
+        int("count", message.quantity)
+        coordGrid(coordInZone(message.xInZone, message.zInZone))
+    }
+
     private fun Property.buildSoundArea(message: SoundArea) {
         scriptVarType("id", ScriptVarType.SYNTH, message.id.maxUShortToMinusOne())
         filteredInt("loops", message.loops, 0)
@@ -2743,6 +2785,48 @@ public class BaseServerPacketTranscriber(
     override fun unknownString(message: UnknownString) {
         if (!filters[PropertyFilter.DEPRECATED_SERVER]) return omit()
         root.string("string", message.string)
+    }
+
+    override fun objCustomise(message: ObjCustomise) {
+        if (!filters[PropertyFilter.OBJ_CUSTOMISE]) return omit()
+        root.buildObjCustomise(message)
+    }
+
+    override fun objUncustomise(message: ObjUncustomise) {
+        if (!filters[PropertyFilter.OBJ_CUSTOMISE]) return omit()
+        root.buildObjUncustomise(message)
+    }
+
+    override fun setInteractionMode(message: SetInteractionMode) {
+        if (!filters[PropertyFilter.SET_INTERACTION_MODE]) return omit()
+        if (message.worldId == -2) {
+            root.any("type", "default")
+        } else {
+            root.worldentity(message.worldId)
+        }
+        val tileInteractionMode = when (message.tileInteractionMode) {
+            0 -> "disabled"
+            1 -> "walk"
+            2 -> "heading"
+            else -> "unknown (id: ${message.tileInteractionMode})"
+        }
+        val entityInteractionMode = when (message.entityInteractionMode) {
+            0 -> "disabled"
+            1 -> "enabled"
+            2 -> "examine"
+            else -> "unknown (id: ${message.entityInteractionMode})"
+        }
+        root.any("tileinteractionmode", tileInteractionMode)
+        root.any("entityinteractionmode", entityInteractionMode)
+    }
+
+    override fun resetInteractionMode(message: ResetInteractionMode) {
+        if (!filters[PropertyFilter.SET_INTERACTION_MODE]) return omit()
+        if (message.worldId == -2) {
+            root.any("type", "default")
+        } else {
+            root.worldentity(message.worldId)
+        }
     }
 
     private companion object {
