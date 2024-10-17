@@ -79,9 +79,11 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.HiscoreReplyD
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.MinimapToggleDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.ReflectionCheckerDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.ResetAnimsDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.ResetInteractionModeDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.SendPingDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.ServerTickEndDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.SetHeatmapEnabledDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.SetInteractionModeDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.SiteSettingsDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.UpdateRebootTimerDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.client.UpdateUid192Decoder
@@ -137,8 +139,10 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.MapAnimDecod
 import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.MapProjAnimDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.ObjAddDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.ObjCountDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.ObjCustomiseDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.ObjDelDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.ObjEnabledOpsDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.ObjUncustomiseDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.SoundAreaDecoder
 
 public object ServerMessageDecoderRepository {
@@ -230,6 +234,8 @@ public object ServerMessageDecoderRepository {
                 bind(HideLocOpsDecoder())
                 bind(HideNpcOpsDecoder())
                 bind(HideObjOpsDecoder())
+                bind(SetInteractionModeDecoder())
+                bind(ResetInteractionModeDecoder())
                 bind(HintArrowDecoder())
                 bind(HiscoreReplyDecoder())
                 bind(MinimapToggleDecoder())
@@ -302,6 +308,8 @@ public object ServerMessageDecoderRepository {
                 bind(ObjDelDecoder())
                 bind(ObjEnabledOpsDecoder())
                 bind(SoundAreaDecoder())
+                bind(ObjCustomiseDecoder())
+                bind(ObjUncustomiseDecoder())
 
                 bind(UnknownStringDecoder())
             }

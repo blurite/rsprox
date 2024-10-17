@@ -12,4 +12,6 @@ public object OldSchoolZoneProt {
     public const val MAP_ANIM: Int = 8
     public const val MAP_PROJANIM: Int = 9
     public const val SOUND_AREA: Int = 10
+    public const val OBJ_CUSTOMISE: Int = 11
+    public const val OBJ_UNCUSTOMISE: Int = 12
 }

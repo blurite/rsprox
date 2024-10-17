@@ -11,8 +11,10 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.MapAnimDecod
 import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.MapProjAnimDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.ObjAddDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.ObjCountDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.ObjCustomiseDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.ObjDelDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.ObjEnabledOpsDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.ObjUncustomiseDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.zone.payload.SoundAreaDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.IncomingZoneProt
@@ -48,7 +50,7 @@ public class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZonePa
     private enum class IndexedZoneProtDecoder(
         val decoder: ProxyMessageDecoder<*>,
     ) {
-        OBJ_UNCUSTOMISE(TODO()),
+        OBJ_UNCUSTOMISE(ObjUncustomiseDecoder()),
         OBJ_COUNT(ObjCountDecoder()),
         OBJ_ADD(ObjAddDecoder()),
         LOC_MERGE(LocMergeDecoder()),
@@ -60,6 +62,6 @@ public class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZonePa
         OBJ_ENABLED_OPS(ObjEnabledOpsDecoder()),
         SOUND_AREA(SoundAreaDecoder()),
         LOC_DEL(LocDelDecoder()),
-        OBJ_CUSTOMISE(TODO()),
+        OBJ_CUSTOMISE(ObjCustomiseDecoder()),
     }
 }
