@@ -1,6 +1,6 @@
 package net.rsprox.protocol.game.outgoing.model.info.worldentityinfo
 
-import net.rsprox.protocol.common.CoordGrid
+import net.rsprox.protocol.common.CoordFine
 
 public sealed interface WorldEntityUpdateType {
     public data object Idle : WorldEntityUpdateType
@@ -9,15 +9,15 @@ public sealed interface WorldEntityUpdateType {
         public val sizeX: Int,
         public val sizeZ: Int,
         public val angle: Int,
-        public val unknownProperty: Int,
-        public val coordGrid: CoordGrid,
+        public val coordFine: CoordFine,
+        public val level: Int,
     ) : WorldEntityUpdateType
 
     public data object HighResolutionToLowResolution : WorldEntityUpdateType
 
     public class Active(
         public val angle: Int,
-        public val coordGrid: CoordGrid,
-        public val moveSpeed: WorldEntityMoveSpeed,
+        public val coordFine: CoordFine,
+        public val teleport: Boolean,
     ) : WorldEntityUpdateType
 }
