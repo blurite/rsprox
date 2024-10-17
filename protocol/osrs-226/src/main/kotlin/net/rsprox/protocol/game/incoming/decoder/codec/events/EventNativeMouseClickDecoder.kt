@@ -1,11 +1,11 @@
 package net.rsprox.protocol.game.incoming.decoder.codec.events
+import net.rsprox.protocol.session.Session
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprox.protocol.ProxyMessageDecoder
-import net.rsprox.protocol.game.incoming.decoder.prot.GameClientProt
 import net.rsprox.protocol.game.incoming.model.events.EventNativeMouseClick
-import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.game.incoming.decoder.prot.GameClientProt
+import net.rsprox.protocol.ProxyMessageDecoder
 
 public class EventNativeMouseClickDecoder : ProxyMessageDecoder<EventNativeMouseClick> {
     override val prot: ClientProt = GameClientProt.EVENT_NATIVE_MOUSE_CLICK
@@ -14,9 +14,9 @@ public class EventNativeMouseClickDecoder : ProxyMessageDecoder<EventNativeMouse
         buffer: JagByteBuf,
         session: Session,
     ): EventNativeMouseClick {
-        val packedCoord = buffer.g4Alt2()
+        val packedCoord = buffer.g4Alt1()
         val code = buffer.g1Alt1()
-        val lastTransmittedMouseClick = buffer.g2Alt3()
+        val lastTransmittedMouseClick = buffer.g2()
         return EventNativeMouseClick(
             lastTransmittedMouseClick,
             code,

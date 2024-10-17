@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.npcs
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * OpNpc messages are sent when a player clicks one of the five primary options on a NPC.
@@ -55,11 +55,10 @@ public class OpNpc private constructor(
         return result
     }
 
-    override fun toString(): String {
-        return "OpNpc(" +
+    override fun toString(): String =
+        "OpNpc(" +
             "index=$index, " +
             "controlKey=$controlKey, " +
             "op=$op" +
             ")"
-    }
 }

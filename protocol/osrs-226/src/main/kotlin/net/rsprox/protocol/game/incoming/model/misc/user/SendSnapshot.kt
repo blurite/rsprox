@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.misc.user
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * Send snapshot message is sent when a player reports another player.
@@ -83,11 +83,10 @@ public class SendSnapshot private constructor(
         return result
     }
 
-    override fun toString(): String {
-        return "SendSnapshot(" +
+    override fun toString(): String =
+        "SendSnapshot(" +
             "name='$name', " +
             "ruleId=$ruleId, " +
             "mute=$mute" +
             ")"
-    }
 }

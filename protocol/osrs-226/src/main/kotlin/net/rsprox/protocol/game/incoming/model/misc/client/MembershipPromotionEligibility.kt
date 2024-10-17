@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.misc.client
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * An enhanced-client-only packet to inform the server of the status of
@@ -52,10 +52,9 @@ public class MembershipPromotionEligibility private constructor(
         return result
     }
 
-    override fun toString(): String {
-        return "MembershipPromotionEligibility(" +
+    override fun toString(): String =
+        "MembershipPromotionEligibility(" +
             "eligibleForIntroductoryPrice=$eligibleForIntroductoryPrice, " +
             "eligibleForTrialPurchase=$eligibleForTrialPurchase" +
             ")"
-    }
 }

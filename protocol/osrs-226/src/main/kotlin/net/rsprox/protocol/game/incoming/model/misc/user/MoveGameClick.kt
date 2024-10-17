@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.misc.user
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.misc.user.internal.MovementRequest
 
 /**
@@ -56,15 +56,12 @@ public class MoveGameClick private constructor(
         return movementRequest == other.movementRequest
     }
 
-    override fun hashCode(): Int {
-        return movementRequest.hashCode()
-    }
+    override fun hashCode(): Int = movementRequest.hashCode()
 
-    override fun toString(): String {
-        return "MoveGameClick(" +
+    override fun toString(): String =
+        "MoveGameClick(" +
             "x=$x, " +
             "z=$z, " +
             "keyCombination=$keyCombination" +
             ")"
-    }
 }

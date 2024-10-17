@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.events
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * Mouse scroll message is sent whenever the user scrolls using their mouse.
@@ -25,11 +25,7 @@ public class EventMouseScroll(
         return mouseWheelRotation == other.mouseWheelRotation
     }
 
-    override fun hashCode(): Int {
-        return mouseWheelRotation
-    }
+    override fun hashCode(): Int = mouseWheelRotation
 
-    override fun toString(): String {
-        return "EventMouseScroll(mouseWheelRotation=$mouseWheelRotation)"
-    }
+    override fun toString(): String = "EventMouseScroll(mouseWheelRotation=$mouseWheelRotation)"
 }

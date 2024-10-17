@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.events
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * Applet focus events are sent whenever the client either loses or gains focus.
@@ -24,11 +24,7 @@ public class EventAppletFocus(
         return inFocus == other.inFocus
     }
 
-    override fun hashCode(): Int {
-        return inFocus.hashCode()
-    }
+    override fun hashCode(): Int = inFocus.hashCode()
 
-    override fun toString(): String {
-        return "EventAppletFocus(inFocus=$inFocus)"
-    }
+    override fun toString(): String = "EventAppletFocus(inFocus=$inFocus)"
 }

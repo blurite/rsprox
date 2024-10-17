@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.misc.client
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * Detect modified client is sent by the client right before a map load
@@ -25,11 +25,7 @@ public class DetectModifiedClient(
         return code == other.code
     }
 
-    override fun hashCode(): Int {
-        return code
-    }
+    override fun hashCode(): Int = code
 
-    override fun toString(): String {
-        return "DetectModifiedClient(code=$code)"
-    }
+    override fun toString(): String = "DetectModifiedClient(code=$code)"
 }

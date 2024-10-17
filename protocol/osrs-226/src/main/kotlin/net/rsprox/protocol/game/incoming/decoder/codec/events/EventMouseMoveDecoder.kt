@@ -1,13 +1,13 @@
 package net.rsprox.protocol.game.incoming.decoder.codec.events
+import net.rsprox.protocol.session.Session
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.metadata.Consistent
-import net.rsprox.protocol.ProxyMessageDecoder
-import net.rsprox.protocol.game.incoming.decoder.prot.GameClientProt
 import net.rsprox.protocol.game.incoming.model.events.EventMouseMove
 import net.rsprox.protocol.game.incoming.model.events.util.MouseMovements
-import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.game.incoming.decoder.prot.GameClientProt
+import net.rsprox.protocol.ProxyMessageDecoder
+import net.rsprot.protocol.metadata.Consistent
 
 @Suppress("DuplicatedCode")
 @Consistent
@@ -54,12 +54,12 @@ public class EventMouseMoveDecoder : ProxyMessageDecoder<EventMouseMove> {
                 deltaY = (packed and 0x3F) - 32
             }
             val change =
-                MouseMovements.MousePosChange(
+                MouseMovements.MousePosChange.pack(
                     timeSinceLastMovement,
                     deltaX,
                     deltaY,
                 )
-            array[count++] = change.packed
+            array[count++] = change
         }
         val slice = array.copyOf(count)
         return EventMouseMove(

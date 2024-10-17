@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.events
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * Mouse click messages are sent whenever the user clicks with the
@@ -67,12 +67,11 @@ public class EventMouseClick private constructor(
         return result
     }
 
-    override fun toString(): String {
-        return "EventMouseClick(" +
+    override fun toString(): String =
+        "EventMouseClick(" +
             "lastTransmittedMouseClick=$lastTransmittedMouseClick, " +
             "rightClick=$rightClick, " +
             "x=$x, " +
             "y=$y" +
             ")"
-    }
 }

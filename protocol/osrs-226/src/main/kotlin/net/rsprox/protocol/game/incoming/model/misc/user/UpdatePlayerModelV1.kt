@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.misc.user
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 import kotlin.jvm.Throws
 
 /**
@@ -16,7 +16,7 @@ import kotlin.jvm.Throws
  * @property colours the colours the player can customize
  */
 @Suppress("MemberVisibilityCanBePrivate")
-public class UpdatePlayerModelOld private constructor(
+public class UpdatePlayerModelV1 private constructor(
     private val _bodyType: UByte,
     private val identKits: ByteArray,
     private val colours: ByteArray,
@@ -40,17 +40,13 @@ public class UpdatePlayerModelOld private constructor(
      * Gets the backing ident kits byte array.
      * Changes done to this byte array reflect on this packet.
      */
-    public fun getIdentKitsByteArray(): ByteArray {
-        return identKits
-    }
+    public fun getIdentKitsByteArray(): ByteArray = identKits
 
     /**
      * Gets the backing colours byte array.
      * Changes done to this byte array reflect on the packet.
      */
-    public fun getColoursByteArray(): ByteArray {
-        return colours
-    }
+    public fun getColoursByteArray(): ByteArray = colours
 
     /**
      * Gets the ident kit at index [index], or -1 if it doesn't exist.
@@ -75,15 +71,13 @@ public class UpdatePlayerModelOld private constructor(
      * @throws ArrayIndexOutOfBoundsException if the index is below 0, or >= 5
      */
     @Throws(ArrayIndexOutOfBoundsException::class)
-    public fun getColour(index: Int): Int {
-        return colours[index].toInt()
-    }
+    public fun getColour(index: Int): Int = colours[index].toInt()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as UpdatePlayerModelOld
+        other as UpdatePlayerModelV1
 
         if (_bodyType != other._bodyType) return false
         if (!identKits.contentEquals(other.identKits)) return false
@@ -99,11 +93,10 @@ public class UpdatePlayerModelOld private constructor(
         return result
     }
 
-    override fun toString(): String {
-        return "UpdatePlayerModelOld(" +
+    override fun toString(): String =
+        "UpdatePlayerModelV1(" +
             "bodyType=$bodyType, " +
             "identKits=${identKits.contentToString()}, " +
             "colours=${colours.contentToString()}" +
             ")"
-    }
 }

@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.clan
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * Clan ban messages are sent when a player with sufficient rank
@@ -64,12 +64,11 @@ public class AffinedClanSettingsSetMutedFromChannel private constructor(
         return result
     }
 
-    override fun toString(): String {
-        return "AffinedClanSettingsSetMutedFromChannel(" +
+    override fun toString(): String =
+        "AffinedClanSettingsSetMutedFromChannel(" +
             "name='$name', " +
             "clanId=$clanId, " +
             "memberIndex=$memberIndex, " +
             "muted=$muted" +
             ")"
-    }
 }

@@ -1,23 +1,26 @@
 package net.rsprox.protocol.game.incoming.model.buttons
 
 import net.rsprot.protocol.ClientProtCategory
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprot.protocol.util.CombinedId
-import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * If1 button messages are sent whenever a player clicks on an older
  * if1-type component.
+ * @property combinedId the bitpacked combination of [interfaceId] and [componentId].
  * @property interfaceId the interface id the player interacted with
  * @property componentId the component id on that interface the player interacted with
  */
 public class If1Button(
-    private val combinedId: CombinedId,
+    private val _combinedId: CombinedId,
 ) : IncomingGameMessage {
+    public val combinedId: Int
+        get() = _combinedId.combinedId
     public val interfaceId: Int
-        get() = combinedId.interfaceId
+        get() = _combinedId.interfaceId
     public val componentId: Int
-        get() = combinedId.componentId
+        get() = _combinedId.componentId
     override val category: ClientProtCategory
         get() = GameClientProtCategory.USER_EVENT
 
@@ -27,17 +30,14 @@ public class If1Button(
 
         other as If1Button
 
-        return combinedId == other.combinedId
+        return _combinedId == other._combinedId
     }
 
-    override fun hashCode(): Int {
-        return combinedId.hashCode()
-    }
+    override fun hashCode(): Int = _combinedId.hashCode()
 
-    override fun toString(): String {
-        return "If1Button(" +
+    override fun toString(): String =
+        "If1Button(" +
             "interfaceId=$interfaceId, " +
             "componentId=$componentId" +
             ")"
-    }
 }

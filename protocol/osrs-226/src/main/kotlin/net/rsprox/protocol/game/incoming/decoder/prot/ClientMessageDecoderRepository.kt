@@ -56,7 +56,7 @@ import net.rsprox.protocol.game.incoming.decoder.codec.misc.user.OculusLeaveDeco
 import net.rsprox.protocol.game.incoming.decoder.codec.misc.user.SendSnapshotDecoder
 import net.rsprox.protocol.game.incoming.decoder.codec.misc.user.SetChatFilterSettingsDecoder
 import net.rsprox.protocol.game.incoming.decoder.codec.misc.user.TeleportDecoder
-import net.rsprox.protocol.game.incoming.decoder.codec.misc.user.UpdatePlayerModelOldDecoder
+import net.rsprox.protocol.game.incoming.decoder.codec.misc.user.UpdatePlayerModelDecoderV1
 import net.rsprox.protocol.game.incoming.decoder.codec.npcs.OpNpc1Decoder
 import net.rsprox.protocol.game.incoming.decoder.codec.npcs.OpNpc2Decoder
 import net.rsprox.protocol.game.incoming.decoder.codec.npcs.OpNpc3Decoder
@@ -192,7 +192,7 @@ public object ClientMessageDecoderRepository {
                 bind(SendSnapshotDecoder())
                 bind(HiscoreRequestDecoder())
                 bind(IfCrmViewClickDecoder())
-                bind(UpdatePlayerModelOldDecoder())
+                bind(UpdatePlayerModelDecoderV1())
 
                 bind(ConnectionTelemetryDecoder())
                 bind(SendPingReplyDecoder())

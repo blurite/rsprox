@@ -1,17 +1,19 @@
 package net.rsprox.protocol.game.incoming.model.buttons
 
 import net.rsprot.protocol.ClientProtCategory
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprot.protocol.message.toIntOrMinusOne
 import net.rsprot.protocol.util.CombinedId
-import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * If button target messages are used whenever one button is targeted against another.
+ * @property selectedCombinedId the bitpacked combination of [selectedInterfaceId] and [selectedComponentId].
  * @property selectedInterfaceId the selected interface id of the component that is being used
  * @property selectedComponentId the selected component id that is being used
  * @property selectedSub the subcomponent id of the selected, or -1 if none exists
  * @property selectedObj the obj in the selected subcomponent, or -1 if none exists
+ * @property targetCombinedId the bitpacked combination of [targetInterfaceId] and [targetComponentId].
  * @property targetInterfaceId the target interface id on which the selected component
  * is being used
  * @property targetComponentId the target component id on which the selected component
@@ -22,10 +24,10 @@ import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
  */
 @Suppress("DuplicatedCode", "MemberVisibilityCanBePrivate")
 public class IfButtonT private constructor(
-    private val selectedCombinedId: CombinedId,
+    private val _selectedCombinedId: CombinedId,
     private val _selectedSub: UShort,
     private val _selectedObj: UShort,
-    private val targetCombinedId: CombinedId,
+    private val _targetCombinedId: CombinedId,
     private val _targetSub: UShort,
     private val _targetObj: UShort,
 ) : IncomingGameMessage {
@@ -45,18 +47,22 @@ public class IfButtonT private constructor(
         targetObj.toUShort(),
     )
 
+    public val selectedCombinedId: Int
+        get() = _selectedCombinedId.combinedId
     public val selectedInterfaceId: Int
-        get() = selectedCombinedId.interfaceId
+        get() = _selectedCombinedId.interfaceId
     public val selectedComponentId: Int
-        get() = selectedCombinedId.componentId
+        get() = _selectedCombinedId.componentId
     public val selectedSub: Int
         get() = _selectedSub.toIntOrMinusOne()
     public val selectedObj: Int
         get() = _selectedObj.toIntOrMinusOne()
+    public val targetCombinedId: Int
+        get() = _targetCombinedId.combinedId
     public val targetInterfaceId: Int
-        get() = targetCombinedId.interfaceId
+        get() = _targetCombinedId.interfaceId
     public val targetComponentId: Int
-        get() = targetCombinedId.componentId
+        get() = _targetCombinedId.componentId
     public val targetSub: Int
         get() = _targetSub.toIntOrMinusOne()
     public val targetObj: Int
@@ -70,10 +76,10 @@ public class IfButtonT private constructor(
 
         other as IfButtonT
 
-        if (selectedCombinedId != other.selectedCombinedId) return false
+        if (_selectedCombinedId != other._selectedCombinedId) return false
         if (_selectedSub != other._selectedSub) return false
         if (_selectedObj != other._selectedObj) return false
-        if (targetCombinedId != other.targetCombinedId) return false
+        if (_targetCombinedId != other._targetCombinedId) return false
         if (_targetSub != other._targetSub) return false
         if (_targetObj != other._targetObj) return false
 
@@ -81,17 +87,17 @@ public class IfButtonT private constructor(
     }
 
     override fun hashCode(): Int {
-        var result = selectedCombinedId.hashCode()
+        var result = _selectedCombinedId.hashCode()
         result = 31 * result + _selectedSub.hashCode()
         result = 31 * result + _selectedObj.hashCode()
-        result = 31 * result + targetCombinedId.hashCode()
+        result = 31 * result + _targetCombinedId.hashCode()
         result = 31 * result + _targetSub.hashCode()
         result = 31 * result + _targetObj.hashCode()
         return result
     }
 
-    override fun toString(): String {
-        return "IfButtonT(" +
+    override fun toString(): String =
+        "IfButtonT(" +
             "selectedInterfaceId=$selectedInterfaceId, " +
             "selectedComponentId=$selectedComponentId, " +
             "selectedSub=$selectedSub, " +
@@ -101,5 +107,4 @@ public class IfButtonT private constructor(
             "targetSub=$targetSub, " +
             "targetObj=$targetObj" +
             ")"
-    }
 }

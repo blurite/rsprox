@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.objs
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * OpObj messages are fired when the player interacts with an obj on the ground,
@@ -70,13 +70,12 @@ public class OpObj private constructor(
         return result
     }
 
-    override fun toString(): String {
-        return "OpObj(" +
+    override fun toString(): String =
+        "OpObj(" +
             "id=$id, " +
             "x=$x, " +
             "z=$z, " +
             "controlKey=$controlKey, " +
             "op=$op" +
             ")"
-    }
 }

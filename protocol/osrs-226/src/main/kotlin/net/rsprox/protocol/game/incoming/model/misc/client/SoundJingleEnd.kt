@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.misc.client
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * Sound jingle end packet is sent when a jingle finishes playing in the client,
@@ -24,11 +24,7 @@ public class SoundJingleEnd(
         return jingleId == other.jingleId
     }
 
-    override fun hashCode(): Int {
-        return jingleId
-    }
+    override fun hashCode(): Int = jingleId
 
-    override fun toString(): String {
-        return "SoundJingleEnd(jingleId=$jingleId)"
-    }
+    override fun toString(): String = "SoundJingleEnd(jingleId=$jingleId)"
 }

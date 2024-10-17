@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.locs
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * OpLoc messages are fired when a player clicks one of the five (excluding oploc6)
@@ -70,13 +70,12 @@ public class OpLoc private constructor(
         return result
     }
 
-    override fun toString(): String {
-        return "OpLoc(" +
+    override fun toString(): String =
+        "OpLoc(" +
             "id=$id, " +
             "x=$x, " +
             "z=$z, " +
             "controlKey=$controlKey, " +
             "op=$op" +
             ")"
-    }
 }

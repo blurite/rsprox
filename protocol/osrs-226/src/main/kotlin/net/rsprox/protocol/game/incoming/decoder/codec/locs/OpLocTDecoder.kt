@@ -1,12 +1,12 @@
 package net.rsprox.protocol.game.incoming.decoder.codec.locs
+import net.rsprox.protocol.session.Session
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.util.gCombinedIdAlt1
-import net.rsprox.protocol.ProxyMessageDecoder
-import net.rsprox.protocol.game.incoming.decoder.prot.GameClientProt
 import net.rsprox.protocol.game.incoming.model.locs.OpLocT
-import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.game.incoming.decoder.prot.GameClientProt
+import net.rsprox.protocol.ProxyMessageDecoder
+import net.rsprot.protocol.util.gCombinedIdAlt1
 
 public class OpLocTDecoder : ProxyMessageDecoder<OpLocT> {
     override val prot: ClientProt = GameClientProt.OPLOCT
@@ -15,13 +15,13 @@ public class OpLocTDecoder : ProxyMessageDecoder<OpLocT> {
         buffer: JagByteBuf,
         session: Session,
     ): OpLocT {
-        val controlKey = buffer.g1Alt1() == 1
-        val id = buffer.g2Alt3()
-        val selectedObj = buffer.g2()
+        val x = buffer.g2Alt2()
         val z = buffer.g2Alt1()
-        val x = buffer.g2Alt1()
         val selectedCombinedId = buffer.gCombinedIdAlt1()
-        val selectedSub = buffer.g2Alt1()
+        val controlKey = buffer.g1Alt2() == 1
+        val selectedObj = buffer.g2Alt3()
+        val id = buffer.g2Alt3()
+        val selectedSub = buffer.g2Alt3()
         return OpLocT(
             id,
             x,

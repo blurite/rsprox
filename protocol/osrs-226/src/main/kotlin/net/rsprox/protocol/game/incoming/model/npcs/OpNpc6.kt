@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.npcs
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * OpNpc6 message is fired when a player clicks the 'Examine' option on a npc.
@@ -23,11 +23,7 @@ public class OpNpc6(
         return id == other.id
     }
 
-    override fun hashCode(): Int {
-        return id
-    }
+    override fun hashCode(): Int = id
 
-    override fun toString(): String {
-        return "OpNpc6(id=$id)"
-    }
+    override fun toString(): String = "OpNpc6(id=$id)"
 }

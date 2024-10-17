@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.misc.user
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.misc.user.internal.MovementRequest
 import kotlin.math.cos
 import kotlin.math.sin
@@ -145,8 +145,8 @@ public class MoveMinimapClick private constructor(
         return result
     }
 
-    override fun toString(): String {
-        return "MoveMinimapClick(" +
+    override fun toString(): String =
+        "MoveMinimapClick(" +
             "x=$x, " +
             "z=$z, " +
             "keyCombination=$keyCombination, " +
@@ -156,7 +156,6 @@ public class MoveMinimapClick private constructor(
             "fineX=$fineX, " +
             "fineZ=$fineZ" +
             ")"
-    }
 
     private companion object {
         private const val MAX_ANGLE = 65536.0

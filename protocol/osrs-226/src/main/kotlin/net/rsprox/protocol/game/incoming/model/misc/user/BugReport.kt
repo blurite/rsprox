@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.misc.user
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * Bug report packets are sent when players submit a bug report
@@ -57,11 +57,10 @@ public class BugReport private constructor(
         return result
     }
 
-    override fun toString(): String {
-        return "BugReport(" +
+    override fun toString(): String =
+        "BugReport(" +
             "description='$description', " +
             "instructions='$instructions', " +
             "type=$type" +
             ")"
-    }
 }

@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.misc.user
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * Client cheats are commands sent in chat using the :: prefix,
@@ -23,11 +23,7 @@ public class ClientCheat(
         return command == other.command
     }
 
-    override fun hashCode(): Int {
-        return command.hashCode()
-    }
+    override fun hashCode(): Int = command.hashCode()
 
-    override fun toString(): String {
-        return "ClientCheat(command='$command')"
-    }
+    override fun toString(): String = "ClientCheat(command='$command')"
 }

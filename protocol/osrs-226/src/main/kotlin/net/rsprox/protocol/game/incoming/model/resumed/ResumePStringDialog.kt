@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.resumed
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * String dialogs are sent whenever a player enters a string into
@@ -24,11 +24,7 @@ public class ResumePStringDialog(
         return string == other.string
     }
 
-    override fun hashCode(): Int {
-        return string.hashCode()
-    }
+    override fun hashCode(): Int = string.hashCode()
 
-    override fun toString(): String {
-        return "ResumePStringDialog(string='$string')"
-    }
+    override fun toString(): String = "ResumePStringDialog(string='$string')"
 }

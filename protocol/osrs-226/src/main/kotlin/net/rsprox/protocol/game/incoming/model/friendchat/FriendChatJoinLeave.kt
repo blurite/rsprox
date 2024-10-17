@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.friendchat
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * Friend chat join-leave message is sent when the player joins or leaves
@@ -25,11 +25,7 @@ public class FriendChatJoinLeave(
         return name == other.name
     }
 
-    override fun hashCode(): Int {
-        return name.hashCode()
-    }
+    override fun hashCode(): Int = name.hashCode()
 
-    override fun toString(): String {
-        return "FriendChatJoinLeave(name='$name')"
-    }
+    override fun toString(): String = "FriendChatJoinLeave(name='$name')"
 }

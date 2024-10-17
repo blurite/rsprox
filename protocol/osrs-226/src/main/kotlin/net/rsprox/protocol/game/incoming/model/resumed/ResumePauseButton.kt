@@ -1,20 +1,21 @@
 package net.rsprox.protocol.game.incoming.model.resumed
 
 import net.rsprot.protocol.ClientProtCategory
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprot.protocol.message.toIntOrMinusOne
 import net.rsprot.protocol.util.CombinedId
-import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * Resume pausebutton messages are sent when the player continues
  * a dialogue through the "Click to continue" button
+ * @property combinedId the bitpacked combination of [interfaceId] and [componentId].
  * @property interfaceId the interface on which the component exists
  * @property componentId the component id clicked
  * @property sub the subcomponent id, or -1 if it doesn't exist
  */
 public class ResumePauseButton private constructor(
-    private val combinedId: CombinedId,
+    private val _combinedId: CombinedId,
     private val _sub: UShort,
 ) : IncomingGameMessage {
     public constructor(
@@ -25,10 +26,12 @@ public class ResumePauseButton private constructor(
         sub.toUShort(),
     )
 
+    public val combinedId: Int
+        get() = _combinedId.combinedId
     public val interfaceId: Int
-        get() = combinedId.interfaceId
+        get() = _combinedId.interfaceId
     public val componentId: Int
-        get() = combinedId.componentId
+        get() = _combinedId.componentId
     public val sub: Int
         get() = _sub.toIntOrMinusOne()
     override val category: ClientProtCategory
@@ -40,23 +43,22 @@ public class ResumePauseButton private constructor(
 
         other as ResumePauseButton
 
-        if (combinedId != other.combinedId) return false
+        if (_combinedId != other._combinedId) return false
         if (_sub != other._sub) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = combinedId.hashCode()
+        var result = _combinedId.hashCode()
         result = 31 * result + _sub.hashCode()
         return result
     }
 
-    override fun toString(): String {
-        return "ResumePauseButton(" +
+    override fun toString(): String =
+        "ResumePauseButton(" +
             "interfaceId=$interfaceId, " +
             "componentId=$componentId, " +
             "sub=$sub" +
             ")"
-    }
 }

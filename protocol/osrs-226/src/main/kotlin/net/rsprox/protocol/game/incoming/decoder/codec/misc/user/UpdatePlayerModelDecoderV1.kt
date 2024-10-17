@@ -1,21 +1,21 @@
 package net.rsprox.protocol.game.incoming.decoder.codec.misc.user
+import net.rsprox.protocol.session.Session
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.metadata.Consistent
-import net.rsprox.protocol.ProxyMessageDecoder
+import net.rsprox.protocol.game.incoming.model.misc.user.UpdatePlayerModelV1
 import net.rsprox.protocol.game.incoming.decoder.prot.GameClientProt
-import net.rsprox.protocol.game.incoming.model.misc.user.UpdatePlayerModelOld
-import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.ProxyMessageDecoder
+import net.rsprot.protocol.metadata.Consistent
 
 @Consistent
-public class UpdatePlayerModelOldDecoder : ProxyMessageDecoder<UpdatePlayerModelOld> {
-    override val prot: ClientProt = GameClientProt.UPDATE_PLAYER_MODEL_OLD
+public class UpdatePlayerModelDecoderV1 : ProxyMessageDecoder<UpdatePlayerModelV1> {
+    override val prot: ClientProt = GameClientProt.UPDATE_PLAYER_MODEL_V1
 
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
-    ): UpdatePlayerModelOld {
+    ): UpdatePlayerModelV1 {
         val bodyType = buffer.g1()
         val identKit = ByteArray(7)
         for (i in identKit.indices) {
@@ -25,7 +25,7 @@ public class UpdatePlayerModelOldDecoder : ProxyMessageDecoder<UpdatePlayerModel
         for (i in colours.indices) {
             colours[i] = buffer.g1().toByte()
         }
-        return UpdatePlayerModelOld(
+        return UpdatePlayerModelV1(
             bodyType,
             identKit,
             colours,

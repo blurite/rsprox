@@ -1,10 +1,10 @@
 package net.rsprox.protocol.game.incoming.model.misc.user
 
 import net.rsprot.protocol.ClientProtCategory
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprot.protocol.message.toIntOrMinusOne
 import net.rsprot.protocol.util.CombinedId
-import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * Content recommendation interface clicks happen when a player
@@ -14,6 +14,7 @@ import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
  * Worth noting that the properties here are rough guesses at their naming
  * and the real usage has not been tested in-game.
  * @property crmServerTarget the server target, an integer
+ * @property combinedId the bitpacked combination of [interfaceId] and [componentId].
  * @property interfaceId the interface id clicked on
  * @property componentId the component id clicked on
  * @property sub the subcomponent clicked on, or -1 if none exists
@@ -23,7 +24,7 @@ import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
  */
 public class IfCrmViewClick private constructor(
     public val crmServerTarget: Int,
-    private val combinedId: CombinedId,
+    private val _combinedId: CombinedId,
     private val _sub: UShort,
     public val behaviour1: Int,
     public val behaviour2: Int,
@@ -45,10 +46,12 @@ public class IfCrmViewClick private constructor(
         behaviour3,
     )
 
+    public val combinedId: Int
+        get() = _combinedId.combinedId
     public val interfaceId: Int
-        get() = combinedId.interfaceId
+        get() = _combinedId.interfaceId
     public val componentId: Int
-        get() = combinedId.componentId
+        get() = _combinedId.componentId
     public val sub: Int
         get() = _sub.toIntOrMinusOne()
     override val category: ClientProtCategory
@@ -61,7 +64,7 @@ public class IfCrmViewClick private constructor(
         other as IfCrmViewClick
 
         if (crmServerTarget != other.crmServerTarget) return false
-        if (combinedId != other.combinedId) return false
+        if (_combinedId != other._combinedId) return false
         if (_sub != other._sub) return false
         if (behaviour1 != other.behaviour1) return false
         if (behaviour2 != other.behaviour2) return false
@@ -72,7 +75,7 @@ public class IfCrmViewClick private constructor(
 
     override fun hashCode(): Int {
         var result = crmServerTarget
-        result = 31 * result + combinedId.hashCode()
+        result = 31 * result + _combinedId.hashCode()
         result = 31 * result + _sub.hashCode()
         result = 31 * result + behaviour1
         result = 31 * result + behaviour2
@@ -80,8 +83,8 @@ public class IfCrmViewClick private constructor(
         return result
     }
 
-    override fun toString(): String {
-        return "IfCrmViewClick(" +
+    override fun toString(): String =
+        "IfCrmViewClick(" +
             "crmServerTarget=$crmServerTarget, " +
             "interfaceId=$interfaceId, " +
             "componentId=$componentId, " +
@@ -90,5 +93,4 @@ public class IfCrmViewClick private constructor(
             "behaviour2=$behaviour2, " +
             "behaviour3=$behaviour3" +
             ")"
-    }
 }

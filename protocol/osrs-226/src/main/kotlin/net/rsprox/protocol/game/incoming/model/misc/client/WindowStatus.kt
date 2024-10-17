@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.misc.client
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * Window status is sent first on login, and afterwards whenever
@@ -53,11 +53,10 @@ public class WindowStatus private constructor(
         return result
     }
 
-    override fun toString(): String {
-        return "WindowStatus(" +
+    override fun toString(): String =
+        "WindowStatus(" +
             "windowMode=$windowMode, " +
             "frameWidth=$frameWidth, " +
             "frameHeight=$frameHeight" +
             ")"
-    }
 }

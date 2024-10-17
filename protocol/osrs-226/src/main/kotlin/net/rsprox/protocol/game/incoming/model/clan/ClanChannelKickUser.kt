@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.clan
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * Clan kick messages are sent when a player with sufficient privileges
@@ -57,11 +57,10 @@ public class ClanChannelKickUser private constructor(
         return result
     }
 
-    override fun toString(): String {
-        return "ClanChannelKickUser(" +
+    override fun toString(): String =
+        "ClanChannelKickUser(" +
             "name='$name', " +
             "clanId=$clanId, " +
             "memberIndex=$memberIndex" +
             ")"
-    }
 }

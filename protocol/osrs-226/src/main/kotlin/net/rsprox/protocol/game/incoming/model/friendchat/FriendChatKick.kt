@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.friendchat
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * Friend chat kick is sent when the owner requests to click another
@@ -24,11 +24,7 @@ public class FriendChatKick(
         return name == other.name
     }
 
-    override fun hashCode(): Int {
-        return name.hashCode()
-    }
+    override fun hashCode(): Int = name.hashCode()
 
-    override fun toString(): String {
-        return "FriendChatKick(name='$name')"
-    }
+    override fun toString(): String = "FriendChatKick(name='$name')"
 }

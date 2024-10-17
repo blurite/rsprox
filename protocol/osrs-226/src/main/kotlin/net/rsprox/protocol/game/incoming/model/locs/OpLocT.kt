@@ -1,10 +1,10 @@
 package net.rsprox.protocol.game.incoming.model.locs
 
 import net.rsprot.protocol.ClientProtCategory
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprot.protocol.message.toIntOrMinusOne
 import net.rsprot.protocol.util.CombinedId
-import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * OpLocT messages are fired whenever an interface component is targeted
@@ -14,6 +14,7 @@ import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
  * @property x the absolute x coordinate of the south-western corner of the loc
  * @property z the absolute z coordinate of the south-western corner of the loc
  * @property controlKey whether the control key was held down, used to invert movement speed
+ * @property selectedCombinedId the bitpacked combination of [selectedInterfaceId] and [selectedComponentId].
  * @property selectedInterfaceId the interface id of the selected component
  * @property selectedComponentId the component id being used on the loc
  * @property selectedSub the subcomponent of the selected component, or -1 of none exists
@@ -25,7 +26,7 @@ public class OpLocT private constructor(
     private val _x: UShort,
     private val _z: UShort,
     public val controlKey: Boolean,
-    private val selectedCombinedId: CombinedId,
+    private val _selectedCombinedId: CombinedId,
     private val _selectedSub: UShort,
     private val _selectedObj: UShort,
 ) : IncomingGameMessage {
@@ -53,10 +54,12 @@ public class OpLocT private constructor(
         get() = _x.toInt()
     public val z: Int
         get() = _z.toInt()
+    public val selectedCombinedId: Int
+        get() = _selectedCombinedId.combinedId
     public val selectedInterfaceId: Int
-        get() = selectedCombinedId.interfaceId
+        get() = _selectedCombinedId.interfaceId
     public val selectedComponentId: Int
-        get() = selectedCombinedId.componentId
+        get() = _selectedCombinedId.componentId
     public val selectedSub: Int
         get() = _selectedSub.toIntOrMinusOne()
     public val selectedObj: Int
@@ -72,7 +75,7 @@ public class OpLocT private constructor(
 
         if (_id != other._id) return false
         if (controlKey != other.controlKey) return false
-        if (selectedCombinedId != other.selectedCombinedId) return false
+        if (_selectedCombinedId != other._selectedCombinedId) return false
         if (_selectedSub != other._selectedSub) return false
         if (_selectedObj != other._selectedObj) return false
 
@@ -82,14 +85,14 @@ public class OpLocT private constructor(
     override fun hashCode(): Int {
         var result = _id.hashCode()
         result = 31 * result + controlKey.hashCode()
-        result = 31 * result + selectedCombinedId.hashCode()
+        result = 31 * result + _selectedCombinedId.hashCode()
         result = 31 * result + _selectedSub.hashCode()
         result = 31 * result + _selectedObj.hashCode()
         return result
     }
 
-    override fun toString(): String {
-        return "OpLocT(" +
+    override fun toString(): String =
+        "OpLocT(" +
             "id=$id, " +
             "x=$x, " +
             "z=$z, " +
@@ -99,5 +102,4 @@ public class OpLocT private constructor(
             "selectedSub=$selectedSub, " +
             "selectedObj=$selectedObj" +
             ")"
-    }
 }

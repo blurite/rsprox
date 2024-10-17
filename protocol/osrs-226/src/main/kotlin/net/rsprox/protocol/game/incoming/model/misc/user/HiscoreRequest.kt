@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.misc.user
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * A hiscore request message is sent when a player does a lookup of another
@@ -55,11 +55,10 @@ public class HiscoreRequest(
         return result
     }
 
-    override fun toString(): String {
-        return "HiscoreRequest(" +
+    override fun toString(): String =
+        "HiscoreRequest(" +
             "name='$name', " +
             "type=$type, " +
             "requestId=$requestId" +
             ")"
-    }
 }

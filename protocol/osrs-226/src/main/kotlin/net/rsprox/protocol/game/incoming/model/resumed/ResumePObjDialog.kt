@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.resumed
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * Resume p obj dialogue is sent when the user selects an obj from the
@@ -25,11 +25,7 @@ public class ResumePObjDialog(
         return obj == other.obj
     }
 
-    override fun hashCode(): Int {
-        return obj
-    }
+    override fun hashCode(): Int = obj
 
-    override fun toString(): String {
-        return "ResumePObjDialog(obj=$obj)"
-    }
+    override fun toString(): String = "ResumePObjDialog(obj=$obj)"
 }

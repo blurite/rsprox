@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.misc.user
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * Set chat filter settings is sent when the player changes either their
@@ -71,11 +71,10 @@ public class SetChatFilterSettings private constructor(
         return result
     }
 
-    override fun toString(): String {
-        return "SetChatFilterSettings(" +
+    override fun toString(): String =
+        "SetChatFilterSettings(" +
             "publicChatFilter=$publicChatFilter, " +
             "privateChatFilter=$privateChatFilter, " +
             "tradeChatFilter=$tradeChatFilter" +
             ")"
-    }
 }

@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.events
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * Camera position events are sent whenever the client's camera changes position,
@@ -48,10 +48,9 @@ public class EventCameraPosition private constructor(
         return result
     }
 
-    override fun toString(): String {
-        return "EventCameraPosition(" +
+    override fun toString(): String =
+        "EventCameraPosition(" +
             "angleX=$angleX, " +
             "angleY=$angleY" +
             ")"
-    }
 }

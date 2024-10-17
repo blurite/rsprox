@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.locs
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * OpLoc6 message is fired whenever a player clicks examine on a loc.
@@ -24,11 +24,7 @@ public class OpLoc6(
         return id == other.id
     }
 
-    override fun hashCode(): Int {
-        return id
-    }
+    override fun hashCode(): Int = id
 
-    override fun toString(): String {
-        return "OpLoc6(id=$id)"
-    }
+    override fun toString(): String = "OpLoc6(id=$id)"
 }

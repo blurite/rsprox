@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.misc.client
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * Sends a ping reply to the server whenever the server requests it.
@@ -60,12 +60,11 @@ public class SendPingReply private constructor(
         return result
     }
 
-    override fun toString(): String {
-        return "SendPingReply(" +
+    override fun toString(): String =
+        "SendPingReply(" +
             "fps=$fps, " +
             "gcPercentTime=$gcPercentTime, " +
             "value1=$value1, " +
             "value2=$value2" +
             ")"
-    }
 }

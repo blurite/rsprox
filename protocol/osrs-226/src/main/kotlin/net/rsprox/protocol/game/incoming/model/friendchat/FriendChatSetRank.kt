@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.friendchat
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * Friend chat set rank message is sent when the owner of a friend chat
@@ -46,10 +46,9 @@ public class FriendChatSetRank private constructor(
         return result
     }
 
-    override fun toString(): String {
-        return "FriendChatSetRank(" +
+    override fun toString(): String =
+        "FriendChatSetRank(" +
             "name='$name', " +
             "rank=$rank" +
             ")"
-    }
 }

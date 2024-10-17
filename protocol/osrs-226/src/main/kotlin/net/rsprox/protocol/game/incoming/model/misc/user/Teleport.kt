@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.misc.user
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * Teleport packets are sent in multiple possible scenarios:
@@ -72,12 +72,11 @@ public class Teleport private constructor(
         return result
     }
 
-    override fun toString(): String {
-        return "Teleport(" +
+    override fun toString(): String =
+        "Teleport(" +
             "oculusSyncValue=$oculusSyncValue, " +
             "x=$x, " +
             "z=$z, " +
             "level=$level" +
             ")"
-    }
 }

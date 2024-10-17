@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.social
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * Friend list deletion messages are sent whenever the player
@@ -24,11 +24,7 @@ public class FriendListDel(
         return name == other.name
     }
 
-    override fun hashCode(): Int {
-        return name.hashCode()
-    }
+    override fun hashCode(): Int = name.hashCode()
 
-    override fun toString(): String {
-        return "FriendListDel(name='$name')"
-    }
+    override fun toString(): String = "FriendListDel(name='$name')"
 }

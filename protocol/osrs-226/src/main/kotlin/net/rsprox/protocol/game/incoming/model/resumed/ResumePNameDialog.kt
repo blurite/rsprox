@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.resumed
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * Name dialogs are sent whenever a player enters the name of a player
@@ -25,11 +25,7 @@ public class ResumePNameDialog(
         return name == other.name
     }
 
-    override fun hashCode(): Int {
-        return name.hashCode()
-    }
+    override fun hashCode(): Int = name.hashCode()
 
-    override fun toString(): String {
-        return "ResumePNameDialog(name='$name')"
-    }
+    override fun toString(): String = "ResumePNameDialog(name='$name')"
 }

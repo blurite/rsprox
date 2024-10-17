@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.resumed
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * Resume p count dialogue is sent whenever a player enters an
@@ -27,11 +27,7 @@ public class ResumePCountDialog(
         return count == other.count
     }
 
-    override fun hashCode(): Int {
-        return count
-    }
+    override fun hashCode(): Int = count
 
-    override fun toString(): String {
-        return "ResumePCountDialog(count=$count)"
-    }
+    override fun toString(): String = "ResumePCountDialog(count=$count)"
 }

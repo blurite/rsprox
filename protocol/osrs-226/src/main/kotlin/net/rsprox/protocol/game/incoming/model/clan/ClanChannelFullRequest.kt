@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.clan
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
 
 /**
  * Clan channel requests are made whenever the server sends a clanchannel
@@ -27,11 +27,7 @@ public class ClanChannelFullRequest(
         return clanId == other.clanId
     }
 
-    override fun hashCode(): Int {
-        return clanId
-    }
+    override fun hashCode(): Int = clanId
 
-    override fun toString(): String {
-        return "ClanChannelFullRequest(clanId=$clanId)"
-    }
+    override fun toString(): String = "ClanChannelFullRequest(clanId=$clanId)"
 }
