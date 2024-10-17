@@ -1,15 +1,15 @@
-package net.rsprox.protocol.game.outgoing.model.info.npcinfo
+package net.rsprox.protocol.game.outgoing.model.info.worldentityinfo
 
 import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
-public class NpcInfo(
-    public val updates: Map<Int, NpcUpdateType>,
+public class WorldEntityInfoV3(
+    public val updates: Map<Int, WorldEntityUpdateType>,
 ) : IncomingServerGameMessage {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as NpcInfo
+        other as WorldEntityInfoV3
 
         return updates == other.updates
     }
@@ -19,6 +19,6 @@ public class NpcInfo(
     }
 
     override fun toString(): String {
-        return "NpcInfo(updates=$updates)"
+        return "WorldEntityInfoV3(updates=$updates)"
     }
 }

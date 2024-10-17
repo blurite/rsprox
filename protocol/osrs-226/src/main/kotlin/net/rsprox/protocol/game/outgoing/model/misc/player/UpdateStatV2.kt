@@ -13,7 +13,7 @@ import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
  * @property experience player's experience in the skill,
  * in its integer form - expected value range 0 to 200,000,000.
  */
-public class UpdateStat private constructor(
+public class UpdateStatV2 private constructor(
     private val _stat: UByte,
     private val _currentLevel: UByte,
     private val _invisibleBoostedLevel: UByte,
@@ -42,7 +42,7 @@ public class UpdateStat private constructor(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as UpdateStat
+        other as UpdateStatV2
 
         if (_stat != other._stat) return false
         if (_currentLevel != other._currentLevel) return false
@@ -61,7 +61,7 @@ public class UpdateStat private constructor(
     }
 
     override fun toString(): String {
-        return "UpdateStat(" +
+        return "UpdateStatV2(" +
             "stat=$stat, " +
             "currentLevel=$currentLevel, " +
             "invisibleBoostedLevel=$invisibleBoostedLevel, " +

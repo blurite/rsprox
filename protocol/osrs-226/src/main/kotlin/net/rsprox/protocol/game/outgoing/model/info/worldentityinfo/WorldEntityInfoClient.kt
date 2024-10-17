@@ -12,11 +12,11 @@ public class WorldEntityInfoClient {
     public fun decode(
         buffer: JagByteBuf,
         baseCoord: CoordGrid,
-    ): WorldEntityInfo {
+    ): WorldEntityInfoV3 {
         updates.clear()
         decodeHighResolution(buffer)
         decodeLowResolution(buffer, baseCoord)
-        return WorldEntityInfo(updates.toMap())
+        return WorldEntityInfoV3(updates.toMap())
     }
 
     private fun decodeHighResolution(buffer: JagByteBuf) {

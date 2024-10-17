@@ -10,21 +10,21 @@ import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
  * is used. Other types will use the traditional priority system.
  * @property type the camera target type to focus on.
  */
-public class CamTargetOld(
+public class CamTargetV2(
     public val type: CamTargetType,
 ) : IncomingServerGameMessage {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as CamTargetOld
+        other as CamTargetV2
 
         return type == other.type
     }
 
     override fun hashCode(): Int = type.hashCode()
 
-    override fun toString(): String = "CamTargetOld(type=$type)"
+    override fun toString(): String = "CamTargetV2(type=$type)"
 
     /**
      * A sealed interface for various camera target types.
@@ -92,16 +92,23 @@ public class CamTargetOld(
     /**
      * Camera target type for world entities. This will focus the camera on a specific world entity.
      * If the world entity by the specified [index] cannot be found, the camera will be set back on
-     * local player.
+     * local player. If a player index is provided, the client will try to look up that player in the
+     * root player's current world entity and lock the camera onto them.
      * Additionally, depth buffering (z-buffer) will be enabled when this type of camera target is used.
      * @property index the index of the world entity who to set the camera on.
+     * @property cameraLockedPlayerIndex the index of the player on the local player's world entity whom
+     * to lock the camera onto.
      */
     public class WorldEntityTarget(
         public val index: Int,
+        public val cameraLockedPlayerIndex: Int,
     ) : CamTargetType {
         init {
             require(index in 0..<2048) {
                 "Index must be in range of 0..<2048"
+            }
+            require(cameraLockedPlayerIndex == -1 || cameraLockedPlayerIndex in 0..<2048) {
+                "Player index must be -1, or in range of 0..<2048"
             }
         }
 
@@ -111,11 +118,22 @@ public class CamTargetOld(
 
             other as WorldEntityTarget
 
-            return index == other.index
+            if (index != other.index) return false
+            if (cameraLockedPlayerIndex != other.cameraLockedPlayerIndex) return false
+
+            return true
         }
 
-        override fun hashCode(): Int = index
+        override fun hashCode(): Int {
+            var result = index
+            result = 31 * result + cameraLockedPlayerIndex
+            return result
+        }
 
-        override fun toString(): String = "WorldEntityTarget(index=$index)"
+        override fun toString(): String =
+            "WorldEntityTarget(" +
+                "index=$index, " +
+                "cameraLockedPlayerIndex=$cameraLockedPlayerIndex" +
+                ")"
     }
 }

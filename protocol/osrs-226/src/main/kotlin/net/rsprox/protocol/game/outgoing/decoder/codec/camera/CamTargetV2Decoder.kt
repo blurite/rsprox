@@ -5,28 +5,28 @@ import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.metadata.Consistent
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
-import net.rsprox.protocol.game.outgoing.model.camera.CamTarget
+import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV2
 import net.rsprox.protocol.session.Session
 
 @Consistent
-public class CamTargetDecoder : ProxyMessageDecoder<CamTarget> {
-    override val prot: ClientProt = GameServerProt.CAM_TARGET
+public class CamTargetV2Decoder : ProxyMessageDecoder<CamTargetV2> {
+    override val prot: ClientProt = GameServerProt.CAM_TARGET_V2
 
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
-    ): CamTarget {
+    ): CamTargetV2 {
         val type = buffer.g1()
         val index = buffer.g2()
         val cameraLockedPlayerIndex = buffer.g2()
-        return CamTarget(
+        return CamTargetV2(
             when (type) {
                 0 ->
-                    CamTarget.PlayerCamTarget(index)
+                    CamTargetV2.PlayerCamTarget(index)
                 1 ->
-                    CamTarget.NpcCamTarget(index)
+                    CamTargetV2.NpcCamTarget(index)
                 2 ->
-                    CamTarget.WorldEntityTarget(
+                    CamTargetV2.WorldEntityTarget(
                         index,
                         cameraLockedPlayerIndex,
                     )

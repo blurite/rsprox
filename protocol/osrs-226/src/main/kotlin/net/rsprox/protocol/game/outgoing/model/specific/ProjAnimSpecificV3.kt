@@ -64,7 +64,7 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildAre
  * along with [zoneZ] + [zInZone] to re-create the effects of a normal zone packet.
  */
 @Suppress("DuplicatedCode")
-public class ProjAnimSpecific private constructor(
+public class ProjAnimSpecificV3 private constructor(
     private val _id: UShort,
     private val _startHeight: UByte,
     private val _endHeight: UByte,
@@ -208,7 +208,7 @@ public class ProjAnimSpecific private constructor(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as ProjAnimSpecific
+        other as ProjAnimSpecificV3
 
         if (_id != other._id) return false
         if (_startHeight != other._startHeight) return false
@@ -243,7 +243,7 @@ public class ProjAnimSpecific private constructor(
     }
 
     override fun toString(): String {
-        return "ProjAnimSpecific(" +
+        return "ProjAnimSpecificV3(" +
             "id=$id, " +
             "startHeight=$startHeight, " +
             "endHeight=$endHeight, " +

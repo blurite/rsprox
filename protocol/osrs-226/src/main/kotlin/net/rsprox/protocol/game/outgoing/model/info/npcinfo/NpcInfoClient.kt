@@ -51,7 +51,7 @@ public class NpcInfoClient(
         buffer: ByteBuf,
         large: Boolean,
         baseCoord: CoordGrid,
-    ): NpcInfo {
+    ): NpcInfoV5 {
         deletedNPCCount = 0
         extraUpdateNPCCount = 0
         buffer.toBitBuf().use { bitBuffer ->
@@ -116,7 +116,7 @@ public class NpcInfoClient(
         }
         this.updates.clear()
         this.extendedInfoBlocks.clear()
-        return NpcInfo(result)
+        return NpcInfoV5(result)
     }
 
     private fun processExtendedInfo(buffer: JagByteBuf) {
