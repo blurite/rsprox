@@ -18,7 +18,7 @@ public class MapProjAnimDecoder : ProxyMessageDecoder<MapProjAnim> {
         val deltaX = buffer.g1()
         val endTime = buffer.g2Alt1()
         val deltaZ = buffer.g1Alt2()
-        val targetIndex = buffer.g3()
+        val targetIndex = buffer.g3s()
         val angle = buffer.g1()
         val coordInZone = CoordInZone(buffer.g1Alt3())
         val startHeight = buffer.g1()
@@ -26,7 +26,7 @@ public class MapProjAnimDecoder : ProxyMessageDecoder<MapProjAnim> {
         val startTime = buffer.g2Alt2()
         val progress = buffer.g2()
         val endHeight = buffer.g1Alt2()
-        val sourceIndex = buffer.g3Alt1()
+        val sourceIndex = buffer.g3sAlt1()
         return MapProjAnim(
             id,
             startHeight,
