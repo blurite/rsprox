@@ -1,11 +1,10 @@
 package net.rsprox.protocol.game.incoming.decoder.codec.misc.client
-import net.rsprox.protocol.session.Session
-
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprox.protocol.game.incoming.model.misc.client.SendPingReply
-import net.rsprox.protocol.game.incoming.decoder.prot.GameClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
+import net.rsprox.protocol.game.incoming.decoder.prot.GameClientProt
+import net.rsprox.protocol.game.incoming.model.misc.client.SendPingReply
+import net.rsprox.protocol.session.Session
 
 public class SendPingReplyDecoder : ProxyMessageDecoder<SendPingReply> {
     override val prot: ClientProt = GameClientProt.SEND_PING_REPLY

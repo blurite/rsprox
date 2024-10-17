@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.npcs
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * OpNpc6 message is fired when a player clicks the 'Examine' option on a npc.

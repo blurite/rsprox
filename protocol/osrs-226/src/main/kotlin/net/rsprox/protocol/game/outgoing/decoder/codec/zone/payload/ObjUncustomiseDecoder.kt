@@ -4,9 +4,7 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
-import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjCustomise
 import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjUncustomise
-import net.rsprox.protocol.game.outgoing.model.zone.payload.SoundArea
 import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInZone
 import net.rsprox.protocol.session.Session
 

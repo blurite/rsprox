@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.messaging
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * Message private events are sent when a player writes a private

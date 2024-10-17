@@ -15,6 +15,8 @@ import net.rsprox.protocol.game.outgoing.model.camera.CamRotateBy
 import net.rsprox.protocol.game.outgoing.model.camera.CamRotateTo
 import net.rsprox.protocol.game.outgoing.model.camera.CamShake
 import net.rsprox.protocol.game.outgoing.model.camera.CamSmoothReset
+import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV1
+import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV2
 import net.rsprox.protocol.game.outgoing.model.camera.OculusSync
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelDelta
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelFull
@@ -30,6 +32,7 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChanne
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV2
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelSingleUser
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV3
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityUpdateType
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
@@ -74,9 +77,11 @@ import net.rsprox.protocol.game.outgoing.model.misc.client.HiscoreReply
 import net.rsprox.protocol.game.outgoing.model.misc.client.MinimapToggle
 import net.rsprox.protocol.game.outgoing.model.misc.client.ReflectionChecker
 import net.rsprox.protocol.game.outgoing.model.misc.client.ResetAnims
+import net.rsprox.protocol.game.outgoing.model.misc.client.ResetInteractionMode
 import net.rsprox.protocol.game.outgoing.model.misc.client.SendPing
 import net.rsprox.protocol.game.outgoing.model.misc.client.ServerTickEnd
 import net.rsprox.protocol.game.outgoing.model.misc.client.SetHeatmapEnabled
+import net.rsprox.protocol.game.outgoing.model.misc.client.SetInteractionMode
 import net.rsprox.protocol.game.outgoing.model.misc.client.SiteSettings
 import net.rsprox.protocol.game.outgoing.model.misc.client.UpdateRebootTimer
 import net.rsprox.protocol.game.outgoing.model.misc.client.UpdateUid192
@@ -90,6 +95,8 @@ import net.rsprox.protocol.game.outgoing.model.misc.player.SetPlayerOp
 import net.rsprox.protocol.game.outgoing.model.misc.player.TriggerOnDialogAbort
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunEnergy
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunWeight
+import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV1
+import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV2
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStockMarketSlot
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateTradingPost
 import net.rsprox.protocol.game.outgoing.model.social.FriendListLoaded
@@ -99,6 +106,8 @@ import net.rsprox.protocol.game.outgoing.model.social.UpdateFriendList
 import net.rsprox.protocol.game.outgoing.model.social.UpdateIgnoreList
 import net.rsprox.protocol.game.outgoing.model.sound.MidiJingle
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongStop
+import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV1
+import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV2
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongWithSecondary
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSwap
 import net.rsprox.protocol.game.outgoing.model.sound.SynthSound
@@ -109,6 +118,7 @@ import net.rsprox.protocol.game.outgoing.model.specific.NpcHeadIconSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.NpcSpotAnimSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.PlayerAnimSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.PlayerSpotAnimSpecific
+import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV3
 import net.rsprox.protocol.game.outgoing.model.unknown.UnknownString
 import net.rsprox.protocol.game.outgoing.model.varp.VarpLarge
 import net.rsprox.protocol.game.outgoing.model.varp.VarpReset
@@ -127,9 +137,12 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.MapAnim
 import net.rsprox.protocol.game.outgoing.model.zone.payload.MapProjAnim
 import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjAdd
 import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjCount
+import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjCustomise
 import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjDel
 import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjEnabledOps
+import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjUncustomise
 import net.rsprox.protocol.game.outgoing.model.zone.payload.SoundArea
+import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildArea
 import net.rsprox.protocol.reflection.ReflectionCheck
 import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.filters.PropertyFilter
@@ -185,19 +198,6 @@ import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.concurrent.TimeUnit
-import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV1
-import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV2
-import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV3
-import net.rsprox.protocol.game.outgoing.model.misc.client.ResetInteractionMode
-import net.rsprox.protocol.game.outgoing.model.misc.client.SetInteractionMode
-import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV1
-import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV2
-import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV1
-import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV2
-import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV3
-import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjCustomise
-import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjUncustomise
-import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildArea
 
 @Suppress("SpellCheckingInspection", "DuplicatedCode")
 public class BaseServerPacketTranscriber(
@@ -352,9 +352,10 @@ public class BaseServerPacketTranscriber(
         if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
         if (coordInBuildArea.invalid()) {
-            root.any("outofboundsbuildareacoord",
+            root.any(
+                "outofboundsbuildareacoord",
                 "[zoneX=${coordInBuildArea.zoneX}, xInZone=${coordInBuildArea.xInZone}, " +
-                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]"
+                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]",
             )
         } else {
             root.coordGrid(buildAreaCoordGrid(coordInBuildArea.xInBuildArea, coordInBuildArea.zInBuildArea))
@@ -368,9 +369,10 @@ public class BaseServerPacketTranscriber(
         if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
         if (coordInBuildArea.invalid()) {
-            root.any("outofboundsbuildareacoord",
+            root.any(
+                "outofboundsbuildareacoord",
                 "[zoneX=${coordInBuildArea.zoneX}, xInZone=${coordInBuildArea.xInZone}, " +
-                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]"
+                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]",
             )
         } else {
             root.coordGrid(buildAreaCoordGrid(coordInBuildArea.xInBuildArea, coordInBuildArea.zInBuildArea))
@@ -389,9 +391,10 @@ public class BaseServerPacketTranscriber(
         if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
         if (coordInBuildArea.invalid()) {
-            root.any("outofboundsbuildareacoord",
+            root.any(
+                "outofboundsbuildareacoord",
                 "[zoneX=${coordInBuildArea.zoneX}, xInZone=${coordInBuildArea.xInZone}, " +
-                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]"
+                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]",
             )
         } else {
             root.coordGrid(buildAreaCoordGrid(coordInBuildArea.xInBuildArea, coordInBuildArea.zInBuildArea))
@@ -405,9 +408,10 @@ public class BaseServerPacketTranscriber(
         if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
         if (coordInBuildArea.invalid()) {
-            root.any("outofboundsbuildareacoord",
+            root.any(
+                "outofboundsbuildareacoord",
                 "[zoneX=${coordInBuildArea.zoneX}, xInZone=${coordInBuildArea.xInZone}, " +
-                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]"
+                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]",
             )
         } else {
             root.coordGrid(buildAreaCoordGrid(coordInBuildArea.xInBuildArea, coordInBuildArea.zInBuildArea))
@@ -423,9 +427,10 @@ public class BaseServerPacketTranscriber(
         if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
         if (coordInBuildArea.invalid()) {
-            root.any("outofboundsbuildareacoord",
+            root.any(
+                "outofboundsbuildareacoord",
                 "[zoneX=${coordInBuildArea.zoneX}, xInZone=${coordInBuildArea.xInZone}, " +
-                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]"
+                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]",
             )
         } else {
             root.coordGrid(buildAreaCoordGrid(coordInBuildArea.xInBuildArea, coordInBuildArea.zInBuildArea))
@@ -2160,12 +2165,15 @@ public class BaseServerPacketTranscriber(
         if (!filters[PropertyFilter.LOC_ANIM_SPECIFIC]) return omit()
         root.scriptVarType("id", ScriptVarType.SEQ, message.id)
         if (message.coordInBuildArea.invalid()) {
-            root.any("outofboundsbuildareacoord",
+            root.any(
+                "outofboundsbuildareacoord",
                 "[zoneX=${message.coordInBuildArea.zoneX}, xInZone=${message.coordInBuildArea.xInZone}, " +
-                    "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]"
+                    "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]",
             )
         } else {
-            root.coordGrid(buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea))
+            root.coordGrid(
+                buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea),
+            )
         }
         root.scriptVarType("shape", ScriptVarType.LOC_SHAPE, message.shape)
         root.int("rotation", message.rotation)
@@ -2177,12 +2185,15 @@ public class BaseServerPacketTranscriber(
         root.filteredInt("delay", message.delay, 0)
         root.filteredInt("height", message.height, 0)
         if (message.coordInBuildArea.invalid()) {
-            root.any("outofboundsbuildareacoord",
+            root.any(
+                "outofboundsbuildareacoord",
                 "[zoneX=${message.coordInBuildArea.zoneX}, xInZone=${message.coordInBuildArea.xInZone}, " +
-                    "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]"
+                    "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]",
             )
         } else {
-            root.coordGrid(buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea))
+            root.coordGrid(
+                buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea),
+            )
         }
     }
 
@@ -2236,12 +2247,15 @@ public class BaseServerPacketTranscriber(
         root.int("endheight", message.endHeight)
         root.group("SOURCE") {
             if (message.coordInBuildArea.invalid()) {
-                any("outofboundsbuildareacoord",
+                any(
+                    "outofboundsbuildareacoord",
                     "[zoneX=${message.coordInBuildArea.zoneX}, xInZone=${message.coordInBuildArea.xInZone}, " +
-                        "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]"
+                        "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]",
                 )
             } else {
-                coordGrid(buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea))
+                coordGrid(
+                    buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea),
+                )
             }
         }
         root.group("TARGET") {
@@ -2249,7 +2263,7 @@ public class BaseServerPacketTranscriber(
                 any(
                     "outofboundsbuildareacoord",
                     "[zoneX=${message.coordInBuildArea.zoneX}, xInZone=${message.coordInBuildArea.xInZone}, " +
-                        "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]"
+                        "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]",
                 )
             } else {
                 coordGrid(
@@ -2804,18 +2818,20 @@ public class BaseServerPacketTranscriber(
         } else {
             root.worldentity(message.worldId)
         }
-        val tileInteractionMode = when (message.tileInteractionMode) {
-            0 -> "disabled"
-            1 -> "walk"
-            2 -> "heading"
-            else -> "unknown (id: ${message.tileInteractionMode})"
-        }
-        val entityInteractionMode = when (message.entityInteractionMode) {
-            0 -> "disabled"
-            1 -> "enabled"
-            2 -> "examine"
-            else -> "unknown (id: ${message.entityInteractionMode})"
-        }
+        val tileInteractionMode =
+            when (message.tileInteractionMode) {
+                0 -> "disabled"
+                1 -> "walk"
+                2 -> "heading"
+                else -> "unknown (id: ${message.tileInteractionMode})"
+            }
+        val entityInteractionMode =
+            when (message.entityInteractionMode) {
+                0 -> "disabled"
+                1 -> "enabled"
+                2 -> "examine"
+                else -> "unknown (id: ${message.entityInteractionMode})"
+            }
         root.any("tileinteractionmode", tileInteractionMode)
         root.any("entityinteractionmode", entityInteractionMode)
     }

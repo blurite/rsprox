@@ -1,12 +1,11 @@
 package net.rsprox.protocol.game.incoming.decoder.codec.misc.user
-import net.rsprox.protocol.session.Session
-
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprox.protocol.game.incoming.model.misc.user.IfCrmViewClick
-import net.rsprox.protocol.game.incoming.decoder.prot.GameClientProt
-import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprot.protocol.util.gCombinedIdAlt2
+import net.rsprox.protocol.ProxyMessageDecoder
+import net.rsprox.protocol.game.incoming.decoder.prot.GameClientProt
+import net.rsprox.protocol.game.incoming.model.misc.user.IfCrmViewClick
+import net.rsprox.protocol.session.Session
 
 public class IfCrmViewClickDecoder : ProxyMessageDecoder<IfCrmViewClick> {
     override val prot: ClientProt = GameClientProt.IF_CRMVIEW_CLICK

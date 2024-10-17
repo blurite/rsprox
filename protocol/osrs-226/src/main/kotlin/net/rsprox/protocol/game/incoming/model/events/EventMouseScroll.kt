@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.events
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * Mouse scroll message is sent whenever the user scrolls using their mouse.

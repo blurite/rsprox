@@ -449,7 +449,7 @@ public enum class PropertyFilter(
         searchTerms = "window,status,width,height,mode",
     ),
     SET_HEADING(
-      CLIENT_TO_SERVER,
+        CLIENT_TO_SERVER,
         OTHER,
         "Set Heading",
         false,
@@ -708,7 +708,7 @@ public enum class PropertyFilter(
         ZONES,
         "Obj Customise",
         true,
-        searchTerms = "objs,customise,model,recolour,recolor,retexture,zone,items"
+        searchTerms = "objs,customise,model,recolour,recolor,retexture,zone,items",
     ),
     MAP_ANIM(
         SERVER_TO_CLIENT,

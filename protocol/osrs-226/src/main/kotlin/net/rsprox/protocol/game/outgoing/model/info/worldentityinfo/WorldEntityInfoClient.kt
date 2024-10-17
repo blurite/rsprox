@@ -99,11 +99,12 @@ public class WorldEntityInfoClient {
                 angle = decodeAngledCoordFineComponent(buffer, bitpackedAngledCoordFineOpcodes, 6)
                 coordFine = CoordFine(coordFine.x + deltaX, coordFine.y + deltaY, coordFine.z + deltaZ)
             }
-            coordFine = CoordFine(
-                (baseCoord.x shl 7) + coordFine.x,
-                coordFine.y,
-                (baseCoord.z shl 7) + coordFine.z,
-            )
+            coordFine =
+                CoordFine(
+                    (baseCoord.x shl 7) + coordFine.x,
+                    coordFine.y,
+                    (baseCoord.z shl 7) + coordFine.z,
+                )
             val worldEntity =
                 WorldEntity(
                     index,

@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.social
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * Ignore list addition events are sent whenever the player

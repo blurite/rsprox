@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.events
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * Mouse click messages are sent whenever the user clicks with the

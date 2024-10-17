@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.misc.user
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * Set heading packet is used to update the current heading/angle/direction of the worldentity.

@@ -277,7 +277,7 @@ public class NpcInfoClient(
             }
         }
 
-        val headbarCount = buffer.g1Alt1()
+        val headbarCount = buffer.g1Alt3()
         val headbars = ArrayList<Headbar>(headbarCount)
         for (i in 0..<headbarCount) {
             val type = buffer.gSmart1or2()

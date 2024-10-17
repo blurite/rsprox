@@ -2,7 +2,6 @@ package net.rsprox.transcriber.state
 
 import net.rsprox.protocol.common.CoordFine
 import net.rsprox.protocol.common.CoordGrid
-import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityMoveSpeed
 import net.rsprox.protocol.game.outgoing.model.map.util.BuildArea
 import net.rsprox.shared.settings.Setting
 import net.rsprox.shared.settings.SettingSet

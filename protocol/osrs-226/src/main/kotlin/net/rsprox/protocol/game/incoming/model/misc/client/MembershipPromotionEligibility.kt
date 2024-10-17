@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.misc.client
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * An enhanced-client-only packet to inform the server of the status of

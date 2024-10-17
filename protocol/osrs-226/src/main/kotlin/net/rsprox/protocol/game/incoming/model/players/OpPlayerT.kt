@@ -1,10 +1,10 @@
 package net.rsprox.protocol.game.incoming.model.players
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprot.protocol.message.toIntOrMinusOne
 import net.rsprot.protocol.util.CombinedId
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * OpPlayerT messages are fired whenever an interface component is targeted

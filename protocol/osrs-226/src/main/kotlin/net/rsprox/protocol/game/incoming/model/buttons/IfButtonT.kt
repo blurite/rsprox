@@ -1,10 +1,10 @@
 package net.rsprox.protocol.game.incoming.model.buttons
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprot.protocol.message.toIntOrMinusOne
 import net.rsprot.protocol.util.CombinedId
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * If button target messages are used whenever one button is targeted against another.

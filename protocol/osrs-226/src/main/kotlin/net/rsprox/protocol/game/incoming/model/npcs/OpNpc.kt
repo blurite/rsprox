@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.npcs
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * OpNpc messages are sent when a player clicks one of the five primary options on a NPC.

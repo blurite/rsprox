@@ -63,4 +63,3 @@ public value class CoordFine(
         public val INVALID: CoordFine = CoordFine(-1)
     }
 }
-

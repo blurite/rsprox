@@ -1,10 +1,10 @@
 package net.rsprox.protocol.game.incoming.model.misc.user
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprot.protocol.message.toIntOrMinusOne
 import net.rsprot.protocol.util.CombinedId
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * Content recommendation interface clicks happen when a player

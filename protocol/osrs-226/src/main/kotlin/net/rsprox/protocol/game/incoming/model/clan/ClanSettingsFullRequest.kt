@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.clan
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * Clan settings requests are made whenever the server sends a clansettings

@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.objs
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * OpObj messages are fired when the player interacts with an obj on the ground,

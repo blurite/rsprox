@@ -1,9 +1,9 @@
 package net.rsprox.protocol.game.incoming.model.misc.user
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.common.CoordGrid
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * Click world map events are transmitted when the user double-clicks

@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.misc.client
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * Detect modified client is sent by the client right before a map load

@@ -1,9 +1,9 @@
 package net.rsprox.protocol.game.incoming.model.buttons
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprot.protocol.util.CombinedId
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * If1 button messages are sent whenever a player clicks on an older

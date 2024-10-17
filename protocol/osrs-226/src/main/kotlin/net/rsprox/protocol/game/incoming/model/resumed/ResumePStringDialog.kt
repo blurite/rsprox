@@ -1,8 +1,8 @@
 package net.rsprox.protocol.game.incoming.model.resumed
 
 import net.rsprot.protocol.ClientProtCategory
-import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
  * String dialogs are sent whenever a player enters a string into

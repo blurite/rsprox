@@ -16,8 +16,8 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamRotateBy
 import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamRotateToDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamShakeDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamSmoothResetDecoder
-import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamTargetV2Decoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamTargetV1Decoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamTargetV2Decoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.camera.OculusSyncDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.clan.ClanChannelDeltaDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.clan.ClanChannelFullDecoder
@@ -97,8 +97,8 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.misc.player.SetPlayerOpDe
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.player.TriggerOnDialogAbortDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.player.UpdateRunEnergyDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.player.UpdateRunWeightDecoder
-import net.rsprox.protocol.game.outgoing.decoder.codec.misc.player.UpdateStatV2Decoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.player.UpdateStatV1Decoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.misc.player.UpdateStatV2Decoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.player.UpdateStockMarketSlotDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.player.UpdateTradingPostDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.social.FriendListLoadedDecoder
@@ -107,9 +107,9 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.social.MessagePrivateEcho
 import net.rsprox.protocol.game.outgoing.decoder.codec.social.UpdateFriendListDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.social.UpdateIgnoreListDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.sound.MidiJingleDecoder
-import net.rsprox.protocol.game.outgoing.decoder.codec.sound.MidiSongV2Decoder
-import net.rsprox.protocol.game.outgoing.decoder.codec.sound.MidiSongV1Decoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.sound.MidiSongStopDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.sound.MidiSongV1Decoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.sound.MidiSongV2Decoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.sound.MidiSongWithSecondaryDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.sound.MidiSwapDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.sound.SynthSoundDecoder
