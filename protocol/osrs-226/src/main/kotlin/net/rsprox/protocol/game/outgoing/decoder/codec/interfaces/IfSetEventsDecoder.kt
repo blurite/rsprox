@@ -2,6 +2,7 @@ package net.rsprox.protocol.game.outgoing.decoder.codec.interfaces
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
+import net.rsprot.protocol.util.gCombinedIdAlt2
 import net.rsprot.protocol.util.gCombinedIdAlt3
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
@@ -15,10 +16,10 @@ public class IfSetEventsDecoder : ProxyMessageDecoder<IfSetEvents> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetEvents {
-        val start = buffer.g2()
         val end = buffer.g2Alt1()
-        val combinedId = buffer.gCombinedIdAlt3()
-        val events = buffer.g4()
+        val events = buffer.g4Alt3()
+        val start = buffer.g2Alt3()
+        val combinedId = buffer.gCombinedIdAlt2()
         return IfSetEvents(
             combinedId.interfaceId,
             combinedId.componentId,

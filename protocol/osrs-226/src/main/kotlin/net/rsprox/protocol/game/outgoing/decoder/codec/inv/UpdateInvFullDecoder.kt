@@ -21,11 +21,11 @@ public class UpdateInvFullDecoder : ProxyMessageDecoder<UpdateInvFull> {
         val objs =
             buildList {
                 for (i in 0..<capacity) {
+                    val id = buffer.g2Alt1()
                     var count = buffer.g1Alt2()
                     if (count >= 0xFF) {
                         count = buffer.g4Alt2()
                     }
-                    val id = buffer.g2Alt3()
                     add(UpdateInvFull.Obj(id - 1, count))
                 }
             }

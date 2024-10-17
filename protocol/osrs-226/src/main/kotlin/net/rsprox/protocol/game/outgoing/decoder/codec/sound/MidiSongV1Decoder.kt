@@ -14,7 +14,7 @@ public class MidiSongV1Decoder : ProxyMessageDecoder<MidiSongV1> {
         buffer: JagByteBuf,
         session: Session,
     ): MidiSongV1 {
-        val id = buffer.g2()
+        val id = buffer.g2Alt1()
         return MidiSongV1(
             id,
         )

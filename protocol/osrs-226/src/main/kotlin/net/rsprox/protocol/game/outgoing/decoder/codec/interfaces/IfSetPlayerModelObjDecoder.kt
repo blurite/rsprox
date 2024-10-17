@@ -15,8 +15,8 @@ public class IfSetPlayerModelObjDecoder : ProxyMessageDecoder<IfSetPlayerModelOb
         buffer: JagByteBuf,
         session: Session,
     ): IfSetPlayerModelObj {
-        val obj = buffer.g4Alt2()
         val combinedId = buffer.gCombinedIdAlt2()
+        val obj = buffer.g4()
         return IfSetPlayerModelObj(
             combinedId.interfaceId,
             combinedId.componentId,

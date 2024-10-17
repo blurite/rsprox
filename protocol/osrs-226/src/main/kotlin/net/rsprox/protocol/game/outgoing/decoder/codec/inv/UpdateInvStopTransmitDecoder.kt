@@ -14,7 +14,7 @@ public class UpdateInvStopTransmitDecoder : ProxyMessageDecoder<UpdateInvStopTra
         buffer: JagByteBuf,
         session: Session,
     ): UpdateInvStopTransmit {
-        val inventoryId = buffer.g2Alt2()
+        val inventoryId = buffer.g2Alt3()
         return UpdateInvStopTransmit(inventoryId)
     }
 }

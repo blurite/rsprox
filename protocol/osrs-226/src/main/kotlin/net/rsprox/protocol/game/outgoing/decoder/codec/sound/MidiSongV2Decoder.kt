@@ -14,11 +14,11 @@ public class MidiSongV2Decoder : ProxyMessageDecoder<MidiSongV2> {
         buffer: JagByteBuf,
         session: Session,
     ): MidiSongV2 {
-        val fadeOutDelay = buffer.g2Alt2()
-        val fadeOutSpeed = buffer.g2Alt3()
-        val fadeInDelay = buffer.g2Alt1()
-        val id = buffer.g2Alt3()
-        val fadeInSpeed = buffer.g2Alt2()
+        val fadeOutDelay = buffer.g2Alt1()
+        val fadeInDelay = buffer.g2()
+        val id = buffer.g2Alt2()
+        val fadeInSpeed = buffer.g2Alt3()
+        val fadeOutSpeed = buffer.g2()
         return MidiSongV2(
             id,
             fadeOutDelay,

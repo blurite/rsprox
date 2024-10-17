@@ -15,9 +15,9 @@ public class IfSetRotateSpeedDecoder : ProxyMessageDecoder<IfSetRotateSpeed> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetRotateSpeed {
-        val ySpeed = buffer.g2Alt2()
         val combinedId = buffer.gCombinedId()
-        val xSpeed = buffer.g2Alt1()
+        val ySpeed = buffer.g2Alt1()
+        val xSpeed = buffer.g2Alt2()
         return IfSetRotateSpeed(
             combinedId.interfaceId,
             combinedId.componentId,

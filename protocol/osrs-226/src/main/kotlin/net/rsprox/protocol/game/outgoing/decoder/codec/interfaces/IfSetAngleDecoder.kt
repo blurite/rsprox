@@ -15,9 +15,9 @@ public class IfSetAngleDecoder : ProxyMessageDecoder<IfSetAngle> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetAngle {
-        val angleY = buffer.g2Alt2()
-        val zoom = buffer.g2Alt1()
-        val angleX = buffer.g2()
+        val zoom = buffer.g2()
+        val angleX = buffer.g2Alt1()
+        val angleY = buffer.g2Alt1()
         val combinedId = buffer.gCombinedIdAlt2()
         return IfSetAngle(
             combinedId.interfaceId,
