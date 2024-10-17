@@ -455,7 +455,7 @@ public class IndexerTranscriber private constructor(
     override fun teleport(message: Teleport) {
     }
 
-    override fun updatePlayerModelOld(message: UpdatePlayerModelV1) {
+    override fun updatePlayerModelV1(message: UpdatePlayerModelV1) {
     }
 
     override fun opNpc(message: OpNpc) {
@@ -554,10 +554,10 @@ public class IndexerTranscriber private constructor(
     override fun camSmoothReset(message: CamSmoothReset) {
     }
 
-    override fun camTarget(message: CamTargetV2) {
+    override fun camTargetV2(message: CamTargetV2) {
     }
 
-    override fun camTargetOld(message: CamTargetV1) {
+    override fun camTargetV1(message: CamTargetV1) {
     }
 
     override fun oculusSync(message: OculusSync) {
@@ -649,7 +649,7 @@ public class IndexerTranscriber private constructor(
         }
     }
 
-    override fun worldEntityInfo(message: WorldEntityInfoV3) {
+    override fun worldEntityInfoV3(message: WorldEntityInfoV3) {
         preWorldEntityUpdate(message)
         postWorldEntityUpdate(message)
     }
@@ -1005,10 +1005,10 @@ public class IndexerTranscriber private constructor(
     override fun updateRunWeight(message: UpdateRunWeight) {
     }
 
-    override fun updateStat(message: UpdateStatV2) {
+    override fun updateStatV2(message: UpdateStatV2) {
     }
 
-    override fun updateStatOld(message: UpdateStatV1) {
+    override fun updateStatV1(message: UpdateStatV1) {
     }
 
     override fun updateStockMarketSlot(message: UpdateStockMarketSlot) {
@@ -1036,11 +1036,11 @@ public class IndexerTranscriber private constructor(
         binaryIndex.increment(IndexedType.JINGLE, message.id)
     }
 
-    override fun midiSong(message: MidiSongV2) {
+    override fun midiSongV2(message: MidiSongV2) {
         binaryIndex.increment(IndexedType.MIDI, message.id)
     }
 
-    override fun midiSongOld(message: MidiSongV1) {
+    override fun midiSongV1(message: MidiSongV1) {
         binaryIndex.increment(IndexedType.MIDI, message.id)
     }
 
@@ -1092,7 +1092,7 @@ public class IndexerTranscriber private constructor(
         appendCheckedSpotanim(message.id)
     }
 
-    override fun projAnimSpecific(message: ProjAnimSpecificV3) {
+    override fun projAnimSpecificV3(message: ProjAnimSpecificV3) {
         appendCheckedSpotanim(message.id)
     }
 
@@ -1430,7 +1430,7 @@ public class IndexerTranscriber private constructor(
             ?: "null"
     }
 
-    override fun npcInfo(message: NpcInfoV5) {
+    override fun npcInfoV5(message: NpcInfoV5) {
         val world = stateTracker.getActiveWorld()
         prenpcinfo(message)
         for ((index, update) in message.updates) {

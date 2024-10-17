@@ -217,7 +217,7 @@ public class BaseNpcInfoTranscriber(
         }
     }
 
-    override fun npcInfo(message: NpcInfoV5) {
+    override fun npcInfoV5(message: NpcInfoV5) {
         prenpcinfo(message)
         npcInfoUpdate(message)
         postnpcinfo(message)

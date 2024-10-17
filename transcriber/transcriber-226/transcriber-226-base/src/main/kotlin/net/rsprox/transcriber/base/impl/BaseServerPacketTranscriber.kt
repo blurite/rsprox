@@ -472,7 +472,7 @@ public class BaseServerPacketTranscriber(
         root.int("lookproportionalspeed", message.cameraLookProportionalSpeed)
     }
 
-    override fun camTarget(message: CamTargetV2) {
+    override fun camTargetV2(message: CamTargetV2) {
         if (!filters[PropertyFilter.CAM_TARGET]) return omit()
         when (val type = message.type) {
             is CamTargetV2.NpcCamTarget -> {
@@ -490,7 +490,7 @@ public class BaseServerPacketTranscriber(
         }
     }
 
-    override fun camTargetOld(message: CamTargetV1) {
+    override fun camTargetV1(message: CamTargetV1) {
         if (!filters[PropertyFilter.CAM_TARGET]) return omit()
         when (val type = message.type) {
             is CamTargetV1.NpcCamTarget -> {
@@ -933,7 +933,7 @@ public class BaseServerPacketTranscriber(
         }
     }
 
-    override fun worldEntityInfo(message: WorldEntityInfoV3) {
+    override fun worldEntityInfoV3(message: WorldEntityInfoV3) {
         preWorldEntityUpdate(message)
         val group =
             root.group {
@@ -1963,7 +1963,7 @@ public class BaseServerPacketTranscriber(
         override val prettyName: String = name.lowercase()
     }
 
-    override fun updateStat(message: UpdateStatV2) {
+    override fun updateStatV2(message: UpdateStatV2) {
         val oldXp = stateTracker.getExperience(message.stat)
         stateTracker.setExperience(message.stat, message.experience)
         if (!filters[PropertyFilter.UPDATE_STAT]) return omit()
@@ -1973,7 +1973,7 @@ public class BaseServerPacketTranscriber(
         root.formattedInt("experience", message.experience - (oldXp ?: 0))
     }
 
-    override fun updateStatOld(message: UpdateStatV1) {
+    override fun updateStatV1(message: UpdateStatV1) {
         val oldXp = stateTracker.getExperience(message.stat)
         stateTracker.setExperience(message.stat, message.experience)
         if (!filters[PropertyFilter.UPDATE_STAT]) return omit()
@@ -2111,7 +2111,7 @@ public class BaseServerPacketTranscriber(
         }
     }
 
-    override fun midiSong(message: MidiSongV2) {
+    override fun midiSongV2(message: MidiSongV2) {
         if (!filters[PropertyFilter.MIDI_SONG]) return omit()
         root.scriptVarType("id", ScriptVarType.MIDI, message.id)
         root.int("fadeoutdelay", message.fadeOutDelay)
@@ -2120,7 +2120,7 @@ public class BaseServerPacketTranscriber(
         root.int("fadeinspeed", message.fadeInSpeed)
     }
 
-    override fun midiSongOld(message: MidiSongV1) {
+    override fun midiSongV1(message: MidiSongV1) {
         if (!filters[PropertyFilter.MIDI_SONG]) return omit()
         root.scriptVarType("id", ScriptVarType.MIDI, message.id)
     }
@@ -2225,7 +2225,7 @@ public class BaseServerPacketTranscriber(
         root.filteredInt("delay", message.delay, 0)
     }
 
-    override fun projAnimSpecific(message: ProjAnimSpecificV3) {
+    override fun projAnimSpecificV3(message: ProjAnimSpecificV3) {
         if (!filters[PropertyFilter.PROJANIM_SPECIFIC]) return omit()
         root.scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
         root.int("starttime", message.startTime)

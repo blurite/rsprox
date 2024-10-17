@@ -161,9 +161,9 @@ public interface ServerPacketTranscriber {
 
     public fun camSmoothReset(message: CamSmoothReset)
 
-    public fun camTarget(message: CamTargetV2)
+    public fun camTargetV2(message: CamTargetV2)
 
-    public fun camTargetOld(message: CamTargetV1)
+    public fun camTargetV1(message: CamTargetV1)
 
     public fun oculusSync(message: OculusSync)
 
@@ -195,7 +195,7 @@ public interface ServerPacketTranscriber {
 
     public fun setNpcUpdateOrigin(message: SetNpcUpdateOrigin)
 
-    public fun worldEntityInfo(message: WorldEntityInfoV3)
+    public fun worldEntityInfoV3(message: WorldEntityInfoV3)
 
     public fun ifClearInv(message: IfClearInv)
 
@@ -315,9 +315,9 @@ public interface ServerPacketTranscriber {
 
     public fun updateRunWeight(message: UpdateRunWeight)
 
-    public fun updateStat(message: UpdateStatV2)
+    public fun updateStatV2(message: UpdateStatV2)
 
-    public fun updateStatOld(message: UpdateStatV1)
+    public fun updateStatV1(message: UpdateStatV1)
 
     public fun updateStockMarketSlot(message: UpdateStockMarketSlot)
 
@@ -335,9 +335,9 @@ public interface ServerPacketTranscriber {
 
     public fun midiJingle(message: MidiJingle)
 
-    public fun midiSong(message: MidiSongV2)
+    public fun midiSongV2(message: MidiSongV2)
 
-    public fun midiSongOld(message: MidiSongV1)
+    public fun midiSongV1(message: MidiSongV1)
 
     public fun midiSongStop(message: MidiSongStop)
 
@@ -361,7 +361,7 @@ public interface ServerPacketTranscriber {
 
     public fun playerSpotAnimSpecific(message: PlayerSpotAnimSpecific)
 
-    public fun projAnimSpecific(message: ProjAnimSpecificV3)
+    public fun projAnimSpecificV3(message: ProjAnimSpecificV3)
 
     public fun varpLarge(message: VarpLarge)
 

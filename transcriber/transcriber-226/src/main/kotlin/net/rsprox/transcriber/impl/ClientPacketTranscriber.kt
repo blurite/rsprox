@@ -165,7 +165,7 @@ public interface ClientPacketTranscriber {
 
     public fun teleport(message: Teleport)
 
-    public fun updatePlayerModelOld(message: UpdatePlayerModelV1)
+    public fun updatePlayerModelV1(message: UpdatePlayerModelV1)
 
     public fun opNpc(message: OpNpc)
 
