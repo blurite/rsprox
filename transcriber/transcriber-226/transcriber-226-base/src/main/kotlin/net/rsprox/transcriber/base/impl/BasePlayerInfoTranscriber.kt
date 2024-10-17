@@ -786,6 +786,14 @@ public class BasePlayerInfoTranscriber(
                             if (retexIndex2 != 0xF) {
                                 scriptVarType("retex$retexIndex2", ScriptVarType.TEXTURE, cus.retex2)
                             }
+                            if (cus.manWear and 0xFFFF != 0xFFFF || cus.womanWear and 0xFFFF != 0xFFFF) {
+                                scriptVarType("manwear", ScriptVarType.MODEL, cus.manWear)
+                                scriptVarType("womanwear", ScriptVarType.MODEL, cus.womanWear)
+                            }
+                            if (cus.manHead and 0xFFFF != 0xFFFF || cus.womanHead and 0xFFFF != 0xFFFF) {
+                                scriptVarType("manhead", ScriptVarType.MODEL, cus.manHead)
+                                scriptVarType("womanhead", ScriptVarType.MODEL, cus.womanHead)
+                            }
                         }
                     }
                 }
