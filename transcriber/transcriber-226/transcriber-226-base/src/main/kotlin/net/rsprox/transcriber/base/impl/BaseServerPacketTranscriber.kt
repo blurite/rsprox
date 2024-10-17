@@ -15,8 +15,6 @@ import net.rsprox.protocol.game.outgoing.model.camera.CamRotateBy
 import net.rsprox.protocol.game.outgoing.model.camera.CamRotateTo
 import net.rsprox.protocol.game.outgoing.model.camera.CamShake
 import net.rsprox.protocol.game.outgoing.model.camera.CamSmoothReset
-import net.rsprox.protocol.game.outgoing.model.camera.CamTarget
-import net.rsprox.protocol.game.outgoing.model.camera.CamTargetOld
 import net.rsprox.protocol.game.outgoing.model.camera.OculusSync
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelDelta
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelFull
@@ -32,7 +30,6 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChanne
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV2
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelSingleUser
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
-import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfo
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityUpdateType
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
@@ -93,8 +90,6 @@ import net.rsprox.protocol.game.outgoing.model.misc.player.SetPlayerOp
 import net.rsprox.protocol.game.outgoing.model.misc.player.TriggerOnDialogAbort
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunEnergy
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunWeight
-import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStat
-import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatOld
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStockMarketSlot
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateTradingPost
 import net.rsprox.protocol.game.outgoing.model.social.FriendListLoaded
@@ -103,8 +98,6 @@ import net.rsprox.protocol.game.outgoing.model.social.MessagePrivateEcho
 import net.rsprox.protocol.game.outgoing.model.social.UpdateFriendList
 import net.rsprox.protocol.game.outgoing.model.social.UpdateIgnoreList
 import net.rsprox.protocol.game.outgoing.model.sound.MidiJingle
-import net.rsprox.protocol.game.outgoing.model.sound.MidiSong
-import net.rsprox.protocol.game.outgoing.model.sound.MidiSongOld
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongStop
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongWithSecondary
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSwap
@@ -116,7 +109,6 @@ import net.rsprox.protocol.game.outgoing.model.specific.NpcHeadIconSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.NpcSpotAnimSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.PlayerAnimSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.PlayerSpotAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecific
 import net.rsprox.protocol.game.outgoing.model.unknown.UnknownString
 import net.rsprox.protocol.game.outgoing.model.varp.VarpLarge
 import net.rsprox.protocol.game.outgoing.model.varp.VarpReset
@@ -193,6 +185,14 @@ import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.concurrent.TimeUnit
+import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV1
+import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV2
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV3
+import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV1
+import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV2
+import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV1
+import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV2
+import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV3
 import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildArea
 
 @Suppress("SpellCheckingInspection", "DuplicatedCode")
@@ -468,16 +468,16 @@ public class BaseServerPacketTranscriber(
         root.int("lookproportionalspeed", message.cameraLookProportionalSpeed)
     }
 
-    override fun camTarget(message: CamTarget) {
+    override fun camTarget(message: CamTargetV2) {
         if (!filters[PropertyFilter.CAM_TARGET]) return omit()
         when (val type = message.type) {
-            is CamTarget.NpcCamTarget -> {
+            is CamTargetV2.NpcCamTarget -> {
                 root.npc(type.index)
             }
-            is CamTarget.PlayerCamTarget -> {
+            is CamTargetV2.PlayerCamTarget -> {
                 root.player(type.index)
             }
-            is CamTarget.WorldEntityTarget -> {
+            is CamTargetV2.WorldEntityTarget -> {
                 root.worldentity(type.index)
                 if (type.cameraLockedPlayerIndex != -1) {
                     root.player(type.index, "cameralockedplayer")
@@ -486,16 +486,16 @@ public class BaseServerPacketTranscriber(
         }
     }
 
-    override fun camTargetOld(message: CamTargetOld) {
+    override fun camTargetOld(message: CamTargetV1) {
         if (!filters[PropertyFilter.CAM_TARGET]) return omit()
         when (val type = message.type) {
-            is CamTargetOld.NpcCamTarget -> {
+            is CamTargetV1.NpcCamTarget -> {
                 root.npc(type.index)
             }
-            is CamTargetOld.PlayerCamTarget -> {
+            is CamTargetV1.PlayerCamTarget -> {
                 root.player(type.index)
             }
-            is CamTargetOld.WorldEntityTarget -> {
+            is CamTargetV1.WorldEntityTarget -> {
                 root.worldentity(type.index)
             }
         }
@@ -885,7 +885,7 @@ public class BaseServerPacketTranscriber(
         root.coordGrid(buildAreaCoordGrid(message.originX, message.originZ))
     }
 
-    private fun preWorldEntityUpdate(message: WorldEntityInfo) {
+    private fun preWorldEntityUpdate(message: WorldEntityInfoV3) {
         for ((index, update) in message.updates) {
             when (update) {
                 is WorldEntityUpdateType.Active -> {
@@ -897,8 +897,9 @@ public class BaseServerPacketTranscriber(
                     world.sizeX = update.sizeX
                     world.sizeZ = update.sizeZ
                     world.angle = update.angle
-                    world.unknownProperty = update.unknownProperty
-                    world.coord = update.coordGrid
+                    world.level = update.level
+                    world.coordFine = update.coordFine
+                    world.coord = update.coordFine.toCoordGrid(world.level)
                 }
                 WorldEntityUpdateType.Idle -> {
                     // noop
@@ -907,14 +908,14 @@ public class BaseServerPacketTranscriber(
         }
     }
 
-    private fun postWorldEntityUpdate(message: WorldEntityInfo) {
+    private fun postWorldEntityUpdate(message: WorldEntityInfoV3) {
         for ((index, update) in message.updates) {
             when (update) {
                 is WorldEntityUpdateType.Active -> {
                     val world = stateTracker.getWorld(index)
                     world.angle = update.angle
-                    world.coord = update.coordGrid
-                    world.moveSpeed = update.moveSpeed
+                    world.coordFine = update.coordFine
+                    world.coord = update.coordFine.toCoordGrid(world.level)
                 }
                 WorldEntityUpdateType.HighResolutionToLowResolution -> {
                     stateTracker.destroyWorld(index)
@@ -928,7 +929,7 @@ public class BaseServerPacketTranscriber(
         }
     }
 
-    override fun worldEntityInfo(message: WorldEntityInfo) {
+    override fun worldEntityInfo(message: WorldEntityInfoV3) {
         preWorldEntityUpdate(message)
         val group =
             root.group {
@@ -938,8 +939,16 @@ public class BaseServerPacketTranscriber(
                             group("ACTIVE") {
                                 worldentity(index)
                                 int("angle", update.angle)
-                                string("movespeed", "${update.moveSpeed.id * 0.5} tiles/gamecycle")
-                                coordGrid("newcoord", update.coordGrid)
+                                val world = stateTracker.getWorld(index)
+                                val coordGrid = update.coordFine.toCoordGrid(world.level)
+                                coordGrid("newcoord", coordGrid)
+                                val coordFine = update.coordFine
+                                val coordFineX = coordFine.x and 0x7F
+                                val coordFineY = coordFine.y
+                                val coordFineZ = coordFine.z and 0x7F
+                                int("finex", coordFineX)
+                                int("finey", coordFineY)
+                                int("finez", coordFineZ)
                             }
                         }
                         WorldEntityUpdateType.HighResolutionToLowResolution -> {
@@ -954,7 +963,13 @@ public class BaseServerPacketTranscriber(
                             group("ADD") {
                                 worldentity(index)
                                 int("angle", update.angle)
-                                int("unknown", update.unknownProperty)
+                                val coordFine = update.coordFine
+                                val coordFineX = coordFine.x and 0x7F
+                                val coordFineY = coordFine.y
+                                val coordFineZ = coordFine.z and 0x7F
+                                int("finex", coordFineX)
+                                int("finey", coordFineY)
+                                int("finez", coordFineZ)
                             }
                         }
                     }
@@ -1944,7 +1959,7 @@ public class BaseServerPacketTranscriber(
         override val prettyName: String = name.lowercase()
     }
 
-    override fun updateStat(message: UpdateStat) {
+    override fun updateStat(message: UpdateStatV2) {
         val oldXp = stateTracker.getExperience(message.stat)
         stateTracker.setExperience(message.stat, message.experience)
         if (!filters[PropertyFilter.UPDATE_STAT]) return omit()
@@ -1954,7 +1969,7 @@ public class BaseServerPacketTranscriber(
         root.formattedInt("experience", message.experience - (oldXp ?: 0))
     }
 
-    override fun updateStatOld(message: UpdateStatOld) {
+    override fun updateStatOld(message: UpdateStatV1) {
         val oldXp = stateTracker.getExperience(message.stat)
         stateTracker.setExperience(message.stat, message.experience)
         if (!filters[PropertyFilter.UPDATE_STAT]) return omit()
@@ -2092,7 +2107,7 @@ public class BaseServerPacketTranscriber(
         }
     }
 
-    override fun midiSong(message: MidiSong) {
+    override fun midiSong(message: MidiSongV2) {
         if (!filters[PropertyFilter.MIDI_SONG]) return omit()
         root.scriptVarType("id", ScriptVarType.MIDI, message.id)
         root.int("fadeoutdelay", message.fadeOutDelay)
@@ -2101,7 +2116,7 @@ public class BaseServerPacketTranscriber(
         root.int("fadeinspeed", message.fadeInSpeed)
     }
 
-    override fun midiSongOld(message: MidiSongOld) {
+    override fun midiSongOld(message: MidiSongV1) {
         if (!filters[PropertyFilter.MIDI_SONG]) return omit()
         root.scriptVarType("id", ScriptVarType.MIDI, message.id)
     }
@@ -2206,7 +2221,7 @@ public class BaseServerPacketTranscriber(
         root.filteredInt("delay", message.delay, 0)
     }
 
-    override fun projAnimSpecific(message: ProjAnimSpecific) {
+    override fun projAnimSpecific(message: ProjAnimSpecificV3) {
         if (!filters[PropertyFilter.PROJANIM_SPECIFIC]) return omit()
         root.scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
         root.int("starttime", message.startTime)

@@ -54,7 +54,7 @@ import net.rsprox.protocol.game.incoming.model.misc.user.OculusLeave
 import net.rsprox.protocol.game.incoming.model.misc.user.SendSnapshot
 import net.rsprox.protocol.game.incoming.model.misc.user.SetChatFilterSettings
 import net.rsprox.protocol.game.incoming.model.misc.user.Teleport
-import net.rsprox.protocol.game.incoming.model.misc.user.UpdatePlayerModelOld
+import net.rsprox.protocol.game.incoming.model.misc.user.UpdatePlayerModelV1
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpc
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpc6
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpcT
@@ -83,8 +83,8 @@ import net.rsprox.protocol.game.outgoing.model.camera.CamRotateBy
 import net.rsprox.protocol.game.outgoing.model.camera.CamRotateTo
 import net.rsprox.protocol.game.outgoing.model.camera.CamShake
 import net.rsprox.protocol.game.outgoing.model.camera.CamSmoothReset
-import net.rsprox.protocol.game.outgoing.model.camera.CamTarget
-import net.rsprox.protocol.game.outgoing.model.camera.CamTargetOld
+import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV1
+import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV2
 import net.rsprox.protocol.game.outgoing.model.camera.OculusSync
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelDelta
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelFull
@@ -99,7 +99,7 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.MessageFriendChannel
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV1
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV2
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelSingleUser
-import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcInfo
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcInfoV5
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcUpdateType
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.BaseAnimationSetExtendedInfo
@@ -128,7 +128,7 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SayExten
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SequenceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfo
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV3
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityUpdateType
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
@@ -189,8 +189,8 @@ import net.rsprox.protocol.game.outgoing.model.misc.player.SetPlayerOp
 import net.rsprox.protocol.game.outgoing.model.misc.player.TriggerOnDialogAbort
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunEnergy
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunWeight
-import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStat
-import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatOld
+import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV1
+import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV2
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStockMarketSlot
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateTradingPost
 import net.rsprox.protocol.game.outgoing.model.social.FriendListLoaded
@@ -198,9 +198,9 @@ import net.rsprox.protocol.game.outgoing.model.social.MessagePrivateEcho
 import net.rsprox.protocol.game.outgoing.model.social.UpdateFriendList
 import net.rsprox.protocol.game.outgoing.model.social.UpdateIgnoreList
 import net.rsprox.protocol.game.outgoing.model.sound.MidiJingle
-import net.rsprox.protocol.game.outgoing.model.sound.MidiSong
-import net.rsprox.protocol.game.outgoing.model.sound.MidiSongOld
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongStop
+import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV1
+import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV2
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongWithSecondary
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSwap
 import net.rsprox.protocol.game.outgoing.model.sound.SynthSound
@@ -211,7 +211,7 @@ import net.rsprox.protocol.game.outgoing.model.specific.NpcHeadIconSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.NpcSpotAnimSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.PlayerAnimSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.PlayerSpotAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecific
+import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV3
 import net.rsprox.protocol.game.outgoing.model.unknown.UnknownString
 import net.rsprox.protocol.game.outgoing.model.varp.VarpLarge
 import net.rsprox.protocol.game.outgoing.model.varp.VarpReset
@@ -450,7 +450,7 @@ public class IndexerTranscriber private constructor(
     override fun teleport(message: Teleport) {
     }
 
-    override fun updatePlayerModelOld(message: UpdatePlayerModelOld) {
+    override fun updatePlayerModelOld(message: UpdatePlayerModelV1) {
     }
 
     override fun opNpc(message: OpNpc) {
@@ -546,10 +546,10 @@ public class IndexerTranscriber private constructor(
     override fun camSmoothReset(message: CamSmoothReset) {
     }
 
-    override fun camTarget(message: CamTarget) {
+    override fun camTarget(message: CamTargetV2) {
     }
 
-    override fun camTargetOld(message: CamTargetOld) {
+    override fun camTargetOld(message: CamTargetV1) {
     }
 
     override fun oculusSync(message: OculusSync) {
@@ -597,7 +597,7 @@ public class IndexerTranscriber private constructor(
     override fun setNpcUpdateOrigin(message: SetNpcUpdateOrigin) {
     }
 
-    private fun preWorldEntityUpdate(message: WorldEntityInfo) {
+    private fun preWorldEntityUpdate(message: WorldEntityInfoV3) {
         for ((index, update) in message.updates) {
             when (update) {
                 is WorldEntityUpdateType.Active -> {
@@ -609,8 +609,9 @@ public class IndexerTranscriber private constructor(
                     world.sizeX = update.sizeX
                     world.sizeZ = update.sizeZ
                     world.angle = update.angle
-                    world.unknownProperty = update.unknownProperty
-                    world.coord = update.coordGrid
+                    world.level = update.level
+                    world.coordFine = update.coordFine
+                    world.coord = update.coordFine.toCoordGrid(world.level)
                 }
                 WorldEntityUpdateType.Idle -> {
                     // noop
@@ -619,14 +620,14 @@ public class IndexerTranscriber private constructor(
         }
     }
 
-    private fun postWorldEntityUpdate(message: WorldEntityInfo) {
+    private fun postWorldEntityUpdate(message: WorldEntityInfoV3) {
         for ((index, update) in message.updates) {
             when (update) {
                 is WorldEntityUpdateType.Active -> {
                     val world = stateTracker.getWorld(index)
                     world.angle = update.angle
-                    world.coord = update.coordGrid
-                    world.moveSpeed = update.moveSpeed
+                    world.coordFine = update.coordFine
+                    world.coord = update.coordFine.toCoordGrid(world.level)
                 }
                 WorldEntityUpdateType.HighResolutionToLowResolution -> {
                     stateTracker.destroyWorld(index)
@@ -640,7 +641,7 @@ public class IndexerTranscriber private constructor(
         }
     }
 
-    override fun worldEntityInfo(message: WorldEntityInfo) {
+    override fun worldEntityInfo(message: WorldEntityInfoV3) {
         preWorldEntityUpdate(message)
         postWorldEntityUpdate(message)
     }
@@ -996,10 +997,10 @@ public class IndexerTranscriber private constructor(
     override fun updateRunWeight(message: UpdateRunWeight) {
     }
 
-    override fun updateStat(message: UpdateStat) {
+    override fun updateStat(message: UpdateStatV2) {
     }
 
-    override fun updateStatOld(message: UpdateStatOld) {
+    override fun updateStatOld(message: UpdateStatV1) {
     }
 
     override fun updateStockMarketSlot(message: UpdateStockMarketSlot) {
@@ -1027,11 +1028,11 @@ public class IndexerTranscriber private constructor(
         binaryIndex.increment(IndexedType.JINGLE, message.id)
     }
 
-    override fun midiSong(message: MidiSong) {
+    override fun midiSong(message: MidiSongV2) {
         binaryIndex.increment(IndexedType.MIDI, message.id)
     }
 
-    override fun midiSongOld(message: MidiSongOld) {
+    override fun midiSongOld(message: MidiSongV1) {
         binaryIndex.increment(IndexedType.MIDI, message.id)
     }
 
@@ -1083,7 +1084,7 @@ public class IndexerTranscriber private constructor(
         appendCheckedSpotanim(message.id)
     }
 
-    override fun projAnimSpecific(message: ProjAnimSpecific) {
+    override fun projAnimSpecific(message: ProjAnimSpecificV3) {
         appendCheckedSpotanim(message.id)
     }
 
@@ -1407,7 +1408,7 @@ public class IndexerTranscriber private constructor(
             ?: "null"
     }
 
-    override fun npcInfo(message: NpcInfo) {
+    override fun npcInfo(message: NpcInfoV5) {
         val world = stateTracker.getActiveWorld()
         prenpcinfo(message)
         for ((index, update) in message.updates) {
@@ -1432,7 +1433,7 @@ public class IndexerTranscriber private constructor(
         postnpcinfo(message)
     }
 
-    private fun prenpcinfo(message: NpcInfo) {
+    private fun prenpcinfo(message: NpcInfoV5) {
         val world = stateTracker.getActiveWorld()
         for ((index, update) in message.updates) {
             when (update) {
@@ -1457,7 +1458,7 @@ public class IndexerTranscriber private constructor(
         }
     }
 
-    private fun postnpcinfo(message: NpcInfo) {
+    private fun postnpcinfo(message: NpcInfoV5) {
         val world = stateTracker.getActiveWorld()
         for ((index, update) in message.updates) {
             when (update) {

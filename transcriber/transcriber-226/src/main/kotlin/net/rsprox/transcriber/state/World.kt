@@ -1,5 +1,6 @@
 package net.rsprox.transcriber.state
 
+import net.rsprox.protocol.common.CoordFine
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityMoveSpeed
 import net.rsprox.protocol.game.outgoing.model.map.util.BuildArea
@@ -16,9 +17,9 @@ public class World(
     public var sizeX: Int = 800
     public var sizeZ: Int = 2048
     public var angle: Int = 0
-    public var unknownProperty: Int = -1
+    public var level: Int = 0
+    public var coordFine: CoordFine = CoordFine.INVALID
     public var coord: CoordGrid = CoordGrid.INVALID
-    public var moveSpeed: WorldEntityMoveSpeed = WorldEntityMoveSpeed.ZERO
     private val npcs: MutableMap<Int, Npc> = mutableMapOf()
     private var rebuildRegionBuildArea: BuildArea? = null
 

@@ -50,7 +50,6 @@ import net.rsprox.protocol.game.incoming.model.misc.user.OculusLeave
 import net.rsprox.protocol.game.incoming.model.misc.user.SendSnapshot
 import net.rsprox.protocol.game.incoming.model.misc.user.SetChatFilterSettings
 import net.rsprox.protocol.game.incoming.model.misc.user.Teleport
-import net.rsprox.protocol.game.incoming.model.misc.user.UpdatePlayerModelOld
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpc
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpc6
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpcT
@@ -106,6 +105,7 @@ import net.rsprox.transcriber.state.StateTracker
 import java.awt.event.KeyEvent
 import java.text.DecimalFormat
 import java.text.NumberFormat
+import net.rsprox.protocol.game.incoming.model.misc.user.UpdatePlayerModelV1
 
 @Suppress("SpellCheckingInspection", "DuplicatedCode")
 public open class BaseClientPacketTranscriber(
@@ -706,7 +706,7 @@ public open class BaseClientPacketTranscriber(
         root.filteredInt("oculussyncvalue", message.oculusSyncValue, 0)
     }
 
-    override fun updatePlayerModelOld(message: UpdatePlayerModelOld) {
+    override fun updatePlayerModelOld(message: UpdatePlayerModelV1) {
         if (!filters[PropertyFilter.DEPRECATED_CLIENT]) return omit()
         // Never used any more so not too worried about the formatting
         root.int("bodytype", message.bodyType)
