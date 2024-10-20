@@ -12,6 +12,8 @@ import kotlin.time.TimeSource
 public class GamePackProvider {
     private var lastFetchTime = TimeSource.Monotonic.markNow()
     private var lastPayload: ByteArray? = null
+
+    @Volatile
     private var currentTask: ForkJoinTask<*>? = null
 
     internal fun prefetch(await: Boolean = false) {
