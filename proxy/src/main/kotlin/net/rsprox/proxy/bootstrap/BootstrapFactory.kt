@@ -16,6 +16,7 @@ import net.rsprox.proxy.client.ClientLoginInitializer
 import net.rsprox.proxy.config.JavConfig
 import net.rsprox.proxy.config.ProxyProperties
 import net.rsprox.proxy.connection.ProxyConnectionContainer
+import net.rsprox.proxy.http.GamePackProvider
 import net.rsprox.proxy.http.HttpServerHandler
 import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.server.ServerConnectionInitializer
@@ -81,6 +82,7 @@ public class BootstrapFactory(
     public fun createWorldListHttpServer(
         worldListProvider: WorldListProvider,
         javConfig: JavConfig,
+        gamePackProvider: GamePackProvider,
     ): ServerBootstrap {
         return ServerBootstrap()
             .group(group(PARENT_GROUP_THREADS), group(CHILD_GROUP_THREADS))
@@ -93,7 +95,7 @@ public class BootstrapFactory(
                         val pipeline = ch.pipeline()
                         pipeline.addLast(HttpRequestDecoder())
                         pipeline.addLast(HttpResponseEncoder())
-                        pipeline.addLast(HttpServerHandler(worldListProvider, javConfig, properties))
+                        pipeline.addLast(HttpServerHandler(worldListProvider, javConfig, properties, gamePackProvider))
                     }
                 },
             )
