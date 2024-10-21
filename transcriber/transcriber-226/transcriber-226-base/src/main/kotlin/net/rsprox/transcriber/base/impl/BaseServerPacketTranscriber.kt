@@ -1659,7 +1659,7 @@ public class BaseServerPacketTranscriber(
                             string("classname", check.className)
                             string("methodname", check.methodName)
                             string("returnclass", check.returnClass)
-                            string("parameterclasses", check.parameterClasses.toString())
+                            any("parameterclasses", check.parameterClasses.toString())
                         }
                     }
                     is ReflectionCheck.InvokeMethod -> {
@@ -1667,8 +1667,8 @@ public class BaseServerPacketTranscriber(
                             string("classname", check.className)
                             string("methodname", check.methodName)
                             string("returnclass", check.returnClass)
-                            string("parameterclasses", check.parameterClasses.toString())
-                            string(
+                            any("parameterclasses", check.parameterClasses.toString())
+                            any(
                                 "parametervalues",
                                 check.parameterValues
                                     .map { it.contentToString() }

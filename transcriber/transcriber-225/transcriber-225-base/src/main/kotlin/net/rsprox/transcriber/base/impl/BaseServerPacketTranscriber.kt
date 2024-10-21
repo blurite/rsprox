@@ -138,6 +138,7 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjCount
 import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjDel
 import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjEnabledOps
 import net.rsprox.protocol.game.outgoing.model.zone.payload.SoundArea
+import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildArea
 import net.rsprox.protocol.reflection.ReflectionCheck
 import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.filters.PropertyFilter
@@ -193,7 +194,6 @@ import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.concurrent.TimeUnit
-import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildArea
 
 @Suppress("SpellCheckingInspection", "DuplicatedCode")
 public class BaseServerPacketTranscriber(
@@ -348,9 +348,10 @@ public class BaseServerPacketTranscriber(
         if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
         if (coordInBuildArea.invalid()) {
-            root.any("outofboundsbuildareacoord",
+            root.any(
+                "outofboundsbuildareacoord",
                 "[zoneX=${coordInBuildArea.zoneX}, xInZone=${coordInBuildArea.xInZone}, " +
-                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]"
+                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]",
             )
         } else {
             root.coordGrid(buildAreaCoordGrid(coordInBuildArea.xInBuildArea, coordInBuildArea.zInBuildArea))
@@ -364,9 +365,10 @@ public class BaseServerPacketTranscriber(
         if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
         if (coordInBuildArea.invalid()) {
-            root.any("outofboundsbuildareacoord",
+            root.any(
+                "outofboundsbuildareacoord",
                 "[zoneX=${coordInBuildArea.zoneX}, xInZone=${coordInBuildArea.xInZone}, " +
-                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]"
+                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]",
             )
         } else {
             root.coordGrid(buildAreaCoordGrid(coordInBuildArea.xInBuildArea, coordInBuildArea.zInBuildArea))
@@ -385,9 +387,10 @@ public class BaseServerPacketTranscriber(
         if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
         if (coordInBuildArea.invalid()) {
-            root.any("outofboundsbuildareacoord",
+            root.any(
+                "outofboundsbuildareacoord",
                 "[zoneX=${coordInBuildArea.zoneX}, xInZone=${coordInBuildArea.xInZone}, " +
-                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]"
+                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]",
             )
         } else {
             root.coordGrid(buildAreaCoordGrid(coordInBuildArea.xInBuildArea, coordInBuildArea.zInBuildArea))
@@ -401,9 +404,10 @@ public class BaseServerPacketTranscriber(
         if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
         if (coordInBuildArea.invalid()) {
-            root.any("outofboundsbuildareacoord",
+            root.any(
+                "outofboundsbuildareacoord",
                 "[zoneX=${coordInBuildArea.zoneX}, xInZone=${coordInBuildArea.xInZone}, " +
-                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]"
+                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]",
             )
         } else {
             root.coordGrid(buildAreaCoordGrid(coordInBuildArea.xInBuildArea, coordInBuildArea.zInBuildArea))
@@ -419,9 +423,10 @@ public class BaseServerPacketTranscriber(
         if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
         if (coordInBuildArea.invalid()) {
-            root.any("outofboundsbuildareacoord",
+            root.any(
+                "outofboundsbuildareacoord",
                 "[zoneX=${coordInBuildArea.zoneX}, xInZone=${coordInBuildArea.xInZone}, " +
-                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]"
+                    "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]",
             )
         } else {
             root.coordGrid(buildAreaCoordGrid(coordInBuildArea.xInBuildArea, coordInBuildArea.zInBuildArea))
@@ -1635,7 +1640,7 @@ public class BaseServerPacketTranscriber(
                             string("classname", check.className)
                             string("methodname", check.methodName)
                             string("returnclass", check.returnClass)
-                            string("parameterclasses", check.parameterClasses.toString())
+                            any("parameterclasses", check.parameterClasses.toString())
                         }
                     }
                     is ReflectionCheck.InvokeMethod -> {
@@ -1643,8 +1648,8 @@ public class BaseServerPacketTranscriber(
                             string("classname", check.className)
                             string("methodname", check.methodName)
                             string("returnclass", check.returnClass)
-                            string("parameterclasses", check.parameterClasses.toString())
-                            string(
+                            any("parameterclasses", check.parameterClasses.toString())
+                            any(
                                 "parametervalues",
                                 check.parameterValues
                                     .map { it.contentToString() }
@@ -2141,12 +2146,15 @@ public class BaseServerPacketTranscriber(
         if (!filters[PropertyFilter.LOC_ANIM_SPECIFIC]) return omit()
         root.scriptVarType("id", ScriptVarType.SEQ, message.id)
         if (message.coordInBuildArea.invalid()) {
-            root.any("outofboundsbuildareacoord",
+            root.any(
+                "outofboundsbuildareacoord",
                 "[zoneX=${message.coordInBuildArea.zoneX}, xInZone=${message.coordInBuildArea.xInZone}, " +
-                    "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]"
+                    "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]",
             )
         } else {
-            root.coordGrid(buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea))
+            root.coordGrid(
+                buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea),
+            )
         }
         root.scriptVarType("shape", ScriptVarType.LOC_SHAPE, message.shape)
         root.int("rotation", message.rotation)
@@ -2158,12 +2166,15 @@ public class BaseServerPacketTranscriber(
         root.filteredInt("delay", message.delay, 0)
         root.filteredInt("height", message.height, 0)
         if (message.coordInBuildArea.invalid()) {
-            root.any("outofboundsbuildareacoord",
+            root.any(
+                "outofboundsbuildareacoord",
                 "[zoneX=${message.coordInBuildArea.zoneX}, xInZone=${message.coordInBuildArea.xInZone}, " +
-                    "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]"
+                    "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]",
             )
         } else {
-            root.coordGrid(buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea))
+            root.coordGrid(
+                buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea),
+            )
         }
     }
 
@@ -2217,12 +2228,15 @@ public class BaseServerPacketTranscriber(
         root.int("endheight", message.endHeight)
         root.group("SOURCE") {
             if (message.coordInBuildArea.invalid()) {
-                any("outofboundsbuildareacoord",
+                any(
+                    "outofboundsbuildareacoord",
                     "[zoneX=${message.coordInBuildArea.zoneX}, xInZone=${message.coordInBuildArea.xInZone}, " +
-                        "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]"
+                        "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]",
                 )
             } else {
-                coordGrid(buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea))
+                coordGrid(
+                    buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea),
+                )
             }
         }
         root.group("TARGET") {
@@ -2230,7 +2244,7 @@ public class BaseServerPacketTranscriber(
                 any(
                     "outofboundsbuildareacoord",
                     "[zoneX=${message.coordInBuildArea.zoneX}, xInZone=${message.coordInBuildArea.xInZone}, " +
-                        "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]"
+                        "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]",
                 )
             } else {
                 coordGrid(

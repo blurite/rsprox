@@ -78,6 +78,7 @@ import net.rsprox.shared.property.ChildProperty
 import net.rsprox.shared.property.NamedEnum
 import net.rsprox.shared.property.Property
 import net.rsprox.shared.property.RootProperty
+import net.rsprox.shared.property.any
 import net.rsprox.shared.property.boolean
 import net.rsprox.shared.property.com
 import net.rsprox.shared.property.coordGridProperty
@@ -441,7 +442,7 @@ public open class BaseClientPacketTranscriber(
                                     string("classname", res.className)
                                     string("methodname", res.methodName)
                                     string("returnclass", res.returnClass)
-                                    string("parameterclasses", res.parameterClasses.toString())
+                                    any("parameterclasses", res.parameterClasses.toString())
                                 }
                             }
                             is ReflectionCheck.InvokeMethod -> {
@@ -449,8 +450,8 @@ public open class BaseClientPacketTranscriber(
                                     string("classname", res.className)
                                     string("methodname", res.methodName)
                                     string("returnclass", res.returnClass)
-                                    string("parameterclasses", res.parameterClasses.toString())
-                                    string(
+                                    any("parameterclasses", res.parameterClasses.toString())
+                                    any(
                                         "parametervalues",
                                         res.parameterValues
                                             .map { it.contentToString() }
@@ -466,7 +467,14 @@ public open class BaseClientPacketTranscriber(
                                 }
                             }
                         }
-                        string("exceptionclass", result.exceptionClass.toString())
+                        when (val throwable = result.throwable) {
+                            is ReflectionCheckReply.ErrorResult.ThrowableResultType.ConstructionThrowable<*> -> {
+                                string("constructionThrowable", throwable.throwableClass.toString())
+                            }
+                            is ReflectionCheckReply.ErrorResult.ThrowableResultType.ExecutionThrowable<*> -> {
+                                string("executionThrowable", throwable.throwableClass.toString())
+                            }
+                        }
                     }
                 }
 
@@ -489,7 +497,7 @@ public open class BaseClientPacketTranscriber(
                         string("classname", result.check.className)
                         string("methodname", result.check.methodName)
                         string("returnclass", result.check.returnClass)
-                        string("parameterclasses", result.check.parameterClasses.toString())
+                        any("parameterclasses", result.check.parameterClasses.toString())
                         int("modifiers", result.modifiers)
                     }
                 }
@@ -498,8 +506,8 @@ public open class BaseClientPacketTranscriber(
                         string("classname", result.check.className)
                         string("methodname", result.check.methodName)
                         string("returnclass", result.check.returnClass)
-                        string("parameterclasses", result.check.parameterClasses.toString())
-                        string(
+                        any("parameterclasses", result.check.parameterClasses.toString())
+                        any(
                             "parametervalues",
                             result.check.parameterValues
                                 .map { it.contentToString() }
