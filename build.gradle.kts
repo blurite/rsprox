@@ -147,14 +147,12 @@ tasks.register("uploadJarsToS3") {
                         val group =
                             artifact.moduleVersion.id.group
                                 .replace('.', '/')
-                        val name = artifact.name
                         val version = artifact.moduleVersion.id.version
                         val jarFile = artifact.file
 
-                        val prefix = "dependencies/$group/$name/$version/"
-                        val objectName = "$name-$version.jar"
+                        val prefix = "dependencies/$group/${artifact.name}/$version/"
 
-                        artifacts += uploadToS3(s3, jarFile, "$prefix$objectName")
+                        artifacts += uploadToS3(s3, jarFile, "$prefix${jarFile.name}")
                     }
                 }
         }
