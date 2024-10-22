@@ -21,11 +21,16 @@ import kotlin.io.path.absolutePathString
 
 public fun main() {
     Locale.setDefault(Locale.US)
+    SplashScreen.init()
+    SplashScreen.stage(0.0, "Preparing", "Setting up environment")
     val launcher = Launcher()
+
     val builder =
             ProcessBuilder()
                 .inheritIO()
                 .command(launcher.getLaunchArgs())
+
+    SplashScreen.stop()
     builder.start()
 }
 
@@ -51,6 +56,7 @@ public class Launcher() {
 
     init {
         logger.info { "Initialising RSProx launcher ${bootstrap.proxy.version}" }
+        SplashScreen.stage(0.20, "Preparing", "Creating directories")
         Files.createDirectories(artifactRepo)
     }
 
@@ -75,6 +81,7 @@ public class Launcher() {
     }
 
     private fun download() {
+        SplashScreen.stage(0.4, "Downloading", "Downloading artifacts")
         logger.info { "Downloading proxy-tool artifacts" }
         for (artifact in bootstrap.artifacts) {
             val dest = artifactRepo.resolve(artifact.name)
@@ -109,9 +116,9 @@ public class Launcher() {
             }
 
             val newHash = hash(dest.toFile())
-//            if (artifact.hash != newHash) {
-//                error("Unable to verify resource ${artifact.name} - expected ${artifact.hash}, got $newHash")
-//            }
+            if (artifact.hash != newHash) {
+                error("Unable to verify resource ${artifact.name} - expected ${artifact.hash}, got $newHash")
+            }
         }
     }
 
@@ -123,6 +130,7 @@ public class Launcher() {
     }
 
     private fun clean() {
+        SplashScreen.stage(0.30, "Downloading", "Cleaning up old artifacts")
         val existingFiles = artifactRepo.toFile().listFiles() ?: return
         logger.debug { "Cleaning up old artifacts" }
         val artifactNames = bootstrap.artifacts.map { it.name }.toSet()
@@ -145,6 +153,7 @@ public class Launcher() {
         private val gson = Gson()
 
         private fun getBootstrap(): Bootstrap {
+            SplashScreen.stage(0.1, "Preparing", "Downloading bootstrap")
             val bootstrapRequest = Request
                 .Builder()
                 .url(BOOTSTRAP_URL)
@@ -172,6 +181,8 @@ public class Launcher() {
                 }
                 body
             }
+
+            SplashScreen.stage(0.15, "Preparing", "Verifying bootstrap")
 
             val sig = Signature.getInstance("SHA256withRSA").apply {
                 initVerify(getCertificate())
