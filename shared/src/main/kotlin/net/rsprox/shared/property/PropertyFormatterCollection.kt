@@ -74,7 +74,7 @@ public class PropertyFormatterCollection private constructor(
                 val col =
                     when {
                         id != null -> "id=$id"
-                        it.npcName != "null" -> it.npcName
+                        it.npcName != "null" -> it.npcName + " (id=${it.id})"
                         else -> "id=${it.id}"
                     }
                 if (it.index == Int.MIN_VALUE) {

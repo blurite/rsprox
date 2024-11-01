@@ -138,8 +138,8 @@ public class ServerGameHandler(
             "IF_OPENSUB" -> {
                 // Note(revision): This block changes in each revision and must be updated
                 val buf = msg.payload.toJagByteBuf()
-                val interfaceId = buf.g2Alt3()
                 val targetComponent = buf.gCombinedIdAlt2()
+                val interfaceId = buf.g2Alt2()
                 buf.skipRead(1)
                 if (interfaceId == BANK_PIN_INTERFACE) {
                     this.bankPinComponent = targetComponent

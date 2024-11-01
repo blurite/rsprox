@@ -16,25 +16,6 @@ Below is a quick guide demonstrating how to use RSProx.
 
 ### Cloning
 As of right now, RSProx can only be used by cloning the repository yourself.
-For new users, clean clone can be done via
-```
-git clone --recurse-submodules git@github.com:blurite/rsprox.git
-```
-
-For older users, if the runelite-launcher submodule has not been initialized,
-run the following git command
-```
-git submodule update --init --recursive
-```
-
-> [!IMPORTANT]
-> If you run into an error stating `fatal: destination path '*' already exists and is not an empty directory.`,
-> you will have to run `git submodule deinit -f runelite-launcher` and re-initialize it
-> as shown above.
-
-After initializing the submodule, make sure to run `./gradlew --refresh-dependencies clean build`.
-This will properly download the submodules and rebuild the project, ensuring
-that all the files that are necessary to run, will be available.
 
 ### Launching
 RSProx project can be launched by either running the class
@@ -47,12 +28,15 @@ or by it via gradle as `./gradlew proxy`.
 
 ### Usage
 Upon launching RSProx tool, you will be met with a relatively empty GUI.
-In order to select a client to boot up, click the `+` sign in the top-right corner,
-as seen depicted here:
+In order to start using it, select the Jagex Account Mode from the first
+dropdown as seen below, the client type you wish to use from the second
+dropdown and press the launch button to the right.
+The 'Default' Jagex Account mode means no Jagex Account will be used, and
+you will be prompted for an e-mail and password to login.
 
-![Launching client](https://media.z-kris.com/2024/08/java_WjDIiakbS9.png)
+![Launching client](https://media.z-kris.com/2024/10/javaw_Zdj10a5jq8.png)
 
-After selecting a client, a process will occur which will download the necessary
+After launching a client, a process will occur which will download the necessary
 files and patch them, so they can pass data through the proxy itself.
 On RuneLite, this can take tens of seconds as everything loads up. Caching
 mechanism is included on RuneLite that makes consecutive launches faster than
@@ -64,16 +48,20 @@ your permission.
 Upon logging in, you should be met with logs being written in your RSProx GUI
 as depicted here:
 
-![Active client](https://media.z-kris.com/2024/08/java_XoLwvoxN5e.png)
+![Active client](https://media.z-kris.com/2024/10/javaw_WGRZzk1wtT.png)
 
 In order to filter the data that gets logged, you may use the filters panel
 that is at the top-right section of the client, as seen depicted here:
 
-![Client filters](https://media.z-kris.com/2024/08/java_c7KjkoeWPd.png)
+![Client filters](https://media.z-kris.com/2024/10/javaw_7ScB7aJLHn.png)
 
 Within the filters, you can toggle individual packets, entire packet groups,
 or even the full `Incoming` or `Outgoing` categories, by right-clicking on said
 categories.
+
+Additionally, on-top of the regular filters, one can use the settings above it
+to toggle general-purpose preferences that apply regardless of the selected
+filter preset.
 
 > [!TIP]
 > The Default preset does not support modifications. If you wish to toggle
@@ -151,10 +139,7 @@ Below is a small task list showing a rough breakdown of what the tool will consi
   - [ ] Automated binary blob uploading at the end of a session
   - [x] Indexing of binary files
   - [ ] Ability to download any binary blobs
-- [x] Decoders
-  - [x] Plugin system for decoders, with each revision acting as its own plugin
-  - [x] Revision 223 (client decoders)
-  - [x] Revision 223 (server decoders)
+- [x] Decoders (Every revision starting from 223)
 - [x] Transcriber
 - [ ] Launchers
   - [ ] Proxy launcher/updater

@@ -49,6 +49,7 @@ import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.downloader.JagexNativeClientDownloader
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.futures.asCompletableFuture
+import net.rsprox.proxy.http.GamePackProvider
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.rsa.publicKey
@@ -105,6 +106,7 @@ public class ProxyService(
     private val processes: MutableMap<Int, List<ProcessHandle>> = mutableMapOf()
     private val connections: ProxyConnectionContainer = ProxyConnectionContainer()
     private lateinit var credentials: BinaryCredentialsStore
+    private val gamePackProvider: GamePackProvider = GamePackProvider()
 
     public fun start(progressCallback: ProgressCallback) {
         logger.info { "Starting proxy service" }
@@ -514,6 +516,7 @@ public class ProxyService(
                 character,
             )
             logger.debug { "Waiting for client to connect to the server socket..." }
+            gamePackProvider.prefetch()
             val channel = socket.accept()
             logger.debug { "Client connected to server socket successfully." }
             logger.debug { "Requesting old rsa modulus from the client..." }
@@ -709,6 +712,7 @@ public class ProxyService(
                 factory.createWorldListHttpServer(
                     worldListProvider,
                     javConfig,
+                    gamePackProvider,
                 )
             val timeoutSeconds = properties.getProperty(BIND_TIMEOUT_SECONDS).toLong()
             httpServerBootstrap

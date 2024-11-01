@@ -7,6 +7,7 @@ import net.rsprot.protocol.metadata.Consistent
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.incoming.decoder.prot.GameClientProt
 import net.rsprox.protocol.game.incoming.model.misc.client.ReflectionCheckReply
+import net.rsprox.protocol.game.incoming.model.misc.client.ReflectionCheckReply.ErrorResult
 import net.rsprox.protocol.reflection.ReflectionCheck
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.session.getReflectionChecks
@@ -33,8 +34,21 @@ public class ReflectionCheckReplyDecoder : ProxyMessageDecoder<ReflectionCheckRe
         for (check in checks) {
             val opcode = buffer.g1s()
             if (opcode < 0) {
-                val exception = getExceptionClass(opcode)
-                results += ReflectionCheckReply.ErrorResult(check, exception)
+                if (opcode <= -10) {
+                    val throwable = getExecutionThrowableClass(opcode)
+                    results +=
+                        ErrorResult(
+                            check,
+                            ErrorResult.ThrowableResultType.ExecutionThrowable(throwable),
+                        )
+                } else {
+                    val throwable = getConstructionThrowableClass(opcode)
+                    results +=
+                        ErrorResult(
+                            check,
+                            ErrorResult.ThrowableResultType.ConstructionThrowable(throwable),
+                        )
+                }
                 continue
             }
             when (check) {
@@ -84,12 +98,12 @@ public class ReflectionCheckReplyDecoder : ProxyMessageDecoder<ReflectionCheckRe
     }
 
     /**
-     * Gets the exception class corresponding to each opcode.
+     * Gets the throwable class corresponding to each opcode during the reflection check execution.
      * @param opcode the opcode value
-     * @return the exception class corresponding to that opcode
+     * @return the throwable class corresponding to that opcode
      */
-    private fun getExceptionClass(opcode: Int): Class<*> {
-        return when (opcode) {
+    private fun getExecutionThrowableClass(opcode: Int): Class<out Throwable> =
+        when (opcode) {
             -10 -> ClassNotFoundException::class.java
             -11 -> InvalidClassException::class.java
             -12 -> StreamCorruptedException::class.java
@@ -102,7 +116,21 @@ public class ReflectionCheckReplyDecoder : ProxyMessageDecoder<ReflectionCheckRe
             -19 -> NullPointerException::class.java
             -20 -> Exception::class.java
             -21 -> Throwable::class.java
-            else -> throw IllegalArgumentException("Unknown exception opcode: $opcode")
+            else -> throw IllegalArgumentException("Unknown execution throwable opcode: $opcode")
         }
-    }
+
+    /**
+     * Gets the throwable class corresponding to each opcode during the reflection check construction.
+     * @param opcode the opcode value
+     * @return the throwable class corresponding to that opcode
+     */
+    private fun getConstructionThrowableClass(opcode: Int): Class<out Throwable> =
+        when (opcode) {
+            -1 -> ClassNotFoundException::class.java
+            -2 -> SecurityException::class.java
+            -3 -> NullPointerException::class.java
+            -4 -> Exception::class.java
+            -5 -> Throwable::class.java
+            else -> throw IllegalArgumentException("Unknown construction throwable opcode: $opcode")
+        }
 }

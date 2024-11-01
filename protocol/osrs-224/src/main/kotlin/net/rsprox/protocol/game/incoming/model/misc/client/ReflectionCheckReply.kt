@@ -33,11 +33,11 @@ public class ReflectionCheckReply(
      * Any error result will be in its own class, as there will not be any
      * return values included in this lot.
      * @property check the reflection check requested by the server
-     * @property exceptionClass the exception class that the client received
+     * @property throwable the throwable class that the client received during either construction or execution.
      */
-    public class ErrorResult<T : ReflectionCheck, E : Class<*>>(
+    public class ErrorResult<T : ReflectionCheck, E : Class<out Throwable>>(
         override val check: T,
-        public val exceptionClass: E,
+        public val throwable: ThrowableResultType<E>,
     ) : ReflectionCheckResult<T> {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -46,22 +46,87 @@ public class ReflectionCheckReply(
             other as ErrorResult<*, *>
 
             if (check != other.check) return false
-            if (exceptionClass != other.exceptionClass) return false
+            if (throwable != other.throwable) return false
 
             return true
         }
 
         override fun hashCode(): Int {
             var result = check.hashCode()
-            result = 31 * result + exceptionClass.hashCode()
+            result = 31 * result + throwable.hashCode()
             return result
         }
 
-        override fun toString(): String {
-            return "ErrorResult(" +
+        override fun toString(): String =
+            "ErrorResult(" +
                 "check=$check, " +
-                "exceptionClass=$exceptionClass" +
+                "throwable=$throwable" +
                 ")"
+
+        /**
+         * The throwable result types notify the user whether the throwable was caught during the
+         * construction of the reflection check where it looks up each class/field, or during
+         * the execution, where it looks up or assigns new values to properties. As the exceptions
+         * overlap, we need to distinguish the two types with a different wrapper.
+         * @property throwableClass the class that was thrown.
+         */
+        public sealed interface ThrowableResultType<E : Class<out Throwable>> {
+            public val throwableClass: E
+
+            /**
+             * A construction throwable is a throwable that was caught during the construction
+             * of a reflection check, e.g. when looking up the classes or fields on which the operations
+             * would be performed.
+             */
+            public class ConstructionThrowable<E : Class<out Throwable>>(
+                override val throwableClass: E,
+            ) : ThrowableResultType<E> {
+                override fun equals(other: Any?): Boolean {
+                    if (this === other) return true
+                    if (other !is ConstructionThrowable<*>) return false
+
+                    if (throwableClass != other.throwableClass) return false
+
+                    return true
+                }
+
+                override fun hashCode(): Int {
+                    return throwableClass.hashCode()
+                }
+
+                override fun toString(): String {
+                    return "ConstructionThrowable(" +
+                        "throwableClass=$throwableClass" +
+                        ")"
+                }
+            }
+
+            /**
+             * An execution throwable is a throwable that was caught during the execution of a specific
+             * operation that was requested, e.g. GetFieldModifiers or SetFieldValue.
+             */
+            public class ExecutionThrowable<E : Class<out Throwable>>(
+                override val throwableClass: E,
+            ) : ThrowableResultType<E> {
+                override fun equals(other: Any?): Boolean {
+                    if (this === other) return true
+                    if (other !is ExecutionThrowable<*>) return false
+
+                    if (throwableClass != other.throwableClass) return false
+
+                    return true
+                }
+
+                override fun hashCode(): Int {
+                    return throwableClass.hashCode()
+                }
+
+                override fun toString(): String {
+                    return "ExecutionThrowable(" +
+                        "throwableClass=$throwableClass" +
+                        ")"
+                }
+            }
         }
     }
 
