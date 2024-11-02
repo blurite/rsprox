@@ -61,7 +61,7 @@ import net.rsprox.transcriber.state.StateTracker
 import net.rsprox.transcriber.toFullBinaryString
 
 @Suppress("SpellCheckingInspection", "DuplicatedCode")
-public class BaseNpcInfoTranscriber(
+public class TextNpcInfoTranscriber(
     private val stateTracker: StateTracker,
     private val cache: Cache,
     private val filterSetStore: PropertyFilterSetStore,

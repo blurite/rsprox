@@ -5,15 +5,15 @@ import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.indexing.BinaryIndex
 import net.rsprox.shared.settings.SettingSetStore
-import net.rsprox.transcriber.BaseMessageConsumerContainer
 import net.rsprox.transcriber.TranscriberPlugin
 import net.rsprox.transcriber.TranscriberProvider
 import net.rsprox.transcriber.TranscriberRunner
 import net.rsprox.transcriber.state.StateTracker
+import net.rsprox.transcriber.text.TextMessageConsumerContainer
 
 public class IndexerTranscriberProvider : TranscriberProvider {
     override fun provide(
-        container: BaseMessageConsumerContainer,
+        container: TextMessageConsumerContainer,
         cacheProvider: CacheProvider,
         monitor: SessionMonitor<*>,
         filters: PropertyFilterSetStore,

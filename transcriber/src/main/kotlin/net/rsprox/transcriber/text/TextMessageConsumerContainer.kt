@@ -1,10 +1,12 @@
-package net.rsprox.transcriber
+package net.rsprox.transcriber.text
 
 import com.github.michaelbull.logging.InlineLogger
 import net.rsprox.shared.property.PropertyTreeFormatter
 import net.rsprox.shared.property.RootProperty
+import net.rsprox.transcriber.MessageConsumer
+import net.rsprox.transcriber.MessageConsumerContainer
 
-public open class BaseMessageConsumerContainer(
+public open class TextMessageConsumerContainer(
     private val consumers: List<MessageConsumer>,
 ) : MessageConsumerContainer {
     override fun publish(

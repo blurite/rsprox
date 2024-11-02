@@ -15,8 +15,8 @@ import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.indexing.IndexedKey
 import net.rsprox.shared.indexing.IndexedType
 import net.rsprox.shared.indexing.MultiMapBinaryIndex
-import net.rsprox.transcriber.BaseMessageConsumerContainer
 import net.rsprox.transcriber.indexer.IndexerTranscriberProvider
+import net.rsprox.transcriber.text.TextMessageConsumerContainer
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Locale
@@ -47,7 +47,7 @@ public class BinaryIndexer {
         val session = DecodingSession(binary, latestPlugin)
         val folder = binaryPath.parent.resolve("indexed")
         Files.createDirectories(folder)
-        val consumers = BaseMessageConsumerContainer(emptyList())
+        val consumers = TextMessageConsumerContainer(emptyList())
         val index = MultiMapBinaryIndex()
         val runner =
             transcriberProvider.provide(

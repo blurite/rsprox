@@ -23,8 +23,8 @@ import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.indexing.NopBinaryIndex
 import net.rsprox.shared.settings.SettingSetStore
-import net.rsprox.transcriber.BaseMessageConsumerContainer
-import net.rsprox.transcriber.text.BaseTranscriberProvider
+import net.rsprox.transcriber.text.TextMessageConsumerContainer
+import net.rsprox.transcriber.text.TextTranscriberProvider
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
@@ -207,8 +207,8 @@ public data class BinaryBlob(
                 logger.info { "Plugin for ${header.revision} missing, no live transcriber hooked." }
                 return
             }
-            val transcriberProvider = BaseTranscriberProvider()
-            val consumers = BaseMessageConsumerContainer(emptyList())
+            val transcriberProvider = TextTranscriberProvider()
+            val consumers = TextMessageConsumerContainer(emptyList())
             val session = Session(header.localPlayerIndex, AttributeMap())
             val decodingSession = DecodingSession(this, latestPlugin)
             val runner =

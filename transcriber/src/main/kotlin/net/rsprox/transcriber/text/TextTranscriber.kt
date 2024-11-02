@@ -18,7 +18,7 @@ import net.rsprox.transcriber.prot.GameServerProt
 import net.rsprox.transcriber.prot.Prot
 import net.rsprox.transcriber.state.StateTracker
 
-public class BaseTranscriber private constructor(
+public class TextTranscriber private constructor(
     private val stateTracker: StateTracker,
     cacheProvider: CacheProvider,
     override val monitor: SessionMonitor<*>,
@@ -27,27 +27,27 @@ public class BaseTranscriber private constructor(
     private val filterSetStore: PropertyFilterSetStore,
     private val settingSetStore: SettingSetStore,
 ) : Transcriber,
-    ClientPacketTranscriber by BaseClientPacketTranscriber(
+    ClientPacketTranscriber by TextClientPacketTranscriber(
         stateTracker,
         cacheProvider.get(),
         filterSetStore,
         settingSetStore,
     ),
-    ServerPacketTranscriber by BaseServerPacketTranscriber(
+    ServerPacketTranscriber by TextServerPacketTranscriber(
         stateTracker,
         cacheProvider.get(),
         filterSetStore,
         settingSetStore,
         (formatter as OmitFilteredPropertyTreeFormatter).propertyFormatterCollection, // Unsafe but works for now
     ),
-    PlayerInfoTranscriber by BasePlayerInfoTranscriber(
+    PlayerInfoTranscriber by TextPlayerInfoTranscriber(
         stateTracker,
         monitor,
         cacheProvider.get(),
         filterSetStore,
         settingSetStore,
     ),
-    NpcInfoTranscriber by BaseNpcInfoTranscriber(
+    NpcInfoTranscriber by TextNpcInfoTranscriber(
         stateTracker,
         cacheProvider.get(),
         filterSetStore,

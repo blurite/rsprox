@@ -208,7 +208,7 @@ import java.util.Date
 import java.util.concurrent.TimeUnit
 
 @Suppress("SpellCheckingInspection", "DuplicatedCode")
-public class BaseServerPacketTranscriber(
+public class TextServerPacketTranscriber(
     private val stateTracker: StateTracker,
     private val cache: Cache,
     private val filterSetStore: PropertyFilterSetStore,

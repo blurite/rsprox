@@ -8,15 +8,14 @@ import net.rsprox.shared.property.OmitFilteredPropertyTreeFormatter
 import net.rsprox.shared.property.PropertyFormatterCollection
 import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.shared.symbols.SymbolDictionaryProvider
-import net.rsprox.transcriber.BaseMessageConsumerContainer
 import net.rsprox.transcriber.TranscriberPlugin
 import net.rsprox.transcriber.TranscriberProvider
 import net.rsprox.transcriber.TranscriberRunner
 import net.rsprox.transcriber.state.StateTracker
 
-public class BaseTranscriberProvider : TranscriberProvider {
+public class TextTranscriberProvider : TranscriberProvider {
     override fun provide(
-        container: BaseMessageConsumerContainer,
+        container: TextMessageConsumerContainer,
         cacheProvider: CacheProvider,
         monitor: SessionMonitor<*>,
         filters: PropertyFilterSetStore,
@@ -34,7 +33,7 @@ public class BaseTranscriberProvider : TranscriberProvider {
             )
         val monitoredContainer = MonitoredMessageConsumerContainer(container, monitor)
         return TranscriberPlugin(
-            BaseTranscriber(
+            TextTranscriber(
                 cacheProvider,
                 monitor,
                 stateTracker,

@@ -56,7 +56,7 @@ import net.rsprox.transcriber.state.Player
 import net.rsprox.transcriber.state.StateTracker
 
 @Suppress("DuplicatedCode")
-public class BasePlayerInfoTranscriber(
+public class TextPlayerInfoTranscriber(
     private val stateTracker: StateTracker,
     private val monitor: SessionMonitor<*>,
     private val cache: Cache,

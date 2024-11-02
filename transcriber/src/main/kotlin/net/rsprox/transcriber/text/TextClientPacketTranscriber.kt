@@ -110,7 +110,7 @@ import java.text.DecimalFormat
 import java.text.NumberFormat
 
 @Suppress("SpellCheckingInspection", "DuplicatedCode")
-public open class BaseClientPacketTranscriber(
+public open class TextClientPacketTranscriber(
     private val stateTracker: StateTracker,
     private val cache: Cache,
     private val filterSetStore: PropertyFilterSetStore,
