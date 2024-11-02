@@ -128,6 +128,9 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SayExten
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SequenceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfo
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV1
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV2
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV3
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityUpdateType
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
@@ -214,6 +217,7 @@ import net.rsprox.protocol.game.outgoing.model.specific.NpcHeadIconSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.NpcSpotAnimSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.PlayerAnimSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.PlayerSpotAnimSpecific
+import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV2
 import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV3
 import net.rsprox.protocol.game.outgoing.model.unknown.UnknownString
 import net.rsprox.protocol.game.outgoing.model.varp.VarpLarge
@@ -606,7 +610,7 @@ public class IndexerTranscriber private constructor(
     override fun setNpcUpdateOrigin(message: SetNpcUpdateOrigin) {
     }
 
-    private fun preWorldEntityUpdate(message: WorldEntityInfoV3) {
+    private fun preWorldEntityUpdate(message: WorldEntityInfo) {
         for ((index, update) in message.updates) {
             when (update) {
                 is WorldEntityUpdateType.ActiveV2 -> {
@@ -635,7 +639,7 @@ public class IndexerTranscriber private constructor(
         }
     }
 
-    private fun postWorldEntityUpdate(message: WorldEntityInfoV3) {
+    private fun postWorldEntityUpdate(message: WorldEntityInfo) {
         for ((index, update) in message.updates) {
             when (update) {
                 is WorldEntityUpdateType.ActiveV2 -> {
@@ -660,6 +664,16 @@ public class IndexerTranscriber private constructor(
                 }
             }
         }
+    }
+
+    override fun worldEntityInfoV1(message: WorldEntityInfoV1) {
+        preWorldEntityUpdate(message)
+        postWorldEntityUpdate(message)
+    }
+
+    override fun worldEntityInfoV2(message: WorldEntityInfoV2) {
+        preWorldEntityUpdate(message)
+        postWorldEntityUpdate(message)
     }
 
     override fun worldEntityInfoV3(message: WorldEntityInfoV3) {
@@ -1106,6 +1120,10 @@ public class IndexerTranscriber private constructor(
     }
 
     override fun playerSpotAnimSpecific(message: PlayerSpotAnimSpecific) {
+        appendCheckedSpotanim(message.id)
+    }
+
+    override fun projAnimSpecificV2(message: ProjAnimSpecificV2) {
         appendCheckedSpotanim(message.id)
     }
 

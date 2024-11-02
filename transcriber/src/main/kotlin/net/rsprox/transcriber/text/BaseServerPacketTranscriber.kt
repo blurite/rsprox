@@ -1,5 +1,6 @@
 package net.rsprox.transcriber.text
 
+import net.rsprot.crypto.xtea.XteaKey
 import net.rsprox.cache.api.Cache
 import net.rsprox.cache.api.type.VarBitType
 import net.rsprox.protocol.common.CoordGrid
@@ -32,6 +33,10 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChanne
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV2
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelSingleUser
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfo
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV1
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV2
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV3
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityUpdateType
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
@@ -70,6 +75,7 @@ import net.rsprox.protocol.game.outgoing.model.map.RebuildRegion
 import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV1
 import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV2
 import net.rsprox.protocol.game.outgoing.model.map.Reconnect
+import net.rsprox.protocol.game.outgoing.model.map.util.BuildArea
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideLocOps
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideNpcOps
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideObjOps
@@ -119,6 +125,7 @@ import net.rsprox.protocol.game.outgoing.model.specific.NpcHeadIconSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.NpcSpotAnimSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.PlayerAnimSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.PlayerSpotAnimSpecific
+import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV2
 import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV3
 import net.rsprox.protocol.game.outgoing.model.unknown.UnknownString
 import net.rsprox.protocol.game.outgoing.model.varp.VarpLarge
@@ -895,7 +902,7 @@ public class BaseServerPacketTranscriber(
         root.coordGrid(buildAreaCoordGrid(message.originX, message.originZ))
     }
 
-    private fun preWorldEntityUpdate(message: WorldEntityInfoV3) {
+    private fun preWorldEntityUpdate(message: WorldEntityInfo) {
         for ((index, update) in message.updates) {
             when (update) {
                 is WorldEntityUpdateType.ActiveV2 -> {
@@ -916,16 +923,20 @@ public class BaseServerPacketTranscriber(
                 }
 
                 is WorldEntityUpdateType.ActiveV1 -> {
-                    throw IllegalStateException("Invalid update: $update")
                 }
                 is WorldEntityUpdateType.LowResolutionToHighResolutionV1 -> {
-                    throw IllegalStateException("Invalid update: $update")
+                    val world = stateTracker.createWorld(index)
+                    world.sizeX = update.sizeX
+                    world.sizeZ = update.sizeZ
+                    world.angle = update.angle
+                    // world.unknownProperty = update.unknownProperty
+                    world.coord = update.coordGrid
                 }
             }
         }
     }
 
-    private fun postWorldEntityUpdate(message: WorldEntityInfoV3) {
+    private fun postWorldEntityUpdate(message: WorldEntityInfo) {
         for ((index, update) in message.updates) {
             when (update) {
                 is WorldEntityUpdateType.ActiveV2 -> {
@@ -943,16 +954,30 @@ public class BaseServerPacketTranscriber(
                     // noop
                 }
                 is WorldEntityUpdateType.ActiveV1 -> {
-                    throw IllegalStateException("Invalid update: $update")
+                    val world = stateTracker.getWorld(index)
+                    world.angle = update.angle
+                    world.coord = update.coordGrid
+                    // world.moveSpeed = update.moveSpeed
                 }
                 is WorldEntityUpdateType.LowResolutionToHighResolutionV1 -> {
-                    throw IllegalStateException("Invalid update: $update")
                 }
             }
         }
     }
 
+    override fun worldEntityInfoV1(message: WorldEntityInfoV1) {
+        worldEntityInfo(message)
+    }
+
+    override fun worldEntityInfoV2(message: WorldEntityInfoV2) {
+        worldEntityInfo(message)
+    }
+
     override fun worldEntityInfoV3(message: WorldEntityInfoV3) {
+        worldEntityInfo(message)
+    }
+
+    private fun worldEntityInfo(message: WorldEntityInfo) {
         preWorldEntityUpdate(message)
         val group =
             root.group {
@@ -996,10 +1021,19 @@ public class BaseServerPacketTranscriber(
                             }
                         }
                         is WorldEntityUpdateType.ActiveV1 -> {
-                            throw IllegalStateException("Invalid update: $update")
+                            group("ACTIVE") {
+                                worldentity(index)
+                                int("angle", update.angle)
+                                string("movespeed", "${update.moveSpeed.id * 0.5} tiles/gamecycle")
+                                coordGrid("newcoord", update.coordGrid)
+                            }
                         }
                         is WorldEntityUpdateType.LowResolutionToHighResolutionV1 -> {
-                            throw IllegalStateException("Invalid update: $update")
+                            group("ADD") {
+                                worldentity(index)
+                                int("angle", update.angle)
+                                int("unknown", update.unknownProperty)
+                            }
                         }
                     }
                 }
@@ -1530,26 +1564,32 @@ public class BaseServerPacketTranscriber(
         }
     }
 
-    override fun rebuildWorldEntityV1(message: RebuildWorldEntityV1) {
-        throw IllegalStateException("Invalid message: $message")
-    }
-
-    override fun rebuildWorldEntityV2(message: RebuildWorldEntityV2) {
-        val world = stateTracker.getWorld(message.index)
-        world.rebuild(CoordGrid(0, (message.baseX - 6) shl 3, (message.baseZ - 6) shl 3))
-        world.setBuildArea(message.buildArea)
+    private fun rebuildWorldEntity(
+        index: Int,
+        baseX: Int,
+        baseZ: Int,
+        buildArea: BuildArea,
+        keys: List<XteaKey>,
+        playerInfoInitBlock: PlayerInfoInitBlock?,
+    ) {
+        val world = stateTracker.getWorld(index)
+        world.rebuild(CoordGrid(0, (baseX - 6) shl 3, (baseZ - 6) shl 3))
+        world.setBuildArea(buildArea)
         if (!filters[PropertyFilter.REBUILD]) return omit()
-        root.worldentity(message.index)
-        root.int("zonex", message.baseX)
-        root.int("zonez", message.baseZ)
+        root.worldentity(index)
+        root.int("zonex", baseX)
+        root.int("zonez", baseZ)
+        if (playerInfoInitBlock != null) {
+            root.coordGrid("localplayercoord", playerInfoInitBlock.localPlayerCoord)
+        }
         val mapsquares = mutableSetOf<Int>()
         root.group("BUILD_AREA") {
-            val startZoneX = message.baseX - 6
-            val startZoneZ = message.baseZ - 6
+            val startZoneX = baseX - 6
+            val startZoneZ = baseZ - 6
             for (level in 0..<4) {
-                for (zoneX in startZoneX..(message.baseX + 6)) {
-                    for (zoneZ in startZoneZ..(message.baseZ + 6)) {
-                        val block = message.buildArea[level, zoneX - startZoneX, zoneZ - startZoneZ]
+                for (zoneX in startZoneX..(baseX + 6)) {
+                    for (zoneZ in startZoneZ..(baseZ + 6)) {
+                        val block = buildArea[level, zoneX - startZoneX, zoneZ - startZoneZ]
                         // Invalid zone
                         if (block.mapsquareId == 32767) continue
                         mapsquares += block.mapsquareId
@@ -1562,7 +1602,7 @@ public class BaseServerPacketTranscriber(
                 }
             }
         }
-        val iterator = message.keys.listIterator()
+        val iterator = keys.listIterator()
         root.group("KEYS") {
             for (mapsquareId in mapsquares) {
                 val key = iterator.next()
@@ -1575,6 +1615,28 @@ public class BaseServerPacketTranscriber(
         check(!iterator.hasNext()) {
             "Xtea keys leftover"
         }
+    }
+
+    override fun rebuildWorldEntityV1(message: RebuildWorldEntityV1) {
+        rebuildWorldEntity(
+            message.index,
+            message.baseX,
+            message.baseZ,
+            message.buildArea,
+            message.keys,
+            message.playerInfoInitBlock,
+        )
+    }
+
+    override fun rebuildWorldEntityV2(message: RebuildWorldEntityV2) {
+        rebuildWorldEntity(
+            message.index,
+            message.baseX,
+            message.baseZ,
+            message.buildArea,
+            message.keys,
+            null,
+        )
     }
 
     override fun hideLocOps(message: HideLocOps) {
@@ -2260,6 +2322,54 @@ public class BaseServerPacketTranscriber(
         root.filteredInt("delay", message.delay, 0)
     }
 
+    override fun projAnimSpecificV2(message: ProjAnimSpecificV2) {
+        if (!filters[PropertyFilter.PROJANIM_SPECIFIC]) return omit()
+        root.scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
+        root.int("starttime", message.startTime)
+        root.int("endtime", message.endTime)
+        root.int("angle", message.angle)
+        root.int("progress", message.progress)
+        root.int("startheight", message.startHeight)
+        root.int("endheight", message.endHeight)
+        root.group("SOURCE") {
+            if (message.coordInBuildArea.invalid()) {
+                any(
+                    "outofboundsbuildareacoord",
+                    "[zoneX=${message.coordInBuildArea.zoneX}, xInZone=${message.coordInBuildArea.xInZone}, " +
+                        "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]",
+                )
+            } else {
+                coordGrid(
+                    buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea),
+                )
+            }
+        }
+        root.group("TARGET") {
+            if (message.coordInBuildArea.invalid()) {
+                any(
+                    "outofboundsbuildareacoord",
+                    "[zoneX=${message.coordInBuildArea.zoneX}, xInZone=${message.coordInBuildArea.xInZone}, " +
+                        "zoneZ=${message.coordInBuildArea.zoneZ}, zInZone=${message.coordInBuildArea.zInZone}]",
+                )
+            } else {
+                coordGrid(
+                    buildAreaCoordGrid(
+                        message.coordInBuildArea.xInBuildArea + message.deltaX,
+                        message.coordInBuildArea.zInBuildArea + message.deltaZ,
+                    ),
+                )
+            }
+            val ambiguousIndex = message.targetIndex
+            if (ambiguousIndex != 0) {
+                if (ambiguousIndex > 0) {
+                    npc(ambiguousIndex - 1)
+                } else {
+                    player(-ambiguousIndex - 1)
+                }
+            }
+        }
+    }
+
     override fun projAnimSpecificV3(message: ProjAnimSpecificV3) {
         if (!filters[PropertyFilter.PROJANIM_SPECIFIC]) return omit()
         root.scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
@@ -2280,6 +2390,14 @@ public class BaseServerPacketTranscriber(
                 coordGrid(
                     buildAreaCoordGrid(message.coordInBuildArea.xInBuildArea, message.coordInBuildArea.zInBuildArea),
                 )
+            }
+            val ambiguousIndex = message.sourceIndex
+            if (ambiguousIndex != 0) {
+                if (ambiguousIndex > 0) {
+                    npc(ambiguousIndex - 1)
+                } else {
+                    player(-ambiguousIndex - 1)
+                }
             }
         }
         root.group("TARGET") {

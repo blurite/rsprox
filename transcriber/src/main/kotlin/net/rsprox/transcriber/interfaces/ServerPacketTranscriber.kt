@@ -28,6 +28,8 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChanne
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV2
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelSingleUser
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV1
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV2
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV3
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
@@ -114,6 +116,7 @@ import net.rsprox.protocol.game.outgoing.model.specific.NpcHeadIconSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.NpcSpotAnimSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.PlayerAnimSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.PlayerSpotAnimSpecific
+import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV2
 import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV3
 import net.rsprox.protocol.game.outgoing.model.unknown.UnknownString
 import net.rsprox.protocol.game.outgoing.model.varp.VarpLarge
@@ -195,6 +198,10 @@ public interface ServerPacketTranscriber {
     public fun updateFriendChatChannelSingleUser(message: UpdateFriendChatChannelSingleUser)
 
     public fun setNpcUpdateOrigin(message: SetNpcUpdateOrigin)
+
+    public fun worldEntityInfoV1(message: WorldEntityInfoV1)
+
+    public fun worldEntityInfoV2(message: WorldEntityInfoV2)
 
     public fun worldEntityInfoV3(message: WorldEntityInfoV3)
 
@@ -363,6 +370,8 @@ public interface ServerPacketTranscriber {
     public fun playerAnimSpecific(message: PlayerAnimSpecific)
 
     public fun playerSpotAnimSpecific(message: PlayerSpotAnimSpecific)
+
+    public fun projAnimSpecificV2(message: ProjAnimSpecificV2)
 
     public fun projAnimSpecificV3(message: ProjAnimSpecificV3)
 

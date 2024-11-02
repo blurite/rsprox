@@ -24,10 +24,16 @@ public class LiveTranscriberSession(
     @Volatile
     private var running: Boolean = true
 
+    @Volatile private var revision: Int = -1
+
     private val packetList: MutableList<Packet> = mutableListOf()
 
     init {
         launchThread()
+    }
+
+    public fun setRevision(revision: Int) {
+        this.revision = revision
     }
 
     public fun pass(
@@ -75,10 +81,10 @@ public class LiveTranscriberSession(
         for (packet in results) {
             when (packet.direction) {
                 StreamDirection.CLIENT_TO_SERVER -> {
-                    runner.onClientProt(packet.prot, packet.message)
+                    runner.onClientProt(packet.prot, packet.message, revision)
                 }
                 StreamDirection.SERVER_TO_CLIENT -> {
-                    runner.onServerPacket(packet.prot, packet.message)
+                    runner.onServerPacket(packet.prot, packet.message, revision)
                 }
             }
         }

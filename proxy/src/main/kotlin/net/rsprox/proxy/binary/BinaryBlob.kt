@@ -220,12 +220,14 @@ public data class BinaryBlob(
                     settings,
                     NopBinaryIndex,
                 )
-            this.liveSession =
+            val liveSession =
                 LiveTranscriberSession(
                     session,
                     decodingSession,
                     runner,
                 )
+            this.liveSession = liveSession
+            liveSession.setRevision(header.revision)
         } catch (t: Throwable) {
             logger.error(t) {
                 "Unable to hook a live transcriber."

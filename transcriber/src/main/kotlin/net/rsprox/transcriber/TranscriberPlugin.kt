@@ -24,6 +24,7 @@ public class TranscriberPlugin(
     override fun onServerPacket(
         prot: Prot,
         message: IncomingMessage,
+        revision: Int,
     ) {
         val toString = prot.toString()
         val serverProt = GameServerProt.valueOf(toString)
@@ -81,7 +82,7 @@ public class TranscriberPlugin(
             GameServerProt.MAP_PROJANIM -> pass(message, Transcriber::mapProjAnim)
             GameServerProt.SOUND_AREA -> pass(message, Transcriber::soundArea)
             GameServerProt.PROJANIM_SPECIFIC_V3 -> pass(message, Transcriber::projAnimSpecificV3)
-            GameServerProt.PROJANIM_SPECIFIC_V2 -> throw IllegalArgumentException("Unimplemented packet")
+            GameServerProt.PROJANIM_SPECIFIC_V2 -> pass(message, Transcriber::projAnimSpecificV2)
             GameServerProt.PROJANIM_SPECIFIC_V1 -> throw IllegalArgumentException("Unimplemented packet")
             GameServerProt.MAP_ANIM_SPECIFIC -> pass(message, Transcriber::mapAnimSpecific)
             GameServerProt.LOC_ANIM_SPECIFIC -> pass(message, Transcriber::locAnimSpecific)
@@ -97,11 +98,17 @@ public class TranscriberPlugin(
             GameServerProt.CLEAR_ENTITIES -> pass(message, Transcriber::clearEntities)
             GameServerProt.SET_ACTIVE_WORLD -> pass(message, Transcriber::setActiveWorld)
             GameServerProt.WORLDENTITY_INFO_V3 -> pass(message, Transcriber::worldEntityInfoV3)
-            GameServerProt.WORLDENTITY_INFO_V2 -> throw IllegalArgumentException("Unimplemented packet")
-            GameServerProt.WORLDENTITY_INFO_V1 -> throw IllegalArgumentException("Unimplemented packet")
+            GameServerProt.WORLDENTITY_INFO_V2 -> pass(message, Transcriber::worldEntityInfoV2)
+            GameServerProt.WORLDENTITY_INFO_V1 -> pass(message, Transcriber::worldEntityInfoV1)
             GameServerProt.REBUILD_NORMAL -> pass(message, Transcriber::rebuildNormal)
             GameServerProt.REBUILD_REGION -> pass(message, Transcriber::rebuildRegion)
-            GameServerProt.REBUILD_WORLDENTITY -> pass(message, Transcriber::rebuildWorldEntityV2)
+            GameServerProt.REBUILD_WORLDENTITY -> {
+                if (revision >= 225) {
+                    pass(message, Transcriber::rebuildWorldEntityV2)
+                } else {
+                    pass(message, Transcriber::rebuildWorldEntityV1)
+                }
+            }
             GameServerProt.VARP_SMALL -> pass(message, Transcriber::varpSmall)
             GameServerProt.VARP_LARGE -> pass(message, Transcriber::varpLarge)
             GameServerProt.VARP_RESET -> pass(message, Transcriber::varpReset)
@@ -180,8 +187,8 @@ public class TranscriberPlugin(
             GameServerProt.RECONNECT -> pass(message, Transcriber::reconnect)
             GameServerProt.HIDEOBJOPS -> pass(message, Transcriber::hideObjOps)
             GameServerProt.UNKNOWN_STRING -> pass(message, Transcriber::unknownString)
-            GameServerProt.NPC_INFO_SMALL_V4 -> throw IllegalArgumentException("Unimplemented packet")
-            GameServerProt.NPC_INFO_LARGE_V4 -> throw IllegalArgumentException("Unimplemented packet")
+            GameServerProt.NPC_INFO_SMALL_V4 -> pass(message, Transcriber::npcInfoV5)
+            GameServerProt.NPC_INFO_LARGE_V4 -> pass(message, Transcriber::npcInfoV5)
             GameServerProt.OBJ_CUSTOMISE -> pass(message, Transcriber::objCustomise)
             GameServerProt.OBJ_UNCUSTOMISE -> pass(message, Transcriber::objUncustomise)
             GameServerProt.SET_INTERACTION_MODE -> pass(message, Transcriber::setInteractionMode)
@@ -192,6 +199,7 @@ public class TranscriberPlugin(
     override fun onClientProt(
         prot: Prot,
         message: IncomingMessage,
+        revision: Int,
     ) {
         val toString = prot.toString()
         val clientProt = GameClientProt.valueOf(toString)

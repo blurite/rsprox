@@ -58,15 +58,15 @@ public class BinaryIndexer {
                 settings,
                 index,
             )
-
+        val revision = binary.header.revision
         for ((direction, prot, packet) in session.sequence()) {
             try {
                 when (direction) {
                     StreamDirection.CLIENT_TO_SERVER -> {
-                        runner.onClientProt(prot, packet)
+                        runner.onClientProt(prot, packet, revision)
                     }
                     StreamDirection.SERVER_TO_CLIENT -> {
-                        runner.onServerPacket(prot, packet)
+                        runner.onServerPacket(prot, packet, revision)
                     }
                 }
             } catch (t: NotImplementedError) {
