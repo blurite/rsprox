@@ -36,11 +36,11 @@ public enum class GameServerProt(
     IF_SETPLAYERMODEL_SELF(GameServerProtId.IF_SETPLAYERMODEL_SELF, 5),
 
     // Music-system related packets (excl. zone ones)
-    MIDI_SONG(GameServerProtId.MIDI_SONG, 10),
+    MIDI_SONG_V2(GameServerProtId.MIDI_SONG_V2, 10),
     MIDI_SONG_WITHSECONDARY(GameServerProtId.MIDI_SONG_WITHSECONDARY, 12),
     MIDI_SWAP(GameServerProtId.MIDI_SWAP, 8),
     MIDI_SONG_STOP(GameServerProtId.MIDI_SONG_STOP, 4),
-    MIDI_SONG_OLD(GameServerProtId.MIDI_SONG_OLD, 2),
+    MIDI_SONG_V1(GameServerProtId.MIDI_SONG_V1, 2),
     MIDI_JINGLE(GameServerProtId.MIDI_JINGLE, 5),
     SYNTH_SOUND(GameServerProtId.SYNTH_SOUND, 5),
 
@@ -63,20 +63,20 @@ public enum class GameServerProt(
     SOUND_AREA(GameServerProtId.SOUND_AREA, 7),
 
     // Specific packets
-    PROJANIM_SPECIFIC(GameServerProtId.PROJANIM_SPECIFIC, 22),
+    PROJANIM_SPECIFIC_V3(GameServerProtId.PROJANIM_SPECIFIC_V3, 22),
 
     @Deprecated(
         "Deprecated as a new variant that supports source index was introduced.",
-        replaceWith = ReplaceWith("PROJANIM_SPECIFIC"),
+        replaceWith = ReplaceWith("PROJANIM_SPECIFIC_V3"),
     )
-    PROJANIM_SPECIFIC_OLD(GameServerProtId.PROJANIM_SPECIFIC_OLD, 19),
+    PROJANIM_SPECIFIC_V2(GameServerProtId.PROJANIM_SPECIFIC_V2, 19),
 
     @Deprecated(
         "Deprecated as it is bugged(size: 17; payload: 18) and " +
             "a newer variant with greater property ranges is introduced",
-        replaceWith = ReplaceWith("PROJANIM_SPECIFIC"),
+        replaceWith = ReplaceWith("PROJANIM_SPECIFIC_V2"),
     )
-    PROJANIM_SPECIFIC_OLD_OLD(GameServerProtId.PROJANIM_SPECIFIC_OLD_OLD, 17),
+    PROJANIM_SPECIFIC_V1(GameServerProtId.PROJANIM_SPECIFIC_V1, 17),
     MAP_ANIM_SPECIFIC(GameServerProtId.MAP_ANIM_SPECIFIC, 8),
     LOC_ANIM_SPECIFIC(GameServerProtId.LOC_ANIM_SPECIFIC, 6),
     NPC_HEADICON_SPECIFIC(GameServerProtId.NPC_HEADICON_SPECIFIC, 9),
@@ -87,20 +87,20 @@ public enum class GameServerProt(
 
     // Info packets
     PLAYER_INFO(GameServerProtId.PLAYER_INFO, Prot.VAR_SHORT),
-    NPC_INFO_SMALL(GameServerProtId.NPC_INFO_SMALL, Prot.VAR_SHORT),
-    NPC_INFO_LARGE(GameServerProtId.NPC_INFO_LARGE, Prot.VAR_SHORT),
+    NPC_INFO_SMALL_V4(GameServerProtId.NPC_INFO_SMALL_V4, Prot.VAR_SHORT),
+    NPC_INFO_LARGE_V4(GameServerProtId.NPC_INFO_LARGE_V4, Prot.VAR_SHORT),
     SET_NPC_UPDATE_ORIGIN(GameServerProtId.SET_NPC_UPDATE_ORIGIN, 2),
 
     // World entity packets
     CLEAR_ENTITIES(GameServerProtId.CLEAR_ENTITIES, 0),
     SET_ACTIVE_WORLD(GameServerProtId.SET_ACTIVE_WORLD, 4),
-    WORLDENTITY_INFO(GameServerProtId.WORLDENTITY_INFO, Prot.VAR_SHORT),
+    WORLDENTITY_INFO_V2(GameServerProtId.WORLDENTITY_INFO_V2, Prot.VAR_SHORT),
 
     @Deprecated(
         "Deprecated as a new variant that supports fine height was introduced.",
-        replaceWith = ReplaceWith("WORLDENTITY_INFO"),
+        replaceWith = ReplaceWith("WORLDENTITY_INFO_V2"),
     )
-    WORLDENTITY_INFO_OLD(GameServerProtId.WORLDENTITY_INFO_OLD, Prot.VAR_SHORT),
+    WORLDENTITY_INFO_V1(GameServerProtId.WORLDENTITY_INFO_V1, Prot.VAR_SHORT),
 
     // Map packets
     REBUILD_NORMAL(GameServerProtId.REBUILD_NORMAL, Prot.VAR_SHORT),
@@ -125,8 +125,8 @@ public enum class GameServerProt(
     CAM_ROTATEBY(GameServerProtId.CAM_ROTATEBY, 7),
     CAM_ROTATETO(GameServerProtId.CAM_ROTATETO, 7),
     CAM_MODE(GameServerProtId.CAM_MODE, 1),
-    CAM_TARGET(GameServerProtId.CAM_TARGET, 5),
-    CAM_TARGET_OLD(GameServerProtId.CAM_TARGET_OLD, 3),
+    CAM_TARGET_V2(GameServerProtId.CAM_TARGET, 5),
+    CAM_TARGET_V1(GameServerProtId.CAM_TARGET_OLD, 3),
     OCULUS_SYNC(GameServerProtId.OCULUS_SYNC, 4),
 
     // Inventory packets
@@ -168,8 +168,8 @@ public enum class GameServerProt(
     UPDATE_RUNENERGY(GameServerProtId.UPDATE_RUNENERGY, 2),
     SET_MAP_FLAG(GameServerProtId.SET_MAP_FLAG, 2),
     SET_PLAYER_OP(GameServerProtId.SET_PLAYER_OP, Prot.VAR_BYTE),
-    UPDATE_STAT(GameServerProtId.UPDATE_STAT, 7),
-    UPDATE_STAT_OLD(GameServerProtId.UPDATE_STAT_OLD, 6),
+    UPDATE_STAT_V2(GameServerProtId.UPDATE_STAT, 7),
+    UPDATE_STAT_V1(GameServerProtId.UPDATE_STAT_OLD, 6),
 
     // Misc. player packets
     RUNCLIENTSCRIPT(GameServerProtId.RUNCLIENTSCRIPT, Prot.VAR_SHORT),

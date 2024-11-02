@@ -33,7 +33,7 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingE
 public class PlayerInfoClient(
     private val localIndex: Int,
     private val huffmanCodec: HuffmanCodec,
-) {
+) : PlayerInfoDecoder {
     private var extendedInfoCount: Int = 0
     private val extendedInfoIndices: IntArray = IntArray(2048)
     private var highResolutionCount: Int = 0
@@ -48,7 +48,7 @@ public class PlayerInfoClient(
             UpdateType.LOW_RESOLUTION_IDLE
         }
 
-    public fun gpiInit(initBlock: PlayerInfoInitBlock) {
+    override fun gpiInit(initBlock: PlayerInfoInitBlock) {
         val localPlayer = Player()
         cachedPlayers[localIndex] = localPlayer
         localPlayer.coord = initBlock.localPlayerCoord
@@ -68,7 +68,7 @@ public class PlayerInfoClient(
         }
     }
 
-    public fun reset() {
+    override fun reset() {
         for (i in cachedPlayers.indices) {
             cachedPlayers[i] = null
         }
@@ -79,7 +79,7 @@ public class PlayerInfoClient(
         lowResolutionIndices.fill(0)
     }
 
-    public fun decode(buffer: ByteBuf): PlayerInfo {
+    override fun decode(buffer: ByteBuf): PlayerInfo {
         extendedInfoCount = 0
         updateTypes.fill(UpdateType.LOW_RESOLUTION_IDLE)
         for (player in cachedPlayers) {

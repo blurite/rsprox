@@ -9,6 +9,8 @@ import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcInfoClient
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerInfoClient
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
 import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
 import net.rsprox.protocol.game.outgoing.model.map.RebuildNormal
@@ -76,9 +78,11 @@ public class StaticRebuildDecoder(
             val world =
                 session.allocateWorld(
                     -1,
-                    session.localPlayerIndex,
-                    huffmanCodec,
-                    cache,
+                    PlayerInfoClient(
+                        session.localPlayerIndex,
+                        huffmanCodec,
+                    ),
+                    NpcInfoClient(cache),
                 )
             world.baseX = (zoneX - 6) * 8
             world.baseZ = (zoneZ - 6) * 8

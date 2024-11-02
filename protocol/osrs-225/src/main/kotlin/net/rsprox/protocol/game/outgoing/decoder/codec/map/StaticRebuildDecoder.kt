@@ -9,12 +9,13 @@ import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcInfoClient
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerInfoClient
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
 import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
 import net.rsprox.protocol.game.outgoing.model.map.RebuildNormal
 import net.rsprox.protocol.game.outgoing.model.map.StaticRebuildMessage
 import net.rsprox.protocol.session.Session
-import net.rsprox.protocol.session.allocatePlayerInfoClient
 import net.rsprox.protocol.session.allocateWorld
 import net.rsprox.protocol.session.getWorld
 
@@ -74,15 +75,18 @@ public class StaticRebuildDecoder(
                     keys,
                     playerInfoInitBlock,
                 )
-            val info = session.allocatePlayerInfoClient(session.localPlayerIndex, huffmanCodec)
             val world =
                 session.allocateWorld(
                     -1,
-                    cache,
+                    PlayerInfoClient(
+                        session.localPlayerIndex,
+                        huffmanCodec,
+                    ),
+                    NpcInfoClient(cache),
                 )
             world.baseX = (zoneX - 6) * 8
             world.baseZ = (zoneZ - 6) * 8
-            info.gpiInit(playerInfoInitBlock)
+            world.playerInfo.gpiInit(playerInfoInitBlock)
             message
         } else {
             val world = session.getWorld(-1)

@@ -73,7 +73,7 @@ public class BinaryToStringCommand : CliktCommand(name = "tostring") {
                 binary.header.js5MasterIndex,
             ),
         )
-        pluginLoader.load("osrs", binary.header.revision, statefulCacheProvider)
+        pluginLoader.load(binary.header.revision, statefulCacheProvider)
         val latestPlugin = pluginLoader.getPlugin(binary.header.revision)
         val session = DecodingSession(binary, latestPlugin)
         var tick = 0

@@ -22,9 +22,13 @@ import net.rsprox.shared.indexing.NopBinaryIndex
 import net.rsprox.shared.property.PropertyTreeFormatter
 import net.rsprox.shared.property.RootProperty
 import net.rsprox.shared.settings.SettingSetStore
-import net.rsprox.transcriber.BaseMessageConsumerContainer
 import net.rsprox.transcriber.MessageConsumer
+import net.rsprox.transcriber.state.SessionState
+import net.rsprox.transcriber.state.SessionTracker
+import net.rsprox.transcriber.text.TextMessageConsumerContainer
+import net.rsprox.transcriber.text.TextTranscriberProvider
 import java.io.BufferedWriter
+import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Locale
 import kotlin.io.path.bufferedWriter
@@ -94,12 +98,14 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
                 binary.header.js5MasterIndex,
             ),
         )
-        pluginLoader.load("osrs", binary.header.revision, statefulCacheProvider)
+        pluginLoader.load(binary.header.revision, statefulCacheProvider)
         val latestPlugin = pluginLoader.getPlugin(binary.header.revision)
-        val transcriberProvider = pluginLoader.getTranscriberProvider(binary.header.revision)
+        val transcriberProvider = TextTranscriberProvider()
         val session = DecodingSession(binary, latestPlugin)
-        val writer = binaryPath.parent.resolve(binaryPath.nameWithoutExtension + ".txt").bufferedWriter()
-        val consumers = BaseMessageConsumerContainer(listOf(createBufferedWriterConsumer(writer)))
+        val textPath = binaryPath.parent.resolve(binaryPath.nameWithoutExtension + ".txt")
+        val writer = textPath.bufferedWriter()
+        val consumers = TextMessageConsumerContainer(listOf(createBufferedWriterConsumer(writer)))
+        val sessionState = SessionState(settings)
         val runner =
             transcriberProvider.provide(
                 consumers,
@@ -108,6 +114,13 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
                 filters,
                 settings,
                 NopBinaryIndex,
+                sessionState,
+            )
+        val sessionTracker =
+            SessionTracker(
+                sessionState,
+                statefulCacheProvider.get(),
+                NopSessionMonitor,
             )
 
         writer.appendLine("------------------")
@@ -122,15 +135,21 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
         )
         writer.appendLine("local player index: ${binary.header.localPlayerIndex}")
         writer.appendLine("-------------------")
-
+        val revision = binary.header.revision
         for ((direction, prot, packet) in session.sequence()) {
             try {
                 when (direction) {
                     StreamDirection.CLIENT_TO_SERVER -> {
-                        runner.onClientProt(prot, packet)
+                        sessionTracker.onClientPacket(packet, prot)
+                        sessionTracker.beforeTranscribe(packet)
+                        runner.onClientProt(prot, packet, revision)
+                        sessionTracker.afterTranscribe(packet)
                     }
                     StreamDirection.SERVER_TO_CLIENT -> {
-                        runner.onServerPacket(prot, packet)
+                        sessionTracker.onServerPacket(packet, prot)
+                        sessionTracker.beforeTranscribe(packet)
+                        runner.onServerPacket(prot, packet, revision)
+                        sessionTracker.afterTranscribe(packet)
                     }
                 }
             } catch (t: NotImplementedError) {
@@ -138,6 +157,9 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
             }
         }
         consumers.close()
+        // Set the last modified date to match up with the .bin file, so it's easier to find and link files
+        // in particular when re-ordering files in descending order
+        Files.setLastModifiedTime(textPath, Files.getLastModifiedTime(binaryPath))
     }
 
     private fun createBufferedWriterConsumer(writer: BufferedWriter): MessageConsumer {

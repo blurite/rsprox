@@ -23,7 +23,10 @@ import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.indexing.NopBinaryIndex
 import net.rsprox.shared.settings.SettingSetStore
-import net.rsprox.transcriber.BaseMessageConsumerContainer
+import net.rsprox.transcriber.state.SessionState
+import net.rsprox.transcriber.state.SessionTracker
+import net.rsprox.transcriber.text.TextMessageConsumerContainer
+import net.rsprox.transcriber.text.TextTranscriberProvider
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
@@ -199,17 +202,18 @@ public data class BinaryBlob(
                     OldSchoolCache(LiveCacheResolver(info), masterIndex)
                 }
             if (pluginLoader.getPluginOrNull(header.revision) == null) {
-                pluginLoader.load("osrs", header.revision, provider)
+                pluginLoader.load(header.revision, provider)
             }
             val latestPlugin = pluginLoader.getPluginOrNull(header.revision)
             if (latestPlugin == null) {
                 logger.info { "Plugin for ${header.revision} missing, no live transcriber hooked." }
                 return
             }
-            val transcriberProvider = pluginLoader.getTranscriberProvider(header.revision)
-            val consumers = BaseMessageConsumerContainer(emptyList())
+            val transcriberProvider = TextTranscriberProvider()
+            val consumers = TextMessageConsumerContainer(emptyList())
             val session = Session(header.localPlayerIndex, AttributeMap())
             val decodingSession = DecodingSession(this, latestPlugin)
+            val state = SessionState(settings)
             val runner =
                 transcriberProvider.provide(
                     consumers,
@@ -218,13 +222,23 @@ public data class BinaryBlob(
                     filters,
                     settings,
                     NopBinaryIndex,
+                    state,
                 )
-            this.liveSession =
+            val sessionTracker =
+                SessionTracker(
+                    state,
+                    provider.get(),
+                    NopSessionMonitor,
+                )
+            val liveSession =
                 LiveTranscriberSession(
                     session,
                     decodingSession,
                     runner,
+                    sessionTracker,
                 )
+            this.liveSession = liveSession
+            liveSession.setRevision(header.revision)
         } catch (t: Throwable) {
             logger.error(t) {
                 "Unable to hook a live transcriber."

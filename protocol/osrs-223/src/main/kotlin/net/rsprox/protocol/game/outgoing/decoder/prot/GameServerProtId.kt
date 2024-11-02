@@ -21,7 +21,7 @@ internal object GameServerProtId {
     const val UPDATE_ZONE_PARTIAL_ENCLOSED = 17
     const val MESSAGE_PRIVATE_ECHO = 18
     const val SET_MAP_FLAG = 19
-    const val NPC_INFO_SMALL = 20
+    const val NPC_INFO_SMALL_V4 = 20
     const val HISCORE_REPLY = 21
     const val LOC_ANIM = 22
     const val UPDATE_STAT = 23
@@ -30,10 +30,10 @@ internal object GameServerProtId {
     const val UPDATE_INV_FULL = 26
     const val UPDATE_RUNWEIGHT = 27
     const val SET_NPC_UPDATE_ORIGIN = 28
-    const val MIDI_SONG = 29
+    const val MIDI_SONG_V2 = 29
     const val RUNCLIENTSCRIPT = 30
     const val CLANSETTINGS_FULL = 31
-    const val NPC_INFO_LARGE = 32
+    const val NPC_INFO_LARGE_V4 = 32
     const val SET_HEATMAP_ENABLED = 33
     const val URL_OPEN = 34
     const val IF_MOVESUB = 35
@@ -57,7 +57,7 @@ internal object GameServerProtId {
     const val NPC_ANIM_SPECIFIC = 53
     const val IF_CLEARINV = 54
     const val MINIMAP_TOGGLE = 55
-    const val PROJANIM_SPECIFIC_OLD = 56
+    const val PROJANIM_SPECIFIC_V1 = 56
     const val IF_SETPOSITION = 57
     const val UPDATE_FRIENDLIST = 58
     const val UPDATE_STAT_OLD = 59
@@ -85,7 +85,7 @@ internal object GameServerProtId {
     const val UPDATE_TRADINGPOST = 81
     const val CHAT_FILTER_SETTINGS_PRIVATECHAT = 82
     const val MESSAGE_PRIVATE = 83
-    const val MIDI_SONG_OLD = 84
+    const val MIDI_SONG_V1 = 84
     const val UPDATE_STOCKMARKET_SLOT = 85
     const val IF_SETCOLOUR = 86
     const val LOC_DEL = 87
@@ -111,7 +111,7 @@ internal object GameServerProtId {
     const val UPDATE_RUNENERGY = 107
     const val IF_OPENSUB = 108
     const val CHAT_FILTER_SETTINGS = 109
-    const val WORLDENTITY_INFO = 110
+    const val WORLDENTITY_INFO_V1 = 110
     const val VARP_RESET = 111
     const val UPDATE_FRIENDCHAT_CHANNEL_FULL_V2 = 112
     const val LOGOUT_TRANSFER = 113
@@ -119,7 +119,7 @@ internal object GameServerProtId {
     const val NPC_SPOTANIM_SPECIFIC = 115
     const val PLAYER_SPOTANIM_SPECIFIC = 116
     const val PLAYER_ANIM_SPECIFIC = 117
-    const val PROJANIM_SPECIFIC = 118
+    const val PROJANIM_SPECIFIC_V2 = 118
     const val SET_PLAYER_OP = 119
     const val CAM_MOVETO_CYCLES = 120
     const val REBUILD_REGION = 121

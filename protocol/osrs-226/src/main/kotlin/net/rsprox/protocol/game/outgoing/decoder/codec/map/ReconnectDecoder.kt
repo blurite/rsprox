@@ -9,7 +9,8 @@ import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
 import net.rsprox.protocol.game.outgoing.model.map.Reconnect
 import net.rsprox.protocol.session.Session
-import net.rsprox.protocol.session.getPlayerInfoClient
+import net.rsprox.protocol.session.getActiveWorld
+import net.rsprox.protocol.session.getWorld
 
 @Suppress("DuplicatedCode")
 public class ReconnectDecoder : ProxyMessageDecoder<Reconnect> {
@@ -36,7 +37,7 @@ public class ReconnectDecoder : ProxyMessageDecoder<Reconnect> {
                     )
                 }
 
-        val info = session.getPlayerInfoClient()
+        val info = session.getWorld(session.getActiveWorld()).playerInfo
         info.reset()
         info.gpiInit(playerInfoInitBlock)
         return Reconnect(playerInfoInitBlock)

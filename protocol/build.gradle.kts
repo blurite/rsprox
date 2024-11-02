@@ -11,8 +11,10 @@ dependencies {
     implementation(rootProject.libs.rsprot.buffer)
     implementation(rootProject.libs.rsprot.compression)
     implementation(rootProject.libs.rsprot.protocol)
+    implementation(rootProject.libs.rsprot.crypto)
     implementation(platform(rootProject.libs.log4j.bom))
     implementation(rootProject.libs.bundles.log4j)
+    implementation(projects.cache.cacheApi)
 }
 
 private val pluginsPath: Path = Path(System.getProperty("user.home"), ".rsprox", "plugins")

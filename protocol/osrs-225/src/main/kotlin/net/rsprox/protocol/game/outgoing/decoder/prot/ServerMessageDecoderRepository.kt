@@ -16,8 +16,8 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamRotateBy
 import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamRotateToDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamShakeDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamSmoothResetDecoder
-import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamTargetDecoder
-import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamTargetOldDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamTargetV1Decoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.camera.CamTargetV2Decoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.camera.OculusSyncDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.clan.ClanChannelDeltaDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.clan.ClanChannelFullDecoder
@@ -36,7 +36,7 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.info.NpcInfoLargeDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.info.NpcInfoSmallDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.info.PlayerInfoDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.info.SetNpcUpdateOriginDecoder
-import net.rsprox.protocol.game.outgoing.decoder.codec.info.WorldEntityInfoDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.info.WorldEntityInfoV2Decoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.interfaces.IfClearInvDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.interfaces.IfCloseSubDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.interfaces.IfMoveSubDecoder
@@ -95,8 +95,8 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.misc.player.SetPlayerOpDe
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.player.TriggerOnDialogAbortDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.player.UpdateRunEnergyDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.player.UpdateRunWeightDecoder
-import net.rsprox.protocol.game.outgoing.decoder.codec.misc.player.UpdateStatDecoder
-import net.rsprox.protocol.game.outgoing.decoder.codec.misc.player.UpdateStatOldDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.misc.player.UpdateStatV1Decoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.misc.player.UpdateStatV2Decoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.player.UpdateStockMarketSlotDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.misc.player.UpdateTradingPostDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.social.FriendListLoadedDecoder
@@ -105,9 +105,9 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.social.MessagePrivateEcho
 import net.rsprox.protocol.game.outgoing.decoder.codec.social.UpdateFriendListDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.social.UpdateIgnoreListDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.sound.MidiJingleDecoder
-import net.rsprox.protocol.game.outgoing.decoder.codec.sound.MidiSongDecoder
-import net.rsprox.protocol.game.outgoing.decoder.codec.sound.MidiSongOldDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.sound.MidiSongStopDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.sound.MidiSongV1Decoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.sound.MidiSongV2Decoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.sound.MidiSongWithSecondaryDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.sound.MidiSwapDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.sound.SynthSoundDecoder
@@ -118,7 +118,7 @@ import net.rsprox.protocol.game.outgoing.decoder.codec.specific.NpcHeadIconSpeci
 import net.rsprox.protocol.game.outgoing.decoder.codec.specific.NpcSpotAnimSpecificDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.specific.PlayerAnimSpecificDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.specific.PlayerSpotAnimSpecificDecoder
-import net.rsprox.protocol.game.outgoing.decoder.codec.specific.ProjAnimSpecificDecoder
+import net.rsprox.protocol.game.outgoing.decoder.codec.specific.ProjAnimSpecificV3Decoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.unknown.UnknownStringDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.varp.VarpLargeDecoder
 import net.rsprox.protocol.game.outgoing.decoder.codec.varp.VarpResetDecoder
@@ -163,8 +163,8 @@ public object ServerMessageDecoderRepository {
                 bind(CamResetDecoder())
                 bind(CamShakeDecoder())
                 bind(CamSmoothResetDecoder())
-                bind(CamTargetDecoder())
-                bind(CamTargetOldDecoder())
+                bind(CamTargetV2Decoder())
+                bind(CamTargetV1Decoder())
                 bind(OculusSyncDecoder())
 
                 bind(ClanChannelDeltaDecoder())
@@ -186,7 +186,7 @@ public object ServerMessageDecoderRepository {
                 bind(NpcInfoSmallDecoder())
                 bind(NpcInfoLargeDecoder())
                 bind(SetNpcUpdateOriginDecoder())
-                bind(WorldEntityInfoDecoder())
+                bind(WorldEntityInfoV2Decoder())
 
                 bind(IfClearInvDecoder())
                 bind(IfCloseSubDecoder())
@@ -251,8 +251,8 @@ public object ServerMessageDecoderRepository {
                 bind(TriggerOnDialogAbortDecoder())
                 bind(UpdateRunEnergyDecoder())
                 bind(UpdateRunWeightDecoder())
-                bind(UpdateStatDecoder())
-                bind(UpdateStatOldDecoder())
+                bind(UpdateStatV2Decoder())
+                bind(UpdateStatV1Decoder())
                 bind(UpdateStockMarketSlotDecoder())
                 bind(UpdateTradingPostDecoder())
 
@@ -263,8 +263,8 @@ public object ServerMessageDecoderRepository {
                 bind(UpdateIgnoreListDecoder())
 
                 bind(MidiJingleDecoder())
-                bind(MidiSongDecoder())
-                bind(MidiSongOldDecoder())
+                bind(MidiSongV2Decoder())
+                bind(MidiSongV1Decoder())
                 bind(MidiSongStopDecoder())
                 bind(MidiSongWithSecondaryDecoder())
                 bind(MidiSwapDecoder())
@@ -277,7 +277,7 @@ public object ServerMessageDecoderRepository {
                 bind(NpcSpotAnimSpecificDecoder())
                 bind(PlayerAnimSpecificDecoder())
                 bind(PlayerSpotAnimSpecificDecoder())
-                bind(ProjAnimSpecificDecoder())
+                bind(ProjAnimSpecificV3Decoder())
 
                 bind(VarpLargeDecoder())
                 bind(VarpResetDecoder())
