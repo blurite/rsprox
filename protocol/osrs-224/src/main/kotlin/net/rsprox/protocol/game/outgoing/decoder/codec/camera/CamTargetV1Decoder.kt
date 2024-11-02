@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package net.rsprox.protocol.game.outgoing.decoder.codec.camera
 
 import net.rsprot.buffer.JagByteBuf

@@ -109,7 +109,7 @@ public class LaunchBar(
                 renderer = SessionTypeCellRenderer()
                 selectedIndex = App.service.getSelectedClient()
             }
-        launchModeDropdown.addActionListener { e ->
+        launchModeDropdown.addActionListener {
             App.service.setSelectedClient(launchModeDropdown.selectedIndex)
         }
 
