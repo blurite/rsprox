@@ -24,6 +24,7 @@ import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.indexing.NopBinaryIndex
 import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.BaseMessageConsumerContainer
+import net.rsprox.transcriber.text.BaseTranscriberProvider
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
@@ -199,14 +200,14 @@ public data class BinaryBlob(
                     OldSchoolCache(LiveCacheResolver(info), masterIndex)
                 }
             if (pluginLoader.getPluginOrNull(header.revision) == null) {
-                pluginLoader.load("osrs", header.revision, provider)
+                pluginLoader.load(header.revision, provider)
             }
             val latestPlugin = pluginLoader.getPluginOrNull(header.revision)
             if (latestPlugin == null) {
                 logger.info { "Plugin for ${header.revision} missing, no live transcriber hooked." }
                 return
             }
-            val transcriberProvider = pluginLoader.getTranscriberProvider(header.revision)
+            val transcriberProvider = BaseTranscriberProvider()
             val consumers = BaseMessageConsumerContainer(emptyList())
             val session = Session(header.localPlayerIndex, AttributeMap())
             val decodingSession = DecodingSession(this, latestPlugin)

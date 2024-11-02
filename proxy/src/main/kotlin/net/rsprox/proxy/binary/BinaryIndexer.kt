@@ -16,6 +16,7 @@ import net.rsprox.shared.indexing.IndexedKey
 import net.rsprox.shared.indexing.IndexedType
 import net.rsprox.shared.indexing.MultiMapBinaryIndex
 import net.rsprox.transcriber.BaseMessageConsumerContainer
+import net.rsprox.transcriber.indexer.IndexerTranscriberProvider
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Locale
@@ -40,9 +41,9 @@ public class BinaryIndexer {
                 binary.header.js5MasterIndex,
             ),
         )
-        pluginLoader.load("osrs", binary.header.revision, statefulCacheProvider)
+        pluginLoader.load(binary.header.revision, statefulCacheProvider)
         val latestPlugin = pluginLoader.getPlugin(binary.header.revision)
-        val transcriberProvider = pluginLoader.getIndexerProvider(binary.header.revision)
+        val transcriberProvider = IndexerTranscriberProvider()
         val session = DecodingSession(binary, latestPlugin)
         val folder = binaryPath.parent.resolve("indexed")
         Files.createDirectories(folder)

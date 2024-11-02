@@ -24,6 +24,7 @@ import net.rsprox.shared.property.RootProperty
 import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.BaseMessageConsumerContainer
 import net.rsprox.transcriber.MessageConsumer
+import net.rsprox.transcriber.text.BaseTranscriberProvider
 import java.io.BufferedWriter
 import java.nio.file.Path
 import java.util.Locale
@@ -94,9 +95,9 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
                 binary.header.js5MasterIndex,
             ),
         )
-        pluginLoader.load("osrs", binary.header.revision, statefulCacheProvider)
+        pluginLoader.load(binary.header.revision, statefulCacheProvider)
         val latestPlugin = pluginLoader.getPlugin(binary.header.revision)
-        val transcriberProvider = pluginLoader.getTranscriberProvider(binary.header.revision)
+        val transcriberProvider = BaseTranscriberProvider()
         val session = DecodingSession(binary, latestPlugin)
         val writer = binaryPath.parent.resolve(binaryPath.nameWithoutExtension + ".txt").bufferedWriter()
         val consumers = BaseMessageConsumerContainer(listOf(createBufferedWriterConsumer(writer)))
