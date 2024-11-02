@@ -630,10 +630,14 @@ public class IndexerTranscriber private constructor(
                     // noop
                 }
                 is WorldEntityUpdateType.ActiveV1 -> {
-                    throw IllegalStateException("Invalid update: $update")
                 }
                 is WorldEntityUpdateType.LowResolutionToHighResolutionV1 -> {
-                    throw IllegalStateException("Invalid update: $update")
+                    val world = stateTracker.createWorld(index)
+                    world.sizeX = update.sizeX
+                    world.sizeZ = update.sizeZ
+                    world.angle = update.angle
+                    // world.unknownProperty = update.unknownProperty
+                    world.coord = update.coordGrid
                 }
             }
         }
@@ -657,10 +661,12 @@ public class IndexerTranscriber private constructor(
                     // noop
                 }
                 is WorldEntityUpdateType.ActiveV1 -> {
-                    throw IllegalStateException("Invalid update: $update")
+                    val world = stateTracker.getWorld(index)
+                    world.angle = update.angle
+                    world.coord = update.coordGrid
+                    // world.moveSpeed = update.moveSpeed
                 }
                 is WorldEntityUpdateType.LowResolutionToHighResolutionV1 -> {
-                    throw IllegalStateException("Invalid update: $update")
                 }
             }
         }
@@ -905,7 +911,25 @@ public class IndexerTranscriber private constructor(
     }
 
     override fun rebuildWorldEntityV1(message: RebuildWorldEntityV1) {
-        throw IllegalStateException("Invalid message: $message")
+        val world = stateTracker.getWorld(message.index)
+        world.rebuild(CoordGrid(0, (message.baseX - 6) shl 3, (message.baseZ - 6) shl 3))
+
+        val startZoneX = message.baseX - 6
+        val startZoneZ = message.baseZ - 6
+        val mapsquares = mutableSetOf<Int>()
+        for (level in 0..<4) {
+            for (zoneX in startZoneX..(message.baseX + 6)) {
+                for (zoneZ in startZoneZ..(message.baseZ + 6)) {
+                    val block = message.buildArea[level, zoneX - startZoneX, zoneZ - startZoneZ]
+                    // Invalid zone
+                    if (block.mapsquareId == 32767) continue
+                    mapsquares += block.mapsquareId
+                }
+            }
+        }
+        for (mapsquare in mapsquares) {
+            binaryIndex.increment(IndexedType.MAPSQUARE, mapsquare)
+        }
     }
 
     override fun rebuildWorldEntityV2(message: RebuildWorldEntityV2) {
