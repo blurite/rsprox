@@ -6,7 +6,8 @@ import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerInfo
 import net.rsprox.protocol.session.Session
-import net.rsprox.protocol.session.getPlayerInfoClient
+import net.rsprox.protocol.session.getActiveWorld
+import net.rsprox.protocol.session.getWorld
 
 public class PlayerInfoDecoder : ProxyMessageDecoder<PlayerInfo> {
     override val prot: ClientProt = GameServerProt.PLAYER_INFO
@@ -15,7 +16,7 @@ public class PlayerInfoDecoder : ProxyMessageDecoder<PlayerInfo> {
         buffer: JagByteBuf,
         session: Session,
     ): PlayerInfo {
-        val playerInfo = session.getPlayerInfoClient()
+        val playerInfo = session.getWorld(session.getActiveWorld()).playerInfo
         return playerInfo.decode(buffer.buffer)
     }
 }

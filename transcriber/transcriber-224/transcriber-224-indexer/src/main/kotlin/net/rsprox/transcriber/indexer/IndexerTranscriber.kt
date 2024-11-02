@@ -54,7 +54,7 @@ import net.rsprox.protocol.game.incoming.model.misc.user.OculusLeave
 import net.rsprox.protocol.game.incoming.model.misc.user.SendSnapshot
 import net.rsprox.protocol.game.incoming.model.misc.user.SetChatFilterSettings
 import net.rsprox.protocol.game.incoming.model.misc.user.Teleport
-import net.rsprox.protocol.game.incoming.model.misc.user.UpdatePlayerModelOld
+import net.rsprox.protocol.game.incoming.model.misc.user.UpdatePlayerModelV1
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpc
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpc6
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpcT
@@ -83,8 +83,8 @@ import net.rsprox.protocol.game.outgoing.model.camera.CamRotateBy
 import net.rsprox.protocol.game.outgoing.model.camera.CamRotateTo
 import net.rsprox.protocol.game.outgoing.model.camera.CamShake
 import net.rsprox.protocol.game.outgoing.model.camera.CamSmoothReset
-import net.rsprox.protocol.game.outgoing.model.camera.CamTarget
-import net.rsprox.protocol.game.outgoing.model.camera.CamTargetOld
+import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV1
+import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV2
 import net.rsprox.protocol.game.outgoing.model.camera.OculusSync
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelDelta
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelFull
@@ -128,7 +128,7 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SayExten
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SequenceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfo
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV1
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityUpdateType
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
@@ -163,7 +163,8 @@ import net.rsprox.protocol.game.outgoing.model.logout.LogoutWithReason
 import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
 import net.rsprox.protocol.game.outgoing.model.map.RebuildNormal
 import net.rsprox.protocol.game.outgoing.model.map.RebuildRegion
-import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntity
+import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV1
+import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV2
 import net.rsprox.protocol.game.outgoing.model.map.Reconnect
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideLocOps
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideNpcOps
@@ -189,8 +190,8 @@ import net.rsprox.protocol.game.outgoing.model.misc.player.SetPlayerOp
 import net.rsprox.protocol.game.outgoing.model.misc.player.TriggerOnDialogAbort
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunEnergy
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunWeight
-import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStat
-import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatOld
+import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV1
+import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV2
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStockMarketSlot
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateTradingPost
 import net.rsprox.protocol.game.outgoing.model.social.FriendListLoaded
@@ -198,9 +199,9 @@ import net.rsprox.protocol.game.outgoing.model.social.MessagePrivateEcho
 import net.rsprox.protocol.game.outgoing.model.social.UpdateFriendList
 import net.rsprox.protocol.game.outgoing.model.social.UpdateIgnoreList
 import net.rsprox.protocol.game.outgoing.model.sound.MidiJingle
-import net.rsprox.protocol.game.outgoing.model.sound.MidiSong
-import net.rsprox.protocol.game.outgoing.model.sound.MidiSongOld
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongStop
+import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV1
+import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV2
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongWithSecondary
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSwap
 import net.rsprox.protocol.game.outgoing.model.sound.SynthSound
@@ -211,7 +212,7 @@ import net.rsprox.protocol.game.outgoing.model.specific.NpcHeadIconSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.NpcSpotAnimSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.PlayerAnimSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.PlayerSpotAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecific
+import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV2
 import net.rsprox.protocol.game.outgoing.model.unknown.UnknownString
 import net.rsprox.protocol.game.outgoing.model.varp.VarpLarge
 import net.rsprox.protocol.game.outgoing.model.varp.VarpReset
@@ -450,7 +451,7 @@ public class IndexerTranscriber private constructor(
     override fun teleport(message: Teleport) {
     }
 
-    override fun updatePlayerModelOld(message: UpdatePlayerModelOld) {
+    override fun updatePlayerModelOld(message: UpdatePlayerModelV1) {
     }
 
     override fun opNpc(message: OpNpc) {
@@ -546,10 +547,10 @@ public class IndexerTranscriber private constructor(
     override fun camSmoothReset(message: CamSmoothReset) {
     }
 
-    override fun camTarget(message: CamTarget) {
+    override fun camTargetV2(message: CamTargetV2) {
     }
 
-    override fun camTargetOld(message: CamTargetOld) {
+    override fun camTargetV1(message: CamTargetV1) {
     }
 
     override fun oculusSync(message: OculusSync) {
@@ -597,14 +598,14 @@ public class IndexerTranscriber private constructor(
     override fun setNpcUpdateOrigin(message: SetNpcUpdateOrigin) {
     }
 
-    private fun preWorldEntityUpdate(message: WorldEntityInfo) {
+    private fun preWorldEntityUpdate(message: WorldEntityInfoV1) {
         for ((index, update) in message.updates) {
             when (update) {
-                is WorldEntityUpdateType.Active -> {
+                is WorldEntityUpdateType.ActiveV1 -> {
                 }
                 WorldEntityUpdateType.HighResolutionToLowResolution -> {
                 }
-                is WorldEntityUpdateType.LowResolutionToHighResolution -> {
+                is WorldEntityUpdateType.LowResolutionToHighResolutionV1 -> {
                     val world = stateTracker.createWorld(index)
                     world.sizeX = update.sizeX
                     world.sizeZ = update.sizeZ
@@ -615,14 +616,21 @@ public class IndexerTranscriber private constructor(
                 WorldEntityUpdateType.Idle -> {
                     // noop
                 }
+
+                is WorldEntityUpdateType.ActiveV2 -> {
+                    throw IllegalStateException("Invalid update: $update")
+                }
+                is WorldEntityUpdateType.LowResolutionToHighResolutionV2 -> {
+                    throw IllegalStateException("Invalid update: $update")
+                }
             }
         }
     }
 
-    private fun postWorldEntityUpdate(message: WorldEntityInfo) {
+    private fun postWorldEntityUpdate(message: WorldEntityInfoV1) {
         for ((index, update) in message.updates) {
             when (update) {
-                is WorldEntityUpdateType.Active -> {
+                is WorldEntityUpdateType.ActiveV1 -> {
                     val world = stateTracker.getWorld(index)
                     world.angle = update.angle
                     world.coord = update.coordGrid
@@ -631,16 +639,23 @@ public class IndexerTranscriber private constructor(
                 WorldEntityUpdateType.HighResolutionToLowResolution -> {
                     stateTracker.destroyWorld(index)
                 }
-                is WorldEntityUpdateType.LowResolutionToHighResolution -> {
+                is WorldEntityUpdateType.LowResolutionToHighResolutionV1 -> {
                 }
                 WorldEntityUpdateType.Idle -> {
                     // noop
+                }
+
+                is WorldEntityUpdateType.ActiveV2 -> {
+                    throw IllegalStateException("Invalid update: $update")
+                }
+                is WorldEntityUpdateType.LowResolutionToHighResolutionV2 -> {
+                    throw IllegalStateException("Invalid update: $update")
                 }
             }
         }
     }
 
-    override fun worldEntityInfo(message: WorldEntityInfo) {
+    override fun worldEntityInfoV1(message: WorldEntityInfoV1) {
         preWorldEntityUpdate(message)
         postWorldEntityUpdate(message)
     }
@@ -868,7 +883,11 @@ public class IndexerTranscriber private constructor(
         }
     }
 
-    override fun rebuildWorldEntity(message: RebuildWorldEntity) {
+    override fun rebuildWorldEntityV1(message: RebuildWorldEntityV1) {
+        throw IllegalStateException("Invalid message: $message")
+    }
+
+    override fun rebuildWorldEntityV2(message: RebuildWorldEntityV2) {
         val world = stateTracker.getWorld(message.index)
         world.rebuild(CoordGrid(0, (message.baseX - 6) shl 3, (message.baseZ - 6) shl 3))
 
@@ -996,10 +1015,10 @@ public class IndexerTranscriber private constructor(
     override fun updateRunWeight(message: UpdateRunWeight) {
     }
 
-    override fun updateStat(message: UpdateStat) {
+    override fun updateStatV2(message: UpdateStatV2) {
     }
 
-    override fun updateStatOld(message: UpdateStatOld) {
+    override fun updateStatV1(message: UpdateStatV1) {
     }
 
     override fun updateStockMarketSlot(message: UpdateStockMarketSlot) {
@@ -1027,11 +1046,11 @@ public class IndexerTranscriber private constructor(
         binaryIndex.increment(IndexedType.JINGLE, message.id)
     }
 
-    override fun midiSong(message: MidiSong) {
+    override fun midiSongV2(message: MidiSongV2) {
         binaryIndex.increment(IndexedType.MIDI, message.id)
     }
 
-    override fun midiSongOld(message: MidiSongOld) {
+    override fun midiSongV1(message: MidiSongV1) {
         binaryIndex.increment(IndexedType.MIDI, message.id)
     }
 
@@ -1083,7 +1102,7 @@ public class IndexerTranscriber private constructor(
         appendCheckedSpotanim(message.id)
     }
 
-    override fun projAnimSpecific(message: ProjAnimSpecific) {
+    override fun projAnimSpecific(message: ProjAnimSpecificV2) {
         appendCheckedSpotanim(message.id)
     }
 

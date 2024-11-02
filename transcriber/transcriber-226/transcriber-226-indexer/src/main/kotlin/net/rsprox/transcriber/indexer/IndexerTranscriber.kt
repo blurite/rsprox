@@ -100,7 +100,7 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.MessageFriendChannel
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV1
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV2
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelSingleUser
-import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcInfoV5
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcInfo
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcUpdateType
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.BaseAnimationSetExtendedInfo
@@ -164,7 +164,8 @@ import net.rsprox.protocol.game.outgoing.model.logout.LogoutWithReason
 import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
 import net.rsprox.protocol.game.outgoing.model.map.RebuildNormal
 import net.rsprox.protocol.game.outgoing.model.map.RebuildRegion
-import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntity
+import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV1
+import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV2
 import net.rsprox.protocol.game.outgoing.model.map.Reconnect
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideLocOps
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideNpcOps
@@ -608,11 +609,11 @@ public class IndexerTranscriber private constructor(
     private fun preWorldEntityUpdate(message: WorldEntityInfoV3) {
         for ((index, update) in message.updates) {
             when (update) {
-                is WorldEntityUpdateType.Active -> {
+                is WorldEntityUpdateType.ActiveV2 -> {
                 }
                 WorldEntityUpdateType.HighResolutionToLowResolution -> {
                 }
-                is WorldEntityUpdateType.LowResolutionToHighResolution -> {
+                is WorldEntityUpdateType.LowResolutionToHighResolutionV2 -> {
                     val world = stateTracker.createWorld(index)
                     world.sizeX = update.sizeX
                     world.sizeZ = update.sizeZ
@@ -624,6 +625,12 @@ public class IndexerTranscriber private constructor(
                 WorldEntityUpdateType.Idle -> {
                     // noop
                 }
+                is WorldEntityUpdateType.ActiveV1 -> {
+                    throw IllegalStateException("Invalid update: $update")
+                }
+                is WorldEntityUpdateType.LowResolutionToHighResolutionV1 -> {
+                    throw IllegalStateException("Invalid update: $update")
+                }
             }
         }
     }
@@ -631,7 +638,7 @@ public class IndexerTranscriber private constructor(
     private fun postWorldEntityUpdate(message: WorldEntityInfoV3) {
         for ((index, update) in message.updates) {
             when (update) {
-                is WorldEntityUpdateType.Active -> {
+                is WorldEntityUpdateType.ActiveV2 -> {
                     val world = stateTracker.getWorld(index)
                     world.angle = update.angle
                     world.coordFine = update.coordFine
@@ -640,10 +647,16 @@ public class IndexerTranscriber private constructor(
                 WorldEntityUpdateType.HighResolutionToLowResolution -> {
                     stateTracker.destroyWorld(index)
                 }
-                is WorldEntityUpdateType.LowResolutionToHighResolution -> {
+                is WorldEntityUpdateType.LowResolutionToHighResolutionV2 -> {
                 }
                 WorldEntityUpdateType.Idle -> {
                     // noop
+                }
+                is WorldEntityUpdateType.ActiveV1 -> {
+                    throw IllegalStateException("Invalid update: $update")
+                }
+                is WorldEntityUpdateType.LowResolutionToHighResolutionV1 -> {
+                    throw IllegalStateException("Invalid update: $update")
                 }
             }
         }
@@ -877,7 +890,11 @@ public class IndexerTranscriber private constructor(
         }
     }
 
-    override fun rebuildWorldEntity(message: RebuildWorldEntity) {
+    override fun rebuildWorldEntityV1(message: RebuildWorldEntityV1) {
+        throw IllegalStateException("Invalid message: $message")
+    }
+
+    override fun rebuildWorldEntityV2(message: RebuildWorldEntityV2) {
         val world = stateTracker.getWorld(message.index)
         world.rebuild(CoordGrid(0, (message.baseX - 6) shl 3, (message.baseZ - 6) shl 3))
 
@@ -1430,7 +1447,7 @@ public class IndexerTranscriber private constructor(
             ?: "null"
     }
 
-    override fun npcInfoV5(message: NpcInfoV5) {
+    override fun npcInfoV5(message: NpcInfo) {
         val world = stateTracker.getActiveWorld()
         prenpcinfo(message)
         for ((index, update) in message.updates) {
@@ -1455,7 +1472,7 @@ public class IndexerTranscriber private constructor(
         postnpcinfo(message)
     }
 
-    private fun prenpcinfo(message: NpcInfoV5) {
+    private fun prenpcinfo(message: NpcInfo) {
         val world = stateTracker.getActiveWorld()
         for ((index, update) in message.updates) {
             when (update) {
@@ -1480,7 +1497,7 @@ public class IndexerTranscriber private constructor(
         }
     }
 
-    private fun postnpcinfo(message: NpcInfoV5) {
+    private fun postnpcinfo(message: NpcInfo) {
         val world = stateTracker.getActiveWorld()
         for ((index, update) in message.updates) {
             when (update) {

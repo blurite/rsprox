@@ -3,7 +3,7 @@ package net.rsprox.transcriber.base.impl
 import net.rsprox.cache.api.Cache
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.MoveSpeed
-import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcInfoV5
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcInfo
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcUpdateType
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.BaseAnimationSetExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.BodyCustomisationExtendedInfo
@@ -167,7 +167,7 @@ public class BaseNpcInfoTranscriber(
         return coordGridProperty(coord.level, coord.x, coord.z, name)
     }
 
-    private fun prenpcinfo(message: NpcInfoV5) {
+    private fun prenpcinfo(message: NpcInfo) {
         val world = stateTracker.getActiveWorld()
         for ((index, update) in message.updates) {
             when (update) {
@@ -192,7 +192,7 @@ public class BaseNpcInfoTranscriber(
         }
     }
 
-    private fun postnpcinfo(message: NpcInfoV5) {
+    private fun postnpcinfo(message: NpcInfo) {
         val world = stateTracker.getActiveWorld()
         for ((index, update) in message.updates) {
             when (update) {
@@ -217,7 +217,7 @@ public class BaseNpcInfoTranscriber(
         }
     }
 
-    override fun npcInfoV5(message: NpcInfoV5) {
+    override fun npcInfoV5(message: NpcInfo) {
         prenpcinfo(message)
         npcInfoUpdate(message)
         postnpcinfo(message)
@@ -237,7 +237,7 @@ public class BaseNpcInfoTranscriber(
         SOUTH_EAST(7, "south-east"),
     }
 
-    private fun npcInfoUpdate(message: NpcInfoV5) {
+    private fun npcInfoUpdate(message: NpcInfo) {
         if (!filters[PropertyFilter.NPC_INFO]) return omit()
         val world = stateTracker.getActiveWorld()
         val group =

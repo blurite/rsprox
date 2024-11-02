@@ -48,7 +48,7 @@ import net.rsprox.protocol.game.incoming.model.misc.user.OculusLeave
 import net.rsprox.protocol.game.incoming.model.misc.user.SendSnapshot
 import net.rsprox.protocol.game.incoming.model.misc.user.SetChatFilterSettings
 import net.rsprox.protocol.game.incoming.model.misc.user.Teleport
-import net.rsprox.protocol.game.incoming.model.misc.user.UpdatePlayerModelOld
+import net.rsprox.protocol.game.incoming.model.misc.user.UpdatePlayerModelV1
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpc
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpc6
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpcT
@@ -164,7 +164,7 @@ public interface ClientPacketTranscriber {
 
     public fun teleport(message: Teleport)
 
-    public fun updatePlayerModelOld(message: UpdatePlayerModelOld)
+    public fun updatePlayerModelOld(message: UpdatePlayerModelV1)
 
     public fun opNpc(message: OpNpc)
 

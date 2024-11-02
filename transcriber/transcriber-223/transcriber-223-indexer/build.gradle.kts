@@ -7,4 +7,5 @@ dependencies {
     implementation(projects.cache.cacheApi)
     implementation(projects.shared)
     implementation(libs.inline.logger)
+    implementation(projects.protocol)
 }

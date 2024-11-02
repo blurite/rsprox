@@ -34,7 +34,7 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingE
 @Suppress("DuplicatedCode")
 public class NpcInfoClient(
     public val cache: CacheProvider,
-) {
+) : NpcInfoDecoder {
     private var deletedNPCCount: Int = 0
     private var deletedNPC = IntArray(1000)
     private var npc = arrayOfNulls<Npc>(65536)
@@ -47,7 +47,7 @@ public class NpcInfoClient(
     private val updates: MutableMap<Int, UpdateType> = mutableMapOf()
     private val extendedInfoBlocks: MutableMap<Int, List<ExtendedInfo>> = mutableMapOf()
 
-    public fun decode(
+    override fun decode(
         buffer: ByteBuf,
         large: Boolean,
         baseCoord: CoordGrid,

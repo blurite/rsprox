@@ -14,7 +14,7 @@ internal object GameServerProtId {
     const val UPDATE_ZONE_FULL_FOLLOWS = 10
     const val UPDATE_ZONE_PARTIAL_FOLLOWS = 11
     const val VARCLAN_ENABLE = 12
-    const val PROJANIM_SPECIFIC_OLD_OLD = 13
+    const val PROJANIM_SPECIFIC_V1 = 13
     const val IF_SETROTATESPEED = 14
     const val SET_MAP_FLAG = 15
     const val MESSAGE_FRIENDCHANNEL = 16
@@ -22,7 +22,7 @@ internal object GameServerProtId {
     const val OBJ_COUNT = 18
     const val IF_SETCOLOUR = 19
     const val MESSAGE_PRIVATE = 20
-    const val PROJANIM_SPECIFIC_OLD = 21
+    const val PROJANIM_SPECIFIC_V2 = 21
     const val CHAT_FILTER_SETTINGS = 22
     const val CAM_MOVETO = 23
     const val CAM_ROTATEBY = 24
@@ -76,7 +76,7 @@ internal object GameServerProtId {
     const val LOC_ADD_CHANGE = 72
     const val CAM_ROTATETO = 73
     const val UPDATE_INV_STOPTRANSMIT = 74
-    const val WORLDENTITY_INFO_OLD = 75
+    const val WORLDENTITY_INFO_V1 = 75
     const val MIDI_SONG_WITHSECONDARY = 76
     const val UPDATE_STOCKMARKET_SLOT = 77
     const val RUNCLIENTSCRIPT = 78
@@ -106,11 +106,11 @@ internal object GameServerProtId {
     const val IF_SETEVENTS = 102
     const val HINT_ARROW = 103
     const val OCULUS_SYNC = 104
-    const val NPC_INFO_SMALL = 105
+    const val NPC_INFO_SMALL_V4 = 105
     const val IF_OPENSUB = 106
-    const val MIDI_SONG = 107
+    const val MIDI_SONG_V2 = 107
     const val UPDATE_IGNORELIST = 108
-    const val NPC_INFO_LARGE = 109
+    const val NPC_INFO_LARGE_V4 = 109
     const val CAM_MOVETO_ARC = 110
     const val NPC_ANIM_SPECIFIC = 111
     const val SEND_PING = 112
@@ -125,7 +125,7 @@ internal object GameServerProtId {
     const val SITE_SETTINGS = 121
     const val LOGOUT_TRANSFER = 122
     const val MAP_PROJANIM = 123
-    const val MIDI_SONG_OLD = 124
+    const val MIDI_SONG_V1 = 124
     const val CAM_TARGET = 125
     const val SET_NPC_UPDATE_ORIGIN = 126
     const val UPDATE_UID192 = 127
@@ -135,7 +135,7 @@ internal object GameServerProtId {
     const val REBUILD_WORLDENTITY = 131
     const val HIDENPCOPS = 132
     const val HIDELOCOPS = 133
-    const val WORLDENTITY_INFO = 134
-    const val PROJANIM_SPECIFIC = 135
+    const val WORLDENTITY_INFO_V2 = 134
+    const val PROJANIM_SPECIFIC_V3 = 135
     const val UNKNOWN_STRING = 136
 }

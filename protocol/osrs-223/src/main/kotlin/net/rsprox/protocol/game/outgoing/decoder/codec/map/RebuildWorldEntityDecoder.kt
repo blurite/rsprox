@@ -9,20 +9,20 @@ import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
-import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntity
+import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV1
 import net.rsprox.protocol.game.outgoing.model.map.util.BuildArea
 import net.rsprox.protocol.game.outgoing.model.map.util.RebuildRegionZone
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.session.getWorld
 
 @Consistent
-public class RebuildWorldEntityDecoder : ProxyMessageDecoder<RebuildWorldEntity> {
+public class RebuildWorldEntityDecoder : ProxyMessageDecoder<RebuildWorldEntityV1> {
     override val prot: ClientProt = GameServerProt.REBUILD_WORLDENTITY
 
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
-    ): RebuildWorldEntity {
+    ): RebuildWorldEntityV1 {
         val index = buffer.g2()
         val baseX = buffer.g2()
         val baseZ = buffer.g2()
@@ -66,7 +66,7 @@ public class RebuildWorldEntityDecoder : ProxyMessageDecoder<RebuildWorldEntity>
         world.baseX = (baseX - 6) * 8
         world.baseZ = (baseZ - 6) * 8
         world.playerInfo.gpiInit(playerInfoInitBlock)
-        return RebuildWorldEntity(
+        return RebuildWorldEntityV1(
             index,
             baseX,
             baseZ,

@@ -103,7 +103,7 @@ public class TranscriberPlugin(
             GameServerProt.WORLDENTITY_INFO_V1 -> throw IllegalArgumentException("Unimplemented packet")
             GameServerProt.REBUILD_NORMAL -> pass(message, Transcriber::rebuildNormal)
             GameServerProt.REBUILD_REGION -> pass(message, Transcriber::rebuildRegion)
-            GameServerProt.REBUILD_WORLDENTITY -> pass(message, Transcriber::rebuildWorldEntity)
+            GameServerProt.REBUILD_WORLDENTITY -> pass(message, Transcriber::rebuildWorldEntityV2)
             GameServerProt.VARP_SMALL -> pass(message, Transcriber::varpSmall)
             GameServerProt.VARP_LARGE -> pass(message, Transcriber::varpLarge)
             GameServerProt.VARP_RESET -> pass(message, Transcriber::varpReset)

@@ -62,7 +62,8 @@ import net.rsprox.protocol.game.outgoing.model.logout.LogoutWithReason
 import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
 import net.rsprox.protocol.game.outgoing.model.map.RebuildNormal
 import net.rsprox.protocol.game.outgoing.model.map.RebuildRegion
-import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntity
+import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV1
+import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV2
 import net.rsprox.protocol.game.outgoing.model.map.Reconnect
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideLocOps
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideNpcOps
@@ -265,7 +266,9 @@ public interface ServerPacketTranscriber {
 
     public fun rebuildRegion(message: RebuildRegion)
 
-    public fun rebuildWorldEntity(message: RebuildWorldEntity)
+    public fun rebuildWorldEntityV1(message: RebuildWorldEntityV1)
+
+    public fun rebuildWorldEntityV2(message: RebuildWorldEntityV2)
 
     public fun hideLocOps(message: HideLocOps)
 

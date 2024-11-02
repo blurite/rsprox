@@ -67,7 +67,8 @@ import net.rsprox.protocol.game.outgoing.model.logout.LogoutWithReason
 import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
 import net.rsprox.protocol.game.outgoing.model.map.RebuildNormal
 import net.rsprox.protocol.game.outgoing.model.map.RebuildRegion
-import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntity
+import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV1
+import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV2
 import net.rsprox.protocol.game.outgoing.model.map.Reconnect
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideLocOps
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideNpcOps
@@ -897,11 +898,11 @@ public class BaseServerPacketTranscriber(
     private fun preWorldEntityUpdate(message: WorldEntityInfoV3) {
         for ((index, update) in message.updates) {
             when (update) {
-                is WorldEntityUpdateType.Active -> {
+                is WorldEntityUpdateType.ActiveV2 -> {
                 }
                 WorldEntityUpdateType.HighResolutionToLowResolution -> {
                 }
-                is WorldEntityUpdateType.LowResolutionToHighResolution -> {
+                is WorldEntityUpdateType.LowResolutionToHighResolutionV2 -> {
                     val world = stateTracker.createWorld(index)
                     world.sizeX = update.sizeX
                     world.sizeZ = update.sizeZ
@@ -913,6 +914,13 @@ public class BaseServerPacketTranscriber(
                 WorldEntityUpdateType.Idle -> {
                     // noop
                 }
+
+                is WorldEntityUpdateType.ActiveV1 -> {
+                    throw IllegalStateException("Invalid update: $update")
+                }
+                is WorldEntityUpdateType.LowResolutionToHighResolutionV1 -> {
+                    throw IllegalStateException("Invalid update: $update")
+                }
             }
         }
     }
@@ -920,7 +928,7 @@ public class BaseServerPacketTranscriber(
     private fun postWorldEntityUpdate(message: WorldEntityInfoV3) {
         for ((index, update) in message.updates) {
             when (update) {
-                is WorldEntityUpdateType.Active -> {
+                is WorldEntityUpdateType.ActiveV2 -> {
                     val world = stateTracker.getWorld(index)
                     world.angle = update.angle
                     world.coordFine = update.coordFine
@@ -929,10 +937,16 @@ public class BaseServerPacketTranscriber(
                 WorldEntityUpdateType.HighResolutionToLowResolution -> {
                     stateTracker.destroyWorld(index)
                 }
-                is WorldEntityUpdateType.LowResolutionToHighResolution -> {
+                is WorldEntityUpdateType.LowResolutionToHighResolutionV2 -> {
                 }
                 WorldEntityUpdateType.Idle -> {
                     // noop
+                }
+                is WorldEntityUpdateType.ActiveV1 -> {
+                    throw IllegalStateException("Invalid update: $update")
+                }
+                is WorldEntityUpdateType.LowResolutionToHighResolutionV1 -> {
+                    throw IllegalStateException("Invalid update: $update")
                 }
             }
         }
@@ -944,7 +958,7 @@ public class BaseServerPacketTranscriber(
             root.group {
                 for ((index, update) in message.updates) {
                     when (update) {
-                        is WorldEntityUpdateType.Active -> {
+                        is WorldEntityUpdateType.ActiveV2 -> {
                             group("ACTIVE") {
                                 worldentity(index)
                                 int("angle", update.angle)
@@ -968,7 +982,7 @@ public class BaseServerPacketTranscriber(
                         WorldEntityUpdateType.Idle -> {
                             // noop
                         }
-                        is WorldEntityUpdateType.LowResolutionToHighResolution -> {
+                        is WorldEntityUpdateType.LowResolutionToHighResolutionV2 -> {
                             group("ADD") {
                                 worldentity(index)
                                 int("angle", update.angle)
@@ -980,6 +994,12 @@ public class BaseServerPacketTranscriber(
                                 int("finey", coordFineY)
                                 int("finez", coordFineZ)
                             }
+                        }
+                        is WorldEntityUpdateType.ActiveV1 -> {
+                            throw IllegalStateException("Invalid update: $update")
+                        }
+                        is WorldEntityUpdateType.LowResolutionToHighResolutionV1 -> {
+                            throw IllegalStateException("Invalid update: $update")
                         }
                     }
                 }
@@ -1510,7 +1530,11 @@ public class BaseServerPacketTranscriber(
         }
     }
 
-    override fun rebuildWorldEntity(message: RebuildWorldEntity) {
+    override fun rebuildWorldEntityV1(message: RebuildWorldEntityV1) {
+        throw IllegalStateException("Invalid message: $message")
+    }
+
+    override fun rebuildWorldEntityV2(message: RebuildWorldEntityV2) {
         val world = stateTracker.getWorld(message.index)
         world.rebuild(CoordGrid(0, (message.baseX - 6) shl 3, (message.baseZ - 6) shl 3))
         world.setBuildArea(message.buildArea)

@@ -11,8 +11,8 @@ import net.rsprox.protocol.game.outgoing.model.camera.CamRotateBy
 import net.rsprox.protocol.game.outgoing.model.camera.CamRotateTo
 import net.rsprox.protocol.game.outgoing.model.camera.CamShake
 import net.rsprox.protocol.game.outgoing.model.camera.CamSmoothReset
-import net.rsprox.protocol.game.outgoing.model.camera.CamTarget
-import net.rsprox.protocol.game.outgoing.model.camera.CamTargetOld
+import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV1
+import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV2
 import net.rsprox.protocol.game.outgoing.model.camera.OculusSync
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelDelta
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelFull
@@ -28,7 +28,7 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChanne
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV2
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelSingleUser
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
-import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfo
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV1
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfMoveSub
@@ -62,7 +62,8 @@ import net.rsprox.protocol.game.outgoing.model.logout.LogoutWithReason
 import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
 import net.rsprox.protocol.game.outgoing.model.map.RebuildNormal
 import net.rsprox.protocol.game.outgoing.model.map.RebuildRegion
-import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntity
+import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV1
+import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV2
 import net.rsprox.protocol.game.outgoing.model.map.Reconnect
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideLocOps
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideNpcOps
@@ -88,8 +89,8 @@ import net.rsprox.protocol.game.outgoing.model.misc.player.SetPlayerOp
 import net.rsprox.protocol.game.outgoing.model.misc.player.TriggerOnDialogAbort
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunEnergy
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunWeight
-import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStat
-import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatOld
+import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV1
+import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV2
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStockMarketSlot
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateTradingPost
 import net.rsprox.protocol.game.outgoing.model.social.FriendListLoaded
@@ -98,9 +99,9 @@ import net.rsprox.protocol.game.outgoing.model.social.MessagePrivateEcho
 import net.rsprox.protocol.game.outgoing.model.social.UpdateFriendList
 import net.rsprox.protocol.game.outgoing.model.social.UpdateIgnoreList
 import net.rsprox.protocol.game.outgoing.model.sound.MidiJingle
-import net.rsprox.protocol.game.outgoing.model.sound.MidiSong
-import net.rsprox.protocol.game.outgoing.model.sound.MidiSongOld
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongStop
+import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV1
+import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV2
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongWithSecondary
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSwap
 import net.rsprox.protocol.game.outgoing.model.sound.SynthSound
@@ -111,7 +112,7 @@ import net.rsprox.protocol.game.outgoing.model.specific.NpcHeadIconSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.NpcSpotAnimSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.PlayerAnimSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.PlayerSpotAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecific
+import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV2
 import net.rsprox.protocol.game.outgoing.model.varp.VarpLarge
 import net.rsprox.protocol.game.outgoing.model.varp.VarpReset
 import net.rsprox.protocol.game.outgoing.model.varp.VarpSmall
@@ -156,9 +157,9 @@ public interface ServerPacketTranscriber {
 
     public fun camSmoothReset(message: CamSmoothReset)
 
-    public fun camTarget(message: CamTarget)
+    public fun camTargetV2(message: CamTargetV2)
 
-    public fun camTargetOld(message: CamTargetOld)
+    public fun camTargetV1(message: CamTargetV1)
 
     public fun oculusSync(message: OculusSync)
 
@@ -190,7 +191,7 @@ public interface ServerPacketTranscriber {
 
     public fun setNpcUpdateOrigin(message: SetNpcUpdateOrigin)
 
-    public fun worldEntityInfo(message: WorldEntityInfo)
+    public fun worldEntityInfoV1(message: WorldEntityInfoV1)
 
     public fun ifClearInv(message: IfClearInv)
 
@@ -260,7 +261,9 @@ public interface ServerPacketTranscriber {
 
     public fun rebuildRegion(message: RebuildRegion)
 
-    public fun rebuildWorldEntity(message: RebuildWorldEntity)
+    public fun rebuildWorldEntityV1(message: RebuildWorldEntityV1)
+
+    public fun rebuildWorldEntityV2(message: RebuildWorldEntityV2)
 
     public fun hideLocOps(message: HideLocOps)
 
@@ -310,9 +313,9 @@ public interface ServerPacketTranscriber {
 
     public fun updateRunWeight(message: UpdateRunWeight)
 
-    public fun updateStat(message: UpdateStat)
+    public fun updateStatV2(message: UpdateStatV2)
 
-    public fun updateStatOld(message: UpdateStatOld)
+    public fun updateStatV1(message: UpdateStatV1)
 
     public fun updateStockMarketSlot(message: UpdateStockMarketSlot)
 
@@ -330,9 +333,9 @@ public interface ServerPacketTranscriber {
 
     public fun midiJingle(message: MidiJingle)
 
-    public fun midiSong(message: MidiSong)
+    public fun midiSongV2(message: MidiSongV2)
 
-    public fun midiSongOld(message: MidiSongOld)
+    public fun midiSongV1(message: MidiSongV1)
 
     public fun midiSongStop(message: MidiSongStop)
 
@@ -356,7 +359,7 @@ public interface ServerPacketTranscriber {
 
     public fun playerSpotAnimSpecific(message: PlayerSpotAnimSpecific)
 
-    public fun projAnimSpecific(message: ProjAnimSpecific)
+    public fun projAnimSpecific(message: ProjAnimSpecificV2)
 
     public fun varpLarge(message: VarpLarge)
 

@@ -1,7 +1,7 @@
 package net.rsprox.transcriber.impl
 
-import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcInfoV5
+import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcInfo
 
 public fun interface NpcInfoTranscriber {
-    public fun npcInfoV5(message: NpcInfoV5)
+    public fun npcInfoV5(message: NpcInfo)
 }
