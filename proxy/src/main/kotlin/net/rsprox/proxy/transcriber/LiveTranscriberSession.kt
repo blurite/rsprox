@@ -9,6 +9,7 @@ import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.shared.StreamDirection
 import net.rsprox.transcriber.Packet
 import net.rsprox.transcriber.TranscriberRunner
+import net.rsprox.transcriber.state.SessionTracker
 import java.util.Queue
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -16,6 +17,7 @@ public class LiveTranscriberSession(
     private val session: Session,
     private val decodingSession: DecodingSession,
     private val runner: TranscriberRunner,
+    private val sessionTracker: SessionTracker,
 ) {
     @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
     private val lock: Object = Object()
@@ -81,10 +83,16 @@ public class LiveTranscriberSession(
         for (packet in results) {
             when (packet.direction) {
                 StreamDirection.CLIENT_TO_SERVER -> {
+                    sessionTracker.onClientPacket(packet.message, packet.prot)
+                    sessionTracker.beforeTranscribe(packet.message)
                     runner.onClientProt(packet.prot, packet.message, revision)
+                    sessionTracker.afterTranscribe(packet.message)
                 }
                 StreamDirection.SERVER_TO_CLIENT -> {
+                    sessionTracker.onServerPacket(packet.message, packet.prot)
+                    sessionTracker.beforeTranscribe(packet.message)
                     runner.onServerPacket(packet.prot, packet.message, revision)
+                    sessionTracker.afterTranscribe(packet.message)
                 }
             }
         }

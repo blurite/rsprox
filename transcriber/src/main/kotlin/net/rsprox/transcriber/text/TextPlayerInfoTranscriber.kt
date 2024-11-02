@@ -19,7 +19,6 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Sequence
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
 import net.rsprox.shared.ScriptVarType
-import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.filters.PropertyFilter
 import net.rsprox.shared.filters.PropertyFilterSet
 import net.rsprox.shared.filters.PropertyFilterSetStore
@@ -49,22 +48,20 @@ import net.rsprox.shared.property.unidentifiedPlayer
 import net.rsprox.shared.settings.Setting
 import net.rsprox.shared.settings.SettingSet
 import net.rsprox.shared.settings.SettingSetStore
-import net.rsprox.transcriber.firstOfInstanceOfNull
 import net.rsprox.transcriber.interfaces.PlayerInfoTranscriber
 import net.rsprox.transcriber.maxUShortToMinusOne
 import net.rsprox.transcriber.state.Player
-import net.rsprox.transcriber.state.StateTracker
+import net.rsprox.transcriber.state.SessionState
 
 @Suppress("DuplicatedCode")
 public class TextPlayerInfoTranscriber(
-    private val stateTracker: StateTracker,
-    private val monitor: SessionMonitor<*>,
+    private val sessionState: SessionState,
     private val cache: Cache,
     private val filterSetStore: PropertyFilterSetStore,
     private val settingSetStore: SettingSetStore,
 ) : PlayerInfoTranscriber {
     private val root: RootProperty
-        get() = checkNotNull(stateTracker.root.last())
+        get() = checkNotNull(sessionState.root.last())
     private val filters: PropertyFilterSet
         get() = filterSetStore.getActive()
 
@@ -72,7 +69,7 @@ public class TextPlayerInfoTranscriber(
         get() = settingSetStore.getActive()
 
     private fun omit() {
-        stateTracker.deleteRoot()
+        sessionState.deleteRoot()
     }
 
     private fun Property.entity(ambiguousIndex: Int): ChildProperty<*> {
@@ -84,7 +81,7 @@ public class TextPlayerInfoTranscriber(
     }
 
     private fun Property.npc(index: Int): ChildProperty<*> {
-        val world = stateTracker.getActiveWorld()
+        val world = sessionState.getActiveWorld()
         val npc = world.getNpcOrNull(index) ?: return unidentifiedNpc(index)
         val finalIndex =
             if (settings[Setting.HIDE_NPC_INDICES]) {
@@ -92,8 +89,8 @@ public class TextPlayerInfoTranscriber(
             } else {
                 index
             }
-        val multinpc = stateTracker.resolveMultinpc(npc.id, cache)
-        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(npc.coord)
+        val multinpc = sessionState.resolveMultinpc(npc.id, cache)
+        val coord = sessionState.getActiveWorld().getInstancedCoordOrSelf(npc.coord)
         return if (multinpc != null) {
             identifiedMultinpc(
                 finalIndex,
@@ -120,7 +117,7 @@ public class TextPlayerInfoTranscriber(
         index: Int,
         name: String = "player",
     ): ChildProperty<*> {
-        val player = stateTracker.getPlayerOrNull(index)
+        val player = sessionState.getPlayerOrNull(index)
         val finalIndex =
             if (settings[Setting.PLAYER_HIDE_INDEX]) {
                 Int.MIN_VALUE
@@ -128,7 +125,7 @@ public class TextPlayerInfoTranscriber(
                 index
             }
         return if (player != null) {
-            val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(player.coord)
+            val coord = sessionState.getActiveWorld().getInstancedCoordOrSelf(player.coord)
             identifiedPlayer(
                 finalIndex,
                 player.name,
@@ -146,7 +143,7 @@ public class TextPlayerInfoTranscriber(
         index: Int,
         name: String = "player",
     ): ChildProperty<*> {
-        val player = stateTracker.getPlayerOrNull(index)
+        val player = sessionState.getPlayerOrNull(index)
         return if (player != null) {
             shortPlayer(
                 Int.MIN_VALUE,
@@ -166,101 +163,14 @@ public class TextPlayerInfoTranscriber(
         name: String,
         coordGrid: CoordGrid,
     ): ScriptVarTypeProperty<*> {
-        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(coordGrid)
+        val coord = sessionState.getActiveWorld().getInstancedCoordOrSelf(coordGrid)
         return coordGridProperty(coord.level, coord.x, coord.z, name)
     }
 
-    private fun loadPlayerName(
-        index: Int,
-        extendedInfo: List<ExtendedInfo>,
-    ): String {
-        val appearance =
-            extendedInfo
-                .filterIsInstance<AppearanceExtendedInfo>()
-                .singleOrNull()
-        return appearance?.name
-            ?: stateTracker.getLastKnownPlayerName(index)
-            ?: "null"
-    }
-
-    private fun preloadPlayerInfo(message: PlayerInfo) {
-        for ((index, update) in message.updates) {
-            when (update) {
-                is PlayerUpdateType.LowResolutionToHighResolution -> {
-                    val name = loadPlayerName(index, update.extendedInfo)
-                    stateTracker.overridePlayer(Player(index, name, update.coord))
-                    preprocessExtendedInfo(index, update.extendedInfo)
-                }
-                is PlayerUpdateType.HighResolutionIdle -> {
-                    val name = loadPlayerName(index, update.extendedInfo)
-                    val player = stateTracker.getPlayer(index)
-                    stateTracker.overridePlayer(Player(index, name, player.coord))
-                    preprocessExtendedInfo(index, update.extendedInfo)
-                }
-                is PlayerUpdateType.HighResolutionMovement -> {
-                    val name = loadPlayerName(index, update.extendedInfo)
-                    val player = stateTracker.getPlayer(index)
-                    stateTracker.overridePlayer(Player(index, name, player.coord))
-                    preprocessExtendedInfo(index, update.extendedInfo)
-                }
-                else -> {
-                    // No-op, no info to preload
-                }
-            }
-        }
-    }
-
-    private fun preprocessExtendedInfo(
-        index: Int,
-        extendedInfo: List<ExtendedInfo>,
-    ) {
-        val moveSpeed = extendedInfo.firstOfInstanceOfNull<MoveSpeedExtendedInfo>()
-        if (moveSpeed != null) {
-            stateTracker.setCachedMoveSpeed(index, moveSpeed.speed)
-        }
-        val tempMoveSpeed = extendedInfo.firstOfInstanceOfNull<TemporaryMoveSpeedExtendedInfo>()
-        if (tempMoveSpeed != null) {
-            stateTracker.setTempMoveSpeed(index, tempMoveSpeed.speed)
-        }
-        if (index == stateTracker.localPlayerIndex) {
-            val appearance = extendedInfo.firstOfInstanceOfNull<AppearanceExtendedInfo>()
-            if (appearance != null) {
-                monitor.onNameUpdate(appearance.name)
-            }
-        }
-    }
-
-    private fun postPlayerInfo(message: PlayerInfo) {
-        for ((index, update) in message.updates) {
-            when (update) {
-                is PlayerUpdateType.LowResolutionToHighResolution -> {
-                    val name = loadPlayerName(index, update.extendedInfo)
-                    stateTracker.overridePlayer(Player(index, name, update.coord))
-                }
-                is PlayerUpdateType.HighResolutionIdle -> {
-                    val oldPlayer = stateTracker.getPlayerOrNull(index) ?: return
-                    val name = loadPlayerName(index, update.extendedInfo)
-                    stateTracker.overridePlayer(Player(index, name, oldPlayer.coord))
-                }
-                is PlayerUpdateType.HighResolutionMovement -> {
-                    val name = loadPlayerName(index, update.extendedInfo)
-                    stateTracker.overridePlayer(Player(index, name, update.coord))
-                }
-                else -> {
-                    // No-op, no info to preload
-                }
-            }
-        }
-    }
-
     override fun playerInfo(message: PlayerInfo) {
-        stateTracker.clearTempMoveSpeeds()
-        // Assign the coord and name of each player that is being added
-        preloadPlayerInfo(message)
+        sessionState.clearTempMoveSpeeds()
         // Log any activities that happened for all the players
         logPlayerInfo(message)
-        // Update the last known coord and name of each player being processed
-        postPlayerInfo(message)
     }
 
     private fun logPlayerInfo(message: PlayerInfo) {
@@ -269,7 +179,7 @@ public class TextPlayerInfoTranscriber(
         val group =
             root.group {
                 for ((index, update) in message.updates) {
-                    if (localPlayerOnly && index != stateTracker.localPlayerIndex) continue
+                    if (localPlayerOnly && index != sessionState.localPlayerIndex) continue
                     when (update) {
                         is PlayerUpdateType.LowResolutionMovement, PlayerUpdateType.LowResolutionIdle -> {
                             // no-op
@@ -278,7 +188,7 @@ public class TextPlayerInfoTranscriber(
                             if (update.extendedInfo.isEmpty()) {
                                 return@group
                             }
-                            val player = stateTracker.getPlayer(index)
+                            val player = sessionState.getPlayer(index)
                             group("IDLE") {
                                 player(index)
                                 appendExtendedInfo(player, update.extendedInfo)
@@ -290,8 +200,8 @@ public class TextPlayerInfoTranscriber(
                             ) {
                                 continue
                             }
-                            val player = stateTracker.getPlayer(index)
-                            val speed = getMoveSpeed(stateTracker.getMoveSpeed(index))
+                            val player = sessionState.getPlayer(index)
+                            val speed = getMoveSpeed(sessionState.getMoveSpeed(index))
                             val label =
                                 when (speed) {
                                     MoveSpeed.CRAWL -> "CRAWL"
@@ -319,7 +229,7 @@ public class TextPlayerInfoTranscriber(
                             ) {
                                 continue
                             }
-                            val player = stateTracker.getPlayer(index)
+                            val player = sessionState.getPlayer(index)
                             group("ADD") {
                                 player(index)
                                 appendExtendedInfo(player, update.extendedInfo)
@@ -547,7 +457,7 @@ public class TextPlayerInfoTranscriber(
         if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
             shortPlayer(player.index)
         }
-        val activeWorld = stateTracker.getActiveWorld()
+        val activeWorld = sessionState.getActiveWorld()
         val baseCoord = activeWorld.getInstancedCoordOrSelf(player.coord)
         val to1 = CoordGrid(baseCoord.level, baseCoord.x - info.deltaX2, baseCoord.z - info.deltaZ2)
         coordGridProperty(to1.level, to1.x, to1.z, "to1")

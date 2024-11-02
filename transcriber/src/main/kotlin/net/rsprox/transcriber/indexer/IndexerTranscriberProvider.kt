@@ -8,7 +8,7 @@ import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.TranscriberPlugin
 import net.rsprox.transcriber.TranscriberProvider
 import net.rsprox.transcriber.TranscriberRunner
-import net.rsprox.transcriber.state.StateTracker
+import net.rsprox.transcriber.state.SessionState
 import net.rsprox.transcriber.text.TextMessageConsumerContainer
 
 public class IndexerTranscriberProvider : TranscriberProvider {
@@ -19,13 +19,13 @@ public class IndexerTranscriberProvider : TranscriberProvider {
         filters: PropertyFilterSetStore,
         settings: SettingSetStore,
         binaryIndex: BinaryIndex,
+        state: SessionState,
     ): TranscriberRunner {
-        val stateTracker = StateTracker(settings)
+        val sessionState = SessionState(settings)
         return TranscriberPlugin(
             IndexerTranscriber(
+                sessionState,
                 cacheProvider,
-                monitor,
-                stateTracker,
                 binaryIndex,
             ),
         )

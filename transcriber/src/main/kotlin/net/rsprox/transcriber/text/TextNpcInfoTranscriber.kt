@@ -57,25 +57,25 @@ import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.interfaces.NpcInfoTranscriber
 import net.rsprox.transcriber.maxUShortToMinusOne
 import net.rsprox.transcriber.state.Npc
-import net.rsprox.transcriber.state.StateTracker
+import net.rsprox.transcriber.state.SessionState
 import net.rsprox.transcriber.toFullBinaryString
 
 @Suppress("SpellCheckingInspection", "DuplicatedCode")
 public class TextNpcInfoTranscriber(
-    private val stateTracker: StateTracker,
+    private val sessionState: SessionState,
     private val cache: Cache,
     private val filterSetStore: PropertyFilterSetStore,
     private val settingSetStore: SettingSetStore,
 ) : NpcInfoTranscriber {
     private val root: RootProperty
-        get() = checkNotNull(stateTracker.root.last())
+        get() = checkNotNull(sessionState.root.last())
     private val filters: PropertyFilterSet
         get() = filterSetStore.getActive()
     private val settings: SettingSet
         get() = settingSetStore.getActive()
 
     private fun omit() {
-        stateTracker.deleteRoot()
+        sessionState.deleteRoot()
     }
 
     private fun Property.entity(ambiguousIndex: Int): ChildProperty<*> {
@@ -90,7 +90,7 @@ public class TextNpcInfoTranscriber(
         index: Int,
         name: String = "npc",
     ): ChildProperty<*> {
-        val npc = stateTracker.getActiveWorld().getNpcOrNull(index)
+        val npc = sessionState.getActiveWorld().getNpcOrNull(index)
         return shortNpc(
             index,
             npc?.id ?: -1,
@@ -99,7 +99,7 @@ public class TextNpcInfoTranscriber(
     }
 
     private fun Property.npc(index: Int): ChildProperty<*> {
-        val world = stateTracker.getActiveWorld()
+        val world = sessionState.getActiveWorld()
         val npc = world.getNpcOrNull(index) ?: return unidentifiedNpc(index)
         val finalIndex =
             if (settings[Setting.HIDE_NPC_INDICES]) {
@@ -107,8 +107,8 @@ public class TextNpcInfoTranscriber(
             } else {
                 index
             }
-        val multinpc = stateTracker.resolveMultinpc(npc.id, cache)
-        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(npc.coord)
+        val multinpc = sessionState.resolveMultinpc(npc.id, cache)
+        val coord = sessionState.getActiveWorld().getInstancedCoordOrSelf(npc.coord)
         return if (multinpc != null) {
             identifiedMultinpc(
                 finalIndex,
@@ -135,7 +135,7 @@ public class TextNpcInfoTranscriber(
         index: Int,
         name: String = "player",
     ): ChildProperty<*> {
-        val player = stateTracker.getPlayerOrNull(index)
+        val player = sessionState.getPlayerOrNull(index)
         val finalIndex =
             if (settings[Setting.PLAYER_HIDE_INDEX]) {
                 Int.MIN_VALUE
@@ -143,7 +143,7 @@ public class TextNpcInfoTranscriber(
                 index
             }
         return if (player != null) {
-            val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(player.coord)
+            val coord = sessionState.getActiveWorld().getInstancedCoordOrSelf(player.coord)
             identifiedPlayer(
                 finalIndex,
                 player.name,
@@ -163,64 +163,12 @@ public class TextNpcInfoTranscriber(
         z: Int,
         name: String = "coord",
     ): ScriptVarTypeProperty<*> {
-        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(CoordGrid(level, x, z))
+        val coord = sessionState.getActiveWorld().getInstancedCoordOrSelf(CoordGrid(level, x, z))
         return coordGridProperty(coord.level, coord.x, coord.z, name)
     }
 
-    private fun prenpcinfo(message: NpcInfo) {
-        val world = stateTracker.getActiveWorld()
-        for ((index, update) in message.updates) {
-            when (update) {
-                is NpcUpdateType.Active -> {
-                }
-                NpcUpdateType.HighResolutionToLowResolution -> {
-                }
-                is NpcUpdateType.LowResolutionToHighResolution -> {
-                    val name = cache.getNpcType(update.id)?.name
-                    world.createNpc(
-                        index,
-                        update.id,
-                        name,
-                        update.spawnCycle,
-                        CoordGrid(update.level, update.x, update.z),
-                    )
-                }
-                NpcUpdateType.Idle -> {
-                    // noop
-                }
-            }
-        }
-    }
-
-    private fun postnpcinfo(message: NpcInfo) {
-        val world = stateTracker.getActiveWorld()
-        for ((index, update) in message.updates) {
-            when (update) {
-                is NpcUpdateType.Active -> {
-                    world.updateNpc(index, CoordGrid(update.level, update.x, update.z))
-                    val blocks = update.extendedInfo.filterIsInstance<TransformationExtendedInfo>()
-                    if (blocks.isNotEmpty()) {
-                        val npc = world.getNpc(index)
-                        val transform = blocks.single()
-                        world.updateNpcName(npc.index, cache.getNpcType(transform.id)?.name)
-                    }
-                }
-                NpcUpdateType.HighResolutionToLowResolution -> {
-                    world.removeNpc(index)
-                }
-                is NpcUpdateType.LowResolutionToHighResolution -> {
-                }
-                NpcUpdateType.Idle -> {
-                    // noop
-                }
-            }
-        }
-    }
-
     override fun npcInfoV5(message: NpcInfo) {
-        prenpcinfo(message)
         npcInfoUpdate(message)
-        postnpcinfo(message)
     }
 
     private enum class NpcInfoStep(
@@ -239,7 +187,7 @@ public class TextNpcInfoTranscriber(
 
     private fun npcInfoUpdate(message: NpcInfo) {
         if (!filters[PropertyFilter.NPC_INFO]) return omit()
-        val world = stateTracker.getActiveWorld()
+        val world = sessionState.getActiveWorld()
         val group =
             root.group {
                 for ((index, update) in message.updates) {
@@ -454,7 +402,7 @@ public class TextNpcInfoTranscriber(
         if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
             shortNpc(npc.index)
         }
-        val activeWorld = stateTracker.getActiveWorld()
+        val activeWorld = sessionState.getActiveWorld()
         val baseCoord = activeWorld.getInstancedCoordOrSelf(npc.coord)
         val to1 = CoordGrid(baseCoord.level, baseCoord.x - info.deltaX2, baseCoord.z - info.deltaZ2)
         coordGridProperty(to1.level, to1.x, to1.z, "to1")

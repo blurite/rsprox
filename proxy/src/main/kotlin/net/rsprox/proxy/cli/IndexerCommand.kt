@@ -19,8 +19,11 @@ import net.rsprox.proxy.util.NopSessionMonitor
 import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.indexing.MultiMapBinaryIndex
+import net.rsprox.shared.indexing.NopBinaryIndex
 import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.indexer.IndexerTranscriberProvider
+import net.rsprox.transcriber.state.SessionState
+import net.rsprox.transcriber.state.SessionTracker
 import net.rsprox.transcriber.text.TextMessageConsumerContainer
 import java.nio.file.Files
 import java.nio.file.Path
@@ -100,6 +103,7 @@ public class IndexerCommand : CliktCommand(name = "index") {
         Files.createDirectories(folder)
         val consumers = TextMessageConsumerContainer(emptyList())
         val index = MultiMapBinaryIndex()
+        val sessionState = SessionState(settings)
         val runner =
             transcriberProvider.provide(
                 consumers,
@@ -107,7 +111,14 @@ public class IndexerCommand : CliktCommand(name = "index") {
                 NopSessionMonitor,
                 filters,
                 settings,
-                index,
+                NopBinaryIndex,
+                sessionState,
+            )
+        val sessionTracker =
+            SessionTracker(
+                sessionState,
+                statefulCacheProvider.get(),
+                NopSessionMonitor,
             )
 
         folder.resolve(binaryPath.nameWithoutExtension + ".txt").bufferedWriter().use { writer ->
@@ -128,10 +139,16 @@ public class IndexerCommand : CliktCommand(name = "index") {
                 try {
                     when (direction) {
                         StreamDirection.CLIENT_TO_SERVER -> {
+                            sessionTracker.onClientPacket(packet, prot)
+                            sessionTracker.beforeTranscribe(packet)
                             runner.onClientProt(prot, packet, revision)
+                            sessionTracker.afterTranscribe(packet)
                         }
                         StreamDirection.SERVER_TO_CLIENT -> {
+                            sessionTracker.onServerPacket(packet, prot)
+                            sessionTracker.beforeTranscribe(packet)
                             runner.onServerPacket(prot, packet, revision)
+                            sessionTracker.afterTranscribe(packet)
                         }
                     }
                 } catch (t: NotImplementedError) {

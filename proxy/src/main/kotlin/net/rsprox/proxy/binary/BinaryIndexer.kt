@@ -15,7 +15,10 @@ import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.indexing.IndexedKey
 import net.rsprox.shared.indexing.IndexedType
 import net.rsprox.shared.indexing.MultiMapBinaryIndex
+import net.rsprox.shared.indexing.NopBinaryIndex
 import net.rsprox.transcriber.indexer.IndexerTranscriberProvider
+import net.rsprox.transcriber.state.SessionState
+import net.rsprox.transcriber.state.SessionTracker
 import net.rsprox.transcriber.text.TextMessageConsumerContainer
 import java.nio.file.Files
 import java.nio.file.Path
@@ -49,6 +52,7 @@ public class BinaryIndexer {
         Files.createDirectories(folder)
         val consumers = TextMessageConsumerContainer(emptyList())
         val index = MultiMapBinaryIndex()
+        val sessionState = SessionState(settings)
         val runner =
             transcriberProvider.provide(
                 consumers,
@@ -56,17 +60,30 @@ public class BinaryIndexer {
                 NopSessionMonitor,
                 filters,
                 settings,
-                index,
+                NopBinaryIndex,
+                sessionState,
+            )
+        val sessionTracker =
+            SessionTracker(
+                sessionState,
+                statefulCacheProvider.get(),
+                NopSessionMonitor,
             )
         val revision = binary.header.revision
         for ((direction, prot, packet) in session.sequence()) {
             try {
                 when (direction) {
                     StreamDirection.CLIENT_TO_SERVER -> {
+                        sessionTracker.onClientPacket(packet, prot)
+                        sessionTracker.beforeTranscribe(packet)
                         runner.onClientProt(prot, packet, revision)
+                        sessionTracker.afterTranscribe(packet)
                     }
                     StreamDirection.SERVER_TO_CLIENT -> {
+                        sessionTracker.onServerPacket(packet, prot)
+                        sessionTracker.beforeTranscribe(packet)
                         runner.onServerPacket(prot, packet, revision)
+                        sessionTracker.afterTranscribe(packet)
                     }
                 }
             } catch (t: NotImplementedError) {

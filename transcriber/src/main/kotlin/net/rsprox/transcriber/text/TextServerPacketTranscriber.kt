@@ -199,8 +199,7 @@ import net.rsprox.shared.settings.SettingSet
 import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.interfaces.ServerPacketTranscriber
 import net.rsprox.transcriber.maxUShortToMinusOne
-import net.rsprox.transcriber.state.Player
-import net.rsprox.transcriber.state.StateTracker
+import net.rsprox.transcriber.state.SessionState
 import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
@@ -209,14 +208,14 @@ import java.util.concurrent.TimeUnit
 
 @Suppress("SpellCheckingInspection", "DuplicatedCode")
 public class TextServerPacketTranscriber(
-    private val stateTracker: StateTracker,
+    private val sessionState: SessionState,
     private val cache: Cache,
     private val filterSetStore: PropertyFilterSetStore,
     private val settingSetStore: SettingSetStore,
     private val formatterCollection: PropertyFormatterCollection,
 ) : ServerPacketTranscriber {
     private val root: RootProperty
-        get() = checkNotNull(stateTracker.root.last())
+        get() = checkNotNull(sessionState.root.last())
     private val filters: PropertyFilterSet
         get() = filterSetStore.getActive()
 
@@ -224,11 +223,11 @@ public class TextServerPacketTranscriber(
         get() = settingSetStore.getActive()
 
     private fun omit() {
-        stateTracker.deleteRoot()
+        sessionState.deleteRoot()
     }
 
     private fun Property.npc(index: Int): ChildProperty<*> {
-        val world = stateTracker.getActiveWorld()
+        val world = sessionState.getActiveWorld()
         val npc = world.getNpcOrNull(index) ?: return unidentifiedNpc(index)
         val finalIndex =
             if (settings[Setting.HIDE_NPC_INDICES]) {
@@ -236,8 +235,8 @@ public class TextServerPacketTranscriber(
             } else {
                 index
             }
-        val multinpc = stateTracker.resolveMultinpc(npc.id, cache)
-        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(npc.coord)
+        val multinpc = sessionState.resolveMultinpc(npc.id, cache)
+        val coord = sessionState.getActiveWorld().getInstancedCoordOrSelf(npc.coord)
         return if (multinpc != null) {
             identifiedMultinpc(
                 finalIndex,
@@ -264,7 +263,7 @@ public class TextServerPacketTranscriber(
         index: Int,
         name: String = "player",
     ): ChildProperty<*> {
-        val player = stateTracker.getPlayerOrNull(index)
+        val player = sessionState.getPlayerOrNull(index)
         val finalIndex =
             if (settings[Setting.PLAYER_HIDE_INDEX]) {
                 Int.MIN_VALUE
@@ -272,7 +271,7 @@ public class TextServerPacketTranscriber(
                 index
             }
         return if (player != null) {
-            val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(player.coord)
+            val coord = sessionState.getActiveWorld().getInstancedCoordOrSelf(player.coord)
             identifiedPlayer(
                 finalIndex,
                 player.name,
@@ -293,7 +292,7 @@ public class TextServerPacketTranscriber(
         if (index == -1) {
             return string("worldentity", "root")
         }
-        val world = stateTracker.getWorldOrNull(index)
+        val world = sessionState.getWorldOrNull(index)
         return if (world != null) {
             identifiedWorldEntity(
                 index,
@@ -314,18 +313,18 @@ public class TextServerPacketTranscriber(
         zInBuildArea: Int,
         level: Int = -1,
     ): CoordGrid {
-        val world = stateTracker.getActiveWorld()
+        val world = sessionState.getActiveWorld()
         val coord =
             world.relativizeBuildAreaCoord(
                 xInBuildArea,
                 zInBuildArea,
-                if (level == -1) stateTracker.level() else level,
+                if (level == -1) sessionState.level() else level,
             )
         return world.getInstancedCoordOrSelf(coord)
     }
 
     private fun Property.coordGrid(coordGrid: CoordGrid): ScriptVarTypeProperty<*> {
-        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(coordGrid)
+        val coord = sessionState.getActiveWorld().getInstancedCoordOrSelf(coordGrid)
         return coordGridProperty(coord.level, coord.x, coord.z)
     }
 
@@ -333,7 +332,7 @@ public class TextServerPacketTranscriber(
         name: String,
         coordGrid: CoordGrid,
     ): ScriptVarTypeProperty<*> {
-        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(coordGrid)
+        val coord = sessionState.getActiveWorld().getInstancedCoordOrSelf(coordGrid)
         return coordGridProperty(coord.level, coord.x, coord.z, name)
     }
 
@@ -343,7 +342,7 @@ public class TextServerPacketTranscriber(
         z: Int,
         name: String = "coord",
     ): ScriptVarTypeProperty<*> {
-        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(CoordGrid(level, x, z))
+        val coord = sessionState.getActiveWorld().getInstancedCoordOrSelf(CoordGrid(level, x, z))
         return coordGridProperty(coord.level, coord.x, coord.z, name)
     }
 
@@ -902,69 +901,6 @@ public class TextServerPacketTranscriber(
         root.coordGrid(buildAreaCoordGrid(message.originX, message.originZ))
     }
 
-    private fun preWorldEntityUpdate(message: WorldEntityInfo) {
-        for ((index, update) in message.updates) {
-            when (update) {
-                is WorldEntityUpdateType.ActiveV2 -> {
-                }
-                WorldEntityUpdateType.HighResolutionToLowResolution -> {
-                }
-                is WorldEntityUpdateType.LowResolutionToHighResolutionV2 -> {
-                    val world = stateTracker.createWorld(index)
-                    world.sizeX = update.sizeX
-                    world.sizeZ = update.sizeZ
-                    world.angle = update.angle
-                    world.level = update.level
-                    world.coordFine = update.coordFine
-                    world.coord = update.coordFine.toCoordGrid(world.level)
-                }
-                WorldEntityUpdateType.Idle -> {
-                    // noop
-                }
-
-                is WorldEntityUpdateType.ActiveV1 -> {
-                }
-                is WorldEntityUpdateType.LowResolutionToHighResolutionV1 -> {
-                    val world = stateTracker.createWorld(index)
-                    world.sizeX = update.sizeX
-                    world.sizeZ = update.sizeZ
-                    world.angle = update.angle
-                    // world.unknownProperty = update.unknownProperty
-                    world.coord = update.coordGrid
-                }
-            }
-        }
-    }
-
-    private fun postWorldEntityUpdate(message: WorldEntityInfo) {
-        for ((index, update) in message.updates) {
-            when (update) {
-                is WorldEntityUpdateType.ActiveV2 -> {
-                    val world = stateTracker.getWorld(index)
-                    world.angle = update.angle
-                    world.coordFine = update.coordFine
-                    world.coord = update.coordFine.toCoordGrid(world.level)
-                }
-                WorldEntityUpdateType.HighResolutionToLowResolution -> {
-                    stateTracker.destroyWorld(index)
-                }
-                is WorldEntityUpdateType.LowResolutionToHighResolutionV2 -> {
-                }
-                WorldEntityUpdateType.Idle -> {
-                    // noop
-                }
-                is WorldEntityUpdateType.ActiveV1 -> {
-                    val world = stateTracker.getWorld(index)
-                    world.angle = update.angle
-                    world.coord = update.coordGrid
-                    // world.moveSpeed = update.moveSpeed
-                }
-                is WorldEntityUpdateType.LowResolutionToHighResolutionV1 -> {
-                }
-            }
-        }
-    }
-
     override fun worldEntityInfoV1(message: WorldEntityInfoV1) {
         worldEntityInfo(message)
     }
@@ -978,7 +914,7 @@ public class TextServerPacketTranscriber(
     }
 
     private fun worldEntityInfo(message: WorldEntityInfo) {
-        preWorldEntityUpdate(message)
+        if (!filters[PropertyFilter.WORLDENTITY_INFO]) return omit()
         val group =
             root.group {
                 for ((index, update) in message.updates) {
@@ -987,7 +923,7 @@ public class TextServerPacketTranscriber(
                             group("ACTIVE") {
                                 worldentity(index)
                                 int("angle", update.angle)
-                                val world = stateTracker.getWorld(index)
+                                val world = sessionState.getWorld(index)
                                 val coordGrid = update.coordFine.toCoordGrid(world.level)
                                 coordGrid("newcoord", coordGrid)
                                 val coordFine = update.coordFine
@@ -1038,8 +974,6 @@ public class TextServerPacketTranscriber(
                     }
                 }
             }
-        postWorldEntityUpdate(message)
-        if (!filters[PropertyFilter.WORLDENTITY_INFO]) return omit()
         val children = group.children
         // If no children were added to the root group, it means no worldentities are being updated
         // In this case, remove the empty line that the group is generating
@@ -1058,9 +992,8 @@ public class TextServerPacketTranscriber(
     }
 
     override fun ifCloseSub(message: IfCloseSub) {
-        val interfaceId = stateTracker.getOpenInterface(message.combinedId)
-        stateTracker.closeInterface(message.combinedId)
         if (!filters[PropertyFilter.IF_CLOSESUB]) return omit()
+        val interfaceId = sessionState.getOpenInterface(message.combinedId)
         root.com(message.interfaceId, message.componentId)
         if (interfaceId != null) {
             root.inter(interfaceId)
@@ -1068,11 +1001,10 @@ public class TextServerPacketTranscriber(
     }
 
     override fun ifMoveSub(message: IfMoveSub) {
-        val interfaceId = stateTracker.getOpenInterface(message.sourceCombinedId)
-        stateTracker.moveInterface(message.sourceCombinedId, message.destinationCombinedId)
         if (!filters[PropertyFilter.IF_MOVESUB]) return omit()
         root.com("sourcecom", message.sourceInterfaceId, message.sourceComponentId)
         root.com("destcom", message.destinationInterfaceId, message.destinationComponentId)
+        val interfaceId = sessionState.getOpenInterface(message.sourceCombinedId)
         if (interfaceId != null) {
             root.inter(interfaceId)
         }
@@ -1096,7 +1028,6 @@ public class TextServerPacketTranscriber(
     }
 
     override fun ifOpenSub(message: IfOpenSub) {
-        stateTracker.openInterface(message.interfaceId, message.destinationCombinedId)
         if (!filters[PropertyFilter.IF_OPENSUB]) return omit()
         root.com(message.destinationInterfaceId, message.destinationComponentId)
         root.inter(message.interfaceId)
@@ -1104,9 +1035,8 @@ public class TextServerPacketTranscriber(
     }
 
     override fun ifOpenTop(message: IfOpenTop) {
-        val existing = stateTracker.toplevelInterface
-        stateTracker.toplevelInterface = message.interfaceId
         if (!filters[PropertyFilter.IF_OPENTOP]) return omit()
+        val existing = sessionState.toplevelInterface
         if (existing != -1) {
             root.inter("previousid", existing)
         }
@@ -1190,12 +1120,11 @@ public class TextServerPacketTranscriber(
     }
 
     override fun ifResync(message: IfResync) {
-        stateTracker.toplevelInterface = message.topLevelInterface
         if (!filters[PropertyFilter.IF_RESYNC]) return omit()
         root.inter(message.topLevelInterface)
         root.group("SUB_INTERFACES") {
             for (sub in message.subInterfaces) {
-                stateTracker.openInterface(sub.interfaceId, sub.destinationCombinedId)
+                sessionState.openInterface(sub.interfaceId, sub.destinationCombinedId)
                 group {
                     com(sub.destinationInterfaceId, sub.destinationComponentId)
                     inter(sub.interfaceId)
@@ -1453,17 +1382,6 @@ public class TextServerPacketTranscriber(
     }
 
     override fun rebuildLogin(message: RebuildLogin) {
-        stateTracker.overridePlayer(
-            Player(
-                message.playerInfoInitBlock.localPlayerIndex,
-                "uninitialized",
-                message.playerInfoInitBlock.localPlayerCoord,
-            ),
-        )
-        stateTracker.localPlayerIndex = message.playerInfoInitBlock.localPlayerIndex
-        val world = stateTracker.createWorld(-1)
-        world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
-        world.setBuildArea(null)
         if (!filters[PropertyFilter.REBUILD]) return omit()
         root.int("zonex", message.zoneX)
         root.int("zonez", message.zoneZ)
@@ -1492,9 +1410,6 @@ public class TextServerPacketTranscriber(
     }
 
     override fun rebuildNormal(message: RebuildNormal) {
-        val world = stateTracker.getWorld(-1)
-        world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
-        world.setBuildArea(null)
         if (!filters[PropertyFilter.REBUILD]) return omit()
         root.int("zonex", message.zoneX)
         root.int("zonez", message.zoneZ)
@@ -1522,9 +1437,6 @@ public class TextServerPacketTranscriber(
     }
 
     override fun rebuildRegion(message: RebuildRegion) {
-        val world = stateTracker.getWorld(-1)
-        world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
-        world.setBuildArea(message.buildArea)
         if (!filters[PropertyFilter.REBUILD]) return omit()
         root.int("zonex", message.zoneX)
         root.int("zonez", message.zoneZ)
@@ -1572,9 +1484,6 @@ public class TextServerPacketTranscriber(
         keys: List<XteaKey>,
         playerInfoInitBlock: PlayerInfoInitBlock?,
     ) {
-        val world = stateTracker.getWorld(index)
-        world.rebuild(CoordGrid(0, (baseX - 6) shl 3, (baseZ - 6) shl 3))
-        world.setBuildArea(buildArea)
         if (!filters[PropertyFilter.REBUILD]) return omit()
         root.worldentity(index)
         root.int("zonex", baseX)
@@ -1667,7 +1576,7 @@ public class TextServerPacketTranscriber(
                 root.string("type", "reset")
             }
             is HintArrow.TileHintArrow -> {
-                root.coordGrid(stateTracker.level(), type.x, type.z)
+                root.coordGrid(sessionState.level(), type.x, type.z)
                 root.int("height", type.height)
                 root.string(
                     "position",
@@ -1785,7 +1694,6 @@ public class TextServerPacketTranscriber(
     }
 
     override fun serverTickEnd(message: ServerTickEnd) {
-        stateTracker.incrementCycle()
         if (!filters[PropertyFilter.SERVER_TICK_END]) return omit()
     }
 
@@ -2055,9 +1963,8 @@ public class TextServerPacketTranscriber(
     }
 
     override fun updateStatV2(message: UpdateStatV2) {
-        val oldXp = stateTracker.getExperience(message.stat)
-        stateTracker.setExperience(message.stat, message.experience)
         if (!filters[PropertyFilter.UPDATE_STAT]) return omit()
+        val oldXp = sessionState.getExperience(message.stat)
         root.namedEnum("stat", Stat.entries.first { it.id == message.stat })
         root.int("level", message.currentLevel)
         root.filteredInt("invisiblelevel", message.invisibleBoostedLevel, message.currentLevel)
@@ -2065,9 +1972,8 @@ public class TextServerPacketTranscriber(
     }
 
     override fun updateStatV1(message: UpdateStatV1) {
-        val oldXp = stateTracker.getExperience(message.stat)
-        stateTracker.setExperience(message.stat, message.experience)
         if (!filters[PropertyFilter.UPDATE_STAT]) return omit()
+        val oldXp = sessionState.getExperience(message.stat)
         root.namedEnum("stat", Stat.entries.first { it.id == message.stat })
         root.int("level", message.currentLevel)
         root.formattedInt("experience", message.experience - (oldXp ?: 0))
@@ -2431,10 +2337,7 @@ public class TextServerPacketTranscriber(
         oldValue: Int,
         newValue: Int,
     ): List<VarBitType> {
-        if (!stateTracker.varbitsLoaded()) {
-            stateTracker.associateVarbits(cache.listVarBitTypes())
-        }
-        return stateTracker.getAssociatedVarbits(basevar).filter { type ->
+        return sessionState.getAssociatedVarbits(basevar).filter { type ->
             val bitcount = (type.endbit - type.startbit) + 1
             val bitmask = type.bitmask(bitcount)
             val oldVarbitValue = oldValue ushr type.startbit and bitmask
@@ -2471,9 +2374,8 @@ public class TextServerPacketTranscriber(
         id: Int,
         newValue: Int,
     ) {
-        val oldValue = stateTracker.getVarp(id)
+        val oldValue = sessionState.getVarp(id)
         val impactedVarbits = getImpactedVarbits(id, oldValue, newValue)
-        stateTracker.setVarp(id, newValue)
         root.varp("id", id)
         root.int("old", oldValue)
         root.int("new", newValue)
@@ -2501,7 +2403,7 @@ public class TextServerPacketTranscriber(
                 val oldVarbitValue = oldValue ushr varbit.startbit and bitmask
                 val newVarbitValue = newValue ushr varbit.startbit and bitmask
                 if (printAsVarbits) {
-                    stateTracker.createFakeServerRoot("VARBIT")
+                    sessionState.createFakeServerRoot("VARBIT")
                     root.varbit("id", varbit.id)
                     root.int("old", oldVarbitValue)
                     root.int("new", newVarbitValue)
@@ -2521,7 +2423,6 @@ public class TextServerPacketTranscriber(
     }
 
     override fun clearEntities(message: ClearEntities) {
-        stateTracker.destroyDynamicWorlds()
         if (!filters[PropertyFilter.CLEAR_ENTITIES]) return omit()
     }
 
@@ -2540,13 +2441,11 @@ public class TextServerPacketTranscriber(
     }
 
     override fun updateZoneFullFollows(message: UpdateZoneFullFollows) {
-        stateTracker.getActiveWorld().setActiveZone(message.zoneX, message.zoneZ, message.level)
         if (!filters[PropertyFilter.ZONE_HEADER]) return omit()
         root.coordGrid(buildAreaCoordGrid(message.zoneX, message.zoneZ, message.level))
     }
 
     override fun updateZonePartialEnclosed(message: UpdateZonePartialEnclosed) {
-        stateTracker.getActiveWorld().setActiveZone(message.zoneX, message.zoneZ, message.level)
         root.coordGrid(buildAreaCoordGrid(message.zoneX, message.zoneZ, message.level))
         val includeZoneHeader = filters[PropertyFilter.ZONE_HEADER]
         if (!includeZoneHeader) {
@@ -2567,67 +2466,67 @@ public class TextServerPacketTranscriber(
             when (event) {
                 is LocAddChange -> {
                     if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
-                    val root = stateTracker.createFakeServerRoot("LOC_ADD_CHANGE")
+                    val root = sessionState.createFakeServerRoot("LOC_ADD_CHANGE")
                     root.buildLocAddChange(event)
                 }
                 is LocAnim -> {
                     if (!filters[PropertyFilter.LOC_ANIM]) continue
-                    val root = stateTracker.createFakeServerRoot("LOC_ANIM")
+                    val root = sessionState.createFakeServerRoot("LOC_ANIM")
                     root.buildLocAnim(event)
                 }
                 is LocDel -> {
                     if (!filters[PropertyFilter.LOC_DEL]) continue
-                    val root = stateTracker.createFakeServerRoot("LOC_DEL")
+                    val root = sessionState.createFakeServerRoot("LOC_DEL")
                     root.buildLocDel(event)
                 }
                 is LocMerge -> {
                     if (!filters[PropertyFilter.LOC_MERGE]) continue
-                    val root = stateTracker.createFakeServerRoot("LOC_MERGE")
+                    val root = sessionState.createFakeServerRoot("LOC_MERGE")
                     root.buildLocMerge(event)
                 }
                 is MapAnim -> {
                     if (!filters[PropertyFilter.MAP_ANIM]) continue
-                    val root = stateTracker.createFakeServerRoot("MAP_ANIM")
+                    val root = sessionState.createFakeServerRoot("MAP_ANIM")
                     root.buildMapAnim(event)
                 }
                 is MapProjAnim -> {
                     if (!filters[PropertyFilter.MAP_PROJANIM]) continue
-                    val root = stateTracker.createFakeServerRoot("MAP_PROJANIM")
+                    val root = sessionState.createFakeServerRoot("MAP_PROJANIM")
                     root.buildMapProjAnim(event)
                 }
                 is ObjAdd -> {
                     if (!filters[PropertyFilter.OBJ_ADD]) continue
-                    val root = stateTracker.createFakeServerRoot("OBJ_ADD")
+                    val root = sessionState.createFakeServerRoot("OBJ_ADD")
                     root.buildObjAdd(event)
                 }
                 is ObjCount -> {
                     if (!filters[PropertyFilter.OBJ_COUNT]) continue
-                    val root = stateTracker.createFakeServerRoot("OBJ_COUNT")
+                    val root = sessionState.createFakeServerRoot("OBJ_COUNT")
                     root.buildObjCount(event)
                 }
                 is ObjDel -> {
                     if (!filters[PropertyFilter.OBJ_DEL]) continue
-                    val root = stateTracker.createFakeServerRoot("OBJ_DEL")
+                    val root = sessionState.createFakeServerRoot("OBJ_DEL")
                     root.buildObjDel(event)
                 }
                 is ObjEnabledOps -> {
                     if (!filters[PropertyFilter.OBJ_ENABLED_OPS]) continue
-                    val root = stateTracker.createFakeServerRoot("OBJ_ENABLED_OPS")
+                    val root = sessionState.createFakeServerRoot("OBJ_ENABLED_OPS")
                     root.buildObjEnabledOps(event)
                 }
                 is ObjCustomise -> {
                     if (!filters[PropertyFilter.OBJ_CUSTOMISE]) continue
-                    val root = stateTracker.createFakeServerRoot("OBJ_ENABLED_OPS")
+                    val root = sessionState.createFakeServerRoot("OBJ_ENABLED_OPS")
                     root.buildObjCustomise(event)
                 }
                 is ObjUncustomise -> {
                     if (!filters[PropertyFilter.OBJ_CUSTOMISE]) continue
-                    val root = stateTracker.createFakeServerRoot("OBJ_ENABLED_OPS")
+                    val root = sessionState.createFakeServerRoot("OBJ_ENABLED_OPS")
                     root.buildObjUncustomise(event)
                 }
                 is SoundArea -> {
                     if (!filters[PropertyFilter.SOUND_AREA]) continue
-                    val root = stateTracker.createFakeServerRoot("SOUND_AREA")
+                    val root = sessionState.createFakeServerRoot("SOUND_AREA")
                     root.buildSoundArea(event)
                 }
             }
@@ -2725,7 +2624,6 @@ public class TextServerPacketTranscriber(
     }
 
     override fun updateZonePartialFollows(message: UpdateZonePartialFollows) {
-        stateTracker.getActiveWorld().setActiveZone(message.zoneX, message.zoneZ, message.level)
         if (!filters[PropertyFilter.ZONE_HEADER]) return omit()
         root.coordGrid(buildAreaCoordGrid(message.zoneX, message.zoneZ, message.level))
     }
@@ -2789,7 +2687,7 @@ public class TextServerPacketTranscriber(
         xInZone: Int,
         zInZone: Int,
     ): CoordGrid {
-        return stateTracker.getActiveWorld().relativizeZoneCoord(xInZone, zInZone)
+        return sessionState.getActiveWorld().relativizeZoneCoord(xInZone, zInZone)
     }
 
     private fun Property.buildLocAddChange(message: LocAddChange) {

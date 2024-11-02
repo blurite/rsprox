@@ -23,6 +23,8 @@ import net.rsprox.shared.property.PropertyTreeFormatter
 import net.rsprox.shared.property.RootProperty
 import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.MessageConsumer
+import net.rsprox.transcriber.state.SessionState
+import net.rsprox.transcriber.state.SessionTracker
 import net.rsprox.transcriber.text.TextMessageConsumerContainer
 import net.rsprox.transcriber.text.TextTranscriberProvider
 import java.io.BufferedWriter
@@ -103,6 +105,7 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
         val textPath = binaryPath.parent.resolve(binaryPath.nameWithoutExtension + ".txt")
         val writer = textPath.bufferedWriter()
         val consumers = TextMessageConsumerContainer(listOf(createBufferedWriterConsumer(writer)))
+        val sessionState = SessionState(settings)
         val runner =
             transcriberProvider.provide(
                 consumers,
@@ -111,6 +114,13 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
                 filters,
                 settings,
                 NopBinaryIndex,
+                sessionState,
+            )
+        val sessionTracker =
+            SessionTracker(
+                sessionState,
+                statefulCacheProvider.get(),
+                NopSessionMonitor,
             )
 
         writer.appendLine("------------------")
@@ -130,10 +140,16 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
             try {
                 when (direction) {
                     StreamDirection.CLIENT_TO_SERVER -> {
+                        sessionTracker.onClientPacket(packet, prot)
+                        sessionTracker.beforeTranscribe(packet)
                         runner.onClientProt(prot, packet, revision)
+                        sessionTracker.afterTranscribe(packet)
                     }
                     StreamDirection.SERVER_TO_CLIENT -> {
+                        sessionTracker.onServerPacket(packet, prot)
+                        sessionTracker.beforeTranscribe(packet)
                         runner.onServerPacket(prot, packet, revision)
+                        sessionTracker.afterTranscribe(packet)
                     }
                 }
             } catch (t: NotImplementedError) {

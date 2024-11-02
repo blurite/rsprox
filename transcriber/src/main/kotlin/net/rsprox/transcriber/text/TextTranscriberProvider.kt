@@ -11,7 +11,7 @@ import net.rsprox.shared.symbols.SymbolDictionaryProvider
 import net.rsprox.transcriber.TranscriberPlugin
 import net.rsprox.transcriber.TranscriberProvider
 import net.rsprox.transcriber.TranscriberRunner
-import net.rsprox.transcriber.state.StateTracker
+import net.rsprox.transcriber.state.SessionState
 
 public class TextTranscriberProvider : TranscriberProvider {
     override fun provide(
@@ -21,9 +21,9 @@ public class TextTranscriberProvider : TranscriberProvider {
         filters: PropertyFilterSetStore,
         settings: SettingSetStore,
         binaryIndex: BinaryIndex,
+        state: SessionState,
     ): TranscriberRunner {
         val dictionary = SymbolDictionaryProvider.get()
-        val stateTracker = StateTracker(settings)
         val formatter =
             OmitFilteredPropertyTreeFormatter(
                 PropertyFormatterCollection.default(
@@ -35,8 +35,7 @@ public class TextTranscriberProvider : TranscriberProvider {
         return TranscriberPlugin(
             TextTranscriber(
                 cacheProvider,
-                monitor,
-                stateTracker,
+                state,
                 monitoredContainer,
                 formatter,
                 filters,

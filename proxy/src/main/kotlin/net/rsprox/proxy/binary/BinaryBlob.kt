@@ -23,6 +23,8 @@ import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.indexing.NopBinaryIndex
 import net.rsprox.shared.settings.SettingSetStore
+import net.rsprox.transcriber.state.SessionState
+import net.rsprox.transcriber.state.SessionTracker
 import net.rsprox.transcriber.text.TextMessageConsumerContainer
 import net.rsprox.transcriber.text.TextTranscriberProvider
 import java.nio.file.Files
@@ -211,6 +213,7 @@ public data class BinaryBlob(
             val consumers = TextMessageConsumerContainer(emptyList())
             val session = Session(header.localPlayerIndex, AttributeMap())
             val decodingSession = DecodingSession(this, latestPlugin)
+            val state = SessionState(settings)
             val runner =
                 transcriberProvider.provide(
                     consumers,
@@ -219,12 +222,20 @@ public data class BinaryBlob(
                     filters,
                     settings,
                     NopBinaryIndex,
+                    state,
+                )
+            val sessionTracker =
+                SessionTracker(
+                    state,
+                    provider.get(),
+                    NopSessionMonitor,
                 )
             val liveSession =
                 LiveTranscriberSession(
                     session,
                     decodingSession,
                     runner,
+                    sessionTracker,
                 )
             this.liveSession = liveSession
             liveSession.setRevision(header.revision)

@@ -2,7 +2,6 @@ package net.rsprox.transcriber.text
 
 import net.rsprox.cache.api.Cache
 import net.rsprox.cache.api.CacheProvider
-import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.property.OmitFilteredPropertyTreeFormatter
 import net.rsprox.shared.property.PropertyTreeFormatter
@@ -15,56 +14,51 @@ import net.rsprox.transcriber.interfaces.NpcInfoTranscriber
 import net.rsprox.transcriber.interfaces.PlayerInfoTranscriber
 import net.rsprox.transcriber.interfaces.ServerPacketTranscriber
 import net.rsprox.transcriber.prot.GameServerProt
-import net.rsprox.transcriber.prot.Prot
-import net.rsprox.transcriber.state.StateTracker
+import net.rsprox.transcriber.state.SessionState
 
 public class TextTranscriber private constructor(
-    private val stateTracker: StateTracker,
+    private val sessionState: SessionState,
     cacheProvider: CacheProvider,
-    override val monitor: SessionMonitor<*>,
     private val consumers: MessageConsumerContainer,
     private val formatter: PropertyTreeFormatter,
     private val filterSetStore: PropertyFilterSetStore,
     private val settingSetStore: SettingSetStore,
 ) : Transcriber,
     ClientPacketTranscriber by TextClientPacketTranscriber(
-        stateTracker,
+        sessionState,
         cacheProvider.get(),
         filterSetStore,
         settingSetStore,
     ),
     ServerPacketTranscriber by TextServerPacketTranscriber(
-        stateTracker,
+        sessionState,
         cacheProvider.get(),
         filterSetStore,
         settingSetStore,
         (formatter as OmitFilteredPropertyTreeFormatter).propertyFormatterCollection, // Unsafe but works for now
     ),
     PlayerInfoTranscriber by TextPlayerInfoTranscriber(
-        stateTracker,
-        monitor,
+        sessionState,
         cacheProvider.get(),
         filterSetStore,
         settingSetStore,
     ),
     NpcInfoTranscriber by TextNpcInfoTranscriber(
-        stateTracker,
+        sessionState,
         cacheProvider.get(),
         filterSetStore,
         settingSetStore,
     ) {
     public constructor(
         cacheProvider: CacheProvider,
-        monitor: SessionMonitor<*>,
-        stateTracker: StateTracker,
+        sessionState: SessionState,
         consumers: MessageConsumerContainer,
         formatter: PropertyTreeFormatter,
         filters: PropertyFilterSetStore,
         settings: SettingSetStore,
     ) : this(
-        stateTracker,
+        sessionState,
         cacheProvider,
-        monitor,
         consumers,
         formatter,
         filters,
@@ -73,20 +67,16 @@ public class TextTranscriber private constructor(
 
     override val cache: Cache = cacheProvider.get()
 
-    override fun setCurrentProt(prot: Prot) {
-        stateTracker.currentProt = prot.toString()
-    }
-
     override fun onTranscribeStart() {
-        stateTracker.setRoot()
+        sessionState.setRoot()
     }
 
     override fun onTranscribeEnd() {
-        val root = stateTracker.root
+        val root = sessionState.root
         if (root.isEmpty()) return
-        var cycle = stateTracker.cycle
+        var cycle = sessionState.cycle
         // Decrement the cycle if we're logging server tick end
-        if (stateTracker.currentProt == GameServerProt.SERVER_TICK_END.name) {
+        if (sessionState.currentProt == GameServerProt.SERVER_TICK_END.name) {
             cycle--
         }
         for (property in root) {

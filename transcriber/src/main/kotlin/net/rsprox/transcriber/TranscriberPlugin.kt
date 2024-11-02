@@ -30,11 +30,9 @@ public class TranscriberPlugin(
         val serverProt = GameServerProt.valueOf(toString)
         // Special exception as it has its own dedicated class
         if (message is RebuildLogin) {
-            transcriber.setCurrentProt(GameServerProt.REBUILD_NORMAL)
             pass(message, Transcriber::rebuildLogin)
             return
         }
-        transcriber.setCurrentProt(serverProt)
         when (serverProt) {
             GameServerProt.IF_RESYNC -> pass(message, Transcriber::ifResync)
             GameServerProt.IF_OPENTOP -> pass(message, Transcriber::ifOpenTop)
@@ -203,7 +201,6 @@ public class TranscriberPlugin(
     ) {
         val toString = prot.toString()
         val clientProt = GameClientProt.valueOf(toString)
-        transcriber.setCurrentProt(clientProt)
         when (clientProt) {
             GameClientProt.IF_BUTTON -> pass(message, Transcriber::if1Button)
             GameClientProt.IF_BUTTON1 -> pass(message, Transcriber::if3Button)

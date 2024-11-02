@@ -4,7 +4,6 @@ import net.rsprot.protocol.util.CombinedId
 import net.rsprox.cache.api.Cache
 import net.rsprox.cache.api.CacheProvider
 import net.rsprox.cache.api.type.VarBitType
-import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.incoming.model.buttons.If1Button
 import net.rsprox.protocol.game.incoming.model.buttons.If3Button
 import net.rsprox.protocol.game.incoming.model.buttons.IfButtonD
@@ -128,11 +127,9 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SayExten
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SequenceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfo
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV1
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV2
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV3
-import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityUpdateType
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfMoveSub
@@ -244,37 +241,21 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjUncustomise
 import net.rsprox.protocol.game.outgoing.model.zone.payload.SoundArea
 import net.rsprox.shared.BaseVarType
 import net.rsprox.shared.ScriptVarType
-import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.indexing.BinaryIndex
 import net.rsprox.shared.indexing.IndexedType
 import net.rsprox.shared.indexing.increment
 import net.rsprox.transcriber.Transcriber
-import net.rsprox.transcriber.prot.Prot
 import net.rsprox.transcriber.state.Npc
-import net.rsprox.transcriber.state.Player
-import net.rsprox.transcriber.state.StateTracker
+import net.rsprox.transcriber.state.SessionState
 
 @Suppress("DuplicatedCode")
-public class IndexerTranscriber private constructor(
-    private val stateTracker: StateTracker,
+public class IndexerTranscriber(
+    private val sessionState: SessionState,
     cacheProvider: CacheProvider,
-    override val monitor: SessionMonitor<*>,
     private val binaryIndex: BinaryIndex,
 ) : Transcriber {
-    public constructor(
-        cacheProvider: CacheProvider,
-        monitor: SessionMonitor<*>,
-        stateTracker: StateTracker,
-        binaryIndex: BinaryIndex,
-    ) : this(
-        stateTracker,
-        cacheProvider,
-        monitor,
-        binaryIndex,
-    )
-
     private fun getNpcInAnyWorld(index: Int): Npc? {
-        for (world in stateTracker.getAllWorlds()) {
+        for (world in sessionState.getAllWorlds()) {
             val npc = world.getNpcOrNull(index)
             if (npc != null) {
                 return npc
@@ -283,13 +264,7 @@ public class IndexerTranscriber private constructor(
         return null
     }
 
-    private var lastConnection: Int = 0
-
     override val cache: Cache = cacheProvider.get()
-
-    override fun setCurrentProt(prot: Prot) {
-        stateTracker.currentProt = prot.toString()
-    }
 
     override fun onTranscribeStart() {
     }
@@ -610,81 +585,13 @@ public class IndexerTranscriber private constructor(
     override fun setNpcUpdateOrigin(message: SetNpcUpdateOrigin) {
     }
 
-    private fun preWorldEntityUpdate(message: WorldEntityInfo) {
-        for ((index, update) in message.updates) {
-            when (update) {
-                is WorldEntityUpdateType.ActiveV2 -> {
-                }
-                WorldEntityUpdateType.HighResolutionToLowResolution -> {
-                }
-                is WorldEntityUpdateType.LowResolutionToHighResolutionV2 -> {
-                    val world = stateTracker.createWorld(index)
-                    world.sizeX = update.sizeX
-                    world.sizeZ = update.sizeZ
-                    world.angle = update.angle
-                    world.level = update.level
-                    world.coordFine = update.coordFine
-                    world.coord = update.coordFine.toCoordGrid(world.level)
-                }
-                WorldEntityUpdateType.Idle -> {
-                    // noop
-                }
-                is WorldEntityUpdateType.ActiveV1 -> {
-                }
-                is WorldEntityUpdateType.LowResolutionToHighResolutionV1 -> {
-                    val world = stateTracker.createWorld(index)
-                    world.sizeX = update.sizeX
-                    world.sizeZ = update.sizeZ
-                    world.angle = update.angle
-                    // world.unknownProperty = update.unknownProperty
-                    world.coord = update.coordGrid
-                }
-            }
-        }
-    }
-
-    private fun postWorldEntityUpdate(message: WorldEntityInfo) {
-        for ((index, update) in message.updates) {
-            when (update) {
-                is WorldEntityUpdateType.ActiveV2 -> {
-                    val world = stateTracker.getWorld(index)
-                    world.angle = update.angle
-                    world.coordFine = update.coordFine
-                    world.coord = update.coordFine.toCoordGrid(world.level)
-                }
-                WorldEntityUpdateType.HighResolutionToLowResolution -> {
-                    stateTracker.destroyWorld(index)
-                }
-                is WorldEntityUpdateType.LowResolutionToHighResolutionV2 -> {
-                }
-                WorldEntityUpdateType.Idle -> {
-                    // noop
-                }
-                is WorldEntityUpdateType.ActiveV1 -> {
-                    val world = stateTracker.getWorld(index)
-                    world.angle = update.angle
-                    world.coord = update.coordGrid
-                    // world.moveSpeed = update.moveSpeed
-                }
-                is WorldEntityUpdateType.LowResolutionToHighResolutionV1 -> {
-                }
-            }
-        }
-    }
-
     override fun worldEntityInfoV1(message: WorldEntityInfoV1) {
-        preWorldEntityUpdate(message)
-        postWorldEntityUpdate(message)
     }
 
     override fun worldEntityInfoV2(message: WorldEntityInfoV2) {
-        preWorldEntityUpdate(message)
-        postWorldEntityUpdate(message)
     }
 
     override fun worldEntityInfoV3(message: WorldEntityInfoV3) {
-        preWorldEntityUpdate(message)
-        postWorldEntityUpdate(message)
     }
 
     override fun ifClearInv(message: IfClearInv) {
@@ -693,31 +600,23 @@ public class IndexerTranscriber private constructor(
 
     override fun ifCloseSub(message: IfCloseSub) {
         incrementComponent(message.combinedId)
-        stateTracker.closeInterface(message.combinedId)
     }
 
     override fun ifMoveSub(message: IfMoveSub) {
         incrementComponent(message.sourceCombinedId)
         incrementComponent(message.destinationCombinedId)
-        stateTracker.moveInterface(message.sourceCombinedId, message.destinationCombinedId)
     }
 
     override fun ifOpenSub(message: IfOpenSub) {
         incrementInterfaceId(message.interfaceId)
         incrementComponent(message.destinationCombinedId)
-        stateTracker.openInterface(message.interfaceId, message.destinationCombinedId)
     }
 
     override fun ifOpenTop(message: IfOpenTop) {
         incrementInterfaceId(message.interfaceId)
-        stateTracker.toplevelInterface = message.interfaceId
     }
 
     override fun ifResync(message: IfResync) {
-        stateTracker.toplevelInterface = message.topLevelInterface
-        for (sub in message.subInterfaces) {
-            stateTracker.openInterface(sub.interfaceId, sub.destinationCombinedId)
-        }
     }
 
     override fun ifSetAngle(message: IfSetAngle) {
@@ -845,21 +744,9 @@ public class IndexerTranscriber private constructor(
     }
 
     override fun reconnect(message: Reconnect) {
-        lastConnection = stateTracker.cycle
     }
 
     override fun rebuildLogin(message: RebuildLogin) {
-        stateTracker.overridePlayer(
-            Player(
-                message.playerInfoInitBlock.localPlayerIndex,
-                "uninitialized",
-                message.playerInfoInitBlock.localPlayerCoord,
-            ),
-        )
-        stateTracker.localPlayerIndex = message.playerInfoInitBlock.localPlayerIndex
-        val world = stateTracker.createWorld(-1)
-        world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
-
         val minMapsquareX = (message.zoneX - 6) ushr 3
         val maxMapsquareX = (message.zoneX + 6) ushr 3
         val minMapsquareZ = (message.zoneZ - 6) ushr 3
@@ -873,9 +760,6 @@ public class IndexerTranscriber private constructor(
     }
 
     override fun rebuildNormal(message: RebuildNormal) {
-        val world = stateTracker.getWorld(-1)
-        world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
-
         val minMapsquareX = (message.zoneX - 6) ushr 3
         val maxMapsquareX = (message.zoneX + 6) ushr 3
         val minMapsquareZ = (message.zoneZ - 6) ushr 3
@@ -889,9 +773,6 @@ public class IndexerTranscriber private constructor(
     }
 
     override fun rebuildRegion(message: RebuildRegion) {
-        val world = stateTracker.getWorld(-1)
-        world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
-
         val startZoneX = message.zoneX - 6
         val startZoneZ = message.zoneZ - 6
         val mapsquares = mutableSetOf<Int>()
@@ -911,9 +792,6 @@ public class IndexerTranscriber private constructor(
     }
 
     override fun rebuildWorldEntityV1(message: RebuildWorldEntityV1) {
-        val world = stateTracker.getWorld(message.index)
-        world.rebuild(CoordGrid(0, (message.baseX - 6) shl 3, (message.baseZ - 6) shl 3))
-
         val startZoneX = message.baseX - 6
         val startZoneZ = message.baseZ - 6
         val mapsquares = mutableSetOf<Int>()
@@ -933,9 +811,6 @@ public class IndexerTranscriber private constructor(
     }
 
     override fun rebuildWorldEntityV2(message: RebuildWorldEntityV2) {
-        val world = stateTracker.getWorld(message.index)
-        world.rebuild(CoordGrid(0, (message.baseX - 6) shl 3, (message.baseZ - 6) shl 3))
-
         val startZoneX = message.baseX - 6
         val startZoneZ = message.baseZ - 6
         val mapsquares = mutableSetOf<Int>()
@@ -982,7 +857,6 @@ public class IndexerTranscriber private constructor(
     }
 
     override fun serverTickEnd(message: ServerTickEnd) {
-        stateTracker.incrementCycle()
     }
 
     override fun setHeatmapEnabled(message: SetHeatmapEnabled) {
@@ -1171,10 +1045,7 @@ public class IndexerTranscriber private constructor(
         oldValue: Int,
         newValue: Int,
     ): List<VarBitType> {
-        if (!stateTracker.varbitsLoaded()) {
-            stateTracker.associateVarbits(cache.listVarBitTypes())
-        }
-        return stateTracker.getAssociatedVarbits(basevar).filter { type ->
+        return sessionState.getAssociatedVarbits(basevar).filter { type ->
             val bitcount = (type.endbit - type.startbit) + 1
             val bitmask = type.bitmask(bitcount)
             val oldVarbitValue = oldValue ushr type.startbit and bitmask
@@ -1187,11 +1058,10 @@ public class IndexerTranscriber private constructor(
         id: Int,
         newValue: Int,
     ) {
-        val oldValue = stateTracker.getVarp(id)
+        val oldValue = sessionState.getVarp(id)
         val impactedVarbits = getImpactedVarbits(id, oldValue, newValue)
-        stateTracker.setVarp(id, newValue)
         // Ignore any varbits and varps set on tick 0
-        if (stateTracker.cycle == lastConnection) {
+        if (sessionState.cycle == sessionState.lastConnection) {
             return
         }
         binaryIndex.increment(IndexedType.VARP, id)
@@ -1204,18 +1074,15 @@ public class IndexerTranscriber private constructor(
     }
 
     override fun clearEntities(message: ClearEntities) {
-        stateTracker.destroyDynamicWorlds()
     }
 
     override fun setActiveWorld(message: SetActiveWorld) {
     }
 
     override fun updateZoneFullFollows(message: UpdateZoneFullFollows) {
-        stateTracker.getActiveWorld().setActiveZone(message.zoneX, message.zoneZ, message.level)
     }
 
     override fun updateZonePartialEnclosed(message: UpdateZonePartialEnclosed) {
-        stateTracker.getActiveWorld().setActiveZone(message.zoneX, message.zoneZ, message.level)
         for (update in message.packets) {
             when (update) {
                 is LocAddChange -> {
@@ -1255,7 +1122,6 @@ public class IndexerTranscriber private constructor(
     }
 
     override fun updateZonePartialFollows(message: UpdateZonePartialFollows) {
-        stateTracker.getActiveWorld().setActiveZone(message.zoneX, message.zoneZ, message.level)
     }
 
     override fun locAddChange(message: LocAddChange) {
@@ -1319,10 +1185,6 @@ public class IndexerTranscriber private constructor(
     }
 
     override fun playerInfo(message: PlayerInfo) {
-        stateTracker.clearTempMoveSpeeds()
-        // Assign the coord and name of each player that is being added
-        preloadPlayerInfo(message)
-
         for ((_, update) in message.updates) {
             when (update) {
                 is PlayerUpdateType.LowResolutionToHighResolution -> {
@@ -1336,56 +1198,6 @@ public class IndexerTranscriber private constructor(
                 }
                 else -> {
                 }
-            }
-        }
-
-        // Update the last known coord and name of each player being processed
-        postPlayerInfo(message)
-    }
-
-    private fun preloadPlayerInfo(message: PlayerInfo) {
-        for ((index, update) in message.updates) {
-            when (update) {
-                is PlayerUpdateType.LowResolutionToHighResolution -> {
-                    val name = loadPlayerName(index, update.extendedInfo)
-                    stateTracker.overridePlayer(Player(index, name, update.coord))
-                    preprocessExtendedInfo(index, update.extendedInfo)
-                }
-                is PlayerUpdateType.HighResolutionIdle -> {
-                    val name = loadPlayerName(index, update.extendedInfo)
-                    val player = stateTracker.getPlayer(index)
-                    stateTracker.overridePlayer(Player(index, name, player.coord))
-                    preprocessExtendedInfo(index, update.extendedInfo)
-                }
-                is PlayerUpdateType.HighResolutionMovement -> {
-                    val name = loadPlayerName(index, update.extendedInfo)
-                    val player = stateTracker.getPlayer(index)
-                    stateTracker.overridePlayer(Player(index, name, player.coord))
-                    preprocessExtendedInfo(index, update.extendedInfo)
-                }
-                else -> {
-                    // No-op, no info to preload
-                }
-            }
-        }
-    }
-
-    private fun preprocessExtendedInfo(
-        index: Int,
-        extendedInfo: List<ExtendedInfo>,
-    ) {
-        val moveSpeed = extendedInfo.firstOfInstanceOfNull<MoveSpeedExtendedInfo>()
-        if (moveSpeed != null) {
-            stateTracker.setCachedMoveSpeed(index, moveSpeed.speed)
-        }
-        val tempMoveSpeed = extendedInfo.firstOfInstanceOfNull<TemporaryMoveSpeedExtendedInfo>()
-        if (tempMoveSpeed != null) {
-            stateTracker.setTempMoveSpeed(index, tempMoveSpeed.speed)
-        }
-        if (index == stateTracker.localPlayerIndex) {
-            val appearance = extendedInfo.firstOfInstanceOfNull<AppearanceExtendedInfo>()
-            if (appearance != null) {
-                monitor.onNameUpdate(appearance.name)
             }
         }
     }
@@ -1449,49 +1261,8 @@ public class IndexerTranscriber private constructor(
         binaryIndex.increment(IndexedType.SPOTANIM, id)
     }
 
-    private fun postPlayerInfo(message: PlayerInfo) {
-        for ((index, update) in message.updates) {
-            when (update) {
-                is PlayerUpdateType.LowResolutionToHighResolution -> {
-                    val name = loadPlayerName(index, update.extendedInfo)
-                    stateTracker.overridePlayer(Player(index, name, update.coord))
-                }
-                is PlayerUpdateType.HighResolutionIdle -> {
-                    val oldPlayer = stateTracker.getPlayerOrNull(index) ?: return
-                    val name = loadPlayerName(index, update.extendedInfo)
-                    stateTracker.overridePlayer(Player(index, name, oldPlayer.coord))
-                }
-                is PlayerUpdateType.HighResolutionMovement -> {
-                    val name = loadPlayerName(index, update.extendedInfo)
-                    stateTracker.overridePlayer(Player(index, name, update.coord))
-                }
-                else -> {
-                    // No-op, no info to preload
-                }
-            }
-        }
-    }
-
-    private inline fun <reified S> List<*>.firstOfInstanceOfNull(): S? {
-        return firstOrNull { it is S } as? S
-    }
-
-    private fun loadPlayerName(
-        index: Int,
-        extendedInfo: List<ExtendedInfo>,
-    ): String {
-        val appearance =
-            extendedInfo
-                .filterIsInstance<AppearanceExtendedInfo>()
-                .singleOrNull()
-        return appearance?.name
-            ?: stateTracker.getLastKnownPlayerName(index)
-            ?: "null"
-    }
-
     override fun npcInfoV5(message: NpcInfo) {
-        val world = stateTracker.getActiveWorld()
-        prenpcinfo(message)
+        val world = sessionState.getActiveWorld()
         for ((index, update) in message.updates) {
             when (update) {
                 is NpcUpdateType.Active -> {
@@ -1505,57 +1276,6 @@ public class IndexerTranscriber private constructor(
                     // Other information isn't very useful and could add bloat to the indexing
                     val npc = world.getNpcOrNull(index) ?: continue
                     binaryIndex.increment(IndexedType.NPC, npc.id)
-                }
-                NpcUpdateType.Idle -> {
-                    // noop
-                }
-            }
-        }
-        postnpcinfo(message)
-    }
-
-    private fun prenpcinfo(message: NpcInfo) {
-        val world = stateTracker.getActiveWorld()
-        for ((index, update) in message.updates) {
-            when (update) {
-                is NpcUpdateType.Active -> {
-                }
-                NpcUpdateType.HighResolutionToLowResolution -> {
-                }
-                is NpcUpdateType.LowResolutionToHighResolution -> {
-                    val name = cache.getNpcType(update.id)?.name
-                    world.createNpc(
-                        index,
-                        update.id,
-                        name,
-                        update.spawnCycle,
-                        CoordGrid(update.level, update.x, update.z),
-                    )
-                }
-                NpcUpdateType.Idle -> {
-                    // noop
-                }
-            }
-        }
-    }
-
-    private fun postnpcinfo(message: NpcInfo) {
-        val world = stateTracker.getActiveWorld()
-        for ((index, update) in message.updates) {
-            when (update) {
-                is NpcUpdateType.Active -> {
-                    world.updateNpc(index, CoordGrid(update.level, update.x, update.z))
-                    val blocks = update.extendedInfo.filterIsInstance<TransformationExtendedInfo>()
-                    if (blocks.isNotEmpty()) {
-                        val npc = world.getNpc(index)
-                        val transform = blocks.single()
-                        world.updateNpcName(npc.index, cache.getNpcType(transform.id)?.name)
-                    }
-                }
-                NpcUpdateType.HighResolutionToLowResolution -> {
-                    world.removeNpc(index)
-                }
-                is NpcUpdateType.LowResolutionToHighResolution -> {
                 }
                 NpcUpdateType.Idle -> {
                     // noop

@@ -104,31 +104,31 @@ import net.rsprox.shared.settings.Setting
 import net.rsprox.shared.settings.SettingSet
 import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.interfaces.ClientPacketTranscriber
-import net.rsprox.transcriber.state.StateTracker
+import net.rsprox.transcriber.state.SessionState
 import java.awt.event.KeyEvent
 import java.text.DecimalFormat
 import java.text.NumberFormat
 
 @Suppress("SpellCheckingInspection", "DuplicatedCode")
 public open class TextClientPacketTranscriber(
-    private val stateTracker: StateTracker,
+    private val sessionState: SessionState,
     private val cache: Cache,
     private val filterSetStore: PropertyFilterSetStore,
     private val settingSetStore: SettingSetStore,
 ) : ClientPacketTranscriber {
     private val root: RootProperty
-        get() = checkNotNull(stateTracker.root.last())
+        get() = checkNotNull(sessionState.root.last())
     private val filters: PropertyFilterSet
         get() = filterSetStore.getActive()
     private val settings: SettingSet
         get() = settingSetStore.getActive()
 
     private fun omit() {
-        stateTracker.deleteRoot()
+        sessionState.deleteRoot()
     }
 
     private fun Property.npc(index: Int): ChildProperty<*> {
-        val world = stateTracker.getActiveWorld()
+        val world = sessionState.getActiveWorld()
         val npc = world.getNpcOrNull(index) ?: return unidentifiedNpc(index)
         val finalIndex =
             if (settings[Setting.HIDE_NPC_INDICES]) {
@@ -136,7 +136,7 @@ public open class TextClientPacketTranscriber(
             } else {
                 index
             }
-        val multinpc = stateTracker.resolveMultinpc(npc.id, cache)
+        val multinpc = sessionState.resolveMultinpc(npc.id, cache)
         return if (multinpc != null) {
             identifiedMultinpc(
                 finalIndex,
@@ -160,7 +160,7 @@ public open class TextClientPacketTranscriber(
     }
 
     private fun Property.player(index: Int): ChildProperty<*> {
-        val npc = stateTracker.getPlayerOrNull(index)
+        val npc = sessionState.getPlayerOrNull(index)
         val finalIndex =
             if (settings[Setting.PLAYER_HIDE_INDEX]) {
                 Int.MIN_VALUE
@@ -186,7 +186,7 @@ public open class TextClientPacketTranscriber(
         z: Int,
         name: String = "coord",
     ): ScriptVarTypeProperty<*> {
-        val coord = stateTracker.getActiveWorld().getInstancedCoordOrSelf(CoordGrid(level, x, z))
+        val coord = sessionState.getActiveWorld().getInstancedCoordOrSelf(CoordGrid(level, x, z))
         return coordGridProperty(coord.level, coord.x, coord.z, name)
     }
 
@@ -359,7 +359,7 @@ public open class TextClientPacketTranscriber(
     override fun opLoc(message: OpLoc) {
         if (!filters[PropertyFilter.OPLOC]) return omit()
         root.scriptVarType("id", ScriptVarType.LOC, message.id)
-        root.coordGrid(stateTracker.level(), message.x, message.z)
+        root.coordGrid(sessionState.level(), message.x, message.z)
         root.filteredBoolean("ctrl", message.controlKey)
     }
 
@@ -371,7 +371,7 @@ public open class TextClientPacketTranscriber(
     override fun opLocT(message: OpLocT) {
         if (!filters[PropertyFilter.OPLOCT]) return omit()
         root.scriptVarType("id", ScriptVarType.LOC, message.id)
-        root.coordGrid(stateTracker.level(), message.x, message.z)
+        root.coordGrid(sessionState.level(), message.x, message.z)
         root.filteredBoolean("ctrl", message.controlKey)
         root.com(message.selectedInterfaceId, message.selectedComponentId)
         root.filteredInt("sub", message.selectedSub, -1)
@@ -624,7 +624,7 @@ public open class TextClientPacketTranscriber(
 
     override fun moveGameClick(message: MoveGameClick) {
         if (!filters[PropertyFilter.MOVE_GAMECLICK]) return omit()
-        root.coordGrid(stateTracker.level(), message.x, message.z)
+        root.coordGrid(sessionState.level(), message.x, message.z)
         root.filteredNamedEnum(
             "keycombination",
             getMovementKeyCombination(message.keyCombination),
@@ -634,7 +634,7 @@ public open class TextClientPacketTranscriber(
 
     override fun moveMinimapClick(message: MoveMinimapClick) {
         if (!filters[PropertyFilter.MOVE_MINIMAPCLICK]) return omit()
-        root.coordGrid(stateTracker.level(), message.x, message.z)
+        root.coordGrid(sessionState.level(), message.x, message.z)
         root.filteredNamedEnum(
             "keycombination",
             getMovementKeyCombination(message.keyCombination),
@@ -746,20 +746,20 @@ public open class TextClientPacketTranscriber(
     override fun opObj(message: OpObj) {
         if (!filters[PropertyFilter.OPOBJ]) return omit()
         root.scriptVarType("id", ScriptVarType.OBJ, message.id)
-        root.coordGrid(stateTracker.level(), message.x, message.z)
+        root.coordGrid(sessionState.level(), message.x, message.z)
         root.filteredBoolean("ctrl", message.controlKey)
     }
 
     override fun opObj6(message: OpObj6) {
         if (!filters[PropertyFilter.OPOBJ]) return omit()
         root.scriptVarType("id", ScriptVarType.OBJ, message.id)
-        root.coordGrid(stateTracker.level(), message.x, message.z)
+        root.coordGrid(sessionState.level(), message.x, message.z)
     }
 
     override fun opObjT(message: OpObjT) {
         if (!filters[PropertyFilter.OPOBJT]) return omit()
         root.scriptVarType("id", ScriptVarType.OBJ, message.id)
-        root.coordGrid(stateTracker.level(), message.x, message.z)
+        root.coordGrid(sessionState.level(), message.x, message.z)
         root.filteredBoolean("ctrl", message.controlKey)
         root.com("selectedcom", message.selectedInterfaceId, message.selectedComponentId)
         root.filteredInt("selectedsub", message.selectedSub, -1)

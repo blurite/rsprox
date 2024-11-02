@@ -9,7 +9,7 @@ import net.rsprox.shared.property.RootProperty
 import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.prot.GameServerProt
 
-public class StateTracker(
+public class SessionState(
     private val settingSetStore: SettingSetStore,
 ) {
     public var cycle: Int = 0
@@ -25,6 +25,7 @@ public class StateTracker(
     private val cachedVarps: IntArray = IntArray(15_000)
     private lateinit var varpToVarbitsMap: Map<Int, List<VarBitType>>
     public var root: MutableList<RootProperty> = mutableListOf()
+    public var lastConnection: Int = 0
     private val cachedMoveSpeeds: IntArray =
         IntArray(2048) {
             -1
