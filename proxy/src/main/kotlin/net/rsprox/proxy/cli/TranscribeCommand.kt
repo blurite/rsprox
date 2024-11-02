@@ -26,6 +26,7 @@ import net.rsprox.transcriber.MessageConsumer
 import net.rsprox.transcriber.text.TextMessageConsumerContainer
 import net.rsprox.transcriber.text.TextTranscriberProvider
 import java.io.BufferedWriter
+import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Locale
 import kotlin.io.path.bufferedWriter
@@ -99,7 +100,8 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
         val latestPlugin = pluginLoader.getPlugin(binary.header.revision)
         val transcriberProvider = TextTranscriberProvider()
         val session = DecodingSession(binary, latestPlugin)
-        val writer = binaryPath.parent.resolve(binaryPath.nameWithoutExtension + ".txt").bufferedWriter()
+        val textPath = binaryPath.parent.resolve(binaryPath.nameWithoutExtension + ".txt")
+        val writer = textPath.bufferedWriter()
         val consumers = TextMessageConsumerContainer(listOf(createBufferedWriterConsumer(writer)))
         val runner =
             transcriberProvider.provide(
@@ -139,6 +141,9 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
             }
         }
         consumers.close()
+        // Set the last modified date to match up with the .bin file, so it's easier to find and link files
+        // in particular when re-ordering files in descending order
+        Files.setLastModifiedTime(textPath, Files.getLastModifiedTime(binaryPath))
     }
 
     private fun createBufferedWriterConsumer(writer: BufferedWriter): MessageConsumer {
