@@ -37,8 +37,8 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Spotanim
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
 
 @Suppress("DuplicatedCode")
-public class NpcInfoClient(
-    public val cache: CacheProvider,
+internal class NpcInfoClient(
+    val cache: CacheProvider,
 ) : NpcInfoDecoder {
     private var deletedNPCCount: Int = 0
     private var deletedNPC = IntArray(1000)

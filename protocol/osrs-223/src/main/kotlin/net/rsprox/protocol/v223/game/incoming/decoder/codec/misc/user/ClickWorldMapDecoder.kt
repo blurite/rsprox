@@ -8,7 +8,7 @@ import net.rsprox.protocol.game.incoming.model.misc.user.ClickWorldMap
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v223.game.incoming.decoder.prot.GameClientProt
 
-public class ClickWorldMapDecoder : ProxyMessageDecoder<ClickWorldMap> {
+internal class ClickWorldMapDecoder : ProxyMessageDecoder<ClickWorldMap> {
     override val prot: ClientProt = GameClientProt.CLICKWORLDMAP
 
     override fun decode(

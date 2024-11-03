@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v223.game.incoming.decoder.prot.GameClientProt
 
 @Consistent
-public class IdleDecoder : ProxyMessageDecoder<Idle> {
+internal class IdleDecoder : ProxyMessageDecoder<Idle> {
     override val prot: ClientProt = GameClientProt.IDLE
 
     override fun decode(

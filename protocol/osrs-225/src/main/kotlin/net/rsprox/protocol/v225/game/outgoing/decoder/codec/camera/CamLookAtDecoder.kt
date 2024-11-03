@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v225.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-public class CamLookAtDecoder : ProxyMessageDecoder<CamLookAt> {
+internal class CamLookAtDecoder : ProxyMessageDecoder<CamLookAt> {
     override val prot: ClientProt = GameServerProt.CAM_LOOKAT
 
     override fun decode(

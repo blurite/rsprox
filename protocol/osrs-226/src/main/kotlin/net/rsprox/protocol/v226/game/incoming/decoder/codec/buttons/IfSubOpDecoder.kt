@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.incoming.decoder.prot.GameClientProt
 
 @Consistent
-public class IfSubOpDecoder : ProxyMessageDecoder<IfSubOp> {
+internal class IfSubOpDecoder : ProxyMessageDecoder<IfSubOp> {
     override val prot: ClientProt = GameClientProt.IF_SUBOP
 
     override fun decode(

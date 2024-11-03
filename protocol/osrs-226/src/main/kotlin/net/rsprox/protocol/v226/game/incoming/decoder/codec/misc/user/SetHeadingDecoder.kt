@@ -6,7 +6,7 @@ import net.rsprox.protocol.game.incoming.model.misc.user.SetHeading
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.incoming.decoder.prot.GameClientProt
 
-public class SetHeadingDecoder : ProxyMessageDecoder<SetHeading> {
+internal class SetHeadingDecoder : ProxyMessageDecoder<SetHeading> {
     override val prot: ClientProt = GameClientProt.SET_HEADING
 
     override fun decode(

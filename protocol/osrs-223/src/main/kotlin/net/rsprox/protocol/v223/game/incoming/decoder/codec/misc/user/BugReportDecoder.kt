@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v223.game.incoming.decoder.prot.GameClientProt
 
 @Consistent
-public class BugReportDecoder : ProxyMessageDecoder<BugReport> {
+internal class BugReportDecoder : ProxyMessageDecoder<BugReport> {
     override val prot: ClientProt = GameClientProt.BUG_REPORT
 
     override fun decode(

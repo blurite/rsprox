@@ -12,7 +12,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.session.getWorld
 import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 
-public class RebuildRegionDecoder : ProxyMessageDecoder<RebuildRegion> {
+internal class RebuildRegionDecoder : ProxyMessageDecoder<RebuildRegion> {
     override val prot: ClientProt = GameServerProt.REBUILD_REGION
 
     override fun decode(

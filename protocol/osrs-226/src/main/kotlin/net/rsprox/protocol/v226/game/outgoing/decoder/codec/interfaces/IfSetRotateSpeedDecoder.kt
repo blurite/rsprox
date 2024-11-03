@@ -8,7 +8,7 @@ import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetRotateSpeed
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 
-public class IfSetRotateSpeedDecoder : ProxyMessageDecoder<IfSetRotateSpeed> {
+internal class IfSetRotateSpeedDecoder : ProxyMessageDecoder<IfSetRotateSpeed> {
     override val prot: ClientProt = GameServerProt.IF_SETROTATESPEED
 
     override fun decode(

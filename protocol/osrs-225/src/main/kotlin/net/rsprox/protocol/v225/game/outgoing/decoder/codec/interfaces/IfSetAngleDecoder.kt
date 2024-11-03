@@ -8,7 +8,7 @@ import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetAngle
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v225.game.outgoing.decoder.prot.GameServerProt
 
-public class IfSetAngleDecoder : ProxyMessageDecoder<IfSetAngle> {
+internal class IfSetAngleDecoder : ProxyMessageDecoder<IfSetAngle> {
     override val prot: ClientProt = GameServerProt.IF_SETANGLE
 
     override fun decode(

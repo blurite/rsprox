@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v225.game.incoming.decoder.prot.GameClientProt
 
 @Consistent
-public class SendSnapshotDecoder : ProxyMessageDecoder<SendSnapshot> {
+internal class SendSnapshotDecoder : ProxyMessageDecoder<SendSnapshot> {
     override val prot: ClientProt = GameClientProt.SEND_SNAPSHOT
 
     override fun decode(

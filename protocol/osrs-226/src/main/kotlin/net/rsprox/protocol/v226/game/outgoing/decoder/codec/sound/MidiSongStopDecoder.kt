@@ -7,7 +7,7 @@ import net.rsprox.protocol.game.outgoing.model.sound.MidiSongStop
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 
-public class MidiSongStopDecoder : ProxyMessageDecoder<MidiSongStop> {
+internal class MidiSongStopDecoder : ProxyMessageDecoder<MidiSongStop> {
     override val prot: ClientProt = GameServerProt.MIDI_SONG_STOP
 
     override fun decode(

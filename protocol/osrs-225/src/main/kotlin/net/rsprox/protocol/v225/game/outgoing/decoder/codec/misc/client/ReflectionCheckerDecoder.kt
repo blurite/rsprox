@@ -12,7 +12,7 @@ import net.rsprox.protocol.v225.game.outgoing.decoder.prot.GameServerProt
 
 @Suppress("DuplicatedCode")
 @Consistent
-public class ReflectionCheckerDecoder : ProxyMessageDecoder<ReflectionChecker> {
+internal class ReflectionCheckerDecoder : ProxyMessageDecoder<ReflectionChecker> {
     override val prot: ClientProt = GameServerProt.REFLECTION_CHECKER
 
     override fun decode(

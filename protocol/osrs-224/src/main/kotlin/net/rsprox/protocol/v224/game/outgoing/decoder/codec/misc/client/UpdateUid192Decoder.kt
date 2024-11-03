@@ -10,7 +10,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v224.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-public class UpdateUid192Decoder : ProxyMessageDecoder<UpdateUid192> {
+internal class UpdateUid192Decoder : ProxyMessageDecoder<UpdateUid192> {
     override val prot: ClientProt = GameServerProt.UPDATE_UID192
 
     override fun decode(

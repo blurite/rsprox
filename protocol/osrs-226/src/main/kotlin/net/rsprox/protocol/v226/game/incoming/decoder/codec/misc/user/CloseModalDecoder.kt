@@ -8,7 +8,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.incoming.decoder.prot.GameClientProt
 
 @Consistent
-public class CloseModalDecoder : ProxyMessageDecoder<CloseModal> {
+internal class CloseModalDecoder : ProxyMessageDecoder<CloseModal> {
     override val prot: ClientProt = GameClientProt.CLOSE_MODAL
 
     override fun decode(

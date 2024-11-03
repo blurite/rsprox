@@ -8,7 +8,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.incoming.decoder.prot.GameClientProt
 
 @Consistent
-public class FriendChatJoinLeaveDecoder : ProxyMessageDecoder<FriendChatJoinLeave> {
+internal class FriendChatJoinLeaveDecoder : ProxyMessageDecoder<FriendChatJoinLeave> {
     override val prot: ClientProt = GameClientProt.FRIENDCHAT_JOIN_LEAVE
 
     override fun decode(

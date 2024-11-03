@@ -18,7 +18,7 @@ import java.io.StreamCorruptedException
 import java.lang.reflect.InvocationTargetException
 
 @Consistent
-public class ReflectionCheckReplyDecoder : ProxyMessageDecoder<ReflectionCheckReply> {
+internal class ReflectionCheckReplyDecoder : ProxyMessageDecoder<ReflectionCheckReply> {
     override val prot: ClientProt = GameClientProt.REFLECTION_CHECK_REPLY
 
     override fun decode(
@@ -34,21 +34,20 @@ public class ReflectionCheckReplyDecoder : ProxyMessageDecoder<ReflectionCheckRe
         for (check in checks) {
             val opcode = buffer.g1s()
             if (opcode < 0) {
-                if (opcode <= -10) {
-                    val throwable = getExecutionThrowableClass(opcode)
-                    results +=
+                results +=
+                    if (opcode <= -10) {
+                        val throwable = getExecutionThrowableClass(opcode)
                         ErrorResult(
                             check,
                             ErrorResult.ThrowableResultType.ExecutionThrowable(throwable),
                         )
-                } else {
-                    val throwable = getConstructionThrowableClass(opcode)
-                    results +=
+                    } else {
+                        val throwable = getConstructionThrowableClass(opcode)
                         ErrorResult(
                             check,
                             ErrorResult.ThrowableResultType.ConstructionThrowable(throwable),
                         )
-                }
+                    }
                 continue
             }
             when (check) {

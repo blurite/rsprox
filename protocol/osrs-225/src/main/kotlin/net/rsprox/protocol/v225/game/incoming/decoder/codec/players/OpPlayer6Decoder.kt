@@ -7,7 +7,7 @@ import net.rsprox.protocol.game.incoming.model.players.OpPlayer
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v225.game.incoming.decoder.prot.GameClientProt
 
-public class OpPlayer6Decoder : ProxyMessageDecoder<OpPlayer> {
+internal class OpPlayer6Decoder : ProxyMessageDecoder<OpPlayer> {
     override val prot: ClientProt = GameClientProt.OPPLAYER6
 
     override fun decode(

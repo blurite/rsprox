@@ -8,7 +8,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.incoming.decoder.prot.GameClientProt
 
 @Consistent
-public class FriendChatKickDecoder : ProxyMessageDecoder<FriendChatKick> {
+internal class FriendChatKickDecoder : ProxyMessageDecoder<FriendChatKick> {
     override val prot: ClientProt = GameClientProt.FRIENDCHAT_KICK
 
     override fun decode(

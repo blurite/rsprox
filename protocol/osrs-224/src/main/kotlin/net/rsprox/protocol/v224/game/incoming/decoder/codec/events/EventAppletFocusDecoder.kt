@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v224.game.incoming.decoder.prot.GameClientProt
 
 @Consistent
-public class EventAppletFocusDecoder : ProxyMessageDecoder<EventAppletFocus> {
+internal class EventAppletFocusDecoder : ProxyMessageDecoder<EventAppletFocus> {
     override val prot: ClientProt = GameClientProt.EVENT_APPLET_FOCUS
 
     override fun decode(

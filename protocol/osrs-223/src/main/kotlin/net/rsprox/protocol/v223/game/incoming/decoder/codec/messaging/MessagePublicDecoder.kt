@@ -10,7 +10,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v223.game.incoming.decoder.prot.GameClientProt
 
 @Consistent
-public class MessagePublicDecoder(
+internal class MessagePublicDecoder(
     private val huffman: HuffmanCodec,
 ) : ProxyMessageDecoder<MessagePublic> {
     override val prot: ClientProt = GameClientProt.MESSAGE_PUBLIC

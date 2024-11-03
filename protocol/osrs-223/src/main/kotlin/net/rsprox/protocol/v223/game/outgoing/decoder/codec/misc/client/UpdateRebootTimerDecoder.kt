@@ -7,7 +7,7 @@ import net.rsprox.protocol.game.outgoing.model.misc.client.UpdateRebootTimer
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v223.game.outgoing.decoder.prot.GameServerProt
 
-public class UpdateRebootTimerDecoder : ProxyMessageDecoder<UpdateRebootTimer> {
+internal class UpdateRebootTimerDecoder : ProxyMessageDecoder<UpdateRebootTimer> {
     override val prot: ClientProt = GameServerProt.UPDATE_REBOOT_TIMER
 
     override fun decode(

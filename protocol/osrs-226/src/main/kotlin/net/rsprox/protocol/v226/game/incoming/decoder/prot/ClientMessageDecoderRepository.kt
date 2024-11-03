@@ -55,6 +55,7 @@ import net.rsprox.protocol.v226.game.incoming.decoder.codec.misc.user.MoveMinima
 import net.rsprox.protocol.v226.game.incoming.decoder.codec.misc.user.OculusLeaveDecoder
 import net.rsprox.protocol.v226.game.incoming.decoder.codec.misc.user.SendSnapshotDecoder
 import net.rsprox.protocol.v226.game.incoming.decoder.codec.misc.user.SetChatFilterSettingsDecoder
+import net.rsprox.protocol.v226.game.incoming.decoder.codec.misc.user.SetHeadingDecoder
 import net.rsprox.protocol.v226.game.incoming.decoder.codec.misc.user.TeleportDecoder
 import net.rsprox.protocol.v226.game.incoming.decoder.codec.misc.user.UpdatePlayerModelDecoderV1
 import net.rsprox.protocol.v226.game.incoming.decoder.codec.npcs.OpNpc1Decoder
@@ -90,9 +91,9 @@ import net.rsprox.protocol.v226.game.incoming.decoder.codec.social.FriendListDel
 import net.rsprox.protocol.v226.game.incoming.decoder.codec.social.IgnoreListAddDecoder
 import net.rsprox.protocol.v226.game.incoming.decoder.codec.social.IgnoreListDelDecoder
 
-public object ClientMessageDecoderRepository {
+internal object ClientMessageDecoderRepository {
     @ExperimentalStdlibApi
-    public fun build(huffmanCodec: HuffmanCodec): MessageDecoderRepository<GameClientProt> {
+    fun build(huffmanCodec: HuffmanCodec): MessageDecoderRepository<GameClientProt> {
         val protRepository = ProtRepository.of<GameClientProt>()
         val builder =
             MessageDecoderRepositoryBuilder(
@@ -193,6 +194,7 @@ public object ClientMessageDecoderRepository {
                 bind(HiscoreRequestDecoder())
                 bind(IfCrmViewClickDecoder())
                 bind(UpdatePlayerModelDecoderV1())
+                bind(SetHeadingDecoder())
 
                 bind(ConnectionTelemetryDecoder())
                 bind(SendPingReplyDecoder())

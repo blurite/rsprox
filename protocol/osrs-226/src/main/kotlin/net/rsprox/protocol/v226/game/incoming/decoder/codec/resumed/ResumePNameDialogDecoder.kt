@@ -8,7 +8,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.incoming.decoder.prot.GameClientProt
 
 @Consistent
-public class ResumePNameDialogDecoder : ProxyMessageDecoder<ResumePNameDialog> {
+internal class ResumePNameDialogDecoder : ProxyMessageDecoder<ResumePNameDialog> {
     override val prot: ClientProt = GameClientProt.RESUME_P_NAMEDIALOG
 
     override fun decode(

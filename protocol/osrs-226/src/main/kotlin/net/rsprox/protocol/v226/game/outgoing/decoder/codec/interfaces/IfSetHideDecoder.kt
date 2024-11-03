@@ -8,7 +8,7 @@ import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetHide
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 
-public class IfSetHideDecoder : ProxyMessageDecoder<IfSetHide> {
+internal class IfSetHideDecoder : ProxyMessageDecoder<IfSetHide> {
     override val prot: ClientProt = GameServerProt.IF_SETHIDE
 
     override fun decode(

@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.incoming.decoder.prot.GameClientProt
 
 @Consistent
-public class AffinedClanSettingsAddBannedFromChannelDecoder :
+internal class AffinedClanSettingsAddBannedFromChannelDecoder :
     ProxyMessageDecoder<AffinedClanSettingsAddBannedFromChannel> {
     override val prot: ClientProt = GameClientProt.AFFINEDCLANSETTINGS_ADDBANNED_FROMCHANNEL
 

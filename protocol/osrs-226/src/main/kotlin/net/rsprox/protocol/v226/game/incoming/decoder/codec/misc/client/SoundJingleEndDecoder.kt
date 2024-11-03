@@ -8,7 +8,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.incoming.decoder.prot.GameClientProt
 
 @Consistent
-public class SoundJingleEndDecoder : ProxyMessageDecoder<SoundJingleEnd> {
+internal class SoundJingleEndDecoder : ProxyMessageDecoder<SoundJingleEnd> {
     override val prot: ClientProt = GameClientProt.SOUND_JINGLEEND
 
     override fun decode(

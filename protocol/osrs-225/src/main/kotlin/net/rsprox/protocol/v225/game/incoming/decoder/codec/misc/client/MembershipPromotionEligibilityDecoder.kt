@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v225.game.incoming.decoder.prot.GameClientProt
 
 @Consistent
-public class MembershipPromotionEligibilityDecoder : ProxyMessageDecoder<MembershipPromotionEligibility> {
+internal class MembershipPromotionEligibilityDecoder : ProxyMessageDecoder<MembershipPromotionEligibility> {
     override val prot: ClientProt = GameClientProt.MEMBERSHIP_PROMOTION_ELIGIBILITY
 
     override fun decode(

@@ -89,9 +89,9 @@ import net.rsprox.protocol.v223.game.incoming.decoder.codec.social.FriendListDel
 import net.rsprox.protocol.v223.game.incoming.decoder.codec.social.IgnoreListAddDecoder
 import net.rsprox.protocol.v223.game.incoming.decoder.codec.social.IgnoreListDelDecoder
 
-public object ClientMessageDecoderRepository {
+internal object ClientMessageDecoderRepository {
     @ExperimentalStdlibApi
-    public fun build(huffmanCodec: HuffmanCodec): MessageDecoderRepository<GameClientProt> {
+    fun build(huffmanCodec: HuffmanCodec): MessageDecoderRepository<GameClientProt> {
         val protRepository = ProtRepository.of<GameClientProt>()
         val builder =
             MessageDecoderRepositoryBuilder(

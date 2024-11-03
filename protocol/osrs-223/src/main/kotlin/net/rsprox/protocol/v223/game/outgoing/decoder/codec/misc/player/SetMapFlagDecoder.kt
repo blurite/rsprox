@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v223.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-public class SetMapFlagDecoder : ProxyMessageDecoder<SetMapFlag> {
+internal class SetMapFlagDecoder : ProxyMessageDecoder<SetMapFlag> {
     override val prot: ClientProt = GameServerProt.SET_MAP_FLAG
 
     override fun decode(

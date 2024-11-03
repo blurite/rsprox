@@ -7,7 +7,7 @@ import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatSetRank
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v223.game.incoming.decoder.prot.GameClientProt
 
-public class FriendChatSetRankDecoder : ProxyMessageDecoder<FriendChatSetRank> {
+internal class FriendChatSetRankDecoder : ProxyMessageDecoder<FriendChatSetRank> {
     override val prot: ClientProt = GameClientProt.FRIENDCHAT_SETRANK
 
     override fun decode(

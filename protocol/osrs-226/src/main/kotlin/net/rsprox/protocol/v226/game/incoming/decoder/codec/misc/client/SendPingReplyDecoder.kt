@@ -6,7 +6,7 @@ import net.rsprox.protocol.game.incoming.model.misc.client.SendPingReply
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.incoming.decoder.prot.GameClientProt
 
-public class SendPingReplyDecoder : ProxyMessageDecoder<SendPingReply> {
+internal class SendPingReplyDecoder : ProxyMessageDecoder<SendPingReply> {
     override val prot: ClientProt = GameClientProt.SEND_PING_REPLY
 
     override fun decode(

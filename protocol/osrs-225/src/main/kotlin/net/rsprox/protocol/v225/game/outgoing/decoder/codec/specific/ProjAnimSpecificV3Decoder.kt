@@ -8,7 +8,7 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildAre
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v225.game.outgoing.decoder.prot.GameServerProt
 
-public class ProjAnimSpecificV3Decoder : ProxyMessageDecoder<ProjAnimSpecificV3> {
+internal class ProjAnimSpecificV3Decoder : ProxyMessageDecoder<ProjAnimSpecificV3> {
     override val prot: ClientProt = GameServerProt.PROJANIM_SPECIFIC_V3
 
     override fun decode(

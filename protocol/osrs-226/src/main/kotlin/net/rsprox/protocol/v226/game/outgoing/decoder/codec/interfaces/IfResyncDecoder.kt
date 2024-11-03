@@ -10,7 +10,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-public class IfResyncDecoder : ProxyMessageDecoder<IfResync> {
+internal class IfResyncDecoder : ProxyMessageDecoder<IfResync> {
     override val prot: ClientProt = GameServerProt.IF_RESYNC
 
     override fun decode(

@@ -13,7 +13,7 @@ import net.rsprox.protocol.session.setNpcInfoBaseCoord
 import net.rsprox.protocol.v223.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-public class SetNpcUpdateOriginDecoder : ProxyMessageDecoder<SetNpcUpdateOrigin> {
+internal class SetNpcUpdateOriginDecoder : ProxyMessageDecoder<SetNpcUpdateOrigin> {
     override val prot: ClientProt = GameServerProt.SET_NPC_UPDATE_ORIGIN
 
     override fun decode(

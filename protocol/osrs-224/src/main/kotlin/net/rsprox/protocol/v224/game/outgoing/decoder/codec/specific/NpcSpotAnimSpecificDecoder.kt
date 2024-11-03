@@ -7,7 +7,7 @@ import net.rsprox.protocol.game.outgoing.model.specific.NpcSpotAnimSpecific
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v224.game.outgoing.decoder.prot.GameServerProt
 
-public class NpcSpotAnimSpecificDecoder : ProxyMessageDecoder<NpcSpotAnimSpecific> {
+internal class NpcSpotAnimSpecificDecoder : ProxyMessageDecoder<NpcSpotAnimSpecific> {
     override val prot: ClientProt = GameServerProt.NPC_SPOTANIM_SPECIFIC
 
     override fun decode(

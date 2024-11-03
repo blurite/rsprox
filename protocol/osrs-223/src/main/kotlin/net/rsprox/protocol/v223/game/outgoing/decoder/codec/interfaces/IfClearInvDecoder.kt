@@ -8,7 +8,7 @@ import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v223.game.outgoing.decoder.prot.GameServerProt
 
-public class IfClearInvDecoder : ProxyMessageDecoder<IfClearInv> {
+internal class IfClearInvDecoder : ProxyMessageDecoder<IfClearInv> {
     override val prot: ClientProt = GameServerProt.IF_CLEARINV
 
     override fun decode(

@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v223.game.incoming.decoder.prot.GameClientProt
 
 @Consistent
-public class HiscoreRequestDecoder : ProxyMessageDecoder<HiscoreRequest> {
+internal class HiscoreRequestDecoder : ProxyMessageDecoder<HiscoreRequest> {
     override val prot: ClientProt = GameClientProt.HISCORE_REQUEST
 
     override fun decode(

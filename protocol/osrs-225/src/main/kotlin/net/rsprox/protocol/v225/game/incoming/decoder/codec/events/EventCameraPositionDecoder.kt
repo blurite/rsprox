@@ -7,7 +7,7 @@ import net.rsprox.protocol.game.incoming.model.events.EventCameraPosition
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v225.game.incoming.decoder.prot.GameClientProt
 
-public class EventCameraPositionDecoder : ProxyMessageDecoder<EventCameraPosition> {
+internal class EventCameraPositionDecoder : ProxyMessageDecoder<EventCameraPosition> {
     override val prot: ClientProt = GameClientProt.EVENT_CAMERA_POSITION
 
     override fun decode(

@@ -8,7 +8,7 @@ import net.rsprox.protocol.game.incoming.model.buttons.IfButtonT
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.incoming.decoder.prot.GameClientProt
 
-public class IfButtonTDecoder : ProxyMessageDecoder<IfButtonT> {
+internal class IfButtonTDecoder : ProxyMessageDecoder<IfButtonT> {
     override val prot: ClientProt = GameClientProt.IF_BUTTONT
 
     override fun decode(

@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-public class UpdateStockMarketSlotDecoder : ProxyMessageDecoder<UpdateStockMarketSlot> {
+internal class UpdateStockMarketSlotDecoder : ProxyMessageDecoder<UpdateStockMarketSlot> {
     override val prot: ClientProt = GameServerProt.UPDATE_STOCKMARKET_SLOT
 
     override fun decode(

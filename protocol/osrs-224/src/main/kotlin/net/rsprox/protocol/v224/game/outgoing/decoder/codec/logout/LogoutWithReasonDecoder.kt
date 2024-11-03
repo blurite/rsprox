@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v224.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-public class LogoutWithReasonDecoder : ProxyMessageDecoder<LogoutWithReason> {
+internal class LogoutWithReasonDecoder : ProxyMessageDecoder<LogoutWithReason> {
     override val prot: ClientProt = GameServerProt.LOGOUT_WITHREASON
 
     override fun decode(

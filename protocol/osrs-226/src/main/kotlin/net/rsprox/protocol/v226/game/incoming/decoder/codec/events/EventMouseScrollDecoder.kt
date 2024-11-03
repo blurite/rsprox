@@ -8,7 +8,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.incoming.decoder.prot.GameClientProt
 
 @Consistent
-public class EventMouseScrollDecoder : ProxyMessageDecoder<EventMouseScroll> {
+internal class EventMouseScrollDecoder : ProxyMessageDecoder<EventMouseScroll> {
     override val prot: ClientProt = GameClientProt.EVENT_MOUSE_SCROLL
 
     override fun decode(

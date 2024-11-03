@@ -11,7 +11,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-public class UpdateFriendChatChannelFullV1Decoder : ProxyMessageDecoder<UpdateFriendChatChannelFullV1> {
+internal class UpdateFriendChatChannelFullV1Decoder : ProxyMessageDecoder<UpdateFriendChatChannelFullV1> {
     override val prot: ClientProt = GameServerProt.UPDATE_FRIENDCHAT_CHANNEL_FULL_V1
 
     override fun decode(

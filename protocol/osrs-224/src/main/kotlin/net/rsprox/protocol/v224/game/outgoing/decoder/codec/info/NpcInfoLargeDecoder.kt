@@ -10,7 +10,7 @@ import net.rsprox.protocol.session.getNpcInfoBaseCoord
 import net.rsprox.protocol.session.getWorld
 import net.rsprox.protocol.v224.game.outgoing.decoder.prot.GameServerProt
 
-public class NpcInfoLargeDecoder : ProxyMessageDecoder<NpcInfo> {
+internal class NpcInfoLargeDecoder : ProxyMessageDecoder<NpcInfo> {
     override val prot: ClientProt = GameServerProt.NPC_INFO_LARGE_V4
 
     override fun decode(

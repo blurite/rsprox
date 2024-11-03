@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v223.game.incoming.decoder.prot.GameClientProt
 
 @Consistent
-public class FriendListAddDecoder : ProxyMessageDecoder<FriendListAdd> {
+internal class FriendListAddDecoder : ProxyMessageDecoder<FriendListAdd> {
     override val prot: ClientProt = GameClientProt.FRIENDLIST_ADD
 
     override fun decode(

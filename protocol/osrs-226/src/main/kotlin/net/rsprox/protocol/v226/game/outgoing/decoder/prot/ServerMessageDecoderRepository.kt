@@ -145,9 +145,9 @@ import net.rsprox.protocol.v226.game.outgoing.decoder.codec.zone.payload.ObjEnab
 import net.rsprox.protocol.v226.game.outgoing.decoder.codec.zone.payload.ObjUncustomiseDecoder
 import net.rsprox.protocol.v226.game.outgoing.decoder.codec.zone.payload.SoundAreaDecoder
 
-public object ServerMessageDecoderRepository {
+internal object ServerMessageDecoderRepository {
     @ExperimentalStdlibApi
-    public fun build(
+    fun build(
         huffmanCodec: HuffmanCodec,
         cache: CacheProvider,
     ): MessageDecoderRepository<GameServerProt> {

@@ -7,7 +7,7 @@ import net.rsprox.protocol.game.incoming.model.misc.user.Teleport
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v224.game.incoming.decoder.prot.GameClientProt
 
-public class TeleportDecoder : ProxyMessageDecoder<Teleport> {
+internal class TeleportDecoder : ProxyMessageDecoder<Teleport> {
     override val prot: ClientProt = GameClientProt.TELEPORT
 
     override fun decode(

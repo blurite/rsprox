@@ -7,7 +7,7 @@ import net.rsprox.protocol.game.incoming.model.events.EventKeyboard
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v224.game.incoming.decoder.prot.GameClientProt
 
-public class EventKeyboardDecoder : ProxyMessageDecoder<EventKeyboard> {
+internal class EventKeyboardDecoder : ProxyMessageDecoder<EventKeyboard> {
     override val prot: ClientProt = GameClientProt.EVENT_KEYBOARD
 
     override fun decode(

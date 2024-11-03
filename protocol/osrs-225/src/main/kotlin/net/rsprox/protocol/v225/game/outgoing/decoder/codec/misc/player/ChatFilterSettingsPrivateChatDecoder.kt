@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v225.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-public class ChatFilterSettingsPrivateChatDecoder : ProxyMessageDecoder<ChatFilterSettingsPrivateChat> {
+internal class ChatFilterSettingsPrivateChatDecoder : ProxyMessageDecoder<ChatFilterSettingsPrivateChat> {
     override val prot: ClientProt = GameServerProt.CHAT_FILTER_SETTINGS_PRIVATECHAT
 
     override fun decode(

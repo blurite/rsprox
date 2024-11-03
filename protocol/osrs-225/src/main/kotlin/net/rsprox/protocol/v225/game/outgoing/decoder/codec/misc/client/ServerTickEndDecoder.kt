@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v225.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-public class ServerTickEndDecoder : ProxyMessageDecoder<ServerTickEnd> {
+internal class ServerTickEndDecoder : ProxyMessageDecoder<ServerTickEnd> {
     override val prot: ClientProt = GameServerProt.SERVER_TICK_END
 
     override fun decode(

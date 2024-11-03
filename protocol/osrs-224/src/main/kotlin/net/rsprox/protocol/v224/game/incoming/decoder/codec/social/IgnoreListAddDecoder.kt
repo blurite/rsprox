@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v224.game.incoming.decoder.prot.GameClientProt
 
 @Consistent
-public class IgnoreListAddDecoder : ProxyMessageDecoder<IgnoreListAdd> {
+internal class IgnoreListAddDecoder : ProxyMessageDecoder<IgnoreListAdd> {
     override val prot: ClientProt = GameClientProt.IGNORELIST_ADD
 
     override fun decode(

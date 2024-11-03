@@ -10,7 +10,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v225.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-public class IfCloseSubDecoder : ProxyMessageDecoder<IfCloseSub> {
+internal class IfCloseSubDecoder : ProxyMessageDecoder<IfCloseSub> {
     override val prot: ClientProt = GameServerProt.IF_CLOSESUB
 
     override fun decode(

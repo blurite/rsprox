@@ -7,7 +7,7 @@ import net.rsprox.protocol.game.outgoing.model.interfaces.IfOpenTop
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v224.game.outgoing.decoder.prot.GameServerProt
 
-public class IfOpenTopDecoder : ProxyMessageDecoder<IfOpenTop> {
+internal class IfOpenTopDecoder : ProxyMessageDecoder<IfOpenTop> {
     override val prot: ClientProt = GameServerProt.IF_OPENTOP
 
     override fun decode(

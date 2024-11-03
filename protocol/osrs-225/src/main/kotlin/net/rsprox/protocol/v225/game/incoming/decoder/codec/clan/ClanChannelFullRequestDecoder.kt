@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v225.game.incoming.decoder.prot.GameClientProt
 
 @Consistent
-public class ClanChannelFullRequestDecoder : ProxyMessageDecoder<ClanChannelFullRequest> {
+internal class ClanChannelFullRequestDecoder : ProxyMessageDecoder<ClanChannelFullRequest> {
     override val prot: ClientProt = GameClientProt.CLANCHANNEL_FULL_REQUEST
 
     override fun decode(

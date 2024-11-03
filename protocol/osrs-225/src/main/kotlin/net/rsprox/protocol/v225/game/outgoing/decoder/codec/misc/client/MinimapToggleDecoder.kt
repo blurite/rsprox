@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v225.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-public class MinimapToggleDecoder : ProxyMessageDecoder<MinimapToggle> {
+internal class MinimapToggleDecoder : ProxyMessageDecoder<MinimapToggle> {
     override val prot: ClientProt = GameServerProt.MINIMAP_TOGGLE
 
     override fun decode(

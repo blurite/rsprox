@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v225.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-public class SetHeatmapEnabledDecoder : ProxyMessageDecoder<SetHeatmapEnabled> {
+internal class SetHeatmapEnabledDecoder : ProxyMessageDecoder<SetHeatmapEnabled> {
     override val prot: ClientProt = GameServerProt.SET_HEATMAP_ENABLED
 
     override fun decode(

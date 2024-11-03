@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v224.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-public class HideNpcOpsDecoder : ProxyMessageDecoder<HideNpcOps> {
+internal class HideNpcOpsDecoder : ProxyMessageDecoder<HideNpcOps> {
     override val prot: ClientProt = GameServerProt.HIDENPCOPS
 
     override fun decode(

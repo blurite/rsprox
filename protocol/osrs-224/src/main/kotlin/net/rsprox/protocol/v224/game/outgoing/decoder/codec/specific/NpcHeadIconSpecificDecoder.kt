@@ -7,7 +7,7 @@ import net.rsprox.protocol.game.outgoing.model.specific.NpcHeadIconSpecific
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v224.game.outgoing.decoder.prot.GameServerProt
 
-public class NpcHeadIconSpecificDecoder : ProxyMessageDecoder<NpcHeadIconSpecific> {
+internal class NpcHeadIconSpecificDecoder : ProxyMessageDecoder<NpcHeadIconSpecific> {
     override val prot: ClientProt = GameServerProt.NPC_HEADICON_SPECIFIC
 
     override fun decode(

@@ -8,7 +8,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.incoming.decoder.prot.GameClientProt
 
 @Consistent
-public class If3ButtonDecoder(
+internal class If3ButtonDecoder(
     override val prot: GameClientProt,
     private val op: Int,
 ) : ProxyMessageDecoder<If3Button> {

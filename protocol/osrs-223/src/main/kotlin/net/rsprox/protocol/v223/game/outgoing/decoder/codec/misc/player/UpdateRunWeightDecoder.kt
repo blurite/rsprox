@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v223.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-public class UpdateRunWeightDecoder : ProxyMessageDecoder<UpdateRunWeight> {
+internal class UpdateRunWeightDecoder : ProxyMessageDecoder<UpdateRunWeight> {
     override val prot: ClientProt = GameServerProt.UPDATE_RUNWEIGHT
 
     override fun decode(

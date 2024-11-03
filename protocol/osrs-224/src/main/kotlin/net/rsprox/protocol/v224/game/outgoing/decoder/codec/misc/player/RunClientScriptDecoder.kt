@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v224.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-public class RunClientScriptDecoder : ProxyMessageDecoder<RunClientScript> {
+internal class RunClientScriptDecoder : ProxyMessageDecoder<RunClientScript> {
     override val prot: ClientProt = GameServerProt.RUNCLIENTSCRIPT
 
     override fun decode(

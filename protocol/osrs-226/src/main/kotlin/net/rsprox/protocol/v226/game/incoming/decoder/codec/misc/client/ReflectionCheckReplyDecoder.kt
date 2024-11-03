@@ -18,7 +18,7 @@ import java.io.StreamCorruptedException
 import java.lang.reflect.InvocationTargetException
 
 @Consistent
-public class ReflectionCheckReplyDecoder : ProxyMessageDecoder<ReflectionCheckReply> {
+internal class ReflectionCheckReplyDecoder : ProxyMessageDecoder<ReflectionCheckReply> {
     override val prot: ClientProt = GameClientProt.REFLECTION_CHECK_REPLY
 
     override fun decode(

@@ -21,7 +21,7 @@ import net.rsprox.protocol.v226.game.outgoing.decoder.codec.zone.payload.ObjUncu
 import net.rsprox.protocol.v226.game.outgoing.decoder.codec.zone.payload.SoundAreaDecoder
 import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 
-public class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZonePartialEnclosed> {
+internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZonePartialEnclosed> {
     override val prot: ClientProt = GameServerProt.UPDATE_ZONE_PARTIAL_ENCLOSED
 
     override fun decode(

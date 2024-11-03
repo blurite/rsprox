@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v225.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-public class UrlOpenDecoder : ProxyMessageDecoder<UrlOpen> {
+internal class UrlOpenDecoder : ProxyMessageDecoder<UrlOpen> {
     override val prot: ClientProt = GameServerProt.URL_OPEN
 
     override fun decode(

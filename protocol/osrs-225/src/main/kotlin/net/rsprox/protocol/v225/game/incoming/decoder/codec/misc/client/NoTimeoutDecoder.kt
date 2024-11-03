@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v225.game.incoming.decoder.prot.GameClientProt
 
 @Consistent
-public class NoTimeoutDecoder : ProxyMessageDecoder<NoTimeout> {
+internal class NoTimeoutDecoder : ProxyMessageDecoder<NoTimeout> {
     override val prot: ClientProt = GameClientProt.NO_TIMEOUT
 
     override fun decode(

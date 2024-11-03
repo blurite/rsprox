@@ -8,7 +8,7 @@ import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerHead
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 
-public class IfSetPlayerHeadDecoder : ProxyMessageDecoder<IfSetPlayerHead> {
+internal class IfSetPlayerHeadDecoder : ProxyMessageDecoder<IfSetPlayerHead> {
     override val prot: ClientProt = GameServerProt.IF_SETPLAYERHEAD
 
     override fun decode(

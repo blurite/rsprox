@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v225.game.incoming.decoder.prot.GameClientProt
 
 @Consistent
-public class MapBuildCompleteDecoder : ProxyMessageDecoder<MapBuildComplete> {
+internal class MapBuildCompleteDecoder : ProxyMessageDecoder<MapBuildComplete> {
     override val prot: ClientProt = GameClientProt.MAP_BUILD_COMPLETE
 
     override fun decode(

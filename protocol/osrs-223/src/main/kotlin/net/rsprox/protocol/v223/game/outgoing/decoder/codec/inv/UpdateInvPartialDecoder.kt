@@ -10,7 +10,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v223.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-public class UpdateInvPartialDecoder : ProxyMessageDecoder<UpdateInvPartial> {
+internal class UpdateInvPartialDecoder : ProxyMessageDecoder<UpdateInvPartial> {
     override val prot: ClientProt = GameServerProt.UPDATE_INV_PARTIAL
 
     override fun decode(

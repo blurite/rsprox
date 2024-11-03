@@ -8,7 +8,7 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInZone
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v223.game.outgoing.decoder.prot.GameServerProt
 
-public class MapAnimDecoder : ProxyMessageDecoder<MapAnim> {
+internal class MapAnimDecoder : ProxyMessageDecoder<MapAnim> {
     override val prot: ClientProt = GameServerProt.MAP_ANIM
 
     override fun decode(

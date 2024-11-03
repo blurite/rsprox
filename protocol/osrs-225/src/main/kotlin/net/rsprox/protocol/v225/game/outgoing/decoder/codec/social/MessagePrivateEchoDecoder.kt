@@ -10,7 +10,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v225.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-public class MessagePrivateEchoDecoder(
+internal class MessagePrivateEchoDecoder(
     private val huffmanCodec: HuffmanCodec,
 ) : ProxyMessageDecoder<MessagePrivateEcho> {
     override val prot: ClientProt = GameServerProt.MESSAGE_PRIVATE_ECHO

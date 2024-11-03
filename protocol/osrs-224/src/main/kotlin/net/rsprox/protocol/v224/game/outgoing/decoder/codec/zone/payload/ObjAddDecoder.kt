@@ -9,7 +9,7 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInZone
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v224.game.outgoing.decoder.prot.GameServerProt
 
-public class ObjAddDecoder : ProxyMessageDecoder<ObjAdd> {
+internal class ObjAddDecoder : ProxyMessageDecoder<ObjAdd> {
     override val prot: ClientProt = GameServerProt.OBJ_ADD
 
     override fun decode(

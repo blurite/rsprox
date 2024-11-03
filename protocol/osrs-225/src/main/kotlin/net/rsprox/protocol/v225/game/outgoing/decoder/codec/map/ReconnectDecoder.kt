@@ -13,7 +13,7 @@ import net.rsprox.protocol.session.getWorld
 import net.rsprox.protocol.v225.game.outgoing.decoder.prot.GameServerProt
 
 @Suppress("DuplicatedCode")
-public class ReconnectDecoder : ProxyMessageDecoder<Reconnect> {
+internal class ReconnectDecoder : ProxyMessageDecoder<Reconnect> {
     override val prot: ClientProt = GameServerProt.RECONNECT
 
     override fun decode(

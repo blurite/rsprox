@@ -14,7 +14,7 @@ import net.rsprox.protocol.session.getWorld
 import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-public class RebuildWorldEntityDecoder : ProxyMessageDecoder<RebuildWorldEntityV2> {
+internal class RebuildWorldEntityDecoder : ProxyMessageDecoder<RebuildWorldEntityV2> {
     override val prot: ClientProt = GameServerProt.REBUILD_WORLDENTITY
 
     override fun decode(

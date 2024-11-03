@@ -10,7 +10,7 @@ import net.rsprox.protocol.session.getActiveWorld
 import net.rsprox.protocol.session.getWorld
 import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 
-public class WorldEntityInfoV3Decoder : ProxyMessageDecoder<WorldEntityInfo> {
+internal class WorldEntityInfoV3Decoder : ProxyMessageDecoder<WorldEntityInfo> {
     override val prot: ClientProt = GameServerProt.WORLDENTITY_INFO_V3
 
     override fun decode(

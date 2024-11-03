@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v223.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-public class VarClanEnableDecoder : ProxyMessageDecoder<VarClanEnable> {
+internal class VarClanEnableDecoder : ProxyMessageDecoder<VarClanEnable> {
     override val prot: ClientProt = GameServerProt.VARCLAN_ENABLE
 
     override fun decode(

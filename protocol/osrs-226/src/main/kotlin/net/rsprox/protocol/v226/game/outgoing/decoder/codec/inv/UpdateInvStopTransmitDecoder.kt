@@ -7,7 +7,7 @@ import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvStopTransmit
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 
-public class UpdateInvStopTransmitDecoder : ProxyMessageDecoder<UpdateInvStopTransmit> {
+internal class UpdateInvStopTransmitDecoder : ProxyMessageDecoder<UpdateInvStopTransmit> {
     override val prot: ClientProt = GameServerProt.UPDATE_INV_STOPTRANSMIT
 
     override fun decode(

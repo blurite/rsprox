@@ -11,7 +11,7 @@ import net.rsprox.protocol.v223.game.incoming.decoder.prot.GameClientProt
 
 @Suppress("DuplicatedCode")
 @Consistent
-public class EventNativeMouseMoveDecoder : ProxyMessageDecoder<EventNativeMouseMove> {
+internal class EventNativeMouseMoveDecoder : ProxyMessageDecoder<EventNativeMouseMove> {
     override val prot: ClientProt = GameClientProt.EVENT_NATIVE_MOUSE_MOVE
 
     override fun decode(

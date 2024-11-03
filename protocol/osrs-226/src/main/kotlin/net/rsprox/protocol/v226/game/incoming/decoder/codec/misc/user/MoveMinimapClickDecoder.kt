@@ -6,7 +6,7 @@ import net.rsprox.protocol.game.incoming.model.misc.user.MoveMinimapClick
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.incoming.decoder.prot.GameClientProt
 
-public class MoveMinimapClickDecoder : ProxyMessageDecoder<MoveMinimapClick> {
+internal class MoveMinimapClickDecoder : ProxyMessageDecoder<MoveMinimapClick> {
     override val prot: ClientProt = GameClientProt.MOVE_MINIMAPCLICK
 
     override fun decode(

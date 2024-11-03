@@ -8,7 +8,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.incoming.decoder.prot.GameClientProt
 
 @Consistent
-public class ConnectionTelemetryDecoder : ProxyMessageDecoder<ConnectionTelemetry> {
+internal class ConnectionTelemetryDecoder : ProxyMessageDecoder<ConnectionTelemetry> {
     override val prot: ClientProt = GameClientProt.CONNECTION_TELEMETRY
 
     override fun decode(

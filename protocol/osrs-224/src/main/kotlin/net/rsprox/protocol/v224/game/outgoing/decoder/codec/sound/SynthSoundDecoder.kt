@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v224.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-public class SynthSoundDecoder : ProxyMessageDecoder<SynthSound> {
+internal class SynthSoundDecoder : ProxyMessageDecoder<SynthSound> {
     override val prot: ClientProt = GameServerProt.SYNTH_SOUND
 
     override fun decode(

@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v224.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-public class HintArrowDecoder : ProxyMessageDecoder<HintArrow> {
+internal class HintArrowDecoder : ProxyMessageDecoder<HintArrow> {
     override val prot: ClientProt = GameServerProt.HINT_ARROW
 
     override fun decode(

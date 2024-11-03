@@ -9,7 +9,7 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.util.LocProperties
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 
-public class LocMergeDecoder : ProxyMessageDecoder<LocMerge> {
+internal class LocMergeDecoder : ProxyMessageDecoder<LocMerge> {
     override val prot: ClientProt = GameServerProt.LOC_MERGE
 
     override fun decode(

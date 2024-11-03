@@ -33,7 +33,7 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Spotanim
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
 
 @Suppress("DuplicatedCode")
-public class PlayerInfoClient(
+internal class PlayerInfoClient(
     private val localIndex: Int,
     private val huffmanCodec: HuffmanCodec,
 ) : PlayerInfoDecoder {

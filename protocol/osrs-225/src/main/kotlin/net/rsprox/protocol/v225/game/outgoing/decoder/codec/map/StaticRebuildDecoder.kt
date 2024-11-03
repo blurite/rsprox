@@ -19,7 +19,7 @@ import net.rsprox.protocol.v225.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.v225.game.outgoing.model.info.npcinfo.NpcInfoClient
 import net.rsprox.protocol.v225.game.outgoing.model.info.playerinfo.PlayerInfoClient
 
-public class StaticRebuildDecoder(
+internal class StaticRebuildDecoder(
     private val huffmanCodec: HuffmanCodec,
     private val cache: CacheProvider,
 ) : ProxyMessageDecoder<StaticRebuildMessage> {

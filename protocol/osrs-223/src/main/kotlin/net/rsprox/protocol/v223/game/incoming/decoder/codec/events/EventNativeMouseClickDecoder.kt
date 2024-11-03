@@ -7,7 +7,7 @@ import net.rsprox.protocol.game.incoming.model.events.EventNativeMouseClick
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v223.game.incoming.decoder.prot.GameClientProt
 
-public class EventNativeMouseClickDecoder : ProxyMessageDecoder<EventNativeMouseClick> {
+internal class EventNativeMouseClickDecoder : ProxyMessageDecoder<EventNativeMouseClick> {
     override val prot: ClientProt = GameClientProt.EVENT_NATIVE_MOUSE_CLICK
 
     override fun decode(

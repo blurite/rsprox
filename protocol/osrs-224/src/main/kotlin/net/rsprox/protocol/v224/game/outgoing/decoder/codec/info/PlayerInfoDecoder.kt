@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.getActiveWorld
 import net.rsprox.protocol.session.getWorld
 import net.rsprox.protocol.v224.game.outgoing.decoder.prot.GameServerProt
 
-public class PlayerInfoDecoder : ProxyMessageDecoder<PlayerInfo> {
+internal class PlayerInfoDecoder : ProxyMessageDecoder<PlayerInfo> {
     override val prot: ClientProt = GameServerProt.PLAYER_INFO
 
     override fun decode(

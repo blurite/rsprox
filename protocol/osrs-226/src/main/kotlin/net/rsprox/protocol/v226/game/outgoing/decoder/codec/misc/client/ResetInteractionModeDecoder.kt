@@ -9,7 +9,7 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-public class ResetInteractionModeDecoder : ProxyMessageDecoder<ResetInteractionMode> {
+internal class ResetInteractionModeDecoder : ProxyMessageDecoder<ResetInteractionMode> {
     override val prot: ClientProt = GameServerProt.RESET_INTERACTION_MODE
 
     override fun decode(

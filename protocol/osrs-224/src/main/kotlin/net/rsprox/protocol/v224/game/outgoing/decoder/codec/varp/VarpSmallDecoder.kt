@@ -7,7 +7,7 @@ import net.rsprox.protocol.game.outgoing.model.varp.VarpSmall
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v224.game.outgoing.decoder.prot.GameServerProt
 
-public class VarpSmallDecoder : ProxyMessageDecoder<VarpSmall> {
+internal class VarpSmallDecoder : ProxyMessageDecoder<VarpSmall> {
     override val prot: ClientProt = GameServerProt.VARP_SMALL
 
     override fun decode(

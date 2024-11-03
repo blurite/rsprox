@@ -8,7 +8,7 @@ import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPosition
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 
-public class IfSetPositionDecoder : ProxyMessageDecoder<IfSetPosition> {
+internal class IfSetPositionDecoder : ProxyMessageDecoder<IfSetPosition> {
     override val prot: ClientProt = GameServerProt.IF_SETPOSITION
 
     override fun decode(

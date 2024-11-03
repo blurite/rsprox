@@ -7,7 +7,7 @@ import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV1
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v223.game.outgoing.decoder.prot.GameServerProt
 
-public class MidiSongV1Decoder : ProxyMessageDecoder<MidiSongV1> {
+internal class MidiSongV1Decoder : ProxyMessageDecoder<MidiSongV1> {
     override val prot: ClientProt = GameServerProt.MIDI_SONG_V1
 
     override fun decode(
