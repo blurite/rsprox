@@ -8,7 +8,8 @@ import net.rsprox.protocol.ProtProvider
 import net.rsprox.protocol.ServerPacketDecoder
 import net.rsprox.protocol.session.Session
 
-public data class DecoderPlugin(
+public data class RevisionDecoder(
+    public val revision: Int,
     private val clientPacketDecoder: ClientPacketDecoder,
     private val serverPacketDecoder: ServerPacketDecoder,
     public val gameClientProtProvider: ProtProvider<ClientProt>,

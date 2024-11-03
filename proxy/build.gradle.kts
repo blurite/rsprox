@@ -31,6 +31,10 @@ dependencies {
     implementation(libs.junixsocket)
     implementation(libs.okhttp3)
     implementation(libs.gson)
+    implementation(projects.protocol.osrs223)
+    implementation(projects.protocol.osrs224)
+    implementation(projects.protocol.osrs225)
+    implementation(projects.protocol.osrs226)
 }
 
 tasks.build.configure {

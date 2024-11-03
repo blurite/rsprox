@@ -4,10 +4,10 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.compression.HuffmanCodec
 import net.rsprot.protocol.message.IncomingMessage
 import net.rsprox.protocol.ClientPacketDecoder
-import net.rsprox.protocol.v226.game.incoming.decoder.prot.ClientMessageDecoderRepository
 import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.v226.game.incoming.decoder.prot.ClientMessageDecoderRepository
 
-public class ClientPacketDecoderService(
+public class ClientPacketDecoderServiceV226(
     huffmanCodec: HuffmanCodec,
 ) : ClientPacketDecoder {
     @OptIn(ExperimentalStdlibApi::class)

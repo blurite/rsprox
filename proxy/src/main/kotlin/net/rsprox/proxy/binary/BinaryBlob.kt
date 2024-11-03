@@ -14,8 +14,8 @@ import net.rsprox.cache.resolver.LiveCacheResolver
 import net.rsprox.protocol.session.AttributeMap
 import net.rsprox.protocol.session.Session
 import net.rsprox.proxy.config.BINARY_PATH
+import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.plugin.DecodingSession
-import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.transcriber.LiveTranscriberSession
 import net.rsprox.proxy.util.NopSessionMonitor
 import net.rsprox.shared.SessionMonitor
@@ -174,7 +174,7 @@ public data class BinaryBlob(
 
     public fun hookLiveTranscriber(
         key: XteaKey,
-        pluginLoader: PluginLoader,
+        decoderLoader: DecoderLoader,
     ) {
         check(this.liveSession == null) {
             "Live session already hooked."
@@ -201,10 +201,8 @@ public data class BinaryBlob(
                 CacheProvider {
                     OldSchoolCache(LiveCacheResolver(info), masterIndex)
                 }
-            if (pluginLoader.getPluginOrNull(header.revision) == null) {
-                pluginLoader.load(header.revision, provider)
-            }
-            val latestPlugin = pluginLoader.getPluginOrNull(header.revision)
+            decoderLoader.load(provider, latestOnly = true)
+            val latestPlugin = decoderLoader.getDecoderOrNull(header.revision)
             if (latestPlugin == null) {
                 logger.info { "Plugin for ${header.revision} missing, no live transcriber hooked." }
                 return

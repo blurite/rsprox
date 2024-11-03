@@ -1,23 +1,17 @@
-package net.rsprox.protocol.v223
+package net.rsprox.protocol.v225
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.compression.HuffmanCodec
 import net.rsprot.protocol.message.IncomingMessage
-import net.rsprox.cache.api.CacheProvider
-import net.rsprox.protocol.ServerPacketDecoder
+import net.rsprox.protocol.ClientPacketDecoder
 import net.rsprox.protocol.session.Session
-import net.rsprox.protocol.v223.game.outgoing.decoder.prot.ServerMessageDecoderRepository
+import net.rsprox.protocol.v225.game.incoming.decoder.prot.ClientMessageDecoderRepository
 
-public class ServerPacketDecoderService(
+public class ClientPacketDecoderServiceV225(
     huffmanCodec: HuffmanCodec,
-    cache: CacheProvider,
-) : ServerPacketDecoder {
+) : ClientPacketDecoder {
     @OptIn(ExperimentalStdlibApi::class)
-    private val repository =
-        ServerMessageDecoderRepository.build(
-            huffmanCodec,
-            cache,
-        )
+    private val repository = ClientMessageDecoderRepository.build(huffmanCodec)
 
     override fun decode(
         opcode: Int,

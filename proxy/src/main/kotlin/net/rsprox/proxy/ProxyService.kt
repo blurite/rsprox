@@ -52,7 +52,7 @@ import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.futures.asCompletableFuture
 import net.rsprox.proxy.http.GamePackProvider
 import net.rsprox.proxy.huffman.HuffmanProvider
-import net.rsprox.proxy.plugin.PluginLoader
+import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
 import net.rsprox.proxy.runelite.RuneliteLauncher
@@ -88,7 +88,7 @@ import kotlin.system.exitProcess
 public class ProxyService(
     private val allocator: ByteBufAllocator,
 ) {
-    private val pluginLoader: PluginLoader = PluginLoader()
+    private val decoderLoader: DecoderLoader = DecoderLoader()
     private lateinit var bootstrapFactory: BootstrapFactory
     private lateinit var serverBootstrap: ServerBootstrap
     private lateinit var httpServerBootstrap: ServerBootstrap
@@ -783,7 +783,7 @@ public class ProxyService(
             factory.createServerBootStrap(
                 worldListProvider,
                 rsa,
-                pluginLoader,
+                decoderLoader,
                 properties.getProperty(BINARY_WRITE_INTERVAL_SECONDS),
                 connections,
                 filterSetStore,
