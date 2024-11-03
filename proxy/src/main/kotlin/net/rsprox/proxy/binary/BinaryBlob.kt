@@ -228,7 +228,7 @@ public data class BinaryBlob(
                 SessionTracker(
                     state,
                     provider.get(),
-                    NopSessionMonitor,
+                    monitor,
                 )
             val liveSession =
                 LiveTranscriberSession(
