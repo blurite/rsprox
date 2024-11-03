@@ -3,7 +3,6 @@ package net.rsprox.protocol.v226.game.outgoing.decoder.prot
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.Prot
 import net.rsprot.protocol.ServerProt
-import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProtId
 
 public enum class GameServerProt(
     override val opcode: Int,

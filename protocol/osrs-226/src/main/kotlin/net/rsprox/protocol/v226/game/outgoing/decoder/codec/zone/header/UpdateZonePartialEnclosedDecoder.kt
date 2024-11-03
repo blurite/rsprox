@@ -3,6 +3,9 @@ package net.rsprox.protocol.v226.game.outgoing.decoder.codec.zone.header
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
+import net.rsprox.protocol.game.outgoing.model.IncomingZoneProt
+import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
+import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v226.game.outgoing.decoder.codec.zone.payload.LocAddChangeDecoder
 import net.rsprox.protocol.v226.game.outgoing.decoder.codec.zone.payload.LocAnimDecoder
 import net.rsprox.protocol.v226.game.outgoing.decoder.codec.zone.payload.LocDelDecoder
@@ -17,9 +20,6 @@ import net.rsprox.protocol.v226.game.outgoing.decoder.codec.zone.payload.ObjEnab
 import net.rsprox.protocol.v226.game.outgoing.decoder.codec.zone.payload.ObjUncustomiseDecoder
 import net.rsprox.protocol.v226.game.outgoing.decoder.codec.zone.payload.SoundAreaDecoder
 import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
-import net.rsprox.protocol.game.outgoing.model.IncomingZoneProt
-import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
-import net.rsprox.protocol.session.Session
 
 public class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZonePartialEnclosed> {
     override val prot: ClientProt = GameServerProt.UPDATE_ZONE_PARTIAL_ENCLOSED

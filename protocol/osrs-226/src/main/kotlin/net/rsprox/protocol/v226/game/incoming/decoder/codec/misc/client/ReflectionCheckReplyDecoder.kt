@@ -5,12 +5,12 @@ import net.rsprot.buffer.extensions.checkCRC32
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.metadata.Consistent
 import net.rsprox.protocol.ProxyMessageDecoder
-import net.rsprox.protocol.v226.game.incoming.decoder.prot.GameClientProt
 import net.rsprox.protocol.game.incoming.model.misc.client.ReflectionCheckReply
 import net.rsprox.protocol.game.incoming.model.misc.client.ReflectionCheckReply.ErrorResult
 import net.rsprox.protocol.reflection.ReflectionCheck
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.session.getReflectionChecks
+import net.rsprox.protocol.v226.game.incoming.decoder.prot.GameClientProt
 import java.io.IOException
 import java.io.InvalidClassException
 import java.io.OptionalDataException
@@ -34,21 +34,20 @@ public class ReflectionCheckReplyDecoder : ProxyMessageDecoder<ReflectionCheckRe
         for (check in checks) {
             val opcode = buffer.g1s()
             if (opcode < 0) {
-                if (opcode <= -10) {
-                    val throwable = getExecutionThrowableClass(opcode)
-                    results +=
+                results +=
+                    if (opcode <= -10) {
+                        val throwable = getExecutionThrowableClass(opcode)
                         ErrorResult(
                             check,
                             ErrorResult.ThrowableResultType.ExecutionThrowable(throwable),
                         )
-                } else {
-                    val throwable = getConstructionThrowableClass(opcode)
-                    results +=
+                    } else {
+                        val throwable = getConstructionThrowableClass(opcode)
                         ErrorResult(
                             check,
                             ErrorResult.ThrowableResultType.ConstructionThrowable(throwable),
                         )
-                }
+                    }
                 continue
             }
             when (check) {

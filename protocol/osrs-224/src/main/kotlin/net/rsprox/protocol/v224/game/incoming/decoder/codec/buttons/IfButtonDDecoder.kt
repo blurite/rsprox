@@ -5,9 +5,9 @@ import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.util.gCombinedId
 import net.rsprot.protocol.util.gCombinedIdAlt2
 import net.rsprox.protocol.ProxyMessageDecoder
-import net.rsprox.protocol.v224.game.incoming.decoder.prot.GameClientProt
 import net.rsprox.protocol.game.incoming.model.buttons.IfButtonD
 import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.v224.game.incoming.decoder.prot.GameClientProt
 
 public class IfButtonDDecoder : ProxyMessageDecoder<IfButtonD> {
     override val prot: ClientProt = GameClientProt.IF_BUTTOND

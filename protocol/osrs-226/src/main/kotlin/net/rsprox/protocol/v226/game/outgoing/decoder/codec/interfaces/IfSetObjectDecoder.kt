@@ -4,9 +4,9 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.util.gCombinedIdAlt3
 import net.rsprox.protocol.ProxyMessageDecoder
-import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetObject
 import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 
 public class IfSetObjectDecoder : ProxyMessageDecoder<IfSetObject> {
     override val prot: ClientProt = GameServerProt.IF_SETOBJECT

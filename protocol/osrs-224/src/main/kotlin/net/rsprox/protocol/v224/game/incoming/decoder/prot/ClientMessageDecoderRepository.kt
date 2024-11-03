@@ -90,7 +90,6 @@ import net.rsprox.protocol.v224.game.incoming.decoder.codec.social.FriendListAdd
 import net.rsprox.protocol.v224.game.incoming.decoder.codec.social.FriendListDelDecoder
 import net.rsprox.protocol.v224.game.incoming.decoder.codec.social.IgnoreListAddDecoder
 import net.rsprox.protocol.v224.game.incoming.decoder.codec.social.IgnoreListDelDecoder
-import net.rsprox.protocol.v224.game.incoming.decoder.prot.GameClientProt
 
 public object ClientMessageDecoderRepository {
     @ExperimentalStdlibApi

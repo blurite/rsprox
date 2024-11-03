@@ -1,7 +1,6 @@
 package net.rsprox.shared.filters
 
 public interface PropertyFilterSetStore {
-
     public val size: Int
 
     public fun create(name: String): PropertyFilterSet

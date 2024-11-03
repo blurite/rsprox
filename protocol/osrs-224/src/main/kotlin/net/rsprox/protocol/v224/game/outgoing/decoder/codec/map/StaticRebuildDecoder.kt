@@ -8,9 +8,6 @@ import net.rsprot.protocol.ClientProt
 import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.common.CoordGrid
-import net.rsprox.protocol.v224.game.outgoing.decoder.prot.GameServerProt
-import net.rsprox.protocol.v224.game.outgoing.model.info.npcinfo.NpcInfoClient
-import net.rsprox.protocol.v224.game.outgoing.model.info.playerinfo.PlayerInfoClient
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
 import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
 import net.rsprox.protocol.game.outgoing.model.map.RebuildNormal
@@ -18,6 +15,9 @@ import net.rsprox.protocol.game.outgoing.model.map.StaticRebuildMessage
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.session.allocateWorld
 import net.rsprox.protocol.session.getWorld
+import net.rsprox.protocol.v224.game.outgoing.decoder.prot.GameServerProt
+import net.rsprox.protocol.v224.game.outgoing.model.info.npcinfo.NpcInfoClient
+import net.rsprox.protocol.v224.game.outgoing.model.info.playerinfo.PlayerInfoClient
 
 public class StaticRebuildDecoder(
     private val huffmanCodec: HuffmanCodec,

@@ -5,9 +5,9 @@ import net.rsprot.compression.HuffmanCodec
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.metadata.Consistent
 import net.rsprox.protocol.ProxyMessageDecoder
-import net.rsprox.protocol.v226.game.incoming.decoder.prot.GameClientProt
 import net.rsprox.protocol.game.incoming.model.messaging.MessagePublic
 import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.v226.game.incoming.decoder.prot.GameClientProt
 
 @Consistent
 public class MessagePublicDecoder(

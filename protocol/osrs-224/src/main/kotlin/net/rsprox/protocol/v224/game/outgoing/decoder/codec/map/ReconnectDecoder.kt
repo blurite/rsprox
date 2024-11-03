@@ -5,11 +5,11 @@ import net.rsprot.buffer.bitbuffer.toBitBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.common.CoordGrid
-import net.rsprox.protocol.v224.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
 import net.rsprox.protocol.game.outgoing.model.map.Reconnect
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.session.getWorld
+import net.rsprox.protocol.v224.game.outgoing.decoder.prot.GameServerProt
 
 @Suppress("DuplicatedCode")
 public class ReconnectDecoder : ProxyMessageDecoder<Reconnect> {

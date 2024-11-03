@@ -3,9 +3,9 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.util.gCombinedIdAlt2
 import net.rsprox.protocol.ProxyMessageDecoder
-import net.rsprox.protocol.v226.game.incoming.decoder.prot.GameClientProt
 import net.rsprox.protocol.game.incoming.model.resumed.ResumePauseButton
 import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.v226.game.incoming.decoder.prot.GameClientProt
 
 public class ResumePauseButtonDecoder : ProxyMessageDecoder<ResumePauseButton> {
     override val prot: ClientProt = GameClientProt.RESUME_PAUSEBUTTON

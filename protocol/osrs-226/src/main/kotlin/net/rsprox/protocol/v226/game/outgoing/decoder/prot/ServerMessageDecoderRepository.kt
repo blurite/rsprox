@@ -144,7 +144,6 @@ import net.rsprox.protocol.v226.game.outgoing.decoder.codec.zone.payload.ObjDelD
 import net.rsprox.protocol.v226.game.outgoing.decoder.codec.zone.payload.ObjEnabledOpsDecoder
 import net.rsprox.protocol.v226.game.outgoing.decoder.codec.zone.payload.ObjUncustomiseDecoder
 import net.rsprox.protocol.v226.game.outgoing.decoder.codec.zone.payload.SoundAreaDecoder
-import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 
 public object ServerMessageDecoderRepository {
     @ExperimentalStdlibApi

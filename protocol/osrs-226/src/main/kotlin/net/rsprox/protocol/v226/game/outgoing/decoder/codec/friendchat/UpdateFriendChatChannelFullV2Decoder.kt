@@ -5,10 +5,10 @@ import net.rsprot.compression.Base37
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.metadata.Consistent
 import net.rsprox.protocol.ProxyMessageDecoder
-import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFull
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV2
 import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
 public class UpdateFriendChatChannelFullV2Decoder : ProxyMessageDecoder<UpdateFriendChatChannelFullV2> {

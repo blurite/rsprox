@@ -3,9 +3,9 @@ package net.rsprox.protocol.v224.game.outgoing.decoder.codec.sound
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
-import net.rsprox.protocol.v224.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSwap
 import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.v224.game.outgoing.decoder.prot.GameServerProt
 
 public class MidiSwapDecoder : ProxyMessageDecoder<MidiSwap> {
     override val prot: ClientProt = GameServerProt.MIDI_SWAP

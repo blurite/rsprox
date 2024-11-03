@@ -25,7 +25,7 @@ import javax.swing.UIManager
 public class ManageLinkedAccountsDialog(
     private val jagexAuthenticator: JagexAuthenticator,
     private val launchBar: LaunchBar,
-    private val sessionsPanel: SessionsPanel,
+    sessionsPanel: SessionsPanel,
 ) : JDialog() {
     private val accountsModel = DefaultListModel<JagexAccount>()
 

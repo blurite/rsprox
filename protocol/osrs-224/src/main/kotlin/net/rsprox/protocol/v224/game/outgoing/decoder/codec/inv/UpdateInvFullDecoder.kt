@@ -4,9 +4,9 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.util.gCombinedId
 import net.rsprox.protocol.ProxyMessageDecoder
-import net.rsprox.protocol.v224.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvFull
 import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.v224.game.outgoing.decoder.prot.GameServerProt
 
 public class UpdateInvFullDecoder : ProxyMessageDecoder<UpdateInvFull> {
     override val prot: ClientProt = GameServerProt.UPDATE_INV_FULL

@@ -6,12 +6,12 @@ import net.rsprot.crypto.xtea.XteaKey
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.metadata.Consistent
 import net.rsprox.protocol.ProxyMessageDecoder
-import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV2
 import net.rsprox.protocol.game.outgoing.model.map.util.BuildArea
 import net.rsprox.protocol.game.outgoing.model.map.util.RebuildRegionZone
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.session.getWorld
+import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
 public class RebuildWorldEntityDecoder : ProxyMessageDecoder<RebuildWorldEntityV2> {

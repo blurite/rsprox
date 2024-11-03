@@ -5,12 +5,12 @@ import net.rsprot.buffer.bitbuffer.toBitBuf
 import net.rsprot.crypto.xtea.XteaKey
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
-import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.map.RebuildRegion
 import net.rsprox.protocol.game.outgoing.model.map.util.BuildArea
 import net.rsprox.protocol.game.outgoing.model.map.util.RebuildRegionZone
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.session.getWorld
+import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 
 public class RebuildRegionDecoder : ProxyMessageDecoder<RebuildRegion> {
     override val prot: ClientProt = GameServerProt.REBUILD_REGION

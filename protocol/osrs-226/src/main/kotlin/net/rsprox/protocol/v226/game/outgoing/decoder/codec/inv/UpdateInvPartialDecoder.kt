@@ -5,9 +5,9 @@ import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.metadata.Consistent
 import net.rsprot.protocol.util.gCombinedId
 import net.rsprox.protocol.ProxyMessageDecoder
-import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvPartial
 import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
 public class UpdateInvPartialDecoder : ProxyMessageDecoder<UpdateInvPartial> {
