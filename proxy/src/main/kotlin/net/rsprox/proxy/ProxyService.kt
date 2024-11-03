@@ -47,6 +47,7 @@ import net.rsprox.proxy.config.registerConnection
 import net.rsprox.proxy.connection.ClientTypeDictionary
 import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.downloader.JagexNativeClientDownloader
+import net.rsprox.proxy.exceptions.MissingLibraryException
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.futures.asCompletableFuture
 import net.rsprox.proxy.http.GamePackProvider
@@ -514,6 +515,8 @@ public class ProxyService(
                 path = null,
                 port = port,
                 character,
+                operatingSystem,
+                ClientType.RuneLite,
             )
             logger.debug { "Waiting for client to connect to the server socket..." }
             gamePackProvider.prefetch()
@@ -554,7 +557,15 @@ public class ProxyService(
             OperatingSystem.WINDOWS -> {
                 val directory = path.parent.toFile()
                 val absolutePath = path.absolutePathString()
-                createProcess(listOf(absolutePath), directory, path, port, character)
+                createProcess(
+                    listOf(absolutePath),
+                    directory,
+                    path,
+                    port,
+                    character,
+                    operatingSystem,
+                    ClientType.Native,
+                )
             }
 
             OperatingSystem.MAC -> {
@@ -562,14 +573,30 @@ public class ProxyService(
                 // We need to however execute the /.rsprox/clients/osclient.app "file"
                 val rootDirection = path.parent.parent.parent
                 val absolutePath = "${File.separator}${rootDirection.absolutePathString()}"
-                createProcess(listOf("open", absolutePath), null, path, port, character)
+                createProcess(
+                    listOf("open", absolutePath),
+                    null,
+                    path,
+                    port,
+                    character,
+                    operatingSystem,
+                    ClientType.Native,
+                )
             }
 
             OperatingSystem.UNIX -> {
                 try {
                     val directory = path.parent.toFile()
                     val absolutePath = path.absolutePathString()
-                    createProcess(listOf("wine", absolutePath), directory, path, port, character)
+                    createProcess(
+                        listOf("wine", absolutePath),
+                        directory,
+                        path,
+                        port,
+                        character,
+                        operatingSystem,
+                        ClientType.Native,
+                    )
                 } catch (e: IOException) {
                     throw RuntimeException("wine is required to run the enhanced client on unix", e)
                 }
@@ -585,6 +612,8 @@ public class ProxyService(
         path: Path?,
         port: Int,
         character: JagexCharacter?,
+        operatingSystem: OperatingSystem,
+        clientType: ClientType,
     ) {
         logger.debug { "Attempting to create process $command" }
         val builder =
@@ -629,10 +658,25 @@ public class ProxyService(
         // case will be hit here. The 500 millisecond wait time is a requirement to hit it, otherwise it'll still
         // be alive by the time it hits that.
         if (!process.isAlive) {
+            if (operatingSystem == OperatingSystem.WINDOWS && clientType == ClientType.Native) {
+                checkVisualCPlusPlusRedistributable()
+            }
             throw IllegalStateException("Unable to launch process: $path, error code: ${process.waitFor()}")
         }
         if (path != null) logger.debug { "Successfully launched $path" }
         processes[port] = process.children().toList() + process.toHandle()
+    }
+
+    private fun checkVisualCPlusPlusRedistributable() {
+        val rootPath = Path(System.getenv("SYSTEMROOT") ?: return)
+        val vcomp140 = rootPath.resolve("System32").resolve("vcomp140.dll")
+        if (vcomp140.notExists()) {
+            throw MissingLibraryException(
+                "VCOMP140.dll is missing. " +
+                    "Install Visual C++ Redistributable to obtain the necessary libraries via " +
+                    "https://www.microsoft.com/en-ca/download/details.aspx?id=48145",
+            )
+        }
     }
 
     private fun createConfigurationDirectories(path: Path) {
