@@ -623,12 +623,16 @@ public class ProxyService(
             )
         }
         val process = builder.start()
-        if (process.isAlive) {
-            if (path != null) logger.debug { "Successfully launched $path" }
-            processes[port] = process.children().toList() + process.toHandle()
-        } else {
-            if (path != null) logger.warn { "Unable to successfully launch $path" }
+        // Wait for up to half a second for the process to launch, after which we can determine if it's still alive
+        process.waitFor(500, TimeUnit.MILLISECONDS)
+        // If the process encountered an error during the launching (e.g. exe couldn't be launched), the failure
+        // case will be hit here. The 500 millisecond wait time is a requirement to hit it, otherwise it'll still
+        // be alive by the time it hits that.
+        if (!process.isAlive) {
+            throw IllegalStateException("Unable to launch process: $path, error code: ${process.waitFor()}")
         }
+        if (path != null) logger.debug { "Successfully launched $path" }
+        processes[port] = process.children().toList() + process.toHandle()
     }
 
     private fun createConfigurationDirectories(path: Path) {
