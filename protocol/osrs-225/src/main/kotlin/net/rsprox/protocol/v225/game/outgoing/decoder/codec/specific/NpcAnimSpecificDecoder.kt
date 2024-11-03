@@ -1,0 +1,26 @@
+package net.rsprox.protocol.v225.game.outgoing.decoder.codec.specific
+
+import net.rsprot.buffer.JagByteBuf
+import net.rsprot.protocol.ClientProt
+import net.rsprox.protocol.ProxyMessageDecoder
+import net.rsprox.protocol.game.outgoing.model.specific.NpcAnimSpecific
+import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.v225.game.outgoing.decoder.prot.GameServerProt
+
+public class NpcAnimSpecificDecoder : ProxyMessageDecoder<NpcAnimSpecific> {
+    override val prot: ClientProt = GameServerProt.NPC_ANIM_SPECIFIC
+
+    override fun decode(
+        buffer: JagByteBuf,
+        session: Session,
+    ): NpcAnimSpecific {
+        val id = buffer.g2Alt3()
+        val index = buffer.g2Alt1()
+        val delay = buffer.g1()
+        return NpcAnimSpecific(
+            index,
+            id,
+            delay,
+        )
+    }
+}

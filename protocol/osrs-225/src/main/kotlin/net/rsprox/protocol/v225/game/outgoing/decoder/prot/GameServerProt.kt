@@ -1,4 +1,4 @@
-package net.rsprox.protocol.v224.game.outgoing.decoder.prot
+package net.rsprox.protocol.v225.game.outgoing.decoder.prot
 
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.Prot
@@ -63,6 +63,12 @@ public enum class GameServerProt(
     SOUND_AREA(GameServerProtId.SOUND_AREA, 7),
 
     // Specific packets
+    PROJANIM_SPECIFIC_V3(GameServerProtId.PROJANIM_SPECIFIC_V3, 22),
+
+    @Deprecated(
+        "Deprecated as a new variant that supports source index was introduced.",
+        replaceWith = ReplaceWith("PROJANIM_SPECIFIC_V3"),
+    )
     PROJANIM_SPECIFIC_V2(GameServerProtId.PROJANIM_SPECIFIC_V2, 19),
 
     @Deprecated(
@@ -88,6 +94,12 @@ public enum class GameServerProt(
     // World entity packets
     CLEAR_ENTITIES(GameServerProtId.CLEAR_ENTITIES, 0),
     SET_ACTIVE_WORLD(GameServerProtId.SET_ACTIVE_WORLD, 4),
+    WORLDENTITY_INFO_V2(GameServerProtId.WORLDENTITY_INFO_V2, Prot.VAR_SHORT),
+
+    @Deprecated(
+        "Deprecated as a new variant that supports fine height was introduced.",
+        replaceWith = ReplaceWith("WORLDENTITY_INFO_V2"),
+    )
     WORLDENTITY_INFO_V1(GameServerProtId.WORLDENTITY_INFO_V1, Prot.VAR_SHORT),
 
     // Map packets
@@ -113,8 +125,8 @@ public enum class GameServerProt(
     CAM_ROTATEBY(GameServerProtId.CAM_ROTATEBY, 7),
     CAM_ROTATETO(GameServerProtId.CAM_ROTATETO, 7),
     CAM_MODE(GameServerProtId.CAM_MODE, 1),
-    CAM_TARGET_V2(GameServerProtId.CAM_TARGET_V2, 5),
-    CAM_TARGET_V1(GameServerProtId.CAM_TARGET_V1, 3),
+    CAM_TARGET_V2(GameServerProtId.CAM_TARGET, 5),
+    CAM_TARGET_V1(GameServerProtId.CAM_TARGET_OLD, 3),
     OCULUS_SYNC(GameServerProtId.OCULUS_SYNC, 4),
 
     // Inventory packets
