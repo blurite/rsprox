@@ -11,8 +11,8 @@ import net.rsprox.proxy.config.FILTERS_DIRECTORY
 import net.rsprox.proxy.config.SETTINGS_DIRECTORY
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.huffman.HuffmanProvider
+import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.plugin.DecodingSession
-import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.settings.DefaultSettingSetStore
 import net.rsprox.shared.StreamDirection
 import java.nio.file.Path
@@ -25,7 +25,7 @@ public class BinaryToStringCommand : CliktCommand(name = "tostring") {
     private val name by option("-name")
 
     override fun run() {
-        val pluginLoader = PluginLoader()
+        val decoderLoader = DecoderLoader()
         HuffmanProvider.load()
         val provider = StatefulCacheProvider(HistoricCacheResolver())
         val filters = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY)
@@ -39,7 +39,7 @@ public class BinaryToStringCommand : CliktCommand(name = "tostring") {
                 return
             }
             val binary = BinaryBlob.decode(file, filters, settings)
-            simpleTranscribe(file, binary, pluginLoader, provider)
+            simpleTranscribe(file, binary, decoderLoader, provider)
         } else {
             // Sort all the binaries according to revision, so we don't end up loading and unloading plugins
             // repeatedly for the same things, as we can only have one plugin available at a time
@@ -56,7 +56,7 @@ public class BinaryToStringCommand : CliktCommand(name = "tostring") {
                 if (BINARY_PATH.resolve(path.nameWithoutExtension + ".txt").exists()) {
                     continue
                 }
-                simpleTranscribe(path, blob, pluginLoader, provider)
+                simpleTranscribe(path, blob, decoderLoader, provider)
             }
         }
     }
@@ -64,7 +64,7 @@ public class BinaryToStringCommand : CliktCommand(name = "tostring") {
     private fun simpleTranscribe(
         binaryPath: Path,
         binary: BinaryBlob,
-        pluginLoader: PluginLoader,
+        decoderLoader: DecoderLoader,
         statefulCacheProvider: StatefulCacheProvider,
     ) {
         statefulCacheProvider.update(
@@ -73,8 +73,8 @@ public class BinaryToStringCommand : CliktCommand(name = "tostring") {
                 binary.header.js5MasterIndex,
             ),
         )
-        pluginLoader.load(binary.header.revision, statefulCacheProvider)
-        val latestPlugin = pluginLoader.getPlugin(binary.header.revision)
+        decoderLoader.load(statefulCacheProvider)
+        val latestPlugin = decoderLoader.getDecoder(binary.header.revision)
         val session = DecodingSession(binary, latestPlugin)
         var tick = 0
         val output =

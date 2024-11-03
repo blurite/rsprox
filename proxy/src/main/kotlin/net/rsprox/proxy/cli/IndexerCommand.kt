@@ -12,8 +12,8 @@ import net.rsprox.proxy.config.FILTERS_DIRECTORY
 import net.rsprox.proxy.config.SETTINGS_DIRECTORY
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.huffman.HuffmanProvider
+import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.plugin.DecodingSession
-import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.settings.DefaultSettingSetStore
 import net.rsprox.proxy.util.NopSessionMonitor
 import net.rsprox.shared.StreamDirection
@@ -40,7 +40,7 @@ public class IndexerCommand : CliktCommand(name = "index") {
 
     override fun run() {
         Locale.setDefault(Locale.US)
-        val pluginLoader = PluginLoader()
+        val decoderLoader = DecoderLoader()
         HuffmanProvider.load()
         val provider = StatefulCacheProvider(HistoricCacheResolver())
         val filters = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY)
@@ -56,7 +56,7 @@ public class IndexerCommand : CliktCommand(name = "index") {
             val binary = BinaryBlob.decode(file, filters, settings)
             val time =
                 measureTime {
-                    index(file, binary, pluginLoader, provider, filters, settings)
+                    index(file, binary, decoderLoader, provider, filters, settings)
                 }
             logger.debug { "$file took $time to index." }
         } else {
@@ -74,7 +74,7 @@ public class IndexerCommand : CliktCommand(name = "index") {
             for ((path, blob) in fileTreeWalk) {
                 val time =
                     measureTime {
-                        index(path, blob, pluginLoader, provider, filters, settings)
+                        index(path, blob, decoderLoader, provider, filters, settings)
                     }
                 logger.debug { "${path.name} took $time to index." }
             }
@@ -84,7 +84,7 @@ public class IndexerCommand : CliktCommand(name = "index") {
     private fun index(
         binaryPath: Path,
         binary: BinaryBlob,
-        pluginLoader: PluginLoader,
+        decoderLoader: DecoderLoader,
         statefulCacheProvider: StatefulCacheProvider,
         filters: PropertyFilterSetStore,
         settings: SettingSetStore,
@@ -95,8 +95,8 @@ public class IndexerCommand : CliktCommand(name = "index") {
                 binary.header.js5MasterIndex,
             ),
         )
-        pluginLoader.load(binary.header.revision, statefulCacheProvider)
-        val latestPlugin = pluginLoader.getPlugin(binary.header.revision)
+        decoderLoader.load(statefulCacheProvider)
+        val latestPlugin = decoderLoader.getDecoder(binary.header.revision)
         val transcriberProvider = IndexerTranscriberProvider()
         val session = DecodingSession(binary, latestPlugin)
         val folder = binaryPath.parent.resolve("indexed")

@@ -30,7 +30,7 @@ import net.rsprox.proxy.config.CURRENT_REVISION
 import net.rsprox.proxy.config.getConnection
 import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.js5.Js5MasterIndexArchive
-import net.rsprox.proxy.plugin.PluginLoader
+import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.rsa.Rsa
 import net.rsprox.proxy.rsa.rsa
 import net.rsprox.proxy.server.ServerGameLoginDecoder
@@ -52,7 +52,7 @@ public class ClientLoginHandler(
     private val rsa: RSAPrivateCrtKeyParameters,
     private val binaryWriteInterval: Int,
     private val worldListProvider: WorldListProvider,
-    private val pluginLoader: PluginLoader,
+    private val decoderLoader: DecoderLoader,
     private val connections: ProxyConnectionContainer,
     private val filters: PropertyFilterSetStore,
     private val settings: SettingSetStore,
@@ -426,7 +426,7 @@ public class ClientLoginHandler(
                 ctx.channel(),
                 binaryWriteInterval,
                 worldListProvider,
-                pluginLoader,
+                decoderLoader,
                 connections,
                 filters,
                 settings,

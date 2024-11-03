@@ -7,8 +7,8 @@ import net.rsprox.proxy.config.FILTERS_DIRECTORY
 import net.rsprox.proxy.config.SETTINGS_DIRECTORY
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.huffman.HuffmanProvider
+import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.plugin.DecodingSession
-import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.settings.DefaultSettingSetStore
 import net.rsprox.proxy.util.NopSessionMonitor
 import net.rsprox.shared.StreamDirection
@@ -26,7 +26,7 @@ import java.util.Locale
 
 @Suppress("DuplicatedCode")
 public class BinaryIndexer {
-    private val pluginLoader: PluginLoader = PluginLoader()
+    private val decoderLoader: DecoderLoader = DecoderLoader()
     private val statefulCacheProvider: StatefulCacheProvider = StatefulCacheProvider(HistoricCacheResolver())
 
     public fun initialize() {
@@ -44,8 +44,8 @@ public class BinaryIndexer {
                 binary.header.js5MasterIndex,
             ),
         )
-        pluginLoader.load(binary.header.revision, statefulCacheProvider)
-        val latestPlugin = pluginLoader.getPlugin(binary.header.revision)
+        decoderLoader.load(statefulCacheProvider)
+        val latestPlugin = decoderLoader.getDecoder(binary.header.revision)
         val transcriberProvider = IndexerTranscriberProvider()
         val session = DecodingSession(binary, latestPlugin)
         val folder = binaryPath.parent.resolve("indexed")

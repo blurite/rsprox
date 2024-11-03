@@ -8,7 +8,6 @@ public class DefaultPropertyFilterSetStore(
     private val rootPath: Path,
     private val filterSets: MutableList<PropertyFilterSet> = mutableListOf(),
 ) : PropertyFilterSetStore {
-
     override val size: Int
         get() = filterSets.size
 

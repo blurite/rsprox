@@ -12,8 +12,8 @@ import net.rsprox.proxy.config.FILTERS_DIRECTORY
 import net.rsprox.proxy.config.SETTINGS_DIRECTORY
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.huffman.HuffmanProvider
+import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.plugin.DecodingSession
-import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.settings.DefaultSettingSetStore
 import net.rsprox.proxy.util.NopSessionMonitor
 import net.rsprox.shared.StreamDirection
@@ -43,7 +43,7 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
 
     override fun run() {
         Locale.setDefault(Locale.US)
-        val pluginLoader = PluginLoader()
+        val decoderLoader = DecoderLoader()
         HuffmanProvider.load()
         val provider = StatefulCacheProvider(HistoricCacheResolver())
         val filters = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY)
@@ -59,7 +59,7 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
             val binary = BinaryBlob.decode(file, filters, settings)
             val time =
                 measureTime {
-                    fileTranscribe(file, binary, pluginLoader, provider, filters, settings)
+                    fileTranscribe(file, binary, decoderLoader, provider, filters, settings)
                 }
             logger.debug { "$file took $time to transcribe." }
         } else {
@@ -77,7 +77,7 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
             for ((path, blob) in fileTreeWalk) {
                 val time =
                     measureTime {
-                        fileTranscribe(path, blob, pluginLoader, provider, filters, settings)
+                        fileTranscribe(path, blob, decoderLoader, provider, filters, settings)
                     }
                 logger.debug { "${path.name} took $time to transcribe." }
             }
@@ -87,7 +87,7 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
     private fun fileTranscribe(
         binaryPath: Path,
         binary: BinaryBlob,
-        pluginLoader: PluginLoader,
+        decoderLoader: DecoderLoader,
         statefulCacheProvider: StatefulCacheProvider,
         filters: PropertyFilterSetStore,
         settings: SettingSetStore,
@@ -98,8 +98,8 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
                 binary.header.js5MasterIndex,
             ),
         )
-        pluginLoader.load(binary.header.revision, statefulCacheProvider)
-        val latestPlugin = pluginLoader.getPlugin(binary.header.revision)
+        decoderLoader.load(statefulCacheProvider)
+        val latestPlugin = decoderLoader.getDecoder(binary.header.revision)
         val transcriberProvider = TextTranscriberProvider()
         val session = DecodingSession(binary, latestPlugin)
         val textPath = binaryPath.parent.resolve(binaryPath.nameWithoutExtension + ".txt")

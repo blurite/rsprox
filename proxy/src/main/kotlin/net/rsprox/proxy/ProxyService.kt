@@ -52,12 +52,16 @@ import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.futures.asCompletableFuture
 import net.rsprox.proxy.http.GamePackProvider
 import net.rsprox.proxy.huffman.HuffmanProvider
-import net.rsprox.proxy.plugin.PluginLoader
+import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
 import net.rsprox.proxy.runelite.RuneliteLauncher
 import net.rsprox.proxy.settings.DefaultSettingSetStore
-import net.rsprox.proxy.util.*
+import net.rsprox.proxy.util.ClientType
+import net.rsprox.proxy.util.ConnectionInfo
+import net.rsprox.proxy.util.OperatingSystem
+import net.rsprox.proxy.util.ProgressCallback
+import net.rsprox.proxy.util.getOperatingSystem
 import net.rsprox.proxy.worlds.DynamicWorldListProvider
 import net.rsprox.proxy.worlds.World
 import net.rsprox.proxy.worlds.WorldListProvider
@@ -76,10 +80,17 @@ import java.net.URL
 import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
-import java.util.*
+import java.util.Properties
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
-import kotlin.io.path.*
+import kotlin.io.path.Path
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.copyTo
+import kotlin.io.path.exists
+import kotlin.io.path.extension
+import kotlin.io.path.nameWithoutExtension
+import kotlin.io.path.notExists
+import kotlin.io.path.writeBytes
 import kotlin.properties.Delegates
 import kotlin.streams.toList
 import kotlin.system.exitProcess
@@ -88,7 +99,7 @@ import kotlin.system.exitProcess
 public class ProxyService(
     private val allocator: ByteBufAllocator,
 ) {
-    private val pluginLoader: PluginLoader = PluginLoader()
+    private val decoderLoader: DecoderLoader = DecoderLoader()
     private lateinit var bootstrapFactory: BootstrapFactory
     private lateinit var serverBootstrap: ServerBootstrap
     private lateinit var httpServerBootstrap: ServerBootstrap
@@ -783,7 +794,7 @@ public class ProxyService(
             factory.createServerBootStrap(
                 worldListProvider,
                 rsa,
-                pluginLoader,
+                decoderLoader,
                 properties.getProperty(BINARY_WRITE_INTERVAL_SECONDS),
                 connections,
                 filterSetStore,
