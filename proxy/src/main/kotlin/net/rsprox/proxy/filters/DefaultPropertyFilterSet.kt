@@ -99,7 +99,10 @@ public class DefaultPropertyFilterSet(
         save()
     }
 
-    override fun replaceRegexFilter(oldRegexFilter: RegexFilter, newRegexFilter: RegexFilter) {
+    override fun replaceRegexFilter(
+        oldRegexFilter: RegexFilter,
+        newRegexFilter: RegexFilter,
+    ) {
         val index = regexFilters.indexOf(oldRegexFilter)
         if (index == -1) return
         regexFilters[index] = newRegexFilter

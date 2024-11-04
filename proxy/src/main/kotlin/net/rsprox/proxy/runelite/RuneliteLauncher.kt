@@ -13,7 +13,6 @@ import java.security.cert.Certificate
 import java.security.cert.CertificateFactory
 import kotlin.io.path.absolutePathString
 
-
 public data class Artifact(
     val name: String,
     val path: String,
@@ -31,14 +30,19 @@ public data class Bootstrap(
     val launcher: Launcher,
 )
 
-public class RuneliteLauncher() {
+public class RuneliteLauncher {
     private val bootstrap = getBootstrap()
 
     init {
         logger.info { "Initialising RuneLite launcher ${bootstrap.launcher.version}" }
     }
 
-    public fun getLaunchArgs(port: Int, rsa: String, javConfig: String, socket: String): List<String> {
+    public fun getLaunchArgs(
+        port: Int,
+        rsa: String,
+        javConfig: String,
+        socket: String,
+    ): List<String> {
         clean()
         download()
 
@@ -67,14 +71,15 @@ public class RuneliteLauncher() {
         logger.info { "Downloading RuneLite launcher artifacts" }
         for (artifact in bootstrap.artifacts) {
             val dest = RUNELITE_LAUNCHER_REPO_DIRECTORY.resolve(artifact.name)
-            val hash = try {
-                hash(dest.toFile())
-            } catch (_: FileNotFoundException) {
-                null
-            } catch (_: IOException) {
-                dest.toFile().delete()
-                null
-            }
+            val hash =
+                try {
+                    hash(dest.toFile())
+                } catch (_: FileNotFoundException) {
+                    null
+                } catch (_: IOException) {
+                    dest.toFile().delete()
+                    null
+                }
             if (artifact.hash == hash) {
                 logger.debug { "Hash for ${artifact.name} up to date" }
                 continue
@@ -82,18 +87,20 @@ public class RuneliteLauncher() {
             logger.info { "Downloading artifact ${artifact.name} hash=${artifact.hash}" }
 
             Files.newOutputStream(dest).use { out ->
-                val request = Request
-                    .Builder()
-                    .url(artifact.path)
-                    .get()
-                    .build()
-                val artifactBytes = httpClient.newCall(request).execute().use { response ->
-                    val body = response.body?.bytes() ?: error("Artifact request was null")
-                    if (!response.isSuccessful) {
-                        error("Failed to retrieve artifact: $body")
+                val request =
+                    Request
+                        .Builder()
+                        .url(artifact.path)
+                        .get()
+                        .build()
+                val artifactBytes =
+                    httpClient.newCall(request).execute().use { response ->
+                        val body = response.body?.bytes() ?: error("Artifact request was null")
+                        if (!response.isSuccessful) {
+                            error("Failed to retrieve artifact: $body")
+                        }
+                        body
                     }
-                    body
-                }
                 out.write(artifactBytes)
             }
 
@@ -130,38 +137,43 @@ public class RuneliteLauncher() {
         private val gson = Gson()
 
         private fun getBootstrap(): Bootstrap {
-            val bootstrapRequest = Request
-                .Builder()
-                .url(BOOTSTRAP_URL)
-                .get()
-                .build()
-            val bootstrapBytes = httpClient.newCall(bootstrapRequest).execute().use { response ->
-                val body = response.body?.bytes() ?: error("Bootstrap request was null")
-                if (!response.isSuccessful) {
-                    logger.error { "Failed to retrieve bootstrap: $body" }
-                    return@use null
+            val bootstrapRequest =
+                Request
+                    .Builder()
+                    .url(BOOTSTRAP_URL)
+                    .get()
+                    .build()
+            val bootstrapBytes =
+                httpClient.newCall(bootstrapRequest).execute().use { response ->
+                    val body = response.body?.bytes() ?: error("Bootstrap request was null")
+                    if (!response.isSuccessful) {
+                        logger.error { "Failed to retrieve bootstrap: $body" }
+                        return@use null
+                    }
+                    body
                 }
-                body
-            }
 
-            val signatureRequest = Request
-                .Builder()
-                .url(BOOTSTRAP_SIG_URL)
-                .get()
-                .build()
-            val signatureBytes = httpClient.newCall(signatureRequest).execute().use { response ->
-                val body = response.body?.bytes() ?: error("Bootstrap signature request was null")
-                if (!response.isSuccessful) {
-                    logger.error { "Failed to retrieve bootstrap signature: $body" }
-                    return@use null
+            val signatureRequest =
+                Request
+                    .Builder()
+                    .url(BOOTSTRAP_SIG_URL)
+                    .get()
+                    .build()
+            val signatureBytes =
+                httpClient.newCall(signatureRequest).execute().use { response ->
+                    val body = response.body?.bytes() ?: error("Bootstrap signature request was null")
+                    if (!response.isSuccessful) {
+                        logger.error { "Failed to retrieve bootstrap signature: $body" }
+                        return@use null
+                    }
+                    body
                 }
-                body
-            }
 
-            val sig = Signature.getInstance("SHA256withRSA").apply {
-                initVerify(getCertificate())
-                update(bootstrapBytes)
-            }
+            val sig =
+                Signature.getInstance("SHA256withRSA").apply {
+                    initVerify(getCertificate())
+                    update(bootstrapBytes)
+                }
 
             if (!sig.verify(signatureBytes)) {
                 throw RuntimeException("Failed to validate bootstrap")
@@ -175,5 +187,4 @@ public class RuneliteLauncher() {
             return factory.generateCertificate(RuneliteLauncher::class.java.getResourceAsStream("launcher.crt"))
         }
     }
-
 }

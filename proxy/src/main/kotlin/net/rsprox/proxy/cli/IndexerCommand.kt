@@ -12,15 +12,19 @@ import net.rsprox.proxy.config.FILTERS_DIRECTORY
 import net.rsprox.proxy.config.SETTINGS_DIRECTORY
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.huffman.HuffmanProvider
+import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.plugin.DecodingSession
-import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.settings.DefaultSettingSetStore
 import net.rsprox.proxy.util.NopSessionMonitor
 import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.indexing.MultiMapBinaryIndex
+import net.rsprox.shared.indexing.NopBinaryIndex
 import net.rsprox.shared.settings.SettingSetStore
-import net.rsprox.transcriber.BaseMessageConsumerContainer
+import net.rsprox.transcriber.indexer.IndexerTranscriberProvider
+import net.rsprox.transcriber.state.SessionState
+import net.rsprox.transcriber.state.SessionTracker
+import net.rsprox.transcriber.text.TextMessageConsumerContainer
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Locale
@@ -36,7 +40,7 @@ public class IndexerCommand : CliktCommand(name = "index") {
 
     override fun run() {
         Locale.setDefault(Locale.US)
-        val pluginLoader = PluginLoader()
+        val decoderLoader = DecoderLoader()
         HuffmanProvider.load()
         val provider = StatefulCacheProvider(HistoricCacheResolver())
         val filters = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY)
@@ -52,7 +56,7 @@ public class IndexerCommand : CliktCommand(name = "index") {
             val binary = BinaryBlob.decode(file, filters, settings)
             val time =
                 measureTime {
-                    index(file, binary, pluginLoader, provider, filters, settings)
+                    index(file, binary, decoderLoader, provider, filters, settings)
                 }
             logger.debug { "$file took $time to index." }
         } else {
@@ -70,7 +74,7 @@ public class IndexerCommand : CliktCommand(name = "index") {
             for ((path, blob) in fileTreeWalk) {
                 val time =
                     measureTime {
-                        index(path, blob, pluginLoader, provider, filters, settings)
+                        index(path, blob, decoderLoader, provider, filters, settings)
                     }
                 logger.debug { "${path.name} took $time to index." }
             }
@@ -80,7 +84,7 @@ public class IndexerCommand : CliktCommand(name = "index") {
     private fun index(
         binaryPath: Path,
         binary: BinaryBlob,
-        pluginLoader: PluginLoader,
+        decoderLoader: DecoderLoader,
         statefulCacheProvider: StatefulCacheProvider,
         filters: PropertyFilterSetStore,
         settings: SettingSetStore,
@@ -91,14 +95,15 @@ public class IndexerCommand : CliktCommand(name = "index") {
                 binary.header.js5MasterIndex,
             ),
         )
-        pluginLoader.load("osrs", binary.header.revision, statefulCacheProvider)
-        val latestPlugin = pluginLoader.getPlugin(binary.header.revision)
-        val transcriberProvider = pluginLoader.getIndexerProvider(binary.header.revision)
+        decoderLoader.load(statefulCacheProvider)
+        val latestPlugin = decoderLoader.getDecoder(binary.header.revision)
+        val transcriberProvider = IndexerTranscriberProvider()
         val session = DecodingSession(binary, latestPlugin)
         val folder = binaryPath.parent.resolve("indexed")
         Files.createDirectories(folder)
-        val consumers = BaseMessageConsumerContainer(emptyList())
+        val consumers = TextMessageConsumerContainer(emptyList())
         val index = MultiMapBinaryIndex()
+        val sessionState = SessionState(settings)
         val runner =
             transcriberProvider.provide(
                 consumers,
@@ -106,7 +111,14 @@ public class IndexerCommand : CliktCommand(name = "index") {
                 NopSessionMonitor,
                 filters,
                 settings,
-                index,
+                NopBinaryIndex,
+                sessionState,
+            )
+        val sessionTracker =
+            SessionTracker(
+                sessionState,
+                statefulCacheProvider.get(),
+                NopSessionMonitor,
             )
 
         folder.resolve(binaryPath.nameWithoutExtension + ".txt").bufferedWriter().use { writer ->
@@ -122,15 +134,21 @@ public class IndexerCommand : CliktCommand(name = "index") {
             )
             writer.appendLine("local player index: ${binary.header.localPlayerIndex}")
             writer.appendLine("-------------------")
-
+            val revision = binary.header.revision
             for ((direction, prot, packet) in session.sequence()) {
                 try {
                     when (direction) {
                         StreamDirection.CLIENT_TO_SERVER -> {
-                            runner.onClientProt(prot, packet)
+                            sessionTracker.onClientPacket(packet, prot)
+                            sessionTracker.beforeTranscribe(packet)
+                            runner.onClientProt(prot, packet, revision)
+                            sessionTracker.afterTranscribe(packet)
                         }
                         StreamDirection.SERVER_TO_CLIENT -> {
-                            runner.onServerPacket(prot, packet)
+                            sessionTracker.onServerPacket(packet, prot)
+                            sessionTracker.beforeTranscribe(packet)
+                            runner.onServerPacket(prot, packet, revision)
+                            sessionTracker.afterTranscribe(packet)
                         }
                     }
                 } catch (t: NotImplementedError) {

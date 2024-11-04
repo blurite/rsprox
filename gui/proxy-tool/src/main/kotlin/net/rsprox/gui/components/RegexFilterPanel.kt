@@ -27,9 +27,8 @@ import javax.swing.undo.UndoManager
 
 public class RegexFilterPanel(
     private val filterSet: PropertyFilterSet,
-    private var currentFilter: RegexFilter
+    private var currentFilter: RegexFilter,
 ) : JPanel() {
-
     private val protNameLabel = FlatLabel()
     private val regexTextField = FlatTextField()
     private val perLineCheckbox = FlatCheckBox()
@@ -45,24 +44,27 @@ public class RegexFilterPanel(
         add(protNameLabel)
 
         // Add a delete button to remove the filter.
-        add(FlatButton().apply {
-            toolTipText = "Delete"
-            icon = AppIcons.Delete
-            buttonType = ButtonType.borderless
-            addActionListener {
-                // Remove the filter from the filter set.
-                filterSet.removeRegexFilter(currentFilter)
+        add(
+            FlatButton().apply {
+                toolTipText = "Delete"
+                icon = AppIcons.Delete
+                buttonType = ButtonType.borderless
+                addActionListener {
+                    // Remove the filter from the filter set.
+                    filterSet.removeRegexFilter(currentFilter)
 
-                // Remove the panel from the parent.
-                val regexFilterPanel = this@RegexFilterPanel
-                val parent = regexFilterPanel.parent
-                parent.remove(regexFilterPanel)
+                    // Remove the panel from the parent.
+                    val regexFilterPanel = this@RegexFilterPanel
+                    val parent = regexFilterPanel.parent
+                    parent.remove(regexFilterPanel)
 
-                // Revalidate and repaint the parent.
-                parent.revalidate()
-                parent.repaint()
-            }
-        }, "wrap")
+                    // Revalidate and repaint the parent.
+                    parent.revalidate()
+                    parent.repaint()
+                }
+            },
+            "wrap",
+        )
 
         add(JSeparator(), "span, wrap")
 
@@ -70,19 +72,21 @@ public class RegexFilterPanel(
         regexTextField.toolTipText = "The regular expression to match."
         regexTextField.placeholderText = "Regular expression"
         regexTextField.addActionListener { regexTextField.transferFocus() }
-        regexTextField.document.addDocumentListener(object : DocumentListener {
-            override fun insertUpdate(e: DocumentEvent) {
-                regexUpdated()
-            }
+        regexTextField.document.addDocumentListener(
+            object : DocumentListener {
+                override fun insertUpdate(e: DocumentEvent) {
+                    regexUpdated()
+                }
 
-            override fun removeUpdate(e: DocumentEvent) {
-                regexUpdated()
-            }
+                override fun removeUpdate(e: DocumentEvent) {
+                    regexUpdated()
+                }
 
-            override fun changedUpdate(e: DocumentEvent) {
-                regexUpdated()
-            }
-        })
+                override fun changedUpdate(e: DocumentEvent) {
+                    regexUpdated()
+                }
+            },
+        )
 
         // Add undo/redo support to the text field.
         val undoManager = UndoManager()
@@ -106,52 +110,59 @@ public class RegexFilterPanel(
     }
 
     private fun installNameEditor(label: FlatLabel) {
-        label.addMouseListener(object : MouseAdapter() {
+        label.addMouseListener(
+            object : MouseAdapter() {
+                override fun mouseClicked(e: MouseEvent) {
+                    if (e.clickCount == 2) {
+                        val editor = FlatTextField()
+                        editor.text = label.text
+                        editor.placeholderText = label.text
+                        editor.border = null
+                        // do not let it grow over the parent
+                        editor.selectAll()
 
-            override fun mouseClicked(e: MouseEvent) {
-                if (e.clickCount == 2) {
-                    val editor = FlatTextField()
-                    editor.text = label.text
-                    editor.placeholderText = label.text
-                    editor.border = null
-                    // do not let it grow over the parent
-                    editor.selectAll()
+                        remove(label)
+                        add(editor, 0)
 
-                    remove(label)
-                    add(editor, 0)
+                        revalidate()
+                        repaint()
 
-                    revalidate()
-                    repaint()
-
-                    editor.addActionListener {
-                        if (editor.text.isNotBlank()) {
-                            label.text = editor.text
-                        }
-                        swapEditorWithLabel(editor, label)
-                    }
-                    editor.addFocusListener(object : FocusAdapter() {
-                        override fun focusLost(e: FocusEvent) {
+                        editor.addActionListener {
+                            if (editor.text.isNotBlank()) {
+                                label.text = editor.text
+                            }
                             swapEditorWithLabel(editor, label)
                         }
-                    })
-                    editor.requestFocusInWindow()
+                        editor.addFocusListener(
+                            object : FocusAdapter() {
+                                override fun focusLost(e: FocusEvent) {
+                                    swapEditorWithLabel(editor, label)
+                                }
+                            },
+                        )
+                        editor.requestFocusInWindow()
+                    }
                 }
-            }
-        })
+            },
+        )
     }
 
     private fun saveFilter() {
         val oldRegexFilter = currentFilter
-        val newRegexFilter = RegexFilter(
-            protName = protNameLabel.text,
-            regex = if (validateRegex(regexTextField.text)) Regex(regexTextField.text) else oldRegexFilter.regex,
-            perLine = perLineCheckbox.isSelected
-        )
+        val newRegexFilter =
+            RegexFilter(
+                protName = protNameLabel.text,
+                regex = if (validateRegex(regexTextField.text)) Regex(regexTextField.text) else oldRegexFilter.regex,
+                perLine = perLineCheckbox.isSelected,
+            )
         currentFilter = newRegexFilter
         filterSet.replaceRegexFilter(oldRegexFilter, newRegexFilter)
     }
 
-    private fun swapEditorWithLabel(editor: JTextField, label: JLabel) {
+    private fun swapEditorWithLabel(
+        editor: JTextField,
+        label: JLabel,
+    ) {
         // Sync the label text with the editor text.
         label.text = editor.text
         saveFilter()
@@ -185,7 +196,9 @@ public class RegexFilterPanel(
         }
     }
 
-    private class UndoRedoKeyListener(private val undoManager: UndoManager) : KeyAdapter() {
+    private class UndoRedoKeyListener(
+        private val undoManager: UndoManager,
+    ) : KeyAdapter() {
         override fun keyPressed(e: KeyEvent) {
             if (e.isControlDown) {
                 when {

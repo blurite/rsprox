@@ -205,8 +205,9 @@ public class SessionPanel(
                         }
                     } catch (e: Exception) {
                         logger.error(e) {
-                            "Unable to launch $type client (initialize git submodules, gradle refresh)"
+                            "Unable to launch $type client"
                         }
+                        return@submit
                     }
                 }
             logger.info { "$type client started in $time" }

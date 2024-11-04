@@ -47,16 +47,21 @@ import net.rsprox.proxy.config.registerConnection
 import net.rsprox.proxy.connection.ClientTypeDictionary
 import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.downloader.JagexNativeClientDownloader
+import net.rsprox.proxy.exceptions.MissingLibraryException
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.futures.asCompletableFuture
 import net.rsprox.proxy.http.GamePackProvider
 import net.rsprox.proxy.huffman.HuffmanProvider
-import net.rsprox.proxy.plugin.PluginLoader
+import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
 import net.rsprox.proxy.runelite.RuneliteLauncher
 import net.rsprox.proxy.settings.DefaultSettingSetStore
-import net.rsprox.proxy.util.*
+import net.rsprox.proxy.util.ClientType
+import net.rsprox.proxy.util.ConnectionInfo
+import net.rsprox.proxy.util.OperatingSystem
+import net.rsprox.proxy.util.ProgressCallback
+import net.rsprox.proxy.util.getOperatingSystem
 import net.rsprox.proxy.worlds.DynamicWorldListProvider
 import net.rsprox.proxy.worlds.World
 import net.rsprox.proxy.worlds.WorldListProvider
@@ -75,10 +80,17 @@ import java.net.URL
 import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
-import java.util.*
+import java.util.Properties
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
-import kotlin.io.path.*
+import kotlin.io.path.Path
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.copyTo
+import kotlin.io.path.exists
+import kotlin.io.path.extension
+import kotlin.io.path.nameWithoutExtension
+import kotlin.io.path.notExists
+import kotlin.io.path.writeBytes
 import kotlin.properties.Delegates
 import kotlin.streams.toList
 import kotlin.system.exitProcess
@@ -87,7 +99,7 @@ import kotlin.system.exitProcess
 public class ProxyService(
     private val allocator: ByteBufAllocator,
 ) {
-    private val pluginLoader: PluginLoader = PluginLoader()
+    private val decoderLoader: DecoderLoader = DecoderLoader()
     private lateinit var bootstrapFactory: BootstrapFactory
     private lateinit var serverBootstrap: ServerBootstrap
     private lateinit var httpServerBootstrap: ServerBootstrap
@@ -514,6 +526,8 @@ public class ProxyService(
                 path = null,
                 port = port,
                 character,
+                operatingSystem,
+                ClientType.RuneLite,
             )
             logger.debug { "Waiting for client to connect to the server socket..." }
             gamePackProvider.prefetch()
@@ -554,7 +568,15 @@ public class ProxyService(
             OperatingSystem.WINDOWS -> {
                 val directory = path.parent.toFile()
                 val absolutePath = path.absolutePathString()
-                createProcess(listOf(absolutePath), directory, path, port, character)
+                createProcess(
+                    listOf(absolutePath),
+                    directory,
+                    path,
+                    port,
+                    character,
+                    operatingSystem,
+                    ClientType.Native,
+                )
             }
 
             OperatingSystem.MAC -> {
@@ -562,14 +584,30 @@ public class ProxyService(
                 // We need to however execute the /.rsprox/clients/osclient.app "file"
                 val rootDirection = path.parent.parent.parent
                 val absolutePath = "${File.separator}${rootDirection.absolutePathString()}"
-                createProcess(listOf("open", absolutePath), null, path, port, character)
+                createProcess(
+                    listOf("open", absolutePath),
+                    null,
+                    path,
+                    port,
+                    character,
+                    operatingSystem,
+                    ClientType.Native,
+                )
             }
 
             OperatingSystem.UNIX -> {
                 try {
                     val directory = path.parent.toFile()
                     val absolutePath = path.absolutePathString()
-                    createProcess(listOf("wine", absolutePath), directory, path, port, character)
+                    createProcess(
+                        listOf("wine", absolutePath),
+                        directory,
+                        path,
+                        port,
+                        character,
+                        operatingSystem,
+                        ClientType.Native,
+                    )
                 } catch (e: IOException) {
                     throw RuntimeException("wine is required to run the enhanced client on unix", e)
                 }
@@ -585,6 +623,8 @@ public class ProxyService(
         path: Path?,
         port: Int,
         character: JagexCharacter?,
+        operatingSystem: OperatingSystem,
+        clientType: ClientType,
     ) {
         logger.debug { "Attempting to create process $command" }
         val builder =
@@ -623,11 +663,30 @@ public class ProxyService(
             )
         }
         val process = builder.start()
-        if (process.isAlive) {
-            if (path != null) logger.debug { "Successfully launched $path" }
-            processes[port] = process.children().toList() + process.toHandle()
-        } else {
-            if (path != null) logger.warn { "Unable to successfully launch $path" }
+        // Wait for up to half a second for the process to launch, after which we can determine if it's still alive
+        process.waitFor(500, TimeUnit.MILLISECONDS)
+        // If the process encountered an error during the launching (e.g. exe couldn't be launched), the failure
+        // case will be hit here. The 500 millisecond wait time is a requirement to hit it, otherwise it'll still
+        // be alive by the time it hits that.
+        if (!process.isAlive) {
+            if (operatingSystem == OperatingSystem.WINDOWS && clientType == ClientType.Native) {
+                checkVisualCPlusPlusRedistributable()
+            }
+            throw IllegalStateException("Unable to launch process: $path, error code: ${process.waitFor()}")
+        }
+        if (path != null) logger.debug { "Successfully launched $path" }
+        processes[port] = process.children().toList() + process.toHandle()
+    }
+
+    private fun checkVisualCPlusPlusRedistributable() {
+        val rootPath = Path(System.getenv("SYSTEMROOT") ?: return)
+        val vcomp140 = rootPath.resolve("System32").resolve("vcomp140.dll")
+        if (vcomp140.notExists()) {
+            throw MissingLibraryException(
+                "VCOMP140.dll is missing. " +
+                    "Install Visual C++ Redistributable to obtain the necessary libraries via " +
+                    "https://www.microsoft.com/en-ca/download/details.aspx?id=48145",
+            )
         }
     }
 
@@ -735,7 +794,7 @@ public class ProxyService(
             factory.createServerBootStrap(
                 worldListProvider,
                 rsa,
-                pluginLoader,
+                decoderLoader,
                 properties.getProperty(BINARY_WRITE_INTERVAL_SECONDS),
                 connections,
                 filterSetStore,
