@@ -5,6 +5,7 @@ plugins {
 }
 
 dependencies {
+    implementation(projects.gui.splashScreen)
     implementation(libs.bundles.flatlaf)
     implementation(libs.mig.layout)
     implementation(projects.proxy)

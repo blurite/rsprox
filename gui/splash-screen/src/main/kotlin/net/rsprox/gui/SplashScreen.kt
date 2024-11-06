@@ -1,4 +1,4 @@
-package net.rsprox.gui.splash
+package net.rsprox.gui
 
 import com.github.michaelbull.logging.InlineLogger
 import java.awt.Color
@@ -18,7 +18,6 @@ import javax.swing.Timer
 import javax.swing.UIManager
 import javax.swing.border.EmptyBorder
 import javax.swing.plaf.basic.BasicProgressBarUI
-import kotlin.concurrent.Volatile
 
 public class SplashScreen private constructor() :
     JFrame(),
@@ -143,7 +142,7 @@ public class SplashScreen private constructor() :
 
             public fun stop() {
                 SwingUtilities.invokeLater {
-                    val instance = this.instance ?: return@invokeLater
+                    val instance = instance ?: return@invokeLater
                     instance.timer.stop()
                     // The CLOSE_ALL_WINDOWS quit strategy on MacOS dispatches WINDOW_CLOSING events to each frame
                     // from Window.getWindows. However, getWindows uses weak refs and relies on gc to remove windows
@@ -152,7 +151,7 @@ public class SplashScreen private constructor() :
                     // to DO_NOTHING_ON_CLOSE prior to disposing to prevent this.
                     instance.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE)
                     instance.dispose()
-                    this.instance = null
+                    Companion.instance = null
                 }
             }
 
@@ -183,7 +182,7 @@ public class SplashScreen private constructor() :
                 subActionText: String,
                 progressText: String? = null,
             ) {
-                val instance = this.instance ?: return println("Instance is null")
+                val instance = instance ?: return println("Instance is null")
                 instance.overallProgress = overallProgress
                 if (actionText != null) {
                     instance.actionText = actionText

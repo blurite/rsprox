@@ -2,6 +2,7 @@ package net.rsprox.launcher
 
 import com.github.michaelbull.logging.InlineLogger
 import com.google.gson.Gson
+import net.rsprox.gui.SplashScreen
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.ByteArrayInputStream
@@ -26,9 +27,9 @@ public fun main() {
     val launcher = Launcher()
 
     val builder =
-            ProcessBuilder()
-                .inheritIO()
-                .command(launcher.getLaunchArgs())
+        ProcessBuilder()
+            .inheritIO()
+            .command(launcher.getLaunchArgs())
 
     SplashScreen.stop()
     builder.start()
@@ -51,7 +52,7 @@ public data class Bootstrap(
     val proxy: Proxy,
 )
 
-public class Launcher() {
+public class Launcher {
     private val bootstrap = getBootstrap()
 
     init {
@@ -85,14 +86,15 @@ public class Launcher() {
         logger.info { "Downloading proxy-tool artifacts" }
         for (artifact in bootstrap.artifacts) {
             val dest = artifactRepo.resolve(artifact.name)
-            val hash = try {
-                hash(dest.toFile())
-            } catch (_: FileNotFoundException) {
-                null
-            } catch (_: IOException) {
-                dest.toFile().delete()
-                null
-            }
+            val hash =
+                try {
+                    hash(dest.toFile())
+                } catch (_: FileNotFoundException) {
+                    null
+                } catch (_: IOException) {
+                    dest.toFile().delete()
+                    null
+                }
             if (artifact.hash == hash) {
                 logger.debug { "Hash for ${artifact.name} up to date" }
                 continue
@@ -100,18 +102,20 @@ public class Launcher() {
             logger.info { "Downloading artifact ${artifact.name} hash=${artifact.hash}" }
 
             Files.newOutputStream(dest).use { out ->
-                val request = Request
-                    .Builder()
-                    .url(artifact.path)
-                    .get()
-                    .build()
-                val artifactBytes = httpClient.newCall(request).execute().use { response ->
-                    val body = response.body?.bytes() ?: error("Artifact request was null")
-                    if (!response.isSuccessful) {
-                        error("Failed to retrieve artifact: $body")
+                val request =
+                    Request
+                        .Builder()
+                        .url(artifact.path)
+                        .get()
+                        .build()
+                val artifactBytes =
+                    httpClient.newCall(request).execute().use { response ->
+                        val body = response.body?.bytes() ?: error("Artifact request was null")
+                        if (!response.isSuccessful) {
+                            error("Failed to retrieve artifact: $body")
+                        }
+                        body
                     }
-                    body
-                }
                 out.write(artifactBytes)
             }
 
@@ -154,40 +158,45 @@ public class Launcher() {
 
         private fun getBootstrap(): Bootstrap {
             SplashScreen.stage(0.1, "Preparing", "Downloading bootstrap")
-            val bootstrapRequest = Request
-                .Builder()
-                .url(BOOTSTRAP_URL)
-                .get()
-                .build()
-            val bootstrapBytes = httpClient.newCall(bootstrapRequest).execute().use { response ->
-                val body = response.body?.bytes() ?: error("Bootstrap request was null")
-                if (!response.isSuccessful) {
-                    logger.error { "Failed to retrieve bootstrap: $body" }
-                    return@use null
+            val bootstrapRequest =
+                Request
+                    .Builder()
+                    .url(BOOTSTRAP_URL)
+                    .get()
+                    .build()
+            val bootstrapBytes =
+                httpClient.newCall(bootstrapRequest).execute().use { response ->
+                    val body = response.body?.bytes() ?: error("Bootstrap request was null")
+                    if (!response.isSuccessful) {
+                        logger.error { "Failed to retrieve bootstrap: $body" }
+                        return@use null
+                    }
+                    body
                 }
-                body
-            }
 
-            val signatureRequest = Request
-                .Builder()
-                .url(BOOTSTRAP_SIG_URL)
-                .get()
-                .build()
-            val signatureBytes = httpClient.newCall(signatureRequest).execute().use { response ->
-                val body = response.body?.bytes() ?: error("Bootstrap signature request was null")
-                if (!response.isSuccessful) {
-                    logger.error { "Failed to retrieve bootstrap signature: $body" }
-                    return@use null
+            val signatureRequest =
+                Request
+                    .Builder()
+                    .url(BOOTSTRAP_SIG_URL)
+                    .get()
+                    .build()
+            val signatureBytes =
+                httpClient.newCall(signatureRequest).execute().use { response ->
+                    val body = response.body?.bytes() ?: error("Bootstrap signature request was null")
+                    if (!response.isSuccessful) {
+                        logger.error { "Failed to retrieve bootstrap signature: $body" }
+                        return@use null
+                    }
+                    body
                 }
-                body
-            }
 
             SplashScreen.stage(0.15, "Preparing", "Verifying bootstrap")
 
-            val sig = Signature.getInstance("SHA256withRSA").apply {
-                initVerify(getCertificate())
-                update(bootstrapBytes)
-            }
+            val sig =
+                Signature.getInstance("SHA256withRSA").apply {
+                    initVerify(getCertificate())
+                    update(bootstrapBytes)
+                }
 
             if (!sig.verify(signatureBytes)) {
                 throw RuntimeException("Failed to validate bootstrap")
@@ -201,5 +210,4 @@ public class Launcher() {
             return factory.generateCertificate(Launcher::class.java.getResourceAsStream("rsprox.crt"))
         }
     }
-
 }

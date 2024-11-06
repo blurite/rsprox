@@ -5,6 +5,7 @@ plugins {
 }
 
 dependencies {
+    implementation(projects.gui.splashScreen)
     implementation(platform(rootProject.libs.log4j.bom))
     implementation(rootProject.libs.bundles.log4j)
     implementation(libs.inline.logger)
