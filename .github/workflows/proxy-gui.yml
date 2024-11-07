@@ -1,4 +1,4 @@
-name: Gradle Test
+name: Proxy GUI
 
 on:
   workflow_dispatch:
