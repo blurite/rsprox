@@ -57,7 +57,7 @@ public class Launcher {
 
     init {
         logger.info { "Initialising RSProx launcher ${bootstrap.proxy.version}" }
-        SplashScreen.stage(0.20, "Preparing", "Creating directories")
+        SplashScreen.stage(0.30, "Preparing", "Creating directories")
         Files.createDirectories(artifactRepo)
     }
 
@@ -82,8 +82,11 @@ public class Launcher {
     }
 
     private fun download() {
-        SplashScreen.stage(0.4, "Downloading", "Downloading artifacts")
+        val downloadStartProgress = 0.50
+        SplashScreen.stage(downloadStartProgress, "Downloading", "Downloading artifacts")
         logger.info { "Downloading proxy-tool artifacts" }
+
+        val toDownload = mutableListOf<Artifact>()
         for (artifact in bootstrap.artifacts) {
             val dest = artifactRepo.resolve(artifact.name)
             val hash =
@@ -99,7 +102,15 @@ public class Launcher {
                 logger.debug { "Hash for ${artifact.name} up to date" }
                 continue
             }
+            toDownload += artifact
+        }
+
+        val totalDownloadSize = toDownload.sumOf { it.size }
+        var progress = downloadStartProgress
+        for (artifact in toDownload) {
+            val dest = artifactRepo.resolve(artifact.name)
             logger.info { "Downloading artifact ${artifact.name} hash=${artifact.hash}" }
+            SplashScreen.stage(progress, "Downloading", "Downloading ${artifact.name}")
 
             Files.newOutputStream(dest).use { out ->
                 val request =
@@ -123,6 +134,9 @@ public class Launcher {
             if (artifact.hash != newHash) {
                 error("Unable to verify resource ${artifact.name} - expected ${artifact.hash}, got $newHash")
             }
+
+            val toAdd = artifact.size.toDouble() / totalDownloadSize.toDouble()
+            progress += toAdd * (1 - downloadStartProgress)
         }
     }
 
@@ -134,7 +148,7 @@ public class Launcher {
     }
 
     private fun clean() {
-        SplashScreen.stage(0.30, "Downloading", "Cleaning up old artifacts")
+        SplashScreen.stage(0.40, "Downloading", "Cleaning up old artifacts")
         val existingFiles = artifactRepo.toFile().listFiles() ?: return
         logger.debug { "Cleaning up old artifacts" }
         val artifactNames = bootstrap.artifacts.map { it.name }.toSet()
@@ -157,7 +171,7 @@ public class Launcher {
         private val gson = Gson()
 
         private fun getBootstrap(): Bootstrap {
-            SplashScreen.stage(0.1, "Preparing", "Downloading bootstrap")
+            SplashScreen.stage(0.10, "Preparing", "Downloading bootstrap")
             val bootstrapRequest =
                 Request
                     .Builder()
@@ -190,7 +204,7 @@ public class Launcher {
                     body
                 }
 
-            SplashScreen.stage(0.15, "Preparing", "Verifying bootstrap")
+            SplashScreen.stage(0.20, "Preparing", "Verifying bootstrap")
 
             val sig =
                 Signature.getInstance("SHA256withRSA").apply {
