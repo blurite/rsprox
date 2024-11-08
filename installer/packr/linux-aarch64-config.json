@@ -1,8 +1,8 @@
 {
   "classPath": [
-    "RuneLite.jar"
+    "rsprox-launcher.jar"
   ],
-  "mainClass": "net.runelite.launcher.Launcher",
+  "mainClass": "net.rsprox.launcher.LauncherKt",
   "vmArgs": [
     "-Xmx768m",
     "-Xss2m",

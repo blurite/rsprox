@@ -5,7 +5,7 @@ set -e
 cmake -S liblauncher -B liblauncher/buildaarch64 -A ARM64
 cmake --build liblauncher/buildaarch64 --config Release
 
-pushd native
+pushd installer/native
 cmake -B build-aarch64 -A ARM64
 cmake --build build-aarch64 --config Release
 popd
@@ -81,15 +81,15 @@ jlink \
   --add-modules jdk.xml.dom \
   --add-modules jdk.zipfs
 
-cp native/build-aarch64/src/Release/RuneLite.exe build/win-aarch64/
-cp target/RuneLite.jar build/win-aarch64/
+cp native/build-aarch64/src/Release/RSProx.exe build/win-aarch64/
+cp target/rsprox-launcher.jar build/win-aarch64/
 cp packr/win-aarch64-config.json build/win-aarch64/config.json
 cp liblauncher/buildaarch64/Release/launcher_aarch64.dll build/win-aarch64/
 
-echo RuneLite.exe aarch64 sha256sum
-sha256sum build/win-aarch64/RuneLite.exe
+echo RSProx.exe aarch64 sha256sum
+sha256sum build/win-aarch64/RSProx.exe
 
-dumpbin //HEADERS build/win-aarch64/RuneLite.exe
+dumpbin //HEADERS build/win-aarch64/RSProx.exe
 
 # We use the filtered iss file
-iscc target/filtered-resources/runeliteaarch64.iss
+iscc target/filtered-resources/rsproxaarch64.iss

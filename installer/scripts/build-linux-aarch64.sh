@@ -2,7 +2,7 @@
 
 set -e
 
-pushd native
+pushd installer/native
 cmake -DCMAKE_TOOLCHAIN_FILE=arm64-linux-gcc.cmake -B build-aarch64 .
 cmake --build build-aarch64 --config Release
 popd
@@ -25,13 +25,13 @@ echo "$LINUX_AARCH64_CHKSUM linux_aarch64_jre.tar.gz" | sha256sum -c
 # Note: Host umask may have checked out this directory with g/o permissions blank
 chmod -R u=rwX,go=rX appimage
 # ...ditto for the build process
-chmod 644 target/RuneLite.jar
+chmod 644 target/rsprox-launcher.jar
 
-cp native/build-aarch64/src/RuneLite build/linux-aarch64/
-cp target/RuneLite.jar build/linux-aarch64/
+cp native/build-aarch64/src/RSProx build/linux-aarch64/
+cp target/rsprox-launcher.jar build/linux-aarch64/
 cp packr/linux-aarch64-config.json build/linux-aarch64/config.json
-cp target/filtered-resources/runelite.desktop build/linux-aarch64/
-cp appimage/runelite.png build/linux-aarch64/
+cp target/filtered-resources/rsprox.desktop build/linux-aarch64/
+cp appimage/rsprox.png build/linux-aarch64/
 
 tar zxf linux_aarch64_jre.tar.gz
 mv jdk-$LINUX_AMD64_VERSION-jre build/linux-aarch64/jre
@@ -40,11 +40,11 @@ pushd build/linux-aarch64
 mkdir -p jre/lib/amd64/server/
 ln -s ../../server/libjvm.so jre/lib/amd64/server/ # packr looks for libjvm at this hardcoded path
 
-# Symlink AppRun -> RuneLite
-ln -s RuneLite AppRun
+# Symlink AppRun -> RSProx
+ln -s RSProx AppRun
 
-# Ensure RuneLite is executable to all users
-chmod 755 RuneLite
+# Ensure RSProx is executable to all users
+chmod 755 RSProx
 popd
 
 if ! [ -f appimagetool-x86_64.AppImage ] ; then
@@ -65,4 +65,4 @@ echo "d2624ce8cc2c64ef76ba986166ad67f07110cdbf85112ace4f91611bc634c96a  runtime-
 ARCH=arm_aarch64 ./appimagetool-x86_64.AppImage \
 	--runtime-file runtime-aarch64  \
 	build/linux-aarch64/ \
-	RuneLite-aarch64.AppImage
+	RSProx-aarch64.AppImage

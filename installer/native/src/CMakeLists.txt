@@ -5,10 +5,10 @@ else()
 endif()
 
 add_executable(packr WIN32 packr.cpp)
-set_target_properties(packr PROPERTIES OUTPUT_NAME "RuneLite")
+set_target_properties(packr PROPERTIES OUTPUT_NAME "RSProx")
 if(WIN32)
     set_target_properties(packr PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE")
-    target_sources(packr PUBLIC win32/packr_win32.cpp win32/runelite.manifest win32/runelite.rc)
+    target_sources(packr PUBLIC win32/packr_win32.cpp win32/rsprox.manifest win32/rsprox.rc)
     set_property(TARGET packr PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded") # multi-threaded statically-linked runtime
 elseif(APPLE)
     target_sources(packr PUBLIC macos/packr_macos.cpp)

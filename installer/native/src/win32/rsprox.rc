@@ -1,6 +1,6 @@
 #include "winres.h"
 
-RUNELITE_ICON ICON runelite.ico
+RUNELITE_ICON ICON rsprox.ico
 
 1 VERSIONINFO
 FILEFLAGS       0
@@ -11,9 +11,9 @@ BEGIN
     BEGIN
         BLOCK "040904B0"
         BEGIN
-            VALUE "FileDescription",  "RuneLite"
-            VALUE "OriginalFilename", "RuneLite.exe"
-            VALUE "ProductName",      "RuneLite Launcher"
+            VALUE "FileDescription",  "RSProx"
+            VALUE "OriginalFilename", "RSProx.exe"
+            VALUE "ProductName",      "RSProx Launcher"
         END
     END
 

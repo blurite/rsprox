@@ -2,7 +2,7 @@
 Name=${project.build.finalName}
 Comment=${project.description}
 Exec=${project.build.finalName}
-Icon=runelite
+Icon=rsprox
 Terminal=false
 Type=Application
 Categories=Game;
