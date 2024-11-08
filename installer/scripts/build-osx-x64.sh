@@ -23,11 +23,11 @@ build() {
 
     mkdir -p $APPBASE/Contents/{MacOS,Resources}
 
-    cp native/build-x64/src/RSProx $APPBASE/Contents/MacOS/
-    cp target/rsprox-launcher.jar $APPBASE/Contents/Resources/
-    cp packr/macos-x64-config.json $APPBASE/Contents/Resources/config.json
-    cp target/filtered-resources/Info.plist $APPBASE/Contents/
-    cp osx/rsprox.icns $APPBASE/Contents/Resources/icons.icns
+    cp installer/native/build-x64/src/RSProx $APPBASE/Contents/MacOS/
+    cp rsprox-launcher.jar $APPBASE/Contents/Resources/
+    cp installer/packr/macos-x64-config.json $APPBASE/Contents/Resources/config.json
+    cp installer/osx/Info.plist $APPBASE/Contents/
+    cp installer/osx/rsprox.icns $APPBASE/Contents/Resources/icons.icns
 
     tar zxf mac64_jre.tar.gz
     mkdir $APPBASE/Contents/Resources/jre
@@ -43,7 +43,7 @@ build() {
 
 dmg() {
     SIGNING_IDENTITY="Developer ID Application"
-    codesign -f -s "${SIGNING_IDENTITY}" --entitlements osx/signing.entitlements --options runtime $APPBASE || true
+    codesign -f -s "${SIGNING_IDENTITY}" --entitlements installer/osx/signing.entitlements --options runtime $APPBASE || true
 
     # create-dmg exits with an error code due to no code signing, but is still okay
     # note we use Adam-/create-dmg as upstream does not support UDBZ

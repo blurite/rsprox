@@ -2,8 +2,8 @@
 
 set -e
 
-cmake -S liblauncher -B liblauncher/buildaarch64 -A ARM64
-cmake --build liblauncher/buildaarch64 --config Release
+cmake -S liblauncher -B installer/liblauncher/buildaarch64 -A ARM64
+cmake --build installer/liblauncher/buildaarch64 --config Release
 
 pushd installer/native
 cmake -B build-aarch64 -A ARM64
@@ -81,10 +81,10 @@ jlink \
   --add-modules jdk.xml.dom \
   --add-modules jdk.zipfs
 
-cp native/build-aarch64/src/Release/RSProx.exe build/win-aarch64/
-cp target/rsprox-launcher.jar build/win-aarch64/
-cp packr/win-aarch64-config.json build/win-aarch64/config.json
-cp liblauncher/buildaarch64/Release/launcher_aarch64.dll build/win-aarch64/
+cp installer/native/build-aarch64/src/Release/RSProx.exe build/win-aarch64/
+cp rsprox-launcher.jar build/win-aarch64/
+cp installer/packr/win-aarch64-config.json build/win-aarch64/config.json
+cp installer/liblauncher/buildaarch64/Release/launcher_aarch64.dll build/win-aarch64/
 
 echo RSProx.exe aarch64 sha256sum
 sha256sum build/win-aarch64/RSProx.exe
@@ -92,4 +92,4 @@ sha256sum build/win-aarch64/RSProx.exe
 dumpbin //HEADERS build/win-aarch64/RSProx.exe
 
 # We use the filtered iss file
-iscc target/filtered-resources/rsproxaarch64.iss
+iscc installer/innosetup/rsproxaarch64.iss

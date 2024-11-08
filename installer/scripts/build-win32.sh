@@ -2,8 +2,8 @@
 
 set -e
 
-cmake -S liblauncher -B liblauncher/build32 -A Win32
-cmake --build liblauncher/build32 --config Release
+cmake -S liblauncher -B installer/liblauncher/build32 -A Win32
+cmake --build installer/liblauncher/build32 --config Release
 
 pushd installer/native
 cmake -B build-x86 -A Win32
@@ -21,10 +21,10 @@ fi
 
 echo "$WIN32_CHKSUM win32_jre.zip" | sha256sum -c
 
-cp native/build-x86/src/Release/RSProx.exe build/win-x86/
-cp target/rsprox-launcher.jar build/win-x86/
-cp packr/win-x86-config.json build/win-x86/config.json
-cp liblauncher/build32/Release/launcher_x86.dll build/win-x86/
+cp installer/native/build-x86/src/Release/RSProx.exe build/win-x86/
+cp rsprox-launcher.jar build/win-x86/
+cp installer/packr/win-x86-config.json build/win-x86/config.json
+cp installer/liblauncher/build32/Release/launcher_x86.dll build/win-x86/
 
 unzip win32_jre.zip
 mv jdk-$WIN32_VERSION-jre build/win-x86/jre
@@ -35,4 +35,4 @@ sha256sum build/win-x86/RSProx.exe
 dumpbin //HEADERS build/win-x86/RSProx.exe
 
 # We use the filtered iss file
-iscc target/filtered-resources/rsprox32.iss
+iscc installer/innosetup/rsprox32.iss
