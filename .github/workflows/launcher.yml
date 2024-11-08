@@ -84,13 +84,13 @@ jobs:
           nmake
       - name: x64 installer
         shell: bash
-        run: ./installer/scripts/build-win64.sh
+        run: ./installer/build-win64.sh
       - name: x86 installer
         shell: bash
-        run: ./installer/scripts/build-win32.sh
+        run: ./installer/build-win32.sh
       - name: AArch64 installer
         shell: bash
-        run: ./installer/scripts/build-win-aarch64.sh
+        run: ./installer/build-win-aarch64.sh
       - uses: actions/upload-artifact@v4
         with:
           name: windows
@@ -113,9 +113,9 @@ jobs:
         with:
           name: jar
       - name: linux-x64
-        run: ./installer/scripts/build-linux-x86_64.sh
+        run: ./installer/build-linux-x86_64.sh
       - name: linux-aarch64
-        run: ./installer/scripts/build-linux-aarch64.sh
+        run: ./installer/build-linux-aarch64.sh
       - uses: actions/upload-artifact@v4
         with:
           name: linux
@@ -148,9 +148,9 @@ jobs:
           chmod +x create-dmg
       - run: echo create-dmg >> $GITHUB_PATH
       - name: macos-x64
-        run: ./installer/scripts/build-osx-x64.sh --build --dmg
+        run: ./installer/build-osx-x64.sh --build --dmg
       - name: macos-aarch64
-        run: ./installer/scripts/build-osx-aarch64.sh --build --dmg
+        run: ./installer/build-osx-aarch64.sh --build --dmg
       # tar app to keep permissions correct
       - name: tar app
         run: tar -cf app.tar build/macos-x64/RSProx.app build/macos-aarch64/RSProx.app build-osx-x64.sh build-osx-aarch64.sh osx/signing.entitlements
