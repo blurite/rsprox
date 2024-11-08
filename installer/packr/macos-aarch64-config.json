@@ -1,0 +1,13 @@
+{
+  "classPath": [
+    "RuneLite.jar"
+  ],
+  "mainClass": "net.runelite.launcher.Launcher",
+  "vmArgs": [
+    "-Xmx768m",
+    "-Xss2m",
+    "-XX:CompileThreshold=1500",
+    "--add-opens=java.desktop/com.apple.eawt=ALL-UNNAMED",
+    "--add-opens=java.desktop/sun.awt=ALL-UNNAMED"
+  ]
+}

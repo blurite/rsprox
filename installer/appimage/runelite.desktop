@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=${project.build.finalName}
+Comment=${project.description}
+Exec=${project.build.finalName}
+Icon=runelite
+Terminal=false
+Type=Application
+Categories=Game;

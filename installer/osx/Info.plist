@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleExecutable</key>
+  <string>${project.build.finalName}</string>
+  <key>CFBundleIdentifier</key>
+  <string>${project.groupId}.${project.artifactId}</string>
+  <key>CFBundleName</key>
+  <string>${project.build.finalName}</string>
+  <key>CFBundleIconFile</key>
+  <string>icons.icns</string>
+  <key>CFBundleShortVersionString</key>
+  <string>${project.version}</string>
+  <key>CFBundleInfoDictionaryVersion</key>
+  <string>6.0</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>IFMajorVersion</key>
+  <integer>0</integer>
+  <key>IFMinorVersion</key>
+  <integer>1</integer>
+  <key>NSHighResolutionCapable</key>
+  <true/>
+  <key>NSSupportsAutomaticGraphicsSwitching</key>
+  <true/>
+  <key>NSRequiresAquaSystemAppearance</key>
+  <false/>
+  <key>LSApplicationCategoryType</key>
+  <string>public.app-category.games</string>
+  <key>LSEnvironment</key>
+  <dict>
+    <key>PATH</key>
+    <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+  <key>LSRequiresNativeExecution</key>
+  <true/>
+</dict>
+</plist>

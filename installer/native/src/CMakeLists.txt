@@ -1,0 +1,22 @@
+if(MSVC)
+    add_compile_options(/W4)
+else()
+    add_compile_options(-Wall)
+endif()
+
+add_executable(packr WIN32 packr.cpp)
+set_target_properties(packr PROPERTIES OUTPUT_NAME "RuneLite")
+if(WIN32)
+    set_target_properties(packr PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE")
+    target_sources(packr PUBLIC win32/packr_win32.cpp win32/runelite.manifest win32/runelite.rc)
+    set_property(TARGET packr PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded") # multi-threaded statically-linked runtime
+elseif(APPLE)
+    target_sources(packr PUBLIC macos/packr_macos.cpp)
+
+    find_library(CORE_FOUNDATION CoreFoundation)
+    target_link_libraries(packr ${CORE_FOUNDATION})
+else()
+    target_sources(packr PUBLIC linux/packr_linux.cpp)
+    target_link_libraries(packr dl pthread Threads::Threads)
+endif()
+target_link_libraries(packr dropt)

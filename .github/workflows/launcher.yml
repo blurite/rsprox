@@ -1,0 +1,169 @@
+name: Launcher
+
+on:
+  workflow_dispatch:
+
+jobs:
+  jar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', '**/settings.gradle') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Build launcher
+        run: ./gradlew launcher:shadowJar
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: jar
+          path: launcher/build/libs/rsprox-launcher.jar
+
+  windows:
+    runs-on: windows-2022
+    needs: jar
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+      - uses: actions/download-artifact@v4
+        with:
+          name: jar
+      - run: choco install innosetup --version 6.3.3
+      - uses: ilammy/msvc-dev-cmd@v1 # for nmake
+        with:
+          arch: x64
+      - name: build detours x64
+        shell: cmd
+        run: |
+          cd detours/src
+          nmake
+      - uses: ilammy/msvc-dev-cmd@v1 # for nmake
+        with:
+          arch: x86
+      - name: clone detours
+        run: |
+          git clone --depth 1 https://github.com/microsoft/Detours detours
+          pushd detours
+          git fetch --depth=1 origin 66d6f2d34aba564d373083621cacf66ec51199b2
+          git checkout 66d6f2d34aba564d373083621cacf66ec51199b2
+          popd
+      - name: build detours x86
+        shell: cmd
+        run: |
+          cd detours/src
+          nmake
+      - uses: ilammy/msvc-dev-cmd@v1 # for nmake
+        with:
+          arch: amd64_arm64
+      - name: build detours aarch64
+        shell: cmd
+        run: |
+          cd detours/src
+          nmake
+      - name: x64 installer
+        shell: bash
+        run: ./installer/scripts/build-win64.sh
+      - name: x86 installer
+        shell: bash
+        run: ./installer/scripts/build-win32.sh
+      - name: AArch64 installer
+        shell: bash
+        run: ./installer/scripts/build-win-aarch64.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: |
+            RSProxSetup.exe
+            RSProxSetup32.exe
+            RSProxSetupAArch64.exe
+          if-no-files-found: error
+
+  linux:
+    runs-on: ubuntu-20.04
+    needs: jar
+    steps:
+      - run: sudo apt update
+      - run: sudo apt install -y gcc-9-aarch64-linux-gnu g++-9-aarch64-linux-gnu
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+      - uses: actions/download-artifact@v4
+        with:
+          name: jar
+      - name: linux-x64
+        run: ./installer/scripts/build-linux-x86_64.sh
+      - name: linux-aarch64
+        run: ./installer/scripts/build-linux-aarch64.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: |
+            RSProx.AppImage
+            RSProx-aarch64.AppImage
+          if-no-files-found: error
+
+  macos:
+    runs-on: macos-12
+    needs: jar
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+      - uses: actions/download-artifact@v4
+        with:
+          name: jar
+      - name: clone create-dmg
+        run: git clone https://github.com/runelite/create-dmg -b runelite-1.0
+      - name: build create-dmg
+        run: |
+          set -e
+          cd create-dmg
+          npm install
+          ln -s cli.js create-dmg
+          chmod +x create-dmg
+      - run: echo create-dmg >> $GITHUB_PATH
+      - name: macos-x64
+        run: ./installer/scripts/build-osx-x64.sh --build --dmg
+      - name: macos-aarch64
+        run: ./installer/scripts/build-osx-aarch64.sh --build --dmg
+      # tar app to keep permissions correct
+      - name: tar app
+        run: tar -cf app.tar build/macos-x64/RSProx.app build/macos-aarch64/RSProx.app build-osx-x64.sh build-osx-aarch64.sh osx/signing.entitlements
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: |
+            RSProx-x64.dmg
+            RSProx-aarch64.dmg
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-app
+          path: |
+            app.tar
+          if-no-files-found: error
