@@ -10,7 +10,7 @@ build() {
     cmake --build build-x64 --config Release
     popd
 
-    source .jdk-versions.sh
+    source installer/scripts/.jdk-versions.sh
 
     rm -rf build/macos-x64
     mkdir -p build/macos-x64

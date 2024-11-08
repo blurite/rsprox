@@ -10,7 +10,7 @@ cmake -B build-x64 -A x64
 cmake --build build-x64 --config Release
 popd
 
-source .jdk-versions.sh
+source installer/scripts/.jdk-versions.sh
 
 rm -rf build/win-x64
 mkdir -p build/win-x64

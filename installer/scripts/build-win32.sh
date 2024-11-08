@@ -10,7 +10,7 @@ cmake -B build-x86 -A Win32
 cmake --build build-x86 --config Release
 popd
 
-source .jdk-versions.sh
+source installer/scripts/.jdk-versions.sh
 
 rm -rf build/win-x86
 mkdir -p build/win-x86

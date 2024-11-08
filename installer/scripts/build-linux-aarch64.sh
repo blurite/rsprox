@@ -11,7 +11,7 @@ APPIMAGE_VERSION="13"
 
 umask 022
 
-source .jdk-versions.sh
+source installer/scripts/.jdk-versions.sh
 
 rm -rf build/linux-aarch64
 mkdir -p build/linux-aarch64

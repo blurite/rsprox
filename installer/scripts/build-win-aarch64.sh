@@ -10,7 +10,7 @@ cmake -B build-aarch64 -A ARM64
 cmake --build build-aarch64 --config Release
 popd
 
-source .jdk-versions.sh
+source installer/scripts/.jdk-versions.sh
 
 rm -rf build/win-aarch64
 mkdir -p build/win-aarch64

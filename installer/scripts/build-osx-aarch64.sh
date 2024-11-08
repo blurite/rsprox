@@ -10,7 +10,7 @@ build() {
     cmake --build build-aarch64 --config Release
     popd
 
-    source .jdk-versions.sh
+    source installer/scripts/.jdk-versions.sh
 
     rm -rf build/macos-aarch64
     mkdir -p build/macos-aarch64
