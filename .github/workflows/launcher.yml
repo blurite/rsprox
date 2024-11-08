@@ -60,7 +60,7 @@ jobs:
           popd
       - name: clone dropt
         run: |
-          cd native
+          cd installer/native
           git clone --depth 1 https://github.com/jamesderlin/dropt dropt
           pushd dropt
           git fetch --depth=1 origin cdf507c7a2d5051da88985ff02be8b0b9c6935a8
@@ -68,7 +68,7 @@ jobs:
           popd
       - name: clone sajson
         run: |
-          cd native
+          cd installer/native
           git clone --depth 1 https://github.com/chadaustin/sajson sajson
           pushd sajson
           git fetch --depth=1 origin 791799ad90f7179f132ea2f53b90ef98f1d399a2
@@ -130,7 +130,7 @@ jobs:
           name: jar
       - name: clone dropt
         run: |
-          cd native
+          cd installer/native
           git clone --depth 1 https://github.com/jamesderlin/dropt dropt
           pushd dropt
           git fetch --depth=1 origin cdf507c7a2d5051da88985ff02be8b0b9c6935a8
@@ -138,7 +138,7 @@ jobs:
           popd
       - name: clone sajson
         run: |
-          cd native
+          cd installer/native
           git clone --depth 1 https://github.com/chadaustin/sajson sajson
           pushd sajson
           git fetch --depth=1 origin 791799ad90f7179f132ea2f53b90ef98f1d399a2
@@ -171,7 +171,7 @@ jobs:
           name: jar
       - name: clone dropt
         run: |
-          cd native
+          cd installer/native
           git clone --depth 1 https://github.com/jamesderlin/dropt dropt
           pushd dropt
           git fetch --depth=1 origin cdf507c7a2d5051da88985ff02be8b0b9c6935a8
@@ -179,7 +179,7 @@ jobs:
           popd
       - name: clone sajson
         run: |
-          cd native
+          cd installer/native
           git clone --depth 1 https://github.com/chadaustin/sajson sajson
           pushd sajson
           git fetch --depth=1 origin 791799ad90f7179f132ea2f53b90ef98f1d399a2
