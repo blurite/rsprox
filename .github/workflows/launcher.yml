@@ -114,9 +114,9 @@ jobs:
         with:
           name: windows
           path: |
-            RSProxSetup.exe
-            RSProxSetup32.exe
-            RSProxSetupAArch64.exe
+            installer/innosetup/RSProxSetup.exe
+            installer/innosetup/RSProxSetup32.exe
+            installer/innosetup/RSProxSetupAArch64.exe
           if-no-files-found: error
 
   linux:
