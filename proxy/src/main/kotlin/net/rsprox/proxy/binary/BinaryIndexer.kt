@@ -15,7 +15,6 @@ import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.indexing.IndexedKey
 import net.rsprox.shared.indexing.IndexedType
 import net.rsprox.shared.indexing.MultiMapBinaryIndex
-import net.rsprox.shared.indexing.NopBinaryIndex
 import net.rsprox.transcriber.indexer.IndexerTranscriberProvider
 import net.rsprox.transcriber.state.SessionState
 import net.rsprox.transcriber.state.SessionTracker
@@ -60,7 +59,7 @@ public class BinaryIndexer {
                 NopSessionMonitor,
                 filters,
                 settings,
-                NopBinaryIndex,
+                index,
                 sessionState,
             )
         val sessionTracker =
