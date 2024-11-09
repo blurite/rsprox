@@ -6,10 +6,7 @@ import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.settings.DefaultSettingSetStore
 import net.rsprox.shared.indexing.IndexedType
 import net.rsprox.web.ApplicationProperties
-import net.rsprox.web.db.IntRepository
-import net.rsprox.web.db.StringRepository
-import net.rsprox.web.db.Submission
-import net.rsprox.web.db.SubmissionRepository
+import net.rsprox.web.db.*
 import net.rsprox.web.util.checksum
 import net.rsprox.web.util.toBase64
 import org.springframework.data.repository.findByIdOrNull
@@ -50,14 +47,25 @@ public class ApiController(
     public fun search(
         @RequestParam("type") type: Int,
         @RequestParam("query") query: String
-    ): Set<Submission> {
-        val submissions: Set<Submission> = when (type) {
+    ): Set<SubmissionWithCount> {
+        val submissions: Set<SubmissionWithCount> = when (type) {
             IndexedType.MESSAGE_GAME.id, IndexedType.TEXT.id -> {
-                stringRepo.findByValueContainingIgnoreCase(query).map { it.submission }.toSet()
+                stringRepo.findByValueContainingIgnoreCase(query)
+                    .groupBy { it.submission }
+                    .map { (submission, matches) ->
+                        SubmissionWithCount(SubmissionResult(submission), matches.size)
+                    }
+                    .sortedByDescending { it.matches }
+                    .toSet()
             }
-
             else -> {
-                intRepo.findByValue(query.toInt()).map { it.submission }.toSet()
+                intRepo.findByValue(query.toInt())
+                    .groupBy { it.submission }
+                    .map { (submission, matches) ->
+                        SubmissionWithCount(SubmissionResult(submission), matches.size)
+                    }
+                    .sortedByDescending { it.matches }
+                    .toSet()
             }
         }
         return submissions
@@ -166,6 +174,8 @@ public class ApiController(
         FAILURE_TO_SAVE,
         DUPLICATE,
     }
+
+    public data class SubmissionWithCount(val submission: SubmissionResult, val matches: Int)
 
     private companion object {
         private const val CONTENT_TYPE = "application/octet-stream"

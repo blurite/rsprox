@@ -13,29 +13,78 @@
 <body>
 <div th:replace="~{fragments/header :: header}"></div>
 
-<div class="py-5 flex flex-col items-center justify-center">
-	<h1 class="text-2xl font-bold text-center mb-4">Database</h1>
-	<p class="text-center mb-4">Search our centralized database of binaries. For example, say you were looking for a
-		binary with Zulrah included, you'd set the type to NPC and search for 2042 (Zulrah's ID).</p>
+<div class="mx-auto p-6 bg-base-200">
+	<h1 class="text-3xl font-extrabold text-center mb-6 text-primary">Database</h1>
+	<p class="text-center mb-6">
+		Search our centralized database of binaries. For example, if you were looking for a binary with Zulrah included,
+		set the type to NPC and search for 2042 (Zulrah's ID).
+	</p>
 
-	<form id="searchForm" class="flex flex-col items-center">
-		<select class="select select-bordered w-full max-w-xs mb-2" id="typeDropdown">
-			<option value="">Select Type</option>
-			<option th:each="type : ${types}" th:text="${type}" th:value="${type.getId()}"></option>
-		</select>
-		<input type="text" id="queryField" class="input input-bordered w-full max-w-xs mb-2" placeholder="Search..."/>
-		<button class="btn btn-primary" id="searchButton" type="submit">Search</button>
+	<div class="bg-base-100 rounded-lg py-2 px-4 text-center mb-6">
+		<span class="text-lg font-medium">Total Submissions:</span>
+		<span class="text-lg font-bold text-primary" th:text="${totalSubmissions}">0</span>
+	</div>
+
+	<form id="searchForm" class="flex flex-col items-center space-y-4">
+		<div class="w-full max-w-xs">
+			<label for="typeDropdown" class="block text-sm font-medium mb-1">Type</label>
+			<select
+				class="select select-bordered w-full max-w-xs mb-2 bg-base-100 focus:border-primary focus:ring-2 focus:ring-primary"
+				id="typeDropdown">
+				<option value="">Select Type</option>
+				<option th:each="type : ${types}" th:text="${type}" th:value="${type.getId()}"></option>
+			</select>
+		</div>
+
+		<div class="w-full max-w-xs">
+			<label for="queryField" class="block text-sm font-medium mb-1">Search Query</label>
+			<input type="text" id="queryField"
+				   class="input input-bordered w-full bg-base-100 focus:border-primary focus:ring-2 focus:ring-primary"
+				   placeholder="Search..."/>
+		</div>
+
+		<button class="btn btn-primary w-full max-w-xs py-2 mt-4" id="searchButton" type="submit">Search</button>
 	</form>
 
-	<div id="results" class="py-5 flex flex-col w-3/4">
-		<div id="resultMessage" role="alert" class="alert alert-primary text-center hidden"></div>
-		<table id="resultsTable" class="table hidden">
+	<div id="recent" class="py-5 overflow-x-auto w-full lg:w-10/12 mx-auto">
+		<h2 class="text-2xl font-semibold text-center text-primary mb-4">Recent Submissions</h2>
+		<table class="table w-full">
 			<thead>
 			<tr>
 				<th>Date</th>
 				<th>Revision</th>
 				<th>World Activity</th>
 				<th>Size</th>
+				<th>Download</th>
+			</tr>
+			</thead>
+			<tbody>
+			<tr th:each="submission : ${submissions}">
+				<td th:text="${submission.readableDate()}">2024-11-09</td>
+				<td th:text="${submission.revision}">1.0.1</td>
+				<td th:text="${submission.worldActivity}">Active</td>
+				<td th:text="${submission.readableSize()}">15MB</td>
+				<td>
+					<a th:href="@{/download/{id}(id=${submission.id})}" class="text-primary underline" target="_blank">
+						Download
+					</a>
+				</td>
+			</tr>
+			</tbody>
+		</table>
+	</div>
+
+	<div id="results" class="py-5 overflow-x-auto w-full lg:w-10/12 mx-auto hidden">
+		<h2 class="text-2xl font-semibold text-center text-primary mb-4">Search Results</h2>
+		<div id="resultMessage" role="alert" class="alert alert-primary text-center hidden"></div>
+		<table id="resultsTable" class="table w-full">
+			<thead>
+			<tr>
+				<th>Date</th>
+				<th>Revision</th>
+				<th>World Activity</th>
+				<th>Size</th>
+				<th class="text-center">Index Matches</th>
 				<th>Download</th>
 			</tr>
 			</thead>
@@ -47,17 +96,6 @@
 </div>
 
 <script>
-	const bucketUrl = "[[${bucketUrl}]]";
-
-	function bytesToHumanReadable(bytes) {
-		if (bytes === 0) return '0 Bytes';
-
-		const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-		const i = Math.floor(Math.log(bytes) / Math.log(1024));
-
-		return (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + sizes[i];
-	}
-
 	$(document).ready(function () {
 		$('#searchForm').on('submit', function (e) {
 			e.preventDefault();
@@ -74,6 +112,9 @@
 				url: apiEndpoint,
 				method: 'GET',
 				success: function (data) {
+					$("#recent").hide();
+					$("#results").show();
+
 					if (data.length === 0) {
 						$("#resultsTable").hide();
 						$("#resultMessage").html("No results found.");
@@ -85,20 +126,15 @@
 					$('#resultsTableBody').empty();
 
 					data.forEach(function (item) {
-						const date = new Date(item.createdAt[0], item.createdAt[1] - 1, item.createdAt[2]);
-						const formattedDate = date.toLocaleDateString('en-US', {
-							year: 'numeric',
-							month: 'long',
-							day: 'numeric'
-						});
-						const link = bucketUrl + item.id + ".zip";
+						const link = '/download/' + item.submission.id;
 						$('#resultsTableBody').append(`
                             <tr>
-                                <td>${formattedDate}</td>
-                                <td>${item.revision}</td>
-                                <td>${item.worldActivity}</td>
-                                <td>${bytesToHumanReadable(item.fileSize)}</td>
-                                <td><a class="btn btn-accent btn-sm" href="${link}">Download</a></td>
+                                <td>${item.submission.date}</td>
+                                <td>${item.submission.revision}</td>
+                                <td>${item.submission.worldActivity}</td>
+                                <td>${item.submission.fileSize}</td>
+                                <td class="text-center">${item.matches}</td>
+                                <td><a class="text-primary underline" target="_blank" href="${link}">Download</a></td>
                             </tr>
                         `);
 						$('#resultsTable').show();
