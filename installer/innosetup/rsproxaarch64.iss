@@ -25,11 +25,11 @@ OutputBaseFilename=RSProxSetupAArch64
 Name: DesktopIcon; Description: "Create a &desktop icon";
 
 [Files]
-Source: "build\win-aarch64\RSProx.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "build\win-aarch64\rsprox-launcher.jar"; DestDir: "{app}"
-Source: "build\win-aarch64\launcher_aarch64.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "build\win-aarch64\config.json"; DestDir: "{app}"
-Source: "build\win-aarch64\jre\*"; DestDir: "{app}\jre"; Flags: recursesubdirs
+Source: "..\build\win-aarch64\RSProx.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\win-aarch64\rsprox-launcher.jar"; DestDir: "{app}"
+Source: "..\build\win-aarch64\launcher_aarch64.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\win-aarch64\config.json"; DestDir: "{app}"
+Source: "..\build\win-aarch64\jre\*"; DestDir: "{app}\jre"; Flags: recursesubdirs
 
 [Icons]
 ; start menu

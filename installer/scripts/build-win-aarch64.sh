@@ -12,8 +12,8 @@ popd
 
 source installer/scripts/.jdk-versions.sh
 
-rm -rf build/win-aarch64
-mkdir -p build/win-aarch64
+rm -rf installer/build/win-aarch64
+mkdir -p installer/build/win-aarch64
 
 if ! [ -f win-aarch64_jre.zip ] ; then
     curl -Lo win-aarch64_jre.zip $WIN_AARCH64_LINK
@@ -27,7 +27,7 @@ jlink \
   --strip-debug \
   --no-header-files \
   --no-man-pages \
-  --output build/win-aarch64/jre \
+  --output installer/build/win-aarch64/jre \
   --module-path jdk-$WIN_AARCH64_VERSION/jmods \
   --add-modules java.base \
   --add-modules java.compiler \
@@ -81,15 +81,15 @@ jlink \
   --add-modules jdk.xml.dom \
   --add-modules jdk.zipfs
 
-cp installer/native/build-aarch64/src/Release/RSProx.exe build/win-aarch64/
-cp rsprox-launcher.jar build/win-aarch64/
-cp installer/packr/win-aarch64-config.json build/win-aarch64/config.json
-cp installer/liblauncher/buildaarch64/Release/launcher_aarch64.dll build/win-aarch64/
+cp installer/native/build-aarch64/src/Release/RSProx.exe installer/build/win-aarch64/
+cp rsprox-launcher.jar installer/build/win-aarch64/
+cp installer/packr/win-aarch64-config.json installer/build/win-aarch64/config.json
+cp installer/liblauncher/buildaarch64/Release/launcher_aarch64.dll installer/build/win-aarch64/
 
 echo RSProx.exe aarch64 sha256sum
-sha256sum build/win-aarch64/RSProx.exe
+sha256sum installer/build/win-aarch64/RSProx.exe
 
-dumpbin //HEADERS build/win-aarch64/RSProx.exe
+dumpbin //HEADERS installer/build/win-aarch64/RSProx.exe
 
 # We use the filtered iss file
 iscc installer/innosetup/rsproxaarch64.iss
