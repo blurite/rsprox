@@ -51,7 +51,8 @@ public class SubmissionProcessor(
                 // TODO pass ByteArray rather than path
                 binaryIndexer.index(path)
             }.getOrNull()?.flatMap { (key, values) ->
-                    values.mapNotNull { (k, _) ->
+                values.flatMap { (k, count) ->
+                    List(count) {
                         when (k) {
                             is IndexedKey.StringKey -> StringIndex(
                                 type = key.id,
@@ -68,8 +69,9 @@ public class SubmissionProcessor(
                                 null
                             }
                         }
-                    }
-                }.orEmpty()
+                    }.filterNotNull()
+                }
+            }.orEmpty()
 
             if (indexes.isNotEmpty()) {
                 indexRepo.saveAll(indexes)
