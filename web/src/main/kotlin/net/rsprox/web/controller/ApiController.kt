@@ -19,6 +19,8 @@ import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
+import java.time.Instant
+import java.time.ZoneId
 
 @RestController
 public class ApiController(
@@ -117,6 +119,7 @@ public class ApiController(
         }
 
         val submission = Submission(
+            createdAt = Instant.ofEpochMilli(blob.header.timestamp).atZone(ZoneId.systemDefault()).toLocalDateTime(),
             delayed = delayed,
             accountHash = blob.header.accountHash.toBase64(),
             fileChecksum = checksum,
