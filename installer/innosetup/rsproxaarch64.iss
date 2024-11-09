@@ -11,25 +11,25 @@ ExtraDiskSpaceRequired=30000000
 ArchitecturesAllowed=arm64
 PrivilegesRequired=lowest
 
-WizardSmallImageFile=installer/innosetup/rsprox_small.bmp
-SetupIconFile=installer/innosetup/rsprox.ico
+WizardSmallImageFile=${basedir}/innosetup/rsprox_small.bmp
+SetupIconFile=${basedir}/innosetup/rsprox.ico
 UninstallDisplayIcon={app}\RSProx.exe
 
 Compression=lzma2
 SolidCompression=yes
 
-OutputDir=installer
+OutputDir=${basedir}
 OutputBaseFilename=RSProxSetupAArch64
 
 [Tasks]
 Name: DesktopIcon; Description: "Create a &desktop icon";
 
 [Files]
-Source: "installer\build\win-aarch64\RSProx.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "installer\build\win-aarch64\rsprox-launcher.jar"; DestDir: "{app}"
-Source: "installer\build\win-aarch64\launcher_aarch64.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "installer\build\win-aarch64\config.json"; DestDir: "{app}"
-Source: "installer\build\win-aarch64\jre\*"; DestDir: "{app}\jre"; Flags: recursesubdirs
+Source: "${basedir}\build\win-aarch64\RSProx.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "${basedir}\build\win-aarch64\rsprox-launcher.jar"; DestDir: "{app}"
+Source: "${basedir}\build\win-aarch64\launcher_aarch64.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "${basedir}\build\win-aarch64\config.json"; DestDir: "{app}"
+Source: "${basedir}\build\win-aarch64\jre\*"; DestDir: "{app}\jre"; Flags: recursesubdirs
 
 [Icons]
 ; start menu
