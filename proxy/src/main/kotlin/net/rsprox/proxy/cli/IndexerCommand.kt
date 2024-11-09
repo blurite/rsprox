@@ -19,7 +19,6 @@ import net.rsprox.proxy.util.NopSessionMonitor
 import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.indexing.MultiMapBinaryIndex
-import net.rsprox.shared.indexing.NopBinaryIndex
 import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.indexer.IndexerTranscriberProvider
 import net.rsprox.transcriber.state.SessionState
@@ -111,7 +110,7 @@ public class IndexerCommand : CliktCommand(name = "index") {
                 NopSessionMonitor,
                 filters,
                 settings,
-                NopBinaryIndex,
+                index,
                 sessionState,
             )
         val sessionTracker =
