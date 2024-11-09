@@ -11,25 +11,25 @@ ExtraDiskSpaceRequired=30000000
 ArchitecturesAllowed=x86 x64
 PrivilegesRequired=lowest
 
-WizardSmallImageFile=${basedir}/innosetup/rsprox_small.bmp
-SetupIconFile=${basedir}/innosetup/rsprox.ico
+WizardSmallImageFile=installer/innosetup/rsprox_small.bmp
+SetupIconFile=installer/innosetup/rsprox.ico
 UninstallDisplayIcon={app}\RSProx.exe
 
 Compression=lzma2
 SolidCompression=yes
 
-OutputDir=${basedir}
+OutputDir=installer
 OutputBaseFilename=RSProxSetup32
 
 [Tasks]
 Name: DesktopIcon; Description: "Create a &desktop icon";
 
 [Files]
-Source: "${basedir}\build\win-x86\RSProx.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "${basedir}\build\win-x86\rsprox-launcher.jar"; DestDir: "{app}"
-Source: "${basedir}\build\win-x86\launcher_x86.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "${basedir}\build\win-x86\config.json"; DestDir: "{app}"
-Source: "${basedir}\build\win-x86\jre\*"; DestDir: "{app}\jre"; Flags: recursesubdirs
+Source: "installer\build\win-x86\RSProx.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "installer\build\win-x86\rsprox-launcher.jar"; DestDir: "{app}"
+Source: "installer\build\win-x86\launcher_x86.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "installer\build\win-x86\config.json"; DestDir: "{app}"
+Source: "installer\build\win-x86\jre\*"; DestDir: "{app}\jre"; Flags: recursesubdirs
 
 [Icons]
 ; start menu
