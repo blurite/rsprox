@@ -55,7 +55,7 @@ jobs:
         run: |
           cd installer
           git clone --depth 1 https://github.com/microsoft/Detours detours
-          cd installer/detours
+          cd detours
           git fetch --depth=1 origin 66d6f2d34aba564d373083621cacf66ec51199b2
           git checkout 66d6f2d34aba564d373083621cacf66ec51199b2
       - name: clone dropt
