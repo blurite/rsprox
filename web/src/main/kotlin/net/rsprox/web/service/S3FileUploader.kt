@@ -34,7 +34,7 @@ public class S3FileUploader(
         val objectRequest = PutObjectRequest.builder()
             .bucket(props.s3.bucket)
             .key("${submission.id}.zip")
-            .tagging("public=true") // Makes the object public
+            //.tagging("public=true") // Makes the object public
             .build()
 
         log.trace { "Uploading to S3: ${submission.id}" }
