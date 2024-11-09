@@ -26,7 +26,7 @@ public class SubmissionProcessor(
         binaryIndexer.initialize()
     }
 
-    @Scheduled(fixedRate = 60_000)
+    @Scheduled(fixedRate = 300_000)
     public fun processSubmissions() {
         val instant = LocalDateTime.now()
         val list = repo.findByProcessed(false)
