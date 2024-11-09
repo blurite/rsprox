@@ -1,0 +1,42 @@
+services:
+    caddy:
+        image: caddy:latest
+        container_name: caddy
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - ./Caddyfile:/etc/caddy/Caddyfile
+            - caddy_data:/data
+            - caddy_config:/config
+        depends_on:
+            - rsprox
+    postgres:
+        image: postgres:17
+        container_name: postgres
+        environment:
+            - POSTGRES_USER=myuser
+            - POSTGRES_PASSWORD=mypassword
+            - POSTGRES_DB=rsprox
+        volumes:
+            - pgdata:/var/lib/postgresql/data
+    rsprox:
+        build: .
+        container_name: rsprox
+        environment:
+            - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/rsprox
+            - SPRING_DATASOURCE_USERNAME=myuser
+            - SPRING_DATASOURCE_PASSWORD=mypassword
+            - APP_UPLOADDIR=./dumps/:/dumps/
+            - APP_MAXFILESIZE=25MB
+            - APP_S3_REGION=
+            - APP_S3_ACCESSKEY=
+            - APP_S3_SECRETKEY=
+            - APP_S3_BUCKET=
+            - APP_S3_URL=
+        depends_on:
+            - postgres
+volumes:
+    caddy_data:
+    caddy_config:
+    pgdata:

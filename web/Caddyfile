@@ -1,0 +1,3 @@
+rsprox.net {
+	reverse_proxy rsprox:8080
+}
