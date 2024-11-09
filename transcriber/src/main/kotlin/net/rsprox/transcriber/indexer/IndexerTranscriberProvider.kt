@@ -21,10 +21,9 @@ public class IndexerTranscriberProvider : TranscriberProvider {
         binaryIndex: BinaryIndex,
         state: SessionState,
     ): TranscriberRunner {
-        val sessionState = SessionState(settings)
         return TranscriberPlugin(
             IndexerTranscriber(
-                sessionState,
+                state,
                 cacheProvider,
                 binaryIndex,
             ),
