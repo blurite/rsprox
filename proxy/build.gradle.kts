@@ -29,14 +29,20 @@ dependencies {
     implementation(projects.cache.cacheApi)
     implementation(projects.shared)
     implementation(libs.junixsocket)
+    implementation(libs.okhttp3)
+    implementation(libs.gson)
+    implementation(projects.protocol.osrs223)
+    implementation(projects.protocol.osrs224)
+    implementation(projects.protocol.osrs225)
+    implementation(projects.protocol.osrs226)
 }
 
 tasks.build.configure {
-    finalizedBy(*(buildPluginTaskDependencies() + buildSideTaskDependencies()).toTypedArray())
+    finalizedBy(buildPluginTaskDependencies().toTypedArray())
 }
 
 tasks.compileKotlin.configure {
-    finalizedBy(*(buildPluginTaskDependencies() + buildSideTaskDependencies()).toTypedArray())
+    finalizedBy(buildPluginTaskDependencies().toTypedArray())
 }
 
 fun buildPluginTaskDependencies(): List<String> {
@@ -52,10 +58,6 @@ fun buildPluginTaskDependencies(): List<String> {
                 task == ":transcriber:build"
         }
     return filteredTasks
-}
-
-fun buildSideTaskDependencies(): List<String> {
-    return listOf(":runelite-launcher:build")
 }
 
 fun buildSubprojectTree(projectName: String): List<String> {

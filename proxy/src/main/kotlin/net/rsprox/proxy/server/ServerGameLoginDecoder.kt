@@ -29,7 +29,7 @@ import net.rsprox.proxy.client.ClientRelayHandler
 import net.rsprox.proxy.config.CURRENT_REVISION
 import net.rsprox.proxy.config.LATEST_SUPPORTED_PLUGIN
 import net.rsprox.proxy.connection.ProxyConnectionContainer
-import net.rsprox.proxy.plugin.PluginLoader
+import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.server.prot.LoginServerProt
 import net.rsprox.proxy.util.UserUid
 import net.rsprox.proxy.worlds.WorldListProvider
@@ -41,7 +41,7 @@ public class ServerGameLoginDecoder(
     private val clientChannel: Channel,
     private val binaryWriteInterval: Int,
     private val worldListProvider: WorldListProvider,
-    private val pluginLoader: PluginLoader,
+    private val decoderLoader: DecoderLoader,
     private val connections: ProxyConnectionContainer,
     private val filters: PropertyFilterSetStore,
     private val settings: SettingSetStore,
@@ -268,7 +268,7 @@ public class ServerGameLoginDecoder(
             writeToClient {
                 pdata(payload.copy())
             }
-            val prot = pluginLoader.getPlugin(CURRENT_REVISION).gameServerProtProvider[0xFF]
+            val prot = decoderLoader.getDecoder(CURRENT_REVISION).gameServerProtProvider[0xFF]
             val packet =
                 ServerPacket(
                     prot,
@@ -281,7 +281,7 @@ public class ServerGameLoginDecoder(
             pipeline.replace<ServerGameLoginDecoder>(
                 ServerGenericDecoder(
                     serverChannel.getServerToClientStreamCipher(),
-                    pluginLoader.getPlugin(CURRENT_REVISION).gameServerProtProvider,
+                    decoderLoader.getDecoder(CURRENT_REVISION).gameServerProtProvider,
                 ),
             )
             pipeline.replace<ServerRelayHandler>(ServerGameHandler(clientChannel, worldListProvider))
@@ -325,7 +325,7 @@ public class ServerGameLoginDecoder(
             val blob = BinaryBlob(header, stream, binaryWriteInterval, sessionMonitor, filters, settings)
             @Suppress("KotlinConstantConditions")
             if (LATEST_SUPPORTED_PLUGIN >= CURRENT_REVISION) {
-                blob.hookLiveTranscriber(key, pluginLoader)
+                blob.hookLiveTranscriber(key, decoderLoader)
             }
             val serverChannel = ctx.channel()
             connections.addConnection(
@@ -354,7 +354,7 @@ public class ServerGameLoginDecoder(
             pipeline.replace<ServerGameLoginDecoder>(
                 ServerGenericDecoder(
                     serverChannel.getServerToClientStreamCipher(),
-                    pluginLoader.getPlugin(CURRENT_REVISION).gameServerProtProvider,
+                    decoderLoader.getDecoder(CURRENT_REVISION).gameServerProtProvider,
                 ),
             )
             pipeline.replace<ServerRelayHandler>(ServerGameHandler(clientChannel, worldListProvider))
@@ -367,7 +367,7 @@ public class ServerGameLoginDecoder(
         val clientPipeline = clientChannel.pipeline()
         clientPipeline.remove<ClientRelayHandler>()
         clientPipeline.addLast(
-            ClientGenericDecoder(cipher, pluginLoader.getPlugin(CURRENT_REVISION).gameClientProtProvider),
+            ClientGenericDecoder(cipher, decoderLoader.getDecoder(CURRENT_REVISION).gameClientProtProvider),
         )
         clientPipeline.addLast(ClientGameHandler(ctx.channel()))
     }

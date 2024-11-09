@@ -11,7 +11,7 @@ import net.rsprox.shared.StreamDirection
 
 public class DecodingSession(
     private val blob: BinaryBlob,
-    private val plugin: DecoderPlugin,
+    private val plugin: RevisionDecoder,
 ) {
     public fun sequence(): Sequence<DirectionalPacket> {
         val stream =

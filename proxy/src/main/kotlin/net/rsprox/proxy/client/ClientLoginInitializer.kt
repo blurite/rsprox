@@ -14,7 +14,7 @@ import net.rsprox.proxy.channel.setAutoRead
 import net.rsprox.proxy.client.prot.LoginClientProtProvider
 import net.rsprox.proxy.connection.ClientTypeDictionary
 import net.rsprox.proxy.connection.ProxyConnectionContainer
-import net.rsprox.proxy.plugin.PluginLoader
+import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.util.ChannelConnectionHandler
 import net.rsprox.proxy.worlds.LocalHostAddress
 import net.rsprox.proxy.worlds.WorldListProvider
@@ -28,7 +28,7 @@ public class ClientLoginInitializer(
     private val bootstrapFactory: BootstrapFactory,
     private val worldListProvider: WorldListProvider,
     private val rsa: RSAPrivateCrtKeyParameters,
-    private val pluginLoader: PluginLoader,
+    private val decoderLoader: DecoderLoader,
     private val binaryWriteInterval: Int,
     private val connections: ProxyConnectionContainer,
     private val filters: PropertyFilterSetStore,
@@ -74,7 +74,7 @@ public class ClientLoginInitializer(
                         rsa,
                         binaryWriteInterval,
                         worldListProvider,
-                        pluginLoader,
+                        decoderLoader,
                         connections,
                         filters,
                         settings,

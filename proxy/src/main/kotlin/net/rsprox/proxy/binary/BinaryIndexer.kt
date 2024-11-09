@@ -7,22 +7,26 @@ import net.rsprox.proxy.config.FILTERS_DIRECTORY
 import net.rsprox.proxy.config.SETTINGS_DIRECTORY
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.huffman.HuffmanProvider
+import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.plugin.DecodingSession
-import net.rsprox.proxy.plugin.PluginLoader
 import net.rsprox.proxy.settings.DefaultSettingSetStore
 import net.rsprox.proxy.util.NopSessionMonitor
 import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.indexing.IndexedKey
 import net.rsprox.shared.indexing.IndexedType
 import net.rsprox.shared.indexing.MultiMapBinaryIndex
-import net.rsprox.transcriber.BaseMessageConsumerContainer
+import net.rsprox.shared.indexing.NopBinaryIndex
+import net.rsprox.transcriber.indexer.IndexerTranscriberProvider
+import net.rsprox.transcriber.state.SessionState
+import net.rsprox.transcriber.state.SessionTracker
+import net.rsprox.transcriber.text.TextMessageConsumerContainer
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Locale
 
 @Suppress("DuplicatedCode")
 public class BinaryIndexer {
-    private val pluginLoader: PluginLoader = PluginLoader()
+    private val decoderLoader: DecoderLoader = DecoderLoader()
     private val statefulCacheProvider: StatefulCacheProvider = StatefulCacheProvider(HistoricCacheResolver())
 
     public fun initialize() {
@@ -40,14 +44,15 @@ public class BinaryIndexer {
                 binary.header.js5MasterIndex,
             ),
         )
-        pluginLoader.load("osrs", binary.header.revision, statefulCacheProvider)
-        val latestPlugin = pluginLoader.getPlugin(binary.header.revision)
-        val transcriberProvider = pluginLoader.getIndexerProvider(binary.header.revision)
+        decoderLoader.load(statefulCacheProvider)
+        val latestPlugin = decoderLoader.getDecoder(binary.header.revision)
+        val transcriberProvider = IndexerTranscriberProvider()
         val session = DecodingSession(binary, latestPlugin)
         val folder = binaryPath.parent.resolve("indexed")
         Files.createDirectories(folder)
-        val consumers = BaseMessageConsumerContainer(emptyList())
+        val consumers = TextMessageConsumerContainer(emptyList())
         val index = MultiMapBinaryIndex()
+        val sessionState = SessionState(settings)
         val runner =
             transcriberProvider.provide(
                 consumers,
@@ -55,17 +60,30 @@ public class BinaryIndexer {
                 NopSessionMonitor,
                 filters,
                 settings,
-                index,
+                NopBinaryIndex,
+                sessionState,
             )
-
+        val sessionTracker =
+            SessionTracker(
+                sessionState,
+                statefulCacheProvider.get(),
+                NopSessionMonitor,
+            )
+        val revision = binary.header.revision
         for ((direction, prot, packet) in session.sequence()) {
             try {
                 when (direction) {
                     StreamDirection.CLIENT_TO_SERVER -> {
-                        runner.onClientProt(prot, packet)
+                        sessionTracker.onClientPacket(packet, prot)
+                        sessionTracker.beforeTranscribe(packet)
+                        runner.onClientProt(prot, packet, revision)
+                        sessionTracker.afterTranscribe(packet)
                     }
                     StreamDirection.SERVER_TO_CLIENT -> {
-                        runner.onServerPacket(prot, packet)
+                        sessionTracker.onServerPacket(packet, prot)
+                        sessionTracker.beforeTranscribe(packet)
+                        runner.onServerPacket(prot, packet, revision)
+                        sessionTracker.afterTranscribe(packet)
                     }
                 }
             } catch (t: NotImplementedError) {

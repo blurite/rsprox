@@ -16,8 +16,9 @@ import net.rsprox.proxy.client.ClientLoginInitializer
 import net.rsprox.proxy.config.JavConfig
 import net.rsprox.proxy.config.ProxyProperties
 import net.rsprox.proxy.connection.ProxyConnectionContainer
+import net.rsprox.proxy.http.GamePackProvider
 import net.rsprox.proxy.http.HttpServerHandler
-import net.rsprox.proxy.plugin.PluginLoader
+import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.server.ServerConnectionInitializer
 import net.rsprox.proxy.worlds.WorldListProvider
 import net.rsprox.shared.filters.PropertyFilterSetStore
@@ -35,7 +36,7 @@ public class BootstrapFactory(
     public fun createServerBootStrap(
         worldListProvider: WorldListProvider,
         rsa: RSAPrivateCrtKeyParameters,
-        pluginLoader: PluginLoader,
+        decoderLoader: DecoderLoader,
         binaryWriteInterval: Int,
         connections: ProxyConnectionContainer,
         filters: PropertyFilterSetStore,
@@ -56,7 +57,7 @@ public class BootstrapFactory(
                     this,
                     worldListProvider,
                     rsa,
-                    pluginLoader,
+                    decoderLoader,
                     binaryWriteInterval,
                     connections,
                     filters,
@@ -81,6 +82,7 @@ public class BootstrapFactory(
     public fun createWorldListHttpServer(
         worldListProvider: WorldListProvider,
         javConfig: JavConfig,
+        gamePackProvider: GamePackProvider,
     ): ServerBootstrap {
         return ServerBootstrap()
             .group(group(PARENT_GROUP_THREADS), group(CHILD_GROUP_THREADS))
@@ -93,7 +95,7 @@ public class BootstrapFactory(
                         val pipeline = ch.pipeline()
                         pipeline.addLast(HttpRequestDecoder())
                         pipeline.addLast(HttpResponseEncoder())
-                        pipeline.addLast(HttpServerHandler(worldListProvider, javConfig, properties))
+                        pipeline.addLast(HttpServerHandler(worldListProvider, javConfig, properties, gamePackProvider))
                     }
                 },
             )

@@ -59,6 +59,12 @@ public class UnmodifiablePropertyFilterSet : PropertyFilterSet {
     override fun removeRegexFilter(regexFilter: RegexFilter) {
     }
 
+    override fun replaceRegexFilter(
+        oldRegexFilter: RegexFilter,
+        newRegexFilter: RegexFilter,
+    ) {
+    }
+
     override fun clearRegexFilters() {
     }
 }

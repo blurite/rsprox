@@ -30,7 +30,7 @@ public class OmitFilteredPropertyTreeFormatter(
             if (hasLabel) {
                 builder.appendLine()
                 builder.append(INDENTATION.repeat(indent))
-                builder.append('[').append(property.propertyName).append(']')
+                builder.append('[').append(property.propertyName.lowercase()).append(']')
             }
             val childIndent = if (hasLabel) (indent + 1) else indent
             if (property.children.isNotEmpty()) {

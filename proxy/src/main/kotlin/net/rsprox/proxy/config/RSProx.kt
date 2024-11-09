@@ -7,8 +7,6 @@ import kotlin.io.path.Path
 internal val CONFIGURATION_PATH: Path = Path(System.getProperty("user.home"), ".rsprox")
 public val BINARY_PATH: Path = CONFIGURATION_PATH.resolve("binary")
 internal val CLIENTS_DIRECTORY: Path = CONFIGURATION_PATH.resolve("clients")
-internal val PLUGINS_DIRECTORY: Path = CONFIGURATION_PATH.resolve("plugins")
-internal val TRANSCRIBERS_DIRECTORY: Path = CONFIGURATION_PATH.resolve("transcribers")
 internal val TEMP_CLIENTS_DIRECTORY: Path = CLIENTS_DIRECTORY.resolve("temp")
 internal val CACHES_DIRECTORY: Path = CONFIGURATION_PATH.resolve("caches")
 internal val FILTERS_DIRECTORY: Path = CONFIGURATION_PATH.resolve("filters")
@@ -18,12 +16,10 @@ internal val SIGN_KEY_DIRECTORY: Path = CONFIGURATION_PATH.resolve("signkey")
 internal val BINARY_CREDENTIALS_FOLDER: Path = CONFIGURATION_PATH.resolve("credentials")
 internal val BINARY_CREDENTIALS: Path = BINARY_CREDENTIALS_FOLDER.resolve("binary.credentials")
 internal val FAKE_CERTIFICATE_FILE: Path = SIGN_KEY_DIRECTORY.resolve("fake-cert.jks")
-internal val RUNELITE_LAUNCHER: Path =
-    CONFIGURATION_PATH
-        .resolve("runelite")
-        .resolve("runelite-launcher.jar")
-internal const val CURRENT_REVISION: Int = 224
-internal const val LATEST_SUPPORTED_PLUGIN: Int = 224
+internal val JAGEX_ACCOUNTS_FILE: Path = CONFIGURATION_PATH.resolve("jagex-accounts.properties")
+internal val RUNELITE_LAUNCHER_REPO_DIRECTORY: Path = CONFIGURATION_PATH.resolve("runelite-launcher")
+internal const val CURRENT_REVISION: Int = 226
+internal const val LATEST_SUPPORTED_PLUGIN: Int = 226
 
 /**
  * Http server port needs to be hard-coded as we modify it in a few RuneLite classes directly.
