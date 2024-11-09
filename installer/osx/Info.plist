@@ -3,15 +3,15 @@
 <plist version="1.0">
 <dict>
   <key>CFBundleExecutable</key>
-  <string>${project.build.finalName}</string>
+  <string>rsprox</string>
   <key>CFBundleIdentifier</key>
-  <string>${project.groupId}.${project.artifactId}</string>
+  <string>net.rsprox.launcher</string>
   <key>CFBundleName</key>
-  <string>${project.build.finalName}</string>
+  <string>rsprox</string>
   <key>CFBundleIconFile</key>
   <string>icons.icns</string>
   <key>CFBundleShortVersionString</key>
-  <string>${project.version}</string>
+  <string>1.0.0</string>
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>CFBundlePackageType</key>

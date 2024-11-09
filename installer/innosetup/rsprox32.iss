@@ -2,7 +2,7 @@
 AppName=RSProx Launcher
 AppPublisher=RSProx
 UninstallDisplayName=RSProx
-AppVersion=${project.version}
+AppVersion=1.0.0
 AppSupportURL=https://rsprox.net/
 DefaultDirName={localappdata}\RSProx
 

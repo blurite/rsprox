@@ -1,7 +1,7 @@
 [Desktop Entry]
-Name=${project.build.finalName}
-Comment=${project.description}
-Exec=${project.build.finalName}
+Name=rsprox
+Comment=Open source Old School RuneScape client.
+Exec=rsprox
 Icon=rsprox
 Terminal=false
 Type=Application

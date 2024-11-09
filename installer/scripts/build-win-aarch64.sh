@@ -2,7 +2,7 @@
 
 set -e
 
-cmake -S liblauncher -B installer/liblauncher/buildaarch64 -A ARM64
+cmake -S installer/liblauncher -B installer/liblauncher/buildaarch64 -A ARM64
 cmake --build installer/liblauncher/buildaarch64 --config Release
 
 pushd installer/native
