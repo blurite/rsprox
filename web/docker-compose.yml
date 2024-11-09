@@ -27,7 +27,7 @@ services:
             - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/rsprox
             - SPRING_DATASOURCE_USERNAME=myuser
             - SPRING_DATASOURCE_PASSWORD=mypassword
-            - APP_UPLOADDIR=./dumps/:/dumps/
+            - APP_UPLOADDIR=/uploads/
             - APP_MAXFILESIZE=25MB
             - APP_S3_REGION=
             - APP_S3_ACCESSKEY=
@@ -36,7 +36,10 @@ services:
             - APP_S3_URL=
         depends_on:
             - postgres
+        volumes:
+            - uploads:/uploads/
 volumes:
     caddy_data:
     caddy_config:
     pgdata:
+    uploads:
