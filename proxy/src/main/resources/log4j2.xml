@@ -8,10 +8,30 @@
 			[%thread]: %logger{1}.%M:%L - %msg%n"
 				disableAnsi="false"/>
 		</Console>
+		<RollingFile name="roll-by-time-and-size"
+					 fileName="${sys:user.home}/.rsprox/logs/all.log"
+					 filePattern="${sys:user.home}/.rsprox/logs/all-%d{dd-MM-yyyy-HH-mm}-%i.log"
+					 ignoreExceptions="false">
+			<PatternLayout>
+				<Pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread]: %logger{1}.%M:%L - %msg%n</Pattern>
+			</PatternLayout>
+			<Policies>
+				<OnStartupTriggeringPolicy />
+				<SizeBasedTriggeringPolicy size="100 KB" />
+				<TimeBasedTriggeringPolicy />
+			</Policies>
+			<DefaultRolloverStrategy>
+				<Delete basePath="${baseDir}" maxDepth="2">
+					<IfFileName glob="${sys:user.home}/.rsprox/logs/all-*.log" />
+					<IfLastModified age="20d" />
+				</Delete>
+			</DefaultRolloverStrategy>
+		</RollingFile>
 	</Appenders>
 	<Loggers>
 		<Root level="debug">
 			<AppenderRef level="all" ref="Console"/>
+			<AppenderRef level="all" ref="roll-by-time-and-size"/>
 		</Root>
 		<logger name="io.netty" level="info"/>
 		<Logger name="org.openrs2.compress" level="warn" additivity="false"/>
