@@ -82,6 +82,7 @@ import java.nio.file.LinkOption
 import java.nio.file.Path
 import java.util.Properties
 import java.util.concurrent.TimeUnit
+import java.util.stream.Collectors
 import kotlin.concurrent.thread
 import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
@@ -92,7 +93,6 @@ import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.notExists
 import kotlin.io.path.writeBytes
 import kotlin.properties.Delegates
-import kotlin.streams.toList
 import kotlin.system.exitProcess
 
 @Suppress("DuplicatedCode")
@@ -351,6 +351,7 @@ public class ProxyService(
                 }
             }
         }
+        killAliveProcesses()
     }
 
     private fun closeActiveChannel(channel: Channel) {
@@ -675,7 +676,7 @@ public class ProxyService(
             throw IllegalStateException("Unable to launch process: $path, error code: ${process.waitFor()}")
         }
         if (path != null) logger.debug { "Successfully launched $path" }
-        processes[port] = process.children().toList() + process.toHandle()
+        processes[port] = process.children().collect(Collectors.toList()) + process.toHandle()
     }
 
     private fun checkVisualCPlusPlusRedistributable() {
