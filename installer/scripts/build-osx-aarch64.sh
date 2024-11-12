@@ -47,7 +47,7 @@ dmg() {
 
     # create-dmg exits with an error code due to no code signing, but is still okay
     create-dmg $APPBASE . || true
-    mv RSProx*.dmg RSProx-aarch64.dmg
+    mv rsprox\ *.dmg RSProx-aarch64.dmg
 
     # dump for CI
     hdiutil imageinfo RSProx-aarch64.dmg

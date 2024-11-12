@@ -48,8 +48,7 @@ dmg() {
     # create-dmg exits with an error code due to no code signing, but is still okay
     # note we use Adam-/create-dmg as upstream does not support UDBZ
     create-dmg --format UDBZ $APPBASE . || true
-    ls -l
-    mv RSProx*.dmg RSProx-x64.dmg
+    mv rsprox\ *.dmg RSProx-x64.dmg
 
     # dump for CI
     hdiutil imageinfo RSProx-x64.dmg
