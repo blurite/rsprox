@@ -2,7 +2,7 @@
 
 set -e
 
-APPBASE="build/macos-aarch64/RSProx.app"
+APPBASE="installer/build/macos-aarch64/RSProx.app"
 
 build() {
     pushd installer/native
@@ -12,8 +12,8 @@ build() {
 
     source installer/scripts/.jdk-versions.sh
 
-    rm -rf build/macos-aarch64
-    mkdir -p build/macos-aarch64
+    rm -rf installer/build/macos-aarch64
+    mkdir -p installer/build/macos-aarch64
 
     if ! [ -f mac_aarch64_jre.tar.gz ] ; then
         curl -Lo mac_aarch64_jre.tar.gz $MAC_AARCH64_LINK

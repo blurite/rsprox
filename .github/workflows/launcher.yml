@@ -200,7 +200,7 @@ jobs:
         run: ./installer/scripts/build-osx-aarch64.sh --build --dmg
       # tar app to keep permissions correct
       - name: tar app
-        run: tar -cf app.tar build/macos-x64/RSProx.app build/macos-aarch64/RSProx.app build-osx-x64.sh build-osx-aarch64.sh osx/signing.entitlements
+        run: tar -cf app.tar installer/build/macos-x64/RSProx.app installer/build/macos-aarch64/RSProx.app installer/scripts/build-osx-x64.sh installer/scripts/build-osx-aarch64.sh installer/osx/signing.entitlements
       - uses: actions/upload-artifact@v4
         with:
           name: macos-dmg
