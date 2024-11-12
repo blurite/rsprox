@@ -351,6 +351,7 @@ public class ProxyService(
                 }
             }
         }
+        killAliveProcesses()
     }
 
     private fun closeActiveChannel(channel: Channel) {
