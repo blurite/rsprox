@@ -29,7 +29,7 @@ Source: "..\build\win-x86\RSProx.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\build\win-x86\rsprox-launcher.jar"; DestDir: "{app}"
 Source: "..\build\win-x86\launcher_x86.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\build\win-x86\config.json"; DestDir: "{app}"
-Source: "..\build\win-x86\jre\*"; DestDir: "{app}\jre"; Flags: recursesubdirs
+Source: "..\build\win-x86\jdk\*"; DestDir: "{app}\jdk"; Flags: recursesubdirs
 
 [Icons]
 ; start menu
@@ -44,7 +44,7 @@ Filename: "{app}\RSProx.exe"; Description: "&Open RSProx"; Flags: postinstall sk
 
 [InstallDelete]
 ; Delete the old jvm so it doesn't try to load old stuff with the new vm and crash
-Type: filesandordirs; Name: "{app}\jre"
+Type: filesandordirs; Name: "{app}\jdk"
 ; previous shortcut
 Type: files; Name: "{userprograms}\RSProx.lnk"
 

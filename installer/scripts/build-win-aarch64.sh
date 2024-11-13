@@ -15,19 +15,19 @@ source installer/scripts/.jdk-versions.sh
 rm -rf installer/build/win-aarch64
 mkdir -p installer/build/win-aarch64
 
-if ! [ -f win-aarch64_jre.zip ] ; then
-    curl -Lo win-aarch64_jre.zip $WIN_AARCH64_LINK
+if ! [ -f win-aarch64_jdk.zip ] ; then
+    curl -Lo win-aarch64_jdk.zip $WIN_AARCH64_LINK
 fi
 
-echo "$WIN_AARCH64_CHKSUM win-aarch64_jre.zip" | sha256sum -c
+echo "$WIN_AARCH64_CHKSUM win-aarch64_jdk.zip" | sha256sum -c
 
-unzip win-aarch64_jre.zip
+unzip win-aarch64_jdk.zip
 jlink \
   --compress 2 \
   --strip-debug \
   --no-header-files \
   --no-man-pages \
-  --output installer/build/win-aarch64/jre \
+  --output installer/build/win-aarch64/jdk \
   --module-path jdk-$WIN_AARCH64_VERSION/jmods \
   --add-modules java.base \
   --add-modules java.compiler \

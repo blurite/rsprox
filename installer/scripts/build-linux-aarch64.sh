@@ -16,11 +16,11 @@ source installer/scripts/.jdk-versions.sh
 rm -rf build/linux-aarch64
 mkdir -p build/linux-aarch64
 
-if ! [ -f linux_aarch64_jre.tar.gz ] ; then
-    curl -Lo linux_aarch64_jre.tar.gz $LINUX_AARCH64_LINK
+if ! [ -f linux_aarch64_jdk.tar.gz ] ; then
+    curl -Lo linux_aarch64_jdk.tar.gz $LINUX_AARCH64_LINK
 fi
 
-echo "$LINUX_AARCH64_CHKSUM linux_aarch64_jre.tar.gz" | sha256sum -c
+echo "$LINUX_AARCH64_CHKSUM linux_aarch64_jdk.tar.gz" | sha256sum -c
 
 # Note: Host umask may have checked out this directory with g/o permissions blank
 chmod -R u=rwX,go=rX installer/appimage
@@ -33,12 +33,12 @@ cp installer/packr/linux-aarch64-config.json build/linux-aarch64/config.json
 cp installer/appimage/rsprox.desktop build/linux-aarch64/
 cp installer/appimage/rsprox.png build/linux-aarch64/
 
-tar zxf linux_aarch64_jre.tar.gz
-mv jdk-$LINUX_AMD64_VERSION-jre build/linux-aarch64/jre
+tar zxf linux_aarch64_jdk.tar.gz
+mv jdk-$LINUX_AMD64_VERSION-jdk build/linux-aarch64/jdk
 
 pushd build/linux-aarch64
-mkdir -p jre/lib/amd64/server/
-ln -s ../../server/libjvm.so jre/lib/amd64/server/ # packr looks for libjvm at this hardcoded path
+mkdir -p jdk/lib/amd64/server/
+ln -s ../../server/libjvm.so jdk/lib/amd64/server/ # packr looks for libjvm at this hardcoded path
 
 # Symlink AppRun -> RSProx
 ln -s RSProx AppRun

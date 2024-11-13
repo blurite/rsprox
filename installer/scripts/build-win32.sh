@@ -15,19 +15,19 @@ source installer/scripts/.jdk-versions.sh
 rm -rf installer/build/win-x86
 mkdir -p installer/build/win-x86
 
-if ! [ -f win32_jre.zip ] ; then
-    curl -Lo win32_jre.zip $WIN32_LINK
+if ! [ -f win32_jdk.zip ] ; then
+    curl -Lo win32_jdk.zip $WIN32_LINK
 fi
 
-echo "$WIN32_CHKSUM win32_jre.zip" | sha256sum -c
+echo "$WIN32_CHKSUM win32_jdk.zip" | sha256sum -c
 
 cp installer/native/build-x86/src/Release/RSProx.exe installer/build/win-x86/
 cp rsprox-launcher.jar installer/build/win-x86/
 cp installer/packr/win-x86-config.json installer/build/win-x86/config.json
 cp installer/liblauncher/build32/Release/launcher_x86.dll installer/build/win-x86/
 
-unzip win32_jre.zip
-mv jdk-$WIN32_VERSION-jre installer/build/win-x86/jre
+unzip win32_jdk.zip
+mv jdk-$WIN32_VERSION-jdk installer/build/win-x86/jdk
 
 echo RSProx.exe 32bit sha256sum
 sha256sum installer/build/win-x86/RSProx.exe

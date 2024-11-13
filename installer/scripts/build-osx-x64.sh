@@ -15,11 +15,11 @@ build() {
     rm -rf installer/build/macos-x64
     mkdir -p installer/build/macos-x64
 
-    if ! [ -f mac64_jre.tar.gz ] ; then
-        curl -Lo mac64_jre.tar.gz $MAC_AMD64_LINK
+    if ! [ -f mac64_jdk.tar.gz ] ; then
+        curl -Lo mac64_jdk.tar.gz $MAC_AMD64_LINK
     fi
 
-    echo "$MAC_AMD64_CHKSUM  mac64_jre.tar.gz" | shasum -c
+    echo "$MAC_AMD64_CHKSUM  mac64_jdk.tar.gz" | shasum -c
 
     mkdir -p $APPBASE/Contents/{MacOS,Resources}
 
@@ -29,9 +29,9 @@ build() {
     cp installer/osx/Info.plist $APPBASE/Contents/
     cp installer/osx/rsprox.icns $APPBASE/Contents/Resources/icons.icns
 
-    tar zxf mac64_jre.tar.gz
-    mkdir $APPBASE/Contents/Resources/jre
-    mv jdk-$MAC_AMD64_VERSION-jre/Contents/Home/* $APPBASE/Contents/Resources/jre
+    tar zxf mac64_jdk.tar.gz
+    mkdir $APPBASE/Contents/Resources/jdk
+    mv jdk-$MAC_AMD64_VERSION-jdk/Contents/Home/* $APPBASE/Contents/Resources/jdk
 
     echo Setting world execute permissions on RSProx
     pushd $APPBASE

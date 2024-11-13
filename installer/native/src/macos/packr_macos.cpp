@@ -122,11 +122,11 @@ bool loadJNIFunctions(GetDefaultJavaVMInitArgs* getDefaultJavaVMInitArgs, Create
         cwd.append(buf).append("/");
     }
 
-    string path = cwd + "jre/lib/libjli.dylib";
+    string path = cwd + "jdk/lib/libjli.dylib";
 
     void* handle = dlopen(path.c_str(), RTLD_LAZY);
     if (handle == NULL) {
-        path = cwd + "jre/lib/jli/libjli.dylib";
+        path = cwd + "jdk/lib/jli/libjli.dylib";
         handle = dlopen(path.c_str(), RTLD_LAZY);
         if (handle == NULL) {
             cerr << dlerror() << endl;
