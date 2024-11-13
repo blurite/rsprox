@@ -64,7 +64,6 @@ build() {
 			--add-modules jdk.charsets \
 			--add-modules jdk.crypto.cryptoki \
 			--add-modules jdk.crypto.ec \
-			--add-modules jdk.crypto.mscapi \
 			--add-modules jdk.dynalink \
 			--add-modules jdk.httpserver \
 			--add-modules jdk.internal.ed \
@@ -84,7 +83,8 @@ build() {
 			--add-modules jdk.scripting.nashorn \
 			--add-modules jdk.scripting.nashorn.shell \
 			--add-modules jdk.sctp \
-			--add-modules jdk.security \
+			--add-modules jdk.security.auth \
+			--add-modules jdk.security.jgss \
 			--add-modules jdk.unsupported \
 			--add-modules jdk.xml.dom \
 			--add-modules jdk.zipfs

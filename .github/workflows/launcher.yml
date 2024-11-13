@@ -131,6 +131,11 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: jar
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: 11
+          distribution: temurin
       - name: clone dropt
         run: |
           cd installer/native
@@ -170,6 +175,11 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: jar
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
       - name: clone dropt
         run: |
           cd installer/native
