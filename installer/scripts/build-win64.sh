@@ -27,7 +27,7 @@ cp installer/packr/win-x64-config.json installer/build/win-x64/config.json
 cp installer/liblauncher/build64/Release/launcher_amd64.dll installer/build/win-x64/
 
 unzip win64_jdk.zip
-mv jdk-$WIN64_VERSION-jdk installer/build/win-x64/jdk
+mv jdk-$WIN64_VERSION installer/build/win-x64/jdk
 
 echo RSProx.exe 64bit sha256sum
 sha256sum installer/build/win-x64/RSProx.exe

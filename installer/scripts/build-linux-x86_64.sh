@@ -34,7 +34,7 @@ cp installer/appimage/rsprox.desktop build/linux-x64/
 cp installer/appimage/rsprox.png build/linux-x64/
 
 tar zxf linux64_jdk.tar.gz
-mv jdk-$LINUX_AMD64_VERSION-jdk build/linux-x64/jdk
+mv jdk-$LINUX_AMD64_VERSION build/linux-x64/jdk
 
 pushd build/linux-x64/
 mkdir -p jdk/lib/amd64/server/

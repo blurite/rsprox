@@ -27,7 +27,7 @@ cp installer/packr/win-x86-config.json installer/build/win-x86/config.json
 cp installer/liblauncher/build32/Release/launcher_x86.dll installer/build/win-x86/
 
 unzip win32_jdk.zip
-mv jdk-$WIN32_VERSION-jdk installer/build/win-x86/jdk
+mv jdk-$WIN32_VERSION installer/build/win-x86/jdk
 
 echo RSProx.exe 32bit sha256sum
 sha256sum installer/build/win-x86/RSProx.exe

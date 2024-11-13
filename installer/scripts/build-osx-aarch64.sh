@@ -31,7 +31,7 @@ build() {
 
     tar zxf mac_aarch64_jdk.tar.gz
     mkdir $APPBASE/Contents/Resources/jdk
-    mv jdk-$MAC_AARCH64_VERSION-jdk/Contents/Home/* $APPBASE/Contents/Resources/jdk
+    mv jdk-$MAC_AARCH64_VERSION/Contents/Home/* $APPBASE/Contents/Resources/jdk
 
     echo Setting world execute permissions on RSProx
     pushd $APPBASE
