@@ -75,8 +75,7 @@ jlink \
   --add-modules jdk.scripting.nashorn \
   --add-modules jdk.scripting.nashorn.shell \
   --add-modules jdk.sctp \
-  --add-modules jdk.security.auth \
-  --add-modules jdk.security.jgss \
+  --add-modules jdk.security \
   --add-modules jdk.unsupported \
   --add-modules jdk.xml.dom \
   --add-modules jdk.zipfs
