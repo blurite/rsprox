@@ -79,9 +79,6 @@ build() {
 			--add-modules jdk.naming.ldap \
 			--add-modules jdk.naming.rmi \
 			--add-modules jdk.net \
-			--add-modules jdk.pack \
-			--add-modules jdk.scripting.nashorn \
-			--add-modules jdk.scripting.nashorn.shell \
 			--add-modules jdk.sctp \
 			--add-modules jdk.security.auth \
 			--add-modules jdk.security.jgss \
