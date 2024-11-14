@@ -30,7 +30,6 @@ build() {
     cp installer/osx/rsprox.icns $APPBASE/Contents/Resources/icons.icns
 
     tar zxf mac_aarch64_jdk.tar.gz
-    mkdir $APPBASE/Contents/Resources/jdk
 		jlink \
 			--compress 2 \
 			--strip-debug \
