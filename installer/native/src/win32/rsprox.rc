@@ -1,0 +1,24 @@
+#include "winres.h"
+
+RUNELITE_ICON ICON rsprox.ico
+
+1 VERSIONINFO
+FILEFLAGS       0
+FILEOS          VOS__WINDOWS32
+FILETYPE        VFT_APP
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "FileDescription",  "RSProx"
+            VALUE "OriginalFilename", "RSProx.exe"
+            VALUE "ProductName",      "RSProx Launcher"
+        END
+    END
+
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 0x4B0
+    END
+END

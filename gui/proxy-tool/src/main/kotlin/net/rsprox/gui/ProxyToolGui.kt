@@ -1,6 +1,5 @@
 package net.rsprox.gui
 
-import net.rsprox.gui.splash.SplashScreen
 import java.util.Locale
 import javax.swing.ImageIcon
 import javax.swing.SwingUtilities

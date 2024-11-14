@@ -1,0 +1,11 @@
+{
+  "classPath": [
+    "rsprox-launcher.jar"
+  ],
+  "mainClass": "net.rsprox.launcher.LauncherKt",
+  "vmArgs": [
+    "-Xmx768m",
+    "-Xss2m",
+    "-XX:CompileThreshold=1500"
+  ]
+}

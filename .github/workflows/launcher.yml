@@ -39,3 +39,188 @@ jobs:
         with:
           name: jar
           path: launcher/build/libs/rsprox-launcher.jar
+
+  windows:
+    runs-on: windows-2022
+    needs: jar
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+      - uses: actions/download-artifact@v4
+        with:
+          name: jar
+      - run: choco install innosetup --version 6.3.3
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: 11
+          distribution: temurin
+      - name: clone detours
+        run: |
+          cd installer
+          git clone --depth 1 https://github.com/microsoft/Detours detours
+          cd detours
+          git fetch --depth=1 origin 66d6f2d34aba564d373083621cacf66ec51199b2
+          git checkout 66d6f2d34aba564d373083621cacf66ec51199b2
+      - name: clone dropt
+        run: |
+          cd installer/native
+          git clone --depth 1 https://github.com/jamesderlin/dropt dropt
+          cd dropt
+          git fetch --depth=1 origin cdf507c7a2d5051da88985ff02be8b0b9c6935a8
+          git checkout cdf507c7a2d5051da88985ff02be8b0b9c6935a8
+      - name: clone sajson
+        run: |
+          cd installer/native
+          git clone --depth 1 https://github.com/chadaustin/sajson sajson
+          cd sajson
+          git fetch --depth=1 origin 791799ad90f7179f132ea2f53b90ef98f1d399a2
+          git checkout 791799ad90f7179f132ea2f53b90ef98f1d399a2
+      - uses: ilammy/msvc-dev-cmd@v1 # for nmake
+        with:
+          arch: x64
+      - name: build detours x64
+        shell: cmd
+        run: |
+          cd installer/detours/src
+          nmake
+      - uses: ilammy/msvc-dev-cmd@v1 # for nmake
+        with:
+          arch: x86
+      - name: build detours x86
+        shell: cmd
+        run: |
+          cd installer/detours/src
+          nmake
+      - uses: ilammy/msvc-dev-cmd@v1 # for nmake
+        with:
+          arch: amd64_arm64
+      - name: build detours aarch64
+        shell: cmd
+        run: |
+          cd installer/detours/src
+          nmake
+      - name: x64 installer
+        shell: bash
+        run: ./installer/scripts/build-win64.sh
+      - name: x86 installer
+        shell: bash
+        run: ./installer/scripts/build-win32.sh
+      - name: AArch64 installer
+        shell: bash
+        run: ./installer/scripts/build-win-aarch64.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: |
+            installer/innosetup/RSProxSetup.exe
+            installer/innosetup/RSProxSetup32.exe
+            installer/innosetup/RSProxSetupAArch64.exe
+          if-no-files-found: error
+
+  linux:
+    runs-on: ubuntu-20.04
+    needs: jar
+    steps:
+      - run: sudo apt update
+      - run: sudo apt install -y gcc-9-aarch64-linux-gnu g++-9-aarch64-linux-gnu
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+      - uses: actions/download-artifact@v4
+        with:
+          name: jar
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: 11
+          distribution: temurin
+      - name: clone dropt
+        run: |
+          cd installer/native
+          git clone --depth 1 https://github.com/jamesderlin/dropt dropt
+          cd dropt
+          git fetch --depth=1 origin cdf507c7a2d5051da88985ff02be8b0b9c6935a8
+          git checkout cdf507c7a2d5051da88985ff02be8b0b9c6935a8
+      - name: clone sajson
+        run: |
+          cd installer/native
+          git clone --depth 1 https://github.com/chadaustin/sajson sajson
+          cd sajson
+          git fetch --depth=1 origin 791799ad90f7179f132ea2f53b90ef98f1d399a2
+          git checkout 791799ad90f7179f132ea2f53b90ef98f1d399a2
+      - name: linux-x64
+        run: ./installer/scripts/build-linux-x86_64.sh
+      - name: linux-aarch64
+        run: ./installer/scripts/build-linux-aarch64.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: |
+            RSProx.AppImage
+            RSProx-aarch64.AppImage
+          if-no-files-found: error
+
+  macos:
+    runs-on: macos-12
+    needs: jar
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+      - uses: actions/download-artifact@v4
+        with:
+          name: jar
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+      - name: clone dropt
+        run: |
+          cd installer/native
+          git clone --depth 1 https://github.com/jamesderlin/dropt dropt
+          cd dropt
+          git fetch --depth=1 origin cdf507c7a2d5051da88985ff02be8b0b9c6935a8
+          git checkout cdf507c7a2d5051da88985ff02be8b0b9c6935a8
+      - name: clone sajson
+        run: |
+          cd installer/native
+          git clone --depth 1 https://github.com/chadaustin/sajson sajson
+          cd sajson
+          git fetch --depth=1 origin 791799ad90f7179f132ea2f53b90ef98f1d399a2
+          git checkout 791799ad90f7179f132ea2f53b90ef98f1d399a2
+      - name: clone create-dmg
+        run: git clone https://github.com/runelite/create-dmg -b runelite-1.0
+      - name: build create-dmg
+        run: |
+          set -e
+          cd create-dmg
+          npm install
+          ln -s cli.js create-dmg
+          chmod +x create-dmg
+      - run: echo create-dmg >> $GITHUB_PATH
+      - name: macos-x64
+        run: ./installer/scripts/build-osx-x64.sh --build --dmg
+      - name: macos-aarch64
+        run: ./installer/scripts/build-osx-aarch64.sh --build --dmg
+      # tar app to keep permissions correct
+      - name: tar app
+        run: tar -cf app.tar installer/build/macos-x64/RSProx.app installer/build/macos-aarch64/RSProx.app installer/scripts/build-osx-x64.sh installer/scripts/build-osx-aarch64.sh installer/osx/signing.entitlements
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: |
+            RSProx-x64.dmg
+            RSProx-aarch64.dmg
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-app
+          path: |
+            app.tar
+          if-no-files-found: error

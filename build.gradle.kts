@@ -80,8 +80,14 @@ buildscript {
     }
 }
 
-data class Dependencies(
+data class Bootstrap(
+    val proxy: Proxy,
     val artifacts: List<Artifact>,
+)
+
+data class Proxy(
+    val version: String,
+    val mainClass: String
 )
 
 data class Artifact(
@@ -141,20 +147,23 @@ tasks.register("uploadJarsToS3") {
                         val group =
                             artifact.moduleVersion.id.group
                                 .replace('.', '/')
-                        val name = artifact.name
                         val version = artifact.moduleVersion.id.version
                         val jarFile = artifact.file
 
-                        val prefix = "dependencies/$group/$name/$version/"
-                        val objectName = "$name-$version.jar"
+                        val prefix = "dependencies/$group/${artifact.name}/$version/"
 
-                        artifacts += uploadToS3(s3, jarFile, "$prefix$objectName")
+                        artifacts += uploadToS3(s3, jarFile, "$prefix${jarFile.name}")
                     }
                 }
         }
 
+        val bootstrap = Bootstrap(
+            proxy = Proxy(version = project.version.toString(), mainClass = "net.rsprox.gui.ProxyToolGuiKt"),
+            artifacts = artifacts.sortedBy { it.name },
+        )
+
         println("Uploaded ${artifacts.size} artifacts to S3")
-        outputFile.writeText(jacksonObjectMapper().writeValueAsString(Dependencies(artifacts.sortedBy { it.name })))
+        outputFile.writeText(jacksonObjectMapper().writeValueAsString(bootstrap))
     }
 }
 
