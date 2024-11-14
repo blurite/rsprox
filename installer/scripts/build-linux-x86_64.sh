@@ -71,6 +71,7 @@ jlink \
   --add-modules jdk.httpserver \
   --add-modules jdk.internal.ed \
   --add-modules jdk.internal.le \
+  --add-modules jdk.jartool \
   --add-modules jdk.jdwp.agent \
   --add-modules jdk.jfr \
   --add-modules jdk.jsobject \
