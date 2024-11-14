@@ -49,7 +49,14 @@ Type: filesandordirs; Name: "{app}\jdk"
 Type: files; Name: "{userprograms}\RSProx.lnk"
 
 [UninstallDelete]
-Type: filesandordirs; Name: "{%USERPROFILE}\.rsprox"
+Type: filesandordirs; Name: "{%USERPROFILE}\.rsprox\caches"
+Type: filesandordirs; Name: "{%USERPROFILE}\.rsprox\clients"
+Type: filesandordirs; Name: "{%USERPROFILE}\.rsprox\launcher"
+Type: filesandordirs; Name: "{%USERPROFILE}\.rsprox\runelite"
+Type: filesandordirs; Name: "{%USERPROFILE}\.rsprox\runelite-launcher"
+Type: filesandordirs; Name: "{%USERPROFILE}\.rsprox\signkey"
+Type: filesandordirs; Name: "{%USERPROFILE}\.rsprox\sockets"
+Type: filesandordirs; Name: "{%USERPROFILE}\.rsprox\key.rsa"
 ; includes install_id, settings, etc
 Type: filesandordirs; Name: "{app}"
 
