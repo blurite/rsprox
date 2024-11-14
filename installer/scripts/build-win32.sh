@@ -86,6 +86,8 @@ jlink \
   --add-modules jdk.xml.dom \
   --add-modules jdk.zipfs
 
+rm -r jdk-$WIN32_VERSION
+
 echo RSProx.exe 32bit sha256sum
 sha256sum installer/build/win-x86/RSProx.exe
 

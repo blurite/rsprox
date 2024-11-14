@@ -81,6 +81,8 @@ jlink \
   --add-modules jdk.xml.dom \
   --add-modules jdk.zipfs
 
+rm -r jdk-$WIN_AARCH64_VERSION
+
 cp installer/native/build-aarch64/src/Release/RSProx.exe installer/build/win-aarch64/
 cp rsprox-launcher.jar installer/build/win-aarch64/
 cp installer/packr/win-aarch64-config.json installer/build/win-aarch64/config.json
