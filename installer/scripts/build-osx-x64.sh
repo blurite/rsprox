@@ -76,7 +76,6 @@ build() {
 			--add-modules jdk.management.agent \
 			--add-modules jdk.management.jfr \
 			--add-modules jdk.naming.dns \
-			--add-modules jdk.naming.ldap \
 			--add-modules jdk.naming.rmi \
 			--add-modules jdk.net \
 			--add-modules jdk.sctp \
