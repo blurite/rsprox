@@ -13,17 +13,7 @@ import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.binary.credentials.BinaryCredentials
 import net.rsprox.proxy.binary.credentials.BinaryCredentialsStore
 import net.rsprox.proxy.bootstrap.BootstrapFactory
-import net.rsprox.proxy.config.BINARY_CREDENTIALS_FOLDER
-import net.rsprox.proxy.config.BINARY_PATH
-import net.rsprox.proxy.config.CACHES_DIRECTORY
-import net.rsprox.proxy.config.CLIENTS_DIRECTORY
-import net.rsprox.proxy.config.CONFIGURATION_PATH
-import net.rsprox.proxy.config.FAKE_CERTIFICATE_FILE
-import net.rsprox.proxy.config.FILTERS_DIRECTORY
-import net.rsprox.proxy.config.HTTP_SERVER_PORT
-import net.rsprox.proxy.config.JAGEX_ACCOUNTS_FILE
-import net.rsprox.proxy.config.JavConfig
-import net.rsprox.proxy.config.ProxyProperties
+import net.rsprox.proxy.config.*
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_HEIGHT
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_MAXIMIZED
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_POSITION_X
@@ -38,12 +28,6 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
 import net.rsprox.proxy.config.ProxyProperty.Companion.SELECTED_CLIENT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
-import net.rsprox.proxy.config.RUNELITE_LAUNCHER_REPO_DIRECTORY
-import net.rsprox.proxy.config.SETTINGS_DIRECTORY
-import net.rsprox.proxy.config.SIGN_KEY_DIRECTORY
-import net.rsprox.proxy.config.SOCKETS_DIRECTORY
-import net.rsprox.proxy.config.TEMP_CLIENTS_DIRECTORY
-import net.rsprox.proxy.config.registerConnection
 import net.rsprox.proxy.connection.ClientTypeDictionary
 import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.downloader.JagexNativeClientDownloader
@@ -57,11 +41,7 @@ import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
 import net.rsprox.proxy.runelite.RuneliteLauncher
 import net.rsprox.proxy.settings.DefaultSettingSetStore
-import net.rsprox.proxy.util.ClientType
-import net.rsprox.proxy.util.ConnectionInfo
-import net.rsprox.proxy.util.OperatingSystem
-import net.rsprox.proxy.util.ProgressCallback
-import net.rsprox.proxy.util.getOperatingSystem
+import net.rsprox.proxy.util.*
 import net.rsprox.proxy.worlds.DynamicWorldListProvider
 import net.rsprox.proxy.worlds.World
 import net.rsprox.proxy.worlds.WorldListProvider
@@ -74,24 +54,19 @@ import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
 import org.newsclub.net.unix.AFUNIXServerSocket
 import org.newsclub.net.unix.AFUNIXSocketAddress
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.IOException
 import java.math.BigInteger
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
-import java.util.Properties
+import java.nio.file.Paths
+import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
 import kotlin.concurrent.thread
-import kotlin.io.path.Path
-import kotlin.io.path.absolutePathString
-import kotlin.io.path.copyTo
-import kotlin.io.path.exists
-import kotlin.io.path.extension
-import kotlin.io.path.nameWithoutExtension
-import kotlin.io.path.notExists
-import kotlin.io.path.writeBytes
+import kotlin.io.path.*
 import kotlin.properties.Delegates
 import kotlin.system.exitProcess
 
@@ -403,6 +378,26 @@ public class ProxyService(
         }
     }
 
+    private fun getJava(): String {
+        val javaHome = Paths.get(System.getProperty("java.home"))
+
+        if (!Files.exists(javaHome)) {
+            throw FileNotFoundException("JAVA_HOME is not set correctly! directory \"$javaHome\" does not exist.")
+        }
+
+        var javaPath = Paths.get(javaHome.toString(), "bin", "java.exe")
+
+        if (!Files.exists(javaPath)) {
+            javaPath = Paths.get(javaHome.toString(), "bin", "java")
+        }
+
+        if (!Files.exists(javaPath)) {
+            throw FileNotFoundException("java executable not found in directory \"" + javaPath.parent + "\"")
+        }
+
+        return javaPath.toAbsolutePath().toString()
+    }
+
     public fun launchRuneLiteClient(
         sessionMonitor: SessionMonitor<BinaryHeader>,
         character: JagexCharacter?,
@@ -516,13 +511,15 @@ public class ProxyService(
         try {
             val javConfigEndpoint = properties.getProperty(JAV_CONFIG_ENDPOINT)
             val launcher = RuneliteLauncher()
+            val args = listOf(getJava()) + launcher.getLaunchArgs(
+                port,
+                rsa.publicKey.modulus.toString(16),
+                javConfig = "http://127.0.0.1:$HTTP_SERVER_PORT/$javConfigEndpoint",
+                socket = timestamp.toString(),
+            )
+
             createProcess(
-                launcher.getLaunchArgs(
-                    port,
-                    rsa.publicKey.modulus.toString(16),
-                    javConfig = "http://127.0.0.1:$HTTP_SERVER_PORT/$javConfigEndpoint",
-                    socket = timestamp.toString(),
-                ),
+                args,
                 directory = null,
                 path = null,
                 port = port,
