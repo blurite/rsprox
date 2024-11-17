@@ -141,8 +141,8 @@ Below is a small task list showing a rough breakdown of what the tool will consi
   - [ ] Ability to download any binary blobs
 - [x] Decoders (Every revision starting from 223)
 - [x] Transcriber
-- [ ] Launchers
-  - [ ] Proxy launcher/updater
+- [x] Launchers
+  - [x] Proxy launcher/updater
   - [x] RuneLite launcher (necessary to avoid detection)
 
 [actions-badge]: https://github.com/blurite/rsprox/actions/workflows/ci.yml/badge.svg
