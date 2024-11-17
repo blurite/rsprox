@@ -12,6 +12,7 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.security.MessageDigest
 import java.security.Signature
 import java.security.cert.Certificate
@@ -61,6 +62,26 @@ public class Launcher {
         Files.createDirectories(artifactRepo)
     }
 
+    private fun getJava(): String {
+        val javaHome = Paths.get(System.getProperty("java.home"))
+
+        if (!Files.exists(javaHome)) {
+            throw FileNotFoundException("JAVA_HOME is not set correctly! directory \"$javaHome\" does not exist.")
+        }
+
+        var javaPath = Paths.get(javaHome.toString(), "bin", "java.exe")
+
+        if (!Files.exists(javaPath)) {
+            javaPath = Paths.get(javaHome.toString(), "bin", "java")
+        }
+
+        if (!Files.exists(javaPath)) {
+            throw FileNotFoundException("java executable not found in directory \"" + javaPath.parent + "\"")
+        }
+
+        return javaPath.toAbsolutePath().toString()
+    }
+
     public fun getLaunchArgs(launcherArgs: Array<String>): List<String> {
         clean()
         download()
@@ -74,7 +95,7 @@ public class Launcher {
         }
 
         return listOf(
-            "java",
+            getJava(),
             "-cp",
             classpath.toString(),
             bootstrap.proxy.mainClass,
