@@ -20,7 +20,7 @@ import java.util.Locale
 import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
 
-public fun main() {
+public fun main(args: Array<String>) {
     Locale.setDefault(Locale.US)
     SplashScreen.init()
     SplashScreen.stage(0.0, "Preparing", "Setting up environment")
@@ -29,7 +29,7 @@ public fun main() {
     val builder =
         ProcessBuilder()
             .inheritIO()
-            .command(launcher.getLaunchArgs())
+            .command(launcher.getLaunchArgs(args))
 
     SplashScreen.stop()
     builder.start()
@@ -61,7 +61,7 @@ public class Launcher {
         Files.createDirectories(artifactRepo)
     }
 
-    public fun getLaunchArgs(): List<String> {
+    public fun getLaunchArgs(launcherArgs: Array<String>): List<String> {
         clean()
         download()
 
@@ -78,6 +78,7 @@ public class Launcher {
             "-cp",
             classpath.toString(),
             bootstrap.proxy.mainClass,
+            *launcherArgs
         )
     }
 

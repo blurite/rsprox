@@ -5,7 +5,10 @@ import javax.swing.ImageIcon
 import javax.swing.SwingUtilities
 import javax.swing.UIManager
 
-public fun main() {
+public fun main(args: Array<String>) {
+    if (args.isNotEmpty()) {
+        System.setProperty("net.rsprox.gui.args", args.joinToString("|"))
+    }
     Locale.setDefault(Locale.US)
     SplashScreen.init()
     SplashScreen.stage(0.0, "Preparing", "Setting up environment")

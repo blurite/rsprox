@@ -46,6 +46,7 @@ public class RuneliteLauncher {
         clean()
         download()
 
+        val guiArgs = System.getProperty("net.rsprox.gui.args")?.split("|") ?: emptyList()
         val classpath = StringBuilder()
         for (artifact in bootstrap.artifacts) {
             if (classpath.isNotEmpty()) {
@@ -55,7 +56,6 @@ public class RuneliteLauncher {
         }
 
         return listOf(
-            "java",
             "-cp",
             classpath.toString(),
             bootstrap.launcher.mainClass,
@@ -64,6 +64,7 @@ public class RuneliteLauncher {
             "--jav_config=$javConfig",
             "--socket_id=$socket",
             "--developer-mode",
+            *guiArgs.toTypedArray(),
         )
     }
 
