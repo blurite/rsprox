@@ -106,7 +106,7 @@ jobs:
         run: ./installer/scripts/build-win64.sh
       - uses: actions/upload-artifact@v4
         with:
-          name: windows
+          name: windows-win64
           path: |
             installer/innosetup/RSProxSetup.exe
           if-no-files-found: error
@@ -115,7 +115,7 @@ jobs:
         run: ./installer/scripts/build-win32.sh
       - uses: actions/upload-artifact@v4
         with:
-          name: windows
+          name: windows-win32
           path: |
             installer/innosetup/RSProxSetup32.exe
           if-no-files-found: error
@@ -124,7 +124,7 @@ jobs:
         run: ./installer/scripts/build-win-aarch64.sh
       - uses: actions/upload-artifact@v4
         with:
-          name: windows
+          name: windows-aarch64
           path: |
             installer/innosetup/RSProxSetupAArch64.exe
           if-no-files-found: error
@@ -164,7 +164,7 @@ jobs:
         run: ./installer/scripts/build-linux-x86_64.sh
       - uses: actions/upload-artifact@v4
         with:
-          name: linux
+          name: linux-x86_64
           path: |
             RSProx.AppImage
           if-no-files-found: error
@@ -172,7 +172,7 @@ jobs:
         run: ./installer/scripts/build-linux-aarch64.sh
       - uses: actions/upload-artifact@v4
         with:
-          name: linux
+          name: linux-aarch64
           path: |
             RSProx-aarch64.AppImage
           if-no-files-found: error
@@ -223,7 +223,7 @@ jobs:
         run: ./installer/scripts/build-osx-x64.sh --build --dmg
       - uses: actions/upload-artifact@v4
         with:
-          name: macos-dmg
+          name: macos-dmg-x64
           path: |
             RSProx-x64.dmg
           if-no-files-found: error
@@ -231,7 +231,7 @@ jobs:
         run: ./installer/scripts/build-osx-aarch64.sh --build --dmg
       - uses: actions/upload-artifact@v4
         with:
-          name: macos-dmg
+          name: macos-dmg-aarch64
           path: |
             RSProx-aarch64.dmg
           if-no-files-found: error
