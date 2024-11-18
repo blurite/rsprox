@@ -30,61 +30,8 @@ build() {
     cp installer/osx/rsprox.icns $APPBASE/Contents/Resources/icons.icns
 
     tar zxf mac64_jdk.tar.gz
-    jlink \
-			--compress 2 \
-			--strip-debug \
-			--no-header-files \
-			--no-man-pages \
-			--output $APPBASE/Contents/Resources/jdk \
-			--module-path jdk-$MAC_AMD64_VERSION/Contents/Home/jmods \
-			--add-modules java.base \
-			--add-modules java.compiler \
-			--add-modules java.datatransfer \
-			--add-modules java.desktop \
-			--add-modules java.instrument \
-			--add-modules java.logging \
-			--add-modules java.management \
-			--add-modules java.management.rmi \
-			--add-modules java.naming \
-			--add-modules java.net.http \
-			--add-modules java.prefs \
-			--add-modules java.rmi \
-			--add-modules java.scripting \
-			--add-modules java.se \
-			--add-modules java.security.jgss \
-			--add-modules java.security.sasl \
-			--add-modules java.smartcardio \
-			--add-modules java.sql \
-			--add-modules java.sql.rowset \
-			--add-modules java.transaction.xa \
-			--add-modules java.xml \
-			--add-modules java.xml.crypto \
-			--add-modules jdk.accessibility \
-			--add-modules jdk.charsets \
-			--add-modules jdk.crypto.cryptoki \
-			--add-modules jdk.crypto.ec \
-			--add-modules jdk.dynalink \
-			--add-modules jdk.httpserver \
-			--add-modules jdk.internal.ed \
-			--add-modules jdk.internal.le \
-			--add-modules jdk.jartool \
-			--add-modules jdk.jdwp.agent \
-			--add-modules jdk.jfr \
-			--add-modules jdk.jsobject \
-			--add-modules jdk.localedata \
-			--add-modules jdk.management \
-			--add-modules jdk.management.agent \
-			--add-modules jdk.management.jfr \
-			--add-modules jdk.naming.dns \
-			--add-modules jdk.naming.rmi \
-			--add-modules jdk.net \
-			--add-modules jdk.sctp \
-			--add-modules jdk.security.auth \
-			--add-modules jdk.security.jgss \
-			--add-modules jdk.unsupported \
-			--add-modules jdk.xml.dom \
-			--add-modules jdk.zipfs
-
+    mkdir $APPBASE/Contents/Resources/jdk
+    mv jdk-$MAC_AMD64_VERSION/Contents/Home/* $APPBASE/Contents/Resources/jdk
 
     echo Setting world execute permissions on RSProx
     pushd $APPBASE

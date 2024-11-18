@@ -104,9 +104,21 @@ jobs:
       - name: x64 installer
         shell: bash
         run: ./installer/scripts/build-win64.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: |
+            installer/innosetup/RSProxSetup.exe
+          if-no-files-found: error
       - name: x86 installer
         shell: bash
         run: ./installer/scripts/build-win32.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: |
+            installer/innosetup/RSProxSetup32.exe
+          if-no-files-found: error
       - name: AArch64 installer
         shell: bash
         run: ./installer/scripts/build-win-aarch64.sh
@@ -114,8 +126,6 @@ jobs:
         with:
           name: windows
           path: |
-            installer/innosetup/RSProxSetup.exe
-            installer/innosetup/RSProxSetup32.exe
             installer/innosetup/RSProxSetupAArch64.exe
           if-no-files-found: error
 
@@ -152,13 +162,18 @@ jobs:
           git checkout 791799ad90f7179f132ea2f53b90ef98f1d399a2
       - name: linux-x64
         run: ./installer/scripts/build-linux-x86_64.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: |
+            RSProx.AppImage
+          if-no-files-found: error
       - name: linux-aarch64
         run: ./installer/scripts/build-linux-aarch64.sh
       - uses: actions/upload-artifact@v4
         with:
           name: linux
           path: |
-            RSProx.AppImage
             RSProx-aarch64.AppImage
           if-no-files-found: error
 
@@ -206,18 +221,23 @@ jobs:
       - run: echo create-dmg >> $GITHUB_PATH
       - name: macos-x64
         run: ./installer/scripts/build-osx-x64.sh --build --dmg
-      - name: macos-aarch64
-        run: ./installer/scripts/build-osx-aarch64.sh --build --dmg
-      # tar app to keep permissions correct
-      - name: tar app
-        run: tar -cf app.tar installer/build/macos-x64/RSProx.app installer/build/macos-aarch64/RSProx.app installer/scripts/build-osx-x64.sh installer/scripts/build-osx-aarch64.sh installer/osx/signing.entitlements
       - uses: actions/upload-artifact@v4
         with:
           name: macos-dmg
           path: |
             RSProx-x64.dmg
+          if-no-files-found: error
+      - name: macos-aarch64
+        run: ./installer/scripts/build-osx-aarch64.sh --build --dmg
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: |
             RSProx-aarch64.dmg
           if-no-files-found: error
+      # tar app to keep permissions correct
+      - name: tar app
+        run: tar -cf app.tar installer/build/macos-x64/RSProx.app installer/build/macos-aarch64/RSProx.app installer/scripts/build-osx-x64.sh installer/scripts/build-osx-aarch64.sh installer/osx/signing.entitlements
       - uses: actions/upload-artifact@v4
         with:
           name: macos-app
