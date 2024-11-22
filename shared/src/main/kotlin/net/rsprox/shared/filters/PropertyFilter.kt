@@ -1156,7 +1156,7 @@ public enum class PropertyFilter(
         SERVER_TO_CLIENT,
         OTHER,
         "Packet Group Start",
-        true,
+        false,
         searchTerms = "packet,group,start,batch",
     ),
     SITE_SETTINGS(
