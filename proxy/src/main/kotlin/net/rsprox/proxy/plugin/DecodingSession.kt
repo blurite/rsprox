@@ -3,7 +3,6 @@ package net.rsprox.proxy.plugin
 import com.github.michaelbull.logging.InlineLogger
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
-import net.rsprot.buffer.extensions.p2
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.protocol.Prot
 import net.rsprox.protocol.session.*
@@ -38,7 +37,7 @@ public class DecodingSession(
                 } else if (prot.size == Prot.VAR_SHORT) {
                     read += 2
                 }
-
+                val remainingBytesInPacketGroup = session.getRemainingBytesInPacketGroup()
                 val packet =
                     when (binaryPacket.direction) {
                         StreamDirection.CLIENT_TO_SERVER -> {
@@ -56,7 +55,6 @@ public class DecodingSession(
                             )
                         }
                     }
-                val remainingBytesInPacketGroup = session.getRemainingBytesInPacketGroup()
                 if (remainingBytesInPacketGroup != null && remainingBytesInPacketGroup > 0) {
                     session.setBytesConsumed((session.getBytesConsumed() ?: 0) + read)
                     if (remainingBytesInPacketGroup - read <= 0) {
@@ -118,6 +116,7 @@ public class DecodingSession(
         // Even though we don't use the size, we must
         val size = BinaryStream.decodeSize(buffer, prot)
         val payload = buffer.readSlice(size)
+        val remainingBytesInPacketGroup = session.getRemainingBytesInPacketGroup()
         val packet =
             when (direction) {
                 StreamDirection.CLIENT_TO_SERVER -> {
@@ -135,7 +134,6 @@ public class DecodingSession(
                     )
                 }
             }
-        val remainingBytesInPacketGroup = session.getRemainingBytesInPacketGroup()
         if (remainingBytesInPacketGroup != null && remainingBytesInPacketGroup > 0) {
             val read = buffer.readerIndex() - marker
             session.setBytesConsumed((session.getBytesConsumed() ?: 0) + read)
