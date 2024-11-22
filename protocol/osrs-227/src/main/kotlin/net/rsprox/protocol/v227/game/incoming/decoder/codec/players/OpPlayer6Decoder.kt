@@ -1,4 +1,5 @@
 package net.rsprox.protocol.v227.game.incoming.decoder.codec.players
+
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
@@ -13,8 +14,8 @@ internal class OpPlayer6Decoder : ProxyMessageDecoder<OpPlayer> {
         buffer: JagByteBuf,
         session: Session,
     ): OpPlayer {
-        val index = buffer.g2()
-        val controlKey = buffer.g1Alt1() == 1
+        val index = buffer.g2Alt3()
+        val controlKey = buffer.g1Alt2() == 1
         return OpPlayer(
             index,
             controlKey,

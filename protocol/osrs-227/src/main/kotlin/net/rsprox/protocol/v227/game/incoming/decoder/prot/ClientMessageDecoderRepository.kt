@@ -57,7 +57,6 @@ import net.rsprox.protocol.v227.game.incoming.decoder.codec.misc.user.SendSnapsh
 import net.rsprox.protocol.v227.game.incoming.decoder.codec.misc.user.SetChatFilterSettingsDecoder
 import net.rsprox.protocol.v227.game.incoming.decoder.codec.misc.user.SetHeadingDecoder
 import net.rsprox.protocol.v227.game.incoming.decoder.codec.misc.user.TeleportDecoder
-import net.rsprox.protocol.v227.game.incoming.decoder.codec.misc.user.UpdatePlayerModelDecoderV1
 import net.rsprox.protocol.v227.game.incoming.decoder.codec.npcs.OpNpc1Decoder
 import net.rsprox.protocol.v227.game.incoming.decoder.codec.npcs.OpNpc2Decoder
 import net.rsprox.protocol.v227.game.incoming.decoder.codec.npcs.OpNpc3Decoder
@@ -185,6 +184,7 @@ internal object ClientMessageDecoderRepository {
                 bind(MoveMinimapClickDecoder())
                 bind(ClientCheatDecoder())
                 bind(SetChatFilterSettingsDecoder())
+                bind(SetHeadingDecoder())
                 bind(ClickWorldMapDecoder())
                 bind(OculusLeaveDecoder())
                 bind(CloseModalDecoder())
@@ -193,8 +193,6 @@ internal object ClientMessageDecoderRepository {
                 bind(SendSnapshotDecoder())
                 bind(HiscoreRequestDecoder())
                 bind(IfCrmViewClickDecoder())
-                bind(UpdatePlayerModelDecoderV1())
-                bind(SetHeadingDecoder())
 
                 bind(ConnectionTelemetryDecoder())
                 bind(SendPingReplyDecoder())

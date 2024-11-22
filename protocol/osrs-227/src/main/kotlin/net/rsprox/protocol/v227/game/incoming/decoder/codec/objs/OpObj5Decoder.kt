@@ -1,4 +1,5 @@
 package net.rsprox.protocol.v227.game.incoming.decoder.codec.objs
+
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
@@ -13,9 +14,9 @@ internal class OpObj5Decoder : ProxyMessageDecoder<OpObj> {
         buffer: JagByteBuf,
         session: Session,
     ): OpObj {
+        val z = buffer.g2Alt2()
         val id = buffer.g2()
-        val z = buffer.g2Alt1()
-        val x = buffer.g2Alt3()
+        val x = buffer.g2()
         val controlKey = buffer.g1Alt1() == 1
         return OpObj(
             id,

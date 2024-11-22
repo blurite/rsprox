@@ -1,4 +1,5 @@
 package net.rsprox.protocol.v227.game.incoming.decoder.codec.misc.user
+
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
@@ -13,9 +14,9 @@ internal class MoveGameClickDecoder : ProxyMessageDecoder<MoveGameClick> {
         buffer: JagByteBuf,
         session: Session,
     ): MoveGameClick {
-        val keyCombination = buffer.g1Alt1()
-        val x = buffer.g2Alt3()
         val z = buffer.g2Alt2()
+        val x = buffer.g2Alt3()
+        val keyCombination = buffer.g1()
         return MoveGameClick(
             x,
             z,

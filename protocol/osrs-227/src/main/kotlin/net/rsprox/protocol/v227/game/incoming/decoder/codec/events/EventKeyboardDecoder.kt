@@ -1,4 +1,5 @@
 package net.rsprox.protocol.v227.game.incoming.decoder.codec.events
+
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
@@ -17,8 +18,8 @@ internal class EventKeyboardDecoder : ProxyMessageDecoder<EventKeyboard> {
         val keys = ByteArray(count)
         var lastTransmittedKeyPress: Int = -1
         for (i in 0..<count) {
-            val delta = buffer.g3Alt2()
-            val key = buffer.g1Alt1()
+            val key = buffer.g1()
+            val delta = buffer.g3()
             if (i == 0) {
                 lastTransmittedKeyPress = delta
             }

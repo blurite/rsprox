@@ -1,4 +1,5 @@
 package net.rsprox.protocol.v227.game.incoming.decoder.codec.events
+
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
@@ -13,8 +14,8 @@ internal class EventCameraPositionDecoder : ProxyMessageDecoder<EventCameraPosit
         buffer: JagByteBuf,
         session: Session,
     ): EventCameraPosition {
+        val angleY = buffer.g2Alt2()
         val angleX = buffer.g2()
-        val angleY = buffer.g2()
         return EventCameraPosition(
             angleX,
             angleY,

@@ -1,4 +1,5 @@
 package net.rsprox.protocol.v227.game.incoming.decoder.codec.misc.client
+
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
@@ -13,10 +14,10 @@ internal class SendPingReplyDecoder : ProxyMessageDecoder<SendPingReply> {
         buffer: JagByteBuf,
         session: Session,
     ): SendPingReply {
-        val value1 = buffer.g4Alt1()
-        val value2 = buffer.g4Alt2()
-        val gcPercentTime = buffer.g1()
-        val fps = buffer.g1Alt1()
+        val gcPercentTime = buffer.g1Alt3()
+        val fps = buffer.g1()
+        val value1 = buffer.g4Alt3()
+        val value2 = buffer.g4Alt1()
         return SendPingReply(
             fps,
             gcPercentTime,

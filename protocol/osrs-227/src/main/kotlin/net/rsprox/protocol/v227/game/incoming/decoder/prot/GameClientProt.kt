@@ -89,14 +89,6 @@ public enum class GameClientProt(
     )
     OPPLAYERU(GameClientProtId.OPPLAYERU, 11),
 
-    // Op held
-    @Deprecated(
-        "Deprecated since revision 211, when a new variant that transmits " +
-            "the absolute coordinates was introduced for objs on the ground.",
-        replaceWith = ReplaceWith("IF_BUTTON10"),
-    )
-    OPHELD6(GameClientProtId.OPHELD6, 2),
-
     // Events
     EVENT_APPLET_FOCUS(GameClientProtId.EVENT_APPLET_FOCUS, 1),
     EVENT_CAMERA_POSITION(GameClientProtId.EVENT_CAMERA_POSITION, 4),
@@ -153,7 +145,6 @@ public enum class GameClientProt(
     HISCORE_REQUEST(GameClientProtId.HISCORE_REQUEST, Prot.VAR_BYTE),
     IF_CRMVIEW_CLICK(GameClientProtId.IF_CRMVIEW_CLICK, 22),
     UPDATE_PLAYER_MODEL_V2(GameClientProtId.UPDATE_PLAYER_MODEL_V2, 26),
-    UPDATE_PLAYER_MODEL_V1(GameClientProtId.UPDATE_PLAYER_MODEL_V1, 13),
 
     // Misc. client packets
     CONNECTION_TELEMETRY(GameClientProtId.CONNECTION_TELEMETRY, Prot.VAR_BYTE),
@@ -167,4 +158,5 @@ public enum class GameClientProt(
     SOUND_JINGLEEND(GameClientProtId.SOUND_JINGLEEND, 4),
     WINDOW_STATUS(GameClientProtId.WINDOW_STATUS, 5),
     SET_HEADING(GameClientProtId.SET_HEADING, 1),
+    UNKNOWN_BYTE(GameClientProtId.UNKNOWN_BYTE, 1),
 }

@@ -1,4 +1,5 @@
 package net.rsprox.protocol.v227.game.incoming.decoder.codec.locs
+
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
@@ -13,10 +14,10 @@ internal class OpLoc5Decoder : ProxyMessageDecoder<OpLoc> {
         buffer: JagByteBuf,
         session: Session,
     ): OpLoc {
-        val x = buffer.g2Alt3()
         val controlKey = buffer.g1Alt3() == 1
-        val id = buffer.g2Alt3()
-        val z = buffer.g2()
+        val id = buffer.g2Alt2()
+        val x = buffer.g2()
+        val z = buffer.g2Alt2()
         return OpLoc(
             id,
             x,

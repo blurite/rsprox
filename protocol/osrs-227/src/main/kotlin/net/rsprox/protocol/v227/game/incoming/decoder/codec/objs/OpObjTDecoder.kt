@@ -1,7 +1,8 @@
 package net.rsprox.protocol.v227.game.incoming.decoder.codec.objs
+
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.util.gCombinedIdAlt3
+import net.rsprot.protocol.util.gCombinedIdAlt1
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.incoming.model.objs.OpObjT
 import net.rsprox.protocol.session.Session
@@ -14,13 +15,13 @@ internal class OpObjTDecoder : ProxyMessageDecoder<OpObjT> {
         buffer: JagByteBuf,
         session: Session,
     ): OpObjT {
-        val x = buffer.g2()
-        val selectedObj = buffer.g2Alt1()
-        val id = buffer.g2Alt1()
-        val z = buffer.g2Alt1()
-        val controlKey = buffer.g1Alt1() == 1
-        val selectedCombinedId = buffer.gCombinedIdAlt3()
-        val selectedSub = buffer.g2()
+        val x = buffer.g2Alt3()
+        val controlKey = buffer.g1Alt3() == 1
+        val z = buffer.g2Alt2()
+        val selectedSub = buffer.g2Alt3()
+        val selectedCombinedId = buffer.gCombinedIdAlt1()
+        val id = buffer.g2()
+        val selectedObj = buffer.g2()
         return OpObjT(
             id,
             x,
