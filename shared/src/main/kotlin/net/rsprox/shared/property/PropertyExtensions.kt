@@ -536,6 +536,8 @@ public fun Property.identifiedWorldEntity(
     z: Int,
     sizeX: Int,
     sizeZ: Int,
+    centerFineOffsetX: Int?,
+    centerFineOffsetZ: Int?,
     propertyName: String = "worldentity",
 ): IdentifiedWorldEntityProperty {
     return child(
@@ -547,6 +549,8 @@ public fun Property.identifiedWorldEntity(
             z,
             sizeX,
             sizeZ,
+            centerFineOffsetX,
+            centerFineOffsetZ,
         ),
     )
 }

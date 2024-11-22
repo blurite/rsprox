@@ -19,6 +19,10 @@ import net.rsprox.protocol.v226.ClientPacketDecoderServiceV226
 import net.rsprox.protocol.v226.GameClientProtProviderV226
 import net.rsprox.protocol.v226.GameServerProtProviderV226
 import net.rsprox.protocol.v226.ServerPacketDecoderServiceV226
+import net.rsprox.protocol.v227.ClientPacketDecoderServiceV227
+import net.rsprox.protocol.v227.GameClientProtProviderV227
+import net.rsprox.protocol.v227.GameServerProtProviderV227
+import net.rsprox.protocol.v227.ServerPacketDecoderServiceV227
 import net.rsprox.proxy.huffman.HuffmanProvider
 import java.util.concurrent.Callable
 import java.util.concurrent.ForkJoinPool
@@ -61,7 +65,7 @@ public class DecoderLoader {
     ) {
         tasks +=
             Callable {
-                loadRevision226(huffmanCodec, cache)
+                loadRevision227(huffmanCodec, cache)
             }
     }
 
@@ -81,6 +85,10 @@ public class DecoderLoader {
         tasks +=
             Callable {
                 loadRevision225(huffmanCodec, cache)
+            }
+        tasks +=
+            Callable {
+                loadRevision226(huffmanCodec, cache)
             }
         loadLatestRevision(tasks, huffmanCodec, cache)
     }
@@ -138,6 +146,20 @@ public class DecoderLoader {
             ServerPacketDecoderServiceV226(huffmanCodec, cache),
             GameClientProtProviderV226,
             GameServerProtProviderV226,
+        )
+    }
+
+    private fun loadRevision227(
+        huffmanCodec: HuffmanCodec,
+        cache: CacheProvider,
+    ): RevisionDecoder {
+        logger.debug { "Loading revision 227 decoders" }
+        return RevisionDecoder(
+            227,
+            ClientPacketDecoderServiceV227(huffmanCodec),
+            ServerPacketDecoderServiceV227(huffmanCodec, cache),
+            GameClientProtProviderV227,
+            GameServerProtProviderV227,
         )
     }
 

@@ -13,7 +13,6 @@ import net.rsprox.transcriber.interfaces.ClientPacketTranscriber
 import net.rsprox.transcriber.interfaces.NpcInfoTranscriber
 import net.rsprox.transcriber.interfaces.PlayerInfoTranscriber
 import net.rsprox.transcriber.interfaces.ServerPacketTranscriber
-import net.rsprox.transcriber.prot.GameServerProt
 import net.rsprox.transcriber.state.SessionState
 
 public class TextTranscriber private constructor(
@@ -74,14 +73,9 @@ public class TextTranscriber private constructor(
     override fun onTranscribeEnd() {
         val root = sessionState.root
         if (root.isEmpty()) return
-        var cycle = sessionState.cycle
-        // Decrement the cycle if we're logging server tick end
-        if (sessionState.currentProt == GameServerProt.SERVER_TICK_END.name) {
-            cycle--
-        }
         for (property in root) {
             if (isRegexSkipped(property)) continue
-            consumers.publish(formatter, cycle, property)
+            consumers.publish(formatter, sessionState.cycle, property)
         }
         root.clear()
     }

@@ -67,23 +67,7 @@ import net.rsprox.protocol.game.outgoing.model.map.RebuildRegion
 import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV1
 import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV2
 import net.rsprox.protocol.game.outgoing.model.map.Reconnect
-import net.rsprox.protocol.game.outgoing.model.misc.client.HideLocOps
-import net.rsprox.protocol.game.outgoing.model.misc.client.HideNpcOps
-import net.rsprox.protocol.game.outgoing.model.misc.client.HideObjOps
-import net.rsprox.protocol.game.outgoing.model.misc.client.HintArrow
-import net.rsprox.protocol.game.outgoing.model.misc.client.HiscoreReply
-import net.rsprox.protocol.game.outgoing.model.misc.client.MinimapToggle
-import net.rsprox.protocol.game.outgoing.model.misc.client.ReflectionChecker
-import net.rsprox.protocol.game.outgoing.model.misc.client.ResetAnims
-import net.rsprox.protocol.game.outgoing.model.misc.client.ResetInteractionMode
-import net.rsprox.protocol.game.outgoing.model.misc.client.SendPing
-import net.rsprox.protocol.game.outgoing.model.misc.client.ServerTickEnd
-import net.rsprox.protocol.game.outgoing.model.misc.client.SetHeatmapEnabled
-import net.rsprox.protocol.game.outgoing.model.misc.client.SetInteractionMode
-import net.rsprox.protocol.game.outgoing.model.misc.client.SiteSettings
-import net.rsprox.protocol.game.outgoing.model.misc.client.UpdateRebootTimer
-import net.rsprox.protocol.game.outgoing.model.misc.client.UpdateUid192
-import net.rsprox.protocol.game.outgoing.model.misc.client.UrlOpen
+import net.rsprox.protocol.game.outgoing.model.misc.client.*
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettings
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettingsPrivateChat
 import net.rsprox.protocol.game.outgoing.model.misc.player.MessageGame
@@ -306,6 +290,10 @@ public interface ServerPacketTranscriber {
     public fun updateUid192(message: UpdateUid192)
 
     public fun urlOpen(message: UrlOpen)
+
+    public fun packetGroupStart(message: PacketGroupStart)
+
+    public fun packetGroupEnd(message: PacketGroupEnd)
 
     public fun chatFilterSettings(message: ChatFilterSettings)
 

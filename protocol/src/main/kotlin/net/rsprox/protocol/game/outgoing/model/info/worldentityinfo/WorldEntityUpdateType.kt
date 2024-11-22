@@ -12,6 +12,8 @@ public sealed interface WorldEntityUpdateType {
         public val angle: Int,
         public val coordFine: CoordFine,
         public val level: Int,
+        public val centerFineOffsetX: Int?,
+        public val centerFineOffsetZ: Int?,
     ) : WorldEntityUpdateType
 
     public class LowResolutionToHighResolutionV1(

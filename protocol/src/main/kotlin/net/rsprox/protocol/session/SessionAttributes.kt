@@ -10,6 +10,8 @@ private var Session.reflectionCheckMap: MutableMap<Int, List<ReflectionCheck>>? 
 private var Session.trackedWorldMap: MutableMap<Int, World>? by attribute()
 private var Session.currentActiveWorld: Int? by attribute()
 private var Session.activeNpcInfoBaseCoord: CoordGrid? by attribute()
+private var Session.bytesInPacketGroup: Int? by attribute()
+private var Session.bytesConsumedInPacketGroup: Int? by attribute()
 
 public fun Session.getReflectionChecks(): MutableMap<Int, List<ReflectionCheck>> {
     val existingChecks = this.reflectionCheckMap
@@ -51,4 +53,20 @@ public fun Session.getNpcInfoBaseCoord(): CoordGrid {
 
 public fun Session.setNpcInfoBaseCoord(coordGrid: CoordGrid) {
     this.activeNpcInfoBaseCoord = coordGrid
+}
+
+public fun Session.getRemainingBytesInPacketGroup(): Int? {
+    return this.bytesInPacketGroup
+}
+
+public fun Session.setRemainingBytesInPacketGroup(num: Int?) {
+    this.bytesInPacketGroup = num
+}
+
+public fun Session.getBytesConsumed(): Int? {
+    return this.bytesConsumedInPacketGroup
+}
+
+public fun Session.setBytesConsumed(num: Int?) {
+    this.bytesConsumedInPacketGroup = num
 }

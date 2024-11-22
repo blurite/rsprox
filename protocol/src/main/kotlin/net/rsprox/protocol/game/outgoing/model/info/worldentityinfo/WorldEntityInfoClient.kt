@@ -18,7 +18,7 @@ public class WorldEntityInfoClient {
         updates.clear()
         if (version >= 3) {
             decodeHighResolutionV2(buffer)
-            decodeLowResolutionV2(buffer, baseCoord)
+            decodeLowResolutionV2(buffer, baseCoord, version)
         } else {
             decodeHighResolutionV1(buffer)
             decodeLowResolutionV1(buffer, baseCoord)
@@ -27,6 +27,7 @@ public class WorldEntityInfoClient {
             1 -> WorldEntityInfoV1(updates.toMap())
             2 -> WorldEntityInfoV2(updates.toMap())
             3 -> WorldEntityInfoV3(updates.toMap())
+            4 -> WorldEntityInfoV4(updates.toMap())
             else -> error("Invalid version: $version")
         }
     }
@@ -174,6 +175,7 @@ public class WorldEntityInfoClient {
     private fun decodeLowResolutionV2(
         buffer: JagByteBuf,
         baseCoord: CoordGrid,
+        version: Int,
     ) {
         while (buffer.isReadable(10)) {
             val index = buffer.g2()
@@ -197,6 +199,8 @@ public class WorldEntityInfoClient {
                     coordFine.y,
                     (baseCoord.z shl 7) + coordFine.z,
                 )
+            val centerFineOffsetX = if (version >= 4) buffer.g2s() else null
+            val centerFineOffsetZ = if (version >= 4) buffer.g2s() else null
             val worldEntity =
                 WorldEntityV2(
                     index,
@@ -205,6 +209,8 @@ public class WorldEntityInfoClient {
                     coordFine,
                     angle,
                     level,
+                    centerFineOffsetX,
+                    centerFineOffsetZ,
                 )
             this.worldEntity[index] = worldEntity
             this.updates[index] =
@@ -214,6 +220,8 @@ public class WorldEntityInfoClient {
                     angle,
                     coordFine,
                     level,
+                    centerFineOffsetX,
+                    centerFineOffsetZ,
                 )
         }
     }
@@ -237,5 +245,7 @@ public class WorldEntityInfoClient {
         var coordFine: CoordFine,
         var angle: Int,
         val level: Int,
+        val centerFineOffsetX: Int?,
+        val centerFineOffsetZ: Int?,
     )
 }

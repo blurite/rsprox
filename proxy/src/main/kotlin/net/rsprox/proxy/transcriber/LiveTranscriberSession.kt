@@ -52,16 +52,18 @@ public class LiveTranscriberSession(
     private fun decode(unidentified: UnidentifiedPacket) {
         val index = unidentified.payload.readerIndex()
         try {
-            val result =
+            val results =
                 decodingSession.decodePacket(
                     unidentified.direction,
                     unidentified.payload,
                     session,
                 )
-            packetList += Packet(unidentified.direction, result.prot, result.message)
-            if (result.prot.toString() == "SERVER_TICK_END") {
-                executeRunner(runner.preprocess(packetList))
-                packetList.clear()
+            for (result in results) {
+                packetList += Packet(unidentified.direction, result.prot, result.message)
+                if (result.prot.toString() == "SERVER_TICK_END") {
+                    executeRunner(runner.preprocess(packetList))
+                    packetList.clear()
+                }
             }
         } catch (t: Throwable) {
             unidentified.payload.readerIndex(index)

@@ -181,6 +181,8 @@ public enum class GameServerProt : Prot {
     REFLECTION_CHECKER,
     SEND_PING,
     HISCORE_REPLY,
+    PACKET_GROUP_START,
+    PACKET_GROUP_END,
 
     // Unknown packets
     UNKNOWN_STRING,
