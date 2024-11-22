@@ -177,6 +177,7 @@ public class TranscriberPlugin(
             GameServerProt.HIDENPCOPS -> pass(message, Transcriber::hideNpcOps)
             GameServerProt.HIDELOCOPS -> pass(message, Transcriber::hideLocOps)
             GameServerProt.URL_OPEN -> pass(message, Transcriber::urlOpen)
+            GameServerProt.PACKET_GROUP_START -> pass(message, Transcriber::packetGroupStart)
             GameServerProt.SITE_SETTINGS -> pass(message, Transcriber::siteSettings)
             GameServerProt.UPDATE_UID192 -> pass(message, Transcriber::updateUid192)
             GameServerProt.REFLECTION_CHECKER -> pass(message, Transcriber::reflectionChecker)

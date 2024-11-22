@@ -16,7 +16,6 @@ import net.rsprox.protocol.v227.game.outgoing.decoder.codec.camera.CamRotateBy
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.camera.CamRotateToDecoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.camera.CamShakeDecoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.camera.CamSmoothResetDecoder
-import net.rsprox.protocol.v227.game.outgoing.decoder.codec.camera.CamTargetV1Decoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.camera.CamTargetV2Decoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.camera.OculusSyncDecoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.clan.ClanChannelDeltaDecoder
@@ -29,9 +28,9 @@ import net.rsprox.protocol.v227.game.outgoing.decoder.codec.clan.VarClanDecoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.clan.VarClanDisableDecoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.clan.VarClanEnableDecoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.friendchat.MessageFriendChannelDecoder
-import net.rsprox.protocol.v227.game.outgoing.decoder.codec.friendchat.UpdateFriendChatChannelFullV1Decoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.friendchat.UpdateFriendChatChannelFullV2Decoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.friendchat.UpdateFriendChatChannelSingleUserDecoder
+import net.rsprox.protocol.v227.game.outgoing.decoder.codec.info.*
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.info.NpcInfoLargeV5Decoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.info.NpcInfoSmallV5Decoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.info.PlayerInfoDecoder
@@ -71,6 +70,7 @@ import net.rsprox.protocol.v227.game.outgoing.decoder.codec.map.RebuildRegionDec
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.map.RebuildWorldEntityDecoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.map.ReconnectDecoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.map.StaticRebuildDecoder
+import net.rsprox.protocol.v227.game.outgoing.decoder.codec.misc.client.*
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.misc.client.HideLocOpsDecoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.misc.client.HideNpcOpsDecoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.misc.client.HideObjOpsDecoder
@@ -97,7 +97,6 @@ import net.rsprox.protocol.v227.game.outgoing.decoder.codec.misc.player.SetPlaye
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.misc.player.TriggerOnDialogAbortDecoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.misc.player.UpdateRunEnergyDecoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.misc.player.UpdateRunWeightDecoder
-import net.rsprox.protocol.v227.game.outgoing.decoder.codec.misc.player.UpdateStatV1Decoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.misc.player.UpdateStatV2Decoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.misc.player.UpdateStockMarketSlotDecoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.misc.player.UpdateTradingPostDecoder
@@ -108,7 +107,6 @@ import net.rsprox.protocol.v227.game.outgoing.decoder.codec.social.UpdateFriendL
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.social.UpdateIgnoreListDecoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.sound.MidiJingleDecoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.sound.MidiSongStopDecoder
-import net.rsprox.protocol.v227.game.outgoing.decoder.codec.sound.MidiSongV1Decoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.sound.MidiSongV2Decoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.sound.MidiSongWithSecondaryDecoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.sound.MidiSwapDecoder
@@ -168,7 +166,6 @@ internal object ServerMessageDecoderRepository {
                 bind(CamShakeDecoder())
                 bind(CamSmoothResetDecoder())
                 bind(CamTargetV2Decoder())
-                bind(CamTargetV1Decoder())
                 bind(OculusSyncDecoder())
 
                 bind(ClanChannelDeltaDecoder())
@@ -182,7 +179,6 @@ internal object ServerMessageDecoderRepository {
                 bind(VarClanDecoder())
 
                 bind(MessageFriendChannelDecoder(huffmanCodec))
-                bind(UpdateFriendChatChannelFullV1Decoder())
                 bind(UpdateFriendChatChannelFullV2Decoder())
                 bind(UpdateFriendChatChannelSingleUserDecoder())
 
@@ -191,6 +187,7 @@ internal object ServerMessageDecoderRepository {
                 bind(NpcInfoLargeV5Decoder())
                 bind(SetNpcUpdateOriginDecoder())
                 bind(WorldEntityInfoV3Decoder())
+                bind(WorldEntityInfoV4Decoder())
 
                 bind(IfClearInvDecoder())
                 bind(IfCloseSubDecoder())
@@ -247,6 +244,7 @@ internal object ServerMessageDecoderRepository {
                 bind(SiteSettingsDecoder())
                 bind(UpdateUid192Decoder())
                 bind(UrlOpenDecoder())
+                bind(PacketGroupStartDecoder())
 
                 bind(ChatFilterSettingsDecoder())
                 bind(ChatFilterSettingsPrivateChatDecoder())
@@ -258,7 +256,6 @@ internal object ServerMessageDecoderRepository {
                 bind(UpdateRunEnergyDecoder())
                 bind(UpdateRunWeightDecoder())
                 bind(UpdateStatV2Decoder())
-                bind(UpdateStatV1Decoder())
                 bind(UpdateStockMarketSlotDecoder())
                 bind(UpdateTradingPostDecoder())
 
@@ -270,7 +267,6 @@ internal object ServerMessageDecoderRepository {
 
                 bind(MidiJingleDecoder())
                 bind(MidiSongV2Decoder())
-                bind(MidiSongV1Decoder())
                 bind(MidiSongStopDecoder())
                 bind(MidiSongWithSecondaryDecoder())
                 bind(MidiSwapDecoder())

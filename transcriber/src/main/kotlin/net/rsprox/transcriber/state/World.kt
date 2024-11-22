@@ -17,6 +17,8 @@ public class World(
     public var sizeZ: Int = 2048
     public var angle: Int = 0
     public var level: Int = 0
+    public var centerFineOffsetX: Int? = null
+    public var centerFineOffsetZ: Int? = null
     public var coordFine: CoordFine = CoordFine.INVALID
     public var coord: CoordGrid = CoordGrid.INVALID
     private val npcs: MutableMap<Int, Npc> = mutableMapOf()

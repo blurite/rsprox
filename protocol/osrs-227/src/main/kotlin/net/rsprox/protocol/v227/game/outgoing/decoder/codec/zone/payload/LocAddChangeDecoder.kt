@@ -17,10 +17,10 @@ internal class LocAddChangeDecoder : ProxyMessageDecoder<LocAddChange> {
         buffer: JagByteBuf,
         session: Session,
     ): LocAddChange {
+        val opFlags = OpFlags(buffer.g1Alt1())
+        val id = buffer.g2()
         val locProperties = LocProperties(buffer.g1Alt3())
-        val opFlags = OpFlags(buffer.g1Alt3())
-        val id = buffer.g2Alt1()
-        val coordInZone = CoordInZone(buffer.g1Alt1())
+        val coordInZone = CoordInZone(buffer.g1())
         return LocAddChange(
             id,
             coordInZone,

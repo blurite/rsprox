@@ -16,8 +16,8 @@ internal class IfSetRotateSpeedDecoder : ProxyMessageDecoder<IfSetRotateSpeed> {
         session: Session,
     ): IfSetRotateSpeed {
         val combinedId = buffer.gCombinedId()
-        val ySpeed = buffer.g2Alt1()
-        val xSpeed = buffer.g2Alt2()
+        val ySpeed = buffer.g2()
+        val xSpeed = buffer.g2Alt1()
         return IfSetRotateSpeed(
             combinedId.interfaceId,
             combinedId.componentId,

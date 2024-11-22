@@ -82,6 +82,7 @@ import net.rsprox.protocol.game.outgoing.model.misc.client.HideObjOps
 import net.rsprox.protocol.game.outgoing.model.misc.client.HintArrow
 import net.rsprox.protocol.game.outgoing.model.misc.client.HiscoreReply
 import net.rsprox.protocol.game.outgoing.model.misc.client.MinimapToggle
+import net.rsprox.protocol.game.outgoing.model.misc.client.PacketGroupStart
 import net.rsprox.protocol.game.outgoing.model.misc.client.ReflectionChecker
 import net.rsprox.protocol.game.outgoing.model.misc.client.ResetAnims
 import net.rsprox.protocol.game.outgoing.model.misc.client.ResetInteractionMode
@@ -301,6 +302,8 @@ public class TextServerPacketTranscriber(
                 world.coord.z,
                 world.sizeX,
                 world.sizeZ,
+                world.centerFineOffsetX,
+                world.centerFineOffsetZ,
                 name,
             )
         } else {
@@ -1720,6 +1723,11 @@ public class TextServerPacketTranscriber(
     override fun urlOpen(message: UrlOpen) {
         if (!filters[PropertyFilter.URL_OPEN]) return omit()
         root.string("url", message.url)
+    }
+
+    override fun packetGroupStart(message: PacketGroupStart) {
+        if (!filters[PropertyFilter.PACKET_GROUP_START]) return omit()
+        root.int("length", message.length)
     }
 
     private enum class ChatFilter(

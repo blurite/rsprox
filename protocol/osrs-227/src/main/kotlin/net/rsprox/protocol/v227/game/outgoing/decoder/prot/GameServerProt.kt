@@ -40,7 +40,6 @@ public enum class GameServerProt(
     MIDI_SONG_WITHSECONDARY(GameServerProtId.MIDI_SONG_WITHSECONDARY, 12),
     MIDI_SWAP(GameServerProtId.MIDI_SWAP, 8),
     MIDI_SONG_STOP(GameServerProtId.MIDI_SONG_STOP, 4),
-    MIDI_SONG_V1(GameServerProtId.MIDI_SONG_V1, 2),
     MIDI_JINGLE(GameServerProtId.MIDI_JINGLE, 5),
     SYNTH_SOUND(GameServerProtId.SYNTH_SOUND, 5),
 
@@ -66,19 +65,6 @@ public enum class GameServerProt(
 
     // Specific packets
     PROJANIM_SPECIFIC_V3(GameServerProtId.PROJANIM_SPECIFIC_V3, 22),
-
-    @Deprecated(
-        "Deprecated as a new variant that supports source index was introduced.",
-        replaceWith = ReplaceWith("PROJANIM_SPECIFIC_V3"),
-    )
-    PROJANIM_SPECIFIC_V2(GameServerProtId.PROJANIM_SPECIFIC_V2, 19),
-
-    @Deprecated(
-        "Deprecated as it is bugged(size: 17; payload: 18) and " +
-            "a newer variant with greater property ranges is introduced",
-        replaceWith = ReplaceWith("PROJANIM_SPECIFIC_V2"),
-    )
-    PROJANIM_SPECIFIC_V1(GameServerProtId.PROJANIM_SPECIFIC_V1, 17),
     MAP_ANIM_SPECIFIC(GameServerProtId.MAP_ANIM_SPECIFIC, 8),
     LOC_ANIM_SPECIFIC(GameServerProtId.LOC_ANIM_SPECIFIC, 6),
     NPC_HEADICON_SPECIFIC(GameServerProtId.NPC_HEADICON_SPECIFIC, 9),
@@ -92,35 +78,18 @@ public enum class GameServerProt(
     NPC_INFO_SMALL_V5(GameServerProtId.NPC_INFO_SMALL_V5, Prot.VAR_SHORT),
     NPC_INFO_LARGE_V5(GameServerProtId.NPC_INFO_LARGE_V5, Prot.VAR_SHORT),
 
-    @Deprecated(
-        "Deprecated as a new variant was introduced.",
-        replaceWith = ReplaceWith("NPC_INFO_SMALL_V5"),
-    )
-    NPC_INFO_SMALL_V4(GameServerProtId.NPC_INFO_SMALL_V4, Prot.VAR_SHORT),
-
-    @Deprecated(
-        "Deprecated as a new variant was introduced.",
-        replaceWith = ReplaceWith("NPC_INFO_LARGE_V5"),
-    )
-    NPC_INFO_LARGE_V4(GameServerProtId.NPC_INFO_LARGE_V4, Prot.VAR_SHORT),
     SET_NPC_UPDATE_ORIGIN(GameServerProtId.SET_NPC_UPDATE_ORIGIN, 2),
 
     // World entity packets
     CLEAR_ENTITIES(GameServerProtId.CLEAR_ENTITIES, 0),
     SET_ACTIVE_WORLD(GameServerProtId.SET_ACTIVE_WORLD, 4),
+
+    @Deprecated(
+        "Deprecated as a new variant that supports defining center coord was introduced.",
+        replaceWith = ReplaceWith("WORLDENTITY_INFO_V4"),
+    )
     WORLDENTITY_INFO_V3(GameServerProtId.WORLDENTITY_INFO_V3, Prot.VAR_SHORT),
-
-    @Deprecated(
-        "Deprecated as a new variant that supports fine coord was introduced.",
-        replaceWith = ReplaceWith("WORLDENTITY_INFO_V3"),
-    )
-    WORLDENTITY_INFO_V2(GameServerProtId.WORLDENTITY_INFO_V2, Prot.VAR_SHORT),
-
-    @Deprecated(
-        "Deprecated as a new variant that supports fine height was introduced.",
-        replaceWith = ReplaceWith("WORLDENTITY_INFO_V2"),
-    )
-    WORLDENTITY_INFO_V1(GameServerProtId.WORLDENTITY_INFO_V1, Prot.VAR_SHORT),
+    WORLDENTITY_INFO_V4(GameServerProtId.WORLDENTITY_INFO_V4, Prot.VAR_SHORT),
 
     // Map packets
     REBUILD_NORMAL(GameServerProtId.REBUILD_NORMAL, Prot.VAR_SHORT),
@@ -146,7 +115,6 @@ public enum class GameServerProt(
     CAM_ROTATETO(GameServerProtId.CAM_ROTATETO, 7),
     CAM_MODE(GameServerProtId.CAM_MODE, 1),
     CAM_TARGET_V2(GameServerProtId.CAM_TARGET_V2, 5),
-    CAM_TARGET_V1(GameServerProtId.CAM_TARGET_V1, 3),
     OCULUS_SYNC(GameServerProtId.OCULUS_SYNC, 4),
 
     // Inventory packets
@@ -162,7 +130,6 @@ public enum class GameServerProt(
     UPDATE_IGNORELIST(GameServerProtId.UPDATE_IGNORELIST, Prot.VAR_SHORT),
 
     // Friend chat (old "clans") packets
-    UPDATE_FRIENDCHAT_CHANNEL_FULL_V1(GameServerProtId.UPDATE_FRIENDCHAT_CHANNEL_FULL_V1, Prot.VAR_SHORT),
     UPDATE_FRIENDCHAT_CHANNEL_FULL_V2(GameServerProtId.UPDATE_FRIENDCHAT_CHANNEL_FULL_V2, Prot.VAR_SHORT),
     UPDATE_FRIENDCHAT_CHANNEL_SINGLEUSER(GameServerProtId.UPDATE_FRIENDCHAT_CHANNEL_SINGLEUSER, Prot.VAR_BYTE),
     MESSAGE_FRIENDCHANNEL(GameServerProtId.MESSAGE_FRIENDCHANNEL, Prot.VAR_BYTE),
@@ -189,7 +156,6 @@ public enum class GameServerProt(
     SET_MAP_FLAG(GameServerProtId.SET_MAP_FLAG, 2),
     SET_PLAYER_OP(GameServerProtId.SET_PLAYER_OP, Prot.VAR_BYTE),
     UPDATE_STAT_V2(GameServerProtId.UPDATE_STAT_V2, 7),
-    UPDATE_STAT_V1(GameServerProtId.UPDATE_STAT_V1, 6),
 
     // Misc. player packets
     RUNCLIENTSCRIPT(GameServerProtId.RUNCLIENTSCRIPT, Prot.VAR_SHORT),
@@ -220,6 +186,7 @@ public enum class GameServerProt(
     REFLECTION_CHECKER(GameServerProtId.REFLECTION_CHECKER, Prot.VAR_SHORT),
     SEND_PING(GameServerProtId.SEND_PING, 8),
     HISCORE_REPLY(GameServerProtId.HISCORE_REPLY, Prot.VAR_SHORT),
+    PACKET_GROUP_START(GameServerProtId.PACKET_GROUP_START, 2),
 
     // Unknown packets
     UNKNOWN_STRING(GameServerProtId.UNKNOWN_STRING, Prot.VAR_BYTE),

@@ -8,9 +8,18 @@ public class IdentifiedWorldEntityProperty(
     public val level: Int,
     public val x: Int,
     public val z: Int,
-    public val sizeX: Int,
-    public val sizeZ: Int,
-    override val value: String = "(index=$index, coord=($x, $z, $level), sizex=$sizeX, sizez=$sizeZ)",
+    sizeX: Int,
+    sizeZ: Int,
+    centerFineOffsetX: Int?,
+    centerFineOffsetZ: Int?,
     override val children: MutableList<ChildProperty<*>> = mutableListOf(),
     override val type: Class<String> = String::class.java,
-) : ChildProperty<String>
+) : ChildProperty<String> {
+    override val value: String =
+        if (centerFineOffsetX != null && centerFineOffsetZ != null) {
+            "(index=$index, coord=($x, $z, $level), " +
+                "sizex=$sizeX, sizez=$sizeZ, offsetx=$centerFineOffsetX, offsetz=$centerFineOffsetZ)"
+        } else {
+            "(index=$index, coord=($x, $z, $level), sizex=$sizeX, sizez=$sizeZ)"
+        }
+}

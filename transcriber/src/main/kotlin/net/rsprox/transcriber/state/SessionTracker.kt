@@ -141,6 +141,8 @@ public class SessionTracker(
                             world.sizeZ = update.sizeZ
                             world.angle = update.angle
                             world.level = update.level
+                            world.centerFineOffsetX = update.centerFineOffsetX
+                            world.centerFineOffsetZ = update.centerFineOffsetZ
                             world.coordFine = update.coordFine
                             world.coord = update.coordFine.toCoordGrid(world.level)
                         }

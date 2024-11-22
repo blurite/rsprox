@@ -15,10 +15,10 @@ internal class ObjCountDecoder : ProxyMessageDecoder<ObjCount> {
         buffer: JagByteBuf,
         session: Session,
     ): ObjCount {
-        val oldQuantity = buffer.g4Alt3()
+        val coordInZone = CoordInZone(buffer.g1Alt3())
         val id = buffer.g2Alt2()
-        val coordInZone = CoordInZone(buffer.g1())
-        val newQuantity = buffer.g4()
+        val oldQuantity = buffer.g4()
+        val newQuantity = buffer.g4Alt2()
         return ObjCount(
             id,
             oldQuantity,
