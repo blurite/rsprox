@@ -1152,12 +1152,12 @@ public enum class PropertyFilter(
         false,
         searchTerms = "url,site,open,secure,link,browser",
     ),
-    PACKET_GROUP_START(
+    PACKET_GROUP(
         SERVER_TO_CLIENT,
         OTHER,
-        "Packet Group Start",
+        "Packet Group",
         false,
-        searchTerms = "packet,group,start,batch",
+        searchTerms = "packet,group,batch",
     ),
     SITE_SETTINGS(
         SERVER_TO_CLIENT,

@@ -293,6 +293,8 @@ public interface ServerPacketTranscriber {
 
     public fun packetGroupStart(message: PacketGroupStart)
 
+    public fun packetGroupEnd(message: PacketGroupEnd)
+
     public fun chatFilterSettings(message: ChatFilterSettings)
 
     public fun chatFilterSettingsPrivateChat(message: ChatFilterSettingsPrivateChat)

@@ -861,6 +861,9 @@ public class IndexerTranscriber(
     override fun packetGroupStart(message: PacketGroupStart) {
     }
 
+    override fun packetGroupEnd(message: PacketGroupEnd) {
+    }
+
     override fun chatFilterSettings(message: ChatFilterSettings) {
     }
 

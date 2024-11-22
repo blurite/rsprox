@@ -6,6 +6,8 @@ import net.rsprot.protocol.metadata.Consistent
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.model.misc.client.PacketGroupStart
 import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.session.setBytesConsumed
+import net.rsprox.protocol.session.setRemainingBytesInPacketGroup
 import net.rsprox.protocol.v227.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
@@ -17,6 +19,8 @@ internal class PacketGroupStartDecoder : ProxyMessageDecoder<PacketGroupStart> {
         session: Session,
     ): PacketGroupStart {
         val length = buffer.g2s()
+        session.setRemainingBytesInPacketGroup(length)
+        session.setBytesConsumed(null)
         return PacketGroupStart(length)
     }
 }

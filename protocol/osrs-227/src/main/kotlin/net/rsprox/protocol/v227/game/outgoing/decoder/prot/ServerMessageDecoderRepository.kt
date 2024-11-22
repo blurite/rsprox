@@ -245,6 +245,7 @@ internal object ServerMessageDecoderRepository {
                 bind(UpdateUid192Decoder())
                 bind(UrlOpenDecoder())
                 bind(PacketGroupStartDecoder())
+                bind(PacketGroupEndDecoder())
 
                 bind(ChatFilterSettingsDecoder())
                 bind(ChatFilterSettingsPrivateChatDecoder())

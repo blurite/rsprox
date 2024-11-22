@@ -82,6 +82,7 @@ import net.rsprox.protocol.game.outgoing.model.misc.client.HideObjOps
 import net.rsprox.protocol.game.outgoing.model.misc.client.HintArrow
 import net.rsprox.protocol.game.outgoing.model.misc.client.HiscoreReply
 import net.rsprox.protocol.game.outgoing.model.misc.client.MinimapToggle
+import net.rsprox.protocol.game.outgoing.model.misc.client.PacketGroupEnd
 import net.rsprox.protocol.game.outgoing.model.misc.client.PacketGroupStart
 import net.rsprox.protocol.game.outgoing.model.misc.client.ReflectionChecker
 import net.rsprox.protocol.game.outgoing.model.misc.client.ResetAnims
@@ -1726,8 +1727,13 @@ public class TextServerPacketTranscriber(
     }
 
     override fun packetGroupStart(message: PacketGroupStart) {
-        if (!filters[PropertyFilter.PACKET_GROUP_START]) return omit()
+        if (!filters[PropertyFilter.PACKET_GROUP]) return omit()
         root.int("length", message.length)
+    }
+
+    override fun packetGroupEnd(message: PacketGroupEnd) {
+        if (!filters[PropertyFilter.PACKET_GROUP]) return omit()
+        root.int("bytesconsumed", message.bytesRead)
     }
 
     private enum class ChatFilter(
