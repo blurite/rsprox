@@ -35,6 +35,7 @@ dependencies {
     implementation(projects.protocol.osrs224)
     implementation(projects.protocol.osrs225)
     implementation(projects.protocol.osrs226)
+    implementation(projects.protocol.osrs227)
 }
 
 tasks.build.configure {
