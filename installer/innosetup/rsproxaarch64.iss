@@ -34,8 +34,6 @@ Source: "..\build\win-aarch64\jdk\*"; DestDir: "{app}\jdk"; Flags: recursesubdir
 [Icons]
 ; start menu
 Name: "{userprograms}\RSProx\RSProx"; Filename: "{app}\RSProx.exe"
-Name: "{userprograms}\RSProx\RSProx (configure)"; Filename: "{app}\RSProx.exe"; Parameters: "--configure"
-Name: "{userprograms}\RSProx\RSProx (safe mode)"; Filename: "{app}\RSProx.exe"; Parameters: "--safe-mode"
 Name: "{userdesktop}\RSProx"; Filename: "{app}\RSProx.exe"; Tasks: DesktopIcon
 
 [Run]
