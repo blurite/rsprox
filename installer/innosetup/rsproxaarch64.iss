@@ -37,7 +37,6 @@ Name: "{userprograms}\RSProx\RSProx"; Filename: "{app}\RSProx.exe"
 Name: "{userdesktop}\RSProx"; Filename: "{app}\RSProx.exe"; Tasks: DesktopIcon
 
 [Run]
-Filename: "{app}\RSProx.exe"; Parameters: "--postinstall"; Flags: nowait
 Filename: "{app}\RSProx.exe"; Description: "&Open RSProx"; Flags: postinstall skipifsilent nowait
 
 [InstallDelete]
