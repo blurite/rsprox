@@ -360,7 +360,7 @@ internal class PlayerInfoClient(
         blocks: MutableList<ExtendedInfo>,
     ) {
         val id = buffer.g2Alt2()
-        val delay = buffer.g1Alt2()
+        val delay = buffer.g1Alt1()
         blocks += SequenceExtendedInfo(id, delay)
     }
 
