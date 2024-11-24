@@ -11,6 +11,7 @@ dependencies {
     implementation(libs.inline.logger)
     implementation(libs.okhttp3)
     implementation(libs.gson)
+    implementation(libs.jopt.simple)
 }
 
 tasks.withType<ShadowJar> {

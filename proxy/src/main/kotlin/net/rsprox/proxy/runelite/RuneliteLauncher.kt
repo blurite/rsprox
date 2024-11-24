@@ -7,6 +7,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.*
 import java.nio.file.Files
+import java.nio.file.Paths
 import java.security.MessageDigest
 import java.security.Signature
 import java.security.cert.Certificate
@@ -37,6 +38,26 @@ public class RuneliteLauncher {
         logger.info { "Initialising RuneLite launcher ${bootstrap.launcher.version}" }
     }
 
+    private fun getJava(): String {
+        val javaHome = Paths.get(System.getProperty("java.home"))
+
+        if (!Files.exists(javaHome)) {
+            throw FileNotFoundException("JAVA_HOME is not set correctly! directory \"$javaHome\" does not exist.")
+        }
+
+        var javaPath = Paths.get(javaHome.toString(), "bin", "java.exe")
+
+        if (!Files.exists(javaPath)) {
+            javaPath = Paths.get(javaHome.toString(), "bin", "java")
+        }
+
+        if (!Files.exists(javaPath)) {
+            throw FileNotFoundException("java executable not found in directory \"" + javaPath.parent + "\"")
+        }
+
+        return javaPath.toAbsolutePath().toString()
+    }
+
     public fun getLaunchArgs(
         port: Int,
         rsa: String,
@@ -56,6 +77,7 @@ public class RuneliteLauncher {
         }
 
         return listOf(
+            getJava(),
             "-cp",
             classpath.toString(),
             bootstrap.launcher.mainClass,

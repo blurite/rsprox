@@ -54,14 +54,12 @@ import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
 import org.newsclub.net.unix.AFUNIXServerSocket
 import org.newsclub.net.unix.AFUNIXSocketAddress
 import java.io.File
-import java.io.FileNotFoundException
 import java.io.IOException
 import java.math.BigInteger
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
@@ -378,26 +376,6 @@ public class ProxyService(
         }
     }
 
-    private fun getJava(): String {
-        val javaHome = Paths.get(System.getProperty("java.home"))
-
-        if (!Files.exists(javaHome)) {
-            throw FileNotFoundException("JAVA_HOME is not set correctly! directory \"$javaHome\" does not exist.")
-        }
-
-        var javaPath = Paths.get(javaHome.toString(), "bin", "java.exe")
-
-        if (!Files.exists(javaPath)) {
-            javaPath = Paths.get(javaHome.toString(), "bin", "java")
-        }
-
-        if (!Files.exists(javaPath)) {
-            throw FileNotFoundException("java executable not found in directory \"" + javaPath.parent + "\"")
-        }
-
-        return javaPath.toAbsolutePath().toString()
-    }
-
     public fun launchRuneLiteClient(
         sessionMonitor: SessionMonitor<BinaryHeader>,
         character: JagexCharacter?,
@@ -411,7 +389,7 @@ public class ProxyService(
         }
         this.connections.addSessionMonitor(port, sessionMonitor)
         ClientTypeDictionary[port] = "RuneLite (${operatingSystem.shortName})"
-        launchJar(
+        launchJavaProcess(
             port,
             operatingSystem,
             character,
@@ -496,7 +474,7 @@ public class ProxyService(
         launchExecutable(port, result.outputPath, os, character)
     }
 
-    private fun launchJar(
+    private fun launchJavaProcess(
         port: Int,
         operatingSystem: OperatingSystem,
         character: JagexCharacter?,
@@ -511,7 +489,7 @@ public class ProxyService(
         try {
             val javConfigEndpoint = properties.getProperty(JAV_CONFIG_ENDPOINT)
             val launcher = RuneliteLauncher()
-            val args = listOf(getJava()) + launcher.getLaunchArgs(
+            val args = launcher.getLaunchArgs(
                 port,
                 rsa.publicKey.modulus.toString(16),
                 javConfig = "http://127.0.0.1:$HTTP_SERVER_PORT/$javConfigEndpoint",

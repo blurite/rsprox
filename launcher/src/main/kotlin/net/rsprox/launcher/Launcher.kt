@@ -2,14 +2,12 @@ package net.rsprox.launcher
 
 import com.github.michaelbull.logging.InlineLogger
 import com.google.gson.Gson
+import joptsimple.OptionParser
 import net.rsprox.gui.SplashScreen
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import java.io.ByteArrayInputStream
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.IOException
-import java.io.InputStreamReader
+import java.io.*
+import java.net.URLClassLoader
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -17,15 +15,74 @@ import java.security.MessageDigest
 import java.security.Signature
 import java.security.cert.Certificate
 import java.security.cert.CertificateFactory
-import java.util.Locale
+import java.util.*
+import java.util.stream.Collectors
+import javax.swing.UIManager
 import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
 
 public fun main(args: Array<String>) {
+    val logger = InlineLogger()
+    val parser = OptionParser(false)
+    parser.allowsUnrecognizedOptions()
+    parser.accepts("runelite", "Whether we are launching the RuneLite client")
+    parser.accepts("classpath", "Classpath for the process are are launching").withRequiredArg()
+
+    val options = parser.parse(*args)
+    if (options.has("classpath")) {
+        // Sometimes we will be getting launched as a process by an existing RSProx process or a new runelite
+        // process, e.g. from a Linux AppImage launcher. In this case we need to load the classpath and launch
+        // the main class ourselves using reflection, passing along any necessary arguments.
+
+        val loadingRunelite = options.has("runelite")
+        val classpathOpt = options.valueOf("classpath").toString()
+        val classpath = classpathOpt.split(File.pathSeparator).stream().map {
+            if (loadingRunelite) {
+                // runelite-launcher doesn't pass the fully qualified paths of jars, so construct them ourselves
+                Paths.get(System.getProperty("user.home"), ".runelite", "repository2", it).toFile()
+            } else {
+                Paths.get(it).toFile()
+            }
+        }.collect(Collectors.toList())
+
+        val jarUrls = classpath.map { it.toURI().toURL() }.toTypedArray()
+        val parent = ClassLoader.getPlatformClassLoader()
+        val loader = URLClassLoader(jarUrls, parent)
+
+        UIManager.put("ClassLoader", loader)
+        val thread = Thread {
+            try {
+                val mainClassPath = if (loadingRunelite) "net.runelite.client.RuneLite" else listOf("net" +
+                    ".runelite.launcher.Launcher", "net.rsprox.gui.ProxyToolGuiKt").first { it in args}
+                val mainClass = loader.loadClass(mainClassPath)
+                val mainArgs = if (loadingRunelite) {
+                    // RuneLite doesn't allow unrecognised arguments so only use arguments after --classpath
+                    args.copyOfRange(args.indexOfFirst { it == "--classpath" } + 2, args.size)
+                }else {
+                    args.copyOfRange(args.indexOfFirst { it == mainClass.name } + 1, args.size)
+                }
+
+                logger.info { "Launching process using reflection: $mainClassPath ${mainArgs.joinToString(", ")}" }
+
+                val main = mainClass.getMethod("main", Array<String>::class.java)
+                main.invoke(null, mainArgs)
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+            }
+        }
+        thread.name = "RSProx"
+        thread.start()
+
+        return
+    }
+
     Locale.setDefault(Locale.US)
     SplashScreen.init()
     SplashScreen.stage(0.0, "Preparing", "Setting up environment")
-    val launcher = Launcher()
+
+    val launcher = Launcher(args)
+    val launcherArgs = launcher.getLaunchArgs(args)
+    logger.info { "Running process: ${launcherArgs.joinToString(" ")}" }
 
     val builder =
         ProcessBuilder()
@@ -53,11 +110,23 @@ public data class Bootstrap(
     val proxy: Proxy,
 )
 
-public class Launcher {
+public class Launcher(args: Array<String>) {
     private val bootstrap = getBootstrap()
 
     init {
         logger.info { "Initialising RSProx launcher ${bootstrap.proxy.version}" }
+        logger.info {
+            "OS name: ${System.getProperty("os.name")}, version: ${System.getProperty("os.version")}, arch: ${
+                System.getProperty(
+                    "os.arch"
+                )
+            }"
+        }
+        logger.info { "Java path: ${getJava()}" }
+        logger.info { "Java version: ${System.getProperty("java.version")}" }
+        logger.info { "Launcher args: ${args.joinToString(",")}" }
+        logger.info { "AppImage: ${System.getenv("APPIMAGE")}" }
+
         SplashScreen.stage(0.30, "Preparing", "Creating directories")
         Files.createDirectories(artifactRepo)
     }
@@ -66,7 +135,7 @@ public class Launcher {
         val javaHome = Paths.get(System.getProperty("java.home"))
 
         if (!Files.exists(javaHome)) {
-            throw FileNotFoundException("JAVA_HOME is not set correctly! directory \"$javaHome\" does not exist.")
+            throw FileNotFoundException("JAVA_HOME is not set correctly! directory '$javaHome' does not exist.")
         }
 
         var javaPath = Paths.get(javaHome.toString(), "bin", "java.exe")
@@ -76,7 +145,7 @@ public class Launcher {
         }
 
         if (!Files.exists(javaPath)) {
-            throw FileNotFoundException("java executable not found in directory \"" + javaPath.parent + "\"")
+            throw FileNotFoundException("java executable not found in directory '${javaPath.parent}'")
         }
 
         return javaPath.toAbsolutePath().toString()
@@ -94,13 +163,27 @@ public class Launcher {
             classpath.append(artifactRepo.resolve(artifact.name).absolutePathString())
         }
 
-        return listOf(
-            getJava(),
-            "-cp",
-            classpath.toString(),
-            bootstrap.proxy.mainClass,
-            *launcherArgs
-        )
+        if (System.getenv("APPIMAGE") != null) {
+            return listOf(
+                System.getenv("APPIMAGE"),
+                "-c",
+                "-J",
+                "-XX:+DisableAttachMechanism",
+                "--",
+                "--classpath",
+                classpath.toString(),
+                bootstrap.proxy.mainClass,
+                *launcherArgs
+            )
+        } else {
+            return listOf(
+                getJava(),
+                "-cp",
+                classpath.toString(),
+                bootstrap.proxy.mainClass,
+                *launcherArgs
+            )
+        }
     }
 
     private fun download() {
