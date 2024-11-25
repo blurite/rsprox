@@ -2,6 +2,8 @@ name: Launcher
 
 on:
   workflow_dispatch:
+  release:
+    types: [ created ]
 
 jobs:
   jar:
@@ -39,6 +41,12 @@ jobs:
         with:
           name: jar
           path: launcher/build/libs/rsprox-launcher.jar
+
+      - name: Upload for release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: launcher/build/libs/rsprox-launcher.jar
 
   windows:
     runs-on: windows-2022
@@ -110,6 +118,11 @@ jobs:
           path: |
             installer/innosetup/RSProxSetup.exe
           if-no-files-found: error
+      - name: Upload for release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: installer/innosetup/RSProxSetup.exe
 #      - name: x86 installer
 #        shell: bash
 #        run: ./installer/scripts/build-win32.sh
@@ -168,6 +181,11 @@ jobs:
           path: |
             RSProx.AppImage
           if-no-files-found: error
+      - name: Upload for release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: RSProx.AppImage
 #      - name: linux-aarch64
 #        run: ./installer/scripts/build-linux-aarch64.sh
 #      - uses: actions/upload-artifact@v4
