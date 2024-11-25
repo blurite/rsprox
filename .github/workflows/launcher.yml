@@ -5,11 +5,12 @@ on:
   release:
     types: [ created ]
 
+permissions:
+  contents: write
+
 jobs:
   jar:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
