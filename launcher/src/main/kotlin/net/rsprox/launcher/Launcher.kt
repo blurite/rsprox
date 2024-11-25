@@ -26,7 +26,7 @@ public fun main(args: Array<String>) {
     val parser = OptionParser(false)
     parser.allowsUnrecognizedOptions()
     parser.accepts("runelite", "Whether we are launching the RuneLite client")
-    parser.accepts("classpath", "Classpath for the process are are launching").withRequiredArg()
+    parser.accepts("classpath", "Classpath for the process we are launching").withRequiredArg()
 
     val options = parser.parse(*args)
     if (options.has("classpath")) {
@@ -152,8 +152,8 @@ public class Launcher(args: Array<String>) {
     }
 
     public fun getLaunchArgs(launcherArgs: Array<String>): List<String> {
-        clean()
-        download()
+//        clean()
+//        download()
 
         val classpath = StringBuilder()
         for (artifact in bootstrap.artifacts) {
