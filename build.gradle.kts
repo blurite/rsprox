@@ -9,7 +9,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import java.security.MessageDigest
 import kotlin.io.path.fileSize
 
-val mainClass = "net.rsprox.gui.ProxyToolGuiKt"
+val guiMainClass = "net.rsprox.gui.ProxyToolGuiKt"
 val s3Bucket = "cdn.rsprox.net"
 
 plugins {
@@ -159,7 +159,7 @@ tasks.register("uploadJarsToS3") {
         }
 
         val bootstrap = Bootstrap(
-            proxy = Proxy(version = project.version.toString(), mainClass = mainClass),
+            proxy = Proxy(version = project.version.toString(), mainClass = guiMainClass),
             artifacts = artifacts.sortedBy { it.name },
         )
 
@@ -172,7 +172,7 @@ tasks.create<JavaExec>("proxy") {
     environment("APP_VERSION", project.version)
     group = "run"
     classpath = sourceSets["main"].runtimeClasspath
-    mainClass.set(mainClass)
+    mainClass.set(guiMainClass)
 }
 
 tasks.create<JavaExec>("download") {
