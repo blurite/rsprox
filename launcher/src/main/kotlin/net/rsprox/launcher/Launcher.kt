@@ -152,8 +152,8 @@ public class Launcher(args: Array<String>) {
     }
 
     public fun getLaunchArgs(launcherArgs: Array<String>): List<String> {
-//        clean()
-//        download()
+        clean()
+        download()
 
         val classpath = StringBuilder()
         for (artifact in bootstrap.artifacts) {
