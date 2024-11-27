@@ -145,7 +145,7 @@ Below is a small task list showing a rough breakdown of what the tool will consi
   - [x] Proxy launcher/updater
   - [x] RuneLite launcher (necessary to avoid detection)
 
-[actions-badge]: https://github.com/blurite/rsprox/actions/workflows/ci.yml/badge.svg
+[actions-badge]: https://github.com/blurite/rsprox/actions/workflows/proxy-gui.yml/badge.svg
 [actions]: https://github.com/blurite/rsprox/actions
 [mit-badge]: https://img.shields.io/badge/license-MIT-informational
 [mit]: https://opensource.org/license/MIT
