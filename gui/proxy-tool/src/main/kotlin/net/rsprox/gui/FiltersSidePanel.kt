@@ -299,6 +299,7 @@ public class FiltersSidePanel(
 
     private fun populatePresets() {
         val oldSelectedItem = presetsBox.selectedItem
+        val activeIndex = if (oldSelectedItem == null) getActiveFilterSetIndex() else -1
         presetsBoxModel.removeAllElements()
         for (i in 0 until proxyService.filterSetStore.size) {
             val filterSet = proxyService.filterSetStore.get(i) ?: continue
@@ -312,8 +313,23 @@ public class FiltersSidePanel(
                 presetsBox.selectedIndex = selectedIndex
             }
         } else {
-            presetsBox.selectedIndex = presetsBoxModel.size - 1
+            if (activeIndex != -1) {
+                presetsBox.selectedIndex = activeIndex
+            } else {
+                presetsBox.selectedIndex = presetsBoxModel.size - 1
+            }
         }
+    }
+
+    private fun getActiveFilterSetIndex(): Int {
+        val active = proxyService.filterSetStore.getActive()
+        for (i in 0 until proxyService.filterSetStore.size) {
+            val filterSet = proxyService.filterSetStore.get(i) ?: continue
+            if (active === filterSet) {
+                return i
+            }
+        }
+        return -1
     }
 
     private fun createControlButton(
