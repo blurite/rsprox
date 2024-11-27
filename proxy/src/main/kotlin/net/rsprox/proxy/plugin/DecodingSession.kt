@@ -5,7 +5,12 @@ import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.protocol.Prot
-import net.rsprox.protocol.session.*
+import net.rsprox.protocol.session.AttributeMap
+import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.session.getBytesConsumed
+import net.rsprox.protocol.session.getRemainingBytesInPacketGroup
+import net.rsprox.protocol.session.setBytesConsumed
+import net.rsprox.protocol.session.setRemainingBytesInPacketGroup
 import net.rsprox.proxy.binary.BinaryBlob
 import net.rsprox.proxy.binary.BinaryStream
 import net.rsprox.shared.StreamDirection
@@ -24,10 +29,25 @@ public class DecodingSession(
         val session = Session(blob.header.localPlayerIndex, AttributeMap())
         return stream.flatMap { binaryPacket ->
             try {
+                if (binaryPacket.direction == StreamDirection.CLIENT_TO_SERVER) {
+                    val packet =
+                        plugin.decodeClientPacket(
+                            binaryPacket.prot.opcode,
+                            binaryPacket.payload.toJagByteBuf(),
+                            session,
+                        )
+                    return@flatMap listOf(
+                        DirectionalPacket(
+                            binaryPacket.direction,
+                            binaryPacket.prot,
+                            packet,
+                        ),
+                    )
+                }
                 var read = binaryPacket.payload.readableBytes()
                 val prot = binaryPacket.prot
                 val opcode = prot.opcode
-                if (binaryPacket.direction == StreamDirection.CLIENT_TO_SERVER || opcode < 128) {
+                if (opcode < 128) {
                     read++
                 } else {
                     read += 2
@@ -39,22 +59,11 @@ public class DecodingSession(
                 }
                 val remainingBytesInPacketGroup = session.getRemainingBytesInPacketGroup()
                 val packet =
-                    when (binaryPacket.direction) {
-                        StreamDirection.CLIENT_TO_SERVER -> {
-                            plugin.decodeClientPacket(
-                                binaryPacket.prot.opcode,
-                                binaryPacket.payload.toJagByteBuf(),
-                                session,
-                            )
-                        }
-                        StreamDirection.SERVER_TO_CLIENT -> {
-                            plugin.decodeServerPacket(
-                                binaryPacket.prot.opcode,
-                                binaryPacket.payload.toJagByteBuf(),
-                                session,
-                            )
-                        }
-                    }
+                    plugin.decodeServerPacket(
+                        binaryPacket.prot.opcode,
+                        binaryPacket.payload.toJagByteBuf(),
+                        session,
+                    )
                 if (remainingBytesInPacketGroup != null && remainingBytesInPacketGroup > 0) {
                     session.setBytesConsumed((session.getBytesConsumed() ?: 0) + read)
                     if (remainingBytesInPacketGroup - read <= 0) {
