@@ -411,7 +411,7 @@ internal class NpcInfoClient(
         }
         val models =
             if (flag and 0x2 != 0) {
-                val count = buffer.g1Alt1()
+                val count = buffer.g1()
                 val models = ArrayList<Int>(count)
                 for (i in 0..<count) {
                     val modelId = buffer.g2Alt2()
