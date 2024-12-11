@@ -186,7 +186,7 @@ public class TextPlayerInfoTranscriber(
                         }
                         is PlayerUpdateType.HighResolutionIdle -> {
                             if (update.extendedInfo.isEmpty()) {
-                                return@group
+                                continue
                             }
                             val player = sessionState.getPlayer(index)
                             group("IDLE") {
