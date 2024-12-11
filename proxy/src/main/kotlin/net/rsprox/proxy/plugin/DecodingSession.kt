@@ -126,23 +126,27 @@ public class DecodingSession(
         val size = BinaryStream.decodeSize(buffer, prot)
         val payload = buffer.readSlice(size)
         val remainingBytesInPacketGroup = session.getRemainingBytesInPacketGroup()
+        if (direction == StreamDirection.CLIENT_TO_SERVER) {
+            val packet =
+                plugin.decodeClientPacket(
+                    prot.opcode,
+                    payload.toJagByteBuf(),
+                    session,
+                )
+            return listOf(
+                DirectionalPacket(
+                    direction,
+                    prot,
+                    packet,
+                ),
+            )
+        }
         val packet =
-            when (direction) {
-                StreamDirection.CLIENT_TO_SERVER -> {
-                    plugin.decodeClientPacket(
-                        prot.opcode,
-                        payload.toJagByteBuf(),
-                        session,
-                    )
-                }
-                StreamDirection.SERVER_TO_CLIENT -> {
-                    plugin.decodeServerPacket(
-                        prot.opcode,
-                        payload.toJagByteBuf(),
-                        session,
-                    )
-                }
-            }
+            plugin.decodeServerPacket(
+                prot.opcode,
+                payload.toJagByteBuf(),
+                session,
+            )
         if (remainingBytesInPacketGroup != null && remainingBytesInPacketGroup > 0) {
             val read = buffer.readerIndex() - marker
             session.setBytesConsumed((session.getBytesConsumed() ?: 0) + read)
