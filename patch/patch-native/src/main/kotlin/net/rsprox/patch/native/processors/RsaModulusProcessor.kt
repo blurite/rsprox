@@ -15,8 +15,10 @@ internal class RsaModulusProcessor(
         if (index == -1) {
             throw IllegalStateException("Unable to locate exponent 10001")
         }
+        // Begin searching for the modulus before the exponent.
+        // In some clients, it comes just before; in most, it comes just after it.
         val sliceIndices =
-            client.bytes.firstSliceIndices(index + 5, 256) { byte ->
+            client.bytes.firstSliceIndices(index - 300, 256) { byte ->
                 isHex(byte.toInt().toChar())
             }
         val slice = client.bytes.sliceArray(sliceIndices)
@@ -65,7 +67,7 @@ internal class RsaModulusProcessor(
                 }
                 end++
             }
-            if (length != -1 && end - start < length) {
+            if (length != -1 && (end - start) != length) {
                 start = end
                 continue
             }
