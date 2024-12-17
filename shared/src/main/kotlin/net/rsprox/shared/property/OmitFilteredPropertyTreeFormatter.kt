@@ -7,6 +7,7 @@ public class OmitFilteredPropertyTreeFormatter(
     public val propertyFormatterCollection: PropertyFormatterCollection,
 ) : PropertyTreeFormatter {
     override fun format(property: RootProperty): List<String> {
+        val lines = ArrayList<String>()
         val builder = StringBuilder()
         builder.append('[').append(property.prot.lowercase()).append("] ")
         var count = 0
@@ -14,28 +15,33 @@ public class OmitFilteredPropertyTreeFormatter(
             if (child.isExcluded()) {
                 continue
             }
-            writeChild(child, builder, 1, if (count++ == 0) null else SEPARATOR)
+            writeChild(child, builder, lines, 1, if (count++ == 0) null else SEPARATOR)
         }
-        return builder.lines()
+        lines.add(builder.toString())
+        return lines
     }
 
     public fun writeChild(
         property: ChildProperty<*>,
         builder: StringBuilder,
+        lines: MutableList<String>,
         indent: Int,
         linePrefix: String?,
     ) {
         if (property is GroupProperty) {
             val hasLabel = property.propertyName.isNotEmpty()
             if (hasLabel) {
-                builder.appendLine()
+                lines.add(builder.toString())
+                builder.clear()
                 builder.append(INDENTATION.repeat(indent))
                 builder.append('[').append(property.propertyName.lowercase()).append(']')
             }
             val childIndent = if (hasLabel) (indent + 1) else indent
             if (property.children.isNotEmpty()) {
                 if (!hasLabel) {
-                    builder.appendLine().append(INDENTATION.repeat(childIndent))
+                    lines.add(builder.toString())
+                    builder.clear()
+                    builder.append(INDENTATION.repeat(childIndent))
                 }
                 var count = 0
                 for (child in property.children) {
@@ -52,7 +58,7 @@ public class OmitFilteredPropertyTreeFormatter(
                         } else {
                             SEPARATOR
                         }
-                    writeChild(child, builder, childIndent, prefix)
+                    writeChild(child, builder, lines, childIndent, prefix)
                 }
             }
             return
@@ -76,7 +82,7 @@ public class OmitFilteredPropertyTreeFormatter(
                     } else {
                         SEPARATOR
                     }
-                writeChild(child, builder, indent, prefix)
+                writeChild(child, builder, lines, indent, prefix)
             }
             builder.append(']')
             return
@@ -93,14 +99,15 @@ public class OmitFilteredPropertyTreeFormatter(
         }
         builder.append(value)
         if (property.children.isNotEmpty()) {
-            builder.appendLine()
+            lines.add(builder.toString())
+            builder.clear()
             builder.append(INDENTATION.repeat(indent + 1))
             var count = 0
             for (child in property.children) {
                 if (child.isExcluded()) {
                     continue
                 }
-                writeChild(child, builder, indent + 1, if (count++ == 0) null else SEPARATOR)
+                writeChild(child, builder, lines, indent + 1, if (count++ == 0) null else SEPARATOR)
             }
         }
     }

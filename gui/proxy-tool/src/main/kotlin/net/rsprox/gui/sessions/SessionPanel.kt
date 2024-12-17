@@ -320,16 +320,18 @@ public class SessionPanel(
             val previewProps = children.filter { it.children.isEmpty() }
             val previewText =
                 if (previewProps.isNotEmpty()) {
-                    buildString {
-                        var count = 0
-                        for (child in previewProps) {
-                            if (child.isExcluded()) {
-                                continue
-                            }
-                            val linePrefix = if (count++ == 0) null else ", "
-                            formatter.writeChild(child, this@buildString, indent, linePrefix)
+                    val lines = mutableListOf<String>()
+                    val builder = StringBuilder()
+                    var count = 0
+                    for (child in previewProps) {
+                        if (child.isExcluded()) {
+                            continue
                         }
+                        val linePrefix = if (count++ == 0) null else ", "
+                        formatter.writeChild(child, builder, lines, indent, linePrefix)
                     }
+                    lines.add(builder.toString())
+                    lines.joinToString(separator = System.lineSeparator())
                 } else {
                     ""
                 }
