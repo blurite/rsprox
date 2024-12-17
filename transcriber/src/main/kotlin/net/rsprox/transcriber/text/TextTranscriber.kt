@@ -81,25 +81,27 @@ public class TextTranscriber private constructor(
     }
 
     private fun isRegexSkipped(property: RootProperty): Boolean {
+        val name = property.prot.lowercase()
         val filters =
             filterSetStore
                 .getActive()
                 .getRegexFilters()
-                .filter { it.protName == property.prot.lowercase() }
-        if (filters.isNotEmpty()) {
-            val formatted = formatter.format(property)
-            for (filter in filters) {
-                if (filter.perLine) {
-                    for (line in formatted) {
-                        if (filter.regex.containsMatchIn(line)) {
-                            return true
-                        }
-                    }
-                } else {
-                    val combined = formatted.joinToString(separator = System.lineSeparator())
-                    if (filter.regex.containsMatchIn(combined)) {
+                .filter { it.protName == name }
+        if (filters.isEmpty()) {
+            return false
+        }
+        val formatted = formatter.format(property)
+        for (filter in filters) {
+            if (filter.perLine) {
+                for (line in formatted) {
+                    if (filter.regex.containsMatchIn(line)) {
                         return true
                     }
+                }
+            } else {
+                val combined = formatted.joinToString(separator = System.lineSeparator())
+                if (filter.regex.containsMatchIn(combined)) {
+                    return true
                 }
             }
         }
