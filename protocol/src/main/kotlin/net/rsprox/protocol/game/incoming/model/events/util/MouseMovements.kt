@@ -38,7 +38,7 @@ public class MouseMovements(
      * constraints.
      * @property packed the bitpacked long value, exposed as servers may wish
      * to re-compose the position changes at a later date.
-     * @property timeDelta the time difference in milliseconds since the last
+     * @property timeDelta the time difference in client cycles (20ms each) since the last
      * transmitted mouse movement.
      * @property xDelta the x coordinate delta of the mouse, in pixels. If the
      * mouse goes outside the client window, the value will be -1.

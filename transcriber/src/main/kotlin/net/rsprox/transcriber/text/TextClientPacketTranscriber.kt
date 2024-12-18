@@ -296,13 +296,13 @@ public open class TextClientPacketTranscriber(
 
     override fun eventMouseMove(message: EventMouseMove) {
         if (!filters[PropertyFilter.EVENT_MOUSE_MOVE]) return omit()
-        root.formattedInt("averagetime", message.averageTime, MS_NUMBER_FORMAT)
-        root.formattedInt("remainingtime", message.remainingTime, MS_NUMBER_FORMAT)
+        val remainingTime = (message.movements.length * message.averageTime) + message.remainingTime
+        root.formattedInt("remainingtime", remainingTime, MS_NUMBER_FORMAT)
         root.group("MOVEMENTS") {
             for (index in message.movements.asLongArray().indices) {
                 group {
                     val movement = message.movements.getMousePosChange(index)
-                    formattedInt("deltatime", movement.timeDelta, MS_NUMBER_FORMAT)
+                    formattedInt("deltatime", movement.timeDelta * 20, MS_NUMBER_FORMAT)
                     int("deltax", movement.xDelta)
                     int("deltay", movement.yDelta)
                 }
@@ -325,13 +325,13 @@ public open class TextClientPacketTranscriber(
 
     override fun eventNativeMouseMove(message: EventNativeMouseMove) {
         if (!filters[PropertyFilter.EVENT_NATIVE_MOUSE_MOVE]) return omit()
-        root.formattedInt("averagetime", message.averageTime, MS_NUMBER_FORMAT)
-        root.formattedInt("remainingtime", message.remainingTime, MS_NUMBER_FORMAT)
+        val remainingTime = (message.movements.length * message.averageTime) + message.remainingTime
+        root.formattedInt("remainingtime", remainingTime, MS_NUMBER_FORMAT)
         root.group("MOVEMENTS") {
             for (index in message.movements.asLongArray().indices) {
                 group("MOVEMENT") {
                     val movement = message.movements.getMousePosChange(index)
-                    formattedInt("deltatime", movement.timeDelta, MS_NUMBER_FORMAT)
+                    formattedInt("deltatime", movement.timeDelta * 20, MS_NUMBER_FORMAT)
                     int("deltax", movement.xDelta)
                     int("deltay", movement.yDelta)
                     int("lastmousebutton", movement.lastMouseButton)
