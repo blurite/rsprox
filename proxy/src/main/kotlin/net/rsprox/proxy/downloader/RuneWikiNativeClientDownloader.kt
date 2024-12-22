@@ -20,12 +20,14 @@ public object RuneWikiNativeClientDownloader {
             when (type) {
                 NativeClientType.WIN -> "osrs-win/"
                 NativeClientType.MAC -> "osrs-mac/"
+                else -> throw IllegalArgumentException("Unsupported client type: $type")
             }
         val versionPath = "$version/"
         val filePath =
             when (type) {
                 NativeClientType.WIN -> "osclient.exe"
                 NativeClientType.MAC -> "osclient.app/Contents/MacOS/osclient"
+                else -> throw IllegalArgumentException("Unsupported client type: $type")
             }
         val url = URL(prefix + typePath + versionPath + filePath)
         val bytes =

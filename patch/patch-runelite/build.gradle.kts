@@ -13,5 +13,6 @@ publishing {
 dependencies {
     implementation(projects.patch)
     implementation(rootProject.libs.inline.logger)
+    implementation(libs.junixsocket)
     implementation(libs.zip4j)
 }

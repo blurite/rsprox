@@ -39,7 +39,9 @@ import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
-import net.rsprox.proxy.runelite.RuneliteLauncher
+import net.rsprox.patch.runelite.RuneLiteLauncher
+import net.rsprox.proxy.cli.ClientPatcherCommand
+import net.rsprox.proxy.downloader.RuneLiteClientDownloader
 import net.rsprox.proxy.settings.DefaultSettingSetStore
 import net.rsprox.proxy.util.*
 import net.rsprox.proxy.worlds.DynamicWorldListProvider
@@ -58,7 +60,6 @@ import java.io.IOException
 import java.math.BigInteger
 import java.net.URL
 import java.nio.file.Files
-import java.nio.file.LinkOption
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -140,9 +141,9 @@ public class ProxyService(
         launchHttpServer(this.bootstrapFactory, worldListProvider, updatedJavConfig)
         progressCallback.update(0.80, "Proxy", "Deleting temporary files")
         deleteTemporaryClients()
-        deleteTemporaryRuneLiteJars()
+        ClientPatcherCommand.deleteTemporaryRuneLiteJars()
         progressCallback.update(0.90, "Proxy", "Transferring certificate")
-        transferFakeCertificate()
+        ClientPatcherCommand.transferFakeCertificate()
         progressCallback.update(0.95, "Proxy", "Setting up safe shutdown")
         setShutdownHook()
     }
@@ -153,19 +154,6 @@ public class ProxyService(
         userHash: Long,
     ) {
         this.credentials.append(BinaryCredentials(name, userId, userHash))
-    }
-
-    private fun transferFakeCertificate() {
-        if (FAKE_CERTIFICATE_FILE.exists(LinkOption.NOFOLLOW_LINKS)) {
-            return
-        }
-        logger.debug { "Copying fake certificate" }
-        val resource =
-            ProxyService::class.java
-                .getResourceAsStream("fake-cert.jks")
-                ?.readAllBytes()
-                ?: throw IllegalStateException("Unable to find fake-cert.jks")
-        FAKE_CERTIFICATE_FILE.writeBytes(resource)
     }
 
     public fun getAppTheme(): String {
@@ -355,27 +343,6 @@ public class ProxyService(
         }
     }
 
-    private fun deleteTemporaryRuneLiteJars() {
-        val path = Path(System.getProperty("user.home"), ".runelite", "repository2")
-        if (!path.exists(LinkOption.NOFOLLOW_LINKS)) return
-        val files = path.toFile().walkTopDown()
-        val namesToDelete =
-            listOf(
-                "client",
-                "injected-client",
-                "runelite-api",
-            )
-        for (file in files) {
-            if (!file.isFile) {
-                continue
-            }
-            val match = namesToDelete.any { file.name.startsWith(it) }
-            if (!match) continue
-            if (!file.name.endsWith("-patched.jar")) continue
-            file.delete()
-        }
-    }
-
     public fun launchRuneLiteClient(
         sessionMonitor: SessionMonitor<BinaryHeader>,
         character: JagexCharacter?,
@@ -482,13 +449,15 @@ public class ProxyService(
         val timestamp = System.currentTimeMillis()
         val socketFile = SOCKETS_DIRECTORY.resolve("$timestamp.socket").toFile()
         val socket = AFUNIXServerSocket.newInstance()
-        logger.debug {
-            "Binding an AF UNIX Socket to ${socketFile.name}"
-        }
+        logger.debug { "Binding an AF UNIX Socket to ${socketFile.name}" }
         socket.bind(AFUNIXSocketAddress.of(socketFile))
         try {
             val javConfigEndpoint = properties.getProperty(JAV_CONFIG_ENDPOINT)
-            val launcher = RuneliteLauncher()
+            val launcher = RuneLiteLauncher(
+                RuneLiteClientDownloader.bootstrap,
+                RuneLiteClientDownloader.cleanupAndDownloadArtifacts(RUNELITE_LAUNCHER_REPO_DIRECTORY)
+            )
+
             val args = launcher.getLaunchArgs(
                 port,
                 rsa.publicKey.modulus.toString(16),

@@ -18,6 +18,12 @@ public data object JagexNativeClientDownloader {
 
     @OptIn(ExperimentalStdlibApi::class)
     public fun download(type: NativeClientType): Path {
+        val expectedClientName = when(type) {
+            NativeClientType.WIN -> "osclient.exe"
+            NativeClientType.MAC -> "osclient.app/Contents/MacOS/osclient"
+            else -> throw IllegalArgumentException("Unsupported client type: $type")
+        }
+
         val repository = buildRepositoryInfo(type.systemShortName)
         val versionData = repository.getVersionData()
         val version =
@@ -26,12 +32,6 @@ public data object JagexNativeClientDownloader {
                 .firstOrNull { it.key == "production" }
                 ?: error("Unable to locate latest production version of native client!")
         val id = version.value.id
-        val expectedClientName =
-            if (type == NativeClientType.WIN) {
-                "osclient.exe"
-            } else {
-                "osclient.app/Contents/MacOS/osclient"
-            }
         val metafileCache = CLIENTS_DIRECTORY.resolve("${type.systemShortName}-cached-version.txt")
         if (metafileCache.exists()) {
             val text = metafileCache.readText(Charsets.UTF_8)

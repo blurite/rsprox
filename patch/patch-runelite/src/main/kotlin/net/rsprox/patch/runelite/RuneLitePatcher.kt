@@ -6,6 +6,8 @@ import net.lingala.zip4j.ZipFile
 import net.rsprox.patch.PatchResult
 import net.rsprox.patch.Patcher
 import net.rsprox.patch.findBoyerMoore
+import org.newsclub.net.unix.AFUNIXServerSocket
+import org.newsclub.net.unix.AFUNIXSocketAddress
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.LinkOption
@@ -14,46 +16,98 @@ import java.security.KeyStore
 import java.security.KeyStore.PasswordProtection
 import java.security.KeyStore.PrivateKeyEntry
 import java.security.MessageDigest
-import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.Path
-import kotlin.io.path.copyTo
-import kotlin.io.path.deleteIfExists
-import kotlin.io.path.deleteRecursively
-import kotlin.io.path.exists
-import kotlin.io.path.extension
-import kotlin.io.path.isRegularFile
-import kotlin.io.path.moveTo
-import kotlin.io.path.nameWithoutExtension
-import kotlin.io.path.readBytes
-import kotlin.io.path.readText
-import kotlin.io.path.writeBytes
-import kotlin.io.path.writeText
+import kotlin.io.path.*
 
 @Suppress("DuplicatedCode", "SameParameterValue")
-public class RuneLitePatcher : Patcher<Unit> {
+public class RuneLitePatcher : Patcher<RuneLitePatchCriteria> {
+    override fun patch(
+        path: Path,
+        criteria: RuneLitePatchCriteria,
+    ): PatchResult {
+        logger.debug { "Running launcher to build jar file." }
+
+        if (criteria.bootstrap == null || criteria.artifactsDir == null) {
+            throw IllegalArgumentException("Bootstrap and artifacts directory must be provided.")
+        }
+
+        if (criteria.rsa == null) {
+            throw IllegalArgumentException("RSA modulus must be provided.")
+        }
+
+        val timestamp = System.currentTimeMillis()
+        val socketFile = Path.of(System.getProperty("user.home")).resolve(".rsprox").resolve("sockets").resolve("$timestamp.socket").toFile()
+        val socket = AFUNIXServerSocket.newInstance()
+        logger.debug { "Binding an AF UNIX Socket to ${socketFile.name}" }
+        socket.bind(AFUNIXSocketAddress.of(socketFile))
+
+        val launcher = RuneLiteLauncher(criteria.bootstrap, criteria.artifactsDir)
+
+        val args = launcher.getLaunchArgs(
+            port = criteria.port,
+            rsa = criteria.rsa,
+            javConfig = criteria.javConfigUrl,
+            socket = timestamp.toString(),
+        )
+
+        val builder = ProcessBuilder()
+            .inheritIO()
+            .command(args)
+
+        val process = builder.start()
+
+        val channel = socket.accept()
+        val output = channel.outputStream
+        output.write("old-rsa-modulus:".encodeToByteArray())
+        output.flush()
+        socket.close()
+
+        // Wait for the original Launcher patcher process to finish
+        while (process.isAlive) {
+            Thread.sleep(50)
+        }
+
+        // Now, we'll look for the child RuneLite process that the patcher has spawned.
+        // We can identify it based on the client-<version>-<timestamp>.jar argument pattern.
+        while (true) {
+            val pid = ProcessManager.findNewlyCreatedProcess(timestamp)
+            if (pid == null) {
+                Thread.sleep(50)
+                continue
+            }
+
+            logger.debug { "Found RuneLite child process with PID $pid" }
+            ProcessManager.killProcess(pid)
+            logger.debug { "Terminated RuneLite child process with PID $pid" }
+            break
+        }
+
+        val runelitePath = Path(System.getProperty("user.home"), ".rsprox").resolve("runelite")
+        val files = listOf(
+            runelitePath.resolve("latest-runelite.jar"),
+            runelitePath.resolve("latest-runelite.sha256"),
+        )
+
+        if (files.any { it.notExists(LinkOption.NOFOLLOW_LINKS) }) {
+            throw IllegalStateException("Unable to find patched RuneLite client.")
+        }
+
+        Files.createDirectories(path)
+        files.forEach { it.copyTo(path.resolve(it.fileName.name.replace("latest-runelite", "runelite-$timestamp"))) }
+
+        return PatchResult.Success(
+            null,
+            path.resolve(files.first().fileName.name.replace("latest-runelite", "runelite-$timestamp")),
+        )
+    }
+
+    /**
+     * This method is called from within the Launcher.jar to patch the RuneLite client.
+     */
+    @OptIn(ExperimentalPathApi::class)
     public fun patch(
         path: Path,
         rsa: String,
         port: Int,
-    ): PatchResult {
-        return patch(
-            path,
-            rsa,
-            "",
-            "",
-            port,
-            Unit,
-        )
-    }
-
-    @OptIn(ExperimentalPathApi::class)
-    override fun patch(
-        path: Path,
-        rsa: String,
-        javConfigUrl: String,
-        worldListUrl: String,
-        port: Int,
-        metadata: Unit,
     ): PatchResult {
         if (!path.isRegularFile(LinkOption.NOFOLLOW_LINKS)) {
             throw IllegalArgumentException("Path $path does not point to a file.")
@@ -95,6 +149,7 @@ public class RuneLitePatcher : Patcher<Unit> {
             outputFolder.deleteRecursively()
         }
         logger.debug { "Jar patching complete." }
+
         return PatchResult.Success(
             oldModulus,
             patchedJar,
@@ -144,7 +199,7 @@ public class RuneLitePatcher : Patcher<Unit> {
                     metaInf.resolve("RL.RSA").delete()
                     metaInf.resolve("RL.SF").delete()
 
-                    replaceClass(
+                    replaceFile(
                         parentDir
                             .resolve("net")
                             .resolve("runelite")
@@ -155,7 +210,7 @@ public class RuneLitePatcher : Patcher<Unit> {
                         "WorldClient.class",
                     )
 
-                    replaceClass(
+                    replaceFile(
                         parentDir
                             .resolve("net")
                             .resolve("runelite")
@@ -165,7 +220,7 @@ public class RuneLitePatcher : Patcher<Unit> {
                         "RuneLite.class",
                     )
 
-                    replaceClass(
+                    replaceFile(
                         parentDir
                             .resolve("net")
                             .resolve("runelite")
@@ -188,6 +243,7 @@ public class RuneLitePatcher : Patcher<Unit> {
                     }
                     outputFile.charset = inputFile.charset
                 }
+
                 val jarFile = patchedJar.toFile()
                 sign(patchedJar)
                 jarFile.copyTo(existingClient.toFile())
@@ -285,8 +341,8 @@ public class RuneLitePatcher : Patcher<Unit> {
         classPath.writeBytes(classByteArray)
     }
 
-    private fun replaceClass(
-        classFile: File,
+    private fun replaceFile(
+        targetFile: File,
         originalResource: String,
         replacementResource: String,
     ) {
@@ -303,15 +359,12 @@ public class RuneLitePatcher : Patcher<Unit> {
                     ?.readAllBytes()
                     ?: throw IllegalStateException("$originalResource resource not available.")
 
-            val originalBytes = classFile.readBytes()
+            val originalBytes = targetFile.readBytes()
             if (!originalBytes.contentEquals(originalResourceFile)) {
                 throw IllegalStateException("Unable to patch RuneLite $replacementResource - out of date.")
             }
 
-            // Overwrite the WorldClient.class file to read worlds from our proxied-list
-            // This ensures that the world switcher still goes through the proxy tool,
-            // instead of just connecting to RuneLite's own world list API.
-            classFile.writeBytes(replacementResourceFile)
+            targetFile.writeBytes(replacementResourceFile)
         } catch (t: Throwable) {
             t.printStackTrace()
         }

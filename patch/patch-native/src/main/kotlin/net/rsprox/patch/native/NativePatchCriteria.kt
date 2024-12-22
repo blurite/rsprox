@@ -1,6 +1,8 @@
 package net.rsprox.patch.native
 
 import net.rsprox.patch.NativeClientType
+import net.rsprox.patch.PatchCriteria
+import net.rsprox.patch.PatchCriteriaBuilder
 import net.rsprox.patch.native.processors.utils.HexBytePattern
 import net.rsprox.patch.native.processors.utils.hexPattern
 
@@ -10,17 +12,18 @@ public data class NativePatchCriteria(
     public val constStrings: List<ConstStringSlice>,
     public val patternStrings: List<PatternStringSlice>,
     public val bytePatternSlices: List<WildcardHexByteSequenceSlice>,
-) {
+): PatchCriteria {
     @Suppress("MemberVisibilityCanBePrivate")
     public class Builder(
         private val type: NativeClientType,
-    ) {
+    ): PatchCriteriaBuilder<NativePatchCriteria>
+    {
         private var rsaModulus: String? = null
         private val constStrings: MutableList<ConstStringSlice> = mutableListOf()
         private val patternStrings: MutableList<PatternStringSlice> = mutableListOf()
         private val bytePatternSlices: MutableList<WildcardHexByteSequenceSlice> = mutableListOf()
 
-        public fun port(port: Int): Builder {
+        public override fun port(port: Int): Builder {
             val originalPort = intToHexStringLE(DEFAULT_PORT)
             val replacementPort = intToHexStringLE(port)
             when (type) {
@@ -41,6 +44,8 @@ public data class NativePatchCriteria(
                         DuplicateReplacementBehaviour.ERROR_ON_DUPLICATES,
                     )
                 }
+
+                else -> throw UnsupportedOperationException("$type does not support port replacement.")
             }
             return this
         }
@@ -61,11 +66,13 @@ public data class NativePatchCriteria(
                         hexPattern("0F84????????E9????????4C3B????0F84????????49"),
                     )
                 }
+
+                else -> throw UnsupportedOperationException("$type does not support loopback address replacement.")
             }
             return this
         }
 
-        public fun acceptAllHosts(): Builder {
+        public override fun acceptAllHosts(): Builder {
             when (type) {
                 NativeClientType.WIN -> {
                     constString(
@@ -82,11 +89,13 @@ public data class NativePatchCriteria(
                         priority = HIGH_PRIORITY,
                     )
                 }
+
+                else -> throw UnsupportedOperationException("$type does not support host replacement.")
             }
             return this
         }
 
-        public fun javConfig(url: String): Builder {
+        public override fun javConfig(url: String): Builder {
             constString(
                 DEFAULT_JAVCONFIG_URL,
                 url,
@@ -97,7 +106,7 @@ public data class NativePatchCriteria(
             return this
         }
 
-        public fun worldList(url: String): Builder {
+        public override fun worldList(url: String): Builder {
             constString(
                 DEFAULT_WORLDLIST_URL,
                 url,
@@ -108,7 +117,7 @@ public data class NativePatchCriteria(
             return this
         }
 
-        public fun varpCount(
+        public override fun varpCount(
             expectedVarpCount: Int,
             replacementVarpCount: Int,
         ): Builder {
@@ -125,7 +134,7 @@ public data class NativePatchCriteria(
         /**
          * Replaces any 'runescape.com' with the input [replacement] url.
          */
-        public fun siteUrl(replacement: String): Builder {
+        public override fun siteUrl(replacement: String): Builder {
             patternString(
                 createStringCapturedPattern("runescape.com"),
                 "$1$replacement$2",
@@ -139,7 +148,7 @@ public data class NativePatchCriteria(
          * This function will additionally update the cache path, and URL if URL hasn't been previously updated.
          * @param replacement the string to replace by, should be capitalized as a name would be.
          */
-        public fun name(replacement: String): Builder {
+        public override fun name(replacement: String): Builder {
             patternString(
                 createStringCapturedPattern("RuneScape or Old School RuneScape"),
                 "$1$replacement$2",
@@ -178,7 +187,7 @@ public data class NativePatchCriteria(
             return this
         }
 
-        public fun rsaModulus(hexString: String): Builder {
+        public override fun rsaModulus(hexString: String): Builder {
             require(hexString.length <= OSRS_MODULUS_LEN) {
                 "RSA Modulus length cannot be greater than the existing one: ${hexString.length}, $OSRS_MODULUS_LEN"
             }
@@ -243,15 +252,13 @@ public data class NativePatchCriteria(
             return this
         }
 
-        public fun build(): NativePatchCriteria {
-            return NativePatchCriteria(
-                type,
-                rsaModulus,
-                constStrings,
-                patternStrings,
-                bytePatternSlices,
-            )
-        }
+        public override fun build(): NativePatchCriteria = NativePatchCriteria(
+            type,
+            rsaModulus,
+            constStrings,
+            patternStrings,
+            bytePatternSlices,
+        )
     }
 
     public companion object {

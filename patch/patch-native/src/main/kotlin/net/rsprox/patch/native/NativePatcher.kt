@@ -2,6 +2,7 @@ package net.rsprox.patch.native
 
 import com.github.michaelbull.logging.InlineLogger
 import net.rsprox.patch.PatchResult
+import net.rsprox.patch.Patcher
 import net.rsprox.patch.native.processors.ClientProcessor
 import net.rsprox.patch.native.processors.ConstByteSequenceProcessor
 import net.rsprox.patch.native.processors.ConstStringSliceProcessor
@@ -12,8 +13,8 @@ import java.nio.file.Path
 import kotlin.io.path.isRegularFile
 
 @Suppress("DuplicatedCode")
-public class NativePatcher {
-    public fun patch(
+public class NativePatcher: Patcher<NativePatchCriteria> {
+    public override fun patch(
         path: Path,
         criteria: NativePatchCriteria,
     ): PatchResult {
