@@ -5,5 +5,4 @@ public enum class NativeClientType(
 ) {
     WIN("win"),
     MAC("mac"),
-    RUNELITE_JAR("runelite"),
 }

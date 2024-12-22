@@ -32,6 +32,7 @@ public class NativePatcher: Patcher<NativePatchCriteria> {
             } else {
                 null
             }
+
         val processors = mutableListOf<ClientProcessor<*>>()
         val priorityProcessors = mutableListOf<Pair<Int, ClientProcessor<*>>>()
         for (constString in criteria.constStrings) {

@@ -15,6 +15,8 @@ import net.rsprox.proxy.config.*
 import net.rsprox.proxy.downloader.JagexNativeClientDownloader
 import net.rsprox.proxy.downloader.RuneLiteClientDownloader
 import net.rsprox.proxy.downloader.RuneWikiNativeClientDownloader
+import net.rsprox.proxy.util.ClientType
+import net.rsprox.proxy.util.OperatingSystem
 import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
@@ -28,7 +30,8 @@ import kotlin.system.exitProcess
 @Suppress("DuplicatedCode")
 public class ClientPatcherCommand : CliktCommand(name = "patch") {
     private val version by option("-version").default("latest")
-    private val type by option("-type").default("runelite").help("Valid options include 'win', 'mac' and 'runelite'")
+    private val type by option("-type").default("runelite").help("Supported options include 'native', 'runelite'")
+    private val os by option("-os").default("win").help("Supported options include 'win', 'mac'")
     private val modulus by option("-modulus")
     private val acceptAllHosts by option("-acceptallhosts").default("true")
     private val javconfig by option("-javconfig")
@@ -46,35 +49,40 @@ public class ClientPatcherCommand : CliktCommand(name = "patch") {
         createConfigurationDirectories(RUNELITE_LAUNCHER_REPO_DIRECTORY)
 
         Locale.setDefault(Locale.US)
-        val type =
-            when (this.type) {
-                "win" -> NativeClientType.WIN
-                "mac" -> NativeClientType.MAC
-                "runelite" -> NativeClientType.RUNELITE_JAR
-                else -> error("Invalid client type: ${this.type}")
-            }
+        val clientType = when (this.type) {
+            "native" -> ClientType.Native
+            "runelite" -> ClientType.RuneLite
+            else -> error("Invalid client type: ${this.type}")
+        }
 
-        if (type == NativeClientType.RUNELITE_JAR) {
+        val os = when (this.os) {
+            "win" -> OperatingSystem.WINDOWS
+            "mac" -> OperatingSystem.MAC
+            else -> error("Invalid os type: ${this.os}")
+        }
+
+        if (clientType == ClientType.RuneLite) {
             deleteTemporaryRuneLiteJars()
             transferFakeCertificate()
         }
 
         val folder = CLIENTS_DIRECTORY.resolve(version)
         val outputPath: Path = when {
-            type == NativeClientType.RUNELITE_JAR -> {
+            clientType == ClientType.RuneLite -> {
                 RuneLiteClientDownloader.cleanupAndDownloadArtifacts(RUNELITE_LAUNCHER_REPO_DIRECTORY)
                 folder
             }
-            version == "latest" -> JagexNativeClientDownloader.download(type)
-            else -> RuneWikiNativeClientDownloader.download(folder, type, version)
+
+            version == "latest" -> JagexNativeClientDownloader.download(os.toNativeClientType())
+            else -> RuneWikiNativeClientDownloader.download(folder, os.toNativeClientType(), version)
         }
 
         val builder = when {
-            type == NativeClientType.RUNELITE_JAR -> RuneLitePatchCriteria.Builder()
+            clientType == ClientType.RuneLite -> RuneLitePatchCriteria.Builder()
                 .setArtifactsDir(RUNELITE_LAUNCHER_REPO_DIRECTORY)
                 .setBootstrap(RuneLiteClientDownloader.bootstrap)
 
-            else -> NativePatchCriteria.Builder(type)
+            else -> NativePatchCriteria.Builder(os.toNativeClientType())
         }
 
         val revisionNum =
@@ -124,7 +132,7 @@ public class ClientPatcherCommand : CliktCommand(name = "patch") {
         check(result is PatchResult.Success) {
             "Failed to patch"
         }
-        logger.info { "$version ${type.systemShortName} patched client written to ${result.outputPath.absolutePathString()}" }
+        logger.info { "Patched ${clientType.name} client ($version, ${os.shortName.lowercase()}) written to ${result.outputPath.absolutePathString()}" }
     }
 
     private fun createConfigurationDirectories(path: Path) {

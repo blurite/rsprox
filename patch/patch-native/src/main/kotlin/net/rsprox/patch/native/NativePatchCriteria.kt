@@ -44,8 +44,6 @@ public data class NativePatchCriteria(
                         DuplicateReplacementBehaviour.ERROR_ON_DUPLICATES,
                     )
                 }
-
-                else -> throw UnsupportedOperationException("$type does not support port replacement.")
             }
             return this
         }
@@ -66,8 +64,6 @@ public data class NativePatchCriteria(
                         hexPattern("0F84????????E9????????4C3B????0F84????????49"),
                     )
                 }
-
-                else -> throw UnsupportedOperationException("$type does not support loopback address replacement.")
             }
             return this
         }
@@ -89,8 +85,6 @@ public data class NativePatchCriteria(
                         priority = HIGH_PRIORITY,
                     )
                 }
-
-                else -> throw UnsupportedOperationException("$type does not support host replacement.")
             }
             return this
         }
