@@ -1,7 +1,10 @@
 package net.rsprox.patch.runelite
 
+import com.github.michaelbull.logging.InlineLogger
+
 public object ProcessManager {
     private val processNamePattern = Regex("""\.runelite/repository2/client-.*?-(\d+)-patched\.jar""")
+    private val logger = InlineLogger()
 
     public fun findNewlyCreatedProcess(afterTimestamp: Long): String? {
         val os = System.getProperty("os.name").lowercase()
@@ -22,7 +25,7 @@ public object ProcessManager {
                 }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            logger.error { e.stackTraceToString() }
         }
 
         return null

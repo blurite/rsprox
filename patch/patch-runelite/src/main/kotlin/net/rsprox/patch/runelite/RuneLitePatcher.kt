@@ -12,6 +12,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.security.KeyStore
 import java.security.KeyStore.PasswordProtection
 import java.security.KeyStore.PrivateKeyEntry
@@ -62,9 +63,7 @@ public class RuneLitePatcher : Patcher<RuneLitePatchCriteria> {
         socket.close()
 
         // Wait for the original Launcher patcher process to finish
-        while (process.isAlive) {
-            Thread.sleep(50)
-        }
+        process.waitFor()
 
         // Now, we'll look for the child RuneLite process that the patcher has spawned.
         // We can identify it based on the client-<version>-<timestamp>.jar argument pattern.
@@ -81,22 +80,21 @@ public class RuneLitePatcher : Patcher<RuneLitePatchCriteria> {
             break
         }
 
-        val runelitePath = Path(System.getProperty("user.home"), ".rsprox").resolve("runelite")
-        val files = listOf(
-            runelitePath.resolve("latest-runelite.jar"),
-            runelitePath.resolve("latest-runelite.sha256"),
+        val outputPath = path.resolve("runelite-$timestamp.jar")
+
+        StandaloneClientBuilder().build(
+            outputPath,
+            Paths.get(System.getProperty("user.home"), ".runelite", "repository2"),
+            listOf(
+                "client",
+                "injected-client",
+                "runelite-api",
+            )
         )
-
-        if (files.any { it.notExists(LinkOption.NOFOLLOW_LINKS) }) {
-            throw IllegalStateException("Unable to find patched RuneLite client.")
-        }
-
-        Files.createDirectories(path)
-        files.forEach { it.copyTo(path.resolve(it.fileName.name.replace("latest-runelite", "runelite-$timestamp"))) }
 
         return PatchResult.Success(
             null,
-            path.resolve(files.first().fileName.name.replace("latest-runelite", "runelite-$timestamp")),
+            outputPath
         )
     }
 
