@@ -364,7 +364,7 @@ public class RuneLitePatcher : Patcher<RuneLitePatchCriteria> {
 
             targetFile.writeBytes(replacementResourceFile)
         } catch (t: Throwable) {
-            t.printStackTrace()
+            logger.error(t) { "Failed to patch $replacementResource" }
         }
     }
 

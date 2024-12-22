@@ -25,7 +25,7 @@ public object ProcessManager {
                 }
             }
         } catch (e: Exception) {
-            logger.error { e.stackTraceToString() }
+            logger.error(e) { "Failed to load process list" }
         }
 
         return null
