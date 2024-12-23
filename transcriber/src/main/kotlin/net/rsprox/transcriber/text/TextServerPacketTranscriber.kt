@@ -1403,7 +1403,7 @@ public class TextServerPacketTranscriber(
                     val key = iterator.next()
                     group {
                         int("mapsquareid", mapsquareId)
-                        string("key", key.key.contentToString())
+                        any("key", key.key.contentToString())
                     }
                 }
             }
@@ -1430,7 +1430,7 @@ public class TextServerPacketTranscriber(
                     val key = iterator.next()
                     group {
                         int("mapsquareid", mapsquareId)
-                        string("key", key.key.contentToString())
+                        any("key", key.key.contentToString())
                     }
                 }
             }
@@ -1471,7 +1471,7 @@ public class TextServerPacketTranscriber(
                 val key = iterator.next()
                 group {
                     int("mapsquareid", mapsquareId)
-                    string("key", key.key.contentToString())
+                    any("key", key.key.contentToString())
                 }
             }
         }
@@ -1521,7 +1521,7 @@ public class TextServerPacketTranscriber(
                 val key = iterator.next()
                 group {
                     int("mapsquareid", mapsquareId)
-                    string("key", key.key.contentToString())
+                    any("key", key.key.contentToString())
                 }
             }
         }
