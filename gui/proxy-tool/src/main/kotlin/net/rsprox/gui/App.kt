@@ -13,6 +13,7 @@ import net.rsprox.proxy.ProxyService
 import net.rsprox.proxy.config.BINARY_PATH
 import java.awt.Desktop
 import java.awt.Dimension
+import java.awt.GraphicsEnvironment
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.awt.event.WindowAdapter
@@ -56,6 +57,9 @@ public class App {
         frame.size = defaultSize
         frame.minimumSize = UIScale.scale(Dimension(800, 600))
         frame.iconImages = FlatSVGUtils.createWindowIconImages("/favicon.svg")
+        if (!validFramePosition(frame)) {
+            frame.setLocationRelativeTo(null)
+        }
         val windowHandler =
             object : WindowAdapter() {
                 override fun windowClosing(e: WindowEvent) {
@@ -219,6 +223,17 @@ public class App {
             add(launchBar, "wrap")
             add(sessionsPanel)
         }
+
+    /**
+     * Checks if the frame intersects with any screen device. If the function returns false, the window
+     * is completely outside the device's visible area, meaning the user would not be able to interact
+     * with the window.
+     */
+    private fun validFramePosition(frame: JFrame): Boolean {
+        return GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices.any { device ->
+            device.defaultConfiguration.bounds.intersects(frame.bounds)
+        }
+    }
 
     public companion object {
         public val service: ProxyService = ProxyService(ByteBufAllocator.DEFAULT)
