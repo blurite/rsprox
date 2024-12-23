@@ -13,11 +13,11 @@ import net.rsprox.proxy.ProxyService
 import net.rsprox.proxy.config.BINARY_PATH
 import java.awt.Desktop
 import java.awt.Dimension
+import java.awt.GraphicsEnvironment
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
-import java.awt.GraphicsEnvironment
 import javax.swing.BorderFactory
 import javax.swing.JFrame
 import javax.swing.JMenu
@@ -57,7 +57,7 @@ public class App {
         frame.size = defaultSize
         frame.minimumSize = UIScale.scale(Dimension(800, 600))
         frame.iconImages = FlatSVGUtils.createWindowIconImages("/favicon.svg")
-        if (!validateFramePosition(frame)) {
+        if (!validFramePosition(frame)) {
             frame.setLocationRelativeTo(null)
         }
         val windowHandler =
@@ -223,17 +223,18 @@ public class App {
             add(launchBar, "wrap")
             add(sessionsPanel)
         }
+
     /**
-     * Will return false if position of given JFrame is not within any screens bounds
+     * Checks if the frame intersects with any screen device. If the function returns false, the window
+     * is completely outside the device's visible area, meaning the user would not be able to interact
+     * with the window.
      */
-    private fun validateFramePosition(frame: JFrame): Boolean {
-        GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices.forEach {
-            if (it.defaultConfiguration.bounds.intersects(frame.bounds)) {
-                return true
-            }
+    private fun validFramePosition(frame: JFrame): Boolean {
+        return GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices.any { device ->
+            device.defaultConfiguration.bounds.intersects(frame.bounds)
         }
-        return false
     }
+
     public companion object {
         public val service: ProxyService = ProxyService(ByteBufAllocator.DEFAULT)
     }
