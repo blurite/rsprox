@@ -17,6 +17,7 @@ import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
+import java.awt.GraphicsEnvironment
 import javax.swing.BorderFactory
 import javax.swing.JFrame
 import javax.swing.JMenu
@@ -56,6 +57,9 @@ public class App {
         frame.size = defaultSize
         frame.minimumSize = UIScale.scale(Dimension(800, 600))
         frame.iconImages = FlatSVGUtils.createWindowIconImages("/favicon.svg")
+        if (!validateFramePosition(frame)) {
+            frame.setLocationRelativeTo(null)
+        }
         val windowHandler =
             object : WindowAdapter() {
                 override fun windowClosing(e: WindowEvent) {
@@ -219,7 +223,17 @@ public class App {
             add(launchBar, "wrap")
             add(sessionsPanel)
         }
-
+    /**
+     * Will return false if position of given JFrame is not within any screens bounds
+     */
+    private fun validateFramePosition(frame: JFrame): Boolean {
+        GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices.forEach {
+            if (it.defaultConfiguration.bounds.intersects(frame.bounds)) {
+                return true
+            }
+        }
+        return false
+    }
     public companion object {
         public val service: ProxyService = ProxyService(ByteBufAllocator.DEFAULT)
     }
