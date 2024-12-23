@@ -602,7 +602,7 @@ internal class NpcInfoClient(
     ) {
         val x = buffer.g2Alt1()
         val z = buffer.g2Alt2()
-        val instant = buffer.g1Alt1() == 1
+        val instant = buffer.g1Alt2() == 1
         blocks += FaceCoordExtendedInfo(x, z, instant)
     }
 
