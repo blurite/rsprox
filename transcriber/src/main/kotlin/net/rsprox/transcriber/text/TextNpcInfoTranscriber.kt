@@ -199,9 +199,17 @@ public class TextNpcInfoTranscriber(
                                 continue
                             }
                             val npc = world.getNpc(index)
+                            val newCoord = CoordGrid(update.level, update.x, update.z)
+                            val coordShift = npc.coord != newCoord
                             val movementType =
                                 when (update.moveSpeed) {
-                                    MoveSpeed.STATIONARY -> "ACTIVE"
+                                    MoveSpeed.STATIONARY -> {
+                                        when {
+                                            coordShift && update.jump -> "TELEJUMP"
+                                            coordShift -> "TELEPORT"
+                                            else -> "ACTIVE"
+                                        }
+                                    }
                                     MoveSpeed.CRAWL -> "CRAWL"
                                     MoveSpeed.WALK -> "WALK"
                                     MoveSpeed.RUN -> "RUN"
@@ -222,6 +230,8 @@ public class TextNpcInfoTranscriber(
                                         namedEnum("step1", step1)
                                         namedEnum("step2", step2)
                                     }
+                                } else if (coordShift) {
+                                    coordGrid(update.level, update.x, update.z, "newcoord")
                                 }
                                 appendExtendedInfo(npc, update.extendedInfo)
                             }

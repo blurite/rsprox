@@ -115,6 +115,7 @@ internal class NpcInfoClient(
                             npc.steps,
                             npc.moveSpeed,
                             extendedInfo,
+                            npc.jump,
                         )
                 }
             }

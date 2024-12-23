@@ -68,6 +68,7 @@ public sealed interface NpcUpdateType {
         public val steps: List<Int>,
         public val moveSpeed: MoveSpeed,
         public val extendedInfo: List<ExtendedInfo>,
+        public val jump: Boolean,
     ) : NpcUpdateType {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -81,6 +82,7 @@ public sealed interface NpcUpdateType {
             if (steps != other.steps) return false
             if (moveSpeed != other.moveSpeed) return false
             if (extendedInfo != other.extendedInfo) return false
+            if (jump != other.jump) return false
 
             return true
         }
@@ -92,6 +94,7 @@ public sealed interface NpcUpdateType {
             result = 31 * result + steps.hashCode()
             result = 31 * result + moveSpeed.hashCode()
             result = 31 * result + extendedInfo.hashCode()
+            result = 31 * result + jump.hashCode()
             return result
         }
 
@@ -102,7 +105,8 @@ public sealed interface NpcUpdateType {
                 "level=$level, " +
                 "steps=$steps, " +
                 "moveSpeed=$moveSpeed, " +
-                "extendedInfo=$extendedInfo" +
+                "extendedInfo=$extendedInfo, " +
+                "jump=$jump" +
                 ")"
         }
     }
