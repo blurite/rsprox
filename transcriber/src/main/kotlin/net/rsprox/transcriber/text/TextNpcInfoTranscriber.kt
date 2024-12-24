@@ -207,7 +207,7 @@ public class TextNpcInfoTranscriber(
                                         when {
                                             coordShift && update.jump -> "TELEJUMP"
                                             coordShift -> "TELEPORT"
-                                            else -> "ACTIVE"
+                                            else -> "idle"
                                         }
                                     }
                                     MoveSpeed.CRAWL -> "CRAWL"
