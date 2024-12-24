@@ -158,44 +158,9 @@ import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.filters.PropertyFilter
 import net.rsprox.shared.filters.PropertyFilterSet
 import net.rsprox.shared.filters.PropertyFilterSetStore
-import net.rsprox.shared.property.ChildProperty
-import net.rsprox.shared.property.NamedEnum
-import net.rsprox.shared.property.Property
-import net.rsprox.shared.property.PropertyFormatterCollection
-import net.rsprox.shared.property.RootProperty
-import net.rsprox.shared.property.any
-import net.rsprox.shared.property.boolean
-import net.rsprox.shared.property.com
-import net.rsprox.shared.property.coordGridProperty
-import net.rsprox.shared.property.createScriptVarType
-import net.rsprox.shared.property.enum
-import net.rsprox.shared.property.filteredBoolean
-import net.rsprox.shared.property.filteredInt
-import net.rsprox.shared.property.filteredLong
-import net.rsprox.shared.property.filteredNamedEnum
-import net.rsprox.shared.property.filteredString
-import net.rsprox.shared.property.formattedInt
-import net.rsprox.shared.property.group
-import net.rsprox.shared.property.identifiedMultinpc
-import net.rsprox.shared.property.identifiedNpc
-import net.rsprox.shared.property.identifiedPlayer
-import net.rsprox.shared.property.identifiedWorldEntity
-import net.rsprox.shared.property.int
-import net.rsprox.shared.property.inter
-import net.rsprox.shared.property.list
-import net.rsprox.shared.property.long
-import net.rsprox.shared.property.namedEnum
+import net.rsprox.shared.property.*
 import net.rsprox.shared.property.regular.ScriptVarTypeProperty
 import net.rsprox.shared.property.regular.ZoneCoordProperty
-import net.rsprox.shared.property.script
-import net.rsprox.shared.property.scriptVarType
-import net.rsprox.shared.property.string
-import net.rsprox.shared.property.unidentifiedNpc
-import net.rsprox.shared.property.unidentifiedPlayer
-import net.rsprox.shared.property.unidentifiedWorldEntity
-import net.rsprox.shared.property.varbit
-import net.rsprox.shared.property.varp
-import net.rsprox.shared.property.zoneCoordGrid
 import net.rsprox.shared.settings.Setting
 import net.rsprox.shared.settings.SettingSet
 import net.rsprox.shared.settings.SettingSetStore
@@ -2798,7 +2763,7 @@ public class TextServerPacketTranscriber(
     private fun Property.buildObjAdd(message: ObjAdd) {
         scriptVarType("id", ScriptVarType.OBJ, message.id)
         formattedInt("count", message.quantity)
-        filteredString("opflags", "0b" + message.opFlags.value.toString(2), "0b11111")
+        filteredAny("opflags", "0b" + message.opFlags.value.toString(2), "0b11111")
         filteredInt("reveal", message.timeUntilPublic, 0)
         filteredInt("despawn", message.timeUntilDespawn, 0)
         filteredNamedEnum("ownership", getObjOwnership(message.ownershipType), ObjOwnership.None)
@@ -2821,7 +2786,7 @@ public class TextServerPacketTranscriber(
 
     private fun Property.buildObjEnabledOps(message: ObjEnabledOps) {
         scriptVarType("id", ScriptVarType.OBJ, message.id)
-        string("opflags", "0b" + message.opFlags.value.toString(2))
+        any("opflags", "0b" + message.opFlags.value.toString(2))
         coordGrid(coordInZone(message.xInZone, message.zInZone))
     }
 

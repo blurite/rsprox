@@ -712,7 +712,7 @@ public class TextNpcInfoTranscriber(
         if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
             shortNpc(npc.index)
         }
-        string("opflags", info.value.toFullBinaryString(5))
+        any("opflags", info.value.toFullBinaryString(5))
     }
 
     private fun Property.faceCoord(

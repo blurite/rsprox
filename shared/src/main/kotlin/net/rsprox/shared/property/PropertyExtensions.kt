@@ -2,6 +2,7 @@ package net.rsprox.shared.property
 
 import net.rsprox.shared.BaseVarType
 import net.rsprox.shared.ScriptVarType
+import net.rsprox.shared.property.filtered.FilteredAnyProperty
 import net.rsprox.shared.property.filtered.FilteredNamedEnumProperty
 import net.rsprox.shared.property.filtered.FilteredScriptVarTypeProperty
 import net.rsprox.shared.property.formatted.FormattedIntProperty
@@ -379,6 +380,21 @@ public inline fun <reified T> Property.any(
             name,
             value,
             type(),
+        ),
+    )
+}
+
+public inline fun <reified T> Property.filteredAny(
+    name: String,
+    value: T?,
+    filterValue: T?,
+): FilteredAnyProperty<T?> {
+    return child(
+        FilteredAnyProperty(
+            name,
+            value,
+            type(),
+            filterValue,
         ),
     )
 }
