@@ -15,7 +15,7 @@ public object RuneWikiNativeClientDownloader {
         type: NativeClientType,
         version: String,
     ): Path {
-        val prefix = "https://www.runewiki.org/archive/oldschool.runescape.com/native/"
+        val prefix = "https://archive.lostcity.rs/oldschool.runescape.com/native/"
         val typePath =
             when (type) {
                 NativeClientType.WIN -> "osrs-win/"
