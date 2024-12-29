@@ -95,7 +95,7 @@ public class ProxyService(
     private var rspsModulus: String? = null
 
     public fun start(
-        rspsHost: String?,
+        rspsJavConfigUrl: String?,
         rspsModulus: String?,
         progressCallback: ProgressCallback,
     ) {
@@ -127,7 +127,7 @@ public class ProxyService(
         this.availablePort = properties.getProperty(PROXY_PORT_MIN)
         this.bootstrapFactory = BootstrapFactory(allocator, properties)
         progressCallback.update(0.35, "Proxy", "Loading jav config")
-        val javConfig = loadJavConfig(rspsHost)
+        val javConfig = loadJavConfig(rspsJavConfigUrl)
         progressCallback.update(0.40, "Proxy", "Loading world list")
         this.worldListProvider = loadWorldListProvider(javConfig.getWorldListUrl())
         progressCallback.update(0.50, "Proxy", "Replacing codebase")
@@ -694,8 +694,8 @@ public class ProxyService(
         }
     }
 
-    private fun loadJavConfig(rspsHost: String?): JavConfig {
-        val url = "http://${rspsHost ?: "oldschool.runescape.com"}/jav_config.ws"
+    private fun loadJavConfig(customUrl: String?): JavConfig {
+        val url = customUrl ?: "http://oldschool.runescape.com/jav_config.ws"
         return runCatching("Failed to load jav_config.ws from $url") {
             val config = JavConfig(URL(url))
             logger.debug { "Jav config loaded from $url" }
