@@ -6,12 +6,17 @@ import javax.swing.SwingUtilities
 import javax.swing.UIManager
 
 public fun main(args: Array<String>) {
-    val javConfig = System.getenv("RSPS_JAVCONFIG_URL")
-    val rsa = System.getenv("RSPS_RSA")
+    val rspsJavConfigUrl = System.getenv("RSPS_JAVCONFIG_URL")
+    val rspsModulus = System.getenv("RSPS_RSA")
 
     when {
-        rsa == null && javConfig != null -> throw IllegalArgumentException("Missing ENV variable: RSPS_RSA")
-        rsa != null && javConfig == null -> throw IllegalArgumentException("Missing ENV variable: RSPS_JAVCONFIG_URL")
+        rspsModulus == null && rspsJavConfigUrl != null -> throw IllegalArgumentException(
+            "Missing ENV variable: RSPS_RSA",
+        )
+
+        rspsModulus != null && rspsJavConfigUrl == null -> throw IllegalArgumentException(
+            "Missing ENV variable: RSPS_JAVCONFIG_URL",
+        )
     }
 
     if (args.isNotEmpty()) {
@@ -20,7 +25,7 @@ public fun main(args: Array<String>) {
     Locale.setDefault(Locale.US)
     SplashScreen.init()
     SplashScreen.stage(0.0, "Preparing", "Setting up environment")
-    App.service.start(javConfig, rsa) { percentage, actionText, subActionText, progressText ->
+    App.service.start(rspsJavConfigUrl, rspsModulus) { percentage, actionText, subActionText, progressText ->
         SplashScreen.stage(percentage, actionText, subActionText, progressText)
     }
     SplashScreen.stop()
