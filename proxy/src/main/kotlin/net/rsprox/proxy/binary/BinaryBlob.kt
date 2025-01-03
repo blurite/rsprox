@@ -188,10 +188,10 @@ public data class BinaryBlob(
                     header.revision,
                     header.js5MasterIndex,
                 )
-            val world = header.worldId
+
             val info =
                 LiveConnectionInfo(
-                    "oldschool${world - 300}.runescape.com",
+                    header.worldHost,
                     PORT,
                     header.revision,
                     key,

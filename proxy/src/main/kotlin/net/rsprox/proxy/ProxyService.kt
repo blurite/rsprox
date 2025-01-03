@@ -92,8 +92,14 @@ public class ProxyService(
     private val connections: ProxyConnectionContainer = ProxyConnectionContainer()
     private lateinit var credentials: BinaryCredentialsStore
     private val gamePackProvider: GamePackProvider = GamePackProvider()
+    private var rspsModulus: String? = null
 
-    public fun start(progressCallback: ProgressCallback) {
+    public fun start(
+        rspsJavConfigUrl: String?,
+        rspsModulus: String?,
+        progressCallback: ProgressCallback,
+    ) {
+        this.rspsModulus = rspsModulus
         logger.info { "Starting proxy service" }
         progressCallback.update(0.05, "Proxy", "Creating directories")
         createConfigurationDirectories(CONFIGURATION_PATH)
@@ -121,7 +127,7 @@ public class ProxyService(
         this.availablePort = properties.getProperty(PROXY_PORT_MIN)
         this.bootstrapFactory = BootstrapFactory(allocator, properties)
         progressCallback.update(0.35, "Proxy", "Loading jav config")
-        val javConfig = loadJavConfig()
+        val javConfig = loadJavConfig(rspsJavConfigUrl)
         progressCallback.update(0.40, "Proxy", "Loading world list")
         this.worldListProvider = loadWorldListProvider(javConfig.getWorldListUrl())
         progressCallback.update(0.50, "Proxy", "Replacing codebase")
@@ -466,7 +472,7 @@ public class ProxyService(
                 ClientType.Native,
                 os,
                 port,
-                BigInteger(result.oldModulus, 16),
+                BigInteger(rspsModulus ?: result.oldModulus, 16),
             ),
         )
         ClientTypeDictionary[port] = "Native (${os.shortName})"
@@ -524,7 +530,7 @@ public class ProxyService(
                     ClientType.RuneLite,
                     operatingSystem,
                     port,
-                    BigInteger(oldModulus, 16),
+                    BigInteger(rspsModulus ?: oldModulus, 16),
                 ),
             )
             socket.close()
@@ -688,6 +694,15 @@ public class ProxyService(
         }
     }
 
+    private fun loadJavConfig(customUrl: String?): JavConfig {
+        val url = customUrl ?: "http://oldschool.runescape.com/jav_config.ws"
+        return runCatching("Failed to load jav_config.ws from $url") {
+            val config = JavConfig(URL(url))
+            logger.debug { "Jav config loaded from $url" }
+            config
+        }
+    }
+
     private fun loadWorldListProvider(url: String): WorldListProvider {
         return runCatching("Failed to instantiate world list provider") {
             val provider =
@@ -789,15 +804,6 @@ public class ProxyService(
     public companion object {
         private val logger = InlineLogger()
         private val PROPERTIES_FILE = CONFIGURATION_PATH.resolve("proxy.properties")
-
-        private fun loadJavConfig(): JavConfig {
-            val url = "http://oldschool.runescape.com/jav_config.ws"
-            return runCatching("Failed to load jav_config.ws from $url") {
-                val config = JavConfig(URL(url))
-                logger.debug { "Jav config loaded from $url" }
-                config
-            }
-        }
 
         private inline fun <T> runCatching(
             errorMessage: String,
