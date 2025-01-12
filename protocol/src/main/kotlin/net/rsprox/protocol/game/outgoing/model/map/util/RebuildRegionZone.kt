@@ -2,7 +2,7 @@ package net.rsprox.protocol.game.outgoing.model.map.util
 
 @JvmInline
 public value class RebuildRegionZone(
-    internal val packed: Int,
+    public val packed: Int,
 ) {
     public constructor(
         zoneX: Int,

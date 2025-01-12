@@ -1425,6 +1425,7 @@ public class TextServerPacketTranscriber(
                             zoneCoord("source", block.level, block.zoneX, block.zoneZ)
                             zoneCoord("dest", level, zoneX, zoneZ)
                             int("rotation", block.rotation)
+                            filteredInt("firstbit", block.packed and 0x1, 0)
                         }
                     }
                 }
