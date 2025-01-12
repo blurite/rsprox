@@ -1563,11 +1563,12 @@ public class TextServerPacketTranscriber(
         root.int("requestid", message.requestId)
         when (val type = message.response) {
             is HiscoreReply.FailedHiscoreReply -> {
-                root.string("type", "failure")
+                root.any("type", "failure")
                 root.string("reason", type.reason)
             }
             is HiscoreReply.SuccessfulHiscoreReply -> {
-                root.string("type", "success")
+                root.any("type", "success")
+                root.int("version", type.version)
                 root.group("OVERALL") {
                     group {
                         int("rank", type.overallRank)

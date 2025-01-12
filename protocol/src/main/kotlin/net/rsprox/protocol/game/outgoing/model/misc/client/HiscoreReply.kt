@@ -57,12 +57,14 @@ public class HiscoreReply private constructor(
      * It is worth noting that because the packet isn't used, it is not entirely
      * certain that the naming of these properties is accurate. These are merely
      * a guess based on the hiscore json syntax.
+     * @property version the version of the hiscore reply
      * @property statResults the list of stats to transmit
      * @property overallRank the overall rank of this player based on the total level
      * @property overallExperience the overall experience of this player
      * @property activityResults the list of activity results to transmit.
      */
     public class SuccessfulHiscoreReply(
+        public val version: Int,
         public val statResults: List<HiscoreResult>,
         public val overallRank: Int,
         public val overallExperience: Long,
@@ -74,6 +76,7 @@ public class HiscoreReply private constructor(
 
             other as SuccessfulHiscoreReply
 
+            if (version != other.version) return false
             if (statResults != other.statResults) return false
             if (overallRank != other.overallRank) return false
             if (overallExperience != other.overallExperience) return false
@@ -83,7 +86,8 @@ public class HiscoreReply private constructor(
         }
 
         override fun hashCode(): Int {
-            var result = statResults.hashCode()
+            var result = version
+            result = 31 * result + statResults.hashCode()
             result = 31 * result + overallRank
             result = 31 * result + overallExperience.hashCode()
             result = 31 * result + activityResults.hashCode()
@@ -92,6 +96,7 @@ public class HiscoreReply private constructor(
 
         override fun toString(): String {
             return "SuccessfulHiscoreReply(" +
+                "version=$version, " +
                 "statResults=$statResults, " +
                 "overallRank=$overallRank, " +
                 "overallExperience=$overallExperience, " +

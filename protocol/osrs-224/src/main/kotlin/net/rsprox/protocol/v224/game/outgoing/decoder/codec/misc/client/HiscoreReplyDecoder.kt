@@ -19,6 +19,7 @@ internal class HiscoreReplyDecoder : ProxyMessageDecoder<HiscoreReply> {
         val requestId = buffer.g1()
         return when (val responseType = buffer.g1()) {
             0 -> {
+                val version = buffer.g1()
                 val statCount = buffer.g1()
                 val stats =
                     buildList {
@@ -56,6 +57,7 @@ internal class HiscoreReplyDecoder : ProxyMessageDecoder<HiscoreReply> {
                 HiscoreReply(
                     requestId,
                     HiscoreReply.SuccessfulHiscoreReply(
+                        version,
                         stats,
                         overallRank,
                         overallExperience,
