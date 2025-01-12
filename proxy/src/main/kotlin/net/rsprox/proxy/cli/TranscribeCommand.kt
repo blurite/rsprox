@@ -30,6 +30,7 @@ import net.rsprox.transcriber.text.TextTranscriberProvider
 import java.io.BufferedWriter
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.attribute.FileTime
 import java.util.Locale
 import kotlin.io.path.bufferedWriter
 import kotlin.io.path.exists
@@ -92,6 +93,8 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
         filters: PropertyFilterSetStore,
         settings: SettingSetStore,
     ) {
+        val oldTextPath = binaryPath.parent.resolve(binaryPath.nameWithoutExtension + ".txt")
+        val oldTextTime = if (oldTextPath.exists()) Files.getLastModifiedTime(oldTextPath) else null
         statefulCacheProvider.update(
             Js5MasterIndex.trimmed(
                 binary.header.revision,
@@ -159,7 +162,12 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
         consumers.close()
         // Set the last modified date to match up with the .bin file, so it's easier to find and link files
         // in particular when re-ordering files in descending order
-        Files.setLastModifiedTime(textPath, Files.getLastModifiedTime(binaryPath))
+        val oldTime = oldTextTime ?: Files.getLastModifiedTime(binaryPath)
+        val baseTime = FileTime.fromMillis(oldTime.toMillis() + 1)
+        // Set the time 1 millisecond above the last (or binary)
+        // This ensures that tools such as notepad will pick up on file changes, as they rely on the
+        // last modified timestamp.
+        Files.setLastModifiedTime(textPath, baseTime)
     }
 
     private fun createBufferedWriterConsumer(writer: BufferedWriter): MessageConsumer {
