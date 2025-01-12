@@ -16,8 +16,8 @@ internal class HiscoreRequestDecoder : ProxyMessageDecoder<HiscoreRequest> {
         buffer: JagByteBuf,
         session: Session,
     ): HiscoreRequest {
-        val type = buffer.g1()
         val requestId = buffer.g1()
+        val type = buffer.g1()
         val name = buffer.gjstr()
         return HiscoreRequest(
             type,
