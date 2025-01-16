@@ -168,7 +168,6 @@ public class TextPlayerInfoTranscriber(
     }
 
     override fun playerInfo(message: PlayerInfo) {
-        sessionState.clearTempMoveSpeeds()
         // Log any activities that happened for all the players
         logPlayerInfo(message)
     }
