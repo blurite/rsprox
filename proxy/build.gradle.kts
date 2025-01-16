@@ -36,6 +36,8 @@ dependencies {
     implementation(projects.protocol.osrs225)
     implementation(projects.protocol.osrs226)
     implementation(projects.protocol.osrs227)
+    implementation(projects.protocol.osrs228)
+    implementation(project(mapOf("path" to ":protocol:osrs-228")))
 }
 
 tasks.build.configure {

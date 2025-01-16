@@ -42,7 +42,8 @@ public enum class GameServerProt : Prot {
     UPDATE_ZONE_PARTIAL_ENCLOSED,
 
     // Zone payload packets
-    LOC_ADD_CHANGE,
+    LOC_ADD_CHANGE_V1,
+    LOC_ADD_CHANGE_V2,
     LOC_DEL,
     LOC_ANIM,
     LOC_MERGE,

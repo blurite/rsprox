@@ -1,7 +1,7 @@
 package net.rsprox.protocol.common
 
 public object OldSchoolZoneProt {
-    public const val LOC_ADD_CHANGE: Int = 0
+    public const val LOC_ADD_CHANGE_V1: Int = 0
     public const val LOC_DEL: Int = 1
     public const val LOC_ANIM: Int = 2
     public const val LOC_MERGE: Int = 3
@@ -14,4 +14,5 @@ public object OldSchoolZoneProt {
     public const val SOUND_AREA: Int = 10
     public const val OBJ_CUSTOMISE: Int = 11
     public const val OBJ_UNCUSTOMISE: Int = 12
+    public const val LOC_ADD_CHANGE_V2: Int = 13
 }
