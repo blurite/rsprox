@@ -137,46 +137,52 @@ public open class TextClientPacketTranscriber(
                 index
             }
         val multinpc = sessionState.resolveMultinpc(npc.id, cache)
+        val coord = sessionState.getActiveWorld().getInstancedCoordOrSelf(npc.coord)
         return if (multinpc != null) {
             identifiedMultinpc(
                 finalIndex,
                 npc.id,
                 multinpc.id,
                 multinpc.name,
-                npc.coord.level,
-                npc.coord.x,
-                npc.coord.z,
+                coord.level,
+                coord.x,
+                coord.z,
             )
         } else {
             identifiedNpc(
                 finalIndex,
                 npc.id,
                 npc.name ?: "null",
-                npc.coord.level,
-                npc.coord.x,
-                npc.coord.z,
+                coord.level,
+                coord.x,
+                coord.z,
             )
         }
     }
 
-    private fun Property.player(index: Int): ChildProperty<*> {
-        val npc = sessionState.getPlayerOrNull(index)
+    private fun Property.player(
+        index: Int,
+        name: String = "player",
+    ): ChildProperty<*> {
+        val player = sessionState.getPlayerOrNull(index)
         val finalIndex =
             if (settings[Setting.PLAYER_HIDE_INDEX]) {
                 Int.MIN_VALUE
             } else {
                 index
             }
-        return if (npc != null) {
+        return if (player != null) {
+            val coord = sessionState.getActiveWorld().getInstancedCoordOrSelf(player.coord)
             identifiedPlayer(
                 finalIndex,
-                npc.name,
-                npc.coord.level,
-                npc.coord.x,
-                npc.coord.z,
+                player.name,
+                coord.level,
+                coord.x,
+                coord.z,
+                name,
             )
         } else {
-            unidentifiedPlayer(index)
+            unidentifiedPlayer(index, name)
         }
     }
 
