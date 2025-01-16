@@ -139,19 +139,7 @@ import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorld
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZoneFullFollows
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialFollows
-import net.rsprox.protocol.game.outgoing.model.zone.payload.LocAddChangeV1
-import net.rsprox.protocol.game.outgoing.model.zone.payload.LocAnim
-import net.rsprox.protocol.game.outgoing.model.zone.payload.LocDel
-import net.rsprox.protocol.game.outgoing.model.zone.payload.LocMerge
-import net.rsprox.protocol.game.outgoing.model.zone.payload.MapAnim
-import net.rsprox.protocol.game.outgoing.model.zone.payload.MapProjAnim
-import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjAdd
-import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjCount
-import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjCustomise
-import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjDel
-import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjEnabledOps
-import net.rsprox.protocol.game.outgoing.model.zone.payload.ObjUncustomise
-import net.rsprox.protocol.game.outgoing.model.zone.payload.SoundArea
+import net.rsprox.protocol.game.outgoing.model.zone.payload.*
 import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildArea
 import net.rsprox.protocol.reflection.ReflectionCheck
 import net.rsprox.shared.ScriptVarType
@@ -2447,8 +2435,13 @@ public class TextServerPacketTranscriber(
             when (event) {
                 is LocAddChangeV1 -> {
                     if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
-                    val root = sessionState.createFakeServerRoot("LOC_ADD_CHANGE")
-                    root.buildLocAddChange(event)
+                    val root = sessionState.createFakeServerRoot("LOC_ADD_CHANGE_V1")
+                    root.buildLocAddChangeV1(event)
+                }
+                is LocAddChangeV2 -> {
+                    if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
+                    val root = sessionState.createFakeServerRoot("LOC_ADD_CHANGE_V2")
+                    root.buildLocAddChangeV2(event)
                 }
                 is LocAnim -> {
                     if (!filters[PropertyFilter.LOC_ANIM]) continue
@@ -2523,8 +2516,14 @@ public class TextServerPacketTranscriber(
                 when (event) {
                     is LocAddChangeV1 -> {
                         if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
-                        group("LOC_ADD_CHANGE") {
-                            buildLocAddChange(event)
+                        group("LOC_ADD_CHANGE_V1") {
+                            buildLocAddChangeV1(event)
+                        }
+                    }
+                    is LocAddChangeV2 -> {
+                        if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
+                        group("LOC_ADD_CHANGE_V2") {
+                            buildLocAddChangeV2(event)
                         }
                     }
                     is LocAnim -> {
@@ -2609,9 +2608,14 @@ public class TextServerPacketTranscriber(
         root.coordGrid(buildAreaCoordGrid(message.zoneX, message.zoneZ, message.level))
     }
 
-    override fun locAddChange(message: LocAddChangeV1) {
+    override fun locAddChangeV1(message: LocAddChangeV1) {
         if (!filters[PropertyFilter.LOC_ADD_CHANGE]) return omit()
-        root.buildLocAddChange(message)
+        root.buildLocAddChangeV1(message)
+    }
+
+    override fun locAddChangeV2(message: LocAddChangeV2) {
+        if (!filters[PropertyFilter.LOC_ADD_CHANGE]) return omit()
+        root.buildLocAddChangeV2(message)
     }
 
     override fun locAnim(message: LocAnim) {
@@ -2671,11 +2675,24 @@ public class TextServerPacketTranscriber(
         return sessionState.getActiveWorld().relativizeZoneCoord(xInZone, zInZone)
     }
 
-    private fun Property.buildLocAddChange(message: LocAddChangeV1) {
+    private fun Property.buildLocAddChangeV1(message: LocAddChangeV1) {
         scriptVarType("id", ScriptVarType.LOC, message.id)
         coordGrid(coordInZone(message.xInZone, message.zInZone))
         scriptVarType("shape", ScriptVarType.LOC_SHAPE, message.shape)
         int("rotation", message.rotation)
+    }
+
+    private fun Property.buildLocAddChangeV2(message: LocAddChangeV2) {
+        scriptVarType("id", ScriptVarType.LOC, message.id)
+        coordGrid(coordInZone(message.xInZone, message.zInZone))
+        scriptVarType("shape", ScriptVarType.LOC_SHAPE, message.shape)
+        int("rotation", message.rotation)
+        val ops = message.ops
+        if (ops != null) {
+            for ((k, v) in ops) {
+                string("op$k", v)
+            }
+        }
     }
 
     private fun Property.buildLocAnim(message: LocAnim) {
