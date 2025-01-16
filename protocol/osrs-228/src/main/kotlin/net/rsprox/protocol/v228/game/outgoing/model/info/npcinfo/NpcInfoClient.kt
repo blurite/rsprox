@@ -626,6 +626,7 @@ internal class NpcInfoClient(
             if (hasUpdate == 0) {
                 transmittedNPC[transmittedNPCCount++] = index
                 npc.lastTransmitCycle = cycle
+                npc.clearMovement()
                 updates[index] = UpdateType.IDLE
                 continue
             }
@@ -634,6 +635,7 @@ internal class NpcInfoClient(
                 0 -> {
                     transmittedNPC[transmittedNPCCount++] = index
                     npc.lastTransmitCycle = cycle
+                    npc.clearMovement()
                     extraUpdateNPC[extraUpdateNPCCount++] = index
                     updates[index] = UpdateType.ACTIVE
                 }
@@ -679,6 +681,7 @@ internal class NpcInfoClient(
                     updates[index] = UpdateType.ACTIVE
                 }
                 3 -> {
+                    npc.clearMovement()
                     deletedNPC[deletedNPCCount++] = index
                     updates[index] = UpdateType.HIGH_RESOLUTION_TO_LOW_RESOLUTION
                 }
@@ -779,6 +782,11 @@ internal class NpcInfoClient(
         var turnSpeed = 32
         var jump: Boolean = false
         var steps: MutableList<Int> = mutableListOf()
+        fun clearMovement() {
+            this.moveSpeed = MoveSpeed.STATIONARY
+            this.jump = false
+        }
+
 
         fun addRouteWaypoint(
             baseCoord: CoordGrid,
