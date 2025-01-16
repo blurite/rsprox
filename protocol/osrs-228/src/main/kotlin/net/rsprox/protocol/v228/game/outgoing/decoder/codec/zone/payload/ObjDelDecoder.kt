@@ -15,8 +15,8 @@ internal class ObjDelDecoder : ProxyMessageDecoder<ObjDel> {
         buffer: JagByteBuf,
         session: Session,
     ): ObjDel {
-        val id = buffer.g2Alt1()
-        val coordInZone = CoordInZone(buffer.g1Alt1())
+        val id = buffer.g2()
+        val coordInZone = CoordInZone(buffer.g1Alt3())
         val quantity = buffer.g4()
         return ObjDel(
             id,

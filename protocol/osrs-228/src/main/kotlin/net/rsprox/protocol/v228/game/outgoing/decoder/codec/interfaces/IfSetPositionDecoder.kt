@@ -2,6 +2,7 @@ package net.rsprox.protocol.v228.game.outgoing.decoder.codec.interfaces
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
+import net.rsprot.protocol.util.gCombinedIdAlt2
 import net.rsprot.protocol.util.gCombinedIdAlt3
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPosition
@@ -15,9 +16,9 @@ internal class IfSetPositionDecoder : ProxyMessageDecoder<IfSetPosition> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetPosition {
-        val x = buffer.g2Alt1()
+        val combinedId = buffer.gCombinedIdAlt2()
         val y = buffer.g2Alt1()
-        val combinedId = buffer.gCombinedIdAlt3()
+        val x = buffer.g2Alt1()
         return IfSetPosition(
             combinedId.interfaceId,
             combinedId.componentId,

@@ -54,12 +54,13 @@ public class LocAddChangeV2 private constructor(
         coordInZone: CoordInZone,
         locProperties: LocProperties,
         opFlags: OpFlags,
+        ops: Map<Byte, String>?,
     ) : this(
         id.toUShort(),
         coordInZone,
         locProperties,
         opFlags,
-        null,
+        ops,
     )
 
     public val id: Int

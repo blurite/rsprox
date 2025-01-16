@@ -14,10 +14,10 @@ internal class UpdateStatV2Decoder : ProxyMessageDecoder<UpdateStatV2> {
         buffer: JagByteBuf,
         session: Session,
     ): UpdateStatV2 {
+        val invisibleBoostedLevel = buffer.g1Alt2()
+        val stat = buffer.g1Alt2()
         val experience = buffer.g4()
-        val invisibleBoostedLevel = buffer.g1()
         val currentLevel = buffer.g1()
-        val stat = buffer.g1()
         return UpdateStatV2(
             stat,
             currentLevel,
