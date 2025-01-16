@@ -1,7 +1,7 @@
 package net.rsprox.protocol.v224.game.outgoing.decoder.prot
 
 internal object GameServerProtId {
-    const val LOC_ADD_CHANGE = 0
+    const val LOC_ADD_CHANGE_V1 = 0
     const val REBUILD_REGION = 1
     const val IF_SETHIDE = 2
     const val CAM_MODE = 3

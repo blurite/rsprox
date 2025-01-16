@@ -129,4 +129,5 @@ public enum class GameClientProt : Prot {
     SOUND_JINGLEEND,
     WINDOW_STATUS,
     SET_HEADING,
+    UNKNOWN_BYTE,
 }

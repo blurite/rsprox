@@ -73,7 +73,7 @@ internal object GameServerProtId {
     const val REFLECTION_CHECKER = 69
     const val CAM_MOVETO_CYCLES = 70
     const val UPDATE_INV_PARTIAL = 71
-    const val LOC_ADD_CHANGE = 72
+    const val LOC_ADD_CHANGE_V1 = 72
     const val CAM_ROTATETO = 73
     const val UPDATE_INV_STOPTRANSMIT = 74
     const val WORLDENTITY_INFO_V1 = 75

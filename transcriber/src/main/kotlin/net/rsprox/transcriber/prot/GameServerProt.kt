@@ -80,6 +80,7 @@ public enum class GameServerProt : Prot {
     // World entity packets
     CLEAR_ENTITIES,
     SET_ACTIVE_WORLD,
+    WORLDENTITY_INFO_V4,
     WORLDENTITY_INFO_V3,
     WORLDENTITY_INFO_V2,
     WORLDENTITY_INFO_V1,

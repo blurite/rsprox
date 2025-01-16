@@ -105,7 +105,7 @@ internal object GameServerProtId {
     const val UPDATE_INV_PARTIAL = 101
     const val IF_SETANIM = 102
     const val OBJ_DEL = 103
-    const val LOC_ADD_CHANGE = 104
+    const val LOC_ADD_CHANGE_V1 = 104
     const val IF_SETOBJECT = 105
     const val SERVER_TICK_END = 106
     const val UPDATE_RUNENERGY = 107

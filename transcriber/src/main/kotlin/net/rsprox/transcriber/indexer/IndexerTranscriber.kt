@@ -130,6 +130,7 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingE
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV1
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV2
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV3
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV4
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfMoveSub
@@ -564,6 +565,9 @@ public class IndexerTranscriber(
     }
 
     override fun worldEntityInfoV3(message: WorldEntityInfoV3) {
+    }
+
+    override fun worldEntityInfoV4(message: WorldEntityInfoV4) {
     }
 
     override fun ifClearInv(message: IfClearInv) {

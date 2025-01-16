@@ -91,7 +91,7 @@ internal object GameClientProtId {
     const val EVENT_CAMERA_POSITION = 87
     const val IF_SUBOP = 88
     const val IF_BUTTON6 = 89
-    const val UPDATE_PLAYER_MODEL_OLD = 90
+    const val UPDATE_PLAYER_MODEL_V1 = 90
     const val OPNPC6 = 91
     const val OPOBJ6 = 92
     const val MESSAGE_PRIVATE = 93
@@ -99,6 +99,6 @@ internal object GameClientProtId {
     const val OPOBJ2 = 95
     const val CLANCHANNEL_FULL_REQUEST = 96
     const val EVENT_KEYBOARD = 97
-    const val UPDATE_PLAYER_MODEL = 98
+    const val UPDATE_PLAYER_MODEL_V2 = 98
     const val OPPLAYER1 = 99
 }

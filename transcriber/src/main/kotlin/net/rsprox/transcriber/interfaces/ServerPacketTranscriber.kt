@@ -31,6 +31,7 @@ import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV1
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV2
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV3
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV4
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfMoveSub
@@ -176,6 +177,8 @@ public interface ServerPacketTranscriber {
     public fun worldEntityInfoV2(message: WorldEntityInfoV2)
 
     public fun worldEntityInfoV3(message: WorldEntityInfoV3)
+
+    public fun worldEntityInfoV4(message: WorldEntityInfoV4)
 
     public fun ifClearInv(message: IfClearInv)
 

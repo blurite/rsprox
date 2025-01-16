@@ -48,7 +48,7 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
     private enum class IndexedZoneProtDecoder(
         val decoder: ProxyMessageDecoder<*>,
     ) {
-        LOC_ADD_CHANGE(LocAddChangeDecoder()),
+        LOC_ADD_CHANGE_V1(LocAddChangeDecoder()),
         OBJ_COUNT(ObjCountDecoder()),
         OBJ_ENABLED_OPS(ObjEnabledOpsDecoder()),
         MAP_ANIM(MapAnimDecoder()),

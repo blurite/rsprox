@@ -36,7 +36,7 @@ internal object GameServerProtId {
     const val UPDATE_RUNENERGY = 32
     const val CAM_TARGET_V2 = 33
     const val IF_SETPLAYERMODEL_BODYTYPE = 34
-    const val LOC_ADD_CHANGE = 35
+    const val LOC_ADD_CHANGE_V1 = 35
     const val UPDATE_IGNORELIST = 36
     const val LOC_MERGE = 37
     const val SET_HEATMAP_ENABLED = 38

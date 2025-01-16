@@ -54,7 +54,7 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
         OBJ_COUNT(ObjCountDecoder()),
         OBJ_ADD(ObjAddDecoder()),
         LOC_MERGE(LocMergeDecoder()),
-        LOC_ADD_CHANGE(LocAddChangeDecoder()),
+        LOC_ADD_CHANGE_V1(LocAddChangeDecoder()),
         MAP_ANIM(MapAnimDecoder()),
         MAP_PROJANIM(MapProjAnimDecoder()),
         LOC_ANIM(LocAnimDecoder()),

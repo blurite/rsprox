@@ -34,11 +34,7 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChanne
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelSingleUser
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
-import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfo
-import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV1
-import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV2
-import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV3
-import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityUpdateType
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.*
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfMoveSub
@@ -868,6 +864,10 @@ public class TextServerPacketTranscriber(
 
     override fun worldEntityInfoV3(message: WorldEntityInfoV3) {
         worldEntityInfo(message)
+    }
+
+    override fun worldEntityInfoV4(message: WorldEntityInfoV4) {
+        return worldEntityInfo(message)
     }
 
     private fun worldEntityInfo(message: WorldEntityInfo) {

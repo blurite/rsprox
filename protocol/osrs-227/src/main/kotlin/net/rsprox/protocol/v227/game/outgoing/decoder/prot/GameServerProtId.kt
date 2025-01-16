@@ -126,7 +126,7 @@ internal object GameServerProtId {
     const val HIDENPCOPS = 122
     const val IF_SETPLAYERMODEL_OBJ = 123
     const val UPDATE_INV_PARTIAL = 124
-    const val LOC_ADD_CHANGE = 125
+    const val LOC_ADD_CHANGE_V1 = 125
     const val MIDI_SONG_V2 = 126
     const val OBJ_ENABLED_OPS = 127
     const val SET_INTERACTION_MODE = 128

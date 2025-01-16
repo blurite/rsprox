@@ -50,7 +50,7 @@ public enum class GameServerProt(
     UPDATE_ZONE_PARTIAL_ENCLOSED(GameServerProtId.UPDATE_ZONE_PARTIAL_ENCLOSED, Prot.VAR_SHORT),
 
     // Zone payload packets
-    LOC_ADD_CHANGE(GameServerProtId.LOC_ADD_CHANGE, 5),
+    LOC_ADD_CHANGE_V1(GameServerProtId.LOC_ADD_CHANGE_V1, 5),
     LOC_DEL(GameServerProtId.LOC_DEL, 2),
     LOC_ANIM(GameServerProtId.LOC_ANIM, 4),
     LOC_MERGE(GameServerProtId.LOC_MERGE, 14),

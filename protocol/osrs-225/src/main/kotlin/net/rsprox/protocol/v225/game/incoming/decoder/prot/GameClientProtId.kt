@@ -35,7 +35,7 @@ internal object GameClientProtId {
     const val AFFINEDCLANSETTINGS_SETMUTED_FROMCHANNEL = 31
     const val TELEPORT = 32
     const val OPNPCT = 33
-    const val UPDATE_PLAYER_MODEL_OLD = 34
+    const val UPDATE_PLAYER_MODEL_V1 = 34
     const val RESUME_P_NAMEDIALOG = 35
     const val IF_SUBOP = 36
     const val IF_BUTTONT = 37
@@ -88,7 +88,7 @@ internal object GameClientProtId {
     const val MAP_BUILD_COMPLETE = 84
     const val OPOBJ4 = 85
     const val MEMBERSHIP_PROMOTION_ELIGIBILITY = 86
-    const val UPDATE_PLAYER_MODEL = 87
+    const val UPDATE_PLAYER_MODEL_V2 = 87
     const val OPPLAYER4 = 88
     const val OPOBJU = 89
     const val OPOBJ1 = 90

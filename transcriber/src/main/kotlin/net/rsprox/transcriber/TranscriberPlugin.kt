@@ -96,6 +96,7 @@ public class TranscriberPlugin(
             GameServerProt.SET_NPC_UPDATE_ORIGIN -> pass(message, Transcriber::setNpcUpdateOrigin)
             GameServerProt.CLEAR_ENTITIES -> pass(message, Transcriber::clearEntities)
             GameServerProt.SET_ACTIVE_WORLD -> pass(message, Transcriber::setActiveWorld)
+            GameServerProt.WORLDENTITY_INFO_V4 -> pass(message, Transcriber::worldEntityInfoV4)
             GameServerProt.WORLDENTITY_INFO_V3 -> pass(message, Transcriber::worldEntityInfoV3)
             GameServerProt.WORLDENTITY_INFO_V2 -> pass(message, Transcriber::worldEntityInfoV2)
             GameServerProt.WORLDENTITY_INFO_V1 -> pass(message, Transcriber::worldEntityInfoV1)
@@ -312,6 +313,7 @@ public class TranscriberPlugin(
             GameClientProt.SOUND_JINGLEEND -> pass(message, Transcriber::soundJingleEnd)
             GameClientProt.WINDOW_STATUS -> pass(message, Transcriber::windowStatus)
             GameClientProt.SET_HEADING -> pass(message, Transcriber::setHeading)
+            GameClientProt.UNKNOWN_BYTE -> throw IllegalArgumentException("Unknown byte")
         }
     }
 }
