@@ -2690,7 +2690,7 @@ public class TextServerPacketTranscriber(
         val ops = message.ops
         if (ops != null) {
             for ((k, v) in ops) {
-                string("op$k", v)
+                string("op${k.inc()}", v)
             }
         }
     }
