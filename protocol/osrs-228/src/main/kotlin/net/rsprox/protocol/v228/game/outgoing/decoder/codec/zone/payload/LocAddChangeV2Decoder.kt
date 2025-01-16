@@ -4,24 +4,26 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.model.util.OpFlags
-import net.rsprox.protocol.game.outgoing.model.zone.payload.LocAddChange
+import net.rsprox.protocol.game.outgoing.model.zone.payload.LocAddChangeV1
+import net.rsprox.protocol.game.outgoing.model.zone.payload.LocAddChangeV2
 import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInZone
 import net.rsprox.protocol.game.outgoing.model.zone.payload.util.LocProperties
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v228.game.outgoing.decoder.prot.GameServerProt
 
-internal class LocAddChangeDecoder : ProxyMessageDecoder<LocAddChange> {
-    override val prot: ClientProt = GameServerProt.LOC_ADD_CHANGE
+internal class LocAddChangeV2Decoder : ProxyMessageDecoder<LocAddChangeV2> {
+    override val prot: ClientProt = GameServerProt.LOC_ADD_CHANGE_V2
 
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
-    ): LocAddChange {
+    ): LocAddChangeV2 {
         val opFlags = OpFlags(buffer.g1Alt1())
         val id = buffer.g2()
         val locProperties = LocProperties(buffer.g1Alt3())
         val coordInZone = CoordInZone(buffer.g1())
-        return LocAddChange(
+        // TODO
+        return LocAddChangeV2(
             id,
             coordInZone,
             locProperties,

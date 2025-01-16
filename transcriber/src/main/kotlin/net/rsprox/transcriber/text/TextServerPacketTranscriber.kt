@@ -139,7 +139,7 @@ import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorld
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZoneFullFollows
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialFollows
-import net.rsprox.protocol.game.outgoing.model.zone.payload.LocAddChange
+import net.rsprox.protocol.game.outgoing.model.zone.payload.LocAddChangeV1
 import net.rsprox.protocol.game.outgoing.model.zone.payload.LocAnim
 import net.rsprox.protocol.game.outgoing.model.zone.payload.LocDel
 import net.rsprox.protocol.game.outgoing.model.zone.payload.LocMerge
@@ -2445,7 +2445,7 @@ public class TextServerPacketTranscriber(
     private fun createFakeZoneProts(packets: List<IncomingZoneProt>) {
         for (event in packets) {
             when (event) {
-                is LocAddChange -> {
+                is LocAddChangeV1 -> {
                     if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
                     val root = sessionState.createFakeServerRoot("LOC_ADD_CHANGE")
                     root.buildLocAddChange(event)
@@ -2521,7 +2521,7 @@ public class TextServerPacketTranscriber(
         root.apply {
             for (event in packets) {
                 when (event) {
-                    is LocAddChange -> {
+                    is LocAddChangeV1 -> {
                         if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
                         group("LOC_ADD_CHANGE") {
                             buildLocAddChange(event)
@@ -2609,7 +2609,7 @@ public class TextServerPacketTranscriber(
         root.coordGrid(buildAreaCoordGrid(message.zoneX, message.zoneZ, message.level))
     }
 
-    override fun locAddChange(message: LocAddChange) {
+    override fun locAddChange(message: LocAddChangeV1) {
         if (!filters[PropertyFilter.LOC_ADD_CHANGE]) return omit()
         root.buildLocAddChange(message)
     }
@@ -2671,7 +2671,7 @@ public class TextServerPacketTranscriber(
         return sessionState.getActiveWorld().relativizeZoneCoord(xInZone, zInZone)
     }
 
-    private fun Property.buildLocAddChange(message: LocAddChange) {
+    private fun Property.buildLocAddChange(message: LocAddChangeV1) {
         scriptVarType("id", ScriptVarType.LOC, message.id)
         coordGrid(coordInZone(message.xInZone, message.zInZone))
         scriptVarType("shape", ScriptVarType.LOC_SHAPE, message.shape)

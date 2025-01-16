@@ -129,7 +129,8 @@ import net.rsprox.protocol.v228.game.outgoing.decoder.codec.worldentity.SetActiv
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.zone.header.UpdateZoneFullFollowsDecoder
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.zone.header.UpdateZonePartialEnclosedDecoder
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.zone.header.UpdateZonePartialFollowsDecoder
-import net.rsprox.protocol.v228.game.outgoing.decoder.codec.zone.payload.LocAddChangeDecoder
+import net.rsprox.protocol.v228.game.outgoing.decoder.codec.zone.payload.*
+import net.rsprox.protocol.v228.game.outgoing.decoder.codec.zone.payload.LocAddChangeV1Decoder
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.zone.payload.LocAnimDecoder
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.zone.payload.LocDelDecoder
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.zone.payload.LocMergeDecoder
@@ -294,7 +295,8 @@ internal object ServerMessageDecoderRepository {
                 bind(UpdateZoneFullFollowsDecoder())
                 bind(UpdateZonePartialFollowsDecoder())
 
-                bind(LocAddChangeDecoder())
+                bind(LocAddChangeV1Decoder())
+                bind(LocAddChangeV2Decoder())
                 bind(LocAnimDecoder())
                 bind(LocDelDecoder())
                 bind(LocMergeDecoder())

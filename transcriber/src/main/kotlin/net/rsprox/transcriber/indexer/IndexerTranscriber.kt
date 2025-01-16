@@ -210,7 +210,7 @@ import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorld
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZoneFullFollows
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialFollows
-import net.rsprox.protocol.game.outgoing.model.zone.payload.LocAddChange
+import net.rsprox.protocol.game.outgoing.model.zone.payload.LocAddChangeV1
 import net.rsprox.protocol.game.outgoing.model.zone.payload.LocAnim
 import net.rsprox.protocol.game.outgoing.model.zone.payload.LocDel
 import net.rsprox.protocol.game.outgoing.model.zone.payload.LocMerge
@@ -1075,7 +1075,7 @@ public class IndexerTranscriber(
     override fun updateZonePartialEnclosed(message: UpdateZonePartialEnclosed) {
         for (update in message.packets) {
             when (update) {
-                is LocAddChange -> {
+                is LocAddChangeV1 -> {
                     binaryIndex.increment(IndexedType.LOC, update.id)
                 }
                 is LocAnim -> {
@@ -1114,7 +1114,7 @@ public class IndexerTranscriber(
     override fun updateZonePartialFollows(message: UpdateZonePartialFollows) {
     }
 
-    override fun locAddChange(message: LocAddChange) {
+    override fun locAddChange(message: LocAddChangeV1) {
         binaryIndex.increment(IndexedType.LOC, message.id)
     }
 

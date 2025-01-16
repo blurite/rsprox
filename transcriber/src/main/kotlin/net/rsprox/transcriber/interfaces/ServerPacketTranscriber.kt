@@ -112,7 +112,7 @@ import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorld
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZoneFullFollows
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialFollows
-import net.rsprox.protocol.game.outgoing.model.zone.payload.LocAddChange
+import net.rsprox.protocol.game.outgoing.model.zone.payload.LocAddChangeV1
 import net.rsprox.protocol.game.outgoing.model.zone.payload.LocAnim
 import net.rsprox.protocol.game.outgoing.model.zone.payload.LocDel
 import net.rsprox.protocol.game.outgoing.model.zone.payload.LocMerge
@@ -381,7 +381,7 @@ public interface ServerPacketTranscriber {
 
     public fun updateZonePartialFollows(message: UpdateZonePartialFollows)
 
-    public fun locAddChange(message: LocAddChange)
+    public fun locAddChange(message: LocAddChangeV1)
 
     public fun locAnim(message: LocAnim)
 

@@ -7,7 +7,7 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInZone
 import net.rsprox.protocol.game.outgoing.model.zone.payload.util.LocProperties
 
 /**
- * Loc add-change packed is used to either add or change a loc in the world.
+ * Loc add-change v1 packe1 is used to either add or change a loc in the world.
  * The client will add a new loc if none exists by this description,
  * or overwrites an old one with the same layer (layer is obtained through the [shape]
  * property of the loc).
@@ -20,7 +20,7 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.util.LocProperties
  * @property rotation the rotation of the loc, a value of 0 to 3 (inclusive) is expected.
  * @property opFlags the right-click options enabled on this loc.
  */
-public class LocAddChange private constructor(
+public class LocAddChangeV1 private constructor(
     private val _id: UShort,
     private val coordInZone: CoordInZone,
     private val locProperties: LocProperties,
@@ -68,13 +68,13 @@ public class LocAddChange private constructor(
     public val locPropertiesPacked: Int
         get() = locProperties.packed.toInt()
 
-    override val protId: Int = OldSchoolZoneProt.LOC_ADD_CHANGE
+    override val protId: Int = OldSchoolZoneProt.LOC_ADD_CHANGE_V1
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as LocAddChange
+        other as LocAddChangeV1
 
         if (_id != other._id) return false
         if (coordInZone != other.coordInZone) return false
@@ -93,7 +93,7 @@ public class LocAddChange private constructor(
     }
 
     override fun toString(): String {
-        return "LocAddChange(" +
+        return "LocAddChangeV1(" +
             "id=$id, " +
             "xInZone=$xInZone, " +
             "zInZone=$zInZone, " +
