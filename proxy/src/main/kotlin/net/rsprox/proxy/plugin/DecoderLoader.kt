@@ -28,8 +28,11 @@ import net.rsprox.protocol.v228.GameClientProtProviderV228
 import net.rsprox.protocol.v228.GameServerProtProviderV228
 import net.rsprox.protocol.v228.ServerPacketDecoderServiceV228
 import net.rsprox.proxy.huffman.HuffmanProvider
+import net.rsprox.transcriber.prot.GameClientProt
+import net.rsprox.transcriber.prot.GameServerProt
 import java.util.concurrent.Callable
 import java.util.concurrent.ForkJoinPool
+import kotlin.system.exitProcess
 import kotlin.time.measureTimedValue
 
 public class DecoderLoader {
@@ -59,6 +62,54 @@ public class DecoderLoader {
         for (result in results) {
             val plugin = result.get()
             decoders[plugin.revision] = plugin
+        }
+        validateProtNames()
+    }
+
+    private fun validateProtNames() {
+        var errorCount = 0
+        for ((rev, decoder) in decoders) {
+            for (serverProt in decoder.gameServerProtProvider.allProts()) {
+                val prot = serverProtOrNull(serverProt.toString())
+                if (prot == null) {
+                    errorCount++
+                    logger.error {
+                        "Revision $rev defines invalid server prot: $serverProt"
+                    }
+                }
+            }
+
+            for (clientProt in decoder.gameClientProtProvider.allProts()) {
+                val prot = clientProtOrNull(clientProt.toString())
+                if (prot == null) {
+                    errorCount++
+                    logger.error {
+                        "Revision $rev defines invalid client prot: $clientProt"
+                    }
+                }
+            }
+        }
+        if (errorCount > 0) {
+            logger.error {
+                "Unable to proceed with binary decoding - invalid prots detected."
+            }
+            exitProcess(-1)
+        }
+    }
+
+    private fun serverProtOrNull(name: String): GameServerProt? {
+        return try {
+            GameServerProt.valueOf(name)
+        } catch (_: IllegalArgumentException) {
+            return null
+        }
+    }
+
+    private fun clientProtOrNull(name: String): GameClientProt? {
+        return try {
+            GameClientProt.valueOf(name)
+        } catch (_: IllegalArgumentException) {
+            return null
         }
     }
 
