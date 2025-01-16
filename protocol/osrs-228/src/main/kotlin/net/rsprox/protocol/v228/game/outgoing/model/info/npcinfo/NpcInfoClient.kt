@@ -716,8 +716,6 @@ internal class NpcInfoClient(
                     transmittedNPC[transmittedNPCCount++] = index
                     npc.lastTransmitCycle = cycle
 
-
-
                     val deltaZ = decodeDelta(large, buffer)
                     val deltaX = decodeDelta(large, buffer)
                     val hasSpawnCycle = buffer.gBits(1) == 1
@@ -782,11 +780,11 @@ internal class NpcInfoClient(
         var turnSpeed = 32
         var jump: Boolean = false
         var steps: MutableList<Int> = mutableListOf()
+
         fun clearMovement() {
             this.moveSpeed = MoveSpeed.STATIONARY
             this.jump = false
         }
-
 
         fun addRouteWaypoint(
             baseCoord: CoordGrid,

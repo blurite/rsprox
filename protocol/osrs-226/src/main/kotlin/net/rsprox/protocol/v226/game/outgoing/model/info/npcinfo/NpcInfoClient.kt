@@ -780,6 +780,7 @@ internal class NpcInfoClient(
         var turnSpeed = 32
         var jump: Boolean = false
         var steps: MutableList<Int> = mutableListOf()
+
         fun clearMovement() {
             this.moveSpeed = MoveSpeed.STATIONARY
             this.jump = false

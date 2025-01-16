@@ -36,40 +36,54 @@ public fun main(args: Array<String>) {
 
         val loadingRunelite = options.has("runelite")
         val classpathOpt = options.valueOf("classpath").toString()
-        val classpath = classpathOpt.split(File.pathSeparator).stream().map {
-            if (loadingRunelite) {
-                // runelite-launcher doesn't pass the fully qualified paths of jars, so construct them ourselves
-                Paths.get(System.getProperty("user.home"), ".runelite", "repository2", it).toFile()
-            } else {
-                Paths.get(it).toFile()
-            }
-        }.collect(Collectors.toList())
+        val classpath =
+            classpathOpt
+                .split(File.pathSeparator)
+                .stream()
+                .map {
+                    if (loadingRunelite) {
+                        // runelite-launcher doesn't pass the fully qualified paths of jars, so construct them ourselves
+                        Paths.get(System.getProperty("user.home"), ".runelite", "repository2", it).toFile()
+                    } else {
+                        Paths.get(it).toFile()
+                    }
+                }.collect(Collectors.toList())
 
         val jarUrls = classpath.map { it.toURI().toURL() }.toTypedArray()
         val parent = ClassLoader.getPlatformClassLoader()
         val loader = URLClassLoader(jarUrls, parent)
 
         UIManager.put("ClassLoader", loader)
-        val thread = Thread {
-            try {
-                val mainClassPath = if (loadingRunelite) "net.runelite.client.RuneLite" else listOf("net" +
-                    ".runelite.launcher.Launcher", "net.rsprox.gui.ProxyToolGuiKt").first { it in args}
-                val mainClass = loader.loadClass(mainClassPath)
-                val mainArgs = if (loadingRunelite) {
-                    // RuneLite doesn't allow unrecognised arguments so only use arguments after --classpath
-                    args.copyOfRange(args.indexOfFirst { it == "--classpath" } + 2, args.size)
-                }else {
-                    args.copyOfRange(args.indexOfFirst { it == mainClass.name } + 1, args.size)
+        val thread =
+            Thread {
+                try {
+                    val mainClassPath =
+                        if (loadingRunelite) {
+                            "net.runelite.client.RuneLite"
+                        } else {
+                            listOf(
+                                "net" +
+                                    ".runelite.launcher.Launcher",
+                                "net.rsprox.gui.ProxyToolGuiKt",
+                            ).first { it in args }
+                        }
+                    val mainClass = loader.loadClass(mainClassPath)
+                    val mainArgs =
+                        if (loadingRunelite) {
+                            // RuneLite doesn't allow unrecognised arguments so only use arguments after --classpath
+                            args.copyOfRange(args.indexOfFirst { it == "--classpath" } + 2, args.size)
+                        } else {
+                            args.copyOfRange(args.indexOfFirst { it == mainClass.name } + 1, args.size)
+                        }
+
+                    logger.info { "Launching process using reflection: $mainClassPath ${mainArgs.joinToString(", ")}" }
+
+                    val main = mainClass.getMethod("main", Array<String>::class.java)
+                    main.invoke(null, mainArgs)
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
                 }
-
-                logger.info { "Launching process using reflection: $mainClassPath ${mainArgs.joinToString(", ")}" }
-
-                val main = mainClass.getMethod("main", Array<String>::class.java)
-                main.invoke(null, mainArgs)
-            } catch (ex: Exception) {
-                ex.printStackTrace()
             }
-        }
         thread.name = "RSProx"
         thread.start()
 
@@ -110,7 +124,9 @@ public data class Bootstrap(
     val proxy: Proxy,
 )
 
-public class Launcher(args: Array<String>) {
+public class Launcher(
+    args: Array<String>,
+) {
     private val bootstrap = getBootstrap()
 
     init {
@@ -118,7 +134,7 @@ public class Launcher(args: Array<String>) {
         logger.info {
             "OS name: ${System.getProperty("os.name")}, version: ${System.getProperty("os.version")}, arch: ${
                 System.getProperty(
-                    "os.arch"
+                    "os.arch",
                 )
             }"
         }
@@ -173,7 +189,7 @@ public class Launcher(args: Array<String>) {
                 "--classpath",
                 classpath.toString(),
                 bootstrap.proxy.mainClass,
-                *launcherArgs
+                *launcherArgs,
             )
         } else {
             return listOf(
@@ -181,7 +197,7 @@ public class Launcher(args: Array<String>) {
                 "-cp",
                 classpath.toString(),
                 bootstrap.proxy.mainClass,
-                *launcherArgs
+                *launcherArgs,
             )
         }
     }

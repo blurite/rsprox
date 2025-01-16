@@ -88,7 +88,7 @@ data class Bootstrap(
 
 data class Proxy(
     val version: String,
-    val mainClass: String
+    val mainClass: String,
 )
 
 data class Artifact(
@@ -158,10 +158,11 @@ tasks.register("uploadJarsToS3") {
                 }
         }
 
-        val bootstrap = Bootstrap(
-            proxy = Proxy(version = project.version.toString(), mainClass = guiMainClass),
-            artifacts = artifacts.sortedBy { it.name },
-        )
+        val bootstrap =
+            Bootstrap(
+                proxy = Proxy(version = project.version.toString(), mainClass = guiMainClass),
+                artifacts = artifacts.sortedBy { it.name },
+            )
 
         println("Uploaded ${artifacts.size} artifacts to S3")
         outputFile.writeText(jacksonObjectMapper().writeValueAsString(bootstrap))

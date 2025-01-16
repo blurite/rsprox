@@ -2,7 +2,6 @@ package net.rsprox.protocol.v228
 
 import net.rsprox.protocol.ProtProvider
 import net.rsprox.protocol.v228.game.incoming.decoder.prot.GameClientProt
-import net.rsprox.protocol.v228.game.outgoing.decoder.prot.GameServerProt
 import kotlin.enums.EnumEntries
 
 public data object GameClientProtProviderV228 : ProtProvider<GameClientProt> {

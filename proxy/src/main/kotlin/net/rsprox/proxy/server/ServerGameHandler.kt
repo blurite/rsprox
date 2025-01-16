@@ -19,7 +19,6 @@ import net.rsprot.crypto.crc.CyclicRedundancyCheck
 import net.rsprot.protocol.util.CombinedId
 import net.rsprot.protocol.util.gCombinedId
 import net.rsprot.protocol.util.gCombinedIdAlt1
-import net.rsprot.protocol.util.gCombinedIdAlt2
 import net.rsprox.proxy.attributes.INCOMING_BANK_PIN
 import net.rsprox.proxy.channel.getBinaryBlob
 import net.rsprox.proxy.channel.getServerToClientStreamCipher

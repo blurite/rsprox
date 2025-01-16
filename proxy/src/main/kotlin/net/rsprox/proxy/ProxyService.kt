@@ -495,12 +495,13 @@ public class ProxyService(
         try {
             val javConfigEndpoint = properties.getProperty(JAV_CONFIG_ENDPOINT)
             val launcher = RuneliteLauncher()
-            val args = launcher.getLaunchArgs(
-                port,
-                rsa.publicKey.modulus.toString(16),
-                javConfig = "http://127.0.0.1:$HTTP_SERVER_PORT/$javConfigEndpoint",
-                socket = timestamp.toString(),
-            )
+            val args =
+                launcher.getLaunchArgs(
+                    port,
+                    rsa.publicKey.modulus.toString(16),
+                    javConfig = "http://127.0.0.1:$HTTP_SERVER_PORT/$javConfigEndpoint",
+                    socket = timestamp.toString(),
+                )
 
             createProcess(
                 args,
