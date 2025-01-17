@@ -348,7 +348,7 @@ public class SessionTracker(
                             if (blocks.isNotEmpty()) {
                                 val npc = world.getNpc(index)
                                 val transform = blocks.single()
-                                world.updateNpcName(npc.index, cache.getNpcType(transform.id)?.name)
+                                world.updateNpcName(npc.index, transform.id, cache.getNpcType(transform.id)?.name)
                             }
                         }
                         NpcUpdateType.HighResolutionToLowResolution -> {

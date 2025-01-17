@@ -147,10 +147,11 @@ public class World(
 
     public fun updateNpcName(
         index: Int,
-        name: String?,
+        newId: Int,
+        newName: String?,
     ) {
         val old = getNpc(index)
-        this.npcs[index] = Npc(old.index, old.id, old.creationCycle, old.coord, name)
+        this.npcs[index] = Npc(old.index, newId, old.creationCycle, old.coord, newName)
     }
 
     public fun removeNpc(index: Int) {
