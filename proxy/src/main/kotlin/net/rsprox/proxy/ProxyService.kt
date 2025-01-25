@@ -27,7 +27,6 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
 import net.rsprox.proxy.config.ProxyProperty.Companion.SELECTED_CLIENT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
-import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
 import net.rsprox.proxy.connection.ClientTypeDictionary
 import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.downloader.JagexNativeClientDownloader
@@ -41,10 +40,9 @@ import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
 import net.rsprox.proxy.runelite.RuneliteLauncher
 import net.rsprox.proxy.settings.DefaultSettingSetStore
+import net.rsprox.proxy.target.ProxyTarget
+import net.rsprox.proxy.target.ProxyTargetConfig
 import net.rsprox.proxy.util.*
-import net.rsprox.proxy.worlds.DynamicWorldListProvider
-import net.rsprox.proxy.worlds.World
-import net.rsprox.proxy.worlds.WorldListProvider
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.account.JagexAccountStore
 import net.rsprox.shared.account.JagexCharacter
@@ -56,7 +54,6 @@ import org.newsclub.net.unix.AFUNIXSocketAddress
 import java.io.File
 import java.io.IOException
 import java.math.BigInteger
-import java.net.URL
 import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
@@ -75,8 +72,6 @@ public class ProxyService(
     private val decoderLoader: DecoderLoader = DecoderLoader()
     private lateinit var bootstrapFactory: BootstrapFactory
     private lateinit var serverBootstrap: ServerBootstrap
-    private lateinit var httpServerBootstrap: ServerBootstrap
-    private lateinit var worldListProvider: WorldListProvider
     public lateinit var operatingSystem: OperatingSystem
         private set
     private lateinit var rsa: RSAPrivateCrtKeyParameters
@@ -93,6 +88,8 @@ public class ProxyService(
     private lateinit var credentials: BinaryCredentialsStore
     private val gamePackProvider: GamePackProvider = GamePackProvider()
     private var rspsModulus: String? = null
+    private lateinit var proxyTargets: List<ProxyTarget>
+    private var currentProxyTarget: ProxyTarget by Delegates.notNull()
 
     public fun start(
         rspsJavConfigUrl: String?,
@@ -126,14 +123,11 @@ public class ProxyService(
         this.settingsStore = DefaultSettingSetStore.load(SETTINGS_DIRECTORY)
         this.availablePort = properties.getProperty(PROXY_PORT_MIN)
         this.bootstrapFactory = BootstrapFactory(allocator, properties)
-        progressCallback.update(0.35, "Proxy", "Loading jav config")
-        val javConfig = loadJavConfig(rspsJavConfigUrl)
-        progressCallback.update(0.40, "Proxy", "Loading world list")
-        this.worldListProvider = loadWorldListProvider(javConfig.getWorldListUrl())
-        progressCallback.update(0.50, "Proxy", "Replacing codebase")
-        val replacementWorld = findCodebaseReplacementWorld(javConfig, worldListProvider)
-        progressCallback.update(0.60, "Proxy", "Rebuilding jav config")
-        val updatedJavConfig = rebuildJavConfig(javConfig, replacementWorld)
+
+        progressCallback.update(0.35, "Proxy", "Loading proxy targets")
+        val proxyTargetConfigs = loadProxyTargetConfigs(rspsJavConfigUrl)
+        loadProxyTargets(proxyTargetConfigs)
+
         progressCallback.update(0.65, "Proxy", "Reading binary credentials")
         this.credentials = BinaryCredentialsStore.read()
 
@@ -142,8 +136,6 @@ public class ProxyService(
         if (operatingSystem == OperatingSystem.SOLARIS) {
             throw IllegalStateException("Operating system not supported for native: $operatingSystem")
         }
-        progressCallback.update(0.70, "Proxy", "Launching http server")
-        launchHttpServer(this.bootstrapFactory, worldListProvider, updatedJavConfig)
         progressCallback.update(0.80, "Proxy", "Deleting temporary files")
         deleteTemporaryClients()
         deleteTemporaryRuneLiteJars()
@@ -151,6 +143,26 @@ public class ProxyService(
         transferFakeCertificate()
         progressCallback.update(0.95, "Proxy", "Setting up safe shutdown")
         setShutdownHook()
+    }
+
+    private fun loadProxyTargetConfigs(overriddenJavConfig: String?): List<ProxyTargetConfig> {
+        val oldschool =
+            ProxyTargetConfig(
+                0,
+                "OldSchool RuneScape",
+                overriddenJavConfig ?: "http://oldschool.runescape.com/jav_config.ws",
+                HTTP_SERVER_PORT,
+            )
+        return listOf(oldschool)
+    }
+
+    private fun loadProxyTargets(configs: List<ProxyTargetConfig>) {
+        this.proxyTargets = configs.map(::ProxyTarget)
+        for (target in this.proxyTargets) {
+            target.load(properties, gamePackProvider, bootstrapFactory)
+        }
+        // Currently assign it as first
+        this.currentProxyTarget = proxyTargets.first()
     }
 
     public fun updateCredentials(
@@ -388,7 +400,7 @@ public class ProxyService(
         port: Int,
     ) {
         try {
-            launchProxyServer(this.bootstrapFactory, this.worldListProvider, rsa, port)
+            launchProxyServer(this.bootstrapFactory, this.currentProxyTarget, rsa, port)
         } catch (t: Throwable) {
             logger.error(t) { "Unable to bind network port $port for native client." }
             return
@@ -428,7 +440,7 @@ public class ProxyService(
         port: Int,
     ) {
         try {
-            launchProxyServer(this.bootstrapFactory, this.worldListProvider, rsa, port)
+            launchProxyServer(this.bootstrapFactory, this.currentProxyTarget, rsa, port)
         } catch (t: Throwable) {
             logger.error(t) { "Unable to bind network port $port for native client." }
             return
@@ -695,96 +707,15 @@ public class ProxyService(
         }
     }
 
-    private fun loadJavConfig(customUrl: String?): JavConfig {
-        val url = customUrl ?: "http://oldschool.runescape.com/jav_config.ws"
-        return runCatching("Failed to load jav_config.ws from $url") {
-            val config = JavConfig(URL(url))
-            logger.debug { "Jav config loaded from $url" }
-            config
-        }
-    }
-
-    private fun loadWorldListProvider(url: String): WorldListProvider {
-        return runCatching("Failed to instantiate world list provider") {
-            val provider =
-                DynamicWorldListProvider(
-                    URL(url),
-                    properties.getProperty(WORLDLIST_REFRESH_SECONDS),
-                )
-            logger.debug { "World list provider loaded from $url" }
-            provider
-        }
-    }
-
-    private fun findCodebaseReplacementWorld(
-        javConfig: JavConfig,
-        worldListProvider: WorldListProvider,
-    ): World {
-        val address =
-            javConfig
-                .getCodebase()
-                .removePrefix("http://")
-                .removePrefix("https://")
-                .removeSuffix("/")
-        return runCatching("Failed to find a linked world for codebase '$address'") {
-            val world = checkNotNull(worldListProvider.get().getTargetWorld(address))
-            logger.debug { "Loaded initial world ${world.localHostAddress} <-> ${world.host}" }
-            world
-        }
-    }
-
-    private fun rebuildJavConfig(
-        javConfig: JavConfig,
-        replacementWorld: World,
-    ): JavConfig {
-        return runCatching("Failed to rebuild jav_config.ws") {
-            val oldWorldList = javConfig.getWorldListUrl()
-            val oldCodebase = javConfig.getCodebase()
-            val changedWorldListUrl = "http://127.0.0.1:$HTTP_SERVER_PORT/worldlist.ws"
-            val changedCodebase = "http://${replacementWorld.localHostAddress}/"
-            val updated =
-                javConfig
-                    .replaceWorldListUrl(changedWorldListUrl)
-                    .replaceCodebase(changedCodebase)
-            logger.debug { "Rebuilt jav_config.ws:" }
-            logger.debug { "Codebase changed from '$oldCodebase' to '$changedCodebase'" }
-            logger.debug { "Worldlist changed from '$oldWorldList' to '$changedWorldListUrl'" }
-            updated
-        }
-    }
-
-    private fun launchHttpServer(
-        factory: BootstrapFactory,
-        worldListProvider: WorldListProvider,
-        javConfig: JavConfig,
-    ) {
-        runCatching("Failure to launch HTTP server") {
-            val httpServerBootstrap =
-                factory.createWorldListHttpServer(
-                    worldListProvider,
-                    javConfig,
-                    gamePackProvider,
-                )
-            val timeoutSeconds = properties.getProperty(BIND_TIMEOUT_SECONDS).toLong()
-            httpServerBootstrap
-                .bind(HTTP_SERVER_PORT)
-                .asCompletableFuture()
-                .orTimeout(timeoutSeconds, TimeUnit.SECONDS)
-                .join()
-            this.httpServerBootstrap = httpServerBootstrap
-            logger.debug { "HTTP server bound to port $HTTP_SERVER_PORT" }
-        }
-    }
-
     private fun launchProxyServer(
         factory: BootstrapFactory,
-        worldListProvider: WorldListProvider,
+        target: ProxyTarget,
         rsa: RSAPrivateCrtKeyParameters,
         port: Int,
     ) {
         val serverBootstrap =
             factory.createServerBootStrap(
-                worldListProvider,
+                target,
                 rsa,
                 decoderLoader,
                 properties.getProperty(BINARY_WRITE_INTERVAL_SECONDS),

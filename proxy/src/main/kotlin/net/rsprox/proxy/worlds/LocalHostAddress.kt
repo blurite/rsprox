@@ -1,5 +1,7 @@
 package net.rsprox.proxy.worlds
 
+import net.rsprox.proxy.target.ProxyTargetConfig
+
 @JvmInline
 public value class LocalHostAddress private constructor(
     public val ip: Int,
@@ -20,7 +22,10 @@ public value class LocalHostAddress private constructor(
         private val ipv4Regex =
             Regex("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")
 
-        public fun fromWorldId(worldId: Int): LocalHostAddress {
+        public fun fromWorldId(
+            worldId: Int,
+            config: ProxyTargetConfig,
+        ): LocalHostAddress {
             require(worldId in 0..65535) {
                 "World id out of bounds: $worldId"
             }
@@ -31,7 +36,7 @@ public value class LocalHostAddress private constructor(
                     LOCALHOST_GROUP_HEADER,
                     b,
                     c,
-                    LOCALHOST_GROUP_SUFFIX,
+                    LOCALHOST_GROUP_SUFFIX + config.id,
                 ),
             )
         }

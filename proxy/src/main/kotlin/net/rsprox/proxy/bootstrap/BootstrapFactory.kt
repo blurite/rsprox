@@ -20,6 +20,7 @@ import net.rsprox.proxy.http.GamePackProvider
 import net.rsprox.proxy.http.HttpServerHandler
 import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.server.ServerConnectionInitializer
+import net.rsprox.proxy.target.ProxyTarget
 import net.rsprox.proxy.worlds.WorldListProvider
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.settings.SettingSetStore
@@ -34,7 +35,7 @@ public class BootstrapFactory(
     }
 
     public fun createServerBootStrap(
-        worldListProvider: WorldListProvider,
+        target: ProxyTarget,
         rsa: RSAPrivateCrtKeyParameters,
         decoderLoader: DecoderLoader,
         binaryWriteInterval: Int,
@@ -55,7 +56,7 @@ public class BootstrapFactory(
             .childHandler(
                 ClientLoginInitializer(
                     this,
-                    worldListProvider,
+                    target,
                     rsa,
                     decoderLoader,
                     binaryWriteInterval,
