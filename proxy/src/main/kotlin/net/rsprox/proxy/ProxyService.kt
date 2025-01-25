@@ -31,6 +31,7 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.connection.ClientTypeDictionary
 import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.downloader.JagexNativeClientDownloader
+import net.rsprox.proxy.downloader.RuneWikiNativeClientDownloader
 import net.rsprox.proxy.exceptions.MissingLibraryException
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.futures.asCompletableFuture
@@ -474,7 +475,13 @@ public class ProxyService(
                 OperatingSystem.MAC -> NativeClientType.MAC
                 else -> throw IllegalStateException()
             }
-        val binary = JagexNativeClientDownloader.download(nativeClientType)
+        val targetRev = target.config.revision
+        val binary =
+            if (targetRev == null) {
+                JagexNativeClientDownloader.download(nativeClientType)
+            } else {
+                getHistoricNativeClient(targetRev, nativeClientType)
+            }
         val extension = if (binary.extension.isNotEmpty()) ".${binary.extension}" else ""
         val stamp = System.currentTimeMillis()
         val patched = TEMP_CLIENTS_DIRECTORY.resolve("${binary.nameWithoutExtension}-$stamp$extension")
@@ -521,6 +528,17 @@ public class ProxyService(
         ClientTypeDictionary[port] = "Native (${os.shortName})"
         this.connections.addSessionMonitor(port, sessionMonitor)
         launchExecutable(port, result.outputPath, os, character)
+    }
+
+    private fun getHistoricNativeClient(
+        version: String,
+        type: NativeClientType,
+    ): Path {
+        return RuneWikiNativeClientDownloader.download(
+            CLIENTS_DIRECTORY,
+            type,
+            version,
+        )
     }
 
     private fun launchJavaProcess(

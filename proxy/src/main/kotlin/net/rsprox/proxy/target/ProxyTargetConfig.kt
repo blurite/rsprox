@@ -17,6 +17,7 @@ public data class ProxyTargetConfig(
     public val modulus: String? = null,
     @JsonProperty("varp_count")
     public val varpCount: Int = DEFAULT_VARP_COUNT,
+    public val revision: String? = null,
 ) {
     public companion object {
         public const val DEFAULT_NAME: String = "Old School RuneScape"
