@@ -26,13 +26,12 @@ import net.rsprox.proxy.channel.replace
 import net.rsprox.proxy.client.ClientGameHandler
 import net.rsprox.proxy.client.ClientGenericDecoder
 import net.rsprox.proxy.client.ClientRelayHandler
-import net.rsprox.proxy.config.CURRENT_REVISION
 import net.rsprox.proxy.config.LATEST_SUPPORTED_PLUGIN
 import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.server.prot.LoginServerProt
+import net.rsprox.proxy.target.ProxyTarget
 import net.rsprox.proxy.util.UserUid
-import net.rsprox.proxy.worlds.WorldListProvider
 import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.settings.SettingSetStore
@@ -40,7 +39,7 @@ import net.rsprox.shared.settings.SettingSetStore
 public class ServerGameLoginDecoder(
     private val clientChannel: Channel,
     private val binaryWriteInterval: Int,
-    private val worldListProvider: WorldListProvider,
+    private val target: ProxyTarget,
     private val decoderLoader: DecoderLoader,
     private val connections: ProxyConnectionContainer,
     private val filters: PropertyFilterSetStore,
@@ -268,7 +267,7 @@ public class ServerGameLoginDecoder(
             writeToClient {
                 pdata(payload.copy())
             }
-            val prot = decoderLoader.getDecoder(CURRENT_REVISION).gameServerProtProvider[0xFF]
+            val prot = decoderLoader.getDecoder(target.revisionNum()).gameServerProtProvider[0xFF]
             val packet =
                 ServerPacket(
                     prot,
@@ -281,10 +280,10 @@ public class ServerGameLoginDecoder(
             pipeline.replace<ServerGameLoginDecoder>(
                 ServerGenericDecoder(
                     serverChannel.getServerToClientStreamCipher(),
-                    decoderLoader.getDecoder(CURRENT_REVISION).gameServerProtProvider,
+                    decoderLoader.getDecoder(target.revisionNum()).gameServerProtProvider,
                 ),
             )
-            pipeline.replace<ServerRelayHandler>(ServerGameHandler(clientChannel, worldListProvider))
+            pipeline.replace<ServerRelayHandler>(ServerGameHandler(clientChannel, target.worldListProvider))
             switchClientToGameDecoding(ctx)
         }
         if (state == State.LOGIN_OK_READ_DATA) {
@@ -323,8 +322,7 @@ public class ServerGameLoginDecoder(
             sessionMonitor.onLogin(header)
             sessionMonitor.onUserInformationUpdate(userId, userHash)
             val blob = BinaryBlob(header, stream, binaryWriteInterval, sessionMonitor, filters, settings)
-            @Suppress("KotlinConstantConditions")
-            if (LATEST_SUPPORTED_PLUGIN >= CURRENT_REVISION) {
+            if (LATEST_SUPPORTED_PLUGIN >= target.revisionNum()) {
                 blob.hookLiveTranscriber(key, decoderLoader)
             }
             val serverChannel = ctx.channel()
@@ -354,10 +352,10 @@ public class ServerGameLoginDecoder(
             pipeline.replace<ServerGameLoginDecoder>(
                 ServerGenericDecoder(
                     serverChannel.getServerToClientStreamCipher(),
-                    decoderLoader.getDecoder(CURRENT_REVISION).gameServerProtProvider,
+                    decoderLoader.getDecoder(target.revisionNum()).gameServerProtProvider,
                 ),
             )
-            pipeline.replace<ServerRelayHandler>(ServerGameHandler(clientChannel, worldListProvider))
+            pipeline.replace<ServerRelayHandler>(ServerGameHandler(clientChannel, target.worldListProvider))
             switchClientToGameDecoding(ctx)
         }
     }
@@ -367,7 +365,7 @@ public class ServerGameLoginDecoder(
         val clientPipeline = clientChannel.pipeline()
         clientPipeline.remove<ClientRelayHandler>()
         clientPipeline.addLast(
-            ClientGenericDecoder(cipher, decoderLoader.getDecoder(CURRENT_REVISION).gameClientProtProvider),
+            ClientGenericDecoder(cipher, decoderLoader.getDecoder(target.revisionNum()).gameClientProtProvider),
         )
         clientPipeline.addLast(ClientGameHandler(ctx.channel()))
     }

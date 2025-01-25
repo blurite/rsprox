@@ -3,6 +3,7 @@ package net.rsprox.proxy.target
 import com.github.michaelbull.logging.InlineLogger
 import io.netty.bootstrap.ServerBootstrap
 import net.rsprox.proxy.bootstrap.BootstrapFactory
+import net.rsprox.proxy.config.CURRENT_REVISION
 import net.rsprox.proxy.config.JavConfig
 import net.rsprox.proxy.config.ProxyProperties
 import net.rsprox.proxy.config.ProxyProperty
@@ -23,6 +24,15 @@ public class ProxyTarget(
     private lateinit var httpServerBootstrap: ServerBootstrap
     public lateinit var worldListProvider: WorldListProvider
         private set
+
+    public fun revisionNum(): Int {
+        // Improve this maybe? It's a little fragile like this
+        return config.revision
+            ?.split(".")
+            ?.firstOrNull()
+            ?.toIntOrNull()
+            ?: CURRENT_REVISION
+    }
 
     public fun load(
         properties: ProxyProperties,

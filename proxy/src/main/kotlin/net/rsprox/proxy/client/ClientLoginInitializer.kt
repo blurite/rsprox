@@ -74,7 +74,7 @@ public class ClientLoginInitializer(
                         serverChannel,
                         rsa,
                         binaryWriteInterval,
-                        worldListProvider,
+                        target,
                         decoderLoader,
                         connections,
                         filters,
