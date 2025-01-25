@@ -26,6 +26,7 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.FILTERS_STATUS
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
 import net.rsprox.proxy.config.ProxyProperty.Companion.SELECTED_CLIENT
+import net.rsprox.proxy.config.ProxyProperty.Companion.SELECTED_PROXY_TARGET
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.connection.ClientTypeDictionary
 import net.rsprox.proxy.connection.ProxyConnectionContainer
@@ -92,7 +93,8 @@ public class ProxyService(
     private var rspsModulus: String? = null
     public lateinit var proxyTargets: List<ProxyTarget>
         private set
-    private var currentProxyTarget: ProxyTarget by Delegates.notNull()
+    private val currentProxyTarget: ProxyTarget
+        get() = proxyTargets[getSelectedProxyTarget()]
 
     public fun start(
         rspsJavConfigUrl: String?,
@@ -164,8 +166,6 @@ public class ProxyService(
         for (target in this.proxyTargets) {
             target.load(properties, gamePackProvider, bootstrapFactory)
         }
-        // Currently assign it as first
-        this.currentProxyTarget = proxyTargets.first()
     }
 
     public fun updateCredentials(
@@ -229,11 +229,12 @@ public class ProxyService(
     }
 
     public fun getSelectedProxyTarget(): Int {
-        return proxyTargets.indexOf(currentProxyTarget)
+        return properties.getPropertyOrNull(SELECTED_PROXY_TARGET) ?: 0
     }
 
     public fun setSelectedProxyTarget(index: Int) {
-        this.currentProxyTarget = proxyTargets[index]
+        properties.setProperty(SELECTED_PROXY_TARGET, index)
+        properties.saveProperties(PROPERTIES_FILE)
     }
 
     public fun setAppSize(
