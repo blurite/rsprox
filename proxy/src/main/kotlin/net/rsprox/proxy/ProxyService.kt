@@ -158,7 +158,15 @@ public class ProxyService(
                 overriddenJavConfig ?: "http://oldschool.runescape.com/jav_config.ws",
                 HTTP_SERVER_PORT,
             )
-        return listOf(oldschool)
+        val customTargets = ProxyTargetConfig.load(PROXY_TARGETS_FILE)
+        val ids = customTargets.entries.map(ProxyTargetConfig::id).distinct()
+        check(ids.size == customTargets.entries.size) {
+            "Overlapping proxy target ids detected."
+        }
+        check(ids.all { it >= 1 }) {
+            "Proxy target ids must be >= 1"
+        }
+        return listOf(oldschool) + customTargets.entries
     }
 
     private fun loadProxyTargets(configs: List<ProxyTargetConfig>) {
@@ -758,6 +766,7 @@ public class ProxyService(
 
     public companion object {
         private val logger = InlineLogger()
+        private val PROXY_TARGETS_FILE = CONFIGURATION_PATH.resolve("proxy-targets.yaml")
         private val PROPERTIES_FILE = CONFIGURATION_PATH.resolve("proxy.properties")
 
         private inline fun <T> runCatching(
