@@ -88,7 +88,8 @@ public class ProxyService(
     private lateinit var credentials: BinaryCredentialsStore
     private val gamePackProvider: GamePackProvider = GamePackProvider()
     private var rspsModulus: String? = null
-    private lateinit var proxyTargets: List<ProxyTarget>
+    public lateinit var proxyTargets: List<ProxyTarget>
+        private set
     private var currentProxyTarget: ProxyTarget by Delegates.notNull()
 
     public fun start(
@@ -223,6 +224,14 @@ public class ProxyService(
 
     public fun getSelectedClient(): Int {
         return properties.getPropertyOrNull(SELECTED_CLIENT) ?: 0
+    }
+
+    public fun getSelectedProxyTarget(): Int {
+        return proxyTargets.indexOf(currentProxyTarget)
+    }
+
+    public fun setSelectedProxyTarget(index: Int) {
+        this.currentProxyTarget = proxyTargets[index]
     }
 
     public fun setAppSize(
