@@ -70,10 +70,11 @@ public class PropertyFormatterCollection private constructor(
                 it.value.toString().lowercase()
             }
             builder.add<IdentifiedNpcProperty> {
-                val id = dictionary.getScriptVarTypeName(it.id, ScriptVarType.NPC)
+                val symbol = dictionary.getScriptVarTypeName(it.id, ScriptVarType.NPC)
                 val col =
                     when {
-                        id != null -> "id=$id"
+                        symbol != null && settings[Setting.SHOW_IDS_AFTER_SYMBOLS] -> "id=$symbol (${it.id})"
+                        symbol != null -> "id=$symbol"
                         it.npcName != "null" -> it.npcName + " (id=${it.id})"
                         else -> "id=${it.id}"
                     }
@@ -86,14 +87,17 @@ public class PropertyFormatterCollection private constructor(
             builder.add<IdentifiedMultinpcProperty> {
                 val base = dictionary.getScriptVarTypeName(it.baseId, ScriptVarType.NPC)
                 val baseCol =
-                    if (base != null) {
-                        "id=$base"
-                    } else {
-                        "id=${it.baseId}"
+                    when {
+                        base != null && settings[Setting.SHOW_IDS_AFTER_SYMBOLS] -> "id=$base (${it.baseId})"
+                        base != null -> "id=$base"
+                        else -> "id=${it.baseId}"
                     }
                 val multinpc = dictionary.getScriptVarTypeName(it.multinpcId, ScriptVarType.NPC)
                 val multinpcCol =
                     when {
+                        multinpc != null && settings[Setting.SHOW_IDS_AFTER_SYMBOLS] -> {
+                            "multinpc=$multinpc (${it.multinpcId})"
+                        }
                         multinpc != null -> "multinpc=$multinpc"
                         it.npcName != "null" -> "multinpc=${it.npcName}"
                         else -> "multinpc=${it.multinpcId}"
@@ -105,16 +109,36 @@ public class PropertyFormatterCollection private constructor(
                 }
             }
             builder.add<ShortNpcProperty> {
-                dictionary.getScriptVarTypeName(it.id, ScriptVarType.NPC) ?: "(index=${it.index})"
+                val symbol = dictionary.getScriptVarTypeName(it.id, ScriptVarType.NPC) ?: return@add "(id=${it.id})"
+                if (settings[Setting.SHOW_IDS_AFTER_SYMBOLS]) {
+                    "$symbol (${it.id})"
+                } else {
+                    symbol
+                }
             }
             builder.add<ScriptProperty> {
-                dictionary.getScriptName(it.value) ?: "${it.value}"
+                val symbol = dictionary.getScriptName(it.value) ?: return@add "${it.value}"
+                if (settings[Setting.SHOW_IDS_AFTER_SYMBOLS]) {
+                    "$symbol (${it.value})"
+                } else {
+                    symbol
+                }
             }
             builder.add<VarbitProperty> {
-                dictionary.getVarbitName(it.value) ?: "${it.value}"
+                val symbol = dictionary.getVarbitName(it.value) ?: return@add "${it.value}"
+                if (settings[Setting.SHOW_IDS_AFTER_SYMBOLS]) {
+                    "$symbol (${it.value})"
+                } else {
+                    symbol
+                }
             }
             builder.add<VarpProperty> {
-                dictionary.getVarpName(it.value) ?: "${it.value}"
+                val symbol = dictionary.getVarpName(it.value) ?: return@add "${it.value}"
+                if (settings[Setting.SHOW_IDS_AFTER_SYMBOLS]) {
+                    "$symbol (${it.value})"
+                } else {
+                    symbol
+                }
             }
             builder.add<ZoneCoordProperty> {
                 "(${it.zoneX}, ${it.zoneZ}, ${it.level})"
@@ -149,30 +173,47 @@ public class PropertyFormatterCollection private constructor(
                             "($x, $z, $level)"
                         }
                         ScriptVarType.COMPONENT -> {
-                            val name = dictionary.getScriptVarTypeName(value, ScriptVarType.COMPONENT)
-                            if (name != null) {
-                                return@PropertyFormatter name
-                            }
                             var interfaceId = value ushr 16 and 0xFFFF
                             var componentId = value and 0xFFFF
                             if (interfaceId == 0xFFFF) interfaceId = -1
                             if (componentId == 0xFFFF) componentId = -1
+                            val name = dictionary.getScriptVarTypeName(value, ScriptVarType.COMPONENT)
+                            if (name != null) {
+                                return@PropertyFormatter if (settings[Setting.SHOW_IDS_AFTER_SYMBOLS]) {
+                                    "$name ($interfaceId:$componentId)"
+                                } else {
+                                    name
+                                }
+                            }
                             val interfaceName =
                                 dictionary.getScriptVarTypeName(
                                     interfaceId,
                                     ScriptVarType.INTERFACE,
                                 )
-                            if (interfaceName != null) {
-                                "$interfaceName:$componentId"
-                            } else {
-                                "$interfaceId:$componentId"
+                            when {
+                                interfaceName != null && settings[Setting.SHOW_IDS_AFTER_SYMBOLS] -> {
+                                    "$interfaceName:$componentId ($interfaceId:$componentId)"
+                                }
+                                interfaceName != null -> {
+                                    "$interfaceName:$componentId"
+                                }
+                                else -> {
+                                    "$interfaceId:$componentId"
+                                }
                             }
                         }
                         ScriptVarType.BOOLEAN -> {
                             if (value == 1) "true" else "false"
                         }
                         else -> {
-                            dictionary.getScriptVarTypeName(value, it.scriptVarType) ?: "$value"
+                            val symbol =
+                                dictionary.getScriptVarTypeName(value, it.scriptVarType)
+                                    ?: return@PropertyFormatter "$value"
+                            return@PropertyFormatter if (settings[Setting.SHOW_IDS_AFTER_SYMBOLS]) {
+                                "$symbol ($value)"
+                            } else {
+                                symbol
+                            }
                         }
                     }
                 }

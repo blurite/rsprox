@@ -14,6 +14,14 @@ public enum class Setting(
         false,
         "When enabled, uses single quote whenever logging string-types. Otherwise, sticks to double quote.",
     ),
+    SHOW_IDS_AFTER_SYMBOLS(
+        SettingGroup.LOGGING,
+        SettingCategory.PREFS,
+        "Show Ids After Symbols",
+        true,
+        "When enabled and a symbol dictionary is provided, " +
+            "will show ids after symbol names, e.g. \"armadyl_godsword (11802)\"",
+    ),
     TRANSLATE_INSTANCED_COORDS(
         SettingGroup.LOGGING,
         SettingCategory.MISC,
