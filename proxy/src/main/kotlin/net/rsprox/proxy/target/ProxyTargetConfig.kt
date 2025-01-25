@@ -9,6 +9,7 @@ public data class ProxyTargetConfig(
     public val varpCount: Int = DEFAULT_VARP_COUNT,
 ) {
     public companion object {
+        public const val DEFAULT_NAME: String = "Old School RuneScape"
         public const val DEFAULT_VARP_COUNT: Int = 5000
     }
 }

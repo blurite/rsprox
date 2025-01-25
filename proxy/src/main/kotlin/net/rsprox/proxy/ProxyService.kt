@@ -42,6 +42,7 @@ import net.rsprox.proxy.runelite.RuneliteLauncher
 import net.rsprox.proxy.settings.DefaultSettingSetStore
 import net.rsprox.proxy.target.ProxyTarget
 import net.rsprox.proxy.target.ProxyTargetConfig
+import net.rsprox.proxy.target.ProxyTargetConfig.Companion.DEFAULT_NAME
 import net.rsprox.proxy.target.ProxyTargetConfig.Companion.DEFAULT_VARP_COUNT
 import net.rsprox.proxy.util.*
 import net.rsprox.shared.SessionMonitor
@@ -151,7 +152,7 @@ public class ProxyService(
         val oldschool =
             ProxyTargetConfig(
                 0,
-                "OldSchool RuneScape",
+                DEFAULT_NAME,
                 overriddenJavConfig ?: "http://oldschool.runescape.com/jav_config.ws",
                 HTTP_SERVER_PORT,
             )
@@ -482,6 +483,9 @@ public class ProxyService(
                 .port(port)
         if (target.config.varpCount != DEFAULT_VARP_COUNT) {
             criteriaBuilder.varpCount(DEFAULT_VARP_COUNT, target.config.varpCount)
+        }
+        if (target.config.name != DEFAULT_NAME) {
+            criteriaBuilder.name(target.config.name)
         }
         val criteria = criteriaBuilder.build()
         val result =
