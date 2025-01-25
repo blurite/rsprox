@@ -42,6 +42,7 @@ import net.rsprox.proxy.runelite.RuneliteLauncher
 import net.rsprox.proxy.settings.DefaultSettingSetStore
 import net.rsprox.proxy.target.ProxyTarget
 import net.rsprox.proxy.target.ProxyTargetConfig
+import net.rsprox.proxy.target.ProxyTargetConfig.Companion.DEFAULT_VARP_COUNT
 import net.rsprox.proxy.util.*
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.account.JagexAccountStore
@@ -448,8 +449,9 @@ public class ProxyService(
         character: JagexCharacter?,
         port: Int,
     ) {
+        val target = this.currentProxyTarget
         try {
-            launchProxyServer(this.bootstrapFactory, this.currentProxyTarget, rsa, port)
+            launchProxyServer(this.bootstrapFactory, target, rsa, port)
         } catch (t: Throwable) {
             logger.error(t) { "Unable to bind network port $port for native client." }
             return
@@ -470,15 +472,18 @@ public class ProxyService(
 
         // For now, directly just download, patch and launch the C++ client
         val patcher = NativePatcher()
-        val criteria =
+        val criteriaBuilder =
             NativePatchCriteria
                 .Builder(nativeClientType)
                 .acceptAllLoopbackAddresses()
                 .rsaModulus(rsa.publicKey.modulus.toString(16))
-                .javConfig("http://127.0.0.1:$HTTP_SERVER_PORT/$javConfigEndpoint")
-                .worldList("http://127.0.0.1:$HTTP_SERVER_PORT/$worldlistEndpoint")
+                .javConfig("http://127.0.0.1:${target.config.httpPort}/$javConfigEndpoint")
+                .worldList("http://127.0.0.1:${target.config.httpPort}/$worldlistEndpoint")
                 .port(port)
-                .build()
+        if (target.config.varpCount != DEFAULT_VARP_COUNT) {
+            criteriaBuilder.varpCount(DEFAULT_VARP_COUNT, target.config.varpCount)
+        }
+        val criteria = criteriaBuilder.build()
         val result =
             patcher.patch(
                 patched,
@@ -488,12 +493,16 @@ public class ProxyService(
             "Failed to patch"
         }
         checkNotNull(result.oldModulus)
+        val targetModulus =
+            target.config.modulus
+                ?: rspsModulus
+                ?: result.oldModulus
         registerConnection(
             ConnectionInfo(
                 ClientType.Native,
                 os,
                 port,
-                BigInteger(rspsModulus ?: result.oldModulus, 16),
+                BigInteger(targetModulus, 16),
             ),
         )
         ClientTypeDictionary[port] = "Native (${os.shortName})"
