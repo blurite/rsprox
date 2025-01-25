@@ -157,7 +157,6 @@ public class ProxyService(
                 0,
                 DEFAULT_NAME,
                 overriddenJavConfig ?: "http://oldschool.runescape.com/jav_config.ws",
-                HTTP_SERVER_PORT,
             )
         val customTargets = ProxyTargetConfig.load(PROXY_TARGETS_FILE)
         val ids = customTargets.entries.map(ProxyTargetConfig::id).distinct()
