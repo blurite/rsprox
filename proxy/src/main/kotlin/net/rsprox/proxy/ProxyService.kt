@@ -120,15 +120,11 @@ public class ProxyService(
         createConfigurationDirectories(BINARY_CREDENTIALS_FOLDER)
         createConfigurationDirectories(RUNELITE_LAUNCHER_REPO_DIRECTORY)
         progressCallback.update(0.10, "Proxy", "Loading RSProx (2/15)")
+        loadProperties()
+        this.availablePort = properties.getProperty(PROXY_PORT_MIN)
+        this.bootstrapFactory = BootstrapFactory(allocator, properties)
         val proxyTargetConfigs = loadProxyTargetConfigs(rspsJavConfigUrl)
-        val jobs = mutableListOf<Callable<Unit>>()
-
-        jobs +=
-            createJob(progressCallback) {
-                loadProperties()
-                this.availablePort = properties.getProperty(PROXY_PORT_MIN)
-                this.bootstrapFactory = BootstrapFactory(allocator, properties)
-            }
+        val jobs = mutableListOf<Callable<Boolean>>()
         jobs += createJob(progressCallback) { HuffmanProvider.load() }
         jobs += createJob(progressCallback) { this.rsa = loadRsa() }
         jobs +=
@@ -151,7 +147,10 @@ public class ProxyService(
         jobs += createJob(progressCallback) { transferFakeCertificate() }
         jobs += createJob(progressCallback) { setShutdownHook() }
         totalJobs.set(jobs.size + 2)
-        ForkJoinPool.commonPool().invokeAll(jobs)
+        val results = ForkJoinPool.commonPool().invokeAll(jobs)
+        check(results.all { it.get() }) {
+            "Unable to boot RSProx"
+        }
     }
 
     private val completedJobs = AtomicInteger(0)
@@ -160,16 +159,24 @@ public class ProxyService(
     private inline fun createJob(
         progressCallback: ProgressCallback,
         crossinline block: () -> Unit,
-    ): Callable<Unit> {
+    ): Callable<Boolean> {
         return Callable {
-            block()
-            val num = completedJobs.incrementAndGet()
-            val percentage = num.toDouble() / totalJobs.get()
-            progressCallback.update(
-                0.10 + percentage,
-                "Proxy",
-                "Loading RSProx ($num/${totalJobs.get()})",
-            )
+            try {
+                block()
+                val num = completedJobs.incrementAndGet()
+                val percentage = num.toDouble() / totalJobs.get()
+                progressCallback.update(
+                    0.10 + percentage,
+                    "Proxy",
+                    "Loading RSProx ($num/${totalJobs.get()})",
+                )
+                return@Callable true
+            } catch (t: Throwable) {
+                logger.error(t) {
+                    "Unable to load RSProx"
+                }
+                return@Callable false
+            }
         }
     }
 
@@ -201,7 +208,7 @@ public class ProxyService(
     private fun loadProxyTargets(
         progressCallback: ProgressCallback,
         configs: List<ProxyTargetConfig>,
-    ): List<Callable<Unit>> {
+    ): List<Callable<Boolean>> {
         this.proxyTargets = configs.map(::ProxyTarget)
         return this.proxyTargets.map { target ->
             createJob(progressCallback) {
