@@ -108,6 +108,46 @@ login, which is how third party clients tend to get caught, is unaffected.
 This was achieved via numerous clever tricks that will not be explored here,
 as to avoid people maliciously using them.
 
+### Private Server Usage
+RSProx can currently be used to connect to private servers, but only under
+certain circumstances. The following criteria must be met in order to do this:
+
+> [!NOTE]
+> This list is subject to changes over time, we hope to improve the overall
+> support for further platforms and client types.
+
+1. This only works with Windows and Linux, not macOS.
+2. RuneLite is not supported at this time. I will explore this possibility
+after revision 229, when gamepacks are private.
+3. The client must not have any protocol-breaking changes, same traditional
+networking must be used. The only supported change at this time is changing
+the varp count in the client from the size-5000 int array.
+4. Must be on revision 223 or higher.
+
+#### Setting Up Custom Targets
+In order to use the new proxy targets feature, one has to manually fill in the yaml file containing them.
+The file is located at `user.home/.rsprox/proxy-targets.yaml`
+
+Here is an example RSPS target:
+```yaml
+config:
+  - id: 1
+    name: Blurite
+    jav_config_url: "https://client.blurite.io/jav_local_227.ws"
+    varp_count: 15000
+    revision: 227.3
+    modulus: d2a780dccbcf534dc61a36deff725aabf9f46fc9ea298ac8c39b89b5bcb5d0817f8c9f59621187d448da9949aca848d0b2acae50c3122b7da53a79e6fe87ff76b675bcbf5bc18fbd2c9ed8f4cff2b7140508049eb119259af888eb9d20e8cea8a4384b06589483bcda11affd8d67756bc93a4d786494cdf7b634e3228b64116d
+```
+
+Properties breakdown:
+`id` - A number from 1 to 100, must be unique. This is a required property.
+`name` - The name given to the client. Any references to `OldSchool RuneScape` will be replaced by this. This is a required property to ensure caches don't overwrite and cause crashing at runtime when loading different games simultaneously.
+`jav_config_url` - The URL to the jav_config that will be used to load initial world and world list. This is a required property.
+`varp_count` - Changes the array length used for varps in the client, the default value is 5000. This is an optional property.
+`revision` - A revision number used to pick the client and correct decoders. The default is whatever is currently latest stable in Old School RuneScape. This is an optional property.
+`modulus` - A hexadecimal (base-16) RSA modulus used to encrypt the login packet sent to the client. This is a required property.
+
+
 ## Progress
 Below is a small task list showing a rough breakdown of what the tool will consist of, and how far the progress is at any given moment.
 

@@ -4,13 +4,19 @@ import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.Unpooled
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.buffer.extensions.toJagByteBuf
+import net.rsprox.proxy.target.ProxyTargetConfig
 import java.io.IOException
 import java.net.URL
 
 public data class WorldList(
     public val worlds: List<World>,
 ) : List<World> by worlds {
-    public constructor(url: URL) : this(parseWorlds(url))
+    public constructor(
+        proxyTargetConfig: ProxyTargetConfig,
+        url: URL,
+    ) : this(
+        parseWorlds(proxyTargetConfig, url),
+    )
 
     public fun encode(allocator: ByteBufAllocator): JagByteBuf {
         val capacity = estimateBufferCapacity()
@@ -70,13 +76,22 @@ public data class WorldList(
 
     private companion object {
         @Throws(IOException::class)
-        private fun parseWorlds(url: URL): List<World> {
+        private fun parseWorlds(
+            config: ProxyTargetConfig,
+            url: URL,
+        ): List<World> {
             val bytes = url.readBytes()
             val buffer = Unpooled.wrappedBuffer(bytes).toJagByteBuf()
-            return decode(buffer)
+            return decode(
+                config,
+                buffer,
+            )
         }
 
-        private fun decode(buffer: JagByteBuf): List<World> {
+        private fun decode(
+            config: ProxyTargetConfig,
+            buffer: JagByteBuf,
+        ): List<World> {
             val payloadSize = buffer.g4()
             val count = buffer.g2()
             val worldList =
@@ -88,7 +103,7 @@ public data class WorldList(
                         val activity = buffer.gjstr()
                         val location = buffer.g1()
                         val population = buffer.g2s()
-                        add(World(id, properties, population, location, host, activity))
+                        add(World(config, id, properties, population, location, host, activity))
                     }
                 }
             check(buffer.readerIndex() == payloadSize + Int.SIZE_BYTES) {

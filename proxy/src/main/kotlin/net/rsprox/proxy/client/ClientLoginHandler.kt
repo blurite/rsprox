@@ -26,7 +26,6 @@ import net.rsprox.proxy.channel.replace
 import net.rsprox.proxy.client.prot.LoginClientProt
 import net.rsprox.proxy.client.util.HostPlatformStats
 import net.rsprox.proxy.client.util.LoginXteaBlock
-import net.rsprox.proxy.config.CURRENT_REVISION
 import net.rsprox.proxy.config.getConnection
 import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.js5.Js5MasterIndexArchive
@@ -39,10 +38,10 @@ import net.rsprox.proxy.server.ServerJs5LoginHandler
 import net.rsprox.proxy.server.ServerRelayHandler
 import net.rsprox.proxy.server.prot.LoginServerProtId
 import net.rsprox.proxy.server.prot.LoginServerProtProvider
+import net.rsprox.proxy.target.ProxyTarget
 import net.rsprox.proxy.util.ChannelConnectionHandler
 import net.rsprox.proxy.util.xteaEncrypt
 import net.rsprox.proxy.worlds.WorldFlag
-import net.rsprox.proxy.worlds.WorldListProvider
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.settings.SettingSetStore
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
@@ -51,7 +50,7 @@ public class ClientLoginHandler(
     private val serverChannel: Channel,
     private val rsa: RSAPrivateCrtKeyParameters,
     private val binaryWriteInterval: Int,
-    private val worldListProvider: WorldListProvider,
+    private val target: ProxyTarget,
     private val decoderLoader: DecoderLoader,
     private val connections: ProxyConnectionContainer,
     private val filters: PropertyFilterSetStore,
@@ -122,8 +121,8 @@ public class ClientLoginHandler(
         val builder = ctx.channel().getBinaryHeaderBuilder()
         val buffer = msg.payload.toJagByteBuf()
         val version = buffer.g4()
-        if (version != CURRENT_REVISION) {
-            throw IllegalStateException("Out of date revision: $version")
+        if (version != target.revisionNum()) {
+            throw IllegalStateException("Invalid revision for target ${target.config.name}: $version")
         }
         val subVersion = buffer.g4()
         val clientType = buffer.g1()
@@ -425,7 +424,7 @@ public class ClientLoginHandler(
             ServerGameLoginDecoder(
                 ctx.channel(),
                 binaryWriteInterval,
-                worldListProvider,
+                target,
                 decoderLoader,
                 connections,
                 filters,

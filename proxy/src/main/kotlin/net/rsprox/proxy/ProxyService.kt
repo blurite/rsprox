@@ -26,11 +26,12 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.FILTERS_STATUS
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
 import net.rsprox.proxy.config.ProxyProperty.Companion.SELECTED_CLIENT
+import net.rsprox.proxy.config.ProxyProperty.Companion.SELECTED_PROXY_TARGET
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
-import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
 import net.rsprox.proxy.connection.ClientTypeDictionary
 import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.downloader.JagexNativeClientDownloader
+import net.rsprox.proxy.downloader.RuneWikiNativeClientDownloader
 import net.rsprox.proxy.exceptions.MissingLibraryException
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.futures.asCompletableFuture
@@ -41,10 +42,11 @@ import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
 import net.rsprox.proxy.runelite.RuneliteLauncher
 import net.rsprox.proxy.settings.DefaultSettingSetStore
+import net.rsprox.proxy.target.ProxyTarget
+import net.rsprox.proxy.target.ProxyTargetConfig
+import net.rsprox.proxy.target.ProxyTargetConfig.Companion.DEFAULT_NAME
+import net.rsprox.proxy.target.ProxyTargetConfig.Companion.DEFAULT_VARP_COUNT
 import net.rsprox.proxy.util.*
-import net.rsprox.proxy.worlds.DynamicWorldListProvider
-import net.rsprox.proxy.worlds.World
-import net.rsprox.proxy.worlds.WorldListProvider
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.account.JagexAccountStore
 import net.rsprox.shared.account.JagexCharacter
@@ -56,12 +58,14 @@ import org.newsclub.net.unix.AFUNIXSocketAddress
 import java.io.File
 import java.io.IOException
 import java.math.BigInteger
-import java.net.URL
 import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
 import java.util.*
+import java.util.concurrent.Callable
+import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.Collectors
 import kotlin.concurrent.thread
 import kotlin.io.path.*
@@ -75,8 +79,6 @@ public class ProxyService(
     private val decoderLoader: DecoderLoader = DecoderLoader()
     private lateinit var bootstrapFactory: BootstrapFactory
     private lateinit var serverBootstrap: ServerBootstrap
-    private lateinit var httpServerBootstrap: ServerBootstrap
-    private lateinit var worldListProvider: WorldListProvider
     public lateinit var operatingSystem: OperatingSystem
         private set
     private lateinit var rsa: RSAPrivateCrtKeyParameters
@@ -93,6 +95,10 @@ public class ProxyService(
     private lateinit var credentials: BinaryCredentialsStore
     private val gamePackProvider: GamePackProvider = GamePackProvider()
     private var rspsModulus: String? = null
+    public lateinit var proxyTargets: List<ProxyTarget>
+        private set
+    private val currentProxyTarget: ProxyTarget
+        get() = proxyTargets[getSelectedProxyTarget()]
 
     public fun start(
         rspsJavConfigUrl: String?,
@@ -101,7 +107,7 @@ public class ProxyService(
     ) {
         this.rspsModulus = rspsModulus
         logger.info { "Starting proxy service" }
-        progressCallback.update(0.05, "Proxy", "Creating directories")
+        progressCallback.update(0.05, "Proxy", "Loading RSProx (1/15)")
         createConfigurationDirectories(CONFIGURATION_PATH)
         createConfigurationDirectories(BINARY_PATH)
         createConfigurationDirectories(CLIENTS_DIRECTORY)
@@ -113,44 +119,88 @@ public class ProxyService(
         createConfigurationDirectories(SIGN_KEY_DIRECTORY)
         createConfigurationDirectories(BINARY_CREDENTIALS_FOLDER)
         createConfigurationDirectories(RUNELITE_LAUNCHER_REPO_DIRECTORY)
-        progressCallback.update(0.10, "Proxy", "Loading properties")
-        loadProperties()
-        progressCallback.update(0.15, "Proxy", "Loading Huffman")
-        HuffmanProvider.load()
-        progressCallback.update(0.20, "Proxy", "Loading RSA")
-        this.rsa = loadRsa()
-        progressCallback.update(0.25, "Proxy", "Loading jagex accounts")
-        this.jagexAccountStore = DefaultJagexAccountStore.load(JAGEX_ACCOUNTS_FILE)
-        progressCallback.update(0.30, "Proxy", "Loading property filters")
-        this.filterSetStore = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY)
-        this.settingsStore = DefaultSettingSetStore.load(SETTINGS_DIRECTORY)
-        this.availablePort = properties.getProperty(PROXY_PORT_MIN)
-        this.bootstrapFactory = BootstrapFactory(allocator, properties)
-        progressCallback.update(0.35, "Proxy", "Loading jav config")
-        val javConfig = loadJavConfig(rspsJavConfigUrl)
-        progressCallback.update(0.40, "Proxy", "Loading world list")
-        this.worldListProvider = loadWorldListProvider(javConfig.getWorldListUrl())
-        progressCallback.update(0.50, "Proxy", "Replacing codebase")
-        val replacementWorld = findCodebaseReplacementWorld(javConfig, worldListProvider)
-        progressCallback.update(0.60, "Proxy", "Rebuilding jav config")
-        val updatedJavConfig = rebuildJavConfig(javConfig, replacementWorld)
-        progressCallback.update(0.65, "Proxy", "Reading binary credentials")
-        this.credentials = BinaryCredentialsStore.read()
+        progressCallback.update(0.10, "Proxy", "Loading RSProx (2/15)")
+        val proxyTargetConfigs = loadProxyTargetConfigs(rspsJavConfigUrl)
+        val jobs = mutableListOf<Callable<Unit>>()
+
+        jobs +=
+            createJob(progressCallback) {
+                loadProperties()
+                this.availablePort = properties.getProperty(PROXY_PORT_MIN)
+                this.bootstrapFactory = BootstrapFactory(allocator, properties)
+            }
+        jobs += createJob(progressCallback) { HuffmanProvider.load() }
+        jobs += createJob(progressCallback) { this.rsa = loadRsa() }
+        jobs +=
+            createJob(progressCallback) { this.jagexAccountStore = DefaultJagexAccountStore.load(JAGEX_ACCOUNTS_FILE) }
+        jobs +=
+            createJob(progressCallback) { this.filterSetStore = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY) }
+        jobs += createJob(progressCallback) { this.settingsStore = DefaultSettingSetStore.load(SETTINGS_DIRECTORY) }
+
+        jobs += loadProxyTargets(progressCallback, proxyTargetConfigs)
+
+        jobs += createJob(progressCallback) { this.credentials = BinaryCredentialsStore.read() }
 
         this.operatingSystem = getOperatingSystem()
         logger.debug { "Proxy launched on $operatingSystem" }
         if (operatingSystem == OperatingSystem.SOLARIS) {
             throw IllegalStateException("Operating system not supported for native: $operatingSystem")
         }
-        progressCallback.update(0.70, "Proxy", "Launching http server")
-        launchHttpServer(this.bootstrapFactory, worldListProvider, updatedJavConfig)
-        progressCallback.update(0.80, "Proxy", "Deleting temporary files")
-        deleteTemporaryClients()
-        deleteTemporaryRuneLiteJars()
-        progressCallback.update(0.90, "Proxy", "Transferring certificate")
-        transferFakeCertificate()
-        progressCallback.update(0.95, "Proxy", "Setting up safe shutdown")
-        setShutdownHook()
+        jobs += createJob(progressCallback) { deleteTemporaryClients() }
+        jobs += createJob(progressCallback) { deleteTemporaryRuneLiteJars() }
+        jobs += createJob(progressCallback) { transferFakeCertificate() }
+        jobs += createJob(progressCallback) { setShutdownHook() }
+        totalJobs.set(jobs.size + 2)
+        ForkJoinPool.commonPool().invokeAll(jobs)
+    }
+
+    private val completedJobs = AtomicInteger(0)
+    private val totalJobs = AtomicInteger(0)
+
+    private inline fun createJob(
+        progressCallback: ProgressCallback,
+        crossinline block: () -> Unit,
+    ): Callable<Unit> {
+        return Callable {
+            block()
+            val num = completedJobs.incrementAndGet()
+            val percentage = num.toDouble() / totalJobs.get()
+            progressCallback.update(
+                0.10 + percentage,
+                "Proxy",
+                "Loading RSProx ($num/${totalJobs.get()})",
+            )
+        }
+    }
+
+    private fun loadProxyTargetConfigs(overriddenJavConfig: String?): List<ProxyTargetConfig> {
+        val oldschool =
+            ProxyTargetConfig(
+                0,
+                DEFAULT_NAME,
+                overriddenJavConfig ?: "http://oldschool.runescape.com/jav_config.ws",
+            )
+        val customTargets = ProxyTargetConfig.load(PROXY_TARGETS_FILE)
+        val ids = customTargets.entries.map(ProxyTargetConfig::id).distinct()
+        check(ids.size == customTargets.entries.size) {
+            "Overlapping proxy target ids detected."
+        }
+        check(ids.all { it >= 1 }) {
+            "Proxy target ids must be >= 1"
+        }
+        return listOf(oldschool) + customTargets.entries
+    }
+
+    private fun loadProxyTargets(
+        progressCallback: ProgressCallback,
+        configs: List<ProxyTargetConfig>,
+    ): List<Callable<Unit>> {
+        this.proxyTargets = configs.map(::ProxyTarget)
+        return this.proxyTargets.map { target ->
+            createJob(progressCallback) {
+                target.load(properties, gamePackProvider, bootstrapFactory)
+            }
+        }
     }
 
     public fun updateCredentials(
@@ -211,6 +261,15 @@ public class ProxyService(
 
     public fun getSelectedClient(): Int {
         return properties.getPropertyOrNull(SELECTED_CLIENT) ?: 0
+    }
+
+    public fun getSelectedProxyTarget(): Int {
+        return properties.getPropertyOrNull(SELECTED_PROXY_TARGET) ?: 0
+    }
+
+    public fun setSelectedProxyTarget(index: Int) {
+        properties.setProperty(SELECTED_PROXY_TARGET, index)
+        properties.saveProperties(PROPERTIES_FILE)
     }
 
     public fun setAppSize(
@@ -388,7 +447,7 @@ public class ProxyService(
         port: Int,
     ) {
         try {
-            launchProxyServer(this.bootstrapFactory, this.worldListProvider, rsa, port)
+            launchProxyServer(this.bootstrapFactory, this.currentProxyTarget, rsa, port)
         } catch (t: Throwable) {
             logger.error(t) { "Unable to bind network port $port for native client." }
             return
@@ -427,8 +486,9 @@ public class ProxyService(
         character: JagexCharacter?,
         port: Int,
     ) {
+        val target = this.currentProxyTarget
         try {
-            launchProxyServer(this.bootstrapFactory, this.worldListProvider, rsa, port)
+            launchProxyServer(this.bootstrapFactory, target, rsa, port)
         } catch (t: Throwable) {
             logger.error(t) { "Unable to bind network port $port for native client." }
             return
@@ -441,7 +501,13 @@ public class ProxyService(
                 OperatingSystem.MAC -> NativeClientType.MAC
                 else -> throw IllegalStateException()
             }
-        val binary = JagexNativeClientDownloader.download(nativeClientType)
+        val targetRev = target.config.revision
+        val binary =
+            if (targetRev == null) {
+                JagexNativeClientDownloader.download(nativeClientType)
+            } else {
+                getHistoricNativeClient(targetRev, nativeClientType)
+            }
         val extension = if (binary.extension.isNotEmpty()) ".${binary.extension}" else ""
         val stamp = System.currentTimeMillis()
         val patched = TEMP_CLIENTS_DIRECTORY.resolve("${binary.nameWithoutExtension}-$stamp$extension")
@@ -449,15 +515,21 @@ public class ProxyService(
 
         // For now, directly just download, patch and launch the C++ client
         val patcher = NativePatcher()
-        val criteria =
+        val criteriaBuilder =
             NativePatchCriteria
                 .Builder(nativeClientType)
                 .acceptAllLoopbackAddresses()
                 .rsaModulus(rsa.publicKey.modulus.toString(16))
-                .javConfig("http://127.0.0.1:$HTTP_SERVER_PORT/$javConfigEndpoint")
-                .worldList("http://127.0.0.1:$HTTP_SERVER_PORT/$worldlistEndpoint")
+                .javConfig("http://127.0.0.1:${target.config.httpPort}/$javConfigEndpoint")
+                .worldList("http://127.0.0.1:${target.config.httpPort}/$worldlistEndpoint")
                 .port(port)
-                .build()
+        if (target.config.varpCount != DEFAULT_VARP_COUNT) {
+            criteriaBuilder.varpCount(DEFAULT_VARP_COUNT, target.config.varpCount)
+        }
+        if (target.config.name != DEFAULT_NAME) {
+            criteriaBuilder.name(target.config.name)
+        }
+        val criteria = criteriaBuilder.build()
         val result =
             patcher.patch(
                 patched,
@@ -467,17 +539,32 @@ public class ProxyService(
             "Failed to patch"
         }
         checkNotNull(result.oldModulus)
+        val targetModulus =
+            target.config.modulus
+                ?: rspsModulus
+                ?: result.oldModulus
         registerConnection(
             ConnectionInfo(
                 ClientType.Native,
                 os,
                 port,
-                BigInteger(rspsModulus ?: result.oldModulus, 16),
+                BigInteger(targetModulus, 16),
             ),
         )
         ClientTypeDictionary[port] = "Native (${os.shortName})"
         this.connections.addSessionMonitor(port, sessionMonitor)
         launchExecutable(port, result.outputPath, os, character)
+    }
+
+    private fun getHistoricNativeClient(
+        version: String,
+        type: NativeClientType,
+    ): Path {
+        return RuneWikiNativeClientDownloader.download(
+            CLIENTS_DIRECTORY,
+            type,
+            version,
+        )
     }
 
     private fun launchJavaProcess(
@@ -695,96 +782,15 @@ public class ProxyService(
         }
     }
 
-    private fun loadJavConfig(customUrl: String?): JavConfig {
-        val url = customUrl ?: "http://oldschool.runescape.com/jav_config.ws"
-        return runCatching("Failed to load jav_config.ws from $url") {
-            val config = JavConfig(URL(url))
-            logger.debug { "Jav config loaded from $url" }
-            config
-        }
-    }
-
-    private fun loadWorldListProvider(url: String): WorldListProvider {
-        return runCatching("Failed to instantiate world list provider") {
-            val provider =
-                DynamicWorldListProvider(
-                    URL(url),
-                    properties.getProperty(WORLDLIST_REFRESH_SECONDS),
-                )
-            logger.debug { "World list provider loaded from $url" }
-            provider
-        }
-    }
-
-    private fun findCodebaseReplacementWorld(
-        javConfig: JavConfig,
-        worldListProvider: WorldListProvider,
-    ): World {
-        val address =
-            javConfig
-                .getCodebase()
-                .removePrefix("http://")
-                .removePrefix("https://")
-                .removeSuffix("/")
-        return runCatching("Failed to find a linked world for codebase '$address'") {
-            val world = checkNotNull(worldListProvider.get().getTargetWorld(address))
-            logger.debug { "Loaded initial world ${world.localHostAddress} <-> ${world.host}" }
-            world
-        }
-    }
-
-    private fun rebuildJavConfig(
-        javConfig: JavConfig,
-        replacementWorld: World,
-    ): JavConfig {
-        return runCatching("Failed to rebuild jav_config.ws") {
-            val oldWorldList = javConfig.getWorldListUrl()
-            val oldCodebase = javConfig.getCodebase()
-            val changedWorldListUrl = "http://127.0.0.1:$HTTP_SERVER_PORT/worldlist.ws"
-            val changedCodebase = "http://${replacementWorld.localHostAddress}/"
-            val updated =
-                javConfig
-                    .replaceWorldListUrl(changedWorldListUrl)
-                    .replaceCodebase(changedCodebase)
-            logger.debug { "Rebuilt jav_config.ws:" }
-            logger.debug { "Codebase changed from '$oldCodebase' to '$changedCodebase'" }
-            logger.debug { "Worldlist changed from '$oldWorldList' to '$changedWorldListUrl'" }
-            updated
-        }
-    }
-
-    private fun launchHttpServer(
-        factory: BootstrapFactory,
-        worldListProvider: WorldListProvider,
-        javConfig: JavConfig,
-    ) {
-        runCatching("Failure to launch HTTP server") {
-            val httpServerBootstrap =
-                factory.createWorldListHttpServer(
-                    worldListProvider,
-                    javConfig,
-                    gamePackProvider,
-                )
-            val timeoutSeconds = properties.getProperty(BIND_TIMEOUT_SECONDS).toLong()
-            httpServerBootstrap
-                .bind(HTTP_SERVER_PORT)
-                .asCompletableFuture()
-                .orTimeout(timeoutSeconds, TimeUnit.SECONDS)
-                .join()
-            this.httpServerBootstrap = httpServerBootstrap
-            logger.debug { "HTTP server bound to port $HTTP_SERVER_PORT" }
-        }
-    }
-
     private fun launchProxyServer(
         factory: BootstrapFactory,
-        worldListProvider: WorldListProvider,
+        target: ProxyTarget,
         rsa: RSAPrivateCrtKeyParameters,
         port: Int,
     ) {
         val serverBootstrap =
             factory.createServerBootStrap(
-                worldListProvider,
+                target,
                 rsa,
                 decoderLoader,
                 properties.getProperty(BINARY_WRITE_INTERVAL_SECONDS),
@@ -804,6 +810,7 @@ public class ProxyService(
 
     public companion object {
         private val logger = InlineLogger()
+        private val PROXY_TARGETS_FILE = CONFIGURATION_PATH.resolve("proxy-targets.yaml")
         private val PROPERTIES_FILE = CONFIGURATION_PATH.resolve("proxy.properties")
 
         private inline fun <T> runCatching(

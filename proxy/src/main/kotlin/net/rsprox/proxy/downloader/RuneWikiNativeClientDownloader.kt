@@ -5,6 +5,7 @@ import net.rsprox.patch.NativeClientType
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.io.path.exists
 import kotlin.io.path.writeBytes
 
 public object RuneWikiNativeClientDownloader {
@@ -27,6 +28,16 @@ public object RuneWikiNativeClientDownloader {
                 NativeClientType.WIN -> "osclient.exe"
                 NativeClientType.MAC -> "osclient.app/Contents/MacOS/osclient"
             }
+        val filePathWithVersion =
+            when (type) {
+                NativeClientType.WIN -> "osclient-$version.exe"
+                NativeClientType.MAC -> "osclient.app/Contents/MacOS/osclient-$version"
+            }
+        val file = folder.resolve(filePathWithVersion)
+        // Return the old file if it already exists, assume it is unchanged
+        if (file.exists()) {
+            return file
+        }
         val url = URL(prefix + typePath + versionPath + filePath)
         val bytes =
             try {
@@ -38,7 +49,6 @@ public object RuneWikiNativeClientDownloader {
                 throw t
             }
         Files.createDirectories(folder)
-        val file = folder.resolve(filePath)
         file.writeBytes(bytes)
         return file
     }

@@ -72,13 +72,17 @@ public value class ProxyProperties private constructor(
         private fun loadProperties(text: String): Properties {
             val properties = Properties(createDefaultProperties())
             properties.load(text.byteInputStream(DEFAULT_PROPERTIES_CHARSET))
+            // Migrate any 43601 to 43701 as we support multiple http servers now, which start at 43600
+            if (properties.getValue(PROXY_PORT_MIN) == 43601) {
+                properties.setValue(PROXY_PORT_MIN, 43701)
+            }
             return properties
         }
 
         private fun createDefaultProperties(): Properties {
             val properties = Properties()
             // proxy
-            properties.setValue(PROXY_PORT_MIN, 43601)
+            properties.setValue(PROXY_PORT_MIN, 43701)
             properties.setValue(WORLDLIST_ENDPOINT, "worldlist.ws")
             properties.setValue(JAV_CONFIG_ENDPOINT, "javconfig.ws")
             properties.setValue(BIND_TIMEOUT_SECONDS, 30)

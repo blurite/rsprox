@@ -8,6 +8,8 @@ import net.rsprox.gui.AppIcons
 import net.rsprox.gui.auth.JagexAuthenticator
 import net.rsprox.gui.sessions.SessionType
 import net.rsprox.gui.sessions.SessionsPanel
+import net.rsprox.proxy.target.ProxyTarget
+import net.rsprox.proxy.target.ProxyTargetConfig
 import net.rsprox.proxy.util.OperatingSystem
 import net.rsprox.shared.account.JagexCharacter
 import javax.swing.DefaultComboBoxModel
@@ -45,7 +47,21 @@ public class LaunchBar(
     private val charactersModel = DefaultComboBoxModel<JagexCharacter>()
 
     init {
-        layout = MigLayout("gap 10", "push[][][]", "[]")
+        layout = MigLayout("gap 10", "push[][][][]", "[]")
+        val targetConfigs = App.service.proxyTargets.map(ProxyTarget::config)
+        val targetConfigsModel = DefaultComboBoxModel(targetConfigs.toTypedArray())
+        val proxyTargetDropdown =
+            FlatComboBox<ProxyTargetConfig>().apply {
+                model = targetConfigsModel
+                renderer = ProxyTargetCellRenderer()
+                selectedIndex = App.service.getSelectedProxyTarget()
+            }
+        proxyTargetDropdown.addActionListener {
+            App.service.setSelectedProxyTarget(proxyTargetDropdown.selectedIndex)
+        }
+
+        proxyTargetDropdown.minimumWidth = 160
+        add(proxyTargetDropdown, "growx")
 
         val characterDropdown = FlatComboBox<JagexCharacter>()
         characterDropdown.model = charactersModel
@@ -176,6 +192,20 @@ public class LaunchBar(
         ) = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus).apply {
             if (value is SessionType) {
                 icon = value.icon
+                text = value.name
+            }
+        }
+    }
+
+    private class ProxyTargetCellRenderer : DefaultListCellRenderer() {
+        override fun getListCellRendererComponent(
+            list: JList<*>?,
+            value: Any?,
+            index: Int,
+            isSelected: Boolean,
+            cellHasFocus: Boolean,
+        ) = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus).apply {
+            if (value is ProxyTargetConfig) {
                 text = value.name
             }
         }
