@@ -180,15 +180,22 @@ public class ProxyService(
                 DEFAULT_NAME,
                 overriddenJavConfig ?: "http://oldschool.runescape.com/jav_config.ws",
             )
-        val customTargets = ProxyTargetConfig.load(PROXY_TARGETS_FILE)
-        val ids = customTargets.entries.map(ProxyTargetConfig::id).distinct()
-        check(ids.size == customTargets.entries.size) {
-            "Overlapping proxy target ids detected."
+        try {
+            val customTargets = ProxyTargetConfig.load(PROXY_TARGETS_FILE)
+            val ids = customTargets.entries.map(ProxyTargetConfig::id).distinct()
+            check(ids.size == customTargets.entries.size) {
+                "Overlapping proxy target ids detected."
+            }
+            check(ids.all { it >= 1 }) {
+                "Proxy target ids must be >= 1"
+            }
+            return listOf(oldschool) + customTargets.entries
+        } catch (e: Exception) {
+            logger.error(e) {
+                "Unable to load proxy target configs"
+            }
+            return listOf(oldschool)
         }
-        check(ids.all { it >= 1 }) {
-            "Proxy target ids must be >= 1"
-        }
-        return listOf(oldschool) + customTargets.entries
     }
 
     private fun loadProxyTargets(
@@ -264,7 +271,11 @@ public class ProxyService(
     }
 
     public fun getSelectedProxyTarget(): Int {
-        return properties.getPropertyOrNull(SELECTED_PROXY_TARGET) ?: 0
+        val lastSelected = properties.getPropertyOrNull(SELECTED_PROXY_TARGET) ?: 0
+        if (lastSelected in proxyTargets.indices) {
+            return lastSelected
+        }
+        return 0
     }
 
     public fun setSelectedProxyTarget(index: Int) {
