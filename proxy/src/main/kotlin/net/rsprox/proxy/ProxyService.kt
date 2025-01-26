@@ -123,6 +123,7 @@ public class ProxyService(
         loadProperties()
         this.availablePort = properties.getProperty(PROXY_PORT_MIN)
         this.bootstrapFactory = BootstrapFactory(allocator, properties)
+        progressCallback.update(0.15, "Proxy", "Loading RSProx (3/15)")
         val proxyTargetConfigs = loadProxyTargetConfigs(rspsJavConfigUrl)
         val jobs = mutableListOf<Callable<Boolean>>()
         jobs += createJob(progressCallback) { HuffmanProvider.load() }
@@ -146,7 +147,7 @@ public class ProxyService(
         jobs += createJob(progressCallback) { deleteTemporaryRuneLiteJars() }
         jobs += createJob(progressCallback) { transferFakeCertificate() }
         jobs += createJob(progressCallback) { setShutdownHook() }
-        totalJobs.set(jobs.size + 2)
+        totalJobs.set(jobs.size + 3)
         val results = ForkJoinPool.commonPool().invokeAll(jobs)
         check(results.all { it.get() }) {
             "Unable to boot RSProx"
