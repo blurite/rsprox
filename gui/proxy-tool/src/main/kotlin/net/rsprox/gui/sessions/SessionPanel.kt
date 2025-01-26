@@ -8,14 +8,11 @@ import com.formdev.flatlaf.util.ColorFunctions
 import com.github.michaelbull.logging.InlineLogger
 import net.rsprox.gui.App
 import net.rsprox.gui.AppIcons
+import net.rsprox.gui.dialogs.ErrorDialog
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.account.JagexCharacter
-import net.rsprox.shared.property.OmitFilteredPropertyTreeFormatter
-import net.rsprox.shared.property.Property
-import net.rsprox.shared.property.PropertyFormatterCollection
-import net.rsprox.shared.property.RootProperty
-import net.rsprox.shared.property.isExcluded
+import net.rsprox.shared.property.*
 import net.rsprox.shared.property.regular.GroupProperty
 import net.rsprox.shared.property.regular.ListProperty
 import net.rsprox.shared.symbols.SymbolDictionaryProvider
@@ -184,6 +181,12 @@ public class SessionPanel(
             val time =
                 measureTime {
                     try {
+                        if (type == SessionType.RuneLite && App.service.getSelectedProxyTarget() != 0) {
+                            return@submit ErrorDialog.show(
+                                "Error launching RuneLite",
+                                "RSProx is unable to launch on a custom target using RuneLite.",
+                            )
+                        }
                         portNumber = App.service.allocatePort()
                         when (type) {
                             SessionType.Java -> TODO()
