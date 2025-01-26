@@ -130,11 +130,11 @@ public class ProxyService(
         this.availablePort = properties.getProperty(PROXY_PORT_MIN)
         this.bootstrapFactory = BootstrapFactory(allocator, properties)
 
-        progressCallback.update(0.35, "Proxy", "Loading proxy targets")
+        progressCallback.update(0.35, "Proxy", "Loading proxy target configs")
         val proxyTargetConfigs = loadProxyTargetConfigs(rspsJavConfigUrl)
-        loadProxyTargets(proxyTargetConfigs)
+        loadProxyTargets(progressCallback, proxyTargetConfigs)
 
-        progressCallback.update(0.65, "Proxy", "Reading binary credentials")
+        progressCallback.update(0.80, "Proxy", "Reading binary credentials")
         this.credentials = BinaryCredentialsStore.read()
 
         this.operatingSystem = getOperatingSystem()
@@ -142,12 +142,12 @@ public class ProxyService(
         if (operatingSystem == OperatingSystem.SOLARIS) {
             throw IllegalStateException("Operating system not supported for native: $operatingSystem")
         }
-        progressCallback.update(0.80, "Proxy", "Deleting temporary files")
+        progressCallback.update(0.90, "Proxy", "Deleting temporary files")
         deleteTemporaryClients()
         deleteTemporaryRuneLiteJars()
-        progressCallback.update(0.90, "Proxy", "Transferring certificate")
+        progressCallback.update(0.95, "Proxy", "Transferring certificate")
         transferFakeCertificate()
-        progressCallback.update(0.95, "Proxy", "Setting up safe shutdown")
+        progressCallback.update(0.98, "Proxy", "Setting up safe shutdown")
         setShutdownHook()
     }
 
@@ -169,10 +169,20 @@ public class ProxyService(
         return listOf(oldschool) + customTargets.entries
     }
 
-    private fun loadProxyTargets(configs: List<ProxyTargetConfig>) {
+    private fun loadProxyTargets(
+        progressCallback: ProgressCallback,
+        configs: List<ProxyTargetConfig>,
+    ) {
         this.proxyTargets = configs.map(::ProxyTarget)
-        for (target in this.proxyTargets) {
+        var percentage = 0.40
+        for ((index, target) in this.proxyTargets.withIndex()) {
+            progressCallback.update(
+                percentage,
+                "Proxy",
+                "Loading proxy targets (${index.inc()}/${proxyTargets.size})",
+            )
             target.load(properties, gamePackProvider, bootstrapFactory)
+            percentage += 0.50 / proxyTargets.size
         }
     }
 
