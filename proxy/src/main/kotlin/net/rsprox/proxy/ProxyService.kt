@@ -62,7 +62,10 @@ import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
 import java.util.*
+import java.util.concurrent.Callable
+import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.Collectors
 import kotlin.concurrent.thread
 import kotlin.io.path.*
@@ -104,7 +107,7 @@ public class ProxyService(
     ) {
         this.rspsModulus = rspsModulus
         logger.info { "Starting proxy service" }
-        progressCallback.update(0.05, "Proxy", "Creating directories")
+        progressCallback.update(0.05, "Proxy", "Loading RSProx (1/15)")
         createConfigurationDirectories(CONFIGURATION_PATH)
         createConfigurationDirectories(BINARY_PATH)
         createConfigurationDirectories(CLIENTS_DIRECTORY)
@@ -116,39 +119,58 @@ public class ProxyService(
         createConfigurationDirectories(SIGN_KEY_DIRECTORY)
         createConfigurationDirectories(BINARY_CREDENTIALS_FOLDER)
         createConfigurationDirectories(RUNELITE_LAUNCHER_REPO_DIRECTORY)
-        progressCallback.update(0.10, "Proxy", "Loading properties")
-        loadProperties()
-        progressCallback.update(0.15, "Proxy", "Loading Huffman")
-        HuffmanProvider.load()
-        progressCallback.update(0.20, "Proxy", "Loading RSA")
-        this.rsa = loadRsa()
-        progressCallback.update(0.25, "Proxy", "Loading jagex accounts")
-        this.jagexAccountStore = DefaultJagexAccountStore.load(JAGEX_ACCOUNTS_FILE)
-        progressCallback.update(0.30, "Proxy", "Loading property filters")
-        this.filterSetStore = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY)
-        this.settingsStore = DefaultSettingSetStore.load(SETTINGS_DIRECTORY)
-        this.availablePort = properties.getProperty(PROXY_PORT_MIN)
-        this.bootstrapFactory = BootstrapFactory(allocator, properties)
-
-        progressCallback.update(0.35, "Proxy", "Loading proxy target configs")
+        progressCallback.update(0.10, "Proxy", "Loading RSProx (2/15)")
         val proxyTargetConfigs = loadProxyTargetConfigs(rspsJavConfigUrl)
-        loadProxyTargets(progressCallback, proxyTargetConfigs)
+        val jobs = mutableListOf<Callable<Unit>>()
 
-        progressCallback.update(0.80, "Proxy", "Reading binary credentials")
-        this.credentials = BinaryCredentialsStore.read()
+        jobs +=
+            createJob(progressCallback) {
+                loadProperties()
+                this.availablePort = properties.getProperty(PROXY_PORT_MIN)
+                this.bootstrapFactory = BootstrapFactory(allocator, properties)
+            }
+        jobs += createJob(progressCallback) { HuffmanProvider.load() }
+        jobs += createJob(progressCallback) { this.rsa = loadRsa() }
+        jobs +=
+            createJob(progressCallback) { this.jagexAccountStore = DefaultJagexAccountStore.load(JAGEX_ACCOUNTS_FILE) }
+        jobs +=
+            createJob(progressCallback) { this.filterSetStore = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY) }
+        jobs += createJob(progressCallback) { this.settingsStore = DefaultSettingSetStore.load(SETTINGS_DIRECTORY) }
+
+        jobs += loadProxyTargets(progressCallback, proxyTargetConfigs)
+
+        jobs += createJob(progressCallback) { this.credentials = BinaryCredentialsStore.read() }
 
         this.operatingSystem = getOperatingSystem()
         logger.debug { "Proxy launched on $operatingSystem" }
         if (operatingSystem == OperatingSystem.SOLARIS) {
             throw IllegalStateException("Operating system not supported for native: $operatingSystem")
         }
-        progressCallback.update(0.90, "Proxy", "Deleting temporary files")
-        deleteTemporaryClients()
-        deleteTemporaryRuneLiteJars()
-        progressCallback.update(0.95, "Proxy", "Transferring certificate")
-        transferFakeCertificate()
-        progressCallback.update(0.98, "Proxy", "Setting up safe shutdown")
-        setShutdownHook()
+        jobs += createJob(progressCallback) { deleteTemporaryClients() }
+        jobs += createJob(progressCallback) { deleteTemporaryRuneLiteJars() }
+        jobs += createJob(progressCallback) { transferFakeCertificate() }
+        jobs += createJob(progressCallback) { setShutdownHook() }
+        totalJobs.set(jobs.size + 2)
+        ForkJoinPool.commonPool().invokeAll(jobs)
+    }
+
+    private val completedJobs = AtomicInteger(0)
+    private val totalJobs = AtomicInteger(0)
+
+    private inline fun createJob(
+        progressCallback: ProgressCallback,
+        crossinline block: () -> Unit,
+    ): Callable<Unit> {
+        return Callable {
+            block()
+            val num = completedJobs.incrementAndGet()
+            val percentage = num.toDouble() / totalJobs.get()
+            progressCallback.update(
+                0.10 + percentage,
+                "Proxy",
+                "Loading RSProx ($num/${totalJobs.get()})",
+            )
+        }
     }
 
     private fun loadProxyTargetConfigs(overriddenJavConfig: String?): List<ProxyTargetConfig> {
@@ -172,17 +194,12 @@ public class ProxyService(
     private fun loadProxyTargets(
         progressCallback: ProgressCallback,
         configs: List<ProxyTargetConfig>,
-    ) {
+    ): List<Callable<Unit>> {
         this.proxyTargets = configs.map(::ProxyTarget)
-        var percentage = 0.40
-        for ((index, target) in this.proxyTargets.withIndex()) {
-            progressCallback.update(
-                percentage,
-                "Proxy",
-                "Loading proxy targets (${index.inc()}/${proxyTargets.size})",
-            )
-            target.load(properties, gamePackProvider, bootstrapFactory)
-            percentage += 0.50 / proxyTargets.size
+        return this.proxyTargets.map { target ->
+            createJob(progressCallback) {
+                target.load(properties, gamePackProvider, bootstrapFactory)
+            }
         }
     }
 
