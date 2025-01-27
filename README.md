@@ -140,12 +140,13 @@ config:
 ```
 
 Properties breakdown:
-`id` - A number from 1 to 100, must be unique. This is a required property.
-`name` - The name given to the client. Any references to `OldSchool RuneScape` will be replaced by this. This is a required property to ensure caches don't overwrite and cause crashing at runtime when loading different games simultaneously.
-`jav_config_url` - The URL to the jav_config that will be used to load initial world and world list. This is a required property.
-`varp_count` - Changes the array length used for varps in the client, the default value is 5000. This is an optional property.
-`revision` - A revision number used to pick the client and correct decoders. The default is whatever is currently latest stable in Old School RuneScape. This is an optional property.
-`modulus` - A hexadecimal (base-16) RSA modulus used to encrypt the login packet sent to the client. This is a required property.
+
+- `id` - A number from 1 to 100, must be unique. This is a required property.
+- `name` - The name given to the client. Any references to `OldSchool RuneScape` will be replaced by this. This is a required property to ensure caches don't overwrite and cause crashing at runtime when loading different games simultaneously.
+- `jav_config_url` - The URL to the jav_config that will be used to load initial world and world list. This is a required property.
+- `varp_count` - Changes the array length used for varps in the client, the default value is 5000. This is an optional property.
+- `revision` - A revision number used to pick the client and correct decoders. The default is whatever is currently latest stable in Old School RuneScape. This is an optional property.
+- `modulus` - A hexadecimal (base-16) RSA modulus used to encrypt the login packet sent to the client. This is a required property.
 
 
 ## Progress
