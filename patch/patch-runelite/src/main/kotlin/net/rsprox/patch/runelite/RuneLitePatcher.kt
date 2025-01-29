@@ -290,31 +290,27 @@ public class RuneLitePatcher : Patcher<Unit> {
         originalResource: String,
         replacementResource: String,
     ) {
-        try {
-            val replacementResourceFile =
-                RuneLitePatcher::class.java
-                    .getResourceAsStream(replacementResource)
-                    ?.readAllBytes()
-                    ?: throw IllegalStateException("$replacementResource resource not available")
+        val replacementResourceFile =
+            RuneLitePatcher::class.java
+                .getResourceAsStream(replacementResource)
+                ?.readAllBytes()
+                ?: throw IllegalStateException("$replacementResource resource not available")
 
-            val originalResourceFile =
-                RuneLitePatcher::class.java
-                    .getResourceAsStream(originalResource)
-                    ?.readAllBytes()
-                    ?: throw IllegalStateException("$originalResource resource not available.")
+        val originalResourceFile =
+            RuneLitePatcher::class.java
+                .getResourceAsStream(originalResource)
+                ?.readAllBytes()
+                ?: throw IllegalStateException("$originalResource resource not available.")
 
-            val originalBytes = classFile.readBytes()
-            if (!originalBytes.contentEquals(originalResourceFile)) {
-                throw IllegalStateException("Unable to patch RuneLite $replacementResource - out of date.")
-            }
-
-            // Overwrite the WorldClient.class file to read worlds from our proxied-list
-            // This ensures that the world switcher still goes through the proxy tool,
-            // instead of just connecting to RuneLite's own world list API.
-            classFile.writeBytes(replacementResourceFile)
-        } catch (t: Throwable) {
-            t.printStackTrace()
+        val originalBytes = classFile.readBytes()
+        if (!originalBytes.contentEquals(originalResourceFile)) {
+            throw IllegalStateException("Unable to patch RuneLite $replacementResource - out of date.")
         }
+
+        // Overwrite the WorldClient.class file to read worlds from our proxied-list
+        // This ensures that the world switcher still goes through the proxy tool,
+        // instead of just connecting to RuneLite's own world list API.
+        classFile.writeBytes(replacementResourceFile)
     }
 
     private fun patchPort(
