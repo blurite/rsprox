@@ -21,7 +21,7 @@ allprojects {
     apply(plugin = "maven-publish")
 
     group = "net.rsprox"
-    version = "1.0.2"
+    version = "1.0.3"
 
     repositories {
         mavenCentral()
