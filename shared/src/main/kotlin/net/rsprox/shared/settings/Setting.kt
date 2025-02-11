@@ -27,7 +27,7 @@ public enum class Setting(
         SettingCategory.PREFS,
         "Convert to Jag Coords",
         false,
-        "Translates coords to the Jag format, e.g. (3200, 3200, 0) -> (0, 50, 50, 0, 0)",
+        "Translates coords to the Jag format, e.g. (3200, 3200, 0) -> (0_50_50_0_0)",
     ),
     TRANSLATE_INSTANCED_COORDS(
         SettingGroup.LOGGING,
