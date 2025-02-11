@@ -22,6 +22,13 @@ public enum class Setting(
         "When enabled and a symbol dictionary is provided, " +
             "will show ids after symbol names, e.g. \"armadyl_godsword (11802)\"",
     ),
+    CONVERT_COORD_TO_JAGCOORD(
+        SettingGroup.LOGGING,
+        SettingCategory.PREFS,
+        "Convert to Jag Coords",
+        false,
+        "Translates coords to the Jag format, e.g. (3200, 3200, 0) -> (0_50_50_0_0)",
+    ),
     TRANSLATE_INSTANCED_COORDS(
         SettingGroup.LOGGING,
         SettingCategory.MISC,

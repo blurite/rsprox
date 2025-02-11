@@ -1,25 +1,39 @@
 package net.rsprox.shared.property.regular
 
-import net.rsprox.shared.property.ChildProperty
+import net.rsprox.shared.property.SymbolDictionary
+import net.rsprox.shared.property.toJagCoordsText
+import net.rsprox.shared.settings.Setting
+import net.rsprox.shared.settings.SettingSet
 
 public class IdentifiedWorldEntityProperty(
     override val propertyName: String,
-    public val index: Int,
-    public val level: Int,
-    public val x: Int,
-    public val z: Int,
-    sizeX: Int,
-    sizeZ: Int,
-    centerFineOffsetX: Int?,
-    centerFineOffsetZ: Int?,
-    override val children: MutableList<ChildProperty<*>> = mutableListOf(),
-    override val type: Class<String> = String::class.java,
-) : ChildProperty<String> {
-    override val value: String =
-        if (centerFineOffsetX != null && centerFineOffsetZ != null) {
-            "(index=$index, coord=($x, $z, $level), " +
-                "sizex=$sizeX, sizez=$sizeZ, offsetx=$centerFineOffsetX, offsetz=$centerFineOffsetZ)"
+    index: Int,
+    level: Int,
+    x: Int,
+    z: Int,
+    public val sizeX: Int,
+    public val sizeZ: Int,
+    public val centerFineOffsetX: Int?,
+    public val centerFineOffsetZ: Int?,
+) : IdentifiedChildProperty(propertyName, index, level, x, z) {
+    override fun formattedValue(settings: SettingSet, dictionary: SymbolDictionary): String = buildString {
+        append('(')
+
+        append("index=$index, ")
+
+        if (settings[Setting.CONVERT_COORD_TO_JAGCOORD]) {
+            val formatted = toJagCoordsText(level, x, z)
+            append("coord=($formatted)")
         } else {
-            "(index=$index, coord=($x, $z, $level), sizex=$sizeX, sizez=$sizeZ)"
+            append("coord=($x, $z, $level)")
         }
+
+        append("sizex=$sizeX, sizez=$sizeZ")
+
+        if (centerFineOffsetX != null && centerFineOffsetZ != null) {
+            append(", offsetx=$centerFineOffsetX, offsetz=$centerFineOffsetZ")
+        }
+
+        append(')')
+    }
 }
