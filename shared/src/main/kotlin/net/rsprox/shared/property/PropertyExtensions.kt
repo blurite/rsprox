@@ -582,3 +582,16 @@ public fun Property.unidentifiedWorldEntity(
         ),
     )
 }
+
+internal fun toJagCoords(level: Int, x: Int, z: Int): List<Int> {
+    val mx = x / 64
+    val mz = z / 64
+    val lx = x % 64
+    val lz = z % 64
+    return listOf(level, mx, mz, lx, lz)
+}
+
+internal fun toJagCoordsText(level: Int, x: Int, z: Int): String {
+    val (lvl, mx, mz, lx, lz) = toJagCoords(level, x, z)
+    return "${lvl}_${mx}_${mz}_${lx}_${lz}"
+}

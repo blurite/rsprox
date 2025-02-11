@@ -6,8 +6,11 @@ import net.rsprox.shared.property.filtered.FilteredNamedEnumProperty
 import net.rsprox.shared.property.filtered.FilteredScriptVarTypeProperty
 import net.rsprox.shared.property.formatted.FormattedIntProperty
 import net.rsprox.shared.property.regular.EnumProperty
+import net.rsprox.shared.property.regular.IdentifiedChildProperty
 import net.rsprox.shared.property.regular.IdentifiedMultinpcProperty
 import net.rsprox.shared.property.regular.IdentifiedNpcProperty
+import net.rsprox.shared.property.regular.IdentifiedPlayerProperty
+import net.rsprox.shared.property.regular.IdentifiedWorldEntityProperty
 import net.rsprox.shared.property.regular.NamedEnumProperty
 import net.rsprox.shared.property.regular.ScriptProperty
 import net.rsprox.shared.property.regular.ScriptVarTypeProperty
@@ -64,50 +67,19 @@ public class PropertyFormatterCollection private constructor(
                 PropertyFormatter<NamedEnumProperty<*>> {
                     (it.value as NamedEnum).prettyName
                 }
+            val identifiedPropertyFormatter =
+                PropertyFormatter<IdentifiedChildProperty> {
+                    it.formattedValue(settings, dictionary)
+                }
             builder.add<NamedEnumProperty<*>>(enumPropertyFormatter)
             builder.add<FilteredNamedEnumProperty<*>>(enumPropertyFormatter)
             builder.add<EnumProperty<*>> {
                 it.value.toString().lowercase()
             }
-            builder.add<IdentifiedNpcProperty> {
-                val symbol = dictionary.getScriptVarTypeName(it.id, ScriptVarType.NPC)
-                val col =
-                    when {
-                        symbol != null && settings[Setting.SHOW_IDS_AFTER_SYMBOLS] -> "id=$symbol (${it.id})"
-                        symbol != null -> "id=$symbol"
-                        it.npcName != "null" -> it.npcName + " (id=${it.id})"
-                        else -> "id=${it.id}"
-                    }
-                if (it.index == Int.MIN_VALUE) {
-                    "($col, coord=(${it.x}, ${it.z}, ${it.level}))"
-                } else {
-                    "(index=${it.index}, $col, coord=(${it.x}, ${it.z}, ${it.level}))"
-                }
-            }
-            builder.add<IdentifiedMultinpcProperty> {
-                val base = dictionary.getScriptVarTypeName(it.baseId, ScriptVarType.NPC)
-                val baseCol =
-                    when {
-                        base != null && settings[Setting.SHOW_IDS_AFTER_SYMBOLS] -> "id=$base (${it.baseId})"
-                        base != null -> "id=$base"
-                        else -> "id=${it.baseId}"
-                    }
-                val multinpc = dictionary.getScriptVarTypeName(it.multinpcId, ScriptVarType.NPC)
-                val multinpcCol =
-                    when {
-                        multinpc != null && settings[Setting.SHOW_IDS_AFTER_SYMBOLS] -> {
-                            "multinpc=$multinpc (${it.multinpcId})"
-                        }
-                        multinpc != null -> "multinpc=$multinpc"
-                        it.npcName != "null" -> "multinpc=${it.npcName}"
-                        else -> "multinpc=${it.multinpcId}"
-                    }
-                if (it.index == Int.MIN_VALUE) {
-                    "($baseCol, $multinpcCol, coord=(${it.x}, ${it.z}, ${it.level}))"
-                } else {
-                    "(index=${it.index}, $baseCol, $multinpcCol, coord=(${it.x}, ${it.z}, ${it.level}))"
-                }
-            }
+            builder.add<IdentifiedMultinpcProperty>(identifiedPropertyFormatter)
+            builder.add<IdentifiedNpcProperty>(identifiedPropertyFormatter)
+            builder.add<IdentifiedPlayerProperty>(identifiedPropertyFormatter)
+            builder.add<IdentifiedWorldEntityProperty>(identifiedPropertyFormatter)
             builder.add<ShortNpcProperty> {
                 val symbol = dictionary.getScriptVarTypeName(it.id, ScriptVarType.NPC) ?: return@add "(id=${it.id})"
                 if (settings[Setting.SHOW_IDS_AFTER_SYMBOLS]) {
@@ -170,7 +142,12 @@ public class PropertyFormatterCollection private constructor(
                             if (x == 0x3FFF) x = -1
                             var z = value and 0x3FFF
                             if (z == 0x3FFF) z = -1
-                            "($x, $z, $level)"
+                            if (settings[Setting.CONVERT_COORD_TO_JAGCOORD]) {
+                                val formatted = toJagCoordsText(level, x, z)
+                                "($formatted)"
+                            } else {
+                                "($x, $z, $level)"
+                            }
                         }
                         ScriptVarType.COMPONENT -> {
                             var interfaceId = value ushr 16 and 0xFFFF

@@ -1,20 +1,34 @@
 package net.rsprox.shared.property.regular
 
-import net.rsprox.shared.property.ChildProperty
+import net.rsprox.shared.property.SymbolDictionary
+import net.rsprox.shared.property.toJagCoordsText
+import net.rsprox.shared.settings.Setting
+import net.rsprox.shared.settings.SettingSet
 
 public class IdentifiedPlayerProperty(
     override val propertyName: String,
-    public val index: Int,
+    index: Int,
     public val playerName: String,
-    public val level: Int,
-    public val x: Int,
-    public val z: Int,
-    override val value: String =
-        if (index == Int.MIN_VALUE) {
-            "(name=$playerName, coord=($x, $z, $level))"
+    level: Int,
+    x: Int,
+    z: Int,
+) : IdentifiedChildProperty(propertyName, index, level, x, z) {
+    override fun formattedValue(settings: SettingSet, dictionary: SymbolDictionary): String = buildString {
+        append('(')
+
+        if (index != Int.MIN_VALUE) {
+            append("index=$index, ")
+        }
+
+        append("name=$playerName, ")
+
+        if (settings[Setting.CONVERT_COORD_TO_JAGCOORD]) {
+            val formatted = toJagCoordsText(level, x, z)
+            append("coord=($formatted)")
         } else {
-            "(index=$index, name=$playerName, coord=($x, $z, $level))"
-        },
-    override val children: MutableList<ChildProperty<*>> = mutableListOf(),
-    override val type: Class<String> = String::class.java,
-) : ChildProperty<String>
+            append("coord=($x, $z, $level)")
+        }
+
+        append(')')
+    }
+}
