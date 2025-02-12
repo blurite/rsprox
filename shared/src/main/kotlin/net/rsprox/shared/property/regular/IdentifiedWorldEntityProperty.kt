@@ -28,7 +28,7 @@ public class IdentifiedWorldEntityProperty(
             append("coord=($x, $z, $level)")
         }
 
-        append("sizex=$sizeX, sizez=$sizeZ")
+        append(", sizex=$sizeX, sizez=$sizeZ")
 
         if (centerFineOffsetX != null && centerFineOffsetZ != null) {
             append(", offsetx=$centerFineOffsetX, offsetz=$centerFineOffsetZ")
