@@ -11,10 +11,10 @@ public data class LoginXteaBlock(
     public val uuid: ByteArray,
     public val siteSettings: String,
     public val affiliate: Int,
-    public val constZero: Int,
+    public val deepLinks: List<Int>,
     public val hostPlatformStats: HostPlatformStats,
     public val secondClientType: Int,
-    public val crcBlockHeader: Int,
+    public val reflectionCheckerConst: Int,
     public val crc: ByteBuf,
 ) {
     override fun equals(other: Any?): Boolean {
@@ -30,10 +30,10 @@ public data class LoginXteaBlock(
         if (!uuid.contentEquals(other.uuid)) return false
         if (siteSettings != other.siteSettings) return false
         if (affiliate != other.affiliate) return false
-        if (constZero != other.constZero) return false
+        if (deepLinks != other.deepLinks) return false
         if (hostPlatformStats != other.hostPlatformStats) return false
         if (secondClientType != other.secondClientType) return false
-        if (crcBlockHeader != other.crcBlockHeader) return false
+        if (reflectionCheckerConst != other.reflectionCheckerConst) return false
         if (crc != other.crc) return false
 
         return true
@@ -47,10 +47,10 @@ public data class LoginXteaBlock(
         result = 31 * result + uuid.contentHashCode()
         result = 31 * result + siteSettings.hashCode()
         result = 31 * result + affiliate
-        result = 31 * result + constZero
+        result = 31 * result + deepLinks.hashCode()
         result = 31 * result + hostPlatformStats.hashCode()
         result = 31 * result + secondClientType
-        result = 31 * result + crcBlockHeader
+        result = 31 * result + reflectionCheckerConst
         result = 31 * result + crc.hashCode()
         return result
     }
@@ -64,10 +64,10 @@ public data class LoginXteaBlock(
             "uuid=${uuid.contentToString()}, " +
             "siteSettings='$siteSettings', " +
             "affiliate=$affiliate, " +
-            "constZero=$constZero, " +
+            "deepLinks=$deepLinks, " +
             "hostPlatformStats=$hostPlatformStats, " +
             "secondClientType=$secondClientType, " +
-            "crcBlockHeader=$crcBlockHeader, " +
+            "reflectionCheckerConst=$reflectionCheckerConst, " +
             "crc=$crc" +
             ")"
     }

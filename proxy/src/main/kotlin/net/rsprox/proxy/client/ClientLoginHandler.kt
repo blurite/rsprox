@@ -234,10 +234,18 @@ public class ClientLoginHandler(
             }
         val siteSettings = buffer.gjstr()
         val affiliate = buffer.g4()
-        val constZero = buffer.g1()
+        val deepLinkCount = buffer.g1()
+        val deepLinks =
+            if (deepLinkCount == 0) {
+                emptyList()
+            } else {
+                List(deepLinkCount) {
+                    buffer.g4()
+                }
+            }
         val hostPlatformStats = decodeHostPlatformStats(buffer)
         val secondClientType = buffer.g1()
-        val crcBlockHeader = buffer.g4()
+        val reflectionCheckerConst = buffer.g4()
         val crc = buffer.buffer.readBytes(buffer.readableBytes())
         return LoginXteaBlock(
             username,
@@ -247,10 +255,10 @@ public class ClientLoginHandler(
             uuid,
             siteSettings,
             affiliate,
-            constZero,
+            deepLinks,
             hostPlatformStats,
             secondClientType,
-            crcBlockHeader,
+            reflectionCheckerConst,
             crc,
         )
     }
@@ -268,7 +276,10 @@ public class ClientLoginHandler(
         }
         buffer.pjstr(block.siteSettings)
         buffer.p4(block.affiliate)
-        buffer.p1(block.constZero)
+        buffer.p1(block.deepLinks.size)
+        for (link in block.deepLinks) {
+            buffer.p4(link)
+        }
         val hostBuf = Unpooled.buffer()
         encodeHostPlatformStats(block.hostPlatformStats, hostBuf.toJagByteBuf())
         try {
@@ -277,7 +288,7 @@ public class ClientLoginHandler(
             hostBuf.release()
         }
         buffer.p1(block.secondClientType)
-        buffer.p4(block.crcBlockHeader)
+        buffer.p4(block.reflectionCheckerConst)
         try {
             buffer.pdata(block.crc)
         } finally {
