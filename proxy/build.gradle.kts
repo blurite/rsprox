@@ -20,7 +20,6 @@ dependencies {
     implementation(rootProject.libs.bundles.jackson)
     implementation(projects.patch)
     implementation(projects.patch.patchNative)
-    implementation(projects.patch.patchRunelite)
     implementation(projects.protocol)
     implementation(projects.transcriber)
     implementation(rootProject.libs.clikt)
