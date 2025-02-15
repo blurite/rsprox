@@ -91,6 +91,8 @@ public class RuneliteLauncher {
             "--developer-mode",
             "--bootstrap_url=$bootstrapUrl",
             "--bootstrap_sig_url=$bootstrapSigUrl",
+            "--disable-telemetry",
+            "--noupdate",
             *guiArgs.toTypedArray(),
         )
     }
