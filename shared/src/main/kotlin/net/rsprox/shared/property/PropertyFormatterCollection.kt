@@ -113,7 +113,12 @@ public class PropertyFormatterCollection private constructor(
                 }
             }
             builder.add<ZoneCoordProperty> {
-                "(${it.zoneX}, ${it.zoneZ}, ${it.level})"
+                if (settings[Setting.CONVERT_COORD_TO_JAGCOORD]) {
+                    val formatted = toJagCoordsText(it.level, it.zoneX, it.zoneZ)
+                    "($formatted)"
+                } else {
+                    "(${it.zoneX}, ${it.zoneZ}, ${it.level})"
+                }
             }
             builder.add<FormattedIntProperty> {
                 it.format.format(it.value)
