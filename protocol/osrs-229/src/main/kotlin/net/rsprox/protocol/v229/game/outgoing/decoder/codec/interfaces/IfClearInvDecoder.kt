@@ -2,7 +2,7 @@ package net.rsprox.protocol.v229.game.outgoing.decoder.codec.interfaces
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.util.gCombinedId
+import net.rsprot.protocol.util.gCombinedIdAlt2
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
 import net.rsprox.protocol.session.Session
@@ -15,7 +15,7 @@ internal class IfClearInvDecoder : ProxyMessageDecoder<IfClearInv> {
         buffer: JagByteBuf,
         session: Session,
     ): IfClearInv {
-        val combinedId = buffer.gCombinedId()
+        val combinedId = buffer.gCombinedIdAlt2()
         return IfClearInv(
             combinedId.interfaceId,
             combinedId.componentId,

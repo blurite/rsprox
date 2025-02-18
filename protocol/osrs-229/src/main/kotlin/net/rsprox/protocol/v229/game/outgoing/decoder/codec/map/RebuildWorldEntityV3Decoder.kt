@@ -6,22 +6,22 @@ import net.rsprot.crypto.xtea.XteaKey
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.metadata.Consistent
 import net.rsprox.protocol.ProxyMessageDecoder
-import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV2
+import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV3
 import net.rsprox.protocol.game.outgoing.model.map.util.BuildArea
 import net.rsprox.protocol.game.outgoing.model.map.util.RebuildRegionZone
 import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.session.getActiveWorld
 import net.rsprox.protocol.session.getWorld
 import net.rsprox.protocol.v229.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-internal class RebuildWorldEntityDecoder : ProxyMessageDecoder<RebuildWorldEntityV2> {
-    override val prot: ClientProt = GameServerProt.REBUILD_WORLDENTITY
+internal class RebuildWorldEntityV3Decoder : ProxyMessageDecoder<RebuildWorldEntityV3> {
+    override val prot: ClientProt = GameServerProt.REBUILD_WORLDENTITY_V3
 
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
-    ): RebuildWorldEntityV2 {
-        val index = buffer.g2()
+    ): RebuildWorldEntityV3 {
         val baseX = buffer.g2()
         val baseZ = buffer.g2()
         val xteaCount = buffer.g2()
@@ -43,11 +43,10 @@ internal class RebuildWorldEntityDecoder : ProxyMessageDecoder<RebuildWorldEntit
                     add(XteaKey(buffer.g4(), buffer.g4(), buffer.g4(), buffer.g4()))
                 }
             }
-        val world = session.getWorld(index)
+        val world = session.getWorld(session.getActiveWorld())
         world.baseX = (baseX - 6) * 8
         world.baseZ = (baseZ - 6) * 8
-        return RebuildWorldEntityV2(
-            index,
+        return RebuildWorldEntityV3(
             baseX,
             baseZ,
             buildArea,

@@ -14,12 +14,12 @@ internal class MidiSongWithSecondaryDecoder : ProxyMessageDecoder<MidiSongWithSe
         buffer: JagByteBuf,
         session: Session,
     ): MidiSongWithSecondary {
-        val fadeOutSpeed = buffer.g2Alt3()
-        val secondaryId = buffer.g2Alt3()
         val fadeOutDelay = buffer.g2Alt3()
-        val fadeInDelay = buffer.g2Alt3()
+        val secondaryId = buffer.g2Alt3()
+        val fadeOutSpeed = buffer.g2Alt1()
         val fadeInSpeed = buffer.g2Alt3()
-        val primaryId = buffer.g2Alt2()
+        val fadeInDelay = buffer.g2Alt2()
+        val primaryId = buffer.g2Alt1()
         return MidiSongWithSecondary(
             primaryId,
             secondaryId,

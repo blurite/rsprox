@@ -83,7 +83,7 @@ internal object GameServerProtId {
     const val CAM_ROTATEBY = 79
     const val MAP_PROJANIM = 80
     const val NPC_SPOTANIM_SPECIFIC = 81
-    const val REBUILD_WORLDENTITY = 82
+    const val REBUILD_WORLDENTITY_V3 = 82
     const val HIDELOCOPS = 83
     const val CAM_SHAKE = 84
     const val CAM_TARGET_V3 = 85

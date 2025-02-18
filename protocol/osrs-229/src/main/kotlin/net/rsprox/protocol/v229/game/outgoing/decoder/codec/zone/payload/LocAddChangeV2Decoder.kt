@@ -17,14 +17,16 @@ internal class LocAddChangeV2Decoder : ProxyMessageDecoder<LocAddChangeV2> {
         buffer: JagByteBuf,
         session: Session,
     ): LocAddChangeV2 {
+        val id = buffer.g2()
         val coordInZone = CoordInZone(buffer.g1())
-        val locProperties = LocProperties(buffer.g1Alt2())
+        val opFlags = OpFlags(buffer.g1())
+        val locProperties = LocProperties(buffer.g1Alt3())
         val opOverrideCount = buffer.g1Alt2()
         val opOverrides: Map<Byte, String>? =
             if (opOverrideCount > 0) {
                 buildMap {
                     for (i in 0..<opOverrideCount) {
-                        val index = buffer.g1Alt1()
+                        val index = buffer.g1Alt3()
                         val string = buffer.gjstr()
                         put(index.toByte(), string)
                     }
@@ -32,8 +34,6 @@ internal class LocAddChangeV2Decoder : ProxyMessageDecoder<LocAddChangeV2> {
             } else {
                 null
             }
-        val opFlags = OpFlags(buffer.g1Alt2())
-        val id = buffer.g2()
         return LocAddChangeV2(
             id,
             coordInZone,

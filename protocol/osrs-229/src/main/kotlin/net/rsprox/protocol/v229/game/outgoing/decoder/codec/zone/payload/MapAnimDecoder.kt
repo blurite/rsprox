@@ -15,10 +15,10 @@ internal class MapAnimDecoder : ProxyMessageDecoder<MapAnim> {
         buffer: JagByteBuf,
         session: Session,
     ): MapAnim {
-        val id = buffer.g2Alt1()
-        val height = buffer.g1Alt2()
-        val coordInZone = CoordInZone(buffer.g1Alt3())
         val delay = buffer.g2Alt1()
+        val coordInZone = CoordInZone(buffer.g1Alt2())
+        val id = buffer.g2Alt3()
+        val height = buffer.g1Alt2()
         return MapAnim(
             id,
             delay,
