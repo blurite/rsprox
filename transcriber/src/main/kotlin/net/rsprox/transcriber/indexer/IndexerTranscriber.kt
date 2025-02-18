@@ -71,20 +71,7 @@ import net.rsprox.protocol.game.incoming.model.social.FriendListAdd
 import net.rsprox.protocol.game.incoming.model.social.FriendListDel
 import net.rsprox.protocol.game.incoming.model.social.IgnoreListAdd
 import net.rsprox.protocol.game.incoming.model.social.IgnoreListDel
-import net.rsprox.protocol.game.outgoing.model.camera.CamLookAt
-import net.rsprox.protocol.game.outgoing.model.camera.CamLookAtEasedCoord
-import net.rsprox.protocol.game.outgoing.model.camera.CamMode
-import net.rsprox.protocol.game.outgoing.model.camera.CamMoveTo
-import net.rsprox.protocol.game.outgoing.model.camera.CamMoveToArc
-import net.rsprox.protocol.game.outgoing.model.camera.CamMoveToCycles
-import net.rsprox.protocol.game.outgoing.model.camera.CamReset
-import net.rsprox.protocol.game.outgoing.model.camera.CamRotateBy
-import net.rsprox.protocol.game.outgoing.model.camera.CamRotateTo
-import net.rsprox.protocol.game.outgoing.model.camera.CamShake
-import net.rsprox.protocol.game.outgoing.model.camera.CamSmoothReset
-import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV1
-import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV2
-import net.rsprox.protocol.game.outgoing.model.camera.OculusSync
+import net.rsprox.protocol.game.outgoing.model.camera.*
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelDelta
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelFull
 import net.rsprox.protocol.game.outgoing.model.clan.ClanSettingsDelta
@@ -161,12 +148,7 @@ import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvStopTransmit
 import net.rsprox.protocol.game.outgoing.model.logout.Logout
 import net.rsprox.protocol.game.outgoing.model.logout.LogoutTransfer
 import net.rsprox.protocol.game.outgoing.model.logout.LogoutWithReason
-import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
-import net.rsprox.protocol.game.outgoing.model.map.RebuildNormal
-import net.rsprox.protocol.game.outgoing.model.map.RebuildRegion
-import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV1
-import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV2
-import net.rsprox.protocol.game.outgoing.model.map.Reconnect
+import net.rsprox.protocol.game.outgoing.model.map.*
 import net.rsprox.protocol.game.outgoing.model.misc.client.*
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettings
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettingsPrivateChat
@@ -202,12 +184,14 @@ import net.rsprox.protocol.game.outgoing.model.specific.PlayerSpotAnimSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV2
 import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV3
 import net.rsprox.protocol.game.outgoing.model.unknown.UnknownString
+import net.rsprox.protocol.game.outgoing.model.unknown.UnknownVarShort
 import net.rsprox.protocol.game.outgoing.model.varp.VarpLarge
 import net.rsprox.protocol.game.outgoing.model.varp.VarpReset
 import net.rsprox.protocol.game.outgoing.model.varp.VarpSmall
 import net.rsprox.protocol.game.outgoing.model.varp.VarpSync
 import net.rsprox.protocol.game.outgoing.model.worldentity.ClearEntities
-import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorld
+import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorldV1
+import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorldV2
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZoneFullFollows
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialFollows
@@ -505,6 +489,9 @@ public class IndexerTranscriber(
     }
 
     override fun camSmoothReset(message: CamSmoothReset) {
+    }
+
+    override fun camTargetV3(message: CamTargetV3) {
     }
 
     override fun camTargetV2(message: CamTargetV2) {
@@ -805,6 +792,25 @@ public class IndexerTranscriber(
         }
     }
 
+    override fun rebuildWorldEntityV3(message: RebuildWorldEntityV3) {
+        val startZoneX = message.baseX - 6
+        val startZoneZ = message.baseZ - 6
+        val mapsquares = mutableSetOf<Int>()
+        for (level in 0..<4) {
+            for (zoneX in startZoneX..(message.baseX + 6)) {
+                for (zoneZ in startZoneZ..(message.baseZ + 6)) {
+                    val block = message.buildArea[level, zoneX - startZoneX, zoneZ - startZoneZ]
+                    // Invalid zone
+                    if (block.mapsquareId == 32767) continue
+                    mapsquares += block.mapsquareId
+                }
+            }
+        }
+        for (mapsquare in mapsquares) {
+            binaryIndex.increment(IndexedType.MAPSQUARE, mapsquare)
+        }
+    }
+
     override fun hideLocOps(message: HideLocOps) {
     }
 
@@ -1058,7 +1064,10 @@ public class IndexerTranscriber(
     override fun clearEntities(message: ClearEntities) {
     }
 
-    override fun setActiveWorld(message: SetActiveWorld) {
+    override fun setActiveWorldV1(message: SetActiveWorldV1) {
+    }
+
+    override fun setActiveWorldV2(message: SetActiveWorldV2) {
     }
 
     override fun updateZoneFullFollows(message: UpdateZoneFullFollows) {
@@ -1154,6 +1163,9 @@ public class IndexerTranscriber(
     }
 
     override fun unknownString(message: UnknownString) {
+    }
+
+    override fun unknownVarShort(message: UnknownVarShort) {
     }
 
     override fun objCustomise(message: ObjCustomise) {

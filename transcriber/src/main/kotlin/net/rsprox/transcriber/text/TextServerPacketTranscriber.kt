@@ -5,20 +5,7 @@ import net.rsprox.cache.api.Cache
 import net.rsprox.cache.api.type.VarBitType
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.outgoing.model.IncomingZoneProt
-import net.rsprox.protocol.game.outgoing.model.camera.CamLookAt
-import net.rsprox.protocol.game.outgoing.model.camera.CamLookAtEasedCoord
-import net.rsprox.protocol.game.outgoing.model.camera.CamMode
-import net.rsprox.protocol.game.outgoing.model.camera.CamMoveTo
-import net.rsprox.protocol.game.outgoing.model.camera.CamMoveToArc
-import net.rsprox.protocol.game.outgoing.model.camera.CamMoveToCycles
-import net.rsprox.protocol.game.outgoing.model.camera.CamReset
-import net.rsprox.protocol.game.outgoing.model.camera.CamRotateBy
-import net.rsprox.protocol.game.outgoing.model.camera.CamRotateTo
-import net.rsprox.protocol.game.outgoing.model.camera.CamShake
-import net.rsprox.protocol.game.outgoing.model.camera.CamSmoothReset
-import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV1
-import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV2
-import net.rsprox.protocol.game.outgoing.model.camera.OculusSync
+import net.rsprox.protocol.game.outgoing.model.camera.*
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelDelta
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelFull
 import net.rsprox.protocol.game.outgoing.model.clan.ClanSettingsDelta
@@ -65,12 +52,7 @@ import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvStopTransmit
 import net.rsprox.protocol.game.outgoing.model.logout.Logout
 import net.rsprox.protocol.game.outgoing.model.logout.LogoutTransfer
 import net.rsprox.protocol.game.outgoing.model.logout.LogoutWithReason
-import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
-import net.rsprox.protocol.game.outgoing.model.map.RebuildNormal
-import net.rsprox.protocol.game.outgoing.model.map.RebuildRegion
-import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV1
-import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV2
-import net.rsprox.protocol.game.outgoing.model.map.Reconnect
+import net.rsprox.protocol.game.outgoing.model.map.*
 import net.rsprox.protocol.game.outgoing.model.map.util.BuildArea
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideLocOps
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideNpcOps
@@ -126,12 +108,14 @@ import net.rsprox.protocol.game.outgoing.model.specific.PlayerSpotAnimSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV2
 import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV3
 import net.rsprox.protocol.game.outgoing.model.unknown.UnknownString
+import net.rsprox.protocol.game.outgoing.model.unknown.UnknownVarShort
 import net.rsprox.protocol.game.outgoing.model.varp.VarpLarge
 import net.rsprox.protocol.game.outgoing.model.varp.VarpReset
 import net.rsprox.protocol.game.outgoing.model.varp.VarpSmall
 import net.rsprox.protocol.game.outgoing.model.varp.VarpSync
 import net.rsprox.protocol.game.outgoing.model.worldentity.ClearEntities
-import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorld
+import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorldV1
+import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorldV2
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZoneFullFollows
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialFollows
@@ -435,6 +419,24 @@ public class TextServerPacketTranscriber(
         root.int("moveproportionalspeed", message.cameraMoveProportionalSpeed)
         root.int("lookconstantspeed", message.cameraLookConstantSpeed)
         root.int("lookproportionalspeed", message.cameraLookProportionalSpeed)
+    }
+
+    override fun camTargetV3(message: CamTargetV3) {
+        if (!filters[PropertyFilter.CAM_TARGET]) return omit()
+        when (val type = message.type) {
+            is CamTargetV3.NpcCamTarget -> {
+                root.worldentity(type.worldEntityIndex)
+                root.npc(type.targetIndex)
+            }
+            is CamTargetV3.PlayerCamTarget -> {
+                root.worldentity(type.worldEntityIndex)
+                root.player(type.targetIndex)
+            }
+            is CamTargetV3.WorldEntityTarget -> {
+                root.worldentity(type.worldEntityIndex)
+                root.worldentity(type.targetIndex)
+            }
+        }
     }
 
     override fun camTargetV2(message: CamTargetV2) {
@@ -1506,6 +1508,17 @@ public class TextServerPacketTranscriber(
         )
     }
 
+    override fun rebuildWorldEntityV3(message: RebuildWorldEntityV3) {
+        rebuildWorldEntity(
+            sessionState.getActiveWorld().id,
+            message.baseX,
+            message.baseZ,
+            message.buildArea,
+            message.keys,
+            null,
+        )
+    }
+
     override fun hideLocOps(message: HideLocOps) {
         if (!filters[PropertyFilter.HIDEOPS]) return omit()
         root.boolean("hide", message.hidden)
@@ -2395,14 +2408,28 @@ public class TextServerPacketTranscriber(
         if (!filters[PropertyFilter.CLEAR_ENTITIES]) return omit()
     }
 
-    override fun setActiveWorld(message: SetActiveWorld) {
+    override fun setActiveWorldV1(message: SetActiveWorldV1) {
         if (!filters[PropertyFilter.SET_ACTIVE_WORLD]) return omit()
         when (val type = message.worldType) {
-            is SetActiveWorld.DynamicWorldType -> {
+            is SetActiveWorldV1.DynamicWorldType -> {
                 root.worldentity(type.index)
                 root.int("level", type.activeLevel)
             }
-            is SetActiveWorld.RootWorldType -> {
+            is SetActiveWorldV1.RootWorldType -> {
+                root.worldentity(-1)
+                root.int("level", type.activeLevel)
+            }
+        }
+    }
+
+    override fun setActiveWorldV2(message: SetActiveWorldV2) {
+        if (!filters[PropertyFilter.SET_ACTIVE_WORLD]) return omit()
+        when (val type = message.worldType) {
+            is SetActiveWorldV2.DynamicWorldType -> {
+                root.worldentity(type.index)
+                root.int("level", type.activeLevel)
+            }
+            is SetActiveWorldV2.RootWorldType -> {
                 root.worldentity(-1)
                 root.int("level", type.activeLevel)
             }
@@ -2837,6 +2864,12 @@ public class TextServerPacketTranscriber(
     override fun unknownString(message: UnknownString) {
         if (!filters[PropertyFilter.DEPRECATED_SERVER]) return omit()
         root.string("string", message.string)
+    }
+
+    override fun unknownVarShort(message: UnknownVarShort) {
+        if (!filters[PropertyFilter.DEPRECATED_SERVER]) return omit()
+        root.int("value", message.value)
+        root.any("remainingbytes", message.remainingBytes.contentToString())
     }
 
     override fun objCustomise(message: ObjCustomise) {

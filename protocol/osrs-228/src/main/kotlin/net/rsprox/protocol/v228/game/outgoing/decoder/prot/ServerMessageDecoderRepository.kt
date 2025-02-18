@@ -67,7 +67,7 @@ import net.rsprox.protocol.v228.game.outgoing.decoder.codec.logout.LogoutDecoder
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.logout.LogoutTransferDecoder
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.logout.LogoutWithReasonDecoder
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.map.RebuildRegionDecoder
-import net.rsprox.protocol.v228.game.outgoing.decoder.codec.map.RebuildWorldEntityDecoder
+import net.rsprox.protocol.v228.game.outgoing.decoder.codec.map.RebuildWorldEntityV2Decoder
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.map.ReconnectDecoder
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.map.StaticRebuildDecoder
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.misc.client.*
@@ -125,7 +125,7 @@ import net.rsprox.protocol.v228.game.outgoing.decoder.codec.varp.VarpResetDecode
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.varp.VarpSmallDecoder
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.varp.VarpSyncDecoder
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.worldentity.ClearEntitiesDecoder
-import net.rsprox.protocol.v228.game.outgoing.decoder.codec.worldentity.SetActiveWorldDecoder
+import net.rsprox.protocol.v228.game.outgoing.decoder.codec.worldentity.SetActiveWorldV1Decoder
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.zone.header.UpdateZoneFullFollowsDecoder
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.zone.header.UpdateZonePartialEnclosedDecoder
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.zone.header.UpdateZonePartialFollowsDecoder
@@ -226,7 +226,7 @@ internal object ServerMessageDecoderRepository {
                 bind(ReconnectDecoder())
                 bind(StaticRebuildDecoder(huffmanCodec, cache))
                 bind(RebuildRegionDecoder())
-                bind(RebuildWorldEntityDecoder())
+                bind(RebuildWorldEntityV2Decoder())
 
                 bind(SetHeatmapEnabledDecoder())
                 bind(HideLocOpsDecoder())
@@ -289,7 +289,7 @@ internal object ServerMessageDecoderRepository {
                 bind(VarpSyncDecoder())
 
                 bind(ClearEntitiesDecoder())
-                bind(SetActiveWorldDecoder())
+                bind(SetActiveWorldV1Decoder())
 
                 bind(UpdateZonePartialEnclosedDecoder())
                 bind(UpdateZoneFullFollowsDecoder())

@@ -79,7 +79,8 @@ public enum class GameServerProt : Prot {
 
     // World entity packets
     CLEAR_ENTITIES,
-    SET_ACTIVE_WORLD,
+    SET_ACTIVE_WORLD_V2,
+    SET_ACTIVE_WORLD_V1,
     WORLDENTITY_INFO_V4,
     WORLDENTITY_INFO_V3,
     WORLDENTITY_INFO_V2,
@@ -88,7 +89,9 @@ public enum class GameServerProt : Prot {
     // Map packets
     REBUILD_NORMAL,
     REBUILD_REGION,
-    REBUILD_WORLDENTITY,
+    REBUILD_WORLDENTITY_V3,
+    REBUILD_WORLDENTITY_V2,
+    REBUILD_WORLDENTITY_V1,
 
     // Varp packets
     VARP_SMALL,
@@ -108,6 +111,7 @@ public enum class GameServerProt : Prot {
     CAM_ROTATEBY,
     CAM_ROTATETO,
     CAM_MODE,
+    CAM_TARGET_V3,
     CAM_TARGET_V2,
     CAM_TARGET_V1,
     OCULUS_SYNC,
@@ -188,6 +192,7 @@ public enum class GameServerProt : Prot {
 
     // Unknown packets
     UNKNOWN_STRING,
+    UNKNOWN_VAR_SHORT,
 
     RECONNECT,
 }

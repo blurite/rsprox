@@ -5,7 +5,7 @@ public object NopSettingSet : SettingSet {
 
     override fun getName(): String = throw UnsupportedOperationException()
 
-    override fun setName(name: String){
+    override fun setName(name: String) {
         throw UnsupportedOperationException()
     }
 
@@ -17,15 +17,24 @@ public object NopSettingSet : SettingSet {
         return false
     }
 
-    override fun set(setting: Setting, enabled: Boolean) {
+    override fun set(
+        setting: Setting,
+        enabled: Boolean,
+    ) {
         throw UnsupportedOperationException()
     }
 
-    override fun set(category: SettingCategory, enabled: Boolean) {
+    override fun set(
+        category: SettingCategory,
+        enabled: Boolean,
+    ) {
         throw UnsupportedOperationException()
     }
 
-    override fun set(group: SettingGroup, enabled: Boolean) {
+    override fun set(
+        group: SettingGroup,
+        enabled: Boolean,
+    ) {
         throw UnsupportedOperationException()
     }
 

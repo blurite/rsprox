@@ -1,19 +1,6 @@
 package net.rsprox.transcriber.interfaces
 
-import net.rsprox.protocol.game.outgoing.model.camera.CamLookAt
-import net.rsprox.protocol.game.outgoing.model.camera.CamLookAtEasedCoord
-import net.rsprox.protocol.game.outgoing.model.camera.CamMode
-import net.rsprox.protocol.game.outgoing.model.camera.CamMoveTo
-import net.rsprox.protocol.game.outgoing.model.camera.CamMoveToArc
-import net.rsprox.protocol.game.outgoing.model.camera.CamMoveToCycles
-import net.rsprox.protocol.game.outgoing.model.camera.CamReset
-import net.rsprox.protocol.game.outgoing.model.camera.CamRotateBy
-import net.rsprox.protocol.game.outgoing.model.camera.CamRotateTo
-import net.rsprox.protocol.game.outgoing.model.camera.CamShake
-import net.rsprox.protocol.game.outgoing.model.camera.CamSmoothReset
-import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV1
-import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV2
-import net.rsprox.protocol.game.outgoing.model.camera.OculusSync
+import net.rsprox.protocol.game.outgoing.model.camera.*
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelDelta
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelFull
 import net.rsprox.protocol.game.outgoing.model.clan.ClanSettingsDelta
@@ -62,12 +49,7 @@ import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvStopTransmit
 import net.rsprox.protocol.game.outgoing.model.logout.Logout
 import net.rsprox.protocol.game.outgoing.model.logout.LogoutTransfer
 import net.rsprox.protocol.game.outgoing.model.logout.LogoutWithReason
-import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
-import net.rsprox.protocol.game.outgoing.model.map.RebuildNormal
-import net.rsprox.protocol.game.outgoing.model.map.RebuildRegion
-import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV1
-import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV2
-import net.rsprox.protocol.game.outgoing.model.map.Reconnect
+import net.rsprox.protocol.game.outgoing.model.map.*
 import net.rsprox.protocol.game.outgoing.model.misc.client.*
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettings
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettingsPrivateChat
@@ -104,12 +86,14 @@ import net.rsprox.protocol.game.outgoing.model.specific.PlayerSpotAnimSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV2
 import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV3
 import net.rsprox.protocol.game.outgoing.model.unknown.UnknownString
+import net.rsprox.protocol.game.outgoing.model.unknown.UnknownVarShort
 import net.rsprox.protocol.game.outgoing.model.varp.VarpLarge
 import net.rsprox.protocol.game.outgoing.model.varp.VarpReset
 import net.rsprox.protocol.game.outgoing.model.varp.VarpSmall
 import net.rsprox.protocol.game.outgoing.model.varp.VarpSync
 import net.rsprox.protocol.game.outgoing.model.worldentity.ClearEntities
-import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorld
+import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorldV1
+import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorldV2
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZoneFullFollows
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialFollows
@@ -137,6 +121,8 @@ public interface ServerPacketTranscriber {
     public fun camShake(message: CamShake)
 
     public fun camSmoothReset(message: CamSmoothReset)
+
+    public fun camTargetV3(message: CamTargetV3)
 
     public fun camTargetV2(message: CamTargetV2)
 
@@ -252,6 +238,8 @@ public interface ServerPacketTranscriber {
 
     public fun rebuildWorldEntityV2(message: RebuildWorldEntityV2)
 
+    public fun rebuildWorldEntityV3(message: RebuildWorldEntityV3)
+
     public fun hideLocOps(message: HideLocOps)
 
     public fun hideNpcOps(message: HideNpcOps)
@@ -364,7 +352,9 @@ public interface ServerPacketTranscriber {
 
     public fun clearEntities(message: ClearEntities)
 
-    public fun setActiveWorld(message: SetActiveWorld)
+    public fun setActiveWorldV1(message: SetActiveWorldV1)
+
+    public fun setActiveWorldV2(message: SetActiveWorldV2)
 
     public fun updateZoneFullFollows(message: UpdateZoneFullFollows)
 
@@ -397,6 +387,8 @@ public interface ServerPacketTranscriber {
     public fun soundArea(message: SoundArea)
 
     public fun unknownString(message: UnknownString)
+
+    public fun unknownVarShort(message: UnknownVarShort)
 
     public fun objCustomise(message: ObjCustomise)
 

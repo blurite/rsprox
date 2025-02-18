@@ -75,10 +75,15 @@ public class RuneliteLauncher {
             }
             classpath.append(RUNELITE_LAUNCHER_REPO_DIRECTORY.resolve(artifact.name).absolutePathString())
         }
-        val repository = "https://raw.githubusercontent.com/runelite/static.runelite.net"
-        val commit = "dc197f1c305c712fcf496d8a2c3c0d02f3824d18"
-        val bootstrapUrl = "$repository/$commit/bootstrap.json"
-        val bootstrapSigUrl = "$repository/$commit/bootstrap.json.sha256"
+        // Uncomment and change commit when the next revision is about to push
+        // val repository = "https://raw.githubusercontent.com/runelite/static.runelite.net"
+        // val commit = "dc197f1c305c712fcf496d8a2c3c0d02f3824d18"
+        // val bootstrapUrl = "$repository/$commit/bootstrap.json"
+        // val bootstrapSigUrl = "$repository/$commit/bootstrap.json.sha256"
+
+        // Any other time, just rely on the latest bootstrap.
+        val bootstrapUrl = "https://static.runelite.net/bootstrap.json"
+        val bootstrapSigUrl = "https://static.runelite.net/bootstrap.json.sha256"
         return listOf(
             getJava(),
             "-cp",
