@@ -17,7 +17,11 @@ public sealed class IdentifiedChildProperty(
 
     override val type: Class<String> = String::class.java
 
-    override val value: String = formattedValue(NopSettingSet, NopSymbolDictionary)
+    override val value: String
+        get() = formattedValue(NopSettingSet, NopSymbolDictionary)
 
-    public abstract fun formattedValue(settings: SettingSet, dictionary: SymbolDictionary): String
+    public abstract fun formattedValue(
+        settings: SettingSet,
+        dictionary: SymbolDictionary,
+    ): String
 }

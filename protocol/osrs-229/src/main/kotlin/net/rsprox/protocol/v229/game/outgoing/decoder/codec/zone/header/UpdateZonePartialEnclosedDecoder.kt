@@ -6,7 +6,6 @@ import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.model.IncomingZoneProt
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
 import net.rsprox.protocol.session.Session
-import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.payload.*
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.payload.LocAddChangeV2Decoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.payload.LocAnimDecoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.payload.LocDelDecoder
