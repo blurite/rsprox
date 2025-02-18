@@ -99,6 +99,7 @@ import net.rsprox.protocol.game.outgoing.model.specific.PlayerSpotAnimSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV2
 import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV3
 import net.rsprox.protocol.game.outgoing.model.unknown.UnknownString
+import net.rsprox.protocol.game.outgoing.model.unknown.UnknownVarShort
 import net.rsprox.protocol.game.outgoing.model.varp.VarpLarge
 import net.rsprox.protocol.game.outgoing.model.varp.VarpReset
 import net.rsprox.protocol.game.outgoing.model.varp.VarpSmall
@@ -397,6 +398,8 @@ public interface ServerPacketTranscriber {
     public fun soundArea(message: SoundArea)
 
     public fun unknownString(message: UnknownString)
+
+    public fun unknownVarShort(message: UnknownVarShort)
 
     public fun objCustomise(message: ObjCustomise)
 

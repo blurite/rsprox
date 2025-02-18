@@ -186,6 +186,7 @@ public class TranscriberPlugin(
             GameServerProt.RECONNECT -> pass(message, Transcriber::reconnect)
             GameServerProt.HIDEOBJOPS -> pass(message, Transcriber::hideObjOps)
             GameServerProt.UNKNOWN_STRING -> pass(message, Transcriber::unknownString)
+            GameServerProt.UNKNOWN_VAR_SHORT -> pass(message, Transcriber::unknownVarShort)
             GameServerProt.NPC_INFO_SMALL_V4 -> pass(message, Transcriber::npcInfoV5)
             GameServerProt.NPC_INFO_LARGE_V4 -> pass(message, Transcriber::npcInfoV5)
             GameServerProt.OBJ_CUSTOMISE -> pass(message, Transcriber::objCustomise)

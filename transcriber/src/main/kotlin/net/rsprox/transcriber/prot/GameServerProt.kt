@@ -191,6 +191,7 @@ public enum class GameServerProt : Prot {
 
     // Unknown packets
     UNKNOWN_STRING,
+    UNKNOWN_VAR_SHORT,
 
     RECONNECT,
 }
