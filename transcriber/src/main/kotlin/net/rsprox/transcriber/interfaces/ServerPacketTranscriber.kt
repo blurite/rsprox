@@ -62,12 +62,7 @@ import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvStopTransmit
 import net.rsprox.protocol.game.outgoing.model.logout.Logout
 import net.rsprox.protocol.game.outgoing.model.logout.LogoutTransfer
 import net.rsprox.protocol.game.outgoing.model.logout.LogoutWithReason
-import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
-import net.rsprox.protocol.game.outgoing.model.map.RebuildNormal
-import net.rsprox.protocol.game.outgoing.model.map.RebuildRegion
-import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV1
-import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV2
-import net.rsprox.protocol.game.outgoing.model.map.Reconnect
+import net.rsprox.protocol.game.outgoing.model.map.*
 import net.rsprox.protocol.game.outgoing.model.misc.client.*
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettings
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettingsPrivateChat
@@ -251,6 +246,8 @@ public interface ServerPacketTranscriber {
     public fun rebuildWorldEntityV1(message: RebuildWorldEntityV1)
 
     public fun rebuildWorldEntityV2(message: RebuildWorldEntityV2)
+
+    public fun rebuildWorldEntityV3(message: RebuildWorldEntityV3)
 
     public fun hideLocOps(message: HideLocOps)
 

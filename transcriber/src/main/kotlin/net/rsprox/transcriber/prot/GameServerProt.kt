@@ -88,7 +88,9 @@ public enum class GameServerProt : Prot {
     // Map packets
     REBUILD_NORMAL,
     REBUILD_REGION,
-    REBUILD_WORLDENTITY,
+    REBUILD_WORLDENTITY_V3,
+    REBUILD_WORLDENTITY_V2,
+    REBUILD_WORLDENTITY_V1,
 
     // Varp packets
     VARP_SMALL,

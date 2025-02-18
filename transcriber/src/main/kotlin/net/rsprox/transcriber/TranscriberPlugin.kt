@@ -102,7 +102,7 @@ public class TranscriberPlugin(
             GameServerProt.WORLDENTITY_INFO_V1 -> pass(message, Transcriber::worldEntityInfoV1)
             GameServerProt.REBUILD_NORMAL -> pass(message, Transcriber::rebuildNormal)
             GameServerProt.REBUILD_REGION -> pass(message, Transcriber::rebuildRegion)
-            GameServerProt.REBUILD_WORLDENTITY -> {
+            GameServerProt.REBUILD_WORLDENTITY_V1 -> {
                 if (revision >= 225) {
                     pass(message, Transcriber::rebuildWorldEntityV2)
                 } else {
