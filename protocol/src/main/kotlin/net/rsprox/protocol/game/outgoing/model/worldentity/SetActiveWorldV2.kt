@@ -9,14 +9,14 @@ import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
  * Packets such as zone updates, player info, NPC info are a few examples of what may be sent afterwards.
  * @property worldType the world type to update next.
  */
-public class SetActiveWorld(
+public class SetActiveWorldV2(
     public val worldType: WorldType,
 ) : IncomingServerGameMessage {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as SetActiveWorld
+        other as SetActiveWorldV2
 
         return worldType == other.worldType
     }
@@ -26,7 +26,7 @@ public class SetActiveWorld(
     }
 
     override fun toString(): String {
-        return "SetActiveWorld(worldType=$worldType)"
+        return "SetActiveWorldV2(worldType=$worldType)"
     }
 
     /**
@@ -61,13 +61,9 @@ public class SetActiveWorld(
             return _activeLevel == other._activeLevel
         }
 
-        override fun hashCode(): Int {
-            return _activeLevel.hashCode()
-        }
+        override fun hashCode(): Int = _activeLevel.hashCode()
 
-        override fun toString(): String {
-            return "RootWorldType(activeLevel=$activeLevel)"
-        }
+        override fun toString(): String = "RootWorldType(activeLevel=$activeLevel)"
     }
 
     /**
@@ -120,11 +116,10 @@ public class SetActiveWorld(
             return result
         }
 
-        override fun toString(): String {
-            return "DynamicWorldType(" +
+        override fun toString(): String =
+            "DynamicWorldType(" +
                 "index=$index, " +
                 "activeLevel=$activeLevel" +
                 ")"
-        }
     }
 }

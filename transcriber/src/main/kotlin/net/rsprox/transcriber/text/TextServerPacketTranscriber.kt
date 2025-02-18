@@ -126,7 +126,8 @@ import net.rsprox.protocol.game.outgoing.model.varp.VarpReset
 import net.rsprox.protocol.game.outgoing.model.varp.VarpSmall
 import net.rsprox.protocol.game.outgoing.model.varp.VarpSync
 import net.rsprox.protocol.game.outgoing.model.worldentity.ClearEntities
-import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorld
+import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorldV1
+import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorldV2
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZoneFullFollows
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialFollows
@@ -2401,14 +2402,28 @@ public class TextServerPacketTranscriber(
         if (!filters[PropertyFilter.CLEAR_ENTITIES]) return omit()
     }
 
-    override fun setActiveWorld(message: SetActiveWorld) {
+    override fun setActiveWorldV1(message: SetActiveWorldV1) {
         if (!filters[PropertyFilter.SET_ACTIVE_WORLD]) return omit()
         when (val type = message.worldType) {
-            is SetActiveWorld.DynamicWorldType -> {
+            is SetActiveWorldV1.DynamicWorldType -> {
                 root.worldentity(type.index)
                 root.int("level", type.activeLevel)
             }
-            is SetActiveWorld.RootWorldType -> {
+            is SetActiveWorldV1.RootWorldType -> {
+                root.worldentity(-1)
+                root.int("level", type.activeLevel)
+            }
+        }
+    }
+
+    override fun setActiveWorldV2(message: SetActiveWorldV2) {
+        if (!filters[PropertyFilter.SET_ACTIVE_WORLD]) return omit()
+        when (val type = message.worldType) {
+            is SetActiveWorldV2.DynamicWorldType -> {
+                root.worldentity(type.index)
+                root.int("level", type.activeLevel)
+            }
+            is SetActiveWorldV2.RootWorldType -> {
                 root.worldentity(-1)
                 root.int("level", type.activeLevel)
             }

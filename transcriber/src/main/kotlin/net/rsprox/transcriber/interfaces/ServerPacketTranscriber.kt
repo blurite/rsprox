@@ -104,7 +104,8 @@ import net.rsprox.protocol.game.outgoing.model.varp.VarpReset
 import net.rsprox.protocol.game.outgoing.model.varp.VarpSmall
 import net.rsprox.protocol.game.outgoing.model.varp.VarpSync
 import net.rsprox.protocol.game.outgoing.model.worldentity.ClearEntities
-import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorld
+import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorldV1
+import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorldV2
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZoneFullFollows
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialFollows
@@ -361,7 +362,9 @@ public interface ServerPacketTranscriber {
 
     public fun clearEntities(message: ClearEntities)
 
-    public fun setActiveWorld(message: SetActiveWorld)
+    public fun setActiveWorldV1(message: SetActiveWorldV1)
+
+    public fun setActiveWorldV2(message: SetActiveWorldV2)
 
     public fun updateZoneFullFollows(message: UpdateZoneFullFollows)
 

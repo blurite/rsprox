@@ -95,20 +95,17 @@ public class TranscriberPlugin(
             GameServerProt.NPC_INFO_LARGE_V5 -> pass(message, Transcriber::npcInfoV5)
             GameServerProt.SET_NPC_UPDATE_ORIGIN -> pass(message, Transcriber::setNpcUpdateOrigin)
             GameServerProt.CLEAR_ENTITIES -> pass(message, Transcriber::clearEntities)
-            GameServerProt.SET_ACTIVE_WORLD -> pass(message, Transcriber::setActiveWorld)
+            GameServerProt.SET_ACTIVE_WORLD_V1 -> pass(message, Transcriber::setActiveWorldV1)
+            GameServerProt.SET_ACTIVE_WORLD_V2 -> pass(message, Transcriber::setActiveWorldV2)
             GameServerProt.WORLDENTITY_INFO_V4 -> pass(message, Transcriber::worldEntityInfoV4)
             GameServerProt.WORLDENTITY_INFO_V3 -> pass(message, Transcriber::worldEntityInfoV3)
             GameServerProt.WORLDENTITY_INFO_V2 -> pass(message, Transcriber::worldEntityInfoV2)
             GameServerProt.WORLDENTITY_INFO_V1 -> pass(message, Transcriber::worldEntityInfoV1)
             GameServerProt.REBUILD_NORMAL -> pass(message, Transcriber::rebuildNormal)
             GameServerProt.REBUILD_REGION -> pass(message, Transcriber::rebuildRegion)
-            GameServerProt.REBUILD_WORLDENTITY_V1 -> {
-                if (revision >= 225) {
-                    pass(message, Transcriber::rebuildWorldEntityV2)
-                } else {
-                    pass(message, Transcriber::rebuildWorldEntityV1)
-                }
-            }
+            GameServerProt.REBUILD_WORLDENTITY_V1 -> pass(message, Transcriber::rebuildWorldEntityV1)
+            GameServerProt.REBUILD_WORLDENTITY_V2 -> pass(message, Transcriber::rebuildWorldEntityV2)
+            GameServerProt.REBUILD_WORLDENTITY_V3 -> pass(message, Transcriber::rebuildWorldEntityV3)
             GameServerProt.VARP_SMALL -> pass(message, Transcriber::varpSmall)
             GameServerProt.VARP_LARGE -> pass(message, Transcriber::varpLarge)
             GameServerProt.VARP_RESET -> pass(message, Transcriber::varpReset)

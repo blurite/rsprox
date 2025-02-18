@@ -202,7 +202,8 @@ import net.rsprox.protocol.game.outgoing.model.varp.VarpReset
 import net.rsprox.protocol.game.outgoing.model.varp.VarpSmall
 import net.rsprox.protocol.game.outgoing.model.varp.VarpSync
 import net.rsprox.protocol.game.outgoing.model.worldentity.ClearEntities
-import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorld
+import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorldV1
+import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorldV2
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZoneFullFollows
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialFollows
@@ -1072,7 +1073,10 @@ public class IndexerTranscriber(
     override fun clearEntities(message: ClearEntities) {
     }
 
-    override fun setActiveWorld(message: SetActiveWorld) {
+    override fun setActiveWorldV1(message: SetActiveWorldV1) {
+    }
+
+    override fun setActiveWorldV2(message: SetActiveWorldV2) {
     }
 
     override fun updateZoneFullFollows(message: UpdateZoneFullFollows) {

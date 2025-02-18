@@ -4,28 +4,27 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.metadata.Consistent
 import net.rsprox.protocol.ProxyMessageDecoder
-import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorldV1
+import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorldV2
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.session.getWorld
 import net.rsprox.protocol.v229.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-internal class SetActiveWorldV1Decoder : ProxyMessageDecoder<SetActiveWorldV1> {
-    override val prot: ClientProt = GameServerProt.SET_ACTIVE_WORLD_V1
+internal class SetActiveWorldV2Decoder : ProxyMessageDecoder<SetActiveWorldV2> {
+    override val prot: ClientProt = GameServerProt.SET_ACTIVE_WORLD_V2
 
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
-    ): SetActiveWorldV1 {
-        val type = buffer.g1()
-        val index = buffer.g2()
+    ): SetActiveWorldV2 {
+        val index = buffer.g2s()
         val activeLevel = buffer.g1()
-        val world = session.getWorld(if (type == 0) -1 else index)
+        val world = session.getWorld(index)
         world.level = activeLevel
-        return if (type == 0) {
-            SetActiveWorldV1(SetActiveWorldV1.RootWorldType(activeLevel))
+        return if (index == -1) {
+            SetActiveWorldV2(SetActiveWorldV2.RootWorldType(activeLevel))
         } else {
-            SetActiveWorldV1(SetActiveWorldV1.DynamicWorldType(index, activeLevel))
+            SetActiveWorldV2(SetActiveWorldV2.DynamicWorldType(index, activeLevel))
         }
     }
 }

@@ -83,7 +83,7 @@ public enum class GameServerProt(
 
     // World entity packets
     CLEAR_ENTITIES(GameServerProtId.CLEAR_ENTITIES, 0),
-    SET_ACTIVE_WORLD(GameServerProtId.SET_ACTIVE_WORLD, 4),
+    SET_ACTIVE_WORLD_V1(GameServerProtId.SET_ACTIVE_WORLD_V1, 4),
 
     @Deprecated(
         "Deprecated as a new variant that supports defining center coord was introduced.",

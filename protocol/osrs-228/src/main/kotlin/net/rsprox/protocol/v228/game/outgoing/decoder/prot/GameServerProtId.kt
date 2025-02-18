@@ -90,7 +90,7 @@ internal object GameServerProtId {
     const val SERVER_TICK_END = 86
     const val IF_OPENSUB = 87
     const val VARP_SYNC = 88
-    const val SET_ACTIVE_WORLD = 89
+    const val SET_ACTIVE_WORLD_V1 = 89
     const val SOUND_AREA = 90
     const val RESET_ANIMS = 91
     const val MESSAGE_CLANCHANNEL_SYSTEM = 92
