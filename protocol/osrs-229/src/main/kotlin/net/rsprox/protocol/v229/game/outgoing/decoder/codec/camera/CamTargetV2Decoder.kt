@@ -10,7 +10,7 @@ import net.rsprox.protocol.v229.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
 internal class CamTargetV2Decoder : ProxyMessageDecoder<CamTargetV2> {
-    override val prot: ClientProt = GameServerProt.CAM_TARGET_V2
+    override val prot: ClientProt = GameServerProt.CAM_TARGET_V3
 
     override fun decode(
         buffer: JagByteBuf,

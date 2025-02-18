@@ -7,7 +7,6 @@ import net.rsprox.protocol.game.outgoing.model.IncomingZoneProt
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.payload.*
-import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.payload.LocAddChangeV1Decoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.payload.LocAddChangeV2Decoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.payload.LocAnimDecoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.payload.LocDelDecoder
@@ -56,7 +55,6 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
         OBJ_ENABLED_OPS(ObjEnabledOpsDecoder()),
         OBJ_ADD(ObjAddDecoder()),
         LOC_DEL(LocDelDecoder()),
-        LOC_ADD_CHANGE_V1(LocAddChangeV1Decoder()),
         OBJ_UNCUSTOMISE(ObjUncustomiseDecoder()),
         LOC_ADD_CHANGE_V2(LocAddChangeV2Decoder()),
         LOC_MERGE(LocMergeDecoder()),

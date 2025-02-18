@@ -35,7 +35,6 @@ import net.rsprox.protocol.v229.game.outgoing.decoder.codec.info.NpcInfoLargeV5D
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.info.NpcInfoSmallV5Decoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.info.PlayerInfoDecoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.info.SetNpcUpdateOriginDecoder
-import net.rsprox.protocol.v229.game.outgoing.decoder.codec.info.WorldEntityInfoV3Decoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.interfaces.IfClearInvDecoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.interfaces.IfCloseSubDecoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.interfaces.IfMoveSubDecoder
@@ -130,7 +129,6 @@ import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.header.UpdateZo
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.header.UpdateZonePartialEnclosedDecoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.header.UpdateZonePartialFollowsDecoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.payload.*
-import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.payload.LocAddChangeV1Decoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.payload.LocAnimDecoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.payload.LocDelDecoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.payload.LocMergeDecoder
@@ -187,7 +185,6 @@ internal object ServerMessageDecoderRepository {
                 bind(NpcInfoSmallV5Decoder())
                 bind(NpcInfoLargeV5Decoder())
                 bind(SetNpcUpdateOriginDecoder())
-                bind(WorldEntityInfoV3Decoder())
                 bind(WorldEntityInfoV4Decoder())
 
                 bind(IfClearInvDecoder())
@@ -295,7 +292,6 @@ internal object ServerMessageDecoderRepository {
                 bind(UpdateZoneFullFollowsDecoder())
                 bind(UpdateZonePartialFollowsDecoder())
 
-                bind(LocAddChangeV1Decoder())
                 bind(LocAddChangeV2Decoder())
                 bind(LocAnimDecoder())
                 bind(LocDelDecoder())
