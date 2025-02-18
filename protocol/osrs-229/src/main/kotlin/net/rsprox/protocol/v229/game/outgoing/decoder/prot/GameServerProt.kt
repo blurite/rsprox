@@ -49,7 +49,6 @@ public enum class GameServerProt(
     UPDATE_ZONE_PARTIAL_ENCLOSED(GameServerProtId.UPDATE_ZONE_PARTIAL_ENCLOSED, Prot.VAR_SHORT),
 
     // Zone payload packets
-    LOC_ADD_CHANGE_V1(GameServerProtId.LOC_ADD_CHANGE_V1, 5),
     LOC_ADD_CHANGE_V2(GameServerProtId.LOC_ADD_CHANGE_V2, -2),
     LOC_DEL(GameServerProtId.LOC_DEL, 2),
     LOC_ANIM(GameServerProtId.LOC_ANIM, 4),
@@ -83,13 +82,9 @@ public enum class GameServerProt(
 
     // World entity packets
     CLEAR_ENTITIES(GameServerProtId.CLEAR_ENTITIES, 0),
-    SET_ACTIVE_WORLD(GameServerProtId.SET_ACTIVE_WORLD, 4),
+    SET_ACTIVE_WORLD_V1(GameServerProtId.SET_ACTIVE_WORLD_V1, 4),
+    SET_ACTIVE_WORLD_V2(GameServerProtId.SET_ACTIVE_WORLD_V2, 3),
 
-    @Deprecated(
-        "Deprecated as a new variant that supports defining center coord was introduced.",
-        replaceWith = ReplaceWith("WORLDENTITY_INFO_V4"),
-    )
-    WORLDENTITY_INFO_V3(GameServerProtId.WORLDENTITY_INFO_V3, Prot.VAR_SHORT),
     WORLDENTITY_INFO_V4(GameServerProtId.WORLDENTITY_INFO_V4, Prot.VAR_SHORT),
 
     // Map packets
@@ -115,7 +110,7 @@ public enum class GameServerProt(
     CAM_ROTATEBY(GameServerProtId.CAM_ROTATEBY, 7),
     CAM_ROTATETO(GameServerProtId.CAM_ROTATETO, 7),
     CAM_MODE(GameServerProtId.CAM_MODE, 1),
-    CAM_TARGET_V2(GameServerProtId.CAM_TARGET_V2, 5),
+    CAM_TARGET_V3(GameServerProtId.CAM_TARGET_V3, 5),
     OCULUS_SYNC(GameServerProtId.OCULUS_SYNC, 4),
 
     // Inventory packets
