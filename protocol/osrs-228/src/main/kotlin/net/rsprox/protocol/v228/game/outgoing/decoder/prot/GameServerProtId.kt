@@ -22,7 +22,7 @@ internal object GameServerProtId {
     const val IF_OPENTOP = 18
     const val OBJ_ADD = 19
     const val OBJ_DEL = 20
-    const val REBUILD_WORLDENTITY = 21
+    const val REBUILD_WORLDENTITY_V2 = 21
     const val LOGOUT_WITHREASON = 22
     const val OCULUS_SYNC = 23
     const val IF_RESYNC = 24

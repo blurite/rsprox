@@ -25,7 +25,7 @@ internal object GameServerProtId {
     const val IF_SETNPCHEAD_ACTIVE = 21
     const val REBUILD_NORMAL = 22
     const val SERVER_TICK_END = 23
-    const val REBUILD_WORLDENTITY = 24
+    const val REBUILD_WORLDENTITY_V2 = 24
     const val UPDATE_RUNENERGY = 25
     const val VARCLAN_ENABLE = 26
     const val IF_SETNPCHEAD = 27

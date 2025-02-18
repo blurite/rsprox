@@ -125,7 +125,7 @@ public enum class GameServerProt(
     // Map packets
     REBUILD_NORMAL(GameServerProtId.REBUILD_NORMAL, Prot.VAR_SHORT),
     REBUILD_REGION(GameServerProtId.REBUILD_REGION, Prot.VAR_SHORT),
-    REBUILD_WORLDENTITY(GameServerProtId.REBUILD_WORLDENTITY, Prot.VAR_SHORT),
+    REBUILD_WORLDENTITY_V2(GameServerProtId.REBUILD_WORLDENTITY_V2, Prot.VAR_SHORT),
 
     // Varp packets
     VARP_SMALL(GameServerProtId.VARP_SMALL, 3),

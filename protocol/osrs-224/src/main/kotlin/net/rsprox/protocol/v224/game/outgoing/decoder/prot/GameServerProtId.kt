@@ -129,7 +129,7 @@ internal object GameServerProtId {
     const val SYNTH_SOUND = 125
     const val LOGOUT = 126
     const val WORLDENTITY_INFO_V1 = 127
-    const val REBUILD_WORLDENTITY = 128
+    const val REBUILD_WORLDENTITY_V1 = 128
     const val HIDEOBJOPS = 129
     const val UNKNOWN_STRING = 130
     const val HIDENPCOPS = 131

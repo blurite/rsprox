@@ -131,7 +131,7 @@ internal object GameServerProtId {
     const val MESSAGE_PRIVATE = 127
     const val RESET_INTERACTION_MODE = 128
     const val SET_NPC_UPDATE_ORIGIN = 129
-    const val REBUILD_WORLDENTITY = 130
+    const val REBUILD_WORLDENTITY_V2 = 130
     const val SET_ACTIVE_WORLD = 131
     const val CLEAR_ENTITIES = 132
     const val HIDEOBJOPS = 133

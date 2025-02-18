@@ -1,4 +1,4 @@
-package net.rsprox.protocol.v227.game.outgoing.decoder.codec.map
+package net.rsprox.protocol.v226.game.outgoing.decoder.codec.map
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.buffer.bitbuffer.toBitBuf
@@ -11,11 +11,11 @@ import net.rsprox.protocol.game.outgoing.model.map.util.BuildArea
 import net.rsprox.protocol.game.outgoing.model.map.util.RebuildRegionZone
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.session.getWorld
-import net.rsprox.protocol.v227.game.outgoing.decoder.prot.GameServerProt
+import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-internal class RebuildWorldEntityDecoder : ProxyMessageDecoder<RebuildWorldEntityV2> {
-    override val prot: ClientProt = GameServerProt.REBUILD_WORLDENTITY
+internal class RebuildWorldEntityV2Decoder : ProxyMessageDecoder<RebuildWorldEntityV2> {
+    override val prot: ClientProt = GameServerProt.REBUILD_WORLDENTITY_V2
 
     override fun decode(
         buffer: JagByteBuf,

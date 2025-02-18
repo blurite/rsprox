@@ -132,7 +132,7 @@ internal object GameServerProtId {
     const val CLEAR_ENTITIES = 128
     const val SET_ACTIVE_WORLD = 129
     const val HIDEOBJOPS = 130
-    const val REBUILD_WORLDENTITY = 131
+    const val REBUILD_WORLDENTITY_V2 = 131
     const val HIDENPCOPS = 132
     const val HIDELOCOPS = 133
     const val WORLDENTITY_INFO_V2 = 134
