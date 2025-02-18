@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package net.rsprox.protocol.v228.game.outgoing.decoder.codec.info
 
 import net.rsprot.buffer.JagByteBuf
