@@ -111,6 +111,7 @@ public enum class GameServerProt : Prot {
     CAM_ROTATEBY,
     CAM_ROTATETO,
     CAM_MODE,
+    CAM_TARGET_V3,
     CAM_TARGET_V2,
     CAM_TARGET_V1,
     OCULUS_SYNC,

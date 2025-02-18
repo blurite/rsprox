@@ -16,7 +16,7 @@ import net.rsprox.protocol.v229.game.outgoing.decoder.codec.camera.CamRotateBy
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.camera.CamRotateToDecoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.camera.CamShakeDecoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.camera.CamSmoothResetDecoder
-import net.rsprox.protocol.v229.game.outgoing.decoder.codec.camera.CamTargetV2Decoder
+import net.rsprox.protocol.v229.game.outgoing.decoder.codec.camera.CamTargetV3Decoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.camera.OculusSyncDecoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.clan.ClanChannelDeltaDecoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.clan.ClanChannelFullDecoder
@@ -166,7 +166,7 @@ internal object ServerMessageDecoderRepository {
                 bind(CamResetDecoder())
                 bind(CamShakeDecoder())
                 bind(CamSmoothResetDecoder())
-                bind(CamTargetV2Decoder())
+                bind(CamTargetV3Decoder())
                 bind(OculusSyncDecoder())
 
                 bind(ClanChannelDeltaDecoder())

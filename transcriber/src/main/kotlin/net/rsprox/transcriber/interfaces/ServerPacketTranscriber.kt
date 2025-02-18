@@ -1,19 +1,6 @@
 package net.rsprox.transcriber.interfaces
 
-import net.rsprox.protocol.game.outgoing.model.camera.CamLookAt
-import net.rsprox.protocol.game.outgoing.model.camera.CamLookAtEasedCoord
-import net.rsprox.protocol.game.outgoing.model.camera.CamMode
-import net.rsprox.protocol.game.outgoing.model.camera.CamMoveTo
-import net.rsprox.protocol.game.outgoing.model.camera.CamMoveToArc
-import net.rsprox.protocol.game.outgoing.model.camera.CamMoveToCycles
-import net.rsprox.protocol.game.outgoing.model.camera.CamReset
-import net.rsprox.protocol.game.outgoing.model.camera.CamRotateBy
-import net.rsprox.protocol.game.outgoing.model.camera.CamRotateTo
-import net.rsprox.protocol.game.outgoing.model.camera.CamShake
-import net.rsprox.protocol.game.outgoing.model.camera.CamSmoothReset
-import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV1
-import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV2
-import net.rsprox.protocol.game.outgoing.model.camera.OculusSync
+import net.rsprox.protocol.game.outgoing.model.camera.*
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelDelta
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelFull
 import net.rsprox.protocol.game.outgoing.model.clan.ClanSettingsDelta
@@ -134,6 +121,8 @@ public interface ServerPacketTranscriber {
     public fun camShake(message: CamShake)
 
     public fun camSmoothReset(message: CamSmoothReset)
+
+    public fun camTargetV3(message: CamTargetV3)
 
     public fun camTargetV2(message: CamTargetV2)
 

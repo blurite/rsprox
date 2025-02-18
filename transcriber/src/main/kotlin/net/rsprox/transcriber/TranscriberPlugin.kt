@@ -121,6 +121,7 @@ public class TranscriberPlugin(
             GameServerProt.CAM_ROTATEBY -> pass(message, Transcriber::camRotateBy)
             GameServerProt.CAM_ROTATETO -> pass(message, Transcriber::camRotateTo)
             GameServerProt.CAM_MODE -> pass(message, Transcriber::camMode)
+            GameServerProt.CAM_TARGET_V3 -> pass(message, Transcriber::camTargetV3)
             GameServerProt.CAM_TARGET_V2 -> pass(message, Transcriber::camTargetV2)
             GameServerProt.CAM_TARGET_V1 -> pass(message, Transcriber::camTargetV1)
             GameServerProt.OCULUS_SYNC -> pass(message, Transcriber::oculusSync)

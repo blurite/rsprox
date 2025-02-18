@@ -71,20 +71,7 @@ import net.rsprox.protocol.game.incoming.model.social.FriendListAdd
 import net.rsprox.protocol.game.incoming.model.social.FriendListDel
 import net.rsprox.protocol.game.incoming.model.social.IgnoreListAdd
 import net.rsprox.protocol.game.incoming.model.social.IgnoreListDel
-import net.rsprox.protocol.game.outgoing.model.camera.CamLookAt
-import net.rsprox.protocol.game.outgoing.model.camera.CamLookAtEasedCoord
-import net.rsprox.protocol.game.outgoing.model.camera.CamMode
-import net.rsprox.protocol.game.outgoing.model.camera.CamMoveTo
-import net.rsprox.protocol.game.outgoing.model.camera.CamMoveToArc
-import net.rsprox.protocol.game.outgoing.model.camera.CamMoveToCycles
-import net.rsprox.protocol.game.outgoing.model.camera.CamReset
-import net.rsprox.protocol.game.outgoing.model.camera.CamRotateBy
-import net.rsprox.protocol.game.outgoing.model.camera.CamRotateTo
-import net.rsprox.protocol.game.outgoing.model.camera.CamShake
-import net.rsprox.protocol.game.outgoing.model.camera.CamSmoothReset
-import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV1
-import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV2
-import net.rsprox.protocol.game.outgoing.model.camera.OculusSync
+import net.rsprox.protocol.game.outgoing.model.camera.*
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelDelta
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelFull
 import net.rsprox.protocol.game.outgoing.model.clan.ClanSettingsDelta
@@ -502,6 +489,9 @@ public class IndexerTranscriber(
     }
 
     override fun camSmoothReset(message: CamSmoothReset) {
+    }
+
+    override fun camTargetV3(message: CamTargetV3) {
     }
 
     override fun camTargetV2(message: CamTargetV2) {

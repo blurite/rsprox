@@ -5,20 +5,7 @@ import net.rsprox.cache.api.Cache
 import net.rsprox.cache.api.type.VarBitType
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.outgoing.model.IncomingZoneProt
-import net.rsprox.protocol.game.outgoing.model.camera.CamLookAt
-import net.rsprox.protocol.game.outgoing.model.camera.CamLookAtEasedCoord
-import net.rsprox.protocol.game.outgoing.model.camera.CamMode
-import net.rsprox.protocol.game.outgoing.model.camera.CamMoveTo
-import net.rsprox.protocol.game.outgoing.model.camera.CamMoveToArc
-import net.rsprox.protocol.game.outgoing.model.camera.CamMoveToCycles
-import net.rsprox.protocol.game.outgoing.model.camera.CamReset
-import net.rsprox.protocol.game.outgoing.model.camera.CamRotateBy
-import net.rsprox.protocol.game.outgoing.model.camera.CamRotateTo
-import net.rsprox.protocol.game.outgoing.model.camera.CamShake
-import net.rsprox.protocol.game.outgoing.model.camera.CamSmoothReset
-import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV1
-import net.rsprox.protocol.game.outgoing.model.camera.CamTargetV2
-import net.rsprox.protocol.game.outgoing.model.camera.OculusSync
+import net.rsprox.protocol.game.outgoing.model.camera.*
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelDelta
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelFull
 import net.rsprox.protocol.game.outgoing.model.clan.ClanSettingsDelta
@@ -432,6 +419,24 @@ public class TextServerPacketTranscriber(
         root.int("moveproportionalspeed", message.cameraMoveProportionalSpeed)
         root.int("lookconstantspeed", message.cameraLookConstantSpeed)
         root.int("lookproportionalspeed", message.cameraLookProportionalSpeed)
+    }
+
+    override fun camTargetV3(message: CamTargetV3) {
+        if (!filters[PropertyFilter.CAM_TARGET]) return omit()
+        when (val type = message.type) {
+            is CamTargetV3.NpcCamTarget -> {
+                root.worldentity(type.worldEntityIndex)
+                root.npc(type.targetIndex)
+            }
+            is CamTargetV3.PlayerCamTarget -> {
+                root.worldentity(type.worldEntityIndex)
+                root.player(type.targetIndex)
+            }
+            is CamTargetV3.WorldEntityTarget -> {
+                root.worldentity(type.worldEntityIndex)
+                root.worldentity(type.targetIndex)
+            }
+        }
     }
 
     override fun camTargetV2(message: CamTargetV2) {
