@@ -56,11 +56,11 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
         OBJ_ADD(ObjAddDecoder()),
         OBJ_COUNT(ObjCountDecoder()),
         MAP_ANIM(MapAnimDecoder()),
-        OBJ_DEL(ObjDelDecoder()),
+        OBJ_UNCUSTOMISE(ObjUncustomiseDecoder()),
         LOC_ANIM(LocAnimDecoder()),
         OBJ_ENABLED_OPS(ObjEnabledOpsDecoder()),
         LOC_MERGE(LocMergeDecoder()),
-        OBJ_UNCUSTOMISE(ObjUncustomiseDecoder()),
+        OBJ_DEL(ObjDelDecoder()),
         OBJ_CUSTOMISE(ObjCustomiseDecoder()),
         MAP_PROJANIM(MapProjAnimDecoder()),
     }

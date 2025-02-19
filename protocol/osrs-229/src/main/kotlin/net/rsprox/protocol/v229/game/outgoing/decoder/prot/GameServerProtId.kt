@@ -102,7 +102,7 @@ internal object GameServerProtId {
     const val CAM_MOVETO = 98
     const val OBJ_COUNT = 99
     const val MAP_ANIM_SPECIFIC = 100
-    const val OBJ_UNCUSTOMISE = 101
+    const val OBJ_DEL = 101
     const val LOGOUT_WITHREASON = 102
     const val REBUILD_NORMAL = 103
     const val IF_SETCOLOUR = 104
@@ -136,6 +136,6 @@ internal object GameServerProtId {
     const val RESET_INTERACTION_MODE = 132
     const val OBJ_CUSTOMISE = 133
     const val UNKNOWN_VAR_SHORT = 134
-    const val OBJ_DEL = 135
+    const val OBJ_UNCUSTOMISE = 135
     const val SET_INTERACTION_MODE = 136
 }
