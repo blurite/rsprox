@@ -547,6 +547,7 @@ public fun Property.unidentifiedPlayer(
 
 public fun Property.identifiedWorldEntity(
     index: Int,
+    id: Int,
     level: Int,
     x: Int,
     z: Int,
@@ -560,6 +561,7 @@ public fun Property.identifiedWorldEntity(
         IdentifiedWorldEntityProperty(
             propertyName,
             index,
+            id,
             level,
             x,
             z,

@@ -16,7 +16,11 @@ public class WorldEntityInfoClient {
         version: Int,
     ): WorldEntityInfo {
         updates.clear()
-        if (version >= 3) {
+        if (version >= 5) {
+            // High resolution remains unchanged here, but low resolution does change
+            decodeHighResolutionV2(buffer)
+            decodeLowResolutionV3(buffer, baseCoord)
+        } else if (version >= 3) {
             decodeHighResolutionV2(buffer)
             decodeLowResolutionV2(buffer, baseCoord, version)
         } else {
@@ -28,6 +32,7 @@ public class WorldEntityInfoClient {
             2 -> WorldEntityInfoV2(updates.toMap())
             3 -> WorldEntityInfoV3(updates.toMap())
             4 -> WorldEntityInfoV4(updates.toMap())
+            5 -> WorldEntityInfoV5(updates.toMap())
             else -> error("Invalid version: $version")
         }
     }
@@ -226,6 +231,56 @@ public class WorldEntityInfoClient {
         }
     }
 
+    private fun decodeLowResolutionV3(
+        buffer: JagByteBuf,
+        baseCoord: CoordGrid,
+    ) {
+        while (buffer.isReadable(10)) {
+            val index = buffer.g2()
+            this.transmittedWorldEntity[this.transmittedWorldEntityCount++] = index
+            val sizeX = buffer.g1()
+            val sizeZ = buffer.g1()
+            val id = buffer.g2()
+            var coordFine = CoordFine(0, 0, 0)
+            var angle = 0
+            val bitpackedAngledCoordFineOpcodes = buffer.g1s()
+            if (bitpackedAngledCoordFineOpcodes != 0) {
+                val deltaX = decodeAngledCoordFineComponent(buffer, bitpackedAngledCoordFineOpcodes, 0)
+                val deltaY = decodeAngledCoordFineComponent(buffer, bitpackedAngledCoordFineOpcodes, 2)
+                val deltaZ = decodeAngledCoordFineComponent(buffer, bitpackedAngledCoordFineOpcodes, 4)
+                angle = decodeAngledCoordFineComponent(buffer, bitpackedAngledCoordFineOpcodes, 6)
+                coordFine = CoordFine(coordFine.x + deltaX, coordFine.y + deltaY, coordFine.z + deltaZ)
+            }
+            coordFine =
+                CoordFine(
+                    (baseCoord.x shl 7) + coordFine.x,
+                    coordFine.y,
+                    (baseCoord.z shl 7) + coordFine.z,
+                )
+            val priority = buffer.g1()
+            val worldEntity =
+                WorldEntityV3(
+                    index,
+                    id,
+                    sizeX,
+                    sizeZ,
+                    priority,
+                    coordFine,
+                    angle,
+                )
+            this.worldEntity[index] = worldEntity
+            this.updates[index] =
+                WorldEntityUpdateType.LowResolutionToHighResolutionV3(
+                    id,
+                    sizeX,
+                    sizeZ,
+                    priority,
+                    angle,
+                    coordFine,
+                )
+        }
+    }
+
     @Suppress("unused")
     private class WorldEntityV1(
         val index: Int,
@@ -247,5 +302,16 @@ public class WorldEntityInfoClient {
         val level: Int,
         val centerFineOffsetX: Int?,
         val centerFineOffsetZ: Int?,
+    )
+
+    @Suppress("unused")
+    private class WorldEntityV3(
+        val index: Int,
+        val id: Int,
+        val sizeX: Int,
+        val sizeZ: Int,
+        val priority: Int,
+        var coordFine: CoordFine,
+        var angle: Int,
     )
 }

@@ -15,10 +15,7 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChanne
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV2
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelSingleUser
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
-import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV1
-import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV2
-import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV3
-import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV4
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.*
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfMoveSub
@@ -86,7 +83,6 @@ import net.rsprox.protocol.game.outgoing.model.specific.PlayerSpotAnimSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV2
 import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV3
 import net.rsprox.protocol.game.outgoing.model.unknown.UnknownString
-import net.rsprox.protocol.game.outgoing.model.unknown.UnknownVarShort
 import net.rsprox.protocol.game.outgoing.model.varp.VarpLarge
 import net.rsprox.protocol.game.outgoing.model.varp.VarpReset
 import net.rsprox.protocol.game.outgoing.model.varp.VarpSmall
@@ -165,6 +161,8 @@ public interface ServerPacketTranscriber {
     public fun worldEntityInfoV3(message: WorldEntityInfoV3)
 
     public fun worldEntityInfoV4(message: WorldEntityInfoV4)
+
+    public fun worldEntityInfoV5(message: WorldEntityInfoV5)
 
     public fun ifClearInv(message: IfClearInv)
 
@@ -387,8 +385,6 @@ public interface ServerPacketTranscriber {
     public fun soundArea(message: SoundArea)
 
     public fun unknownString(message: UnknownString)
-
-    public fun unknownVarShort(message: UnknownVarShort)
 
     public fun objCustomise(message: ObjCustomise)
 

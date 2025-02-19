@@ -8,7 +8,7 @@ import net.rsprox.shared.settings.SettingSet
 import net.rsprox.shared.settings.SettingSetStore
 
 public class World(
-    public val id: Int,
+    public val index: Int,
     private val settingSetStore: SettingSetStore,
 ) {
     private var buildAreaSouthWestCoord: CoordGrid = CoordGrid.INVALID
@@ -17,6 +17,8 @@ public class World(
     public var sizeZ: Int = 2048
     public var angle: Int = 0
     public var level: Int = 0
+    public var id: Int = -1
+    public var priority: Int = -1
     public var centerFineOffsetX: Int? = null
     public var centerFineOffsetZ: Int? = null
     public var coordFine: CoordFine = CoordFine.INVALID
@@ -115,7 +117,7 @@ public class World(
     }
 
     public fun getNpc(index: Int): Npc {
-        return npcs[index] ?: error("Npc $index does not exist in world $id")
+        return npcs[index] ?: error("Npc $index does not exist in world ${this.index}")
     }
 
     public fun getNpcOrNull(index: Int): Npc? {

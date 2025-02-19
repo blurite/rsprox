@@ -85,6 +85,7 @@ public enum class GameServerProt(
     SET_ACTIVE_WORLD_V1(GameServerProtId.SET_ACTIVE_WORLD_V1, 4),
     SET_ACTIVE_WORLD_V2(GameServerProtId.SET_ACTIVE_WORLD_V2, 3),
 
+    WORLDENTITY_INFO_V5(GameServerProtId.WORLDENTITY_INFO_V5, Prot.VAR_SHORT),
     WORLDENTITY_INFO_V4(GameServerProtId.WORLDENTITY_INFO_V4, Prot.VAR_SHORT),
 
     // Map packets
@@ -186,7 +187,6 @@ public enum class GameServerProt(
 
     // Unknown packets
     UNKNOWN_STRING(GameServerProtId.UNKNOWN_STRING, Prot.VAR_BYTE),
-    UNKNOWN_VAR_SHORT(GameServerProtId.UNKNOWN_VAR_SHORT, Prot.VAR_SHORT),
 
     PACKET_GROUP_END(0xFE, 0),
     RECONNECT(0xFF, Prot.VAR_SHORT),

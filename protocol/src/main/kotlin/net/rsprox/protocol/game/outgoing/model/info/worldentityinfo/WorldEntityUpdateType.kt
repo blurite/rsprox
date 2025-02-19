@@ -6,6 +6,15 @@ import net.rsprox.protocol.common.CoordGrid
 public sealed interface WorldEntityUpdateType {
     public data object Idle : WorldEntityUpdateType
 
+    public class LowResolutionToHighResolutionV3(
+        public val id: Int,
+        public val sizeX: Int,
+        public val sizeZ: Int,
+        public val angle: Int,
+        public val priority: Int,
+        public val coordFine: CoordFine,
+    ) : WorldEntityUpdateType
+
     public class LowResolutionToHighResolutionV2(
         public val sizeX: Int,
         public val sizeZ: Int,

@@ -160,6 +160,17 @@ public class SessionTracker(
                             // world.unknownProperty = update.unknownProperty
                             world.coord = update.coordGrid
                         }
+
+                        is WorldEntityUpdateType.LowResolutionToHighResolutionV3 -> {
+                            val world = sessionState.createWorld(index)
+                            world.sizeX = update.sizeX
+                            world.sizeZ = update.sizeZ
+                            world.angle = update.angle
+                            world.coordFine = update.coordFine
+                            world.coord = update.coordFine.toCoordGrid(world.level)
+                            world.id = update.id
+                            world.priority = update.priority
+                        }
                     }
                 }
             }
@@ -276,6 +287,9 @@ public class SessionTracker(
                             // world.moveSpeed = update.moveSpeed
                         }
                         is WorldEntityUpdateType.LowResolutionToHighResolutionV1 -> {
+                        }
+
+                        is WorldEntityUpdateType.LowResolutionToHighResolutionV3 -> {
                         }
                     }
                 }

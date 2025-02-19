@@ -130,12 +130,12 @@ internal object GameServerProtId {
     const val LOGOUT_TRANSFER = 126
     const val CAM_LOOKAT = 127
     const val NPC_INFO_LARGE_V5 = 128
-    const val WORLDENTITY_INFO_V4 = 129
+    const val WORLDENTITY_INFO_V5 = 129
     const val SET_ACTIVE_WORLD_V2 = 130
     const val PACKET_GROUP_START = 131
     const val RESET_INTERACTION_MODE = 132
     const val OBJ_CUSTOMISE = 133
-    const val UNKNOWN_VAR_SHORT = 134
+    const val WORLDENTITY_INFO_V4 = 134
     const val OBJ_UNCUSTOMISE = 135
     const val SET_INTERACTION_MODE = 136
 }

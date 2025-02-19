@@ -81,6 +81,7 @@ public enum class GameServerProt : Prot {
     CLEAR_ENTITIES,
     SET_ACTIVE_WORLD_V2,
     SET_ACTIVE_WORLD_V1,
+    WORLDENTITY_INFO_V5,
     WORLDENTITY_INFO_V4,
     WORLDENTITY_INFO_V3,
     WORLDENTITY_INFO_V2,
@@ -192,7 +193,6 @@ public enum class GameServerProt : Prot {
 
     // Unknown packets
     UNKNOWN_STRING,
-    UNKNOWN_VAR_SHORT,
 
     RECONNECT,
 }

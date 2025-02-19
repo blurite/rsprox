@@ -8,6 +8,7 @@ import net.rsprox.shared.settings.SettingSet
 public class IdentifiedWorldEntityProperty(
     override val propertyName: String,
     index: Int,
+    private val id: Int,
     level: Int,
     x: Int,
     z: Int,
@@ -24,6 +25,10 @@ public class IdentifiedWorldEntityProperty(
             append('(')
 
             append("index=$index, ")
+
+            if (id != -1) {
+                append("id=$id, ")
+            }
 
             if (settings[Setting.CONVERT_COORD_TO_JAGCOORD]) {
                 val formatted = toJagCoordsText(level, x, z)

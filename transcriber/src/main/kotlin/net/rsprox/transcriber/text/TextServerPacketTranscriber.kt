@@ -108,7 +108,6 @@ import net.rsprox.protocol.game.outgoing.model.specific.PlayerSpotAnimSpecific
 import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV2
 import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV3
 import net.rsprox.protocol.game.outgoing.model.unknown.UnknownString
-import net.rsprox.protocol.game.outgoing.model.unknown.UnknownVarShort
 import net.rsprox.protocol.game.outgoing.model.varp.VarpLarge
 import net.rsprox.protocol.game.outgoing.model.varp.VarpReset
 import net.rsprox.protocol.game.outgoing.model.varp.VarpSmall
@@ -231,6 +230,7 @@ public class TextServerPacketTranscriber(
         return if (world != null) {
             identifiedWorldEntity(
                 index,
+                world.id,
                 world.coord.level,
                 world.coord.x,
                 world.coord.z,
@@ -869,7 +869,11 @@ public class TextServerPacketTranscriber(
     }
 
     override fun worldEntityInfoV4(message: WorldEntityInfoV4) {
-        return worldEntityInfo(message)
+        worldEntityInfo(message)
+    }
+
+    override fun worldEntityInfoV5(message: WorldEntityInfoV5) {
+        worldEntityInfo(message)
     }
 
     private fun worldEntityInfo(message: WorldEntityInfo) {
@@ -928,6 +932,21 @@ public class TextServerPacketTranscriber(
                                 worldentity(index)
                                 int("angle", update.angle)
                                 int("unknown", update.unknownProperty)
+                            }
+                        }
+
+                        is WorldEntityUpdateType.LowResolutionToHighResolutionV3 -> {
+                            group("ADD") {
+                                worldentity(index)
+                                int("priority", update.priority)
+                                int("angle", update.angle)
+                                val coordFine = update.coordFine
+                                val coordFineX = coordFine.x and 0x7F
+                                val coordFineY = coordFine.y
+                                val coordFineZ = coordFine.z and 0x7F
+                                int("finex", coordFineX)
+                                int("finey", coordFineY)
+                                int("finez", coordFineZ)
                             }
                         }
                     }
@@ -1510,7 +1529,7 @@ public class TextServerPacketTranscriber(
 
     override fun rebuildWorldEntityV3(message: RebuildWorldEntityV3) {
         rebuildWorldEntity(
-            sessionState.getActiveWorld().id,
+            sessionState.getActiveWorld().index,
             message.baseX,
             message.baseZ,
             message.buildArea,
@@ -2864,12 +2883,6 @@ public class TextServerPacketTranscriber(
     override fun unknownString(message: UnknownString) {
         if (!filters[PropertyFilter.DEPRECATED_SERVER]) return omit()
         root.string("string", message.string)
-    }
-
-    override fun unknownVarShort(message: UnknownVarShort) {
-        if (!filters[PropertyFilter.DEPRECATED_SERVER]) return omit()
-        root.int("value", message.value)
-        root.any("remainingbytes", message.remainingBytes.contentToString())
     }
 
     override fun objCustomise(message: ObjCustomise) {

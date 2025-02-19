@@ -119,7 +119,6 @@ import net.rsprox.protocol.v229.game.outgoing.decoder.codec.specific.PlayerAnimS
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.specific.PlayerSpotAnimSpecificDecoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.specific.ProjAnimSpecificV3Decoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.unknown.UnknownStringDecoder
-import net.rsprox.protocol.v229.game.outgoing.decoder.codec.unknown.UnknownVarShortDecoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.varp.VarpLargeDecoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.varp.VarpResetDecoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.varp.VarpSmallDecoder
@@ -188,6 +187,7 @@ internal object ServerMessageDecoderRepository {
                 bind(NpcInfoLargeV5Decoder())
                 bind(SetNpcUpdateOriginDecoder())
                 bind(WorldEntityInfoV4Decoder())
+                bind(WorldEntityInfoV5Decoder())
 
                 bind(IfClearInvDecoder())
                 bind(IfCloseSubDecoder())
@@ -310,7 +310,6 @@ internal object ServerMessageDecoderRepository {
                 bind(ObjUncustomiseDecoder())
 
                 bind(UnknownStringDecoder())
-                bind(UnknownVarShortDecoder())
             }
         return builder.build()
     }
