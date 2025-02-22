@@ -58,10 +58,18 @@ public class PropertyFormatterCollection private constructor(
 
     public companion object {
         public fun default(
-            dictionary: SymbolDictionary,
+            systemDictionary: SymbolDictionary,
             settingStore: SettingSetStore,
         ): PropertyFormatterCollection {
             val settings = settingStore.getActive()
+
+            fun dictionary(): SymbolDictionary =
+                if (settings[Setting.DISABLE_DICTIONARY_NAMES]) {
+                    NopSymbolDictionary
+                } else {
+                    systemDictionary
+                }
+
             val builder = Builder()
             val enumPropertyFormatter =
                 PropertyFormatter<NamedEnumProperty<*>> {
@@ -69,7 +77,7 @@ public class PropertyFormatterCollection private constructor(
                 }
             val identifiedPropertyFormatter =
                 PropertyFormatter<IdentifiedChildProperty> {
-                    it.formattedValue(settings, dictionary)
+                    it.formattedValue(settings, dictionary())
                 }
             builder.add<NamedEnumProperty<*>>(enumPropertyFormatter)
             builder.add<FilteredNamedEnumProperty<*>>(enumPropertyFormatter)
@@ -81,7 +89,7 @@ public class PropertyFormatterCollection private constructor(
             builder.add<IdentifiedPlayerProperty>(identifiedPropertyFormatter)
             builder.add<IdentifiedWorldEntityProperty>(identifiedPropertyFormatter)
             builder.add<ShortNpcProperty> {
-                val symbol = dictionary.getScriptVarTypeName(it.id, ScriptVarType.NPC) ?: return@add "(id=${it.id})"
+                val symbol = dictionary().getScriptVarTypeName(it.id, ScriptVarType.NPC) ?: return@add "(id=${it.id})"
                 if (settings[Setting.SHOW_IDS_AFTER_SYMBOLS]) {
                     "$symbol (${it.id})"
                 } else {
@@ -89,7 +97,7 @@ public class PropertyFormatterCollection private constructor(
                 }
             }
             builder.add<ScriptProperty> {
-                val symbol = dictionary.getScriptName(it.value) ?: return@add "${it.value}"
+                val symbol = dictionary().getScriptName(it.value) ?: return@add "${it.value}"
                 if (settings[Setting.SHOW_IDS_AFTER_SYMBOLS]) {
                     "$symbol (${it.value})"
                 } else {
@@ -97,7 +105,7 @@ public class PropertyFormatterCollection private constructor(
                 }
             }
             builder.add<VarbitProperty> {
-                val symbol = dictionary.getVarbitName(it.value) ?: return@add "${it.value}"
+                val symbol = dictionary().getVarbitName(it.value) ?: return@add "${it.value}"
                 if (settings[Setting.SHOW_IDS_AFTER_SYMBOLS]) {
                     "$symbol (${it.value})"
                 } else {
@@ -105,7 +113,7 @@ public class PropertyFormatterCollection private constructor(
                 }
             }
             builder.add<VarpProperty> {
-                val symbol = dictionary.getVarpName(it.value) ?: return@add "${it.value}"
+                val symbol = dictionary().getVarpName(it.value) ?: return@add "${it.value}"
                 if (settings[Setting.SHOW_IDS_AFTER_SYMBOLS]) {
                     "$symbol (${it.value})"
                 } else {
@@ -159,7 +167,7 @@ public class PropertyFormatterCollection private constructor(
                             var componentId = value and 0xFFFF
                             if (interfaceId == 0xFFFF) interfaceId = -1
                             if (componentId == 0xFFFF) componentId = -1
-                            val name = dictionary.getScriptVarTypeName(value, ScriptVarType.COMPONENT)
+                            val name = dictionary().getScriptVarTypeName(value, ScriptVarType.COMPONENT)
                             if (name != null) {
                                 return@PropertyFormatter if (settings[Setting.SHOW_IDS_AFTER_SYMBOLS]) {
                                     "$name ($interfaceId:$componentId)"
@@ -168,7 +176,7 @@ public class PropertyFormatterCollection private constructor(
                                 }
                             }
                             val interfaceName =
-                                dictionary.getScriptVarTypeName(
+                                dictionary().getScriptVarTypeName(
                                     interfaceId,
                                     ScriptVarType.INTERFACE,
                                 )
@@ -189,7 +197,7 @@ public class PropertyFormatterCollection private constructor(
                         }
                         else -> {
                             val symbol =
-                                dictionary.getScriptVarTypeName(value, it.scriptVarType)
+                                dictionary().getScriptVarTypeName(value, it.scriptVarType)
                                     ?: return@PropertyFormatter "$value"
                             return@PropertyFormatter if (settings[Setting.SHOW_IDS_AFTER_SYMBOLS]) {
                                 "$symbol ($value)"

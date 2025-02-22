@@ -57,7 +57,13 @@ public enum class Setting(
         true,
         "Collapses clientscript params & types by putting them all in one line.",
     ),
-
+    DISABLE_DICTIONARY_NAMES(
+        SettingGroup.LOGGING,
+        SettingCategory.MISC,
+        "Disable Dictionary Names",
+        false,
+        "Temporarily disable provided dictionary names for types. Dictionaries allow you to map number ids to text.",
+    ),
     PLAYER_EXT_INFO_INLINE(
         SettingGroup.LOGGING,
         SettingCategory.PLAYER_INFO,
