@@ -102,7 +102,7 @@ public class IndexerCommand : CliktCommand(name = "index") {
         Files.createDirectories(folder)
         val consumers = TextMessageConsumerContainer(emptyList())
         val index = MultiMapBinaryIndex()
-        val sessionState = SessionState(settings)
+        val sessionState = SessionState(binary.header.revision, settings)
         val runner =
             transcriberProvider.provide(
                 consumers,

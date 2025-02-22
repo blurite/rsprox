@@ -108,7 +108,7 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
         val textPath = binaryPath.parent.resolve(binaryPath.nameWithoutExtension + ".txt")
         val writer = textPath.bufferedWriter()
         val consumers = TextMessageConsumerContainer(listOf(createBufferedWriterConsumer(writer)))
-        val sessionState = SessionState(settings)
+        val sessionState = SessionState(binary.header.revision, settings)
         val runner =
             transcriberProvider.provide(
                 consumers,

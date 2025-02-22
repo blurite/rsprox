@@ -2910,11 +2910,21 @@ public class TextServerPacketTranscriber(
                 else -> "unknown (id: ${message.tileInteractionMode})"
             }
         val entityInteractionMode =
-            when (message.entityInteractionMode) {
-                0 -> "disabled"
-                1 -> "enabled"
-                2 -> "examine"
-                else -> "unknown (id: ${message.entityInteractionMode})"
+            if (sessionState.revision >= 229) {
+                when (message.entityInteractionMode) {
+                    0 -> "disabled"
+                    1 -> "all" // unclear as of 229 what it is, constant boolean passed in, presumably worldentities
+                    2 -> "examine"
+                    3 -> "default"
+                    else -> "unknown (id: ${message.entityInteractionMode})"
+                }
+            } else {
+                when (message.entityInteractionMode) {
+                    0 -> "disabled"
+                    1 -> "enabled"
+                    2 -> "examine"
+                    else -> "unknown (id: ${message.entityInteractionMode})"
+                }
             }
         root.any("tileinteractionmode", tileInteractionMode)
         root.any("entityinteractionmode", entityInteractionMode)

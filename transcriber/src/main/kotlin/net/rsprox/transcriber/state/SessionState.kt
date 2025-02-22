@@ -10,6 +10,7 @@ import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.prot.GameServerProt
 
 public class SessionState(
+    public val revision: Int,
     private val settingSetStore: SettingSetStore,
 ) {
     public var cycle: Int = 0
