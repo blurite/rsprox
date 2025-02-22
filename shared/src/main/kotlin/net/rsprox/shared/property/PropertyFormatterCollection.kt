@@ -58,7 +58,7 @@ public class PropertyFormatterCollection private constructor(
 
     public companion object {
         public fun default(
-            dictionary: SymbolDictionary,
+            systemDictionary: SymbolDictionary,
             settingStore: SettingSetStore,
         ): PropertyFormatterCollection {
             val settings = settingStore.getActive()
@@ -67,7 +67,7 @@ public class PropertyFormatterCollection private constructor(
                 if (settings[Setting.DISABLE_DICTIONARY_NAMES]) {
                     NopSymbolDictionary
                 } else {
-                    dictionary
+                    systemDictionary
                 }
 
             val builder = Builder()
