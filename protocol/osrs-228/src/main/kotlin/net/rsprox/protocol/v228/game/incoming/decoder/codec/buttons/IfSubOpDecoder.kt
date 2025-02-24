@@ -26,7 +26,7 @@ public class IfSubOpDecoder : ProxyMessageDecoder<IfSubOp> {
             combinedId,
             sub,
             obj,
-            op + 1,
+            op,
             subop,
         )
     }
