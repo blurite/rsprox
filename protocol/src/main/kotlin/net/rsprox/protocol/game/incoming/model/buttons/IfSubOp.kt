@@ -78,7 +78,7 @@ public class IfSubOp private constructor(
     }
 
     override fun toString(): String =
-        "If3Button(" +
+        "IfSubOp(" +
             "interfaceId=$interfaceId, " +
             "componentId=$componentId, " +
             "sub=$sub, " +
