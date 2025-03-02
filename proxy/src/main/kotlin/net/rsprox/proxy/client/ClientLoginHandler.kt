@@ -96,7 +96,7 @@ public class ClientLoginHandler(
                     "Unknown login prot received"
                 }
             }
-            LoginClientProt.REMAINING_BETA_ARCHIVE_CRCS -> {
+            LoginClientProt.REMAINING_BETA_ARCHIVE_CRCS_V1, LoginClientProt.REMAINING_BETA_ARCHIVE_CRCS_V2 -> {
                 logger.debug {
                     "Remaining beta archive CRCs received"
                 }
