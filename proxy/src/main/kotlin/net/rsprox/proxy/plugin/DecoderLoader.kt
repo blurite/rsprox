@@ -44,20 +44,25 @@ public class DecoderLoader {
 
     public fun load(
         cache: CacheProvider,
-        latestOnly: Boolean = false,
+        revision: Int? = null,
     ) {
-        if (decoders.isNotEmpty()) return
+        if (revision != null && revision in decoders) {
+            return
+        }
         val huffmanCodec = HuffmanProvider.get()
         val pool = ForkJoinPool.commonPool()
         val tasks = mutableListOf<Callable<RevisionDecoder>>()
         // Load the classes in parallel here to speed up the process, especially over time as we
         // get more and more modules; there are about 230 classes per module, and our JDK supports
-        // parallel class-loading so it significantly speeds the process up.
-        if (latestOnly) {
-            loadLatestRevision(tasks, huffmanCodec, cache)
+        // parallel class-loading, so it significantly speeds the process up.
+        val loadJobs = buildLoadJobs(huffmanCodec, cache)
+        if (revision == null) {
+            val missingJobs = loadJobs.filter { it.key !in decoders }
+            tasks += missingJobs.values
         } else {
-            loadAllRevisions(tasks, huffmanCodec, cache)
+            tasks += loadJobs[revision] ?: error("Revision $revision decoder not found!")
         }
+        if (tasks.isEmpty()) return
         val (results, time) =
             measureTimedValue {
                 pool.invokeAll(tasks)
@@ -117,47 +122,19 @@ public class DecoderLoader {
         }
     }
 
-    private fun loadLatestRevision(
-        tasks: MutableList<Callable<RevisionDecoder>>,
+    private fun buildLoadJobs(
         huffmanCodec: HuffmanCodec,
         cache: CacheProvider,
-    ) {
-        tasks +=
-            Callable {
-                loadRevision229(huffmanCodec, cache)
-            }
-    }
-
-    private fun loadAllRevisions(
-        tasks: MutableList<Callable<RevisionDecoder>>,
-        huffmanCodec: HuffmanCodec,
-        cache: CacheProvider,
-    ) {
-        tasks +=
-            Callable {
-                loadRevision223(huffmanCodec, cache)
-            }
-        tasks +=
-            Callable {
-                loadRevision224(huffmanCodec, cache)
-            }
-        tasks +=
-            Callable {
-                loadRevision225(huffmanCodec, cache)
-            }
-        tasks +=
-            Callable {
-                loadRevision226(huffmanCodec, cache)
-            }
-        tasks +=
-            Callable {
-                loadRevision227(huffmanCodec, cache)
-            }
-        tasks +=
-            Callable {
-                loadRevision228(huffmanCodec, cache)
-            }
-        loadLatestRevision(tasks, huffmanCodec, cache)
+    ): Map<Int, Callable<RevisionDecoder>> {
+        return mapOf(
+            223 to Callable { loadRevision223(huffmanCodec, cache) },
+            224 to Callable { loadRevision224(huffmanCodec, cache) },
+            225 to Callable { loadRevision225(huffmanCodec, cache) },
+            226 to Callable { loadRevision226(huffmanCodec, cache) },
+            227 to Callable { loadRevision227(huffmanCodec, cache) },
+            228 to Callable { loadRevision228(huffmanCodec, cache) },
+            229 to Callable { loadRevision229(huffmanCodec, cache) },
+        )
     }
 
     private fun loadRevision223(

@@ -14,7 +14,6 @@ import net.rsprox.cache.resolver.LiveCacheResolver
 import net.rsprox.protocol.session.AttributeMap
 import net.rsprox.protocol.session.Session
 import net.rsprox.proxy.config.BINARY_PATH
-import net.rsprox.proxy.config.CURRENT_REVISION
 import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.proxy.transcriber.LiveTranscriberSession
@@ -202,7 +201,7 @@ public data class BinaryBlob(
                 CacheProvider {
                     OldSchoolCache(LiveCacheResolver(info), masterIndex)
                 }
-            decoderLoader.load(provider, latestOnly = header.revision == CURRENT_REVISION)
+            decoderLoader.load(provider, header.revision)
             val latestPlugin = decoderLoader.getDecoderOrNull(header.revision)
             if (latestPlugin == null) {
                 logger.info { "Plugin for ${header.revision} missing, no live transcriber hooked." }
