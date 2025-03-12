@@ -96,18 +96,24 @@ public class DefaultJagexAccountStore(
                 .get()
                 .build()
 
-        val characters =
-            httpClient.newCall(request).execute().use { response ->
-                val body = response.body!!.string()
-                if (!response.isSuccessful) {
-                    logger.error { "Failed to retrieve session id: $body" }
-                    null
-                } else {
-                    gson.fromJson<List<JagexCharacter>>(body, object : TypeToken<List<JagexCharacter>>() {}.type)
+        try {
+            val characters =
+                httpClient.newCall(request).execute().use { response ->
+                    val body = response.body!!.string()
+                    if (!response.isSuccessful) {
+                        logger.error { "Failed to retrieve session id: $body" }
+                        null
+                    } else {
+                        gson.fromJson<List<JagexCharacter>>(body, object : TypeToken<List<JagexCharacter>>() {}.type)
+                    }
                 }
+            if (characters != null) {
+                jagexAccount.updateCharacters(characters)
             }
-        if (characters != null) {
-            jagexAccount.updateCharacters(characters)
+        } catch (e: Exception) {
+            logger.error(e) {
+                "Unable to load Jagex Account; continuing without."
+            }
         }
     }
 
