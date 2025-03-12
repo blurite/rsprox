@@ -14,6 +14,10 @@ public interface SymbolDictionary {
 
     public fun getScriptName(id: Int): String?
 
+    public fun start()
+
+    public fun stop()
+
     public companion object {
         public val EMPTY_SYMBOL_DICTIONARY: SymbolDictionary =
             object : SymbolDictionary {
@@ -34,6 +38,12 @@ public interface SymbolDictionary {
 
                 override fun getScriptName(id: Int): String? {
                     return null
+                }
+
+                override fun start() {
+                }
+
+                override fun stop() {
                 }
             }
     }

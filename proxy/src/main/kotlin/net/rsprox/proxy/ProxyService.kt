@@ -52,6 +52,7 @@ import net.rsprox.shared.account.JagexAccountStore
 import net.rsprox.shared.account.JagexCharacter
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.settings.SettingSetStore
+import net.rsprox.shared.symbols.SymbolDictionaryProvider
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
 import org.newsclub.net.unix.AFUNIXServerSocket
 import org.newsclub.net.unix.AFUNIXSocketAddress
@@ -409,6 +410,7 @@ public class ProxyService(
             }
         }
         killAliveProcesses()
+        SymbolDictionaryProvider.stop()
     }
 
     private fun closeActiveChannel(channel: Channel) {

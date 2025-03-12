@@ -22,10 +22,17 @@ public object SymbolDictionaryProvider {
                     properties.load(SYMBOLS_PATH.readText().byteInputStream(DEFAULT_PROPERTIES_CHARSET))
                     val symbolProperties = SymbolProperties.load(properties)
                     val typeEntries = symbolProperties.buildSymbolTypeEntries()
-                    StaticSymbolDictionary(typeEntries)
+                    WatchServiceSymbolDictionary(typeEntries)
                 } else {
                     SymbolDictionary.EMPTY_SYMBOL_DICTIONARY
                 }
+            symbolDictionary.start()
+        }
+    }
+
+    public fun stop() {
+        if (::symbolDictionary.isInitialized) {
+            symbolDictionary.stop()
         }
     }
 

@@ -34,4 +34,10 @@ public class StaticSymbolDictionary(
         val symbolMap = symbols[SymbolType.ScriptSymbol] ?: return null
         return symbolMap[id]
     }
+
+    override fun start() {
+    }
+
+    override fun stop() {
+    }
 }
