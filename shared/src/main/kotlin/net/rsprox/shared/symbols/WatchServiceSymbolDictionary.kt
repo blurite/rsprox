@@ -6,11 +6,10 @@ import net.rsprox.shared.property.SymbolDictionary
 import net.rsprox.shared.property.SymbolType
 import java.nio.file.FileSystems
 import java.nio.file.StandardWatchEventKinds
+import java.nio.file.WatchKey
 import java.nio.file.WatchService
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
-import java.util.concurrent.TimeUnit
+import kotlin.concurrent.thread
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 
@@ -22,11 +21,13 @@ public class WatchServiceSymbolDictionary(
             k to v.read()
         }
     private lateinit var service: WatchService
-    private lateinit var executor: ScheduledExecutorService
+    private lateinit var thread: Thread
+
+    @Volatile
+    private var running: Boolean = true
 
     override fun start() {
         service = FileSystems.getDefault().newWatchService()
-        executor = Executors.newSingleThreadScheduledExecutor()
         val directories =
             typeEntries.values.mapNotNull { entry ->
                 if (!entry.path.exists()) return@mapNotNull null
@@ -39,38 +40,58 @@ public class WatchServiceSymbolDictionary(
         for (directory in distinctDirectories) {
             directory.register(service, StandardWatchEventKinds.ENTRY_MODIFY)
         }
-        executor.scheduleWithFixedDelay({
-            while (true) {
-                val key = service.poll() ?: break
-                loop@for (event in key.pollEvents()) {
-                    if (event.kind() != StandardWatchEventKinds.ENTRY_MODIFY) continue
-                    val context = event.context() ?: continue
-                    val str = context.toString()
-                    for ((type, v) in typeEntries) {
-                        if (!v.path.exists()) continue
-                        val file = v.path.toFile()
-                        if (str == file.name) {
-                            val decoded =
-                                try {
-                                    v.read()
-                                } catch (e: Exception) {
-                                    // Skip any parsing exceptions
-                                    continue@loop
-                                }
-                            logger.debug { "Reloaded ${file.name} symbols" }
-                            symbols[type] = decoded
-                            continue@loop
-                        }
+        this.thread = launchThread()
+    }
+
+    private fun launchThread(): Thread {
+        return thread(
+            start = true,
+            isDaemon = true,
+        ) {
+            while (this.running) {
+                try {
+                    checkForReloads(service.take())
+                } catch (t: Throwable) {
+                    logger.error(t) {
+                        "Error in watch service for dictionary"
                     }
                 }
             }
-        }, 5L, 5L, TimeUnit.SECONDS)
+        }
+    }
+
+    private fun checkForReloads(key: WatchKey) {
+        for (event in key.pollEvents()) {
+            if (event.kind() != StandardWatchEventKinds.ENTRY_MODIFY) continue
+            val context = event.context() ?: continue
+            reloadSymbols(context.toString())
+        }
+        key.reset()
+    }
+
+    private fun reloadSymbols(fileName: String) {
+        for ((type, v) in typeEntries) {
+            if (!v.path.exists()) continue
+            val file = v.path.toFile()
+            if (fileName != file.name) continue
+            val decoded =
+                try {
+                    v.read()
+                } catch (e: Exception) {
+                    // Skip any parsing exceptions
+                    return
+                }
+            logger.debug { "Reloaded ${file.name} symbols" }
+            symbols[type] = decoded
+            return
+        }
     }
 
     override fun stop() {
-        service.close()
-        executor.shutdown()
-        executor.awaitTermination(1, TimeUnit.SECONDS)
+        running = false
+        if (this::service.isInitialized) {
+            service.close()
+        }
     }
 
     override fun getScriptVarTypeName(
