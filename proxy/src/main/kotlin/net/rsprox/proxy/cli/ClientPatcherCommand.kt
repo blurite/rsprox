@@ -13,7 +13,7 @@ import net.rsprox.patch.native.NativePatcher
 import net.rsprox.proxy.config.CLIENTS_DIRECTORY
 import net.rsprox.proxy.config.CURRENT_REVISION
 import net.rsprox.proxy.downloader.JagexNativeClientDownloader
-import net.rsprox.proxy.downloader.RuneWikiNativeClientDownloader
+import net.rsprox.proxy.downloader.LostCityNativeClientDownloader
 import java.util.Locale
 import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
@@ -45,7 +45,7 @@ public class ClientPatcherCommand : CliktCommand(name = "patch") {
             if (version == "latest") {
                 JagexNativeClientDownloader.download(type)
             } else {
-                RuneWikiNativeClientDownloader.download(folder, type, version)
+                LostCityNativeClientDownloader.download(folder, type, version)
             }
 
         val outputFile = Path(path.name)

@@ -8,7 +8,7 @@ import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.writeBytes
 
-public object RuneWikiNativeClientDownloader {
+public object LostCityNativeClientDownloader {
     private val logger = InlineLogger()
 
     public fun download(

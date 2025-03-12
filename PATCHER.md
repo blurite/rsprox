@@ -16,7 +16,7 @@ when running from MacOS - this is due to it being too fragile.
 The native patcher supports the following features:
 
 - Any version after `213.2` (~April 2023).
-  - The repository where it downloads the historic executables can be found [here](https://www.runewiki.org/archive/oldschool.runescape.com/native/).
+  - The repository where it downloads the historic executables can be found [here](https://archive.lostcity.rs/oldschool.runescape.com/native/).
 - Selection between Windows and MacOS.
   - Windows patching has been tested to work on every version currently available.
   - MacOS patching is a lot more fragile and will only work on more recent options.

@@ -31,7 +31,7 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.connection.ClientTypeDictionary
 import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.downloader.JagexNativeClientDownloader
-import net.rsprox.proxy.downloader.RuneWikiNativeClientDownloader
+import net.rsprox.proxy.downloader.LostCityNativeClientDownloader
 import net.rsprox.proxy.exceptions.MissingLibraryException
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.futures.asCompletableFuture
@@ -579,7 +579,7 @@ public class ProxyService(
         version: String,
         type: NativeClientType,
     ): Path {
-        return RuneWikiNativeClientDownloader.download(
+        return LostCityNativeClientDownloader.download(
             CLIENTS_DIRECTORY,
             type,
             version,
