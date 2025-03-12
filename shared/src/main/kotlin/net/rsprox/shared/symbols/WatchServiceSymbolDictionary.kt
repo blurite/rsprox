@@ -4,6 +4,7 @@ import com.github.michaelbull.logging.InlineLogger
 import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.property.SymbolDictionary
 import net.rsprox.shared.property.SymbolType
+import java.nio.file.ClosedWatchServiceException
 import java.nio.file.FileSystems
 import java.nio.file.StandardWatchEventKinds
 import java.nio.file.WatchKey
@@ -50,7 +51,13 @@ public class WatchServiceSymbolDictionary(
         ) {
             while (this.running) {
                 try {
-                    checkForReloads(service.take())
+                    val next =
+                        try {
+                            service.take()
+                        } catch (_: ClosedWatchServiceException) {
+                            return@thread
+                        }
+                    checkForReloads(next)
                 } catch (t: Throwable) {
                     logger.error(t) {
                         "Error in watch service for dictionary"
@@ -77,7 +84,7 @@ public class WatchServiceSymbolDictionary(
             val decoded =
                 try {
                     v.read()
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     // Skip any parsing exceptions
                     return
                 }
