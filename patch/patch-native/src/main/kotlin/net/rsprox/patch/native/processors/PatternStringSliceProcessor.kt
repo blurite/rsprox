@@ -58,10 +58,10 @@ public class PatternStringSliceProcessor(
         results: List<MatchResult>,
     ): List<String> {
         logger.info { "Pattern $pattern replacements:" }
-        return results.map { result ->
+        return results.mapNotNull { result ->
             val index = client.indexOf(result.value.toByteArray(Charsets.UTF_8))
             if (index == -1) {
-                throw IllegalStateException("Unexpected error")
+                return@mapNotNull null
             }
             val rangeWithTerminators = index..<index + (result.value.length)
             val bytes = client.bytes.sliceArray(rangeWithTerminators)
