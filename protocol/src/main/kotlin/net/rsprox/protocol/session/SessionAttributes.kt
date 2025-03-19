@@ -32,19 +32,25 @@ public fun Session.allocateWorld(
     worldIndex: Int,
     playerInfoDecoder: PlayerInfoDecoder,
     npcInfoDecoder: NpcInfoDecoder,
+    sizeX: Int = 16384,
+    sizeZ: Int = 16384,
 ): World {
     var worldMap = this.trackedWorldMap
     if (worldMap == null) {
         worldMap = mutableMapOf()
         this.trackedWorldMap = worldMap
     }
-    val world = World(npcInfoDecoder, playerInfoDecoder)
+    val world = World(npcInfoDecoder, playerInfoDecoder, sizeX, sizeZ)
     worldMap[worldIndex] = world
     return world
 }
 
 public fun Session.getActiveWorld(): Int {
     return currentActiveWorld ?: -1
+}
+
+public fun Session.setActiveWorld(id: Int) {
+    currentActiveWorld = id
 }
 
 public fun Session.getNpcInfoBaseCoord(): CoordGrid {

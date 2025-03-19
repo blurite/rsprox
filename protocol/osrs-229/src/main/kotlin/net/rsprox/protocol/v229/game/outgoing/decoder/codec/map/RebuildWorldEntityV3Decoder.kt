@@ -25,11 +25,14 @@ internal class RebuildWorldEntityV3Decoder : ProxyMessageDecoder<RebuildWorldEnt
         val baseX = buffer.g2()
         val baseZ = buffer.g2()
         val xteaCount = buffer.g2()
-        val buildArea = BuildArea()
+        val world = session.getWorld(session.getActiveWorld())
+        val width = world.sizeX / 8
+        val length = world.sizeZ / 8
+        val buildArea = BuildArea(4, width, length)
         buffer.buffer.toBitBuf().use { bitBuf ->
             for (level in 0..<4) {
-                for (x in 0..<13) {
-                    for (z in 0..<13) {
+                for (x in 0..<width) {
+                    for (z in 0..<length) {
                         val exists = bitBuf.gBits(1) == 1
                         val value = if (exists) bitBuf.gBits(26) else -1
                         buildArea[level, x, z] = RebuildRegionZone(value)
@@ -43,9 +46,8 @@ internal class RebuildWorldEntityV3Decoder : ProxyMessageDecoder<RebuildWorldEnt
                     add(XteaKey(buffer.g4(), buffer.g4(), buffer.g4(), buffer.g4()))
                 }
             }
-        val world = session.getWorld(session.getActiveWorld())
-        world.baseX = (baseX - 6) * 8
-        world.baseZ = (baseZ - 6) * 8
+        world.baseX = baseX
+        world.baseZ = baseZ
         return RebuildWorldEntityV3(
             baseX,
             baseZ,

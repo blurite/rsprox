@@ -17,8 +17,7 @@ public class WorldEntityInfoClient {
     ): WorldEntityInfo {
         updates.clear()
         if (version >= 5) {
-            // High resolution remains unchanged here, but low resolution does change
-            decodeHighResolutionV2(buffer)
+            decodeHighResolutionV3(buffer)
             decodeLowResolutionV3(buffer, baseCoord)
         } else if (version >= 3) {
             decodeHighResolutionV2(buffer)
@@ -127,6 +126,51 @@ public class WorldEntityInfoClient {
         }
     }
 
+    private fun decodeHighResolutionV3(buffer: JagByteBuf) {
+        val count = buffer.g1()
+        if (count < transmittedWorldEntityCount) {
+            throw RuntimeException("dang")
+        }
+        if (count > transmittedWorldEntityCount) {
+            throw RuntimeException("dang!")
+        }
+        this.transmittedWorldEntityCount = 0
+        for (i in 0..<count) {
+            val index = this.transmittedWorldEntity[i]
+            val worldEntity = checkNotNull(this.worldEntity[index]) as WorldEntityV3
+            val opcode = buffer.g1()
+            val remove = opcode == 0
+            if (remove) {
+                this.worldEntity[index] = null
+                updates[index] = WorldEntityUpdateType.HighResolutionToLowResolution
+                continue
+            }
+            this.transmittedWorldEntity[this.transmittedWorldEntityCount++] = index
+            if (opcode == 1) {
+                updates[index] = WorldEntityUpdateType.Idle
+                continue
+            }
+            val teleport = opcode == 3
+            val bitpackedAngledCoordFineOpcodes = buffer.g1s()
+            if (bitpackedAngledCoordFineOpcodes != 0) {
+                val deltaX = decodeAngledCoordFineComponent(buffer, bitpackedAngledCoordFineOpcodes, 0)
+                val deltaY = decodeAngledCoordFineComponent(buffer, bitpackedAngledCoordFineOpcodes, 2)
+                val deltaZ = decodeAngledCoordFineComponent(buffer, bitpackedAngledCoordFineOpcodes, 4)
+                val angle = decodeAngledCoordFineComponent(buffer, bitpackedAngledCoordFineOpcodes, 6)
+                val current = worldEntity.coordFine
+                val next = CoordFine(current.x + deltaX, current.y + deltaY, current.z + deltaZ)
+                worldEntity.coordFine = next
+                worldEntity.angle = (worldEntity.angle + angle) and 2047
+            }
+            updates[index] =
+                WorldEntityUpdateType.ActiveV2(
+                    worldEntity.angle,
+                    worldEntity.coordFine,
+                    teleport,
+                )
+        }
+    }
+
     private fun decodeAngledCoordFineComponent(
         buffer: JagByteBuf,
         bitpackedOpcode: Int,
@@ -148,8 +192,8 @@ public class WorldEntityInfoClient {
         while (buffer.isReadable(10)) {
             val index = buffer.g2()
             this.transmittedWorldEntity[this.transmittedWorldEntityCount++] = index
-            val sizeX = buffer.g1()
-            val sizeZ = buffer.g1()
+            val sizeX = buffer.g1() * 8
+            val sizeZ = buffer.g1() * 8
             val xInBuildArea = buffer.g1()
             val zInBuildArea = buffer.g1()
             val angle = buffer.g2()
@@ -185,8 +229,8 @@ public class WorldEntityInfoClient {
         while (buffer.isReadable(10)) {
             val index = buffer.g2()
             this.transmittedWorldEntity[this.transmittedWorldEntityCount++] = index
-            val sizeX = buffer.g1()
-            val sizeZ = buffer.g1()
+            val sizeX = buffer.g1() * 8
+            val sizeZ = buffer.g1() * 8
             val level = buffer.g1s()
             var coordFine = CoordFine(0, 0, 0)
             var angle = 0
@@ -238,8 +282,8 @@ public class WorldEntityInfoClient {
         while (buffer.isReadable(10)) {
             val index = buffer.g2()
             this.transmittedWorldEntity[this.transmittedWorldEntityCount++] = index
-            val sizeX = buffer.g1()
-            val sizeZ = buffer.g1()
+            val sizeX = buffer.g1() * 8
+            val sizeZ = buffer.g1() * 8
             val id = buffer.g2()
             var coordFine = CoordFine(0, 0, 0)
             var angle = 0

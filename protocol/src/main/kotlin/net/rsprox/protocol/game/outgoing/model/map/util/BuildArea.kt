@@ -3,10 +3,14 @@ package net.rsprox.protocol.game.outgoing.model.map.util
 public class BuildArea(
     private val zones: Array<Array<IntArray>>,
 ) {
-    public constructor() : this(
-        Array(4) {
-            Array(13) {
-                IntArray(13) {
+    public constructor(
+        levels: Int = 4,
+        width: Int = 13,
+        length: Int = 13,
+    ) : this(
+        Array(levels) {
+            Array(width) {
+                IntArray(length) {
                     -1
                 }
             }

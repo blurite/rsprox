@@ -7,6 +7,8 @@ import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityI
 public class World(
     public val npcInfo: NpcInfoDecoder,
     public val playerInfo: PlayerInfoDecoder,
+    public val sizeX: Int = 16384,
+    public val sizeZ: Int = 16384,
 ) {
     public val worldEntityInfo: WorldEntityInfoClient = WorldEntityInfoClient()
     public var baseX: Int = -1

@@ -7,6 +7,7 @@ import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorldV2
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.session.getWorld
+import net.rsprox.protocol.session.setActiveWorld
 import net.rsprox.protocol.v229.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
@@ -19,6 +20,7 @@ internal class SetActiveWorldV2Decoder : ProxyMessageDecoder<SetActiveWorldV2> {
     ): SetActiveWorldV2 {
         val index = buffer.g2s()
         val activeLevel = buffer.g1()
+        session.setActiveWorld(index)
         val world = session.getWorld(index)
         world.level = activeLevel
         return if (index == -1) {

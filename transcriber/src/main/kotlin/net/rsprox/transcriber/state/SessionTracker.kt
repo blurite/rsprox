@@ -19,18 +19,15 @@ import net.rsprox.protocol.game.outgoing.model.interfaces.IfMoveSub
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfOpenSub
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfOpenTop
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfResync
-import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
-import net.rsprox.protocol.game.outgoing.model.map.RebuildNormal
-import net.rsprox.protocol.game.outgoing.model.map.RebuildRegion
-import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV1
-import net.rsprox.protocol.game.outgoing.model.map.RebuildWorldEntityV2
-import net.rsprox.protocol.game.outgoing.model.map.Reconnect
+import net.rsprox.protocol.game.outgoing.model.map.*
 import net.rsprox.protocol.game.outgoing.model.misc.client.ServerTickEnd
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV1
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV2
 import net.rsprox.protocol.game.outgoing.model.varp.VarpLarge
 import net.rsprox.protocol.game.outgoing.model.varp.VarpSmall
 import net.rsprox.protocol.game.outgoing.model.worldentity.ClearEntities
+import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorldV1
+import net.rsprox.protocol.game.outgoing.model.worldentity.SetActiveWorldV2
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZoneFullFollows
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialFollows
@@ -98,12 +95,17 @@ public class SessionTracker(
             }
             is RebuildWorldEntityV1 -> {
                 val world = sessionState.getWorld(message.index)
-                world.rebuild(CoordGrid(0, (message.baseX - 6) shl 3, (message.baseZ - 6) shl 3))
+                world.rebuild(CoordGrid(0, message.baseX, message.baseZ))
                 world.setBuildArea(message.buildArea)
             }
             is RebuildWorldEntityV2 -> {
                 val world = sessionState.getWorld(message.index)
-                world.rebuild(CoordGrid(0, (message.baseX - 6) shl 3, (message.baseZ - 6) shl 3))
+                world.rebuild(CoordGrid(0, message.baseX, message.baseZ))
+                world.setBuildArea(message.buildArea)
+            }
+            is RebuildWorldEntityV3 -> {
+                val world = sessionState.getActiveWorld()
+                world.rebuild(CoordGrid(0, message.baseX, message.baseZ))
                 world.setBuildArea(message.buildArea)
             }
             is VarpSmall -> {
@@ -222,6 +224,26 @@ public class SessionTracker(
                         NpcUpdateType.Idle -> {
                             // noop
                         }
+                    }
+                }
+            }
+            is SetActiveWorldV2 -> {
+                when (val type = message.worldType) {
+                    is SetActiveWorldV2.DynamicWorldType -> {
+                        sessionState.setActiveWorld(type.index, type.activeLevel)
+                    }
+                    is SetActiveWorldV2.RootWorldType -> {
+                        sessionState.setActiveWorld(-1, type.activeLevel)
+                    }
+                }
+            }
+            is SetActiveWorldV1 -> {
+                when (val type = message.worldType) {
+                    is SetActiveWorldV1.DynamicWorldType -> {
+                        sessionState.setActiveWorld(type.index, type.activeLevel)
+                    }
+                    is SetActiveWorldV1.RootWorldType -> {
+                        sessionState.setActiveWorld(-1, type.activeLevel)
                     }
                 }
             }

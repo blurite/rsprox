@@ -1459,31 +1459,33 @@ public class TextServerPacketTranscriber(
         index: Int,
         baseX: Int,
         baseZ: Int,
+        sizeX: Int,
+        sizeZ: Int,
         buildArea: BuildArea,
         keys: List<XteaKey>,
         playerInfoInitBlock: PlayerInfoInitBlock?,
     ) {
         if (!filters[PropertyFilter.REBUILD]) return omit()
         root.worldentity(index)
-        root.int("zonex", baseX)
-        root.int("zonez", baseZ)
+        val baseZoneX = baseX ushr 3
+        val baseZoneZ = baseZ ushr 3
+        root.int("zonex", baseZoneX)
+        root.int("zonez", baseZoneZ)
         if (playerInfoInitBlock != null) {
             root.coordGrid("localplayercoord", playerInfoInitBlock.localPlayerCoord)
         }
         val mapsquares = mutableSetOf<Int>()
         root.group("BUILD_AREA") {
-            val startZoneX = baseX - 6
-            val startZoneZ = baseZ - 6
             for (level in 0..<4) {
-                for (zoneX in startZoneX..(baseX + 6)) {
-                    for (zoneZ in startZoneZ..(baseZ + 6)) {
-                        val block = buildArea[level, zoneX - startZoneX, zoneZ - startZoneZ]
+                for (x in 0..<(sizeX / 8)) {
+                    for (z in 0..<(sizeZ / 8)) {
+                        val block = buildArea[level, x, z]
                         // Invalid zone
                         if (block.mapsquareId == 32767) continue
                         mapsquares += block.mapsquareId
                         group {
                             zoneCoord("source", block.level, block.zoneX, block.zoneZ)
-                            zoneCoord("dest", level, zoneX, zoneZ)
+                            zoneCoord("dest", level, baseZoneX + x, baseZoneZ)
                             int("rotation", block.rotation)
                         }
                     }
@@ -1510,6 +1512,8 @@ public class TextServerPacketTranscriber(
             message.index,
             message.baseX,
             message.baseZ,
+            sessionState.getWorld(message.index).sizeX,
+            sessionState.getWorld(message.index).sizeZ,
             message.buildArea,
             message.keys,
             message.playerInfoInitBlock,
@@ -1521,6 +1525,8 @@ public class TextServerPacketTranscriber(
             message.index,
             message.baseX,
             message.baseZ,
+            sessionState.getWorld(message.index).sizeX,
+            sessionState.getWorld(message.index).sizeZ,
             message.buildArea,
             message.keys,
             null,
@@ -1532,6 +1538,8 @@ public class TextServerPacketTranscriber(
             sessionState.getActiveWorld().index,
             message.baseX,
             message.baseZ,
+            sessionState.getActiveWorld().sizeX,
+            sessionState.getActiveWorld().sizeZ,
             message.buildArea,
             message.keys,
             null,

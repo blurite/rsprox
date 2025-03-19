@@ -186,8 +186,8 @@ internal object ServerMessageDecoderRepository {
                 bind(NpcInfoSmallV5Decoder())
                 bind(NpcInfoLargeV5Decoder())
                 bind(SetNpcUpdateOriginDecoder())
-                bind(WorldEntityInfoV4Decoder())
-                bind(WorldEntityInfoV5Decoder())
+                bind(WorldEntityInfoV4Decoder(huffmanCodec, cache))
+                bind(WorldEntityInfoV5Decoder(huffmanCodec, cache))
 
                 bind(IfClearInvDecoder())
                 bind(IfCloseSubDecoder())

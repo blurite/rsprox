@@ -16,6 +16,7 @@ public class SessionState(
     public var cycle: Int = 0
         private set
     private var activeWorldId: Int = ROOT_WORLD
+    private var activeLevel: Int = 0
     private val worlds: MutableMap<Int, World> = mutableMapOf()
     private val players: MutableMap<Int, Player> = mutableMapOf()
     private val lastKnownPlayerNames: MutableMap<Int, String> = mutableMapOf()
@@ -89,6 +90,14 @@ public class SessionState(
         return worlds[activeWorldId] ?: error("World $activeWorldId not available.")
     }
 
+    public fun setActiveWorld(
+        id: Int,
+        level: Int,
+    ) {
+        this.activeWorldId = id
+        this.activeLevel = level
+    }
+
     public fun incrementCycle() {
         this.cycle++
     }
@@ -123,7 +132,7 @@ public class SessionState(
     }
 
     public fun activeLevel(): Int {
-        return getActiveWorld().activeLevel()
+        return this.activeLevel
     }
 
     public fun openInterface(
