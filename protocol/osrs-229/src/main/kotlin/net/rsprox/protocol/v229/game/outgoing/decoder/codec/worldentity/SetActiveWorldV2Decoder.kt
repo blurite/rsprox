@@ -20,7 +20,7 @@ internal class SetActiveWorldV2Decoder : ProxyMessageDecoder<SetActiveWorldV2> {
     ): SetActiveWorldV2 {
         val index = buffer.g2s()
         val activeLevel = buffer.g1()
-        session.setActiveWorld(index)
+        session.setActiveWorld(index, activeLevel)
         val world = session.getWorld(index)
         world.level = activeLevel
         return if (index == -1) {

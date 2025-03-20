@@ -11,7 +11,7 @@ public class World(
     public val sizeZ: Int = 16384,
 ) {
     public val worldEntityInfo: WorldEntityInfoClient = WorldEntityInfoClient()
-    public var baseX: Int = -1
-    public var baseZ: Int = -1
+    public var baseX: Int = 0
+    public var baseZ: Int = 0
     public var level: Int = 0
 }

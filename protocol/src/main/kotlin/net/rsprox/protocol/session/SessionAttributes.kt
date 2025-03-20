@@ -9,6 +9,7 @@ import net.rsprox.protocol.world.World
 private var Session.reflectionCheckMap: MutableMap<Int, List<ReflectionCheck>>? by attribute()
 private var Session.trackedWorldMap: MutableMap<Int, World>? by attribute()
 private var Session.currentActiveWorld: Int? by attribute()
+private var Session.currentActiveLevel: Int? by attribute()
 private var Session.activeNpcInfoBaseCoord: CoordGrid? by attribute()
 private var Session.bytesInPacketGroup: Int? by attribute()
 private var Session.bytesConsumedInPacketGroup: Int? by attribute()
@@ -49,8 +50,16 @@ public fun Session.getActiveWorld(): Int {
     return currentActiveWorld ?: -1
 }
 
-public fun Session.setActiveWorld(id: Int) {
+public fun Session.getActiveLevel(): Int {
+    return currentActiveLevel ?: 0
+}
+
+public fun Session.setActiveWorld(
+    id: Int,
+    level: Int,
+) {
     currentActiveWorld = id
+    currentActiveLevel = level
 }
 
 public fun Session.getNpcInfoBaseCoord(): CoordGrid {
