@@ -42,8 +42,8 @@ public class CamTargetV3(
         public val targetIndex: Int,
     ) : CamTargetType {
         init {
-            require(worldEntityIndex == -1 || worldEntityIndex in 0..<2048) {
-                "World entity index must be -1, or in range of 0..<2048"
+            require(worldEntityIndex == -1 || worldEntityIndex in 0..<4096) {
+                "World entity index must be -1, or in range of 0..<4096"
             }
             require(targetIndex in 0..<2048) {
                 "Index must be in range of 0..<2048"
@@ -87,8 +87,8 @@ public class CamTargetV3(
         public val targetIndex: Int,
     ) : CamTargetType {
         init {
-            require(worldEntityIndex == -1 || worldEntityIndex in 0..<2048) {
-                "World entity index must be -1, or in range of 0..<2048"
+            require(worldEntityIndex == -1 || worldEntityIndex in 0..<4096) {
+                "World entity index must be -1, or in range of 0..<4096"
             }
             require(targetIndex in 0..<65536) {
                 "Index must be in range of 0..<65536"
@@ -133,11 +133,11 @@ public class CamTargetV3(
         public val targetIndex: Int,
     ) : CamTargetType {
         init {
-            require(worldEntityIndex == -1 || worldEntityIndex in 0..<2048) {
-                "Source world entity index must be -1 or in range of 0..<2048"
+            require(worldEntityIndex == -1 || worldEntityIndex in 0..<4096) {
+                "Source world entity index must be -1 or in range of 0..<4096"
             }
-            require(targetIndex in 0..<2048) {
-                "World entity target index must be in range of 0..<2048"
+            require(targetIndex in 0..<4096) {
+                "World entity target index must be in range of 0..<4096"
             }
         }
 
