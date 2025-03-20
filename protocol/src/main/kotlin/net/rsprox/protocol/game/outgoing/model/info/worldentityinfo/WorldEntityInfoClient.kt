@@ -129,7 +129,11 @@ public class WorldEntityInfoClient {
     private fun decodeHighResolutionV3(buffer: JagByteBuf) {
         val count = buffer.g1()
         if (count < transmittedWorldEntityCount) {
-            throw RuntimeException("dang")
+            for (i in count..<transmittedWorldEntityCount) {
+                val index = this.transmittedWorldEntity[i]
+                this.worldEntity[index] = null
+                updates[index] = WorldEntityUpdateType.HighResolutionToLowResolution
+            }
         }
         if (count > transmittedWorldEntityCount) {
             throw RuntimeException("dang!")
