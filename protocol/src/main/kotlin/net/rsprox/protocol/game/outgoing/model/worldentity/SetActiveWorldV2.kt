@@ -85,8 +85,8 @@ public class SetActiveWorldV2(
             index.toUShort(),
             activeLevel.toUByte(),
         ) {
-            require(index in 0..<2048) {
-                "Index must be in range of 0..<2048"
+            require(index in 0..<4096) {
+                "Index must be in range of 0..<4096"
             }
             require(activeLevel in 0..<4) {
                 "Active level must be in range of 0..<4"

@@ -6,8 +6,8 @@ import net.rsprox.protocol.common.CoordGrid
 
 public class WorldEntityInfoClient {
     private var transmittedWorldEntityCount: Int = 0
-    private val transmittedWorldEntity: IntArray = IntArray(2048)
-    private val worldEntity: Array<Any?> = arrayOfNulls(2048)
+    private val transmittedWorldEntity: IntArray = IntArray(25)
+    private val worldEntity: Array<Any?> = arrayOfNulls(4096)
     private val updates: MutableMap<Int, WorldEntityUpdateType> = mutableMapOf()
 
     public fun decode(
