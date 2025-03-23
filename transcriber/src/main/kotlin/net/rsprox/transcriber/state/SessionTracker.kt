@@ -1,5 +1,6 @@
 package net.rsprox.transcriber.state
 
+import com.github.michaelbull.logging.InlineLogger
 import net.rsprot.protocol.message.IncomingMessage
 import net.rsprox.cache.api.Cache
 import net.rsprox.protocol.common.CoordGrid
@@ -42,6 +43,8 @@ public class SessionTracker(
     private val cache: Cache,
     private val monitor: SessionMonitor<*>,
 ) {
+    public val keyStorage: KeyStorage = KeyStorage()
+
     private fun setCurrentProt(prot: Prot) {
         sessionState.currentProt = prot.toString()
     }
@@ -50,6 +53,13 @@ public class SessionTracker(
         message: IncomingMessage,
         prot: net.rsprot.protocol.Prot,
     ) {
+        try {
+            processKeys(message)
+        } catch (e: Exception) {
+            logger.error(e) {
+                "Exception processing keys for message: $message"
+            }
+        }
         if (message is RebuildLogin) {
             setCurrentProt(GameServerProt.REBUILD_NORMAL)
             return
@@ -57,6 +67,45 @@ public class SessionTracker(
         val toString = prot.toString()
         val serverProt = GameServerProt.valueOf(toString)
         setCurrentProt(serverProt)
+    }
+
+    private fun processKeys(message: IncomingMessage) {
+        when (message) {
+            is StaticRebuildMessage -> {
+                keyStorage.onStaticRebuild(message)
+            }
+
+            is RebuildRegion -> {
+                keyStorage.onRebuildRegion(message)
+            }
+
+            is RebuildWorldEntityV3 -> {
+                keyStorage.onRebuildWorldEntity(
+                    sessionState.getActiveWorld().sizeX,
+                    sessionState.getActiveWorld().sizeZ,
+                    message.buildArea,
+                    message.keys,
+                )
+            }
+
+            is RebuildWorldEntityV2 -> {
+                keyStorage.onRebuildWorldEntity(
+                    sessionState.getWorld(message.index).sizeX,
+                    sessionState.getWorld(message.index).sizeZ,
+                    message.buildArea,
+                    message.keys,
+                )
+            }
+
+            is RebuildWorldEntityV1 -> {
+                keyStorage.onRebuildWorldEntity(
+                    sessionState.getWorld(message.index).sizeX,
+                    sessionState.getWorld(message.index).sizeZ,
+                    message.buildArea,
+                    message.keys,
+                )
+            }
+        }
     }
 
     public fun onClientPacket(
@@ -399,5 +448,9 @@ public class SessionTracker(
                 }
             }
         }
+    }
+
+    private companion object {
+        private val logger = InlineLogger()
     }
 }

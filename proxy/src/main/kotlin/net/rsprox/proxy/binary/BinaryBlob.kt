@@ -1,5 +1,6 @@
 package net.rsprox.proxy.binary
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.michaelbull.logging.InlineLogger
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufAllocator
@@ -27,6 +28,10 @@ import net.rsprox.transcriber.state.SessionState
 import net.rsprox.transcriber.state.SessionTracker
 import net.rsprox.transcriber.text.TextMessageConsumerContainer
 import net.rsprox.transcriber.text.TextTranscriberProvider
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
@@ -42,6 +47,7 @@ public data class BinaryBlob(
     private val monitor: SessionMonitor<BinaryHeader>,
     private val filters: PropertyFilterSetStore,
     private val settings: SettingSetStore,
+    private val liveOldschoolConnection: Boolean,
 ) {
     private var lastWrite = TimeSource.Monotonic.markNow()
     private var lastWriteSize = 0
@@ -101,6 +107,61 @@ public data class BinaryBlob(
         this.monitor.onIncomingBytesPerSecondUpdate(-1)
         this.monitor.onOutgoingBytesPerSecondUpdate(-1)
         this.monitor.onLogout(header)
+        if (liveOldschoolConnection) {
+            try {
+                submitKeys()
+            } catch (e: Exception) {
+                logger.error(e) {
+                    "Exception while submitting keys"
+                }
+            }
+        }
+    }
+
+    private fun submitKeys() {
+        val keys =
+            liveSession
+                ?.getKeyStorage()
+                ?.get() ?: return
+        if (keys.isEmpty()) {
+            logger.info { "No keys to submit." }
+            return
+        }
+        logger.info { "Submitting ${keys.size} XTEA keys to OpenRS2." }
+        val keysArray = keys.values.distinct().toTypedArray()
+        val request =
+            Request
+                .Builder()
+                .post(JACKSON.writeValueAsString(keysArray).toRequestBody(JSON))
+                .url(XTEA_KEYS_ENDPOINT)
+                .build()
+        CLIENT.newCall(request).enqueue(
+            object : Callback {
+                override fun onFailure(
+                    call: Call,
+                    e: IOException,
+                ) {
+                    logger.error(e) {
+                        "XTEA key submission failed."
+                    }
+                }
+
+                override fun onResponse(
+                    call: Call,
+                    response: Response,
+                ) {
+                    response.use {
+                        if (it.isSuccessful) {
+                            logger.info { "XTEA key submission successful." }
+                        } else {
+                            logger.error {
+                                "XTEA key submission failed with status code ${it.code}."
+                            }
+                        }
+                    }
+                }
+            },
+        )
     }
 
     public fun shutdown() {
@@ -246,6 +307,10 @@ public data class BinaryBlob(
 
     public companion object {
         private const val PORT: Int = 43_594
+        private const val XTEA_KEYS_ENDPOINT: String = "https://archive.openrs2.org/keys"
+        private val JSON: MediaType = "application/json; charset=utf-8".toMediaType()
+        private val JACKSON = jacksonObjectMapper()
+        private val CLIENT = OkHttpClient()
         private val logger = InlineLogger()
 
         public fun decode(
@@ -268,7 +333,15 @@ public data class BinaryBlob(
             val buffer = Unpooled.wrappedBuffer(buf)
             val header = BinaryHeader.decode(buffer.toJagByteBuf())
             val stream = BinaryStream(buffer.slice())
-            return BinaryBlob(header, stream, 0, NopSessionMonitor, filters, settings)
+            return BinaryBlob(
+                header,
+                stream,
+                0,
+                NopSessionMonitor,
+                filters,
+                settings,
+                false,
+            )
         }
     }
 }

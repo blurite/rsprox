@@ -9,6 +9,7 @@ import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.shared.StreamDirection
 import net.rsprox.transcriber.Packet
 import net.rsprox.transcriber.TranscriberRunner
+import net.rsprox.transcriber.state.KeyStorage
 import net.rsprox.transcriber.state.SessionTracker
 import java.util.Queue
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -29,6 +30,10 @@ public class LiveTranscriberSession(
     @Volatile private var revision: Int = -1
 
     private val packetList: MutableList<Packet> = mutableListOf()
+
+    public fun getKeyStorage(): KeyStorage {
+        return sessionTracker.keyStorage
+    }
 
     init {
         launchThread()

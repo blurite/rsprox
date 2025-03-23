@@ -321,7 +321,16 @@ public class ServerGameLoginDecoder(
             val sessionMonitor = connections.getSessionMonitor(port)
             sessionMonitor.onLogin(header)
             sessionMonitor.onUserInformationUpdate(userId, userHash)
-            val blob = BinaryBlob(header, stream, binaryWriteInterval, sessionMonitor, filters, settings)
+            val blob =
+                BinaryBlob(
+                    header,
+                    stream,
+                    binaryWriteInterval,
+                    sessionMonitor,
+                    filters,
+                    settings,
+                    header.worldHost.endsWith(".runescape.com"),
+                )
             if (LATEST_SUPPORTED_PLUGIN >= target.revisionNum()) {
                 blob.hookLiveTranscriber(key, decoderLoader)
             }
