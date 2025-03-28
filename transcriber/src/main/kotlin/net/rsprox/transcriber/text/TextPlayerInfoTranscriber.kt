@@ -491,14 +491,14 @@ public class TextPlayerInfoTranscriber(
                     shortPlayer(player.index)
                 }
                 scriptVarType("id", ScriptVarType.HEADBAR, headbar.type)
-                int("type", headbar.type)
-                if (headbar.startFill == headbar.endFill) {
+                val logTime = headbar.startTime != 0 || headbar.endTime != 0
+                if (headbar.startFill == headbar.endFill && !logTime) {
                     int("fill", headbar.startFill)
                 } else {
                     int("startfill", headbar.startFill)
                     int("endfill", headbar.endFill)
                 }
-                if (headbar.startTime != 0 || headbar.endTime != 0) {
+                if (logTime) {
                     int("starttime", headbar.startTime)
                     int("endtime", headbar.endTime)
                 }
