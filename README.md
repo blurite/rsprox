@@ -92,7 +92,7 @@ On Linux, there are a few extra steps involved in setting up a Jagex Account:
 
 1. Run `RSProx.AppImage` normally to generate the required folders.
 2. Afterwards, you must run `RSProx.AppImage` with `sudo`, this is because of the Jagex Account login page only allowing redirects to `localhost:80`, which is a protected port by default on Linux, after this you can setup and import your Jagex Account via the GUI.
-3. Once the above is done, you must copy the `jagex-accounts.properties` file from `/root/.rsprox/` to `~/.rsprox/` (i.e `sudo cp /root/.rsprox/jagex-accounts.properties ~/.rsprox/` as RSProx puts its config folder in the user's home folder by default, which is different when ran as root.
+3. Once the above is done, you must copy the `jagex-accounts.properties` file from `/root/.rsprox/` to `~/.rsprox/` (i.e `sudo cp /root/.rsprox/jagex-accounts.properties ~/.rsprox/`) as RSProx puts its config folder in the user's home folder by default, which is different when ran as root.
 4. You must then make yourself the owner of the file, this is done via `sudo chown "$USER" ~/.rsprox/jagex-accounts.properties`.
 5. You can now simply run `RSProx.AppImage` and you will be able to access your Jagex Account.
 
