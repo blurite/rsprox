@@ -3,7 +3,6 @@ package net.rsprox.proxy.target
 import com.github.michaelbull.logging.InlineLogger
 import io.netty.bootstrap.ServerBootstrap
 import net.rsprox.proxy.bootstrap.BootstrapFactory
-import net.rsprox.proxy.config.CURRENT_REVISION
 import net.rsprox.proxy.config.JavConfig
 import net.rsprox.proxy.config.ProxyProperties
 import net.rsprox.proxy.config.ProxyProperty
@@ -31,7 +30,7 @@ public class ProxyTarget(
             ?.split(".")
             ?.firstOrNull()
             ?.toIntOrNull()
-            ?: CURRENT_REVISION
+            ?: loadJavConfig(config.javConfigUrl).getRevision()
     }
 
     public fun load(
