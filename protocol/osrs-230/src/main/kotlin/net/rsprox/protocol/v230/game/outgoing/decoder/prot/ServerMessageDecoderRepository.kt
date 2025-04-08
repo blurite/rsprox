@@ -123,7 +123,6 @@ import net.rsprox.protocol.v230.game.outgoing.decoder.codec.varp.VarpLargeDecode
 import net.rsprox.protocol.v230.game.outgoing.decoder.codec.varp.VarpResetDecoder
 import net.rsprox.protocol.v230.game.outgoing.decoder.codec.varp.VarpSmallDecoder
 import net.rsprox.protocol.v230.game.outgoing.decoder.codec.varp.VarpSyncDecoder
-import net.rsprox.protocol.v230.game.outgoing.decoder.codec.worldentity.ClearEntitiesDecoder
 import net.rsprox.protocol.v230.game.outgoing.decoder.codec.worldentity.SetActiveWorldV1Decoder
 import net.rsprox.protocol.v230.game.outgoing.decoder.codec.worldentity.SetActiveWorldV2Decoder
 import net.rsprox.protocol.v230.game.outgoing.decoder.codec.zone.header.UpdateZoneFullFollowsDecoder
@@ -186,7 +185,6 @@ internal object ServerMessageDecoderRepository {
                 bind(NpcInfoSmallV5Decoder())
                 bind(NpcInfoLargeV5Decoder())
                 bind(SetNpcUpdateOriginDecoder())
-                bind(WorldEntityInfoV4Decoder(huffmanCodec, cache))
                 bind(WorldEntityInfoV5Decoder(huffmanCodec, cache))
 
                 bind(IfClearInvDecoder())
@@ -287,7 +285,6 @@ internal object ServerMessageDecoderRepository {
                 bind(VarpSmallDecoder())
                 bind(VarpSyncDecoder())
 
-                bind(ClearEntitiesDecoder())
                 bind(SetActiveWorldV1Decoder())
                 bind(SetActiveWorldV2Decoder())
 

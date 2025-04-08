@@ -81,12 +81,10 @@ public enum class GameServerProt(
     SET_NPC_UPDATE_ORIGIN(GameServerProtId.SET_NPC_UPDATE_ORIGIN, 2),
 
     // World entity packets
-    CLEAR_ENTITIES(GameServerProtId.CLEAR_ENTITIES, 0),
     SET_ACTIVE_WORLD_V1(GameServerProtId.SET_ACTIVE_WORLD_V1, 4),
     SET_ACTIVE_WORLD_V2(GameServerProtId.SET_ACTIVE_WORLD_V2, 3),
 
     WORLDENTITY_INFO_V5(GameServerProtId.WORLDENTITY_INFO_V5, Prot.VAR_SHORT),
-    WORLDENTITY_INFO_V4(GameServerProtId.WORLDENTITY_INFO_V4, Prot.VAR_SHORT),
 
     // Map packets
     REBUILD_NORMAL(GameServerProtId.REBUILD_NORMAL, Prot.VAR_SHORT),
