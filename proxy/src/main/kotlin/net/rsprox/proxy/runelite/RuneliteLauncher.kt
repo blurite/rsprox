@@ -78,14 +78,14 @@ public class RuneliteLauncher {
         // Uncomment and change commit when the next revision is about to push
         // Pick the correct bootstrap commit from here:
         // https://github.com/runelite/static.runelite.net/commits/gh-pages/bootstrap.json
-        val repository = "https://raw.githubusercontent.com/runelite/static.runelite.net"
-        val commit = "793a9df1ed8cdef5d6a324aeec0629fa0346d32b"
-        val bootstrapUrl = "$repository/$commit/bootstrap.json"
-        val bootstrapSigUrl = "$repository/$commit/bootstrap.json.sha256"
+        // val repository = "https://raw.githubusercontent.com/runelite/static.runelite.net"
+        // val commit = "793a9df1ed8cdef5d6a324aeec0629fa0346d32b"
+        // val bootstrapUrl = "$repository/$commit/bootstrap.json"
+        // val bootstrapSigUrl = "$repository/$commit/bootstrap.json.sha256"
 
         // Any other time, just rely on the latest bootstrap.
-        // val bootstrapUrl = "https://static.runelite.net/bootstrap.json"
-        // val bootstrapSigUrl = "https://static.runelite.net/bootstrap.json.sha256"
+        val bootstrapUrl = "https://static.runelite.net/bootstrap.json"
+        val bootstrapSigUrl = "https://static.runelite.net/bootstrap.json.sha256"
         return listOf(
             getJava(),
             "-cp",

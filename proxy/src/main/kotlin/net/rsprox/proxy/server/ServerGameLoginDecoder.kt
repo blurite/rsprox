@@ -267,7 +267,7 @@ public class ServerGameLoginDecoder(
             writeToClient {
                 pdata(payload.copy())
             }
-            val prot = decoderLoader.getDecoder(target.revisionNum()).gameServerProtProvider[0xFF]
+            val prot = decoderLoader.getDecoder(target.revisionNum(clientChannel)).gameServerProtProvider[0xFF]
             val packet =
                 ServerPacket(
                     prot,
@@ -280,7 +280,7 @@ public class ServerGameLoginDecoder(
             pipeline.replace<ServerGameLoginDecoder>(
                 ServerGenericDecoder(
                     serverChannel.getServerToClientStreamCipher(),
-                    decoderLoader.getDecoder(target.revisionNum()).gameServerProtProvider,
+                    decoderLoader.getDecoder(target.revisionNum(clientChannel)).gameServerProtProvider,
                 ),
             )
             pipeline.replace<ServerRelayHandler>(ServerGameHandler(clientChannel, target.worldListProvider))
@@ -331,7 +331,7 @@ public class ServerGameLoginDecoder(
                     settings,
                     header.worldHost.endsWith(".runescape.com"),
                 )
-            if (LATEST_SUPPORTED_PLUGIN >= target.revisionNum()) {
+            if (LATEST_SUPPORTED_PLUGIN >= target.revisionNum(clientChannel)) {
                 blob.hookLiveTranscriber(key, decoderLoader)
             }
             val serverChannel = ctx.channel()
@@ -361,7 +361,7 @@ public class ServerGameLoginDecoder(
             pipeline.replace<ServerGameLoginDecoder>(
                 ServerGenericDecoder(
                     serverChannel.getServerToClientStreamCipher(),
-                    decoderLoader.getDecoder(target.revisionNum()).gameServerProtProvider,
+                    decoderLoader.getDecoder(target.revisionNum(clientChannel)).gameServerProtProvider,
                 ),
             )
             pipeline.replace<ServerRelayHandler>(ServerGameHandler(clientChannel, target.worldListProvider))
@@ -374,7 +374,10 @@ public class ServerGameLoginDecoder(
         val clientPipeline = clientChannel.pipeline()
         clientPipeline.remove<ClientRelayHandler>()
         clientPipeline.addLast(
-            ClientGenericDecoder(cipher, decoderLoader.getDecoder(target.revisionNum()).gameClientProtProvider),
+            ClientGenericDecoder(
+                cipher,
+                decoderLoader.getDecoder(target.revisionNum(clientChannel)).gameClientProtProvider,
+            ),
         )
         clientPipeline.addLast(ClientGameHandler(ctx.channel()))
     }

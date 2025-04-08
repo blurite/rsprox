@@ -121,7 +121,7 @@ public class ClientLoginHandler(
         val builder = ctx.channel().getBinaryHeaderBuilder()
         val buffer = msg.payload.toJagByteBuf()
         val version = buffer.g4()
-        if (version != target.revisionNum()) {
+        if (version != target.revisionNum(ctx.channel())) {
             throw IllegalStateException("Invalid revision for target ${target.config.name}: $version")
         }
         val subVersion = buffer.g4()

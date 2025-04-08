@@ -16,9 +16,7 @@ import net.rsprot.buffer.extensions.pdata
 import net.rsprot.buffer.extensions.pjstr
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.crypto.crc.CyclicRedundancyCheck
-import net.rsprot.protocol.util.CombinedId
-import net.rsprot.protocol.util.gCombinedId
-import net.rsprot.protocol.util.gCombinedIdAlt1
+import net.rsprot.protocol.util.*
 import net.rsprox.proxy.attributes.INCOMING_BANK_PIN
 import net.rsprox.proxy.channel.getBinaryBlob
 import net.rsprox.proxy.channel.getServerToClientStreamCipher
@@ -38,8 +36,9 @@ public class ServerGameHandler(
     ) {
         try {
             clientChannel.writeAndFlush(redirectTraffic(ctx, msg).encode(ctx.alloc()))
-            eraseSensitiveContents(ctx, msg)
-            ctx.channel().getBinaryBlob().append(
+            val blob = ctx.channel().getBinaryBlob()
+            eraseSensitiveContents(ctx, msg, blob.header.revision)
+            blob.append(
                 StreamDirection.SERVER_TO_CLIENT,
                 msg.encode(ctx.alloc(), mod = false),
             )
@@ -75,6 +74,7 @@ public class ServerGameHandler(
     private fun eraseSensitiveContents(
         ctx: ChannelHandlerContext,
         msg: ServerPacket<*>,
+        revision: Int,
     ) {
         val prot = msg.prot
         // Both the message private and message private echo follow the same consistent structure
@@ -138,9 +138,54 @@ public class ServerGameHandler(
             "IF_OPENSUB" -> {
                 // Note(revision): This block changes in each revision and must be updated
                 val buf = msg.payload.toJagByteBuf()
-                val interfaceId = buf.g2()
-                val targetComponent = buf.gCombinedIdAlt1()
-                buf.skipRead(1)
+                val interfaceId: Int
+                val targetComponent: CombinedId
+                when (revision) {
+                    223 -> {
+                        buf.skipRead(1)
+                        interfaceId = buf.g2Alt1()
+                        targetComponent = buf.gCombinedId()
+                    }
+                    224 -> {
+                        interfaceId = buf.g2Alt3()
+                        targetComponent = buf.gCombinedId()
+                        buf.skipRead(1)
+                    }
+                    225 -> {
+                        targetComponent = buf.gCombinedIdAlt3()
+                        interfaceId = buf.g2Alt2()
+                        buf.skipRead(1)
+                    }
+                    226 -> {
+                        targetComponent = buf.gCombinedIdAlt2()
+                        interfaceId = buf.g2Alt2()
+                        buf.skipRead(1)
+                    }
+                    227 -> {
+                        interfaceId = buf.g2Alt2()
+                        targetComponent = buf.gCombinedIdAlt2()
+                        buf.skipRead(1)
+                    }
+                    228 -> {
+                        targetComponent = buf.gCombinedIdAlt1()
+                        buf.skipRead(1)
+                        interfaceId = buf.g2Alt1()
+                    }
+                    229 -> {
+                        interfaceId = buf.g2()
+                        targetComponent = buf.gCombinedIdAlt1()
+                        buf.skipRead(1)
+                    }
+                    230 -> {
+                        buf.skipRead(1)
+                        interfaceId = buf.g2Alt2()
+                        targetComponent = buf.gCombinedIdAlt3()
+                    }
+
+                    else -> {
+                        error("Unsupported revision: $revision")
+                    }
+                }
                 if (interfaceId == BANK_PIN_INTERFACE) {
                     this.bankPinComponent = targetComponent
                     clientChannel.attr(INCOMING_BANK_PIN).set(true)
