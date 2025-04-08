@@ -2,10 +2,14 @@ package net.rsprox.proxy.target
 
 import com.github.michaelbull.logging.InlineLogger
 import io.netty.bootstrap.ServerBootstrap
+import io.netty.channel.Channel
 import net.rsprox.proxy.bootstrap.BootstrapFactory
+import net.rsprox.proxy.channel.getPort
+import net.rsprox.proxy.config.CURRENT_REVISION
 import net.rsprox.proxy.config.JavConfig
 import net.rsprox.proxy.config.ProxyProperties
 import net.rsprox.proxy.config.ProxyProperty
+import net.rsprox.proxy.connection.ClientTypeDictionary
 import net.rsprox.proxy.futures.asCompletableFuture
 import net.rsprox.proxy.http.GamePackProvider
 import net.rsprox.proxy.worlds.DynamicWorldListProvider
@@ -24,13 +28,17 @@ public class ProxyTarget(
     public lateinit var worldListProvider: WorldListProvider
         private set
 
-    public fun revisionNum(): Int {
-        // Improve this maybe? It's a little fragile like this
-        return config.revision
-            ?.split(".")
-            ?.firstOrNull()
-            ?.toIntOrNull()
-            ?: loadJavConfig(config.javConfigUrl).getRevision()
+    public fun revisionNum(channel: Channel): Int {
+        val overriddenRevision =
+            config.revision
+                ?.split(".")
+                ?.firstOrNull()
+                ?.toIntOrNull()
+        if (overriddenRevision != null) return overriddenRevision
+        // RuneLite is detached from jav config and needs hard-coding
+        val runelite = ClientTypeDictionary[channel.getPort()].startsWith("RuneLite")
+        if (runelite) return CURRENT_REVISION
+        return loadJavConfig(config.javConfigUrl).getRevision()
     }
 
     public fun load(
