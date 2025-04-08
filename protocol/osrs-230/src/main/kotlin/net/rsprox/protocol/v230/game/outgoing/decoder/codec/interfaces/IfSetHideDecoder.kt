@@ -15,8 +15,8 @@ internal class IfSetHideDecoder : ProxyMessageDecoder<IfSetHide> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetHide {
-        val hidden = buffer.g1Alt1() == 1
         val combinedId = buffer.gCombinedIdAlt2()
+        val hidden = buffer.g1Alt3() == 1
         return IfSetHide(
             combinedId.interfaceId,
             combinedId.componentId,

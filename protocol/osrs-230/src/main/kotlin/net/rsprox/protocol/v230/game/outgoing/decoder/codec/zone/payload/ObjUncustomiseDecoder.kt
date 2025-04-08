@@ -15,9 +15,9 @@ internal class ObjUncustomiseDecoder : ProxyMessageDecoder<ObjUncustomise> {
         buffer: JagByteBuf,
         session: Session,
     ): ObjUncustomise {
+        val id = buffer.g2Alt3()
+        val quantity = buffer.g4Alt1()
         val coordInZone = CoordInZone(buffer.g1Alt3())
-        val quantity = buffer.g4()
-        val id = buffer.g2()
         return ObjUncustomise(
             id,
             quantity,

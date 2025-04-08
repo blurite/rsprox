@@ -16,9 +16,9 @@ internal class IfSetEventsDecoder : ProxyMessageDecoder<IfSetEvents> {
         session: Session,
     ): IfSetEvents {
         val combinedId = buffer.gCombinedIdAlt3()
-        val end = buffer.g2Alt2()
-        val start = buffer.g2Alt3()
-        val events = buffer.g4Alt2()
+        val start = buffer.g2Alt2()
+        val events = buffer.g4Alt1()
+        val end = buffer.g2()
         return IfSetEvents(
             combinedId.interfaceId,
             combinedId.componentId,

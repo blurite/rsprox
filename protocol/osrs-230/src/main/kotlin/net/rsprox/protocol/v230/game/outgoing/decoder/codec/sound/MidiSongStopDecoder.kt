@@ -14,8 +14,8 @@ internal class MidiSongStopDecoder : ProxyMessageDecoder<MidiSongStop> {
         buffer: JagByteBuf,
         session: Session,
     ): MidiSongStop {
-        val fadeOutDelay = buffer.g2()
-        val fadeOutSpeed = buffer.g2()
+        val fadeOutSpeed = buffer.g2Alt3()
+        val fadeOutDelay = buffer.g2Alt1()
         return MidiSongStop(
             fadeOutDelay,
             fadeOutSpeed,
