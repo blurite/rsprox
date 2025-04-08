@@ -18,7 +18,7 @@ import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.crypto.crc.CyclicRedundancyCheck
 import net.rsprot.protocol.util.CombinedId
 import net.rsprot.protocol.util.gCombinedId
-import net.rsprot.protocol.util.gCombinedIdAlt1
+import net.rsprot.protocol.util.gCombinedIdAlt3
 import net.rsprox.proxy.attributes.INCOMING_BANK_PIN
 import net.rsprox.proxy.channel.getBinaryBlob
 import net.rsprox.proxy.channel.getServerToClientStreamCipher
@@ -138,9 +138,9 @@ public class ServerGameHandler(
             "IF_OPENSUB" -> {
                 // Note(revision): This block changes in each revision and must be updated
                 val buf = msg.payload.toJagByteBuf()
-                val interfaceId = buf.g2()
-                val targetComponent = buf.gCombinedIdAlt1()
                 buf.skipRead(1)
+                val interfaceId = buf.g2Alt2()
+                val targetComponent = buf.gCombinedIdAlt3()
                 if (interfaceId == BANK_PIN_INTERFACE) {
                     this.bankPinComponent = targetComponent
                     clientChannel.attr(INCOMING_BANK_PIN).set(true)

@@ -51,14 +51,14 @@ public class ClientGameHandler(
                         .toJagByteBuf()
                 for (i in 0..<count) {
                     // Note(revision): These buffer methods change
-                    val delta = buffer.g3()
+                    val delta = buffer.g3Alt2()
                     buffer.g1() // Key
 
                     // Erase any keypresses in general
                     // There is no value in keeping key presses in the logs, at best it helps bot developers,
                     // at worst it leaks sensitive information like private message contents,
                     // which could be re-assembled by going through keyboard events.
-                    replacement.p3(delta)
+                    replacement.p3Alt2(delta)
                     replacement.p1(0)
                 }
 
