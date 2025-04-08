@@ -14,7 +14,7 @@ public class SetHeadingDecoder : ProxyMessageDecoder<SetHeading> {
         buffer: JagByteBuf,
         session: Session,
     ): SetHeading {
-        val heading = buffer.g1Alt2()
+        val heading = buffer.g1()
         return SetHeading(heading)
     }
 }

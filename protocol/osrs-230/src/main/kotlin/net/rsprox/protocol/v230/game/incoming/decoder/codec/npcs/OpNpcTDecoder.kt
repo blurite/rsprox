@@ -2,7 +2,7 @@ package net.rsprox.protocol.v230.game.incoming.decoder.codec.npcs
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.util.gCombinedIdAlt1
+import net.rsprot.protocol.util.gCombinedId
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpcT
 import net.rsprox.protocol.session.Session
@@ -15,11 +15,11 @@ public class OpNpcTDecoder : ProxyMessageDecoder<OpNpcT> {
         buffer: JagByteBuf,
         session: Session,
     ): OpNpcT {
-        val selectedSub = buffer.g2()
-        val selectedObj = buffer.g2Alt1()
-        val index = buffer.g2()
-        val selectedCombinedId = buffer.gCombinedIdAlt1()
-        val controlKey = buffer.g1Alt3() == 1
+        val selectedSub = buffer.g2Alt3()
+        val selectedCombinedId = buffer.gCombinedId()
+        val controlKey = buffer.g1Alt2() == 1
+        val index = buffer.g2Alt2()
+        val selectedObj = buffer.g2()
         return OpNpcT(
             index,
             controlKey,
