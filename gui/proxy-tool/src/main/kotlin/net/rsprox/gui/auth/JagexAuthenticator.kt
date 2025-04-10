@@ -30,11 +30,11 @@ public class JagexAuthenticator {
         } else if (System.getProperty("os.name").contains("Linux")) {
             // doesn't support more than one user as it's fairly impossible to know which user is trying to run since
             // you only have root context.
-            var username = ""
+            var username: String
             try {
                 username = Path("/home/").listDirectoryEntries()[0].name.replace("/home/", "")
             } catch (e: IndexOutOfBoundsException) {
-                logger.error { "No linux users found." }
+                logger.error(e) { "No linux users found." }
                 return future
             }
             Runtime.getRuntime().exec("sudo --user $username xdg-open $url")
