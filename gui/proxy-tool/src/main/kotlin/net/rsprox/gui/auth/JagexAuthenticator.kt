@@ -5,9 +5,6 @@ import java.awt.Desktop
 import java.net.URI
 import java.util.concurrent.CompletableFuture
 import javax.swing.SwingUtilities
-import kotlin.io.path.Path
-import kotlin.io.path.listDirectoryEntries
-import kotlin.io.path.name
 import kotlin.text.Regex
 
 public class JagexAuthenticator {
@@ -52,15 +49,8 @@ public class JagexAuthenticator {
                 // just uses first match since rsprox wouldn't support multiple users due to ports anyway
                 username = regexMatches[0].value.split(" ")[0].trim()
             } else {
-                // fallback to previous method, prob non-default filename
-                val homeDirectories = Path("/home/").listDirectoryEntries()
-
-                if (homeDirectories.isEmpty()) {
-                    logger.error { "No valid linux users found." }
-                    return future
-                }
-
-                username = homeDirectories[0].name.replace("/home/", "")
+                // fallback to first user in logged in list as that's more likely to be correct than `/home/` checks
+                username = loggedInUsers.split("\n")[0].split(" ")[0].trim()
             }
 
             Runtime.getRuntime().exec("sudo --user $username xdg-open $url")
