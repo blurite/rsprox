@@ -258,10 +258,12 @@ public data class BinaryBlob(
                     key,
                     masterIndex,
                 )
+            val cache = OldSchoolCache(LiveCacheResolver(info), masterIndex)
             val provider =
                 CacheProvider {
-                    OldSchoolCache(LiveCacheResolver(info), masterIndex)
+                    cache
                 }
+            monitor.onCacheUpdate(provider)
             decoderLoader.load(provider, header.revision)
             val latestPlugin = decoderLoader.getDecoderOrNull(header.revision)
             if (latestPlugin == null) {
@@ -295,6 +297,7 @@ public data class BinaryBlob(
                     decodingSession,
                     runner,
                     sessionTracker,
+                    provider,
                 )
             this.liveSession = liveSession
             liveSession.setRevision(header.revision)

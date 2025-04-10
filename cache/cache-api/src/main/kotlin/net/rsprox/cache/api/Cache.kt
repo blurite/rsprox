@@ -20,4 +20,6 @@ public interface Cache {
     ): GameValType?
 
     public fun listGameValTypes(gameVal: GameVal): Collection<GameValType>
+
+    public fun allGameValTypes(): Map<GameVal, Map<Int, GameValType>>
 }

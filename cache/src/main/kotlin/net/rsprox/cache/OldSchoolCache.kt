@@ -100,6 +100,13 @@ public class OldSchoolCache(
         return gameVals[gameVal]?.values ?: emptyList()
     }
 
+    override fun allGameValTypes(): Map<GameVal, Map<Int, GameValType>> {
+        if (!this::gameVals.isInitialized) {
+            resolveGameVals()
+        }
+        return this.gameVals
+    }
+
     private fun resolveGameVals() {
         check(!this::gameVals.isInitialized) {
             "Game vals already initialized."
@@ -211,6 +218,23 @@ public class OldSchoolCache(
             indexBuf.release()
             groupBuf.release()
         }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as OldSchoolCache
+
+        return masterIndex == other.masterIndex
+    }
+
+    override fun hashCode(): Int {
+        return masterIndex.hashCode()
+    }
+
+    override fun toString(): String {
+        return "OldSchoolCache(masterIndex=$masterIndex)"
     }
 
     private companion object {

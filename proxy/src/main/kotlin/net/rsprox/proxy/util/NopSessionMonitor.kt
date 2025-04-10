@@ -1,5 +1,6 @@
 package net.rsprox.proxy.util
 
+import net.rsprox.cache.api.CacheProvider
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.property.RootProperty
@@ -9,6 +10,9 @@ public object NopSessionMonitor : SessionMonitor<BinaryHeader> {
     }
 
     override fun onLogout(header: BinaryHeader) {
+    }
+
+    override fun onCacheUpdate(cacheProvider: CacheProvider) {
     }
 
     override fun onIncomingBytesPerSecondUpdate(bytesPerLastSecond: Long) {

@@ -3,6 +3,7 @@ package net.rsprox.proxy.transcriber
 import com.github.michaelbull.logging.InlineLogger
 import io.netty.buffer.ByteBuf
 import net.rsprot.buffer.extensions.toByteArray
+import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.exceptions.DecodeError
 import net.rsprox.protocol.session.Session
 import net.rsprox.proxy.plugin.DecodingSession
@@ -19,6 +20,7 @@ public class LiveTranscriberSession(
     private val decodingSession: DecodingSession,
     private val runner: TranscriberRunner,
     private val sessionTracker: SessionTracker,
+    private val cacheProvider: CacheProvider,
 ) {
     @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
     private val lock: Object = Object()
@@ -108,6 +110,10 @@ public class LiveTranscriberSession(
     private fun launchThread(): Thread {
         val thread =
             Thread {
+                // Preload gameval types as they take quite long to load up
+                // This will block the decoding and transcribing during it,
+                // while still allowing login to take place
+                cacheProvider.get().allGameValTypes()
                 while (this.running) {
                     while (queue.isNotEmpty()) {
                         val next = queue.poll()

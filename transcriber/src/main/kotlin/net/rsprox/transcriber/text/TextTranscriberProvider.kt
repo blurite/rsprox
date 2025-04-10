@@ -29,6 +29,7 @@ public class TextTranscriberProvider : TranscriberProvider {
                 PropertyFormatterCollection.default(
                     dictionary,
                     settings,
+                    cacheProvider,
                 ),
             )
         val monitoredContainer = MonitoredMessageConsumerContainer(container, monitor)
