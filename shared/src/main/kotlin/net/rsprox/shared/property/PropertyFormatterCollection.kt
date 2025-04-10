@@ -1,5 +1,6 @@
 package net.rsprox.shared.property
 
+import net.rsprox.cache.api.CacheProvider
 import net.rsprox.shared.BaseVarType
 import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.property.filtered.FilteredNamedEnumProperty
@@ -20,6 +21,7 @@ import net.rsprox.shared.property.regular.VarpProperty
 import net.rsprox.shared.property.regular.ZoneCoordProperty
 import net.rsprox.shared.settings.Setting
 import net.rsprox.shared.settings.SettingSetStore
+import net.rsprox.shared.symbols.CacheSymbolDictionary
 
 public class PropertyFormatterCollection private constructor(
     private val formatters: Map<Class<*>, PropertyFormatter<*>>,
@@ -60,12 +62,16 @@ public class PropertyFormatterCollection private constructor(
         public fun default(
             systemDictionary: SymbolDictionary,
             settingStore: SettingSetStore,
+            cacheProvider: CacheProvider,
         ): PropertyFormatterCollection {
             val settings = settingStore.getActive()
+            val cacheSymbolDictionary = CacheSymbolDictionary(cacheProvider)
 
             fun dictionary(): SymbolDictionary =
                 if (settings[Setting.DISABLE_DICTIONARY_NAMES]) {
                     NopSymbolDictionary
+                } else if (settings[Setting.USE_OFFICIAL_DICTIONARY]) {
+                    cacheSymbolDictionary.also { it.start() }
                 } else {
                     systemDictionary
                 }

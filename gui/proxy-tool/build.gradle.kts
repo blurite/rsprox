@@ -19,6 +19,8 @@ dependencies {
     implementation(rootProject.libs.netty.transport)
     implementation(rootProject.libs.netty.handler)
     implementation(rootProject.libs.netty.codec.http)
+    implementation(projects.cache)
+    implementation(projects.cache.cacheApi)
 }
 
 tasks.processResources {

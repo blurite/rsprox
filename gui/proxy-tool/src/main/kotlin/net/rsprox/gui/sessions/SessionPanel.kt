@@ -6,6 +6,7 @@ import com.formdev.flatlaf.extras.components.FlatScrollPane
 import com.formdev.flatlaf.extras.components.FlatToolBar
 import com.formdev.flatlaf.util.ColorFunctions
 import com.github.michaelbull.logging.InlineLogger
+import net.rsprox.cache.api.CacheProvider
 import net.rsprox.gui.App
 import net.rsprox.gui.AppIcons
 import net.rsprox.gui.dialogs.ErrorDialog
@@ -234,13 +235,18 @@ public class SessionPanel(
 
     private inner class UiSessionMonitor : SessionMonitor<BinaryHeader> {
         private var lastCycle = -1
+        private var lastCacheProvider: CacheProvider? = null
         private val formatter =
             OmitFilteredPropertyTreeFormatter(
                 PropertyFormatterCollection.default(
                     SymbolDictionaryProvider.get(),
                     App.service.settingsStore,
-                ),
+                ) { this.lastCacheProvider?.get() ?: error("Cache unavailable") },
             )
+
+        override fun onCacheUpdate(cacheProvider: CacheProvider) {
+            this.lastCacheProvider = cacheProvider
+        }
 
         override fun onLogin(header: BinaryHeader) {
             // Update the session metrics data.

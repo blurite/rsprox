@@ -92,7 +92,7 @@ internal class Js5Decoder(
                     throw DecoderException("Invalid block trailer")
                 }
             }
-            this.downloader.groupResponse(this.response)
+            this.downloader.groupResponse(this.archive, this.group, this.response)
             this.state = State.RESPONSE_HEADER
         }
     }

@@ -64,6 +64,13 @@ public enum class Setting(
         false,
         "Temporarily disable provided dictionary names for types. Dictionaries allow you to map number ids to text.",
     ),
+    USE_OFFICIAL_DICTIONARY(
+        SettingGroup.LOGGING,
+        SettingCategory.MISC,
+        "Use Official Dictionary",
+        true,
+        "Enables official gameval dictionary loaded from the cache. This will override custom user dictionary.",
+    ),
     PLAYER_EXT_INFO_INLINE(
         SettingGroup.LOGGING,
         SettingCategory.PLAYER_INFO,

@@ -11,7 +11,7 @@ public class OpenRs2GroupStore(
     override fun get(
         archive: Int,
         group: Int,
-    ): ByteBuf? {
+    ): ByteBuf {
         val result =
             downloadOpenRs2Group(
                 CacheScope.RuneScape,
