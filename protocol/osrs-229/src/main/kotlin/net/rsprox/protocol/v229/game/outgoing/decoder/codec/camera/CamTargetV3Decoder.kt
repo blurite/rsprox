@@ -21,9 +21,9 @@ internal class CamTargetV3Decoder : ProxyMessageDecoder<CamTargetV3> {
         val targetIndex = buffer.g2()
         return CamTargetV3(
             when (type) {
-                0 -> CamTargetV3.PlayerCamTarget(worldEntityIndex, targetIndex)
-                1 -> CamTargetV3.NpcCamTarget(worldEntityIndex, targetIndex)
-                2 -> CamTargetV3.WorldEntityTarget(worldEntityIndex, targetIndex)
+                0 -> CamTargetV3.PlayerCamTarget(worldEntityIndex, if (targetIndex == 65535) -1 else targetIndex)
+                1 -> CamTargetV3.NpcCamTarget(worldEntityIndex, if (targetIndex == 65535) -1 else targetIndex)
+                2 -> CamTargetV3.WorldEntityTarget(worldEntityIndex, if (targetIndex == 65535) -1 else targetIndex)
                 else -> throw IllegalStateException("Unknown type: $type")
             },
         )
