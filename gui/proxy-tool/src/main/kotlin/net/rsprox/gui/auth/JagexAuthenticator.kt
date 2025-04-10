@@ -8,6 +8,7 @@ import javax.swing.SwingUtilities
 import kotlin.io.path.Path
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
+import kotlin.text.Regex
 
 public class JagexAuthenticator {
     private val httpServer = AuthHttpServer()
@@ -28,15 +29,40 @@ public class JagexAuthenticator {
                 Desktop.getDesktop().browse(URI(url))
             }
         } else if (System.getProperty("os.name").contains("Linux")) {
-            // doesn't support more than one user as it's fairly impossible to know which user is trying to run since
-            // you only have root context.
             var username: String
-            try {
-                username = Path("/home/").listDirectoryEntries()[0].name.replace("/home/", "")
-            } catch (e: IndexOutOfBoundsException) {
-                logger.error(e) { "No linux users found." }
-                return future
+
+            val loggedInUsers =
+                Runtime
+                    .getRuntime()
+                    .exec("w")
+                    .inputStream
+                    .readBytes()
+                    .toString(Charsets.UTF_8)
+
+            // might be some fringe cases where this mistakenly matches but it's close enough
+            val regex =
+                Regex(
+                    ".+sudo(?:.+gradlew proxy|.+rsprox(?:-launcher\\.jar|\\.AppImage))",
+                    RegexOption.IGNORE_CASE,
+                )
+
+            val regexMatches = regex.findAll(loggedInUsers).toList()
+
+            if (regexMatches.isNotEmpty()) {
+                // just uses first match since rsprox wouldn't support multiple users due to ports anyway
+                username = regexMatches[0].value.split(" ")[0].trim()
+            } else {
+                // fallback to previous method, prob non-default filename
+                val homeDirectories = Path("/home/").listDirectoryEntries()
+
+                if (homeDirectories.isEmpty()) {
+                    logger.error { "No valid linux users found." }
+                    return future
+                }
+
+                username = homeDirectories[0].name.replace("/home/", "")
             }
+
             Runtime.getRuntime().exec("sudo --user $username xdg-open $url")
         } else {
             error("Unsupported OS for opening browser")
