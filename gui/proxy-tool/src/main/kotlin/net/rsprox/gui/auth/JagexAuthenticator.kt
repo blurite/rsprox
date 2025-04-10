@@ -35,6 +35,7 @@ public class JagexAuthenticator {
                 username = Path("/home/").listDirectoryEntries()[0].name.replace("/home/", "")
             } catch (e: IndexOutOfBoundsException) {
                 logger.error { "No linux users found." }
+                return future
             }
             Runtime.getRuntime().exec("sudo --user $username xdg-open $url")
         } else {
