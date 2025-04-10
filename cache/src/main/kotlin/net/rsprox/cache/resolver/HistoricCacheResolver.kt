@@ -93,13 +93,13 @@ public class HistoricCacheResolver : CacheResolver {
             }
 
             if (remainingRequests.isNotEmpty()) {
-                val openrs2Bulk = resolveOpenRs2Bulk(masterIndex, requests)
+                val openrs2Bulk = resolveOpenRs2Bulk(masterIndex, remainingRequests)
                 remainingRequests.removeAll(openrs2Bulk.keys)
                 putAll(openrs2Bulk)
             }
 
             if (remainingRequests.isNotEmpty()) {
-                logger.warn { "Unable to resolve all groups in bulk request; missing groups: $requests" }
+                logger.warn { "Unable to resolve all groups in bulk request; missing groups: $remainingRequests" }
             }
         }
     }
@@ -131,13 +131,26 @@ public class HistoricCacheResolver : CacheResolver {
             val id =
                 openrs2CacheIdentifier.identify(masterIndex)
                     ?: return null
-            val result =
-                OpenRs2GroupStore(id).get(archive, group)
-                    ?: return null
-            id to result
+            resolveOpenRs2(id, archive, group)
         } catch (e: Exception) {
             logger.warn(e) {
                 "Unable to resolve openrs2 cache: $archive, $group, $masterIndex"
+            }
+            null
+        }
+    }
+
+    private fun resolveOpenRs2(
+        cacheId: Int,
+        archive: Int,
+        group: Int,
+    ): Pair<Int, ByteBuf>? {
+        return try {
+            val result = OpenRs2GroupStore(cacheId).get(archive, group)
+            cacheId to result
+        } catch (e: Exception) {
+            logger.warn(e) {
+                "Unable to resolve openrs2 cache: $archive, $group, $cacheId"
             }
             null
         }
@@ -147,18 +160,21 @@ public class HistoricCacheResolver : CacheResolver {
         masterIndex: Js5MasterIndex,
         requests: List<CacheGroupRequest>,
     ): Map<CacheGroupRequest, ByteBuf> {
-        val jobs = mutableListOf<Callable<Pair<CacheGroupRequest, Pair<Int, ByteBuf>?>>>()
-        for (request in requests) {
-            jobs +=
+        val cacheId =
+            openrs2CacheIdentifier.identify(masterIndex)
+                ?: return emptyMap<CacheGroupRequest, ByteBuf>().also { println("Could not even identify masterindex") }
+        val jobs =
+            requests.map {
                 Callable {
-                    request to resolveOpenRs2(masterIndex, request.archive, request.group)
+                    val result = resolveOpenRs2(cacheId, it.archive, it.group)
+                    it to result
                 }
-        }
+            }
         logger.debug { "Searching for OpenRS2 variant of requests: $requests" }
         val successfulResponses = mutableMapOf<CacheGroupRequest, ByteBuf>()
         val results = ForkJoinPool.commonPool().invokeAll(jobs)
-        for (futures in results) {
-            val (request, response) = futures.get() ?: continue
+        for (future in results) {
+            val (request, response) = future.get() ?: continue
             if (response == null) continue
             val (id, buffer) = response
             val directory = diskCacheDictionary.getOrPut(masterIndex, id)

@@ -70,19 +70,19 @@ public class LiveCacheResolver(
             }
 
             if (remainingRequests.isNotEmpty()) {
-                val liveBulk = getLiveBulk(masterIndex, requests)
+                val liveBulk = getLiveBulk(masterIndex, remainingRequests)
                 remainingRequests.removeAll(liveBulk.keys)
                 putAll(liveBulk)
             }
 
             if (remainingRequests.isNotEmpty()) {
-                val openrs2Bulk = getOpenRs2Bulk(masterIndex, requests)
+                val openrs2Bulk = getOpenRs2Bulk(masterIndex, remainingRequests)
                 remainingRequests.removeAll(openrs2Bulk.keys)
                 putAll(openrs2Bulk)
             }
 
             if (remainingRequests.isNotEmpty()) {
-                logger.warn { "Unable to resolve all groups in bulk request; missing groups: $requests" }
+                logger.warn { "Unable to resolve all groups in bulk request; missing groups: $remainingRequests" }
             }
         }
     }
@@ -268,9 +268,7 @@ public class LiveCacheResolver(
             val id =
                 openrs2CacheIdentifier.identify(masterIndex)
                     ?: return null
-            val result =
-                OpenRs2GroupStore(id).get(archive, group)
-                    ?: return null
+            val result = OpenRs2GroupStore(id).get(archive, group)
             id to result
         } catch (e: Exception) {
             logger.warn(e) {
