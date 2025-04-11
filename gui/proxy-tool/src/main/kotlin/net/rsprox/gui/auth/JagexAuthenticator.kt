@@ -5,7 +5,6 @@ import java.awt.Desktop
 import java.net.URI
 import java.util.concurrent.CompletableFuture
 import javax.swing.SwingUtilities
-import kotlin.text.Regex
 
 public class JagexAuthenticator {
     private val httpServer = AuthHttpServer()
@@ -26,34 +25,7 @@ public class JagexAuthenticator {
                 Desktop.getDesktop().browse(URI(url))
             }
         } else if (System.getProperty("os.name").contains("Linux")) {
-            var username: String
-
-            val loggedInUsers =
-                Runtime
-                    .getRuntime()
-                    .exec("w")
-                    .inputStream
-                    .readBytes()
-                    .toString(Charsets.UTF_8)
-
-            // might be some fringe cases where this mistakenly matches but it's close enough
-            val regex =
-                Regex(
-                    ".+sudo(?:.+gradlew proxy|.+rsprox(?:-launcher\\.jar|\\.AppImage))",
-                    RegexOption.IGNORE_CASE,
-                )
-
-            val regexMatches = regex.findAll(loggedInUsers).toList()
-
-            if (regexMatches.isNotEmpty()) {
-                // just uses first match since rsprox wouldn't support multiple users due to ports anyway
-                username = regexMatches[0].value.split(" ")[0].trim()
-            } else {
-                // fallback to first user in logged in list as that's more likely to be correct than `/home/` checks
-                username = loggedInUsers.split("\n")[0].split(" ")[0].trim()
-            }
-
-            Runtime.getRuntime().exec("sudo --user $username xdg-open $url")
+            Runtime.getRuntime().exec("sudo --user ${System.getenv("SUDO_USER")} xdg-open $url")
         } else {
             error("Unsupported OS for opening browser")
         }
