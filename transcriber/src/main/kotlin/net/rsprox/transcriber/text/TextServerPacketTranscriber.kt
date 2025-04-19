@@ -2734,6 +2734,7 @@ public class TextServerPacketTranscriber(
         coordGrid(coordInZone(message.xInZone, message.zInZone))
         scriptVarType("shape", ScriptVarType.LOC_SHAPE, message.shape)
         int("rotation", message.rotation)
+        filteredAny("opflags", "0b" + message.opFlags.value.toString(2), "0b11111")
     }
 
     private fun Property.buildLocAddChangeV2(message: LocAddChangeV2) {
@@ -2741,6 +2742,7 @@ public class TextServerPacketTranscriber(
         coordGrid(coordInZone(message.xInZone, message.zInZone))
         scriptVarType("shape", ScriptVarType.LOC_SHAPE, message.shape)
         int("rotation", message.rotation)
+        filteredAny("opflags", "0b" + message.opFlags.value.toString(2), "0b11111")
         val ops = message.ops
         if (ops != null) {
             for ((k, v) in ops) {
