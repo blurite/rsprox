@@ -33,6 +33,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          validate-wrappers: true
 
       - name: Build launcher
         run: ./gradlew launcher:shadowJar
