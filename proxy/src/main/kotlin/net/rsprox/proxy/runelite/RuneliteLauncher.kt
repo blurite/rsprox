@@ -63,6 +63,7 @@ public class RuneliteLauncher {
         rsa: String,
         javConfig: String,
         socket: String,
+        worldClientPort: Int,
     ): List<String> {
         clean()
         download()
@@ -92,6 +93,7 @@ public class RuneliteLauncher {
             classpath.toString(),
             bootstrap.launcher.mainClass,
             "--port=$port",
+            "--world_client_port=$worldClientPort",
             "--rsa=$rsa",
             "--jav_config=$javConfig",
             "--socket_id=$socket",

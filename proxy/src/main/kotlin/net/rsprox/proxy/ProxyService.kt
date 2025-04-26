@@ -467,8 +467,9 @@ public class ProxyService(
         character: JagexCharacter?,
         port: Int,
     ) {
+        val target = this.currentProxyTarget
         try {
-            launchProxyServer(this.bootstrapFactory, this.currentProxyTarget, rsa, port)
+            launchProxyServer(this.bootstrapFactory, target, rsa, port)
         } catch (t: Throwable) {
             logger.error(t) { "Unable to bind network port $port for native client." }
             return
@@ -479,6 +480,7 @@ public class ProxyService(
             port,
             operatingSystem,
             character,
+            target,
         )
     }
 
@@ -592,6 +594,7 @@ public class ProxyService(
         port: Int,
         operatingSystem: OperatingSystem,
         character: JagexCharacter?,
+        target: ProxyTarget,
     ) {
         val timestamp = System.currentTimeMillis()
         val socketFile = SOCKETS_DIRECTORY.resolve("$timestamp.socket").toFile()
@@ -607,8 +610,9 @@ public class ProxyService(
                 launcher.getLaunchArgs(
                     port,
                     rsa.publicKey.modulus.toString(16),
-                    javConfig = "http://127.0.0.1:$HTTP_SERVER_PORT/$javConfigEndpoint",
+                    javConfig = "http://127.0.0.1:${target.config.httpPort}/$javConfigEndpoint",
                     socket = timestamp.toString(),
+                    worldClientPort = target.config.httpPort,
                 )
 
             createProcess(
