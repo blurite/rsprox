@@ -23,6 +23,8 @@ public data class ProxyTargetConfig(
     public val varpCount: Int = DEFAULT_VARP_COUNT,
     @JsonProperty("revision")
     public val revision: String? = null,
+    @JsonProperty("runelite_bootstrap_commithash")
+    public val runeliteBootstrapCommitHash: String? = null,
 ) {
     public val httpPort: Int
         get() = HTTP_SERVER_PORT + id

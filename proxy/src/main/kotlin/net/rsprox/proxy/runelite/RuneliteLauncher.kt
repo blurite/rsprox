@@ -80,7 +80,7 @@ public class RuneliteLauncher {
         // Uncomment and change commit when the next revision is about to push
         // Pick the correct bootstrap commit from here:
         // https://github.com/runelite/static.runelite.net/commits/gh-pages/bootstrap.json
-        // val repository = "https://raw.githubusercontent.com/runelite/static.runelite.net"
+        val repository = "https://raw.githubusercontent.com/runelite/static.runelite.net"
         // val commit = "793a9df1ed8cdef5d6a324aeec0629fa0346d32b"
         // val bootstrapUrl = "$repository/$commit/bootstrap.json"
         // val bootstrapSigUrl = "$repository/$commit/bootstrap.json.sha256"
@@ -100,19 +100,41 @@ public class RuneliteLauncher {
                 "--jav_config=$javConfig",
                 "--socket_id=$socket",
                 "--developer-mode",
-                "--bootstrap_url=$bootstrapUrl",
-                "--bootstrap_sig_url=$bootstrapSigUrl",
                 "--disable-telemetry",
                 "--noupdate",
             )
         val conditionalArgs =
             if (target.config.id != 0) {
+                val bootstrapCommitHash = target.config.runeliteBootstrapCommitHash
+                val bootstrap =
+                    if (bootstrapCommitHash != null) {
+                        "$repository/$bootstrapCommitHash/bootstrap.json"
+                    } else {
+                        null
+                    }
+                val bootstrapArg =
+                    if (bootstrap != null) {
+                        "--bootstrap_url=$bootstrap"
+                    } else {
+                        "--bootstrap_url=$bootstrapUrl"
+                    }
+                val bootstrapSigArg =
+                    if (bootstrap != null) {
+                        "--bootstrap_sig_url=$bootstrap.sha256"
+                    } else {
+                        "--bootstrap_sig_url=$bootstrapSigUrl"
+                    }
                 listOf(
                     "--client_name=${target.config.name}",
                     "--varp_count=${target.config.varpCount}",
+                    bootstrapArg,
+                    bootstrapSigArg,
                 )
             } else {
-                emptyList()
+                listOf(
+                    "--bootstrap_url=$bootstrapUrl",
+                    "--bootstrap_sig_url=$bootstrapSigUrl",
+                )
             }
         return primaryArgs + conditionalArgs + guiArgs
     }
