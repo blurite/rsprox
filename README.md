@@ -126,12 +126,10 @@ certain circumstances. The following criteria must be met in order to do this:
 > support for further platforms and client types.
 
 1. This only works with Windows and Linux, not macOS.
-2. RuneLite is not supported at this time. I will explore this possibility
-after revision 229, when gamepacks are private.
-3. The client must not have any protocol-breaking changes, same traditional
+2. The client must not have any protocol-breaking changes, same traditional
 networking must be used. The only supported change at this time is changing
 the varp count in the client from the size-5000 int array.
-4. Must be on revision 223 or higher.
+3. Must be on revision 223 or higher.
 
 #### Setting Up Custom Targets
 In order to use the new proxy targets feature, one has to manually fill in the yaml file containing them.
@@ -146,6 +144,7 @@ config:
     varp_count: 15000
     revision: 227.3
     modulus: d2a780dccbcf534dc61a36deff725aabf9f46fc9ea298ac8c39b89b5bcb5d0817f8c9f59621187d448da9949aca848d0b2acae50c3122b7da53a79e6fe87ff76b675bcbf5bc18fbd2c9ed8f4cff2b7140508049eb119259af888eb9d20e8cea8a4384b06589483bcda11affd8d67756bc93a4d786494cdf7b634e3228b64116d
+    runelite_bootstrap_commithash: 793a9df1ed8cdef5d6a324aeec0629fa0346d32b
 ```
 
 Properties breakdown:
@@ -156,7 +155,21 @@ Properties breakdown:
 - `varp_count` - Changes the array length used for varps in the client, the default value is 5000. This is an optional property.
 - `revision` - A revision number used to pick the client and correct decoders. The default is whatever is currently latest stable in Old School RuneScape. This is an optional property.
 - `modulus` - A hexadecimal (base-16) RSA modulus used to encrypt the login packet sent to the client. This is a required property.
+- `runelite_bootstrap_commithash` - A hash pointing to a version of RuneLite you wish to use. This is an optional property, not defining it will simply use latest RuneLite.
 
+Short guide:
+1. Copy the config file from above and save it as described above.
+2. Change the name to what you'd like to call the client.
+3. Change the number `227` in the jav_config_url to the revision you're using.
+I maintain local javconfigs from revision 223 onwards. You can also host your own, but this will easily get you started.
+4. Change the revision number `227.3` to match with the revision you're using.
+The list of valid revisions can be seen [here](https://archive.lostcity.rs/oldschool.runescape.com/native/osrs-win/). A safe bet is using `.1` subrevision as that exists in all revisions.
+5. Change the modulus to what your server is using. In the case of RSMod, this is exported during the installation.
+6. If you wish to use RuneLite and your server is older than the very latest revision, you'll need to update the commithash for RuneLite that indicates the version of RuneLite to use.
+The list of valid bootstraps can be seen [here](https://github.com/runelite/static.runelite.net/commits/gh-pages/bootstrap.json).
+You'll have to locate the correct bootstrap based on the date when the commit was made, and click the "Copy full SHA for ..." button to get the value for the commithash.
+If you don't know the date for your revision, you can approximately date it via [OpenRS2's Caches](https://archive.openrs2.org/caches) - simply look for you revision,
+look at the date it was first and last published and then locate a bootstrap that falls in that date range.
 
 ## Progress
 Below is a small task list showing a rough breakdown of what the tool will consist of, and how far the progress is at any given moment.
@@ -166,8 +179,6 @@ Below is a small task list showing a rough breakdown of what the tool will consi
     - [x] Supports Unix via `wine`
   - [ ] ~~Native (Mac)~~ (Automated patching too fragile)
   - [x] RuneLite (All Operating systems)
-  - [ ] RuneLite Forks
-  - [ ] ~~HDOS~~ (Cancelled, too difficult to patch)
 - [x] World identification via localhost address
 - [x] World-hop host address injection
 - [x] Login re-encoding & obtaining ISAAC Seed
