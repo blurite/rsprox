@@ -3,6 +3,7 @@ package net.rsprox.proxy.runelite
 import com.github.michaelbull.logging.InlineLogger
 import com.google.gson.Gson
 import net.rsprox.proxy.config.RUNELITE_LAUNCHER_REPO_DIRECTORY
+import net.rsprox.proxy.target.ProxyTarget
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.*
@@ -63,7 +64,7 @@ public class RuneliteLauncher {
         rsa: String,
         javConfig: String,
         socket: String,
-        worldClientPort: Int,
+        target: ProxyTarget,
     ): List<String> {
         clean()
         download()
@@ -87,23 +88,33 @@ public class RuneliteLauncher {
         // Any other time, just rely on the latest bootstrap.
         val bootstrapUrl = "https://static.runelite.net/bootstrap.json"
         val bootstrapSigUrl = "https://static.runelite.net/bootstrap.json.sha256"
-        return listOf(
-            getJava(),
-            "-cp",
-            classpath.toString(),
-            bootstrap.launcher.mainClass,
-            "--port=$port",
-            "--world_client_port=$worldClientPort",
-            "--rsa=$rsa",
-            "--jav_config=$javConfig",
-            "--socket_id=$socket",
-            "--developer-mode",
-            "--bootstrap_url=$bootstrapUrl",
-            "--bootstrap_sig_url=$bootstrapSigUrl",
-            "--disable-telemetry",
-            "--noupdate",
-            *guiArgs.toTypedArray(),
-        )
+        val primaryArgs =
+            listOf(
+                getJava(),
+                "-cp",
+                classpath.toString(),
+                bootstrap.launcher.mainClass,
+                "--port=$port",
+                "--world_client_port=${target.config.httpPort}",
+                "--rsa=$rsa",
+                "--jav_config=$javConfig",
+                "--socket_id=$socket",
+                "--developer-mode",
+                "--bootstrap_url=$bootstrapUrl",
+                "--bootstrap_sig_url=$bootstrapSigUrl",
+                "--disable-telemetry",
+                "--noupdate",
+            )
+        val conditionalArgs =
+            if (target.config.id != 0) {
+                listOf(
+                    "--client_name=${target.config.name}",
+                    "--varp_count=${target.config.varpCount}",
+                )
+            } else {
+                emptyList()
+            }
+        return primaryArgs + conditionalArgs + guiArgs
     }
 
     private fun download() {

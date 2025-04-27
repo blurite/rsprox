@@ -612,7 +612,7 @@ public class ProxyService(
                     rsa.publicKey.modulus.toString(16),
                     javConfig = "http://127.0.0.1:${target.config.httpPort}/$javConfigEndpoint",
                     socket = timestamp.toString(),
-                    worldClientPort = target.config.httpPort,
+                    target = target,
                 )
 
             createProcess(
