@@ -638,12 +638,16 @@ public class ProxyService(
             val read = input.read(buf)
             val oldModulus = String(buf, 0, read)
             logger.debug { "Old RSA modulus received from the client: ${oldModulus.substring(0, 16)}..." }
+            val targetModulus =
+                target.config.modulus
+                    ?: rspsModulus
+                    ?: oldModulus
             registerConnection(
                 ConnectionInfo(
                     ClientType.RuneLite,
                     operatingSystem,
                     port,
-                    BigInteger(rspsModulus ?: oldModulus, 16),
+                    BigInteger(targetModulus, 16),
                 ),
             )
             socket.close()

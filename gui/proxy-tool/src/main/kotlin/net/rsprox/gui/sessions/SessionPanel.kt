@@ -9,7 +9,6 @@ import com.github.michaelbull.logging.InlineLogger
 import net.rsprox.cache.api.CacheProvider
 import net.rsprox.gui.App
 import net.rsprox.gui.AppIcons
-import net.rsprox.gui.dialogs.ErrorDialog
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.account.JagexCharacter
@@ -182,12 +181,6 @@ public class SessionPanel(
             val time =
                 measureTime {
                     try {
-                        if (type == SessionType.RuneLite && App.service.getSelectedProxyTarget() != 0) {
-                            return@submit ErrorDialog.show(
-                                "Error launching RuneLite",
-                                "RSProx is unable to launch on a custom target using RuneLite.",
-                            )
-                        }
                         portNumber = App.service.allocatePort()
                         when (type) {
                             SessionType.Java -> TODO()
