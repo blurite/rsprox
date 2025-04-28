@@ -2402,7 +2402,8 @@ public class TextServerPacketTranscriber(
         val remainingBits = remainingImpactedBits(oldValue, newValue, impactedVarbits)
         // If only interested in varbits and varbits exist, create a varbit root
         val printAsVarbits = impactedVarbits.isNotEmpty() && omitVarpsForVarbits && remainingBits == 0
-        if (!varps || (settings[Setting.HIDE_SAME_VALUE_VARPS] && oldValue == newValue) || printAsVarbits) {
+        val rootOmitted = !varps || (settings[Setting.HIDE_SAME_VALUE_VARPS] && oldValue == newValue) || printAsVarbits
+        if (rootOmitted) {
             omit()
         }
         if (impactedVarbits.isNotEmpty()) {
@@ -2411,7 +2412,7 @@ public class TextServerPacketTranscriber(
                 val bitmask = varbit.bitmask(bitcount)
                 val oldVarbitValue = oldValue ushr varbit.startbit and bitmask
                 val newVarbitValue = newValue ushr varbit.startbit and bitmask
-                if (printAsVarbits) {
+                if (rootOmitted) {
                     sessionState.createFakeServerRoot("VARBIT")
                     root.varbit("id", varbit.id)
                     root.int("old", oldVarbitValue)
