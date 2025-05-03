@@ -115,6 +115,8 @@ public class App {
 
         // Configure the app menu bar.
         setupMenuBar()
+
+        frame.transferHandler = FileDropHandler(service)
     }
 
     public fun start() {

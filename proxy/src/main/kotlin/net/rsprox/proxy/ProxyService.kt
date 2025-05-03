@@ -77,7 +77,7 @@ import kotlin.system.exitProcess
 public class ProxyService(
     private val allocator: ByteBufAllocator,
 ) {
-    private val decoderLoader: DecoderLoader = DecoderLoader()
+    public val decoderLoader: DecoderLoader = DecoderLoader()
     private lateinit var bootstrapFactory: BootstrapFactory
     private lateinit var serverBootstrap: ServerBootstrap
     public lateinit var operatingSystem: OperatingSystem
