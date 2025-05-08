@@ -138,8 +138,7 @@ The file is located at `user.home/.rsprox/proxy-targets.yaml`
 Here is an example RSPS target:
 ```yaml
 config:
-  - id: 1
-    name: Blurite
+  - name: Blurite
     jav_config_url: https://client.blurite.io/jav_local_227.ws
     varp_count: 15000
     revision: 227.3
@@ -149,7 +148,6 @@ config:
 
 Properties breakdown:
 
-- `id` - A number from 1 to 100, must be unique. This is a required property.
 - `name` - The name given to the client. Any references to `OldSchool RuneScape` will be replaced by this. This is a required property to ensure caches don't overwrite and cause crashing at runtime when loading different games simultaneously.
 - `jav_config_url` - The URL to the jav_config that will be used to load initial world and world list. This is a required property.
 - `varp_count` - Changes the array length used for varps in the client, the default value is 5000. This is an optional property.

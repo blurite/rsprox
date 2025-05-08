@@ -44,8 +44,7 @@ import net.rsprox.proxy.runelite.RuneliteLauncher
 import net.rsprox.proxy.settings.DefaultSettingSetStore
 import net.rsprox.proxy.target.ProxyTarget
 import net.rsprox.proxy.target.ProxyTargetConfig
-import net.rsprox.proxy.target.ProxyTargetConfig.Companion.DEFAULT_NAME
-import net.rsprox.proxy.target.ProxyTargetConfig.Companion.DEFAULT_VARP_COUNT
+import net.rsprox.proxy.target.YamlProxyTargetConfig
 import net.rsprox.proxy.util.*
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.account.JagexAccountStore
@@ -185,20 +184,29 @@ public class ProxyService(
     private fun loadProxyTargetConfigs(overriddenJavConfig: String?): List<ProxyTargetConfig> {
         val oldschool =
             ProxyTargetConfig(
-                0,
-                DEFAULT_NAME,
-                overriddenJavConfig ?: "http://oldschool.runescape.com/jav_config.ws",
+                id = 0,
+                name = YamlProxyTargetConfig.DEFAULT_NAME,
+                javConfigUrl = overriddenJavConfig ?: "http://oldschool.runescape.com/jav_config.ws",
+                modulus = null,
+                varpCount = YamlProxyTargetConfig.DEFAULT_VARP_COUNT,
+                revision = null,
+                runeliteBootstrapCommitHash = null,
             )
         try {
-            val customTargets = ProxyTargetConfig.load(PROXY_TARGETS_FILE)
-            val ids = customTargets.entries.map(ProxyTargetConfig::id).distinct()
-            check(ids.size == customTargets.entries.size) {
-                "Overlapping proxy target ids detected."
-            }
-            check(ids.all { it >= 1 }) {
-                "Proxy target ids must be >= 1"
-            }
-            return listOf(oldschool) + customTargets.entries
+            val yamlTargets = YamlProxyTargetConfig.load(PROXY_TARGETS_FILE)
+            val customTargets =
+                yamlTargets.entries.mapIndexed { index, yaml ->
+                    ProxyTargetConfig(
+                        id = index + 1,
+                        name = yaml.name,
+                        javConfigUrl = yaml.javConfigUrl,
+                        modulus = yaml.modulus,
+                        varpCount = yaml.varpCount,
+                        revision = yaml.revision,
+                        runeliteBootstrapCommitHash = yaml.runeliteBootstrapCommitHash,
+                    )
+                }
+            return listOf(oldschool) + customTargets
         } catch (e: Exception) {
             logger.error(e) {
                 "Unable to load proxy target configs"
@@ -546,10 +554,10 @@ public class ProxyService(
                 .javConfig("http://127.0.0.1:${target.config.httpPort}/$javConfigEndpoint")
                 .worldList("http://127.0.0.1:${target.config.httpPort}/$worldlistEndpoint")
                 .port(port)
-        if (target.config.varpCount != DEFAULT_VARP_COUNT) {
-            criteriaBuilder.varpCount(DEFAULT_VARP_COUNT, target.config.varpCount)
+        if (target.config.varpCount != YamlProxyTargetConfig.DEFAULT_VARP_COUNT) {
+            criteriaBuilder.varpCount(YamlProxyTargetConfig.DEFAULT_VARP_COUNT, target.config.varpCount)
         }
-        if (target.config.name != DEFAULT_NAME) {
+        if (target.config.name != YamlProxyTargetConfig.DEFAULT_NAME) {
             criteriaBuilder.name(target.config.name)
         }
         val criteria = criteriaBuilder.build()
