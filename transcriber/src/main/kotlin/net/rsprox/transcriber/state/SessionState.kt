@@ -24,7 +24,7 @@ public class SessionState(
     public var localPlayerIndex: Int = -1
     private val openInterfaces: MutableMap<CombinedId, Int> = mutableMapOf()
     public var toplevelInterface: Int = -1
-    private val cachedVarps: IntArray = IntArray(15_000)
+    private val cachedVarps: IntArray = IntArray(65536)
     private lateinit var varpToVarbitsMap: Map<Int, List<VarBitType>>
     public var root: MutableList<RootProperty> = mutableListOf()
     public var lastConnection: Int = 0
