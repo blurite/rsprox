@@ -4,12 +4,12 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.ForkJoinTask
-import kotlin.random.Random
-import kotlin.random.nextInt
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.TimeSource
 
-public class GamePackProvider {
+public class GamePackProvider(
+    public val gamepackUrl: String?,
+) {
     private var lastFetchTime = TimeSource.Monotonic.markNow()
     private var lastPayload: ByteArray? = null
 
@@ -17,6 +17,7 @@ public class GamePackProvider {
     private var currentTask: ForkJoinTask<*>? = null
 
     internal fun prefetch(await: Boolean = false) {
+        if (gamepackUrl == null) return
         val lastPayload = this.lastPayload
         if (lastPayload == null || lastFetchTime <= TimeSource.Monotonic.markNow().minus(5.minutes)) {
             val task = currentTask
@@ -37,8 +38,10 @@ public class GamePackProvider {
     }
 
     private fun fetch() {
-        val randomValue = Random.Default.nextInt(1_000_000..7_000_000)
-        val forwarded = URL("http://oldschool1.runescape.com/gamepack_$randomValue.jar")
+        checkNotNull(gamepackUrl) {
+            "Gamepack URL has not been assigned."
+        }
+        val forwarded = URL(gamepackUrl)
         val con = forwarded.openConnection() as HttpURLConnection
         con.requestMethod = "GET"
         this.lastPayload = con.inputStream.readAllBytes()
@@ -46,6 +49,9 @@ public class GamePackProvider {
     }
 
     internal fun get(): ByteArray {
+        checkNotNull(gamepackUrl) {
+            "Gamepack URL has not been assigned."
+        }
         prefetch(await = true)
         return checkNotNull(lastPayload) {
             "Payload unavailable."

@@ -93,7 +93,6 @@ public class ProxyService(
     private val processes: MutableMap<Int, List<ProcessHandle>> = mutableMapOf()
     private val connections: ProxyConnectionContainer = ProxyConnectionContainer()
     private lateinit var credentials: BinaryCredentialsStore
-    private val gamePackProvider: GamePackProvider = GamePackProvider()
     private var rspsModulus: String? = null
     public lateinit var proxyTargets: List<ProxyTarget>
         private set
@@ -191,6 +190,7 @@ public class ProxyService(
                 varpCount = YamlProxyTargetConfig.DEFAULT_VARP_COUNT,
                 revision = null,
                 runeliteBootstrapCommitHash = null,
+                runeliteGamepackUrl = null,
             )
         try {
             val yamlTargets = YamlProxyTargetConfig.load(PROXY_TARGETS_FILE)
@@ -204,6 +204,7 @@ public class ProxyService(
                         varpCount = yaml.varpCount,
                         revision = yaml.revision,
                         runeliteBootstrapCommitHash = yaml.runeliteBootstrapCommitHash,
+                        runeliteGamepackUrl = yaml.runeliteGamepackUrl,
                     )
                 }
             return listOf(oldschool) + customTargets
@@ -219,10 +220,16 @@ public class ProxyService(
         progressCallback: ProgressCallback,
         configs: List<ProxyTargetConfig>,
     ): List<Callable<Boolean>> {
-        this.proxyTargets = configs.map(::ProxyTarget)
+        this.proxyTargets =
+            configs.map {
+                ProxyTarget(
+                    it,
+                    GamePackProvider(it.runeliteGamepackUrl),
+                )
+            }
         return this.proxyTargets.map { target ->
             createJob(progressCallback) {
-                target.load(properties, gamePackProvider, bootstrapFactory)
+                target.load(properties, bootstrapFactory)
             }
         }
     }
@@ -633,7 +640,12 @@ public class ProxyService(
                 ClientType.RuneLite,
             )
             logger.debug { "Waiting for client to connect to the server socket..." }
-            gamePackProvider.prefetch()
+            if (target.gamePackProvider.gamepackUrl != null) {
+                logger.debug { "Prefetching gamepack from ${target.gamePackProvider.gamepackUrl}" }
+                target.gamePackProvider.prefetch()
+            } else {
+                logger.debug { "Skipping gamepack prefetching" }
+            }
             val channel = socket.accept()
             logger.debug { "Client connected to server socket successfully." }
             logger.debug { "Requesting old rsa modulus from the client..." }

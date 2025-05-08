@@ -22,6 +22,8 @@ public data class YamlProxyTargetConfig(
     public val revision: String? = null,
     @JsonProperty("runelite_bootstrap_commithash")
     public val runeliteBootstrapCommitHash: String? = null,
+    @JsonProperty("runelite_gamepack_url")
+    public val runeliteGamepackUrl: String? = null,
 ) {
     public companion object {
         public const val DEFAULT_NAME: String = "Old School RuneScape"

@@ -144,6 +144,7 @@ config:
     revision: 227.3
     modulus: d2a780dccbcf534dc61a36deff725aabf9f46fc9ea298ac8c39b89b5bcb5d0817f8c9f59621187d448da9949aca848d0b2acae50c3122b7da53a79e6fe87ff76b675bcbf5bc18fbd2c9ed8f4cff2b7140508049eb119259af888eb9d20e8cea8a4384b06589483bcda11affd8d67756bc93a4d786494cdf7b634e3228b64116d
     runelite_bootstrap_commithash: 793a9df1ed8cdef5d6a324aeec0629fa0346d32b
+    runelite_gamepack_url: https://github.com/runetech/osrs-gamepacks/raw/26ac3cf4bbabee86b47c9e26fb9f255db80c258d/gamepacks/osrs-227.jar
 ```
 
 Properties breakdown:
@@ -154,6 +155,7 @@ Properties breakdown:
 - `revision` - A revision number used to pick the client and correct decoders. The default is whatever is currently latest stable in Old School RuneScape. This is an optional property.
 - `modulus` - A hexadecimal (base-16) RSA modulus used to encrypt the login packet sent to the client. This is a required property.
 - `runelite_bootstrap_commithash` - A hash pointing to a version of RuneLite you wish to use. This is an optional property, not defining it will simply use latest RuneLite.
+- `runelite_gamepack_url` - A URL pointing to a valid gamepack file for the given revision. This is only necessary for revisions 228 and older. Anything newer can omit this field.
 
 Short guide:
 1. Copy the config file from above and save it as described above.
@@ -168,6 +170,8 @@ The list of valid bootstraps can be seen [here](https://github.com/runelite/stat
 You'll have to locate the correct bootstrap based on the date when the commit was made, and click the "Copy full SHA for ..." button to get the value for the commithash.
 If you don't know the date for your revision, you can approximately date it via [OpenRS2's Caches](https://archive.openrs2.org/caches) - simply look for you revision,
 look at the date it was first and last published and then locate a bootstrap that falls in that date range.
+7. If you wish to use RuneLite, and your revision is 228 or older, you must assign the runelite_gamepack_url property. The gamepacks can be found [here](https://github.com/runetech/osrs-gamepacks/tree/master/gamepacks).
+Simply pick your revision and click the "Copy Link" button in your browser for the Raw File. This is the URL to enter.
 
 ## Progress
 Below is a small task list showing a rough breakdown of what the tool will consist of, and how far the progress is at any given moment.

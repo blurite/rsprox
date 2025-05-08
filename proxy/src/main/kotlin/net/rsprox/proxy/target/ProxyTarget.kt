@@ -21,6 +21,7 @@ import kotlin.system.exitProcess
 
 public class ProxyTarget(
     public val config: ProxyTargetConfig,
+    public val gamePackProvider: GamePackProvider,
 ) {
     private val name: String
         get() = config.name
@@ -43,7 +44,6 @@ public class ProxyTarget(
 
     public fun load(
         properties: ProxyProperties,
-        gamePackProvider: GamePackProvider,
         bootstrapFactory: BootstrapFactory,
     ) {
         val javConfig = loadJavConfig(config.javConfigUrl)
