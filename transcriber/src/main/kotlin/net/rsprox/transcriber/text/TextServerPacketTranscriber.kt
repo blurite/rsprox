@@ -1935,7 +1935,7 @@ public class TextServerPacketTranscriber(
 
     override fun updateRunWeight(message: UpdateRunWeight) {
         if (!filters[PropertyFilter.UPDATE_RUNWEIGHT]) return omit()
-        root.formattedInt("weight", message.runweight, GRAM_NUMBER_FORMAT)
+        root.formattedInt("weight", message.runweight, KG_NUMBER_FORMAT)
     }
 
     private enum class Stat(
@@ -2952,6 +2952,6 @@ public class TextServerPacketTranscriber(
 
     private companion object {
         private val MS_NUMBER_FORMAT: NumberFormat = DecimalFormat("###,###,###ms")
-        private val GRAM_NUMBER_FORMAT: NumberFormat = DecimalFormat("###,###,###g")
+        private val KG_NUMBER_FORMAT: NumberFormat = DecimalFormat("###,###,###kg")
     }
 }
