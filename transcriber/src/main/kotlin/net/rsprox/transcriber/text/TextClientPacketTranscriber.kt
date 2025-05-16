@@ -138,6 +138,7 @@ public open class TextClientPacketTranscriber(
             }
         val multinpc = sessionState.resolveMultinpc(npc.id, cache)
         val coord = sessionState.getActiveWorld().getInstancedCoordOrSelf(npc.coord)
+        val angle = npc.angle
         return if (multinpc != null) {
             identifiedMultinpc(
                 finalIndex,
@@ -147,6 +148,7 @@ public open class TextClientPacketTranscriber(
                 coord.level,
                 coord.x,
                 coord.z,
+                angle
             )
         } else {
             identifiedNpc(
@@ -156,6 +158,7 @@ public open class TextClientPacketTranscriber(
                 coord.level,
                 coord.x,
                 coord.z,
+                angle
             )
         }
     }

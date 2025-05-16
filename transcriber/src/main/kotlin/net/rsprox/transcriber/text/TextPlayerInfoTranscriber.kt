@@ -91,6 +91,7 @@ public class TextPlayerInfoTranscriber(
             }
         val multinpc = sessionState.resolveMultinpc(npc.id, cache)
         val coord = sessionState.getActiveWorld().getInstancedCoordOrSelf(npc.coord)
+        val angle = npc.angle
         return if (multinpc != null) {
             identifiedMultinpc(
                 finalIndex,
@@ -100,6 +101,7 @@ public class TextPlayerInfoTranscriber(
                 coord.level,
                 coord.x,
                 coord.z,
+                angle
             )
         } else {
             identifiedNpc(
@@ -109,6 +111,7 @@ public class TextPlayerInfoTranscriber(
                 coord.level,
                 coord.x,
                 coord.z,
+                angle
             )
         }
     }

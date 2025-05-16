@@ -15,6 +15,7 @@ public class IdentifiedMultinpcProperty(
     level: Int,
     x: Int,
     z: Int,
+    public val angle: Int,
 ) : IdentifiedChildProperty(propertyName, index, level, x, z) {
     override fun formattedValue(
         settings: SettingSet,
@@ -59,6 +60,8 @@ public class IdentifiedMultinpcProperty(
             } else {
                 append("coord=($x, $z, $level)")
             }
+
+            append(", angle=$angle")
 
             append(')')
         }

@@ -14,6 +14,7 @@ public class IdentifiedNpcProperty(
     level: Int,
     x: Int,
     z: Int,
+    public val angle: Int,
 ) : IdentifiedChildProperty(propertyName, index, level, x, z) {
     override fun formattedValue(
         settings: SettingSet,
@@ -46,6 +47,8 @@ public class IdentifiedNpcProperty(
             } else {
                 append("coord=($x, $z, $level)")
             }
+
+            append(", angle=$angle")
 
             append(')')
         }

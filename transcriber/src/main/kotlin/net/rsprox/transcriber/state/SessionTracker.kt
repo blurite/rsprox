@@ -267,6 +267,7 @@ public class SessionTracker(
                                 update.id,
                                 name,
                                 update.spawnCycle,
+                                update.angle,
                                 CoordGrid(update.level, update.x, update.z),
                             )
                         }
