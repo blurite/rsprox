@@ -463,10 +463,16 @@ public class TextPlayerInfoTranscriber(
         val baseCoord = activeWorld.getInstancedCoordOrSelf(player.coord)
         val to1 = CoordGrid(baseCoord.level, baseCoord.x - info.deltaX2, baseCoord.z - info.deltaZ2)
         coordGridProperty(to1.level, to1.x, to1.z, "to1")
-        int("delay1", info.delay1)
+        val subtractDelay1 = settings[Setting.EXACTMOVE_SUBTRACT_FIRST_DELAY]
+        val labelDelay1 = if (subtractDelay1) "delay" else "delay1"
+        int(labelDelay1, info.delay1)
         val to2 = CoordGrid(baseCoord.level, baseCoord.x - info.deltaX1, baseCoord.z - info.deltaZ1)
         coordGridProperty(to2.level, to2.x, to2.z, "to2")
-        int("delay2", info.delay2)
+        if (subtractDelay1) {
+            int("duration", info.delay2 - info.delay1)
+        } else {
+            int("delay2", info.delay2)
+        }
         int("angle", info.direction)
     }
 

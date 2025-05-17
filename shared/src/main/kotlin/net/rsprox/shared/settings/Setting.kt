@@ -150,4 +150,12 @@ public enum class Setting(
         true,
         "Hides the NPC info packet entry if there are no logged entries to show.",
     ),
+    EXACTMOVE_SUBTRACT_FIRST_DELAY(
+        SettingGroup.LOGGING,
+        SettingCategory.MISC,
+        "Exactmove Delays",
+        false,
+        "Subtracts delay1 from delay2 when logging exactmove. " +
+            "The variables will be logged as \"delay\" and \"duration\" afterwards.",
+    ),
 }
