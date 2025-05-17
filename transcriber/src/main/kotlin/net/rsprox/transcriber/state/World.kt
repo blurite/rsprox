@@ -129,9 +129,10 @@ public class World(
         id: Int,
         name: String?,
         creationCycle: Int,
+        angle: Int,
         coordGrid: CoordGrid,
     ): Npc {
-        val new = Npc(index, id, creationCycle, coordGrid, name)
+        val new = Npc(index, id, creationCycle, angle, coordGrid, name)
         val old = this.npcs.put(index, new)
         check(old == null) {
             "Overriding npc $index"
@@ -144,7 +145,7 @@ public class World(
         coordGrid: CoordGrid,
     ) {
         val old = getNpc(index)
-        this.npcs[index] = Npc(old.index, old.id, old.creationCycle, coordGrid, old.name)
+        this.npcs[index] = Npc(old.index, old.id, old.creationCycle, old.angle, coordGrid, old.name)
     }
 
     public fun updateNpcName(
@@ -153,7 +154,7 @@ public class World(
         newName: String?,
     ) {
         val old = getNpc(index)
-        this.npcs[index] = Npc(old.index, newId, old.creationCycle, old.coord, newName)
+        this.npcs[index] = Npc(old.index, newId, old.creationCycle, old.angle, old.coord, newName)
     }
 
     public fun removeNpc(index: Int) {

@@ -434,6 +434,7 @@ public fun Property.identifiedNpc(
     level: Int,
     x: Int,
     z: Int,
+    angle: Int,
     propertyName: String = "npc",
 ): IdentifiedNpcProperty {
     return child(
@@ -445,6 +446,7 @@ public fun Property.identifiedNpc(
             level,
             x,
             z,
+            angle
         ),
     )
 }
@@ -457,6 +459,7 @@ public fun Property.identifiedMultinpc(
     level: Int,
     x: Int,
     z: Int,
+    angle: Int,
     propertyName: String = "npc",
 ): IdentifiedMultinpcProperty {
     return child(
@@ -469,6 +472,7 @@ public fun Property.identifiedMultinpc(
             level,
             x,
             z,
+            angle
         ),
     )
 }
