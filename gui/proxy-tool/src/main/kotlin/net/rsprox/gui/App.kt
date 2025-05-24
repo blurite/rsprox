@@ -11,6 +11,7 @@ import net.rsprox.gui.sessions.SessionsPanel
 import net.rsprox.gui.sidebar.SideBar
 import net.rsprox.proxy.ProxyService
 import net.rsprox.proxy.config.BINARY_PATH
+import net.rsprox.proxy.config.ERROR_LOGS_PATH
 import java.awt.Desktop
 import java.awt.Dimension
 import java.awt.GraphicsEnvironment
@@ -136,9 +137,9 @@ public class App {
             JMenu("File").apply {
                 mnemonic = 'F'.code
 
-                val openLogsFolder = JMenuItem("Open Binary Logs Folder")
-                openLogsFolder.mnemonic = 'O'.code
-                openLogsFolder.addActionListener {
+                val openBinaryLogsFolder = JMenuItem("Open Binary Logs Folder")
+                openBinaryLogsFolder.mnemonic = 'O'.code
+                openBinaryLogsFolder.addActionListener {
                     val path = BINARY_PATH.toFile()
                     if (path.exists()) {
                         Desktop.getDesktop().open(path)
@@ -151,7 +152,24 @@ public class App {
                         )
                     }
                 }
-                add(openLogsFolder)
+                add(openBinaryLogsFolder)
+
+                val openErrorLogsFolder = JMenuItem("Open Error Logs Folder")
+                openErrorLogsFolder.mnemonic = '1'.code
+                openErrorLogsFolder.addActionListener {
+                    val path = ERROR_LOGS_PATH.toFile()
+                    if (path.exists()) {
+                        Desktop.getDesktop().open(path)
+                    } else {
+                        JOptionPane.showMessageDialog(
+                            frame,
+                            "You have not had any error logs yet.",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE,
+                        )
+                    }
+                }
+                add(openErrorLogsFolder)
 
                 addSeparator()
 

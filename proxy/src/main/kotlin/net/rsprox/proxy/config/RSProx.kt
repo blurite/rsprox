@@ -6,6 +6,7 @@ import kotlin.io.path.Path
 
 internal val CONFIGURATION_PATH: Path = Path(System.getProperty("user.home"), ".rsprox")
 public val BINARY_PATH: Path = CONFIGURATION_PATH.resolve("binary")
+public val ERROR_LOGS_PATH: Path = CONFIGURATION_PATH.resolve("logs")
 internal val CLIENTS_DIRECTORY: Path = CONFIGURATION_PATH.resolve("clients")
 internal val TEMP_CLIENTS_DIRECTORY: Path = CLIENTS_DIRECTORY.resolve("temp")
 internal val CACHES_DIRECTORY: Path = CONFIGURATION_PATH.resolve("caches")
