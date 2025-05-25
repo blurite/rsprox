@@ -60,7 +60,7 @@ public enum class RuneLiteWorldType(
     /**
      * Tournament world type
      */
-    TOURNAMENT_WORLD(1 shl 26),
+    TOURNAMENT(1 shl 26),
 
     /**
      * Fresh start world type
