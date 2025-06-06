@@ -181,7 +181,7 @@ public class TextServerPacketTranscriber(
                 coord.level,
                 coord.x,
                 coord.z,
-                angle
+                angle,
             )
         } else {
             identifiedNpc(
@@ -191,7 +191,7 @@ public class TextServerPacketTranscriber(
                 coord.level,
                 coord.x,
                 coord.z,
-                angle
+                angle,
             )
         }
     }
@@ -670,7 +670,7 @@ public class TextServerPacketTranscriber(
     }
 
     override fun clanSettingsFull(message: ClanSettingsFull) {
-        if (!filters[PropertyFilter.CLANSETTINGS_FULL_REQUEST]) return omit()
+        if (!filters[PropertyFilter.CLANSETTINGS]) return omit()
         root.int("clantype", message.clanType)
         when (val update = message.update) {
             is ClanSettingsFull.ClanSettingsFullJoinUpdate -> {
