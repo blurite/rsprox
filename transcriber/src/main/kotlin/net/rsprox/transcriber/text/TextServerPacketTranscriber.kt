@@ -1886,6 +1886,16 @@ public class TextServerPacketTranscriber(
             val values = mutableListOf<String>()
             for (i in message.types.indices) {
                 val char = message.types[i]
+                if (char == 'W') {
+                    val array = message.values[i] as IntArray
+                    values += "int${array.contentToString()}"
+                    continue
+                }
+                if (char == 'X') {
+                    val array = message.values[i] as IntArray
+                    values += "string${array.contentToString()}"
+                    continue
+                }
                 val value = message.values[i].toString()
                 val type =
                     ScriptVarType.entries.first { type ->
