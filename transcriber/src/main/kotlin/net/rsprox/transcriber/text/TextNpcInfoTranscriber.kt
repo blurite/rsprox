@@ -19,6 +19,7 @@ import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.customi
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.customisation.ResetCustomisation
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceAngleExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FacePathingEntityExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HitExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SayExtendedInfo
@@ -119,7 +120,7 @@ public class TextNpcInfoTranscriber(
                 coord.level,
                 coord.x,
                 coord.z,
-                angle
+                angle,
             )
         } else {
             identifiedNpc(
@@ -129,7 +130,7 @@ public class TextNpcInfoTranscriber(
                 coord.level,
                 coord.x,
                 coord.z,
-                angle
+                angle,
             )
         }
     }
@@ -380,6 +381,13 @@ public class TextNpcInfoTranscriber(
                     if (filters[PropertyFilter.NPC_FACE_COORD]) {
                         group("FACE_COORD") {
                             faceCoord(npc, info)
+                        }
+                    }
+                }
+                is FaceAngleExtendedInfo -> {
+                    if (filters[PropertyFilter.NPC_FACE_COORD]) {
+                        group("FACE_ANGLE") {
+                            faceAngle(npc, info)
                         }
                     }
                 }
@@ -741,6 +749,17 @@ public class TextNpcInfoTranscriber(
             z = 16383
         }
         coordGrid(npc.coord.level, x, z)
+        filteredBoolean("instant", info.instant)
+    }
+
+    private fun Property.faceAngle(
+        npc: Npc,
+        info: FaceAngleExtendedInfo,
+    ) {
+        if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
+            shortNpc(npc.index)
+        }
+        int("angle", info.angle)
         filteredBoolean("instant", info.instant)
     }
 

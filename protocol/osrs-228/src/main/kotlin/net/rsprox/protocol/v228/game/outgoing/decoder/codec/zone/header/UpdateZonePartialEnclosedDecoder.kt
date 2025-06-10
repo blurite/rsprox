@@ -6,14 +6,13 @@ import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.model.IncomingZoneProt
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
 import net.rsprox.protocol.session.Session
-import net.rsprox.protocol.v228.game.outgoing.decoder.codec.zone.payload.*
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.zone.payload.LocAddChangeV1Decoder
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.zone.payload.LocAddChangeV2Decoder
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.zone.payload.LocAnimDecoder
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.zone.payload.LocDelDecoder
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.zone.payload.LocMergeDecoder
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.zone.payload.MapAnimDecoder
-import net.rsprox.protocol.v228.game.outgoing.decoder.codec.zone.payload.MapProjAnimDecoder
+import net.rsprox.protocol.v228.game.outgoing.decoder.codec.zone.payload.MapProjAnimV1Decoder
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.zone.payload.ObjAddDecoder
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.zone.payload.ObjCountDecoder
 import net.rsprox.protocol.v228.game.outgoing.decoder.codec.zone.payload.ObjCustomiseDecoder
@@ -61,7 +60,7 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
         LOC_ADD_CHANGE_V2(LocAddChangeV2Decoder()),
         LOC_MERGE(LocMergeDecoder()),
         SOUND_AREA(SoundAreaDecoder()),
-        MAP_PROJANIM(MapProjAnimDecoder()),
+        MAP_PROJANIM(MapProjAnimV1Decoder()),
         OBJ_COUNT(ObjCountDecoder()),
         LOC_ANIM(LocAnimDecoder()),
         OBJ_CUSTOMISE(ObjCustomiseDecoder()),

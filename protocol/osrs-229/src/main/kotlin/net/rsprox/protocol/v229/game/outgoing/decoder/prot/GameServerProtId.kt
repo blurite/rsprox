@@ -81,7 +81,7 @@ internal object GameServerProtId {
     const val VARP_SYNC = 77
     const val SITE_SETTINGS = 78
     const val CAM_ROTATEBY = 79
-    const val MAP_PROJANIM = 80
+    const val MAP_PROJANIM_V1 = 80
     const val NPC_SPOTANIM_SPECIFIC = 81
     const val REBUILD_WORLDENTITY_V3 = 82
     const val HIDELOCOPS = 83
@@ -117,11 +117,11 @@ internal object GameServerProtId {
     const val IF_SETANGLE = 113
     const val LOC_ANIM_SPECIFIC = 114
     const val IF_MOVESUB = 115
-    const val IF_RESYNC = 116
+    const val IF_RESYNC_V1 = 116
     const val IF_SETPLAYERMODEL_OBJ = 117
     const val HINT_ARROW = 118
     const val IF_SETROTATESPEED = 119
-    const val IF_SETEVENTS = 120
+    const val IF_SETEVENTS_V1 = 120
     const val CHAT_FILTER_SETTINGS = 121
     const val VARP_RESET = 122
     const val MESSAGE_PRIVATE = 123

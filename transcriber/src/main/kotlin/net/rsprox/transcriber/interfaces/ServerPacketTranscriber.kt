@@ -16,30 +16,7 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChanne
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelSingleUser
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.*
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfMoveSub
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfOpenSub
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfOpenTop
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfResync
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetAngle
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetAnim
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetColour
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetEvents
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetHide
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetModel
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetNpcHead
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetNpcHeadActive
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetObject
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerHead
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelBaseColour
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelBodyType
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelObj
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelSelf
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPosition
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetRotateSpeed
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetScrollPos
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetText
+import net.rsprox.protocol.game.outgoing.model.interfaces.*
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvFull
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvPartial
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvStopTransmit
@@ -73,15 +50,7 @@ import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV2
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongWithSecondary
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSwap
 import net.rsprox.protocol.game.outgoing.model.sound.SynthSound
-import net.rsprox.protocol.game.outgoing.model.specific.LocAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.MapAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.NpcAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.NpcHeadIconSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.NpcSpotAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.PlayerAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.PlayerSpotAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV2
-import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV3
+import net.rsprox.protocol.game.outgoing.model.specific.*
 import net.rsprox.protocol.game.outgoing.model.unknown.UnknownString
 import net.rsprox.protocol.game.outgoing.model.varp.VarpLarge
 import net.rsprox.protocol.game.outgoing.model.varp.VarpReset
@@ -174,7 +143,9 @@ public interface ServerPacketTranscriber {
 
     public fun ifOpenTop(message: IfOpenTop)
 
-    public fun ifResync(message: IfResync)
+    public fun ifResyncV1(message: IfResyncV1)
+
+    public fun ifResyncV2(message: IfResyncV2)
 
     public fun ifSetAngle(message: IfSetAngle)
 
@@ -182,7 +153,9 @@ public interface ServerPacketTranscriber {
 
     public fun ifSetColour(message: IfSetColour)
 
-    public fun ifSetEvents(message: IfSetEvents)
+    public fun ifSetEventsV1(message: IfSetEventsV1)
+
+    public fun ifSetEventsV2(message: IfSetEventsV2)
 
     public fun ifSetHide(message: IfSetHide)
 
@@ -340,6 +313,8 @@ public interface ServerPacketTranscriber {
 
     public fun projAnimSpecificV3(message: ProjAnimSpecificV3)
 
+    public fun projAnimSpecificV4(message: ProjAnimSpecificV4)
+
     public fun varpLarge(message: VarpLarge)
 
     public fun varpReset(message: VarpReset)
@@ -372,7 +347,9 @@ public interface ServerPacketTranscriber {
 
     public fun mapAnim(message: MapAnim)
 
-    public fun mapProjAnim(message: MapProjAnim)
+    public fun mapProjAnimV1(message: MapProjAnimV1)
+
+    public fun mapProjAnimV2(message: MapProjAnimV2)
 
     public fun objAdd(message: ObjAdd)
 

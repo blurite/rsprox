@@ -39,7 +39,7 @@ internal object GameServerProtId {
     const val UPDATE_ZONE_PARTIAL_ENCLOSED = 35
     const val MIDI_SONG_STOP = 36
     const val UPDATE_STOCKMARKET_SLOT = 37
-    const val IF_RESYNC = 38
+    const val IF_RESYNC_V1 = 38
     const val IF_OPENTOP = 39
     const val UPDATE_FRIENDLIST = 40
     const val UPDATE_STAT = 41
@@ -50,7 +50,7 @@ internal object GameServerProtId {
     const val CLANSETTINGS_DELTA = 46
     const val IF_OPENSUB = 47
     const val UPDATE_RUNENERGY = 48
-    const val IF_SETEVENTS = 49
+    const val IF_SETEVENTS_V1 = 49
     const val PLAYER_INFO = 50
     const val IF_SETANGLE = 51
     const val SITE_SETTINGS = 52
@@ -59,7 +59,7 @@ internal object GameServerProtId {
     const val CAM_MOVETO_ARC = 55
     const val OBJ_ADD = 56
     const val SERVER_TICK_END = 57
-    const val MAP_PROJANIM = 58
+    const val MAP_PROJANIM_V1 = 58
     const val CLANSETTINGS_FULL = 59
     const val MAP_ANIM_SPECIFIC = 60
     const val NPC_ANIM_SPECIFIC = 61

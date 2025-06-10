@@ -3,6 +3,7 @@ package net.rsprox.transcriber.prot
 public enum class GameClientProt : Prot {
     // If buttons
     IF_BUTTON,
+    IF_BUTTONX,
     IF_BUTTON1,
     IF_BUTTON2,
     IF_BUTTON3,
@@ -16,6 +17,7 @@ public enum class GameClientProt : Prot {
     IF_SUBOP,
     IF_BUTTOND,
     IF_BUTTONT,
+    IF_RUNSCRIPT,
 
     // Op npc
     OPNPC1,

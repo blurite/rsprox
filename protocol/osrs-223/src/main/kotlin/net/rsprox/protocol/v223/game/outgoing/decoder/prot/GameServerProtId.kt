@@ -10,7 +10,7 @@ internal object GameServerProtId {
     const val SYNTH_SOUND = 6
     const val IF_SETPLAYERMODEL_SELF = 7
     const val OBJ_COUNT = 8
-    const val IF_SETEVENTS = 9
+    const val IF_SETEVENTS_V1 = 9
     const val UPDATE_INV_STOPTRANSMIT = 10
     const val UPDATE_ZONE_PARTIAL_FOLLOWS = 11
     const val CLANCHANNEL_FULL = 12
@@ -49,7 +49,7 @@ internal object GameServerProtId {
     const val PLAYER_INFO = 45
     const val LOC_ANIM_SPECIFIC = 46
     const val CAM_ROTATETO = 47
-    const val IF_RESYNC = 48
+    const val IF_RESYNC_V1 = 48
     const val IF_SETNPCHEAD_ACTIVE = 49
     const val IF_SETROTATESPEED = 50
     const val IF_SETANGLE = 51
@@ -67,7 +67,7 @@ internal object GameServerProtId {
     const val IF_SETMODEL = 63
     const val MIDI_SWAP = 64
     const val SITE_SETTINGS = 65
-    const val MAP_PROJANIM = 66
+    const val MAP_PROJANIM_V1 = 66
     const val OBJ_ENABLED_OPS = 67
     const val CAM_MOVETO = 68
     const val LOGOUT_WITHREASON = 69

@@ -22,30 +22,7 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChanne
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.*
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfMoveSub
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfOpenSub
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfOpenTop
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfResync
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetAngle
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetAnim
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetColour
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetEvents
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetHide
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetModel
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetNpcHead
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetNpcHeadActive
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetObject
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerHead
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelBaseColour
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelBodyType
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelObj
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelSelf
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPosition
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetRotateSpeed
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetScrollPos
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetText
+import net.rsprox.protocol.game.outgoing.model.interfaces.*
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvFull
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvPartial
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvStopTransmit
@@ -98,15 +75,7 @@ import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV2
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongWithSecondary
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSwap
 import net.rsprox.protocol.game.outgoing.model.sound.SynthSound
-import net.rsprox.protocol.game.outgoing.model.specific.LocAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.MapAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.NpcAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.NpcHeadIconSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.NpcSpotAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.PlayerAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.PlayerSpotAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV2
-import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV3
+import net.rsprox.protocol.game.outgoing.model.specific.*
 import net.rsprox.protocol.game.outgoing.model.unknown.UnknownString
 import net.rsprox.protocol.game.outgoing.model.varp.VarpLarge
 import net.rsprox.protocol.game.outgoing.model.varp.VarpReset
@@ -1070,13 +1039,13 @@ public class TextServerPacketTranscriber(
             private val depthEntries = entries.filter { it in DEPTH1..DEPTH7 }.reversed()
             private val lastBlockEntries = entries.filter { it > DEPTH7 }
 
-            fun list(mask: Int): List<EventMask> {
+            fun list(mask: Int): List<String> {
                 return buildList {
                     for (entry in firstBlockEntries) {
                         if (mask and entry.mask != entry.mask) {
                             continue
                         }
-                        add(entry)
+                        add(entry.name)
                     }
                     // Depth entries get checked in reverse
                     // Only a single depth entry can be flagged as the bits are overlapping
@@ -1086,21 +1055,66 @@ public class TextServerPacketTranscriber(
                         if (mask and entry.mask != entry.mask) {
                             continue
                         }
-                        add(entry)
+                        add(entry.name)
                         break
                     }
                     for (entry in lastBlockEntries) {
                         if (mask and entry.mask != entry.mask) {
                             continue
                         }
-                        add(entry)
+                        add(entry.name)
+                    }
+                }
+            }
+
+            fun list(
+                mask1: Int,
+                mask2: Int,
+            ): List<String> {
+                return buildList {
+                    // For consistency's sake with older revisions, we build it identically to how it was
+                    // in the past - other than ops 11..32 being possible too.
+                    if (mask1 and PAUSEBUTTON.mask != 0) {
+                        add(PAUSEBUTTON.name)
+                    }
+
+                    for (i in 0..<32) {
+                        if (mask2 and (1 shl i) != 0) {
+                            add("OP${i.inc()}")
+                        }
+                    }
+                    for (entry in firstBlockEntries) {
+                        // Skip anything before op10 as that's handled separately
+                        if (entry in PAUSEBUTTON..OP10) continue
+
+                        if (mask1 and entry.mask != entry.mask) {
+                            continue
+                        }
+                        add(entry.name)
+                    }
+                    // Depth entries get checked in reverse
+                    // Only a single depth entry can be flagged as the bits are overlapping
+                    // If we just allow the normal 0..31 bits logic to take place,
+                    // we would flag depths 1, 4 and 5 when in reality only depth 5 is flagged
+                    for (entry in depthEntries) {
+                        if (mask1 and entry.mask != entry.mask) {
+                            continue
+                        }
+                        add(entry.name)
+                        break
+                    }
+                    for (entry in lastBlockEntries) {
+                        if (mask1 and entry.mask != entry.mask) {
+                            continue
+                        }
+                        add(entry.name)
                     }
                 }
             }
         }
     }
 
-    override fun ifResync(message: IfResync) {
+    override fun ifResyncV1(message: IfResyncV1) {
         if (!filters[PropertyFilter.IF_RESYNC]) return omit()
         root.inter(message.topLevelInterface)
         root.group("SUB_INTERFACES") {
@@ -1120,6 +1134,31 @@ public class TextServerPacketTranscriber(
                     int("start", event.start.maxUShortToMinusOne())
                     int("end", event.end.maxUShortToMinusOne())
                     any("events", EventMask.list(event.events).toString())
+                }
+            }
+        }
+    }
+
+    override fun ifResyncV2(message: IfResyncV2) {
+        if (!filters[PropertyFilter.IF_RESYNC]) return omit()
+        root.inter(message.topLevelInterface)
+        root.group("SUB_INTERFACES") {
+            for (sub in message.subInterfaces) {
+                sessionState.openInterface(sub.interfaceId, sub.destinationCombinedId)
+                group {
+                    com(sub.destinationInterfaceId, sub.destinationComponentId)
+                    inter(sub.interfaceId)
+                    namedEnum("type", getIfType(sub.type))
+                }
+            }
+        }
+        root.group("EVENTS") {
+            for (event in message.events) {
+                group {
+                    com(event.interfaceId, event.componentId)
+                    int("start", event.start.maxUShortToMinusOne())
+                    int("end", event.end.maxUShortToMinusOne())
+                    any("events", EventMask.list(event.events1, event.events2).toString())
                 }
             }
         }
@@ -1145,12 +1184,20 @@ public class TextServerPacketTranscriber(
         root.scriptVarType("colour", ScriptVarType.COLOUR, message.colour15BitPacked)
     }
 
-    override fun ifSetEvents(message: IfSetEvents) {
+    override fun ifSetEventsV1(message: IfSetEventsV1) {
         if (!filters[PropertyFilter.IF_SETEVENTS]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.int("start", message.start.maxUShortToMinusOne())
         root.int("end", message.end.maxUShortToMinusOne())
         root.any("events", EventMask.list(message.events).toString())
+    }
+
+    override fun ifSetEventsV2(message: IfSetEventsV2) {
+        if (!filters[PropertyFilter.IF_SETEVENTS]) return omit()
+        root.com(message.interfaceId, message.componentId)
+        root.int("start", message.start.maxUShortToMinusOne())
+        root.int("end", message.end.maxUShortToMinusOne())
+        root.any("events", EventMask.list(message.events1, message.events2).toString())
     }
 
     override fun ifSetHide(message: IfSetHide) {
@@ -1839,6 +1886,16 @@ public class TextServerPacketTranscriber(
             val values = mutableListOf<String>()
             for (i in message.types.indices) {
                 val char = message.types[i]
+                if (char == 'W') {
+                    val array = message.values[i] as IntArray
+                    values += "int${array.contentToString()}"
+                    continue
+                }
+                if (char == 'X') {
+                    val array = message.values[i] as IntArray
+                    values += "string${array.contentToString()}"
+                    continue
+                }
                 val value = message.values[i].toString()
                 val type =
                     ScriptVarType.entries.first { type ->
@@ -2344,6 +2401,39 @@ public class TextServerPacketTranscriber(
         }
     }
 
+    override fun projAnimSpecificV4(message: ProjAnimSpecificV4) {
+        if (!filters[PropertyFilter.PROJANIM_SPECIFIC]) return omit()
+        root.scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
+        root.int("starttime", message.startTime)
+        root.int("endtime", message.endTime)
+        root.int("angle", message.angle)
+        root.int("progress", message.progress)
+        root.int("startheight", message.startHeight)
+        root.int("endheight", message.endHeight)
+        root.group("SOURCE") {
+            coordGrid(message.start)
+            val ambiguousIndex = message.sourceIndex
+            if (ambiguousIndex != 0) {
+                if (ambiguousIndex > 0) {
+                    npc(ambiguousIndex - 1)
+                } else {
+                    player(-ambiguousIndex - 1)
+                }
+            }
+        }
+        root.group("TARGET") {
+            coordGrid(message.end)
+            val ambiguousIndex = message.targetIndex
+            if (ambiguousIndex != 0) {
+                if (ambiguousIndex > 0) {
+                    npc(ambiguousIndex - 1)
+                } else {
+                    player(-ambiguousIndex - 1)
+                }
+            }
+        }
+    }
+
     private fun getImpactedVarbits(
         basevar: Int,
         oldValue: Int,
@@ -2521,10 +2611,15 @@ public class TextServerPacketTranscriber(
                     val root = sessionState.createFakeServerRoot("MAP_ANIM")
                     root.buildMapAnim(event)
                 }
-                is MapProjAnim -> {
+                is MapProjAnimV1 -> {
                     if (!filters[PropertyFilter.MAP_PROJANIM]) continue
-                    val root = sessionState.createFakeServerRoot("MAP_PROJANIM")
-                    root.buildMapProjAnim(event)
+                    val root = sessionState.createFakeServerRoot("MAP_PROJANIM_V1")
+                    root.buildMapProjAnimV1(event)
+                }
+                is MapProjAnimV2 -> {
+                    if (!filters[PropertyFilter.MAP_PROJANIM]) continue
+                    val root = sessionState.createFakeServerRoot("MAP_PROJANIM_V2")
+                    root.buildMapProjAnimV2(event)
                 }
                 is ObjAdd -> {
                     if (!filters[PropertyFilter.OBJ_ADD]) continue
@@ -2608,10 +2703,16 @@ public class TextServerPacketTranscriber(
                             buildMapAnim(event)
                         }
                     }
-                    is MapProjAnim -> {
+                    is MapProjAnimV1 -> {
                         if (!filters[PropertyFilter.MAP_PROJANIM]) continue
-                        group("MAP_PROJANIM") {
-                            buildMapProjAnim(event)
+                        group("MAP_PROJANIM_V1") {
+                            buildMapProjAnimV1(event)
+                        }
+                    }
+                    is MapProjAnimV2 -> {
+                        if (!filters[PropertyFilter.MAP_PROJANIM]) continue
+                        group("MAP_PROJANIM_V2") {
+                            buildMapProjAnimV2(event)
                         }
                     }
                     is ObjAdd -> {
@@ -2696,9 +2797,14 @@ public class TextServerPacketTranscriber(
         root.buildMapAnim(message)
     }
 
-    override fun mapProjAnim(message: MapProjAnim) {
+    override fun mapProjAnimV1(message: MapProjAnimV1) {
         if (!filters[PropertyFilter.MAP_PROJANIM]) return omit()
-        root.buildMapProjAnim(message)
+        root.buildMapProjAnimV1(message)
+    }
+
+    override fun mapProjAnimV2(message: MapProjAnimV2) {
+        if (!filters[PropertyFilter.MAP_PROJANIM]) return omit()
+        root.buildMapProjAnimV2(message)
     }
 
     override fun objAdd(message: ObjAdd) {
@@ -2788,7 +2894,7 @@ public class TextServerPacketTranscriber(
         coordGrid(coordInZone(message.xInZone, message.zInZone))
     }
 
-    private fun Property.buildMapProjAnim(message: MapProjAnim) {
+    private fun Property.buildMapProjAnimV1(message: MapProjAnimV1) {
         scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
         int("starttime", message.startTime)
         int("endtime", message.endTime)
@@ -2809,6 +2915,38 @@ public class TextServerPacketTranscriber(
         }
         group("TARGET") {
             coordGrid(coordInZone(message.xInZone + message.deltaX, message.zInZone + message.deltaZ))
+            val ambiguousIndex = message.targetIndex
+            if (ambiguousIndex != 0) {
+                if (ambiguousIndex > 0) {
+                    npc(ambiguousIndex - 1)
+                } else {
+                    player(-ambiguousIndex - 1)
+                }
+            }
+        }
+    }
+
+    private fun Property.buildMapProjAnimV2(message: MapProjAnimV2) {
+        scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
+        int("starttime", message.startTime)
+        int("endtime", message.endTime)
+        int("angle", message.angle)
+        int("progress", message.progress)
+        int("startheight", message.startHeight)
+        int("endheight", message.endHeight)
+        group("SOURCE") {
+            coordGrid(coordInZone(message.xInZone, message.zInZone))
+            val ambiguousIndex = message.sourceIndex
+            if (ambiguousIndex != 0) {
+                if (ambiguousIndex > 0) {
+                    npc(ambiguousIndex - 1)
+                } else {
+                    player(-ambiguousIndex - 1)
+                }
+            }
+        }
+        group("TARGET") {
+            coordGrid(message.end)
             val ambiguousIndex = message.targetIndex
             if (ambiguousIndex != 0) {
                 if (ambiguousIndex > 0) {

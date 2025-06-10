@@ -4,11 +4,7 @@ import net.rsprot.protocol.util.CombinedId
 import net.rsprox.cache.api.Cache
 import net.rsprox.cache.api.CacheProvider
 import net.rsprox.cache.api.type.VarBitType
-import net.rsprox.protocol.game.incoming.model.buttons.If1Button
-import net.rsprox.protocol.game.incoming.model.buttons.If3Button
-import net.rsprox.protocol.game.incoming.model.buttons.IfButtonD
-import net.rsprox.protocol.game.incoming.model.buttons.IfButtonT
-import net.rsprox.protocol.game.incoming.model.buttons.IfSubOp
+import net.rsprox.protocol.game.incoming.model.buttons.*
 import net.rsprox.protocol.game.incoming.model.clan.AffinedClanSettingsAddBannedFromChannel
 import net.rsprox.protocol.game.incoming.model.clan.AffinedClanSettingsSetMutedFromChannel
 import net.rsprox.protocol.game.incoming.model.clan.ClanChannelFullRequest
@@ -102,12 +98,12 @@ import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerUpdateType
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.AppearanceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.ChatExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.FaceAngleExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.MoveSpeedExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.NameExtrasExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.TemporaryMoveSpeedExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceAngleExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FacePathingEntityExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HitExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SayExtendedInfo
@@ -115,30 +111,7 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Sequence
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.*
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfMoveSub
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfOpenSub
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfOpenTop
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfResync
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetAngle
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetAnim
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetColour
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetEvents
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetHide
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetModel
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetNpcHead
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetNpcHeadActive
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetObject
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerHead
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelBaseColour
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelBodyType
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelObj
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelSelf
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPosition
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetRotateSpeed
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetScrollPos
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetText
+import net.rsprox.protocol.game.outgoing.model.interfaces.*
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvFull
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvPartial
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvStopTransmit
@@ -171,15 +144,7 @@ import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV2
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongWithSecondary
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSwap
 import net.rsprox.protocol.game.outgoing.model.sound.SynthSound
-import net.rsprox.protocol.game.outgoing.model.specific.LocAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.MapAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.NpcAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.NpcHeadIconSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.NpcSpotAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.PlayerAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.PlayerSpotAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV2
-import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV3
+import net.rsprox.protocol.game.outgoing.model.specific.*
 import net.rsprox.protocol.game.outgoing.model.unknown.UnknownString
 import net.rsprox.protocol.game.outgoing.model.varp.VarpLarge
 import net.rsprox.protocol.game.outgoing.model.varp.VarpReset
@@ -242,6 +207,10 @@ public class IndexerTranscriber(
         incrementInterfaceId(message.interfaceId)
     }
 
+    override fun ifButtonX(message: If3Button) {
+        incrementInterfaceId(message.interfaceId)
+    }
+
     override fun ifSubOp(message: IfSubOp) {
         incrementInterfaceId(message.interfaceId)
     }
@@ -254,6 +223,10 @@ public class IndexerTranscriber(
     override fun ifButtonT(message: IfButtonT) {
         incrementInterfaceId(message.selectedInterfaceId)
         incrementInterfaceId(message.targetInterfaceId)
+    }
+
+    override fun ifRunScript(message: IfRunScript) {
+        incrementInterfaceId(message.interfaceId)
     }
 
     override fun affinedClanSettingsAddBannedFromChannel(message: AffinedClanSettingsAddBannedFromChannel) {
@@ -578,7 +551,10 @@ public class IndexerTranscriber(
         incrementInterfaceId(message.interfaceId)
     }
 
-    override fun ifResync(message: IfResync) {
+    override fun ifResyncV1(message: IfResyncV1) {
+    }
+
+    override fun ifResyncV2(message: IfResyncV2) {
     }
 
     override fun ifSetAngle(message: IfSetAngle) {
@@ -594,7 +570,11 @@ public class IndexerTranscriber(
         incrementComponent(message.combinedId)
     }
 
-    override fun ifSetEvents(message: IfSetEvents) {
+    override fun ifSetEventsV1(message: IfSetEventsV1) {
+        incrementComponent(message.combinedId)
+    }
+
+    override fun ifSetEventsV2(message: IfSetEventsV2) {
         incrementComponent(message.combinedId)
     }
 
@@ -1016,6 +996,10 @@ public class IndexerTranscriber(
         appendCheckedSpotanim(message.id)
     }
 
+    override fun projAnimSpecificV4(message: ProjAnimSpecificV4) {
+        appendCheckedSpotanim(message.id)
+    }
+
     override fun varpLarge(message: VarpLarge) {
         logVarp(message.id, message.value)
     }
@@ -1089,7 +1073,7 @@ public class IndexerTranscriber(
                 is MapAnim -> {
                     appendCheckedSpotanim(update.id)
                 }
-                is MapProjAnim -> {
+                is MapProjAnimV1 -> {
                     appendCheckedSpotanim(update.id)
                 }
                 is ObjAdd -> {
@@ -1137,7 +1121,11 @@ public class IndexerTranscriber(
         appendCheckedSpotanim(message.id)
     }
 
-    override fun mapProjAnim(message: MapProjAnim) {
+    override fun mapProjAnimV1(message: MapProjAnimV1) {
+        appendCheckedSpotanim(message.id)
+    }
+
+    override fun mapProjAnimV2(message: MapProjAnimV2) {
         appendCheckedSpotanim(message.id)
     }
 
@@ -1328,6 +1316,8 @@ public class IndexerTranscriber(
                 is EnabledOpsExtendedInfo -> {
                 }
                 is FaceCoordExtendedInfo -> {
+                }
+                is FaceAngleExtendedInfo -> {
                 }
                 is NameChangeExtendedInfo -> {
                 }

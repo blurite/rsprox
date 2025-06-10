@@ -4,7 +4,7 @@ internal object GameServerProtId {
     const val SET_PLAYER_OP = 0
     const val CAM_ROTATETO = 1
     const val IF_SETNPCHEAD = 2
-    const val IF_SETEVENTS = 3
+    const val IF_SETEVENTS_V1 = 3
     const val MAP_ANIM_SPECIFIC = 4
     const val LOC_ANIM_SPECIFIC = 5
     const val MIDI_JINGLE = 6
@@ -25,11 +25,11 @@ internal object GameServerProtId {
     const val REBUILD_WORLDENTITY_V2 = 21
     const val LOGOUT_WITHREASON = 22
     const val OCULUS_SYNC = 23
-    const val IF_RESYNC = 24
+    const val IF_RESYNC_V1 = 24
     const val MIDI_SWAP = 25
     const val NPC_SPOTANIM_SPECIFIC = 26
     const val VARP_SMALL = 27
-    const val MAP_PROJANIM = 28
+    const val MAP_PROJANIM_V1 = 28
     const val CAM_LOOKAT_EASED_COORD = 29
     const val CAM_SHAKE = 30
     const val REBUILD_REGION = 31
