@@ -65,7 +65,7 @@ public enum class GameServerProt(
     MAP_PROJANIM_V1(GameServerProtId.MAP_PROJANIM_V1, 20),
 
     // MAP_PROJANIM_V2 has no packet of its own. It can only be transmitted via the partial enclosed packet.
-    MAP_PROJANIM_V2(0xFD, 24), // TODO: change opcode to -1 once RSProt version has been updated
+    MAP_PROJANIM_V2(-1, 24),
     SOUND_AREA(GameServerProtId.SOUND_AREA, 7),
 
     // Specific packets

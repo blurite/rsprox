@@ -3,11 +3,8 @@ package net.rsprox.proxy.bootstrap
 import io.netty.bootstrap.Bootstrap
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.buffer.ByteBufAllocator
-import io.netty.channel.Channel
-import io.netty.channel.ChannelInitializer
-import io.netty.channel.ChannelOption
-import io.netty.channel.EventLoopGroup
-import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.channel.*
+import io.netty.channel.nio.NioIoHandler
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.http.HttpRequestDecoder
@@ -31,7 +28,7 @@ public class BootstrapFactory(
     private val properties: ProxyProperties,
 ) {
     private fun group(numThreads: Int): EventLoopGroup {
-        return NioEventLoopGroup(numThreads)
+        return MultiThreadIoEventLoopGroup(numThreads, NioIoHandler.newFactory())
     }
 
     public fun createServerBootStrap(
@@ -69,7 +66,7 @@ public class BootstrapFactory(
 
     public fun createClientBootstrap(): Bootstrap {
         return Bootstrap()
-            .group(NioEventLoopGroup())
+            .group(MultiThreadIoEventLoopGroup(1, NioIoHandler.newFactory()))
             .channel(NioSocketChannel::class.java)
             .option(ChannelOption.ALLOCATOR, allocator)
             .option(ChannelOption.AUTO_READ, false)
