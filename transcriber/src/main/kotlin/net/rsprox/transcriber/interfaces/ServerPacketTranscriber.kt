@@ -347,7 +347,9 @@ public interface ServerPacketTranscriber {
 
     public fun mapAnim(message: MapAnim)
 
-    public fun mapProjAnim(message: MapProjAnimV1)
+    public fun mapProjAnimV1(message: MapProjAnimV1)
+
+    public fun mapProjAnimV2(message: MapProjAnimV2)
 
     public fun objAdd(message: ObjAdd)
 

@@ -57,6 +57,7 @@ public enum class GameServerProt : Prot {
     OBJ_UNCUSTOMISE,
     MAP_ANIM,
     MAP_PROJANIM_V1,
+    MAP_PROJANIM_V2,
     SOUND_AREA,
 
     // Specific packets

@@ -2614,7 +2614,12 @@ public class TextServerPacketTranscriber(
                 is MapProjAnimV1 -> {
                     if (!filters[PropertyFilter.MAP_PROJANIM]) continue
                     val root = sessionState.createFakeServerRoot("MAP_PROJANIM_V1")
-                    root.buildMapProjAnim(event)
+                    root.buildMapProjAnimV1(event)
+                }
+                is MapProjAnimV2 -> {
+                    if (!filters[PropertyFilter.MAP_PROJANIM]) continue
+                    val root = sessionState.createFakeServerRoot("MAP_PROJANIM_V2")
+                    root.buildMapProjAnimV2(event)
                 }
                 is ObjAdd -> {
                     if (!filters[PropertyFilter.OBJ_ADD]) continue
@@ -2701,7 +2706,13 @@ public class TextServerPacketTranscriber(
                     is MapProjAnimV1 -> {
                         if (!filters[PropertyFilter.MAP_PROJANIM]) continue
                         group("MAP_PROJANIM_V1") {
-                            buildMapProjAnim(event)
+                            buildMapProjAnimV1(event)
+                        }
+                    }
+                    is MapProjAnimV2 -> {
+                        if (!filters[PropertyFilter.MAP_PROJANIM]) continue
+                        group("MAP_PROJANIM_V2") {
+                            buildMapProjAnimV2(event)
                         }
                     }
                     is ObjAdd -> {
@@ -2786,9 +2797,14 @@ public class TextServerPacketTranscriber(
         root.buildMapAnim(message)
     }
 
-    override fun mapProjAnim(message: MapProjAnimV1) {
+    override fun mapProjAnimV1(message: MapProjAnimV1) {
         if (!filters[PropertyFilter.MAP_PROJANIM]) return omit()
-        root.buildMapProjAnim(message)
+        root.buildMapProjAnimV1(message)
+    }
+
+    override fun mapProjAnimV2(message: MapProjAnimV2) {
+        if (!filters[PropertyFilter.MAP_PROJANIM]) return omit()
+        root.buildMapProjAnimV2(message)
     }
 
     override fun objAdd(message: ObjAdd) {
@@ -2878,7 +2894,7 @@ public class TextServerPacketTranscriber(
         coordGrid(coordInZone(message.xInZone, message.zInZone))
     }
 
-    private fun Property.buildMapProjAnim(message: MapProjAnimV1) {
+    private fun Property.buildMapProjAnimV1(message: MapProjAnimV1) {
         scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
         int("starttime", message.startTime)
         int("endtime", message.endTime)
@@ -2899,6 +2915,38 @@ public class TextServerPacketTranscriber(
         }
         group("TARGET") {
             coordGrid(coordInZone(message.xInZone + message.deltaX, message.zInZone + message.deltaZ))
+            val ambiguousIndex = message.targetIndex
+            if (ambiguousIndex != 0) {
+                if (ambiguousIndex > 0) {
+                    npc(ambiguousIndex - 1)
+                } else {
+                    player(-ambiguousIndex - 1)
+                }
+            }
+        }
+    }
+
+    private fun Property.buildMapProjAnimV2(message: MapProjAnimV2) {
+        scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
+        int("starttime", message.startTime)
+        int("endtime", message.endTime)
+        int("angle", message.angle)
+        int("progress", message.progress)
+        int("startheight", message.startHeight)
+        int("endheight", message.endHeight)
+        group("SOURCE") {
+            coordGrid(coordInZone(message.xInZone, message.zInZone))
+            val ambiguousIndex = message.sourceIndex
+            if (ambiguousIndex != 0) {
+                if (ambiguousIndex > 0) {
+                    npc(ambiguousIndex - 1)
+                } else {
+                    player(-ambiguousIndex - 1)
+                }
+            }
+        }
+        group("TARGET") {
+            coordGrid(message.end)
             val ambiguousIndex = message.targetIndex
             if (ambiguousIndex != 0) {
                 if (ambiguousIndex > 0) {

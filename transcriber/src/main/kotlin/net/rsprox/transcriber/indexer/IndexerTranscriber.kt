@@ -1121,7 +1121,11 @@ public class IndexerTranscriber(
         appendCheckedSpotanim(message.id)
     }
 
-    override fun mapProjAnim(message: MapProjAnimV1) {
+    override fun mapProjAnimV1(message: MapProjAnimV1) {
+        appendCheckedSpotanim(message.id)
+    }
+
+    override fun mapProjAnimV2(message: MapProjAnimV2) {
         appendCheckedSpotanim(message.id)
     }
 
