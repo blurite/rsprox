@@ -4,11 +4,7 @@ import net.rsprot.compression.HuffmanCodec
 import net.rsprot.protocol.ProtRepository
 import net.rsprox.protocol.MessageDecoderRepository
 import net.rsprox.protocol.MessageDecoderRepositoryBuilder
-import net.rsprox.protocol.v231.game.incoming.decoder.codec.buttons.If1ButtonDecoder
-import net.rsprox.protocol.v231.game.incoming.decoder.codec.buttons.If3ButtonDecoder
-import net.rsprox.protocol.v231.game.incoming.decoder.codec.buttons.IfButtonDDecoder
-import net.rsprox.protocol.v231.game.incoming.decoder.codec.buttons.IfButtonTDecoder
-import net.rsprox.protocol.v231.game.incoming.decoder.codec.buttons.IfSubOpDecoder
+import net.rsprox.protocol.v231.game.incoming.decoder.codec.buttons.*
 import net.rsprox.protocol.v231.game.incoming.decoder.codec.clan.AffinedClanSettingsAddBannedFromChannelDecoder
 import net.rsprox.protocol.v231.game.incoming.decoder.codec.clan.AffinedClanSettingsSetMutedFromChannelDecoder
 import net.rsprox.protocol.v231.game.incoming.decoder.codec.clan.ClanChannelFullRequestDecoder
@@ -99,6 +95,7 @@ internal object ClientMessageDecoderRepository {
                 protRepository,
             ).apply {
                 bind(If1ButtonDecoder())
+                bind(IfButtonXDecoder())
                 bind(If3ButtonDecoder(GameClientProt.IF_BUTTON1, 1))
                 bind(If3ButtonDecoder(GameClientProt.IF_BUTTON2, 2))
                 bind(If3ButtonDecoder(GameClientProt.IF_BUTTON3, 3))
@@ -112,6 +109,7 @@ internal object ClientMessageDecoderRepository {
                 bind(IfSubOpDecoder())
                 bind(IfButtonDDecoder())
                 bind(IfButtonTDecoder())
+                bind(IfRunScriptDecoder())
 
                 bind(OpNpc1Decoder())
                 bind(OpNpc2Decoder())

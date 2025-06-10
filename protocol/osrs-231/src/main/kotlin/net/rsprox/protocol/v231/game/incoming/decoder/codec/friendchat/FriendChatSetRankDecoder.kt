@@ -15,7 +15,7 @@ public class FriendChatSetRankDecoder : ProxyMessageDecoder<FriendChatSetRank> {
         session: Session,
     ): FriendChatSetRank {
         val name = buffer.gjstr()
-        val rank = buffer.g1()
+        val rank = buffer.g1Alt1()
         return FriendChatSetRank(
             name,
             rank,

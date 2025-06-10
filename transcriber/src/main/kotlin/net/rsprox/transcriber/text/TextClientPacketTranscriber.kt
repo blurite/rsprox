@@ -2,11 +2,7 @@ package net.rsprox.transcriber.text
 
 import net.rsprox.cache.api.Cache
 import net.rsprox.protocol.common.CoordGrid
-import net.rsprox.protocol.game.incoming.model.buttons.If1Button
-import net.rsprox.protocol.game.incoming.model.buttons.If3Button
-import net.rsprox.protocol.game.incoming.model.buttons.IfButtonD
-import net.rsprox.protocol.game.incoming.model.buttons.IfButtonT
-import net.rsprox.protocol.game.incoming.model.buttons.IfSubOp
+import net.rsprox.protocol.game.incoming.model.buttons.*
 import net.rsprox.protocol.game.incoming.model.clan.AffinedClanSettingsAddBannedFromChannel
 import net.rsprox.protocol.game.incoming.model.clan.AffinedClanSettingsSetMutedFromChannel
 import net.rsprox.protocol.game.incoming.model.clan.ClanChannelFullRequest
@@ -148,7 +144,7 @@ public open class TextClientPacketTranscriber(
                 coord.level,
                 coord.x,
                 coord.z,
-                angle
+                angle,
             )
         } else {
             identifiedNpc(
@@ -158,7 +154,7 @@ public open class TextClientPacketTranscriber(
                 coord.level,
                 coord.x,
                 coord.z,
-                angle
+                angle,
             )
         }
     }
@@ -211,6 +207,14 @@ public open class TextClientPacketTranscriber(
         root.filteredScriptVarType("obj", ScriptVarType.OBJ, message.obj, -1)
     }
 
+    override fun ifButtonX(message: If3Button) {
+        if (!filters[PropertyFilter.IF_BUTTON]) return omit()
+        root.com(message.interfaceId, message.componentId)
+        root.filteredInt("sub", message.sub, -1)
+        root.filteredScriptVarType("obj", ScriptVarType.OBJ, message.obj, -1)
+        root.int("op", message.op)
+    }
+
     override fun ifSubOp(message: IfSubOp) {
         if (!filters[PropertyFilter.IF_BUTTON]) return omit()
         root.com(message.interfaceId, message.componentId)
@@ -238,6 +242,15 @@ public open class TextClientPacketTranscriber(
         root.com("targetcom", message.targetInterfaceId, message.targetComponentId)
         root.filteredInt("targetsub", message.targetSub, -1)
         root.filteredScriptVarType("targetobj", ScriptVarType.OBJ, message.targetObj, -1)
+    }
+
+    override fun ifRunScript(message: IfRunScript) {
+        if (!filters[PropertyFilter.IF_RUNSCRIPT]) return omit()
+        root.com(message.interfaceId, message.componentId)
+        root.filteredInt("sub", message.sub, -1)
+        root.filteredScriptVarType("obj", ScriptVarType.OBJ, message.obj, -1)
+        root.int("script", message.script)
+        root.any("payload", message.bytes.contentToString())
     }
 
     override fun affinedClanSettingsAddBannedFromChannel(message: AffinedClanSettingsAddBannedFromChannel) {

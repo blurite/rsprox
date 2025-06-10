@@ -37,6 +37,13 @@ public enum class PropertyFilter(
         true,
         searchTerms = "if,interface,ifbuttont,buttons,targetting,use,using",
     ),
+    IF_RUNSCRIPT(
+        CLIENT_TO_SERVER,
+        INTERFACES,
+        "Interface Scripts",
+        true,
+        searchTerms = "if,interface,ifrunscript,scripts,serverscript,clientscript,cs2,rs2",
+    ),
 
     OPNPC(
         CLIENT_TO_SERVER,

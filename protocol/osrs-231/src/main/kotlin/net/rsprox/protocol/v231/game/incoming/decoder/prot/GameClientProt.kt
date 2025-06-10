@@ -9,6 +9,7 @@ public enum class GameClientProt(
 ) : ClientProt {
     // If buttons
     IF_BUTTON(GameClientProtId.IF_BUTTON, 4),
+    IF_BUTTONX(GameClientProtId.IF_BUTTONX, 9),
     IF_BUTTON1(GameClientProtId.IF_BUTTON1, 8),
     IF_BUTTON2(GameClientProtId.IF_BUTTON2, 8),
     IF_BUTTON3(GameClientProtId.IF_BUTTON3, 8),
@@ -22,6 +23,7 @@ public enum class GameClientProt(
     IF_SUBOP(GameClientProtId.IF_SUBOP, 10),
     IF_BUTTOND(GameClientProtId.IF_BUTTOND, 16),
     IF_BUTTONT(GameClientProtId.IF_BUTTONT, 16),
+    IF_RUNSCRIPT(GameClientProtId.IF_RUNSCRIPT, Prot.VAR_SHORT),
 
     // Op npc
     OPNPC1(GameClientProtId.OPNPC1, 3),

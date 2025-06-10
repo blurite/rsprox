@@ -1,10 +1,6 @@
 package net.rsprox.transcriber.interfaces
 
-import net.rsprox.protocol.game.incoming.model.buttons.If1Button
-import net.rsprox.protocol.game.incoming.model.buttons.If3Button
-import net.rsprox.protocol.game.incoming.model.buttons.IfButtonD
-import net.rsprox.protocol.game.incoming.model.buttons.IfButtonT
-import net.rsprox.protocol.game.incoming.model.buttons.IfSubOp
+import net.rsprox.protocol.game.incoming.model.buttons.*
 import net.rsprox.protocol.game.incoming.model.clan.AffinedClanSettingsAddBannedFromChannel
 import net.rsprox.protocol.game.incoming.model.clan.AffinedClanSettingsSetMutedFromChannel
 import net.rsprox.protocol.game.incoming.model.clan.ClanChannelFullRequest
@@ -73,11 +69,15 @@ public interface ClientPacketTranscriber {
 
     public fun if3Button(message: If3Button)
 
+    public fun ifButtonX(message: If3Button)
+
     public fun ifSubOp(message: IfSubOp)
 
     public fun ifButtonD(message: IfButtonD)
 
     public fun ifButtonT(message: IfButtonT)
+
+    public fun ifRunScript(message: IfRunScript)
 
     public fun affinedClanSettingsAddBannedFromChannel(message: AffinedClanSettingsAddBannedFromChannel)
 

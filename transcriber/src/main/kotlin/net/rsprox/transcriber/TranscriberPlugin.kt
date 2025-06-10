@@ -206,6 +206,7 @@ public class TranscriberPlugin(
         val clientProt = GameClientProt.valueOf(toString)
         when (clientProt) {
             GameClientProt.IF_BUTTON -> pass(message, Transcriber::if1Button)
+            GameClientProt.IF_BUTTONX -> pass(message, Transcriber::ifButtonX)
             GameClientProt.IF_BUTTON1 -> pass(message, Transcriber::if3Button)
             GameClientProt.IF_BUTTON2 -> pass(message, Transcriber::if3Button)
             GameClientProt.IF_BUTTON3 -> pass(message, Transcriber::if3Button)
@@ -219,6 +220,7 @@ public class TranscriberPlugin(
             GameClientProt.IF_SUBOP -> pass(message, Transcriber::ifSubOp)
             GameClientProt.IF_BUTTOND -> pass(message, Transcriber::ifButtonD)
             GameClientProt.IF_BUTTONT -> pass(message, Transcriber::ifButtonT)
+            GameClientProt.IF_RUNSCRIPT -> pass(message, Transcriber::ifRunScript)
             GameClientProt.OPNPC1 -> pass(message, Transcriber::opNpc)
             GameClientProt.OPNPC2 -> pass(message, Transcriber::opNpc)
             GameClientProt.OPNPC3 -> pass(message, Transcriber::opNpc)

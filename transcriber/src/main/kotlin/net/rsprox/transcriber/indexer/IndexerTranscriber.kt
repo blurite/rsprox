@@ -4,11 +4,7 @@ import net.rsprot.protocol.util.CombinedId
 import net.rsprox.cache.api.Cache
 import net.rsprox.cache.api.CacheProvider
 import net.rsprox.cache.api.type.VarBitType
-import net.rsprox.protocol.game.incoming.model.buttons.If1Button
-import net.rsprox.protocol.game.incoming.model.buttons.If3Button
-import net.rsprox.protocol.game.incoming.model.buttons.IfButtonD
-import net.rsprox.protocol.game.incoming.model.buttons.IfButtonT
-import net.rsprox.protocol.game.incoming.model.buttons.IfSubOp
+import net.rsprox.protocol.game.incoming.model.buttons.*
 import net.rsprox.protocol.game.incoming.model.clan.AffinedClanSettingsAddBannedFromChannel
 import net.rsprox.protocol.game.incoming.model.clan.AffinedClanSettingsSetMutedFromChannel
 import net.rsprox.protocol.game.incoming.model.clan.ClanChannelFullRequest
@@ -242,6 +238,10 @@ public class IndexerTranscriber(
         incrementInterfaceId(message.interfaceId)
     }
 
+    override fun ifButtonX(message: If3Button) {
+        incrementInterfaceId(message.interfaceId)
+    }
+
     override fun ifSubOp(message: IfSubOp) {
         incrementInterfaceId(message.interfaceId)
     }
@@ -254,6 +254,10 @@ public class IndexerTranscriber(
     override fun ifButtonT(message: IfButtonT) {
         incrementInterfaceId(message.selectedInterfaceId)
         incrementInterfaceId(message.targetInterfaceId)
+    }
+
+    override fun ifRunScript(message: IfRunScript) {
+        incrementInterfaceId(message.interfaceId)
     }
 
     override fun affinedClanSettingsAddBannedFromChannel(message: AffinedClanSettingsAddBannedFromChannel) {
