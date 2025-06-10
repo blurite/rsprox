@@ -2523,7 +2523,7 @@ public class TextServerPacketTranscriber(
                 }
                 is MapProjAnimV1 -> {
                     if (!filters[PropertyFilter.MAP_PROJANIM]) continue
-                    val root = sessionState.createFakeServerRoot("MAP_PROJANIM")
+                    val root = sessionState.createFakeServerRoot("MAP_PROJANIM_V1")
                     root.buildMapProjAnim(event)
                 }
                 is ObjAdd -> {
@@ -2610,7 +2610,7 @@ public class TextServerPacketTranscriber(
                     }
                     is MapProjAnimV1 -> {
                         if (!filters[PropertyFilter.MAP_PROJANIM]) continue
-                        group("MAP_PROJANIM") {
+                        group("MAP_PROJANIM_V1") {
                             buildMapProjAnim(event)
                         }
                     }
