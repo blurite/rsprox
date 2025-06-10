@@ -111,30 +111,7 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Sequence
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.*
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfMoveSub
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfOpenSub
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfOpenTop
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfResyncV1
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetAngle
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetAnim
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetColour
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetEventsV1
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetHide
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetModel
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetNpcHead
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetNpcHeadActive
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetObject
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerHead
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelBaseColour
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelBodyType
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelObj
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelSelf
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPosition
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetRotateSpeed
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetScrollPos
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetText
+import net.rsprox.protocol.game.outgoing.model.interfaces.*
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvFull
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvPartial
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvStopTransmit
@@ -598,7 +575,11 @@ public class IndexerTranscriber(
         incrementComponent(message.combinedId)
     }
 
-    override fun ifSetEvents(message: IfSetEventsV1) {
+    override fun ifSetEventsV1(message: IfSetEventsV1) {
+        incrementComponent(message.combinedId)
+    }
+
+    override fun ifSetEventsV2(message: IfSetEventsV2) {
         incrementComponent(message.combinedId)
     }
 

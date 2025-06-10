@@ -17,6 +17,7 @@ public enum class GameServerProt(
     IF_MOVESUB(GameServerProtId.IF_MOVESUB, 8),
     IF_CLEARINV(GameServerProtId.IF_CLEARINV, 4),
     IF_SETEVENTS_V1(GameServerProtId.IF_SETEVENTS_V1, 12),
+    IF_SETEVENTS_V2(GameServerProtId.IF_SETEVENTS_V2, 16),
     IF_SETPOSITION(GameServerProtId.IF_SETPOSITION, 8),
     IF_SETSCROLLPOS(GameServerProtId.IF_SETSCROLLPOS, 6),
     IF_SETROTATESPEED(GameServerProtId.IF_SETROTATESPEED, 8),

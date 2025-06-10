@@ -16,30 +16,7 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChanne
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelSingleUser
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.*
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfMoveSub
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfOpenSub
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfOpenTop
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfResyncV1
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetAngle
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetAnim
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetColour
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetEventsV1
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetHide
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetModel
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetNpcHead
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetNpcHeadActive
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetObject
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerHead
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelBaseColour
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelBodyType
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelObj
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelSelf
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPosition
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetRotateSpeed
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetScrollPos
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetText
+import net.rsprox.protocol.game.outgoing.model.interfaces.*
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvFull
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvPartial
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvStopTransmit
@@ -182,7 +159,9 @@ public interface ServerPacketTranscriber {
 
     public fun ifSetColour(message: IfSetColour)
 
-    public fun ifSetEvents(message: IfSetEventsV1)
+    public fun ifSetEventsV1(message: IfSetEventsV1)
+
+    public fun ifSetEventsV2(message: IfSetEventsV2)
 
     public fun ifSetHide(message: IfSetHide)
 

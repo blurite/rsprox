@@ -22,30 +22,7 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChanne
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.*
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfClearInv
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfMoveSub
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfOpenSub
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfOpenTop
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfResyncV1
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetAngle
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetAnim
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetColour
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetEventsV1
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetHide
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetModel
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetNpcHead
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetNpcHeadActive
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetObject
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerHead
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelBaseColour
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelBodyType
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelObj
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelSelf
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPosition
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetRotateSpeed
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetScrollPos
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetText
+import net.rsprox.protocol.game.outgoing.model.interfaces.*
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvFull
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvPartial
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvStopTransmit
@@ -1070,13 +1047,13 @@ public class TextServerPacketTranscriber(
             private val depthEntries = entries.filter { it in DEPTH1..DEPTH7 }.reversed()
             private val lastBlockEntries = entries.filter { it > DEPTH7 }
 
-            fun list(mask: Int): List<EventMask> {
+            fun list(mask: Int): List<String> {
                 return buildList {
                     for (entry in firstBlockEntries) {
                         if (mask and entry.mask != entry.mask) {
                             continue
                         }
-                        add(entry)
+                        add(entry.name)
                     }
                     // Depth entries get checked in reverse
                     // Only a single depth entry can be flagged as the bits are overlapping
@@ -1086,14 +1063,59 @@ public class TextServerPacketTranscriber(
                         if (mask and entry.mask != entry.mask) {
                             continue
                         }
-                        add(entry)
+                        add(entry.name)
                         break
                     }
                     for (entry in lastBlockEntries) {
                         if (mask and entry.mask != entry.mask) {
                             continue
                         }
-                        add(entry)
+                        add(entry.name)
+                    }
+                }
+            }
+
+            fun list(
+                mask1: Int,
+                mask2: Int,
+            ): List<String> {
+                return buildList {
+                    // For consistency's sake with older revisions, we build it identically to how it was
+                    // in the past - other than ops 11..32 being possible too.
+                    if (mask1 and PAUSEBUTTON.mask != 0) {
+                        add(PAUSEBUTTON.name)
+                    }
+
+                    for (i in 0..<32) {
+                        if (mask2 and (1 shl i) != 0) {
+                            add("OP${i.inc()}")
+                        }
+                    }
+                    for (entry in firstBlockEntries) {
+                        // Skip anything before op10 as that's handled separately
+                        if (entry in PAUSEBUTTON..OP10) continue
+
+                        if (mask1 and entry.mask != entry.mask) {
+                            continue
+                        }
+                        add(entry.name)
+                    }
+                    // Depth entries get checked in reverse
+                    // Only a single depth entry can be flagged as the bits are overlapping
+                    // If we just allow the normal 0..31 bits logic to take place,
+                    // we would flag depths 1, 4 and 5 when in reality only depth 5 is flagged
+                    for (entry in depthEntries) {
+                        if (mask1 and entry.mask != entry.mask) {
+                            continue
+                        }
+                        add(entry.name)
+                        break
+                    }
+                    for (entry in lastBlockEntries) {
+                        if (mask1 and entry.mask != entry.mask) {
+                            continue
+                        }
+                        add(entry.name)
                     }
                 }
             }
@@ -1145,12 +1167,20 @@ public class TextServerPacketTranscriber(
         root.scriptVarType("colour", ScriptVarType.COLOUR, message.colour15BitPacked)
     }
 
-    override fun ifSetEvents(message: IfSetEventsV1) {
+    override fun ifSetEventsV1(message: IfSetEventsV1) {
         if (!filters[PropertyFilter.IF_SETEVENTS]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.int("start", message.start.maxUShortToMinusOne())
         root.int("end", message.end.maxUShortToMinusOne())
         root.any("events", EventMask.list(message.events).toString())
+    }
+
+    override fun ifSetEventsV2(message: IfSetEventsV2) {
+        if (!filters[PropertyFilter.IF_SETEVENTS]) return omit()
+        root.com(message.interfaceId, message.componentId)
+        root.int("start", message.start.maxUShortToMinusOne())
+        root.int("end", message.end.maxUShortToMinusOne())
+        root.any("events", EventMask.list(message.events1, message.events2).toString())
     }
 
     override fun ifSetHide(message: IfSetHide) {

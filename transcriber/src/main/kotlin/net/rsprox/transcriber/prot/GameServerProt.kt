@@ -9,6 +9,7 @@ public enum class GameServerProt : Prot {
     IF_MOVESUB,
     IF_CLEARINV,
     IF_SETEVENTS_V1,
+    IF_SETEVENTS_V2,
     IF_SETPOSITION,
     IF_SETSCROLLPOS,
     IF_SETROTATESPEED,
