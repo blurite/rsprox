@@ -27,11 +27,11 @@ import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfMoveSub
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfOpenSub
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfOpenTop
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfResync
+import net.rsprox.protocol.game.outgoing.model.interfaces.IfResyncV1
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetAngle
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetAnim
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetColour
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetEvents
+import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetEventsV1
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetHide
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetModel
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetNpcHead
@@ -1100,7 +1100,7 @@ public class TextServerPacketTranscriber(
         }
     }
 
-    override fun ifResync(message: IfResync) {
+    override fun ifResync(message: IfResyncV1) {
         if (!filters[PropertyFilter.IF_RESYNC]) return omit()
         root.inter(message.topLevelInterface)
         root.group("SUB_INTERFACES") {
@@ -1145,7 +1145,7 @@ public class TextServerPacketTranscriber(
         root.scriptVarType("colour", ScriptVarType.COLOUR, message.colour15BitPacked)
     }
 
-    override fun ifSetEvents(message: IfSetEvents) {
+    override fun ifSetEvents(message: IfSetEventsV1) {
         if (!filters[PropertyFilter.IF_SETEVENTS]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.int("start", message.start.maxUShortToMinusOne())
@@ -2521,7 +2521,7 @@ public class TextServerPacketTranscriber(
                     val root = sessionState.createFakeServerRoot("MAP_ANIM")
                     root.buildMapAnim(event)
                 }
-                is MapProjAnim -> {
+                is MapProjAnimV1 -> {
                     if (!filters[PropertyFilter.MAP_PROJANIM]) continue
                     val root = sessionState.createFakeServerRoot("MAP_PROJANIM")
                     root.buildMapProjAnim(event)
@@ -2608,7 +2608,7 @@ public class TextServerPacketTranscriber(
                             buildMapAnim(event)
                         }
                     }
-                    is MapProjAnim -> {
+                    is MapProjAnimV1 -> {
                         if (!filters[PropertyFilter.MAP_PROJANIM]) continue
                         group("MAP_PROJANIM") {
                             buildMapProjAnim(event)
@@ -2696,7 +2696,7 @@ public class TextServerPacketTranscriber(
         root.buildMapAnim(message)
     }
 
-    override fun mapProjAnim(message: MapProjAnim) {
+    override fun mapProjAnim(message: MapProjAnimV1) {
         if (!filters[PropertyFilter.MAP_PROJANIM]) return omit()
         root.buildMapProjAnim(message)
     }
@@ -2788,7 +2788,7 @@ public class TextServerPacketTranscriber(
         coordGrid(coordInZone(message.xInZone, message.zInZone))
     }
 
-    private fun Property.buildMapProjAnim(message: MapProjAnim) {
+    private fun Property.buildMapProjAnim(message: MapProjAnimV1) {
         scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
         int("starttime", message.startTime)
         int("endtime", message.endTime)

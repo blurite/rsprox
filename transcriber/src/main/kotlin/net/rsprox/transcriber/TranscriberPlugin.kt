@@ -34,13 +34,13 @@ public class TranscriberPlugin(
             return
         }
         when (serverProt) {
-            GameServerProt.IF_RESYNC -> pass(message, Transcriber::ifResync)
+            GameServerProt.IF_RESYNC_V1 -> pass(message, Transcriber::ifResync)
             GameServerProt.IF_OPENTOP -> pass(message, Transcriber::ifOpenTop)
             GameServerProt.IF_OPENSUB -> pass(message, Transcriber::ifOpenSub)
             GameServerProt.IF_CLOSESUB -> pass(message, Transcriber::ifCloseSub)
             GameServerProt.IF_MOVESUB -> pass(message, Transcriber::ifMoveSub)
             GameServerProt.IF_CLEARINV -> pass(message, Transcriber::ifClearInv)
-            GameServerProt.IF_SETEVENTS -> pass(message, Transcriber::ifSetEvents)
+            GameServerProt.IF_SETEVENTS_V1 -> pass(message, Transcriber::ifSetEvents)
             GameServerProt.IF_SETPOSITION -> pass(message, Transcriber::ifSetPosition)
             GameServerProt.IF_SETSCROLLPOS -> pass(message, Transcriber::ifSetScrollPos)
             GameServerProt.IF_SETROTATESPEED -> pass(message, Transcriber::ifSetRotateSpeed)
@@ -78,7 +78,7 @@ public class TranscriberPlugin(
             GameServerProt.OBJ_COUNT -> pass(message, Transcriber::objCount)
             GameServerProt.OBJ_ENABLED_OPS -> pass(message, Transcriber::objEnabledOps)
             GameServerProt.MAP_ANIM -> pass(message, Transcriber::mapAnim)
-            GameServerProt.MAP_PROJANIM -> pass(message, Transcriber::mapProjAnim)
+            GameServerProt.MAP_PROJANIM_V1 -> pass(message, Transcriber::mapProjAnim)
             GameServerProt.SOUND_AREA -> pass(message, Transcriber::soundArea)
             GameServerProt.PROJANIM_SPECIFIC_V3 -> pass(message, Transcriber::projAnimSpecificV3)
             GameServerProt.PROJANIM_SPECIFIC_V2 -> pass(message, Transcriber::projAnimSpecificV2)

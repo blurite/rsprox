@@ -11,7 +11,7 @@ internal object GameServerProtId {
     const val IF_SETCOLOUR = 7
     const val IF_SETHIDE = 8
     const val CAM_RESET = 9
-    const val IF_RESYNC = 10
+    const val IF_RESYNC_V1 = 10
     const val IF_SETMODEL = 11
     const val RUNCLIENTSCRIPT = 12
     const val IF_SETTEXT = 13
@@ -57,7 +57,7 @@ internal object GameServerProtId {
     const val SOUND_AREA = 53
     const val UPDATE_STOCKMARKET_SLOT = 54
     const val CAM_MOVETO = 55
-    const val MAP_PROJANIM = 56
+    const val MAP_PROJANIM_V1 = 56
     const val SET_NPC_UPDATE_ORIGIN = 57
     const val SET_PLAYER_OP = 58
     const val MESSAGE_CLANCHANNEL_SYSTEM = 59
@@ -88,7 +88,7 @@ internal object GameServerProtId {
     const val URL_OPEN = 84
     const val CAM_MOVETO_ARC = 85
     const val MESSAGE_GAME = 86
-    const val IF_SETEVENTS = 87
+    const val IF_SETEVENTS_V1 = 87
     const val CLANSETTINGS_DELTA = 88
     const val UPDATE_STAT_V2 = 89
     const val CLANCHANNEL_DELTA = 90

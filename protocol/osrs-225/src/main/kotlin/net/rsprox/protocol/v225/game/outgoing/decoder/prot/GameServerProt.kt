@@ -10,13 +10,13 @@ public enum class GameServerProt(
 ) : ServerProt,
     ClientProt {
     // Interface related packets
-    IF_RESYNC(GameServerProtId.IF_RESYNC, Prot.VAR_SHORT),
+    IF_RESYNC_V1(GameServerProtId.IF_RESYNC_V1, Prot.VAR_SHORT),
     IF_OPENTOP(GameServerProtId.IF_OPENTOP, 2),
     IF_OPENSUB(GameServerProtId.IF_OPENSUB, 7),
     IF_CLOSESUB(GameServerProtId.IF_CLOSESUB, 4),
     IF_MOVESUB(GameServerProtId.IF_MOVESUB, 8),
     IF_CLEARINV(GameServerProtId.IF_CLEARINV, 4),
-    IF_SETEVENTS(GameServerProtId.IF_SETEVENTS, 12),
+    IF_SETEVENTS_V1(GameServerProtId.IF_SETEVENTS_V1, 12),
     IF_SETPOSITION(GameServerProtId.IF_SETPOSITION, 8),
     IF_SETSCROLLPOS(GameServerProtId.IF_SETSCROLLPOS, 6),
     IF_SETROTATESPEED(GameServerProtId.IF_SETROTATESPEED, 8),
@@ -59,7 +59,7 @@ public enum class GameServerProt(
     OBJ_COUNT(GameServerProtId.OBJ_COUNT, 11),
     OBJ_ENABLED_OPS(GameServerProtId.OBJ_ENABLED_OPS, 4),
     MAP_ANIM(GameServerProtId.MAP_ANIM, 6),
-    MAP_PROJANIM(GameServerProtId.MAP_PROJANIM, 20),
+    MAP_PROJANIM_V1(GameServerProtId.MAP_PROJANIM_V1, 20),
     SOUND_AREA(GameServerProtId.SOUND_AREA, 7),
 
     // Specific packets

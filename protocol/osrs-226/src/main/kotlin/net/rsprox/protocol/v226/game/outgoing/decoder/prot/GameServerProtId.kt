@@ -67,7 +67,7 @@ internal object GameServerProtId {
     const val PLAYER_INFO = 63
     const val OBJ_UNCUSTOMISE = 64
     const val NPC_INFO_LARGE_V4 = 65
-    const val IF_SETEVENTS = 66
+    const val IF_SETEVENTS_V1 = 66
     const val IF_SETPLAYERMODEL_OBJ = 67
     const val LOGOUT = 68
     const val VARCLAN_DISABLE = 69
@@ -120,11 +120,11 @@ internal object GameServerProtId {
     const val PLAYER_SPOTANIM_SPECIFIC = 116
     const val IF_SETPOSITION = 117
     const val SEND_PING = 118
-    const val IF_RESYNC = 119
+    const val IF_RESYNC_V1 = 119
     const val MIDI_SONG_WITHSECONDARY = 120
     const val CAM_RESET = 121
     const val UPDATE_FRIENDLIST = 122
-    const val MAP_PROJANIM = 123
+    const val MAP_PROJANIM_V1 = 123
     const val IF_SETANGLE = 124
     const val CAM_ROTATEBY = 125
     const val CAM_TARGET_V1 = 126

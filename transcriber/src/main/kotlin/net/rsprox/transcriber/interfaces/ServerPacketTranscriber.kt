@@ -21,11 +21,11 @@ import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfMoveSub
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfOpenSub
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfOpenTop
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfResync
+import net.rsprox.protocol.game.outgoing.model.interfaces.IfResyncV1
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetAngle
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetAnim
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetColour
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetEvents
+import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetEventsV1
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetHide
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetModel
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetNpcHead
@@ -174,7 +174,7 @@ public interface ServerPacketTranscriber {
 
     public fun ifOpenTop(message: IfOpenTop)
 
-    public fun ifResync(message: IfResync)
+    public fun ifResync(message: IfResyncV1)
 
     public fun ifSetAngle(message: IfSetAngle)
 
@@ -182,7 +182,7 @@ public interface ServerPacketTranscriber {
 
     public fun ifSetColour(message: IfSetColour)
 
-    public fun ifSetEvents(message: IfSetEvents)
+    public fun ifSetEvents(message: IfSetEventsV1)
 
     public fun ifSetHide(message: IfSetHide)
 
@@ -372,7 +372,7 @@ public interface ServerPacketTranscriber {
 
     public fun mapAnim(message: MapAnim)
 
-    public fun mapProjAnim(message: MapProjAnim)
+    public fun mapProjAnim(message: MapProjAnimV1)
 
     public fun objAdd(message: ObjAdd)
 

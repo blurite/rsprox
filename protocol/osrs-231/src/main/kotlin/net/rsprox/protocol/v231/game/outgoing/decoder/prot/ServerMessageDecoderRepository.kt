@@ -40,11 +40,11 @@ import net.rsprox.protocol.v231.game.outgoing.decoder.codec.interfaces.IfCloseSu
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.interfaces.IfMoveSubDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.interfaces.IfOpenSubDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.interfaces.IfOpenTopDecoder
-import net.rsprox.protocol.v231.game.outgoing.decoder.codec.interfaces.IfResyncDecoder
+import net.rsprox.protocol.v231.game.outgoing.decoder.codec.interfaces.IfResyncV1Decoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.interfaces.IfSetAngleDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.interfaces.IfSetAnimDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.interfaces.IfSetColourDecoder
-import net.rsprox.protocol.v231.game.outgoing.decoder.codec.interfaces.IfSetEventsDecoder
+import net.rsprox.protocol.v231.game.outgoing.decoder.codec.interfaces.IfSetEventsV1Decoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.interfaces.IfSetHideDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.interfaces.IfSetModelDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.interfaces.IfSetNpcHeadActiveDecoder
@@ -123,7 +123,6 @@ import net.rsprox.protocol.v231.game.outgoing.decoder.codec.varp.VarpLargeDecode
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.varp.VarpResetDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.varp.VarpSmallDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.varp.VarpSyncDecoder
-import net.rsprox.protocol.v231.game.outgoing.decoder.codec.worldentity.SetActiveWorldV1Decoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.worldentity.SetActiveWorldV2Decoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.zone.header.UpdateZoneFullFollowsDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.zone.header.UpdateZonePartialEnclosedDecoder
@@ -133,7 +132,7 @@ import net.rsprox.protocol.v231.game.outgoing.decoder.codec.zone.payload.LocAnim
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.zone.payload.LocDelDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.zone.payload.LocMergeDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.zone.payload.MapAnimDecoder
-import net.rsprox.protocol.v231.game.outgoing.decoder.codec.zone.payload.MapProjAnimDecoder
+import net.rsprox.protocol.v231.game.outgoing.decoder.codec.zone.payload.MapProjAnimV1Decoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.zone.payload.ObjAddDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.zone.payload.ObjCountDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.zone.payload.ObjCustomiseDecoder
@@ -189,14 +188,14 @@ internal object ServerMessageDecoderRepository {
 
                 bind(IfClearInvDecoder())
                 bind(IfCloseSubDecoder())
-                bind(IfResyncDecoder())
+                bind(IfResyncV1Decoder())
                 bind(IfMoveSubDecoder())
                 bind(IfOpenSubDecoder())
                 bind(IfOpenTopDecoder())
                 bind(IfSetAngleDecoder())
                 bind(IfSetAnimDecoder())
                 bind(IfSetColourDecoder())
-                bind(IfSetEventsDecoder())
+                bind(IfSetEventsV1Decoder())
                 bind(IfSetHideDecoder())
                 bind(IfSetModelDecoder())
                 bind(IfSetNpcHeadActiveDecoder())
@@ -285,7 +284,6 @@ internal object ServerMessageDecoderRepository {
                 bind(VarpSmallDecoder())
                 bind(VarpSyncDecoder())
 
-                bind(SetActiveWorldV1Decoder())
                 bind(SetActiveWorldV2Decoder())
 
                 bind(UpdateZonePartialEnclosedDecoder())
@@ -297,7 +295,7 @@ internal object ServerMessageDecoderRepository {
                 bind(LocDelDecoder())
                 bind(LocMergeDecoder())
                 bind(MapAnimDecoder())
-                bind(MapProjAnimDecoder())
+                bind(MapProjAnimV1Decoder())
                 bind(ObjAddDecoder())
                 bind(ObjCountDecoder())
                 bind(ObjDelDecoder())

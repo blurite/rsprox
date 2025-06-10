@@ -11,7 +11,7 @@ import net.rsprox.protocol.v227.game.outgoing.decoder.codec.zone.payload.LocAnim
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.zone.payload.LocDelDecoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.zone.payload.LocMergeDecoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.zone.payload.MapAnimDecoder
-import net.rsprox.protocol.v227.game.outgoing.decoder.codec.zone.payload.MapProjAnimDecoder
+import net.rsprox.protocol.v227.game.outgoing.decoder.codec.zone.payload.MapProjAnimV1Decoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.zone.payload.ObjAddDecoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.zone.payload.ObjCountDecoder
 import net.rsprox.protocol.v227.game.outgoing.decoder.codec.zone.payload.ObjCustomiseDecoder
@@ -50,7 +50,7 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
     private enum class IndexedZoneProtDecoder(
         val decoder: ProxyMessageDecoder<*>,
     ) {
-        MAP_PROJANIM(MapProjAnimDecoder()),
+        MAP_PROJANIM(MapProjAnimV1Decoder()),
         LOC_ADD_CHANGE_V1(LocAddChangeDecoder()),
         OBJ_UNCUSTOMISE(ObjUncustomiseDecoder()),
         OBJ_COUNT(ObjCountDecoder()),

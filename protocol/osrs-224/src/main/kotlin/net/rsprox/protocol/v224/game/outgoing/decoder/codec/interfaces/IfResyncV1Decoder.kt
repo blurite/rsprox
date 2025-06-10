@@ -1,22 +1,22 @@
-package net.rsprox.protocol.v226.game.outgoing.decoder.codec.interfaces
+package net.rsprox.protocol.v224.game.outgoing.decoder.codec.interfaces
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.metadata.Consistent
 import net.rsprot.protocol.util.gCombinedId
 import net.rsprox.protocol.ProxyMessageDecoder
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfResync
+import net.rsprox.protocol.game.outgoing.model.interfaces.IfResyncV1
 import net.rsprox.protocol.session.Session
-import net.rsprox.protocol.v226.game.outgoing.decoder.prot.GameServerProt
+import net.rsprox.protocol.v224.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-internal class IfResyncDecoder : ProxyMessageDecoder<IfResync> {
-    override val prot: ClientProt = GameServerProt.IF_RESYNC
+internal class IfResyncV1Decoder : ProxyMessageDecoder<IfResyncV1> {
+    override val prot: ClientProt = GameServerProt.IF_RESYNC_V1
 
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
-    ): IfResync {
+    ): IfResyncV1 {
         val topLevelInterface = buffer.g2()
         val subInterfaceCount = buffer.g2()
         val subInterfaces =
@@ -26,7 +26,7 @@ internal class IfResyncDecoder : ProxyMessageDecoder<IfResync> {
                     val interfaceId = buffer.g2()
                     val type = buffer.g1()
                     add(
-                        IfResync.SubInterfaceMessage(
+                        IfResyncV1.SubInterfaceMessage(
                             destinationCombinedId.interfaceId,
                             destinationCombinedId.componentId,
                             interfaceId,
@@ -43,7 +43,7 @@ internal class IfResyncDecoder : ProxyMessageDecoder<IfResync> {
                     val end = buffer.g2()
                     val events = buffer.g4()
                     add(
-                        IfResync.InterfaceEventsMessage(
+                        IfResyncV1.InterfaceEventsMessage(
                             combinedId.interfaceId,
                             combinedId.componentId,
                             start,
@@ -53,7 +53,7 @@ internal class IfResyncDecoder : ProxyMessageDecoder<IfResync> {
                     )
                 }
             }
-        return IfResync(
+        return IfResyncV1(
             topLevelInterface,
             subInterfaces,
             events,

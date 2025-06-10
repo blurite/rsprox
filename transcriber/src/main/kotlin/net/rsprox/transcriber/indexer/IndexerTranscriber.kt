@@ -116,11 +116,11 @@ import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfMoveSub
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfOpenSub
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfOpenTop
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfResync
+import net.rsprox.protocol.game.outgoing.model.interfaces.IfResyncV1
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetAngle
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetAnim
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetColour
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetEvents
+import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetEventsV1
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetHide
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetModel
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetNpcHead
@@ -582,7 +582,7 @@ public class IndexerTranscriber(
         incrementInterfaceId(message.interfaceId)
     }
 
-    override fun ifResync(message: IfResync) {
+    override fun ifResync(message: IfResyncV1) {
     }
 
     override fun ifSetAngle(message: IfSetAngle) {
@@ -598,7 +598,7 @@ public class IndexerTranscriber(
         incrementComponent(message.combinedId)
     }
 
-    override fun ifSetEvents(message: IfSetEvents) {
+    override fun ifSetEvents(message: IfSetEventsV1) {
         incrementComponent(message.combinedId)
     }
 
@@ -1093,7 +1093,7 @@ public class IndexerTranscriber(
                 is MapAnim -> {
                     appendCheckedSpotanim(update.id)
                 }
-                is MapProjAnim -> {
+                is MapProjAnimV1 -> {
                     appendCheckedSpotanim(update.id)
                 }
                 is ObjAdd -> {
@@ -1141,7 +1141,7 @@ public class IndexerTranscriber(
         appendCheckedSpotanim(message.id)
     }
 
-    override fun mapProjAnim(message: MapProjAnim) {
+    override fun mapProjAnim(message: MapProjAnimV1) {
         appendCheckedSpotanim(message.id)
     }
 

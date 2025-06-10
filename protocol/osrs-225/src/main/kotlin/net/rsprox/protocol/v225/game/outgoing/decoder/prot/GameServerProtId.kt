@@ -37,7 +37,7 @@ internal object GameServerProtId {
     const val IF_SETPLAYERMODEL_BODYTYPE = 33
     const val MESSAGE_CLANCHANNEL = 34
     const val CAM_LOOKAT_EASED_COORD = 35
-    const val IF_RESYNC = 36
+    const val IF_RESYNC_V1 = 36
     const val CAM_TARGET_OLD = 37
     const val IF_SETPLAYERHEAD = 38
     const val OBJ_ENABLED_OPS = 39
@@ -103,7 +103,7 @@ internal object GameServerProtId {
     const val IF_SETTEXT = 99
     const val HISCORE_REPLY = 100
     const val MINIMAP_TOGGLE = 101
-    const val IF_SETEVENTS = 102
+    const val IF_SETEVENTS_V1 = 102
     const val HINT_ARROW = 103
     const val OCULUS_SYNC = 104
     const val NPC_INFO_SMALL_V4 = 105
@@ -124,7 +124,7 @@ internal object GameServerProtId {
     const val MIDI_SWAP = 120
     const val SITE_SETTINGS = 121
     const val LOGOUT_TRANSFER = 122
-    const val MAP_PROJANIM = 123
+    const val MAP_PROJANIM_V1 = 123
     const val MIDI_SONG_V1 = 124
     const val CAM_TARGET = 125
     const val SET_NPC_UPDATE_ORIGIN = 126

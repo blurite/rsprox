@@ -2,13 +2,13 @@ package net.rsprox.transcriber.prot
 
 public enum class GameServerProt : Prot {
     // Interface related packets
-    IF_RESYNC,
+    IF_RESYNC_V1,
     IF_OPENTOP,
     IF_OPENSUB,
     IF_CLOSESUB,
     IF_MOVESUB,
     IF_CLEARINV,
-    IF_SETEVENTS,
+    IF_SETEVENTS_V1,
     IF_SETPOSITION,
     IF_SETSCROLLPOS,
     IF_SETROTATESPEED,
@@ -54,7 +54,7 @@ public enum class GameServerProt : Prot {
     OBJ_CUSTOMISE,
     OBJ_UNCUSTOMISE,
     MAP_ANIM,
-    MAP_PROJANIM,
+    MAP_PROJANIM_V1,
     SOUND_AREA,
 
     // Specific packets

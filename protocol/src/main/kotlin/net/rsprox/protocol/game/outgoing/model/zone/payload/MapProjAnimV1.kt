@@ -44,7 +44,7 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInZone
  * relative to the starting position.
  */
 @Suppress("DuplicatedCode")
-public class MapProjAnim private constructor(
+public class MapProjAnimV1 private constructor(
     private val _id: UShort,
     private val _startTime: UShort,
     private val _endTime: UShort,
@@ -151,7 +151,7 @@ public class MapProjAnim private constructor(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as MapProjAnim
+        other as MapProjAnimV1
 
         if (_id != other._id) return false
         if (_startTime != other._startTime) return false
@@ -180,7 +180,7 @@ public class MapProjAnim private constructor(
     }
 
     override fun toString(): String {
-        return "MapProjAnim(" +
+        return "MapProjAnimV1(" +
             "id=$id, " +
             "startHeight=$startHeight, " +
             "endHeight=$endHeight, " +

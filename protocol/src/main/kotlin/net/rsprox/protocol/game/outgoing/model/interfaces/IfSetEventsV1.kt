@@ -12,7 +12,7 @@ import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
  * @property end the end subcomponent id (inclusive)
  * @property events the bitpacked events
  */
-public class IfSetEvents private constructor(
+public class IfSetEventsV1 private constructor(
     public val combinedId: CombinedId,
     private val _start: UShort,
     private val _end: UShort,
@@ -44,7 +44,7 @@ public class IfSetEvents private constructor(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as IfSetEvents
+        other as IfSetEventsV1
 
         if (combinedId != other.combinedId) return false
         if (_start != other._start) return false
@@ -63,7 +63,7 @@ public class IfSetEvents private constructor(
     }
 
     override fun toString(): String {
-        return "IfSetEvents(" +
+        return "IfSetEventsV1(" +
             "events=$events, " +
             "interfaceId=$interfaceId, " +
             "componentId=$componentId, " +

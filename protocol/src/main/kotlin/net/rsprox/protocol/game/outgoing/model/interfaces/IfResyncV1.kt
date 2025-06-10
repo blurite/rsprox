@@ -13,7 +13,7 @@ import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
  * @property events the interface events being set in this batch
  */
 @Suppress("MemberVisibilityCanBePrivate")
-public class IfResync private constructor(
+public class IfResyncV1 private constructor(
     private val _topLevelInterface: UShort,
     public val subInterfaces: List<SubInterfaceMessage>,
     public val events: List<InterfaceEventsMessage>,
@@ -35,7 +35,7 @@ public class IfResync private constructor(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as IfResync
+        other as IfResyncV1
 
         if (_topLevelInterface != other._topLevelInterface) return false
         if (subInterfaces != other.subInterfaces) return false
@@ -52,7 +52,7 @@ public class IfResync private constructor(
     }
 
     override fun toString(): String {
-        return "IfResync(" +
+        return "IfResyncV1(" +
             "topLevelInterface=$topLevelInterface, " +
             "subInterfaces=$subInterfaces, " +
             "events=$events" +

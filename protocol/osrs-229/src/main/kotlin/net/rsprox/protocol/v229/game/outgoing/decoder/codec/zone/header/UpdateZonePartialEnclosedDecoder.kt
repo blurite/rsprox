@@ -11,7 +11,7 @@ import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.payload.LocAnim
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.payload.LocDelDecoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.payload.LocMergeDecoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.payload.MapAnimDecoder
-import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.payload.MapProjAnimDecoder
+import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.payload.MapProjAnimV1Decoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.payload.ObjAddDecoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.payload.ObjCountDecoder
 import net.rsprox.protocol.v229.game.outgoing.decoder.codec.zone.payload.ObjCustomiseDecoder
@@ -62,6 +62,6 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
         LOC_MERGE(LocMergeDecoder()),
         OBJ_DEL(ObjDelDecoder()),
         OBJ_CUSTOMISE(ObjCustomiseDecoder()),
-        MAP_PROJANIM(MapProjAnimDecoder()),
+        MAP_PROJANIM(MapProjAnimV1Decoder()),
     }
 }

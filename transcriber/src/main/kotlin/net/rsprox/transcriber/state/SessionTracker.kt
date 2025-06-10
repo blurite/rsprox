@@ -19,7 +19,7 @@ import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfMoveSub
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfOpenSub
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfOpenTop
-import net.rsprox.protocol.game.outgoing.model.interfaces.IfResync
+import net.rsprox.protocol.game.outgoing.model.interfaces.IfResyncV1
 import net.rsprox.protocol.game.outgoing.model.map.*
 import net.rsprox.protocol.game.outgoing.model.misc.client.ServerTickEnd
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV1
@@ -378,7 +378,7 @@ public class SessionTracker(
             is IfOpenTop -> {
                 sessionState.toplevelInterface = message.interfaceId
             }
-            is IfResync -> {
+            is IfResyncV1 -> {
                 sessionState.toplevelInterface = message.topLevelInterface
                 for (sub in message.subInterfaces) {
                     sessionState.openInterface(sub.interfaceId, sub.destinationCombinedId)
