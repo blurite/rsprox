@@ -13,7 +13,6 @@ import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerInfoDecoder
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerUpdateType
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.AppearanceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.ChatExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.FaceAngleExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.MoveSpeedExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.NameExtrasExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.ObjTypeCustomisation
@@ -22,6 +21,7 @@ import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.LowResolutio
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceAngleExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FacePathingEntityExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Headbar
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Hit

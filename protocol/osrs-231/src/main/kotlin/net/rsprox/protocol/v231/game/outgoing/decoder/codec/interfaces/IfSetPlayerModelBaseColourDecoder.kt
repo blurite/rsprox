@@ -2,7 +2,7 @@ package net.rsprox.protocol.v231.game.outgoing.decoder.codec.interfaces
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.util.gCombinedId
+import net.rsprot.protocol.util.gCombinedIdAlt2
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetPlayerModelBaseColour
 import net.rsprox.protocol.session.Session
@@ -15,9 +15,9 @@ internal class IfSetPlayerModelBaseColourDecoder : ProxyMessageDecoder<IfSetPlay
         buffer: JagByteBuf,
         session: Session,
     ): IfSetPlayerModelBaseColour {
-        val index = buffer.g1()
-        val colour = buffer.g1()
-        val combinedId = buffer.gCombinedId()
+        val colour = buffer.g1Alt1()
+        val index = buffer.g1Alt2()
+        val combinedId = buffer.gCombinedIdAlt2()
         return IfSetPlayerModelBaseColour(
             combinedId.interfaceId,
             combinedId.componentId,

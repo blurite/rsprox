@@ -15,18 +15,18 @@ internal class MapProjAnimV1Decoder : ProxyMessageDecoder<MapProjAnimV1> {
         buffer: JagByteBuf,
         session: Session,
     ): MapProjAnimV1 {
-        val targetIndex = buffer.g3sAlt2()
-        val endTime = buffer.g2()
-        val sourceIndex = buffer.g3sAlt1()
-        val startHeight = buffer.g1Alt2()
-        val progress = buffer.g2Alt1()
-        val id = buffer.g2Alt3()
-        val deltaX = buffer.g1Alt3()
-        val deltaZ = buffer.g1Alt2()
-        val angle = buffer.g1Alt1()
-        val endHeight = buffer.g1Alt2()
         val coordInZone = CoordInZone(buffer.g1())
-        val startTime = buffer.g2Alt1()
+        val deltaX = buffer.g1Alt2()
+        val startHeight = buffer.g1()
+        val id = buffer.g2()
+        val angle = buffer.g1Alt1()
+        val progress = buffer.g2()
+        val endHeight = buffer.g1Alt1()
+        val deltaZ = buffer.g1Alt1()
+        val targetIndex = buffer.g3sAlt3()
+        val startTime = buffer.g2()
+        val endTime = buffer.g2Alt2()
+        val sourceIndex = buffer.g3sAlt1()
         return MapProjAnimV1(
             id,
             startHeight,

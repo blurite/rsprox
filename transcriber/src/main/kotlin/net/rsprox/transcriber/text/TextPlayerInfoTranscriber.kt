@@ -6,12 +6,12 @@ import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerUpdateType
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.AppearanceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.ChatExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.FaceAngleExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.MoveSpeedExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.NameExtrasExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.TemporaryMoveSpeedExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceAngleExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FacePathingEntityExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HitExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SayExtendedInfo
@@ -101,7 +101,7 @@ public class TextPlayerInfoTranscriber(
                 coord.level,
                 coord.x,
                 coord.z,
-                angle
+                angle,
             )
         } else {
             identifiedNpc(
@@ -111,7 +111,7 @@ public class TextPlayerInfoTranscriber(
                 coord.level,
                 coord.x,
                 coord.z,
-                angle
+                angle,
             )
         }
     }

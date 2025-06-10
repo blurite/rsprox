@@ -14,9 +14,9 @@ internal class NpcAnimSpecificDecoder : ProxyMessageDecoder<NpcAnimSpecific> {
         buffer: JagByteBuf,
         session: Session,
     ): NpcAnimSpecific {
-        val id = buffer.g2Alt2()
-        val index = buffer.g2Alt3()
-        val delay = buffer.g1Alt2()
+        val delay = buffer.g1()
+        val index = buffer.g2()
+        val id = buffer.g2Alt3()
         return NpcAnimSpecific(
             index,
             id,
