@@ -111,6 +111,7 @@ import net.rsprox.protocol.v231.game.outgoing.decoder.codec.sound.MidiSongV2Deco
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.sound.MidiSongWithSecondaryDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.sound.MidiSwapDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.sound.SynthSoundDecoder
+import net.rsprox.protocol.v231.game.outgoing.decoder.codec.specific.*
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.specific.LocAnimSpecificDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.specific.MapAnimSpecificDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.specific.NpcAnimSpecificDecoder
@@ -281,6 +282,7 @@ internal object ServerMessageDecoderRepository {
                 bind(PlayerAnimSpecificDecoder())
                 bind(PlayerSpotAnimSpecificDecoder())
                 bind(ProjAnimSpecificV3Decoder())
+                bind(ProjAnimSpecificV4Decoder())
 
                 bind(VarpLargeDecoder())
                 bind(VarpResetDecoder())

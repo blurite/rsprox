@@ -60,6 +60,7 @@ public enum class GameServerProt : Prot {
     SOUND_AREA,
 
     // Specific packets
+    PROJANIM_SPECIFIC_V4,
     PROJANIM_SPECIFIC_V3,
     PROJANIM_SPECIFIC_V2,
     PROJANIM_SPECIFIC_V1,

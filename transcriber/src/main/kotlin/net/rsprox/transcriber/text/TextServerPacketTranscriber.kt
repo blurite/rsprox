@@ -75,15 +75,7 @@ import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV2
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongWithSecondary
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSwap
 import net.rsprox.protocol.game.outgoing.model.sound.SynthSound
-import net.rsprox.protocol.game.outgoing.model.specific.LocAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.MapAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.NpcAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.NpcHeadIconSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.NpcSpotAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.PlayerAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.PlayerSpotAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV2
-import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV3
+import net.rsprox.protocol.game.outgoing.model.specific.*
 import net.rsprox.protocol.game.outgoing.model.unknown.UnknownString
 import net.rsprox.protocol.game.outgoing.model.varp.VarpLarge
 import net.rsprox.protocol.game.outgoing.model.varp.VarpReset
@@ -2388,6 +2380,39 @@ public class TextServerPacketTranscriber(
                     ),
                 )
             }
+            val ambiguousIndex = message.targetIndex
+            if (ambiguousIndex != 0) {
+                if (ambiguousIndex > 0) {
+                    npc(ambiguousIndex - 1)
+                } else {
+                    player(-ambiguousIndex - 1)
+                }
+            }
+        }
+    }
+
+    override fun projAnimSpecificV4(message: ProjAnimSpecificV4) {
+        if (!filters[PropertyFilter.PROJANIM_SPECIFIC]) return omit()
+        root.scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
+        root.int("starttime", message.startTime)
+        root.int("endtime", message.endTime)
+        root.int("angle", message.angle)
+        root.int("progress", message.progress)
+        root.int("startheight", message.startHeight)
+        root.int("endheight", message.endHeight)
+        root.group("SOURCE") {
+            coordGrid(message.start)
+            val ambiguousIndex = message.sourceIndex
+            if (ambiguousIndex != 0) {
+                if (ambiguousIndex > 0) {
+                    npc(ambiguousIndex - 1)
+                } else {
+                    player(-ambiguousIndex - 1)
+                }
+            }
+        }
+        root.group("TARGET") {
+            coordGrid(message.end)
             val ambiguousIndex = message.targetIndex
             if (ambiguousIndex != 0) {
                 if (ambiguousIndex > 0) {

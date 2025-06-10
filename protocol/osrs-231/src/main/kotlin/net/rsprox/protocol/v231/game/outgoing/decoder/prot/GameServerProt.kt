@@ -67,6 +67,7 @@ public enum class GameServerProt(
 
     // Specific packets
     PROJANIM_SPECIFIC_V3(GameServerProtId.PROJANIM_SPECIFIC_V3, 22),
+    PROJANIM_SPECIFIC_V4(GameServerProtId.PROJANIM_SPECIFIC_V3, 27),
     MAP_ANIM_SPECIFIC(GameServerProtId.MAP_ANIM_SPECIFIC, 8),
     LOC_ANIM_SPECIFIC(GameServerProtId.LOC_ANIM_SPECIFIC, 6),
     NPC_HEADICON_SPECIFIC(GameServerProtId.NPC_HEADICON_SPECIFIC, 9),

@@ -82,6 +82,7 @@ public class TranscriberPlugin(
             GameServerProt.MAP_ANIM -> pass(message, Transcriber::mapAnim)
             GameServerProt.MAP_PROJANIM_V1 -> pass(message, Transcriber::mapProjAnim)
             GameServerProt.SOUND_AREA -> pass(message, Transcriber::soundArea)
+            GameServerProt.PROJANIM_SPECIFIC_V4 -> pass(message, Transcriber::projAnimSpecificV4)
             GameServerProt.PROJANIM_SPECIFIC_V3 -> pass(message, Transcriber::projAnimSpecificV3)
             GameServerProt.PROJANIM_SPECIFIC_V2 -> pass(message, Transcriber::projAnimSpecificV2)
             GameServerProt.PROJANIM_SPECIFIC_V1 -> throw IllegalArgumentException("Unimplemented packet")

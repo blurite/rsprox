@@ -50,15 +50,7 @@ import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV2
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongWithSecondary
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSwap
 import net.rsprox.protocol.game.outgoing.model.sound.SynthSound
-import net.rsprox.protocol.game.outgoing.model.specific.LocAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.MapAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.NpcAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.NpcHeadIconSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.NpcSpotAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.PlayerAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.PlayerSpotAnimSpecific
-import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV2
-import net.rsprox.protocol.game.outgoing.model.specific.ProjAnimSpecificV3
+import net.rsprox.protocol.game.outgoing.model.specific.*
 import net.rsprox.protocol.game.outgoing.model.unknown.UnknownString
 import net.rsprox.protocol.game.outgoing.model.varp.VarpLarge
 import net.rsprox.protocol.game.outgoing.model.varp.VarpReset
@@ -320,6 +312,8 @@ public interface ServerPacketTranscriber {
     public fun projAnimSpecificV2(message: ProjAnimSpecificV2)
 
     public fun projAnimSpecificV3(message: ProjAnimSpecificV3)
+
+    public fun projAnimSpecificV4(message: ProjAnimSpecificV4)
 
     public fun varpLarge(message: VarpLarge)
 
