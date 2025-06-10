@@ -559,7 +559,10 @@ public class IndexerTranscriber(
         incrementInterfaceId(message.interfaceId)
     }
 
-    override fun ifResync(message: IfResyncV1) {
+    override fun ifResyncV1(message: IfResyncV1) {
+    }
+
+    override fun ifResyncV2(message: IfResyncV2) {
     }
 
     override fun ifSetAngle(message: IfSetAngle) {

@@ -151,7 +151,9 @@ public interface ServerPacketTranscriber {
 
     public fun ifOpenTop(message: IfOpenTop)
 
-    public fun ifResync(message: IfResyncV1)
+    public fun ifResyncV1(message: IfResyncV1)
+
+    public fun ifResyncV2(message: IfResyncV2)
 
     public fun ifSetAngle(message: IfSetAngle)
 

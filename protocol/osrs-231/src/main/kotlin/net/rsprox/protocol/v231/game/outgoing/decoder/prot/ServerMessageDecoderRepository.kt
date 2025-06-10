@@ -190,6 +190,7 @@ internal object ServerMessageDecoderRepository {
                 bind(IfClearInvDecoder())
                 bind(IfCloseSubDecoder())
                 bind(IfResyncV1Decoder())
+                bind(IfResyncV2Decoder())
                 bind(IfMoveSubDecoder())
                 bind(IfOpenSubDecoder())
                 bind(IfOpenTopDecoder())

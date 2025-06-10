@@ -11,6 +11,7 @@ public enum class GameServerProt(
     ClientProt {
     // Interface related packets
     IF_RESYNC_V1(GameServerProtId.IF_RESYNC_V1, Prot.VAR_SHORT),
+    IF_RESYNC_V2(GameServerProtId.IF_RESYNC_V2, Prot.VAR_SHORT),
     IF_OPENTOP(GameServerProtId.IF_OPENTOP, 2),
     IF_OPENSUB(GameServerProtId.IF_OPENSUB, 7),
     IF_CLOSESUB(GameServerProtId.IF_CLOSESUB, 4),

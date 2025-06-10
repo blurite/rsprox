@@ -1122,7 +1122,7 @@ public class TextServerPacketTranscriber(
         }
     }
 
-    override fun ifResync(message: IfResyncV1) {
+    override fun ifResyncV1(message: IfResyncV1) {
         if (!filters[PropertyFilter.IF_RESYNC]) return omit()
         root.inter(message.topLevelInterface)
         root.group("SUB_INTERFACES") {
@@ -1142,6 +1142,31 @@ public class TextServerPacketTranscriber(
                     int("start", event.start.maxUShortToMinusOne())
                     int("end", event.end.maxUShortToMinusOne())
                     any("events", EventMask.list(event.events).toString())
+                }
+            }
+        }
+    }
+
+    override fun ifResyncV2(message: IfResyncV2) {
+        if (!filters[PropertyFilter.IF_RESYNC]) return omit()
+        root.inter(message.topLevelInterface)
+        root.group("SUB_INTERFACES") {
+            for (sub in message.subInterfaces) {
+                sessionState.openInterface(sub.interfaceId, sub.destinationCombinedId)
+                group {
+                    com(sub.destinationInterfaceId, sub.destinationComponentId)
+                    inter(sub.interfaceId)
+                    namedEnum("type", getIfType(sub.type))
+                }
+            }
+        }
+        root.group("EVENTS") {
+            for (event in message.events) {
+                group {
+                    com(event.interfaceId, event.componentId)
+                    int("start", event.start.maxUShortToMinusOne())
+                    int("end", event.end.maxUShortToMinusOne())
+                    any("events", EventMask.list(event.events1, event.events2).toString())
                 }
             }
         }

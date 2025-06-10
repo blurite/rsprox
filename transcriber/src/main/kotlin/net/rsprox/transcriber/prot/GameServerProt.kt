@@ -3,6 +3,7 @@ package net.rsprox.transcriber.prot
 public enum class GameServerProt : Prot {
     // Interface related packets
     IF_RESYNC_V1,
+    IF_RESYNC_V2,
     IF_OPENTOP,
     IF_OPENSUB,
     IF_CLOSESUB,

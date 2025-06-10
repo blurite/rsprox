@@ -34,7 +34,8 @@ public class TranscriberPlugin(
             return
         }
         when (serverProt) {
-            GameServerProt.IF_RESYNC_V1 -> pass(message, Transcriber::ifResync)
+            GameServerProt.IF_RESYNC_V1 -> pass(message, Transcriber::ifResyncV1)
+            GameServerProt.IF_RESYNC_V2 -> pass(message, Transcriber::ifResyncV2)
             GameServerProt.IF_OPENTOP -> pass(message, Transcriber::ifOpenTop)
             GameServerProt.IF_OPENSUB -> pass(message, Transcriber::ifOpenSub)
             GameServerProt.IF_CLOSESUB -> pass(message, Transcriber::ifCloseSub)
