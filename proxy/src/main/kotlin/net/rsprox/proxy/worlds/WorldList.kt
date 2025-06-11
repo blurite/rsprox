@@ -18,7 +18,7 @@ public data class WorldList(
         parseWorlds(proxyTargetConfig, url),
     )
 
-    public fun encode(allocator: ByteBufAllocator): JagByteBuf {
+    public fun encodeLocalized(allocator: ByteBufAllocator): JagByteBuf {
         val capacity = estimateBufferCapacity()
         val buffer = allocator.buffer(capacity).toJagByteBuf()
         val offset = buffer.writerIndex()
@@ -35,6 +35,26 @@ public data class WorldList(
         check(buffer.writerIndex() - offset == capacity) {
             "Invalid buffer capacity estimate"
         }
+        return buffer
+    }
+
+    public fun encode(allocator: ByteBufAllocator): JagByteBuf {
+        val buffer = allocator.buffer().toJagByteBuf()
+        val pos = buffer.writerIndex()
+        buffer.p4(0)
+        buffer.p2(worlds.size)
+        for (world in worlds) {
+            buffer.p2(world.id)
+            buffer.p4(world.properties)
+            buffer.pjstr(world.host)
+            buffer.pjstr(world.activity)
+            buffer.p1(world.location)
+            buffer.p2(world.population)
+        }
+        val end = buffer.writerIndex()
+        buffer.writerIndex(pos)
+        buffer.p4(end - pos - Int.SIZE_BYTES)
+        buffer.writerIndex(end)
         return buffer
     }
 
