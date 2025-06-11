@@ -32,6 +32,10 @@ public class OldSchoolGameValType(
                 while (true) {
                     val check = buffer.g1()
                     if (check == 0xFF) {
+                        // If there's nothing more to read, break early
+                        if (!buffer.isReadable) break
+
+                        // Otherwise try to see if we can read more, past the 255 limit.
                         buffer.buffer.markReaderIndex()
                         if (buffer.g2() == 0) {
                             break
