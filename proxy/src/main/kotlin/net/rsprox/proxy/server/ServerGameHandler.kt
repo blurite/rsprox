@@ -35,7 +35,14 @@ public class ServerGameHandler(
         msg: ServerPacket<*>,
     ) {
         try {
-            clientChannel.writeAndFlush(redirectTraffic(ctx, msg).encode(ctx.alloc()))
+            val new = redirectTraffic(ctx, msg)
+            try {
+                clientChannel.writeAndFlush(new.encode(ctx.alloc()))
+            } finally {
+                if (new != msg) {
+                    new.payload.release()
+                }
+            }
             val blob = ctx.channel().getBinaryBlob()
             eraseSensitiveContents(ctx, msg, blob.header.revision)
             blob.append(

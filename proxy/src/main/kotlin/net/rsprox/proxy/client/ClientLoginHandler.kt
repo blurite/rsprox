@@ -179,9 +179,19 @@ public class ClientLoginHandler(
             IntArray(encodeSeed.size) {
                 encodeSeed[it] + 50
             }
-        val xteaBuffer = xteaBlock.xteaDecrypt(encodeSeed).toJagByteBuf()
+        val xteaBuffer =
+            try {
+                xteaBlock.xteaDecrypt(encodeSeed).toJagByteBuf()
+            } finally {
+                xteaBlock.release()
+            }
 
-        val loginXteaBlock = decodeLoginXteaBlock(xteaBuffer)
+        val loginXteaBlock =
+            try {
+                decodeLoginXteaBlock(xteaBuffer)
+            } finally {
+                xteaBuffer.buffer.release()
+            }
         logger.debug {
             "Original login xtea block: $loginXteaBlock"
         }
@@ -203,13 +213,21 @@ public class ClientLoginHandler(
         val connection = getConnection(port)
         val modulus = connection.modulus
         val encrypted =
-            decryptedRsaBuffer.buffer.decipherRsa(
-                Rsa.PUBLIC_EXPONENT,
-                modulus,
-                decryptedRsaBuffer.readableBytes(),
-            )
+            try {
+                decryptedRsaBuffer.buffer.decipherRsa(
+                    Rsa.PUBLIC_EXPONENT,
+                    modulus,
+                    decryptedRsaBuffer.readableBytes(),
+                )
+            } finally {
+                decryptedRsaBuffer.buffer.release()
+            }
         encoded.p2(encrypted.readableBytes())
-        encoded.writeBytes(encrypted)
+        try {
+            encoded.writeBytes(encrypted)
+        } finally {
+            encrypted.release()
+        }
         try {
             encoded.writeBytes(encryptedXteaBuf)
         } finally {

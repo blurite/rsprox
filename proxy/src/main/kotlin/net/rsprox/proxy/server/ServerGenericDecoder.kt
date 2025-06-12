@@ -97,13 +97,13 @@ public class ServerGenericDecoder<out T : Prot>(
             if (!input.isReadable(length)) {
                 return
             }
-            val payload = input.readSlice(length)
+            val payload = input.readBytes(length)
             out +=
                 ServerPacket(
                     this.prot,
                     this.cipherMod1,
                     this.cipherMod2,
-                    payload.retainedSlice(),
+                    payload,
                 )
             state = State.READ_OPCODE_P1
         }

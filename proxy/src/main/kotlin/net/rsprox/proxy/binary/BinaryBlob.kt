@@ -188,7 +188,11 @@ public data class BinaryBlob(
         val headerBytes = header.readableBytes()
         val streamBytes = streamCopy.readableBytes()
         val array = ByteArray(headerBytes + streamBytes)
-        header.readBytes(array, 0, headerBytes)
+        try {
+            header.readBytes(array, 0, headerBytes)
+        } finally {
+            header.release()
+        }
         streamCopy.readBytes(array, headerBytes, streamBytes)
         val parent = path.parent
         val tempFileName = ".${file.name}"
