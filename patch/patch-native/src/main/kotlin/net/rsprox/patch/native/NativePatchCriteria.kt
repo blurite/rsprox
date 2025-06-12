@@ -88,7 +88,10 @@ public data class NativePatchCriteria(
 
         public fun javConfig(url: String): Builder {
             constString(
-                DEFAULT_JAVCONFIG_URL,
+                listOf(
+                    DEFAULT_JAVCONFIG_URL_PRE_231,
+                    DEFAULT_JAVCONFIG_URL,
+                ),
                 url,
                 FailureBehaviour.ERROR,
                 DuplicateReplacementBehaviour.ERROR_ON_DUPLICATES,
@@ -99,7 +102,10 @@ public data class NativePatchCriteria(
 
         public fun worldList(url: String): Builder {
             constString(
-                DEFAULT_WORLDLIST_URL,
+                listOf(
+                    DEFAULT_WORLDLIST_URL_PRE_231,
+                    DEFAULT_WORLDLIST_URL,
+                ),
                 url,
                 FailureBehaviour.ERROR,
                 DuplicateReplacementBehaviour.ERROR_ON_DUPLICATES,
@@ -198,6 +204,29 @@ public data class NativePatchCriteria(
             }
             this.constStrings +=
                 ConstStringSlice(
+                    listOf(old),
+                    new,
+                    failureBehaviour,
+                    duplicateBehaviour,
+                    priority,
+                )
+            return this
+        }
+
+        public fun constString(
+            old: List<String>,
+            new: String,
+            failureBehaviour: FailureBehaviour = FailureBehaviour.WARN,
+            duplicateBehaviour: DuplicateReplacementBehaviour = DuplicateReplacementBehaviour.ERROR_ON_DUPLICATES,
+            priority: Int = DEFAULT_PRIORITY,
+        ): Builder {
+            for (element in old) {
+                require(new.length <= element.length) {
+                    "New string length cannot be longer than the old: '$element' > '$new'"
+                }
+            }
+            this.constStrings +=
+                ConstStringSlice(
                     old,
                     new,
                     failureBehaviour,
@@ -260,8 +289,10 @@ public data class NativePatchCriteria(
         public const val LOW_PRIORITY: Int = 0
         private const val DEFAULT_PORT: Int = 43594
         private const val OSRS_MODULUS_LEN: Int = 256
-        private const val DEFAULT_JAVCONFIG_URL: String = "http://oldschool.runescape.com/jav_config.ws?m=0"
-        private const val DEFAULT_WORLDLIST_URL: String = "https://oldschool.runescape.com/slr.ws?order=LPWM"
+        private const val DEFAULT_JAVCONFIG_URL_PRE_231: String = "http://oldschool.runescape.com/jav_config.ws?m=0"
+        private const val DEFAULT_JAVCONFIG_URL: String = "https://oldschool.config.runescape.com/jav_config.ws?m=0"
+        private const val DEFAULT_WORLDLIST_URL_PRE_231: String = "https://oldschool.runescape.com/slr.ws?order=LPWM"
+        private const val DEFAULT_WORLDLIST_URL: String = "https://oldschool.config.runescape.com/slr.ws?order=LPWM"
 
         private fun createStringCapturedPattern(string: String): Regex {
             return Regex("""(\00[a-zA-Z0-9./\-_!?:;* ]*)$string([a-zA-Z0-9./\-_!?:;* ]*\00)""")

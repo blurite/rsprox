@@ -50,7 +50,7 @@ public class ConstStringSliceProcessor(
         return replaceOccurrences(results.take(1))
     }
 
-    private fun replaceOccurrences(results: List<Int>): List<String> {
+    private fun replaceOccurrences(results: List<Slice>): List<String> {
         if (results.isEmpty()) {
             when (slice.failureBehaviour) {
                 FailureBehaviour.ERROR -> throw IllegalStateException("Unable to find ${slice.old}")
@@ -65,11 +65,12 @@ public class ConstStringSliceProcessor(
         }
         val replacementBytes = wrapInNullTerminators(slice.new.toByteArray(Charsets.UTF_8))
         val replacements =
-            results.map { index ->
+            results.map { slice ->
+                val (index, old) = slice
                 for (i in replacementBytes.indices) {
                     client.bytes[index + i] = replacementBytes[i]
                 }
-                slice.old
+                old
             }
         logger.info {
             "Replaced const string ${slice.old} ${results.size} time${if (results.size == 1) "" else "s"}"
@@ -77,19 +78,21 @@ public class ConstStringSliceProcessor(
         return replacements
     }
 
-    private fun listMatches(): List<Int> {
-        val searchBytes = wrapInNullTerminators(slice.old.toByteArray(Charsets.UTF_8))
-        var index = 0
-        val results = mutableListOf<Int>()
-        while (true) {
-            val result = client.indexOf(searchBytes, index)
-            if (result == -1) {
-                break
+    private fun listMatches(): List<Slice> {
+        return slice.old.flatMap { old ->
+            val searchBytes = wrapInNullTerminators(old.toByteArray(Charsets.UTF_8))
+            var index = 0
+            val results = mutableListOf<Slice>()
+            while (true) {
+                val result = client.indexOf(searchBytes, index)
+                if (result == -1) {
+                    break
+                }
+                results += Slice(result, old)
+                index = result + searchBytes.size - 1
             }
-            results += result
-            index = result + searchBytes.size - 1
+            return@flatMap results
         }
-        return results
     }
 
     private fun wrapInNullTerminators(input: ByteArray): ByteArray {
@@ -97,6 +100,11 @@ public class ConstStringSliceProcessor(
         input.copyInto(array, 1)
         return array
     }
+
+    private data class Slice(
+        val index: Int,
+        val search: String,
+    )
 
     private companion object {
         private val logger = InlineLogger()
