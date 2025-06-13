@@ -22,6 +22,7 @@ import net.rsprox.shared.property.regular.ZoneCoordProperty
 import net.rsprox.shared.settings.Setting
 import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.shared.symbols.CacheSymbolDictionary
+import net.rsprox.shared.symbols.CompositeSymbolDictionary
 
 public class PropertyFormatterCollection private constructor(
     private val formatters: Map<Class<*>, PropertyFormatter<*>>,
@@ -70,6 +71,11 @@ public class PropertyFormatterCollection private constructor(
             fun dictionary(): SymbolDictionary =
                 if (settings[Setting.DISABLE_DICTIONARY_NAMES]) {
                     NopSymbolDictionary
+                } else if (settings[Setting.PREFER_OFFICIAL_DICTIONARY] && settings[Setting.USE_OFFICIAL_DICTIONARY]) {
+                    CompositeSymbolDictionary(
+                        cacheSymbolDictionary.also { it.start() },
+                        systemDictionary,
+                    )
                 } else if (settings[Setting.USE_OFFICIAL_DICTIONARY]) {
                     cacheSymbolDictionary.also { it.start() }
                 } else {
