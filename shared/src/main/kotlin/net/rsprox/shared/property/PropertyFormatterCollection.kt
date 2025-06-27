@@ -6,19 +6,7 @@ import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.property.filtered.FilteredNamedEnumProperty
 import net.rsprox.shared.property.filtered.FilteredScriptVarTypeProperty
 import net.rsprox.shared.property.formatted.FormattedIntProperty
-import net.rsprox.shared.property.regular.EnumProperty
-import net.rsprox.shared.property.regular.IdentifiedChildProperty
-import net.rsprox.shared.property.regular.IdentifiedMultinpcProperty
-import net.rsprox.shared.property.regular.IdentifiedNpcProperty
-import net.rsprox.shared.property.regular.IdentifiedPlayerProperty
-import net.rsprox.shared.property.regular.IdentifiedWorldEntityProperty
-import net.rsprox.shared.property.regular.NamedEnumProperty
-import net.rsprox.shared.property.regular.ScriptProperty
-import net.rsprox.shared.property.regular.ScriptVarTypeProperty
-import net.rsprox.shared.property.regular.ShortNpcProperty
-import net.rsprox.shared.property.regular.VarbitProperty
-import net.rsprox.shared.property.regular.VarpProperty
-import net.rsprox.shared.property.regular.ZoneCoordProperty
+import net.rsprox.shared.property.regular.*
 import net.rsprox.shared.settings.Setting
 import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.shared.symbols.CacheSymbolDictionary
@@ -138,6 +126,17 @@ public class PropertyFormatterCollection private constructor(
                     "($formatted)"
                 } else {
                     "(${it.zoneX}, ${it.zoneZ}, ${it.level})"
+                }
+            }
+            builder.add<DecimalCoordGridProperty> {
+                val value = it.decimalCoordGrid
+                if (settings[Setting.CONVERT_COORD_TO_JAGCOORD]) {
+                    val formatted = toJagCoordsText(value.level, value.x, value.z)
+                    "($formatted)"
+                } else {
+                    val decimalX = value.fineX.toDouble() / 128.0
+                    val decimalZ = value.fineZ.toDouble() / 128.0
+                    "(${value.x + decimalX}, ${value.z + decimalZ}, ${value.level})"
                 }
             }
             builder.add<FormattedIntProperty> {

@@ -95,6 +95,7 @@ import net.rsprox.shared.filters.PropertyFilter
 import net.rsprox.shared.filters.PropertyFilterSet
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.property.*
+import net.rsprox.shared.property.regular.DecimalCoordGridProperty
 import net.rsprox.shared.property.regular.ScriptVarTypeProperty
 import net.rsprox.shared.property.regular.ZoneCoordProperty
 import net.rsprox.shared.settings.Setting
@@ -208,6 +209,8 @@ public class TextServerPacketTranscriber(
                 world.coord.z,
                 world.sizeX,
                 world.sizeZ,
+                world.coordFine.x,
+                world.coordFine.z,
                 world.centerFineOffsetX,
                 world.centerFineOffsetZ,
                 name,
@@ -243,6 +246,16 @@ public class TextServerPacketTranscriber(
     ): ScriptVarTypeProperty<*> {
         val coord = sessionState.getActiveWorld().getInstancedCoordOrSelf(coordGrid)
         return coordGridProperty(coord.level, coord.x, coord.z, name)
+    }
+
+    private fun Property.decimalCoordGrid(
+        name: String,
+        coordGrid: CoordGrid,
+        fineX: Int,
+        fineZ: Int,
+    ): DecimalCoordGridProperty {
+        val coord = sessionState.getActiveWorld().getInstancedCoordOrSelf(coordGrid)
+        return decimalCoordGridProperty(coord.level, coord.x, coord.z, fineX, fineZ, name)
     }
 
     private fun Property.coordGrid(
@@ -848,8 +861,19 @@ public class TextServerPacketTranscriber(
         worldEntityInfo(message)
     }
 
+    private fun useDecimalWorldEntityCoords(): Boolean {
+        return settings[Setting.WORLDENTITY_INFO_DECIMAL_COORDS] &&
+            !settings[Setting.CONVERT_COORD_TO_JAGCOORD]
+    }
+
     private fun worldEntityInfo(message: WorldEntityInfo) {
         if (!filters[PropertyFilter.WORLDENTITY_INFO]) return omit()
+        if (!settings[Setting.WORLDENTITY_INFO_HIDE_EMPTY]) {
+            if (message.updates.all { it.value == WorldEntityUpdateType.Idle }) {
+                return omit()
+            }
+        }
+        val decimalCoords = useDecimalWorldEntityCoords()
         val group =
             root.group {
                 for ((index, update) in message.updates) {
@@ -860,14 +884,19 @@ public class TextServerPacketTranscriber(
                                 int("angle", update.angle)
                                 val world = sessionState.getWorld(index)
                                 val coordGrid = update.coordFine.toCoordGrid(world.level)
-                                coordGrid("newcoord", coordGrid)
                                 val coordFine = update.coordFine
                                 val coordFineX = coordFine.x and 0x7F
                                 val coordFineY = coordFine.y
                                 val coordFineZ = coordFine.z and 0x7F
-                                int("finex", coordFineX)
-                                int("finey", coordFineY)
-                                int("finez", coordFineZ)
+                                if (decimalCoords) {
+                                    decimalCoordGrid("newcoord", coordGrid, coordFineX, coordFineZ)
+                                    int("finey", coordFineY)
+                                } else {
+                                    coordGrid("newcoord", coordGrid)
+                                    int("finex", coordFineX)
+                                    int("finey", coordFineY)
+                                    int("finez", coordFineZ)
+                                }
                             }
                         }
                         WorldEntityUpdateType.HighResolutionToLowResolution -> {
@@ -886,9 +915,13 @@ public class TextServerPacketTranscriber(
                                 val coordFineX = coordFine.x and 0x7F
                                 val coordFineY = coordFine.y
                                 val coordFineZ = coordFine.z and 0x7F
-                                int("finex", coordFineX)
-                                int("finey", coordFineY)
-                                int("finez", coordFineZ)
+                                if (decimalCoords) {
+                                    int("finey", coordFineY)
+                                } else {
+                                    int("finex", coordFineX)
+                                    int("finey", coordFineY)
+                                    int("finez", coordFineZ)
+                                }
                             }
                         }
                         is WorldEntityUpdateType.ActiveV1 -> {
@@ -916,9 +949,13 @@ public class TextServerPacketTranscriber(
                                 val coordFineX = coordFine.x and 0x7F
                                 val coordFineY = coordFine.y
                                 val coordFineZ = coordFine.z and 0x7F
-                                int("finex", coordFineX)
-                                int("finey", coordFineY)
-                                int("finez", coordFineZ)
+                                if (decimalCoords) {
+                                    int("finey", coordFineY)
+                                } else {
+                                    int("finex", coordFineX)
+                                    int("finey", coordFineY)
+                                    int("finez", coordFineZ)
+                                }
                             }
                         }
                     }

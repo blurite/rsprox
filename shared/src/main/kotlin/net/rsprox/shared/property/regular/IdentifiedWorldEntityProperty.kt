@@ -14,6 +14,8 @@ public class IdentifiedWorldEntityProperty(
     z: Int,
     public val sizeX: Int,
     public val sizeZ: Int,
+    public val fineX: Int,
+    public val fineZ: Int,
     public val centerFineOffsetX: Int?,
     public val centerFineOffsetZ: Int?,
 ) : IdentifiedChildProperty(propertyName, index, level, x, z) {
@@ -22,6 +24,9 @@ public class IdentifiedWorldEntityProperty(
         dictionary: SymbolDictionary,
     ): String =
         buildString {
+            val decimalCoords =
+                settings[Setting.WORLDENTITY_INFO_DECIMAL_COORDS] &&
+                    !settings[Setting.CONVERT_COORD_TO_JAGCOORD]
             append('(')
 
             append("index=$index, ")
@@ -33,6 +38,10 @@ public class IdentifiedWorldEntityProperty(
             if (settings[Setting.CONVERT_COORD_TO_JAGCOORD]) {
                 val formatted = toJagCoordsText(level, x, z)
                 append("coord=($formatted)")
+            } else if (decimalCoords) {
+                val decimalX = (fineX and 0x7F).toDouble() / 128.0
+                val decimalZ = (fineZ and 0x7F).toDouble() / 128.0
+                append("coord=(${x + decimalX}, ${z + decimalZ}, $level)")
             } else {
                 append("coord=($x, $z, $level)")
             }

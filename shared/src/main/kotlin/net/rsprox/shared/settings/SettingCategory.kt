@@ -7,4 +7,5 @@ public enum class SettingCategory(
     PLAYER_INFO("Player Info"),
     NPC_INFO("NPC Info"),
     MISC("Miscellaneous"),
+    WORLDENTITY_INFO("World Entity Info"),
 }

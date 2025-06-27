@@ -166,4 +166,19 @@ public enum class Setting(
         "Subtracts delay1 from delay2 when logging exactmove. " +
             "The variables will be logged as \"delay\" and \"duration\" afterwards.",
     ),
+    WORLDENTITY_INFO_HIDE_EMPTY(
+        SettingGroup.LOGGING,
+        SettingCategory.WORLDENTITY_INFO,
+        "Hide Empty World Entity Info",
+        true,
+        "Hides the World Entity info packet entry if there are no logged entries to show.",
+    ),
+    WORLDENTITY_INFO_DECIMAL_COORDS(
+        SettingGroup.LOGGING,
+        SettingCategory.WORLDENTITY_INFO,
+        "World Entity Info Decimal Coords",
+        true,
+        "Shows decimal coordinates for world entities (e.g. 3200.75 instead of x=3200, finex=96). " +
+            "Does not work if Jagex-style coordinates are enabled.",
+    ),
 }

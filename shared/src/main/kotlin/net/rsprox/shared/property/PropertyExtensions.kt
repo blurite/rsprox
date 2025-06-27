@@ -6,25 +6,7 @@ import net.rsprox.shared.property.filtered.FilteredAnyProperty
 import net.rsprox.shared.property.filtered.FilteredNamedEnumProperty
 import net.rsprox.shared.property.filtered.FilteredScriptVarTypeProperty
 import net.rsprox.shared.property.formatted.FormattedIntProperty
-import net.rsprox.shared.property.regular.AnyProperty
-import net.rsprox.shared.property.regular.EnumProperty
-import net.rsprox.shared.property.regular.GroupProperty
-import net.rsprox.shared.property.regular.IdentifiedMultinpcProperty
-import net.rsprox.shared.property.regular.IdentifiedNpcProperty
-import net.rsprox.shared.property.regular.IdentifiedPlayerProperty
-import net.rsprox.shared.property.regular.IdentifiedWorldEntityProperty
-import net.rsprox.shared.property.regular.ListProperty
-import net.rsprox.shared.property.regular.NamedEnumProperty
-import net.rsprox.shared.property.regular.ScriptProperty
-import net.rsprox.shared.property.regular.ScriptVarTypeProperty
-import net.rsprox.shared.property.regular.ShortNpcProperty
-import net.rsprox.shared.property.regular.ShortPlayerProperty
-import net.rsprox.shared.property.regular.UnidentifiedNpcProperty
-import net.rsprox.shared.property.regular.UnidentifiedPlayerProperty
-import net.rsprox.shared.property.regular.UnidentifiedWorldEntityProperty
-import net.rsprox.shared.property.regular.VarbitProperty
-import net.rsprox.shared.property.regular.VarpProperty
-import net.rsprox.shared.property.regular.ZoneCoordProperty
+import net.rsprox.shared.property.regular.*
 import java.text.NumberFormat
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
@@ -103,6 +85,22 @@ public fun Property.coordGridProperty(
         name,
         ScriptVarType.COORDGRID,
         (level and 0x3 shl 28) or (x and 0x3FFF shl 14) or (z and 0x3FFF),
+    )
+}
+
+public fun Property.decimalCoordGridProperty(
+    level: Int,
+    x: Int,
+    z: Int,
+    fineX: Int,
+    fineZ: Int,
+    name: String = "coord",
+): DecimalCoordGridProperty {
+    return child(
+        DecimalCoordGridProperty(
+            name,
+            DecimalCoordGrid(level, x, z, fineX, fineZ),
+        ),
     )
 }
 
@@ -446,7 +444,7 @@ public fun Property.identifiedNpc(
             level,
             x,
             z,
-            angle
+            angle,
         ),
     )
 }
@@ -472,7 +470,7 @@ public fun Property.identifiedMultinpc(
             level,
             x,
             z,
-            angle
+            angle,
         ),
     )
 }
@@ -557,6 +555,8 @@ public fun Property.identifiedWorldEntity(
     z: Int,
     sizeX: Int,
     sizeZ: Int,
+    fineX: Int,
+    fineZ: Int,
     centerFineOffsetX: Int?,
     centerFineOffsetZ: Int?,
     propertyName: String = "worldentity",
@@ -571,6 +571,8 @@ public fun Property.identifiedWorldEntity(
             z,
             sizeX,
             sizeZ,
+            fineX,
+            fineZ,
             centerFineOffsetX,
             centerFineOffsetZ,
         ),
