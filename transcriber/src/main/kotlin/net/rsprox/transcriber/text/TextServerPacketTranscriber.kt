@@ -868,7 +868,7 @@ public class TextServerPacketTranscriber(
 
     private fun worldEntityInfo(message: WorldEntityInfo) {
         if (!filters[PropertyFilter.WORLDENTITY_INFO]) return omit()
-        if (!settings[Setting.WORLDENTITY_INFO_HIDE_EMPTY]) {
+        if (settings[Setting.WORLDENTITY_INFO_HIDE_EMPTY]) {
             if (message.updates.all { it.value == WorldEntityUpdateType.Idle }) {
                 return omit()
             }
