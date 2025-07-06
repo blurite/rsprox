@@ -34,16 +34,8 @@ import net.rsprox.protocol.v229.game.incoming.decoder.codec.locs.OpLoc6Decoder
 import net.rsprox.protocol.v229.game.incoming.decoder.codec.locs.OpLocTDecoder
 import net.rsprox.protocol.v229.game.incoming.decoder.codec.messaging.MessagePrivateDecoder
 import net.rsprox.protocol.v229.game.incoming.decoder.codec.messaging.MessagePublicDecoder
-import net.rsprox.protocol.v229.game.incoming.decoder.codec.misc.client.ConnectionTelemetryDecoder
-import net.rsprox.protocol.v229.game.incoming.decoder.codec.misc.client.DetectModifiedClientDecoder
-import net.rsprox.protocol.v229.game.incoming.decoder.codec.misc.client.IdleDecoder
-import net.rsprox.protocol.v229.game.incoming.decoder.codec.misc.client.MapBuildCompleteDecoder
-import net.rsprox.protocol.v229.game.incoming.decoder.codec.misc.client.MembershipPromotionEligibilityDecoder
-import net.rsprox.protocol.v229.game.incoming.decoder.codec.misc.client.NoTimeoutDecoder
+import net.rsprox.protocol.v229.game.incoming.decoder.codec.misc.client.*
 import net.rsprox.protocol.v229.game.incoming.decoder.codec.misc.client.ReflectionCheckReplyDecoder
-import net.rsprox.protocol.v229.game.incoming.decoder.codec.misc.client.SendPingReplyDecoder
-import net.rsprox.protocol.v229.game.incoming.decoder.codec.misc.client.SoundJingleEndDecoder
-import net.rsprox.protocol.v229.game.incoming.decoder.codec.misc.client.WindowStatusDecoder
 import net.rsprox.protocol.v229.game.incoming.decoder.codec.misc.user.BugReportDecoder
 import net.rsprox.protocol.v229.game.incoming.decoder.codec.misc.user.ClickWorldMapDecoder
 import net.rsprox.protocol.v229.game.incoming.decoder.codec.misc.user.ClientCheatDecoder
@@ -204,6 +196,7 @@ internal object ClientMessageDecoderRepository {
                 bind(MembershipPromotionEligibilityDecoder())
                 bind(SoundJingleEndDecoder())
                 bind(WindowStatusDecoder())
+                bind(RSevenStatusDecoder())
             }
         return builder.build()
     }

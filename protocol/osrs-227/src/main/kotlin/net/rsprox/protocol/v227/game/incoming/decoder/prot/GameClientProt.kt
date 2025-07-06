@@ -158,5 +158,5 @@ public enum class GameClientProt(
     SOUND_JINGLEEND(GameClientProtId.SOUND_JINGLEEND, 4),
     WINDOW_STATUS(GameClientProtId.WINDOW_STATUS, 5),
     SET_HEADING(GameClientProtId.SET_HEADING, 1),
-    UNKNOWN_BYTE(GameClientProtId.UNKNOWN_BYTE, 1),
+    RSEVEN_STATUS(GameClientProtId.RSEVEN_STATUS, 1),
 }

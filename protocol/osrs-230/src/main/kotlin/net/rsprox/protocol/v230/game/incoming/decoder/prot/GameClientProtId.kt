@@ -34,7 +34,7 @@ internal object GameClientProtId {
     const val CLANSETTINGS_FULL_REQUEST = 30
     const val OPOBJU = 31
     const val OPOBJ6 = 32
-    const val UNKNOWN_BYTE = 33
+    const val RSEVEN_STATUS = 33
     const val OPLOC4 = 34
     const val IF_BUTTON = 35
     const val EVENT_MOUSE_CLICK = 36

@@ -17,7 +17,7 @@ internal object GameClientProtId {
     const val CLOSE_MODAL = 13
     const val IF_BUTTOND = 14
     const val CLANCHANNEL_FULL_REQUEST = 15
-    const val UNKNOWN_BYTE = 16
+    const val RSEVEN_STATUS = 16
     const val IGNORELIST_DEL = 17
     const val BUG_REPORT = 18
     const val IF_BUTTON4 = 19

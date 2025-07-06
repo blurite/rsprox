@@ -318,7 +318,7 @@ public class TranscriberPlugin(
             GameClientProt.SOUND_JINGLEEND -> pass(message, Transcriber::soundJingleEnd)
             GameClientProt.WINDOW_STATUS -> pass(message, Transcriber::windowStatus)
             GameClientProt.SET_HEADING -> pass(message, Transcriber::setHeading)
-            GameClientProt.UNKNOWN_BYTE -> throw IllegalArgumentException("Unknown byte")
+            GameClientProt.RSEVEN_STATUS -> pass(message, Transcriber::rsevenStatus)
         }
     }
 }

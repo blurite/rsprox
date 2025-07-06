@@ -100,5 +100,5 @@ internal object GameClientProtId {
     const val NO_TIMEOUT = 96
     const val IF_BUTTON6 = 97
     const val SOUND_JINGLEEND = 98
-    const val UNKNOWN_BYTE = 99
+    const val RSEVEN_STATUS = 99
 }

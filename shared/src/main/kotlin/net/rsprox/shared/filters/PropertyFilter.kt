@@ -462,6 +462,13 @@ public enum class PropertyFilter(
         false,
         searchTerms = "setheading,worldentity,ship,direction",
     ),
+    RSEVEN_STATUS(
+        CLIENT_TO_SERVER,
+        OTHER,
+        "RT7 Status",
+        true,
+        searchTerms = "rseven,rt7,r7,status,ehc,enhanced client,native client",
+    ),
 
     IF_RESYNC(
         SERVER_TO_CLIENT,

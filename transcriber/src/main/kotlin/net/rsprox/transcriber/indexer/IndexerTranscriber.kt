@@ -26,16 +26,7 @@ import net.rsprox.protocol.game.incoming.model.locs.OpLoc6
 import net.rsprox.protocol.game.incoming.model.locs.OpLocT
 import net.rsprox.protocol.game.incoming.model.messaging.MessagePrivate
 import net.rsprox.protocol.game.incoming.model.messaging.MessagePublic
-import net.rsprox.protocol.game.incoming.model.misc.client.ConnectionTelemetry
-import net.rsprox.protocol.game.incoming.model.misc.client.DetectModifiedClient
-import net.rsprox.protocol.game.incoming.model.misc.client.Idle
-import net.rsprox.protocol.game.incoming.model.misc.client.MapBuildComplete
-import net.rsprox.protocol.game.incoming.model.misc.client.MembershipPromotionEligibility
-import net.rsprox.protocol.game.incoming.model.misc.client.NoTimeout
-import net.rsprox.protocol.game.incoming.model.misc.client.ReflectionCheckReply
-import net.rsprox.protocol.game.incoming.model.misc.client.SendPingReply
-import net.rsprox.protocol.game.incoming.model.misc.client.SoundJingleEnd
-import net.rsprox.protocol.game.incoming.model.misc.client.WindowStatus
+import net.rsprox.protocol.game.incoming.model.misc.client.*
 import net.rsprox.protocol.game.incoming.model.misc.user.BugReport
 import net.rsprox.protocol.game.incoming.model.misc.user.ClickWorldMap
 import net.rsprox.protocol.game.incoming.model.misc.user.ClientCheat
@@ -425,6 +416,9 @@ public class IndexerTranscriber(
     }
 
     override fun setHeading(message: SetHeading) {
+    }
+
+    override fun rsevenStatus(message: RSevenStatus) {
     }
 
     override fun camLookAt(message: CamLookAt) {

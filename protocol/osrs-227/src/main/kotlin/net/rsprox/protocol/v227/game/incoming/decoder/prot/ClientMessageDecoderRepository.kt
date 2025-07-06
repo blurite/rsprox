@@ -34,6 +34,7 @@ import net.rsprox.protocol.v227.game.incoming.decoder.codec.locs.OpLoc6Decoder
 import net.rsprox.protocol.v227.game.incoming.decoder.codec.locs.OpLocTDecoder
 import net.rsprox.protocol.v227.game.incoming.decoder.codec.messaging.MessagePrivateDecoder
 import net.rsprox.protocol.v227.game.incoming.decoder.codec.messaging.MessagePublicDecoder
+import net.rsprox.protocol.v227.game.incoming.decoder.codec.misc.client.*
 import net.rsprox.protocol.v227.game.incoming.decoder.codec.misc.client.ConnectionTelemetryDecoder
 import net.rsprox.protocol.v227.game.incoming.decoder.codec.misc.client.DetectModifiedClientDecoder
 import net.rsprox.protocol.v227.game.incoming.decoder.codec.misc.client.IdleDecoder
@@ -204,6 +205,7 @@ internal object ClientMessageDecoderRepository {
                 bind(MembershipPromotionEligibilityDecoder())
                 bind(SoundJingleEndDecoder())
                 bind(WindowStatusDecoder())
+                bind(RSevenStatusDecoder())
             }
         return builder.build()
     }
