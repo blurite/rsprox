@@ -718,15 +718,32 @@ public class ProxyService(
                 try {
                     val directory = path.parent.toFile()
                     val absolutePath = path.absolutePathString()
-                    createProcess(
-                        listOf("wine", absolutePath),
-                        directory,
-                        path,
-                        port,
-                        character,
-                        operatingSystem,
-                        ClientType.Native,
-                    )
+
+                    val protonFilePath  = CONFIGURATION_PATH.absolutePathString() + "/protonpath"
+                    val protonFile = Path(protonFilePath)
+
+                    if (protonFile.exists()) {
+                        createProcess(
+                            listOf(protonFile.readText().trim(), "run", absolutePath),
+                            directory,
+                            path,
+                            port,
+                            character,
+                            operatingSystem,
+                            ClientType.Native,
+                            true
+                        )
+                    } else {
+                        createProcess(
+                            listOf("wine", absolutePath),
+                            directory,
+                            path,
+                            port,
+                            character,
+                            operatingSystem,
+                            ClientType.Native,
+                        )
+                    }
                 } catch (e: IOException) {
                     throw RuntimeException("wine is required to run the enhanced client on unix", e)
                 }
@@ -744,6 +761,7 @@ public class ProxyService(
         character: JagexCharacter?,
         operatingSystem: OperatingSystem,
         clientType: ClientType,
+        proton: Boolean = false,
     ) {
         logger.debug { "Attempting to create process $command" }
         val builder =
@@ -761,6 +779,14 @@ public class ProxyService(
                 builder.environment()["JX_REFRESH_TOKEN"] = ""
                 builder.environment()["JX_DISPLAY_NAME"] = character.displayName ?: ""
                 builder.environment()["JX_ACCESS_TOKEN"] = ""
+                if (proton) {
+                    val pfxFolder = CONFIGURATION_PATH.absolutePathString() + "/proton_pfx"
+                    val pfxPath = Path(pfxFolder)
+                    if (pfxPath.notExists()) pfxPath.createDirectory()
+                    // half sure steam doesnt even work properly if in any other loc so kind of safe to hardcode
+                    builder.environment()["STEAM_COMPAT_CLIENT_INSTALL_PATH"] = "~/.steam/steam"
+                    builder.environment()["STEAM_COMPAT_DATA_PATH"] = pfxFolder
+                }
             }
         } else {
             builder.environment().putAll(
