@@ -96,6 +96,11 @@ On Linux, there are a few extra steps involved in setting up a Jagex Account:
 4. You must then make yourself the owner of the file, this is done via `sudo chown "$USER" ~/.rsprox/jagex-accounts.properties`.
 5. You can now simply run `RSProx.AppImage` and you will be able to access your Jagex Account.
 
+Additionally, if you would like to run the Native Client under Proton (at the time of writing this is currently necessary to use the new renderer), you must create a `protonpath` file in `~/.rsprox/` containing the file path to a proton executable, for example:
+```
+/home/grian/.steam/steam/steamapps/common/Proton - Experimental/proton
+```
+
 ### Security
 We have taken many measures to ensure the players can securely use this tool,
 without having to worry about getting banned or having their information leaked.
