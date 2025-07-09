@@ -771,6 +771,14 @@ public class ProxyService(
         if (directory != null) {
             builder.directory(directory)
         }
+        if (proton) {
+            val pfxFolder = CONFIGURATION_PATH.absolutePathString() + "/proton_pfx"
+            val pfxPath = Path(pfxFolder)
+            if (pfxPath.notExists()) pfxPath.createDirectory()
+            // half sure steam doesn't even work properly if in any other loc so kind of safe to hardcode
+            builder.environment()["STEAM_COMPAT_CLIENT_INSTALL_PATH"] = System.getProperty("user.home ") + "/.steam/steam"
+            builder.environment()["STEAM_COMPAT_DATA_PATH"] = pfxFolder
+        }
         if (character != null) {
             val account = jagexAccountStore.accounts.firstOrNull { it.characters.contains(character) }
             if (account != null) {
@@ -779,14 +787,6 @@ public class ProxyService(
                 builder.environment()["JX_REFRESH_TOKEN"] = ""
                 builder.environment()["JX_DISPLAY_NAME"] = character.displayName ?: ""
                 builder.environment()["JX_ACCESS_TOKEN"] = ""
-                if (proton) {
-                    val pfxFolder = CONFIGURATION_PATH.absolutePathString() + "/proton_pfx"
-                    val pfxPath = Path(pfxFolder)
-                    if (pfxPath.notExists()) pfxPath.createDirectory()
-                    // half sure steam doesn't even work properly if in any other loc so kind of safe to hardcode
-                    builder.environment()["STEAM_COMPAT_CLIENT_INSTALL_PATH"] = System.getProperty("user.home ") + "/.steam/steam"
-                    builder.environment()["STEAM_COMPAT_DATA_PATH"] = pfxFolder
-                }
             }
         } else {
             builder.environment().putAll(
