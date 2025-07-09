@@ -783,8 +783,8 @@ public class ProxyService(
                     val pfxFolder = CONFIGURATION_PATH.absolutePathString() + "/proton_pfx"
                     val pfxPath = Path(pfxFolder)
                     if (pfxPath.notExists()) pfxPath.createDirectory()
-                    // half sure steam doesnt even work properly if in any other loc so kind of safe to hardcode
-                    builder.environment()["STEAM_COMPAT_CLIENT_INSTALL_PATH"] = "~/.steam/steam"
+                    // half sure steam doesn't even work properly if in any other loc so kind of safe to hardcode
+                    builder.environment()["STEAM_COMPAT_CLIENT_INSTALL_PATH"] = System.getProperty("user.home ") + "/.steam/steam"
                     builder.environment()["STEAM_COMPAT_DATA_PATH"] = pfxFolder
                 }
             }
