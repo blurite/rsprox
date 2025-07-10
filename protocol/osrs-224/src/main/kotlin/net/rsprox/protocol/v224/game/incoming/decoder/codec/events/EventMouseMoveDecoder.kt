@@ -11,60 +11,66 @@ import net.rsprox.protocol.v224.game.incoming.decoder.prot.GameClientProt
 
 @Suppress("DuplicatedCode")
 @Consistent
-internal class EventMouseMoveDecoder : ProxyMessageDecoder<EventMouseMove> {
+public class EventMouseMoveDecoder : ProxyMessageDecoder<EventMouseMove> {
     override val prot: ClientProt = GameClientProt.EVENT_MOUSE_MOVE
 
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
     ): EventMouseMove {
-        val averageTime = buffer.g1()
-        val remainingTime = buffer.g1()
+        val stepExcess = buffer.g1()
+        val endExcess = buffer.g1()
         val array = threadLocalArray.get()
         var count = 0
         while (buffer.isReadable) {
             var packed = buffer.g1()
-            var deltaX: Int
-            var deltaY: Int
+            var x: Int
+            var y: Int
             var timeSinceLastMovement: Int
+            var delta: Boolean
             if (packed and 0xE0 == 0xE0) {
                 timeSinceLastMovement = packed and 0x1f shl 8 or buffer.g1()
-                deltaX = buffer.g2s()
-                deltaY = buffer.g2s()
-                if (deltaY == 0 && deltaX == -0x8000) {
-                    deltaX = -1
-                    deltaY = -1
+                y = buffer.g2s()
+                x = buffer.g2s()
+                delta = false
+                if (x == 0 && y == -0x8000) {
+                    x = -1
+                    y = -1
                 }
             } else if (packed and 0xC0 == 0xC0) {
                 timeSinceLastMovement = packed and 0x3f
-                deltaX = buffer.g2s()
-                deltaY = buffer.g2s()
-                if (deltaY == 0 && deltaX == -0x8000) {
-                    deltaX = -1
-                    deltaY = -1
+                y = buffer.g2s()
+                x = buffer.g2s()
+                delta = false
+                if (x == 0 && y == -0x8000) {
+                    x = -1
+                    y = -1
                 }
             } else if (packed and 0x80 == 0x80) {
                 timeSinceLastMovement = packed and 0x7f
-                deltaX = buffer.g1() - 128
-                deltaY = buffer.g1() - 128
+                x = buffer.g1() - 128
+                y = buffer.g1() - 128
+                delta = true
             } else {
                 packed = (packed shl 8) or (buffer.g1())
                 timeSinceLastMovement = (packed ushr 12) and 0x7
-                deltaX = ((packed shr 6) and 0x3F) - 32
-                deltaY = (packed and 0x3F) - 32
+                x = ((packed shr 6) and 0x3F) - 32
+                y = (packed and 0x3F) - 32
+                delta = true
             }
             val change =
-                MouseMovements.MousePosChange(
+                MouseMovements.MousePosChange.pack(
                     timeSinceLastMovement,
-                    deltaX,
-                    deltaY,
+                    x,
+                    y,
+                    delta,
                 )
-            array[count++] = change.packed
+            array[count++] = change
         }
         val slice = array.copyOf(count)
         return EventMouseMove(
-            averageTime,
-            remainingTime,
+            stepExcess,
+            endExcess,
             MouseMovements(slice),
         )
     }

@@ -40,15 +40,15 @@ public class MouseMovements(
      * to re-compose the position changes at a later date.
      * @property timeDelta the time difference in client cycles (20ms each) since the last
      * transmitted mouse movement.
-     * @property xDelta the x coordinate delta of the mouse, in pixels. If the
+     * @property x the x coordinate of the mouse, in pixels. If the
      * mouse goes outside the client window, the value will be -1.
-     * @property yDelta the y coordinate delta of the mouse, in pixels. If the
+     * @property y the y coordinate of the mouse, in pixels. If the
      * mouse goes outside the client window, the value will be -1.
      * @property lastMouseButton the last mouse button that was clicked shortly
      * before the mouse movement. Value 0 means no recent click, 2 means left
      * mouse click, 8 means right mouse click and 14 means middle mouse click.
      * Other buttons are unknown but may also be possible.
-     * The value is 0xFFFF if no mouse button property is included, which is
+     * The value is 0x7FFF if no mouse button property is included, which is
      * the case for the java variant of this packet.
      */
     @Suppress("MemberVisibilityCanBePrivate")
@@ -57,65 +57,84 @@ public class MouseMovements(
     ) {
         public constructor(
             timeDelta: Int,
-            xDelta: Int,
-            yDelta: Int,
+            x: Int,
+            y: Int,
+            delta: Boolean,
         ) : this(
             timeDelta,
-            xDelta,
-            yDelta,
+            x,
+            y,
+            delta,
             -1,
         )
 
         public constructor(
             timeDelta: Int,
-            xDelta: Int,
-            yDelta: Int,
+            x: Int,
+            y: Int,
+            delta: Boolean,
             lastMouseButton: Int,
         ) : this(
-            pack(timeDelta, xDelta, yDelta, lastMouseButton),
+            pack(timeDelta, x, y, delta, lastMouseButton),
         )
 
         public val timeDelta: Int
             get() = (packed and 0xFFFF).toInt()
-        public val xDelta: Int
+        public val x: Int
             get() = (packed ushr 16 and 0xFFFF).toShort().toInt()
-        public val yDelta: Int
+        public val y: Int
             get() = (packed ushr 32 and 0xFFFF).toShort().toInt()
+        public val delta: Boolean
+            get() = (packed ushr 48 and 0x1).toInt() != 0
         public val lastMouseButton: Int
-            get() = (packed ushr 48 and 0xFFFF).toInt()
+            get() = (packed ushr 49 and 0x7FFF).toInt()
 
-        override fun toString(): String =
-            "MousePosChange(" +
-                "timeDelta=$timeDelta, " +
-                "xDelta=$xDelta, " +
-                "yDelta=$yDelta" +
-                (if (lastMouseButton != 0xFFFF) "lastMouseButton=$lastMouseButton" else "") +
-                ")"
+        override fun toString(): String {
+            return if (delta) {
+                "MousePosChange(" +
+                    "timeDelta=$timeDelta, " +
+                    "deltaX=$x, " +
+                    "deltaY=$y" +
+                    (if (lastMouseButton != 0x7FFF) "lastMouseButton=$lastMouseButton" else "") +
+                    ")"
+            } else {
+                "MousePosChange(" +
+                    "timeDelta=$timeDelta, " +
+                    "x=$x, " +
+                    "y=$y" +
+                    (if (lastMouseButton != 0x7FFF) "lastMouseButton=$lastMouseButton" else "") +
+                    ")"
+            }
+        }
 
         public companion object {
             public fun pack(
                 timeDelta: Int,
-                xDelta: Int,
-                yDelta: Int,
+                x: Int,
+                y: Int,
+                delta: Boolean,
             ): Long =
                 pack(
                     timeDelta,
-                    xDelta,
-                    yDelta,
+                    x,
+                    y,
+                    delta,
                     -1,
                 )
 
             public fun pack(
                 timeDelta: Int,
-                xDelta: Int,
-                yDelta: Int,
+                x: Int,
+                y: Int,
+                delta: Boolean,
                 lastMouseButton: Int,
             ): Long =
                 (timeDelta and 0xFFFF)
                     .toLong()
-                    .or(xDelta.toLong() and 0xFFFF shl 16)
-                    .or(yDelta.toLong() and 0xFFFF shl 32)
-                    .or(lastMouseButton.toLong() and 0xFFFF shl 48)
+                    .or(x.toLong() and 0xFFFF shl 16)
+                    .or(y.toLong() and 0xFFFF shl 32)
+                    .or(if (delta) (1L shl 48) else 0)
+                    .or(lastMouseButton.toLong() and 0x7FFF shl 49)
         }
     }
 }

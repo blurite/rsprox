@@ -8,13 +8,9 @@ import net.rsprox.protocol.game.incoming.model.events.util.MouseMovements
 /**
  * Mouse move messages are sent when the user moves their mouse across
  * the client, in this case, on the enhanced C++ clients.
- * @property totalTime the total time in milliseconds that all the movements
- * inside this event span across
- * @property averageTime the average time in milliseconds between each movement.
- * The average time is truncated according to integer division rules in the JVM.
- * This is equal to `totalTime / count`.
- * @property remainingTime the remaining time from the [averageTime] integer
- * division. This is equal to `totalTime % count`.
+ * @property stepExcess the extra milliseconds leftover after each mouse movement
+ * recording.
+ * @property endExcess the extra milliseconds leftover at the end of the packet's tracking.
  * @property movements all the recorded mouse movements within this message.
  * Mouse movements are recorded by the client at a 50 millisecond interval,
  * meaning any movements within that 50 milliseconds are discarded, and
@@ -22,36 +18,32 @@ import net.rsprox.protocol.game.incoming.model.events.util.MouseMovements
  * are sent.
  */
 public class EventNativeMouseMove private constructor(
-    private val _averageTime: UByte,
-    private val _remainingTime: UByte,
+    private val _stepExcess: UByte,
+    private val _endExcess: UByte,
     public val movements: MouseMovements,
 ) : IncomingGameMessage {
     public constructor(
-        averageTime: Int,
-        remainingTime: Int,
+        stepExcess: Int,
+        endExcess: Int,
         movements: MouseMovements,
     ) : this(
-        averageTime.toUByte(),
-        remainingTime.toUByte(),
+        stepExcess.toUByte(),
+        endExcess.toUByte(),
         movements,
     )
 
-    public val totalTime: Int
-        get() = (_averageTime.toInt() * movements.length) + _remainingTime.toInt()
+    public val stepExcess: Int
+        get() = _stepExcess.toInt()
 
-    public val averageTime: Int
-        get() = _averageTime.toInt()
-
-    public val remainingTime: Int
-        get() = _remainingTime.toInt()
+    public val endExcess: Int
+        get() = _endExcess.toInt()
     override val category: ClientProtCategory
         get() = GameClientProtCategory.CLIENT_EVENT
 
     override fun toString(): String =
         "EventNativeMouseMove(" +
             "movements=$movements, " +
-            "totalTime=$totalTime, " +
-            "averageTime=$averageTime, " +
-            "remainingTime=$remainingTime" +
+            "stepExcess=$stepExcess, " +
+            "endExcess=$endExcess" +
             ")"
 }

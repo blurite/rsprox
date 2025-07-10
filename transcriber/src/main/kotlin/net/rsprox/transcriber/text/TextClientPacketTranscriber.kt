@@ -308,16 +308,19 @@ public open class TextClientPacketTranscriber(
     }
 
     override fun eventMouseMove(message: EventMouseMove) {
+        val recordings =
+            sessionState.mouseTracker.capture(
+                message.stepExcess,
+                message.endExcess,
+                message.movements,
+            )
         if (!filters[PropertyFilter.EVENT_MOUSE_MOVE]) return omit()
-        val remainingTime = (message.movements.length * message.averageTime) + message.remainingTime
-        root.formattedInt("remainingtime", remainingTime, MS_NUMBER_FORMAT)
         root.group("MOVEMENTS") {
-            for (index in message.movements.asLongArray().indices) {
-                group {
-                    val movement = message.movements.getMousePosChange(index)
-                    formattedInt("deltatime", movement.timeDelta * 20, MS_NUMBER_FORMAT)
-                    int("deltax", movement.xDelta)
-                    int("deltay", movement.yDelta)
+            for (recording in recordings) {
+                group("MOVEMENT") {
+                    formattedInt("time", recording.time, MS_NUMBER_FORMAT)
+                    formattedInt("x", recording.x)
+                    formattedInt("y", recording.y)
                 }
             }
         }
@@ -337,17 +340,20 @@ public open class TextClientPacketTranscriber(
     }
 
     override fun eventNativeMouseMove(message: EventNativeMouseMove) {
+        val recordings =
+            sessionState.nativeMouseTracker.capture(
+                message.stepExcess,
+                message.endExcess,
+                message.movements,
+            )
         if (!filters[PropertyFilter.EVENT_NATIVE_MOUSE_MOVE]) return omit()
-        val remainingTime = (message.movements.length * message.averageTime) + message.remainingTime
-        root.formattedInt("remainingtime", remainingTime, MS_NUMBER_FORMAT)
         root.group("MOVEMENTS") {
-            for (index in message.movements.asLongArray().indices) {
+            for (recording in recordings) {
                 group("MOVEMENT") {
-                    val movement = message.movements.getMousePosChange(index)
-                    formattedInt("deltatime", movement.timeDelta * 20, MS_NUMBER_FORMAT)
-                    int("deltax", movement.xDelta)
-                    int("deltay", movement.yDelta)
-                    int("lastmousebutton", movement.lastMouseButton)
+                    formattedInt("time", recording.time, MS_NUMBER_FORMAT)
+                    formattedInt("x", recording.x)
+                    formattedInt("y", recording.y)
+                    int("lastmousebutton", recording.lastMouseButton)
                 }
             }
         }
