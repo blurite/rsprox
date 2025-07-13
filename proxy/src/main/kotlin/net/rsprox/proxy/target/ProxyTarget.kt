@@ -29,6 +29,10 @@ public class ProxyTarget(
     public lateinit var worldListProvider: WorldListProvider
         private set
 
+    public fun isSuccessfullyLoaded(): Boolean {
+        return this::httpServerBootstrap.isInitialized
+    }
+
     public fun revisionNum(channel: Channel): Int {
         val overriddenRevision =
             config.revision
@@ -93,11 +97,9 @@ public class ProxyTarget(
                 .removePrefix("http://")
                 .removePrefix("https://")
                 .removeSuffix("/")
-        return runCatching("Failed to find a linked world for codebase '$address' for target '$name'") {
-            val world = checkNotNull(worldListProvider.get().getTargetWorld(address))
-            logger.debug { "Loaded initial world ${world.localHostAddress} <-> ${world.host} for target '$name'" }
-            world
-        }
+        val world = checkNotNull(worldListProvider.get().getTargetWorld(address))
+        logger.debug { "Loaded initial world ${world.localHostAddress} <-> ${world.host} for target '$name'" }
+        return world
     }
 
     private fun rebuildJavConfig(

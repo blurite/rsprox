@@ -151,6 +151,7 @@ public class ProxyService(
         check(results.all { it.get() }) {
             "Unable to boot RSProx"
         }
+        this.proxyTargets = this.proxyTargets.filter(ProxyTarget::isSuccessfullyLoaded)
     }
 
     private val completedJobs = AtomicInteger(0)
@@ -229,7 +230,13 @@ public class ProxyService(
             }
         return this.proxyTargets.map { target ->
             createJob(progressCallback) {
-                target.load(properties, bootstrapFactory)
+                try {
+                    target.load(properties, bootstrapFactory)
+                } catch (e: Exception) {
+                    logger.error(e) {
+                        "Unable to load proxy target ${target.config.name}."
+                    }
+                }
             }
         }
     }
@@ -719,7 +726,7 @@ public class ProxyService(
                     val directory = path.parent.toFile()
                     val absolutePath = path.absolutePathString()
 
-                    val protonFilePath  = CONFIGURATION_PATH.absolutePathString() + "/protonpath"
+                    val protonFilePath = CONFIGURATION_PATH.absolutePathString() + "/protonpath"
                     val protonFile = Path(protonFilePath)
 
                     if (protonFile.exists()) {
@@ -731,7 +738,7 @@ public class ProxyService(
                             character,
                             operatingSystem,
                             ClientType.Native,
-                            true
+                            true,
                         )
                     } else {
                         createProcess(
@@ -776,7 +783,8 @@ public class ProxyService(
             val pfxPath = Path(pfxFolder)
             if (pfxPath.notExists()) pfxPath.createDirectory()
             // half sure steam doesn't even work properly if in any other loc so kind of safe to hardcode
-            builder.environment()["STEAM_COMPAT_CLIENT_INSTALL_PATH"] = System.getProperty("user.home ") + "/.steam/steam"
+            builder.environment()["STEAM_COMPAT_CLIENT_INSTALL_PATH"] =
+                System.getProperty("user.home ") + "/.steam/steam"
             builder.environment()["STEAM_COMPAT_DATA_PATH"] = pfxFolder
         }
         if (character != null) {
