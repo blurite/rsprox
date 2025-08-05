@@ -17,7 +17,7 @@ internal class IfMoveSubDecoder : ProxyMessageDecoder<IfMoveSub> {
         session: Session,
     ): IfMoveSub {
         val sourceCombinedId = buffer.gCombinedIdAlt2()
-        val destinationCombinedId = buffer.gCombinedIdAlt1()
+        val destinationCombinedId = buffer.gCombinedIdAlt2()
         return IfMoveSub(
             sourceCombinedId.interfaceId,
             sourceCombinedId.componentId,

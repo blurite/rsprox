@@ -2,6 +2,7 @@ package net.rsprox.protocol.v232.game.outgoing.decoder.codec.interfaces
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
+import net.rsprot.protocol.util.gCombinedIdAlt1
 import net.rsprot.protocol.util.gCombinedIdAlt2
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetAnim
@@ -15,8 +16,8 @@ internal class IfSetAnimDecoder : ProxyMessageDecoder<IfSetAnim> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetAnim {
-        val combinedId = buffer.gCombinedIdAlt2()
         val anim = buffer.g2()
+        val combinedId = buffer.gCombinedIdAlt1()
         return IfSetAnim(
             combinedId.interfaceId,
             combinedId.componentId,

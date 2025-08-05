@@ -15,7 +15,7 @@ internal class SetPlayerOpDecoder : ProxyMessageDecoder<SetPlayerOp> {
         session: Session,
     ): SetPlayerOp {
         val priority = buffer.g1Alt1() == 1
-        val id = buffer.g1()
+        val id = buffer.g1Alt3()
         val op = buffer.gjstr()
         return SetPlayerOp(
             id,
