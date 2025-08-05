@@ -86,7 +86,7 @@ internal object GameClientProtId {
     const val FRIENDLIST_DEL = 82
     const val SEND_PING_REPLY = 83
     const val OPPLAYER8 = 84
-    const val EVENT_MOUSE_CLICK = 85
+    const val EVENT_MOUSE_CLICK_V1 = 85
     const val OPLOC1 = 86
     const val IF_BUTTON7 = 87
     const val CLIENT_CHEAT = 88

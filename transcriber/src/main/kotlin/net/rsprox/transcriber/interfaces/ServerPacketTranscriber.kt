@@ -309,6 +309,18 @@ public interface ServerPacketTranscriber {
 
     public fun playerSpotAnimSpecific(message: PlayerSpotAnimSpecific)
 
+    public fun objAddSpecific(message: ObjAddSpecific)
+
+    public fun objDelSpecific(message: ObjDelSpecific)
+
+    public fun objEnabledOpsSpecific(message: ObjEnabledOpsSpecific)
+
+    public fun objUncustomiseSpecific(message: ObjUncustomiseSpecific)
+
+    public fun objCountSpecific(message: ObjCountSpecific)
+
+    public fun objCustomiseSpecific(message: ObjCustomiseSpecific)
+
     public fun projAnimSpecificV2(message: ProjAnimSpecificV2)
 
     public fun projAnimSpecificV3(message: ProjAnimSpecificV3)

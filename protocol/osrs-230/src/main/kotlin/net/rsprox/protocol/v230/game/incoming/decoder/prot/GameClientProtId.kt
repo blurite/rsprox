@@ -37,7 +37,7 @@ internal object GameClientProtId {
     const val RSEVEN_STATUS = 33
     const val OPLOC4 = 34
     const val IF_BUTTON = 35
-    const val EVENT_MOUSE_CLICK = 36
+    const val EVENT_MOUSE_CLICK_V1 = 36
     const val OPOBJ4 = 37
     const val MEMBERSHIP_PROMOTION_ELIGIBILITY = 38
     const val OPOBJT = 39

@@ -6,14 +6,7 @@ import net.rsprox.protocol.game.incoming.model.clan.AffinedClanSettingsSetMutedF
 import net.rsprox.protocol.game.incoming.model.clan.ClanChannelFullRequest
 import net.rsprox.protocol.game.incoming.model.clan.ClanChannelKickUser
 import net.rsprox.protocol.game.incoming.model.clan.ClanSettingsFullRequest
-import net.rsprox.protocol.game.incoming.model.events.EventAppletFocus
-import net.rsprox.protocol.game.incoming.model.events.EventCameraPosition
-import net.rsprox.protocol.game.incoming.model.events.EventKeyboard
-import net.rsprox.protocol.game.incoming.model.events.EventMouseClick
-import net.rsprox.protocol.game.incoming.model.events.EventMouseMove
-import net.rsprox.protocol.game.incoming.model.events.EventMouseScroll
-import net.rsprox.protocol.game.incoming.model.events.EventNativeMouseClick
-import net.rsprox.protocol.game.incoming.model.events.EventNativeMouseMove
+import net.rsprox.protocol.game.incoming.model.events.*
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatJoinLeave
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatKick
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatSetRank
@@ -86,7 +79,9 @@ public interface ClientPacketTranscriber {
 
     public fun eventKeyboard(message: EventKeyboard)
 
-    public fun eventMouseClick(message: EventMouseClick)
+    public fun eventMouseClickV1(message: EventMouseClickV1)
+
+    public fun eventMouseClickV2(message: EventMouseClickV2)
 
     public fun eventMouseMove(message: EventMouseMove)
 

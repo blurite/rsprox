@@ -10,14 +10,7 @@ import net.rsprox.protocol.game.incoming.model.clan.AffinedClanSettingsSetMutedF
 import net.rsprox.protocol.game.incoming.model.clan.ClanChannelFullRequest
 import net.rsprox.protocol.game.incoming.model.clan.ClanChannelKickUser
 import net.rsprox.protocol.game.incoming.model.clan.ClanSettingsFullRequest
-import net.rsprox.protocol.game.incoming.model.events.EventAppletFocus
-import net.rsprox.protocol.game.incoming.model.events.EventCameraPosition
-import net.rsprox.protocol.game.incoming.model.events.EventKeyboard
-import net.rsprox.protocol.game.incoming.model.events.EventMouseClick
-import net.rsprox.protocol.game.incoming.model.events.EventMouseMove
-import net.rsprox.protocol.game.incoming.model.events.EventMouseScroll
-import net.rsprox.protocol.game.incoming.model.events.EventNativeMouseClick
-import net.rsprox.protocol.game.incoming.model.events.EventNativeMouseMove
+import net.rsprox.protocol.game.incoming.model.events.*
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatJoinLeave
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatKick
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatSetRank
@@ -244,7 +237,10 @@ public class IndexerTranscriber(
     override fun eventKeyboard(message: EventKeyboard) {
     }
 
-    override fun eventMouseClick(message: EventMouseClick) {
+    override fun eventMouseClickV1(message: EventMouseClickV1) {
+    }
+
+    override fun eventMouseClickV2(message: EventMouseClickV2) {
     }
 
     override fun eventMouseMove(message: EventMouseMove) {
@@ -1139,19 +1135,43 @@ public class IndexerTranscriber(
         binaryIndex.increment(IndexedType.OBJ, message.id)
     }
 
-    override fun soundArea(message: SoundArea) {
-        binaryIndex.increment(IndexedType.SYNTH, message.id)
-    }
-
-    override fun unknownString(message: UnknownString) {
-    }
-
     override fun objCustomise(message: ObjCustomise) {
         binaryIndex.increment(IndexedType.OBJ, message.id)
     }
 
     override fun objUncustomise(message: ObjUncustomise) {
         binaryIndex.increment(IndexedType.OBJ, message.id)
+    }
+
+    override fun objAddSpecific(message: ObjAddSpecific) {
+        binaryIndex.increment(IndexedType.OBJ, message.id)
+    }
+
+    override fun objCountSpecific(message: ObjCountSpecific) {
+        binaryIndex.increment(IndexedType.OBJ, message.id)
+    }
+
+    override fun objDelSpecific(message: ObjDelSpecific) {
+        binaryIndex.increment(IndexedType.OBJ, message.id)
+    }
+
+    override fun objEnabledOpsSpecific(message: ObjEnabledOpsSpecific) {
+        binaryIndex.increment(IndexedType.OBJ, message.id)
+    }
+
+    override fun objCustomiseSpecific(message: ObjCustomiseSpecific) {
+        binaryIndex.increment(IndexedType.OBJ, message.id)
+    }
+
+    override fun objUncustomiseSpecific(message: ObjUncustomiseSpecific) {
+        binaryIndex.increment(IndexedType.OBJ, message.id)
+    }
+
+    override fun soundArea(message: SoundArea) {
+        binaryIndex.increment(IndexedType.SYNTH, message.id)
+    }
+
+    override fun unknownString(message: UnknownString) {
     }
 
     override fun setInteractionMode(message: SetInteractionMode) {

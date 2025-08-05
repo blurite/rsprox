@@ -8,14 +8,7 @@ import net.rsprox.protocol.game.incoming.model.clan.AffinedClanSettingsSetMutedF
 import net.rsprox.protocol.game.incoming.model.clan.ClanChannelFullRequest
 import net.rsprox.protocol.game.incoming.model.clan.ClanChannelKickUser
 import net.rsprox.protocol.game.incoming.model.clan.ClanSettingsFullRequest
-import net.rsprox.protocol.game.incoming.model.events.EventAppletFocus
-import net.rsprox.protocol.game.incoming.model.events.EventCameraPosition
-import net.rsprox.protocol.game.incoming.model.events.EventKeyboard
-import net.rsprox.protocol.game.incoming.model.events.EventMouseClick
-import net.rsprox.protocol.game.incoming.model.events.EventMouseMove
-import net.rsprox.protocol.game.incoming.model.events.EventMouseScroll
-import net.rsprox.protocol.game.incoming.model.events.EventNativeMouseClick
-import net.rsprox.protocol.game.incoming.model.events.EventNativeMouseMove
+import net.rsprox.protocol.game.incoming.model.events.*
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatJoinLeave
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatKick
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatSetRank
@@ -299,12 +292,21 @@ public open class TextClientPacketTranscriber(
         )
     }
 
-    override fun eventMouseClick(message: EventMouseClick) {
+    override fun eventMouseClickV1(message: EventMouseClickV1) {
         if (!filters[PropertyFilter.EVENT_MOUSE_CLICK]) return omit()
         root.formattedInt("lasttransmitted", message.lastTransmittedMouseClick, MS_NUMBER_FORMAT)
         root.int("x", message.x)
         root.int("y", message.y)
         root.boolean("rightclick", message.rightClick)
+    }
+
+    override fun eventMouseClickV2(message: EventMouseClickV2) {
+        if (!filters[PropertyFilter.EVENT_MOUSE_CLICK]) return omit()
+        root.formattedInt("lasttransmitted", message.lastTransmittedMouseClick, MS_NUMBER_FORMAT)
+        root.int("x", message.x)
+        root.int("y", message.y)
+        root.boolean("rightclick", message.rightClick)
+        root.int("code", message.code)
     }
 
     override fun eventMouseMove(message: EventMouseMove) {

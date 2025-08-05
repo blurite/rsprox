@@ -40,7 +40,7 @@ internal object GameClientProtId {
     const val IF_SUBOP = 36
     const val IF_BUTTONT = 37
     const val EVENT_MOUSE_MOVE = 38
-    const val EVENT_MOUSE_CLICK = 39
+    const val EVENT_MOUSE_CLICK_V1 = 39
     const val EVENT_NATIVE_MOUSE_MOVE = 40
     const val OPLOC4 = 41
     const val OPLOC1 = 42

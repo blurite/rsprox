@@ -81,13 +81,13 @@ public class RuneliteLauncher {
         // Pick the correct bootstrap commit from here:
         // https://github.com/runelite/static.runelite.net/commits/gh-pages/bootstrap.json
         val repository = "https://raw.githubusercontent.com/runelite/static.runelite.net"
-        val commit = "8d2e0c60ecec85cffd7a84196aabf4effde55132"
-        val bootstrapUrl = "$repository/$commit/bootstrap.json"
-        val bootstrapSigUrl = "$repository/$commit/bootstrap.json.sha256"
+        // val commit = "8d2e0c60ecec85cffd7a84196aabf4effde55132"
+        // val bootstrapUrl = "$repository/$commit/bootstrap.json"
+        // val bootstrapSigUrl = "$repository/$commit/bootstrap.json.sha256"
 
         // Any other time, just rely on the latest bootstrap.
-        // val bootstrapUrl = "https://static.runelite.net/bootstrap.json"
-        // val bootstrapSigUrl = "https://static.runelite.net/bootstrap.json.sha256"
+        val bootstrapUrl = "https://static.runelite.net/bootstrap.json"
+        val bootstrapSigUrl = "https://static.runelite.net/bootstrap.json.sha256"
         val primaryArgs =
             listOf(
                 getJava(),
