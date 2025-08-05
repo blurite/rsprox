@@ -17,7 +17,6 @@ import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.SoundAr
 import net.rsprox.protocol.v232.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.*
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.MapAnimDecoder
-import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.MapProjAnimV1Decoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.MapProjAnimV2Decoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.ObjAddDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.ObjCustomiseDecoder
@@ -56,7 +55,6 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
         OBJ_UNCUSTOMISE(ObjUncustomiseDecoder()),
         SOUND_AREA(SoundAreaDecoder()),
         OBJ_DEL(ObjDelDecoder()),
-        MAP_PROJANIM_V1(MapProjAnimV1Decoder()),
         OBJ_ADD(ObjAddDecoder()),
         OBJ_COUNT(ObjCountDecoder()),
         LOC_MERGE(LocMergeDecoder()),
