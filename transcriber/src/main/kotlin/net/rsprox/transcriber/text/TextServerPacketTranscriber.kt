@@ -3128,6 +3128,58 @@ public class TextServerPacketTranscriber(
         }
     }
 
+    override fun objAddSpecific(message: ObjAddSpecific) {
+        if (!filters[PropertyFilter.OBJ_ADD]) return omit()
+        root.scriptVarType("id", ScriptVarType.OBJ, message.id)
+        root.formattedInt("count", message.quantity)
+        root.filteredAny("opflags", "0b" + message.opFlags.value.toString(2), "0b11111")
+        root.filteredInt("reveal", message.timeUntilPublic, 0)
+        root.filteredInt("despawn", message.timeUntilDespawn, 0)
+        root.filteredNamedEnum("ownership", getObjOwnership(message.ownershipType), ObjOwnership.None)
+        root.boolean("neverturnpublic", message.neverBecomesPublic)
+        root.coordGrid(message.coordGrid)
+    }
+
+    override fun objCountSpecific(message: ObjCountSpecific) {
+        if (!filters[PropertyFilter.OBJ_COUNT]) return omit()
+        root.scriptVarType("id", ScriptVarType.OBJ, message.id)
+        root.formattedInt("oldcount", message.oldQuantity)
+        root.formattedInt("newcount", message.newQuantity)
+        root.coordGrid(message.coordGrid)
+    }
+
+    override fun objDelSpecific(message: ObjDelSpecific) {
+        if (!filters[PropertyFilter.OBJ_DEL]) return omit()
+        root.scriptVarType("id", ScriptVarType.OBJ, message.id)
+        root.formattedInt("count", message.quantity)
+        root.coordGrid(message.coordGrid)
+    }
+
+    override fun objEnabledOpsSpecific(message: ObjEnabledOpsSpecific) {
+        if (!filters[PropertyFilter.OBJ_ENABLED_OPS]) return omit()
+        root.scriptVarType("id", ScriptVarType.OBJ, message.id)
+        root.any("opflags", "0b" + message.opFlags.value.toString(2))
+        root.coordGrid(message.coordGrid)
+    }
+
+    override fun objCustomiseSpecific(message: ObjCustomiseSpecific) {
+        if (!filters[PropertyFilter.OBJ_CUSTOMISE]) return omit()
+        root.scriptVarType("id", ScriptVarType.OBJ, message.id.maxUShortToMinusOne())
+        root.int("count", message.quantity)
+        root.int("recolindex", message.recolIndex)
+        root.int("recol", message.recol)
+        root.int("retexindex", message.retexIndex)
+        root.int("retex", message.retex)
+        root.coordGrid(message.coordGrid)
+    }
+
+    override fun objUncustomiseSpecific(message: ObjUncustomiseSpecific) {
+        if (!filters[PropertyFilter.OBJ_CUSTOMISE]) return omit()
+        root.scriptVarType("id", ScriptVarType.OBJ, message.id.maxUShortToMinusOne())
+        root.int("count", message.quantity)
+        root.coordGrid(message.coordGrid)
+    }
+
     private companion object {
         private val MS_NUMBER_FORMAT: NumberFormat = DecimalFormat("###,###,###ms")
         private val KG_NUMBER_FORMAT: NumberFormat = DecimalFormat("###,###,###kg")

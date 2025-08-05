@@ -30,7 +30,18 @@ import net.rsprox.protocol.v232.game.outgoing.decoder.codec.clan.VarClanEnableDe
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.friendchat.MessageFriendChannelDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.friendchat.UpdateFriendChatChannelFullV2Decoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.friendchat.UpdateFriendChatChannelSingleUserDecoder
+import net.rsprox.protocol.v232.game.outgoing.decoder.codec.info.NpcInfoLargeV5Decoder
+import net.rsprox.protocol.v232.game.outgoing.decoder.codec.info.NpcInfoSmallV5Decoder
+import net.rsprox.protocol.v232.game.outgoing.decoder.codec.info.PlayerInfoDecoder
+import net.rsprox.protocol.v232.game.outgoing.decoder.codec.info.SetNpcUpdateOriginDecoder
+import net.rsprox.protocol.v232.game.outgoing.decoder.codec.info.WorldEntityInfoV5Decoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.interfaces.*
+import net.rsprox.protocol.v232.game.outgoing.decoder.codec.interfaces.IfClearInvDecoder
+import net.rsprox.protocol.v232.game.outgoing.decoder.codec.interfaces.IfCloseSubDecoder
+import net.rsprox.protocol.v232.game.outgoing.decoder.codec.interfaces.IfMoveSubDecoder
+import net.rsprox.protocol.v232.game.outgoing.decoder.codec.interfaces.IfOpenSubDecoder
+import net.rsprox.protocol.v232.game.outgoing.decoder.codec.interfaces.IfOpenTopDecoder
+import net.rsprox.protocol.v232.game.outgoing.decoder.codec.interfaces.IfResyncV2Decoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.interfaces.IfSetAngleDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.interfaces.IfSetAnimDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.interfaces.IfSetColourDecoder
@@ -64,6 +75,8 @@ import net.rsprox.protocol.v232.game.outgoing.decoder.codec.misc.client.HideObjO
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.misc.client.HintArrowDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.misc.client.HiscoreReplyDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.misc.client.MinimapToggleDecoder
+import net.rsprox.protocol.v232.game.outgoing.decoder.codec.misc.client.PacketGroupEndDecoder
+import net.rsprox.protocol.v232.game.outgoing.decoder.codec.misc.client.PacketGroupStartDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.misc.client.ReflectionCheckerDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.misc.client.ResetAnimsDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.misc.client.ResetInteractionModeDecoder
@@ -98,13 +111,16 @@ import net.rsprox.protocol.v232.game.outgoing.decoder.codec.sound.MidiSongV2Deco
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.sound.MidiSongWithSecondaryDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.sound.MidiSwapDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.sound.SynthSoundDecoder
+import net.rsprox.protocol.v232.game.outgoing.decoder.codec.specific.*
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.specific.LocAnimSpecificDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.specific.MapAnimSpecificDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.specific.NpcAnimSpecificDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.specific.NpcHeadIconSpecificDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.specific.NpcSpotAnimSpecificDecoder
+import net.rsprox.protocol.v232.game.outgoing.decoder.codec.specific.ObjAddSpecificDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.specific.PlayerAnimSpecificDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.specific.PlayerSpotAnimSpecificDecoder
+import net.rsprox.protocol.v232.game.outgoing.decoder.codec.specific.ProjAnimSpecificV4Decoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.unknown.UnknownStringDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.varp.VarpLargeDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.varp.VarpResetDecoder
@@ -114,24 +130,10 @@ import net.rsprox.protocol.v232.game.outgoing.decoder.codec.worldentity.SetActiv
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.header.UpdateZoneFullFollowsDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.header.UpdateZonePartialEnclosedDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.header.UpdateZonePartialFollowsDecoder
-import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.LocDelDecoder
-import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.LocMergeDecoder
-import net.rsprox.protocol.v232.game.outgoing.decoder.codec.info.NpcInfoLargeV5Decoder
-import net.rsprox.protocol.v232.game.outgoing.decoder.codec.info.NpcInfoSmallV5Decoder
-import net.rsprox.protocol.v232.game.outgoing.decoder.codec.info.PlayerInfoDecoder
-import net.rsprox.protocol.v232.game.outgoing.decoder.codec.info.SetNpcUpdateOriginDecoder
-import net.rsprox.protocol.v232.game.outgoing.decoder.codec.info.WorldEntityInfoV5Decoder
-import net.rsprox.protocol.v232.game.outgoing.decoder.codec.interfaces.IfClearInvDecoder
-import net.rsprox.protocol.v232.game.outgoing.decoder.codec.interfaces.IfCloseSubDecoder
-import net.rsprox.protocol.v232.game.outgoing.decoder.codec.interfaces.IfMoveSubDecoder
-import net.rsprox.protocol.v232.game.outgoing.decoder.codec.interfaces.IfOpenSubDecoder
-import net.rsprox.protocol.v232.game.outgoing.decoder.codec.interfaces.IfOpenTopDecoder
-import net.rsprox.protocol.v232.game.outgoing.decoder.codec.interfaces.IfResyncV2Decoder
-import net.rsprox.protocol.v232.game.outgoing.decoder.codec.misc.client.PacketGroupEndDecoder
-import net.rsprox.protocol.v232.game.outgoing.decoder.codec.misc.client.PacketGroupStartDecoder
-import net.rsprox.protocol.v232.game.outgoing.decoder.codec.specific.ProjAnimSpecificV4Decoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.LocAddChangeV2Decoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.LocAnimDecoder
+import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.LocDelDecoder
+import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.LocMergeDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.MapAnimDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.ObjAddDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.ObjCountDecoder
@@ -278,6 +280,12 @@ internal object ServerMessageDecoderRepository {
                 bind(PlayerAnimSpecificDecoder())
                 bind(PlayerSpotAnimSpecificDecoder())
                 bind(ProjAnimSpecificV4Decoder())
+                bind(ObjAddSpecificDecoder())
+                bind(ObjDelSpecificDecoder())
+                bind(ObjCountSpecificDecoder())
+                bind(ObjEnabledOpsSpecificDecoder())
+                bind(ObjCustomiseSpecificDecoder())
+                bind(ObjUncustomiseSpecificDecoder())
 
                 bind(VarpLargeDecoder())
                 bind(VarpResetDecoder())

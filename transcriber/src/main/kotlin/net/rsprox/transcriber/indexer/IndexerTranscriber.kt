@@ -1135,19 +1135,43 @@ public class IndexerTranscriber(
         binaryIndex.increment(IndexedType.OBJ, message.id)
     }
 
-    override fun soundArea(message: SoundArea) {
-        binaryIndex.increment(IndexedType.SYNTH, message.id)
-    }
-
-    override fun unknownString(message: UnknownString) {
-    }
-
     override fun objCustomise(message: ObjCustomise) {
         binaryIndex.increment(IndexedType.OBJ, message.id)
     }
 
     override fun objUncustomise(message: ObjUncustomise) {
         binaryIndex.increment(IndexedType.OBJ, message.id)
+    }
+
+    override fun objAddSpecific(message: ObjAddSpecific) {
+        binaryIndex.increment(IndexedType.OBJ, message.id)
+    }
+
+    override fun objCountSpecific(message: ObjCountSpecific) {
+        binaryIndex.increment(IndexedType.OBJ, message.id)
+    }
+
+    override fun objDelSpecific(message: ObjDelSpecific) {
+        binaryIndex.increment(IndexedType.OBJ, message.id)
+    }
+
+    override fun objEnabledOpsSpecific(message: ObjEnabledOpsSpecific) {
+        binaryIndex.increment(IndexedType.OBJ, message.id)
+    }
+
+    override fun objCustomiseSpecific(message: ObjCustomiseSpecific) {
+        binaryIndex.increment(IndexedType.OBJ, message.id)
+    }
+
+    override fun objUncustomiseSpecific(message: ObjUncustomiseSpecific) {
+        binaryIndex.increment(IndexedType.OBJ, message.id)
+    }
+
+    override fun soundArea(message: SoundArea) {
+        binaryIndex.increment(IndexedType.SYNTH, message.id)
+    }
+
+    override fun unknownString(message: UnknownString) {
     }
 
     override fun setInteractionMode(message: SetInteractionMode) {
