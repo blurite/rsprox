@@ -26,7 +26,7 @@ internal object GameClientProtId {
     const val IF_BUTTON9 = 22
     const val SET_CHATFILTERSETTINGS = 23
     const val OPNPC1 = 24
-    const val EVENT_MOUSE_CLICK = 25
+    const val EVENT_MOUSE_CLICK_V1 = 25
     const val SEND_SNAPSHOT = 26
     const val MOVE_GAMECLICK = 27
     const val IDLE = 28

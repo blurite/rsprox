@@ -9,7 +9,7 @@ import net.rsprox.protocol.game.incoming.model.clan.ClanSettingsFullRequest
 import net.rsprox.protocol.game.incoming.model.events.EventAppletFocus
 import net.rsprox.protocol.game.incoming.model.events.EventCameraPosition
 import net.rsprox.protocol.game.incoming.model.events.EventKeyboard
-import net.rsprox.protocol.game.incoming.model.events.EventMouseClick
+import net.rsprox.protocol.game.incoming.model.events.EventMouseClickV1
 import net.rsprox.protocol.game.incoming.model.events.EventMouseMove
 import net.rsprox.protocol.game.incoming.model.events.EventMouseScroll
 import net.rsprox.protocol.game.incoming.model.events.EventNativeMouseClick
@@ -86,7 +86,7 @@ public interface ClientPacketTranscriber {
 
     public fun eventKeyboard(message: EventKeyboard)
 
-    public fun eventMouseClick(message: EventMouseClick)
+    public fun eventMouseClickV1(message: EventMouseClickV1)
 
     public fun eventMouseMove(message: EventMouseMove)
 

@@ -13,7 +13,7 @@ import net.rsprox.protocol.game.incoming.model.clan.ClanSettingsFullRequest
 import net.rsprox.protocol.game.incoming.model.events.EventAppletFocus
 import net.rsprox.protocol.game.incoming.model.events.EventCameraPosition
 import net.rsprox.protocol.game.incoming.model.events.EventKeyboard
-import net.rsprox.protocol.game.incoming.model.events.EventMouseClick
+import net.rsprox.protocol.game.incoming.model.events.EventMouseClickV1
 import net.rsprox.protocol.game.incoming.model.events.EventMouseMove
 import net.rsprox.protocol.game.incoming.model.events.EventMouseScroll
 import net.rsprox.protocol.game.incoming.model.events.EventNativeMouseClick
@@ -244,7 +244,7 @@ public class IndexerTranscriber(
     override fun eventKeyboard(message: EventKeyboard) {
     }
 
-    override fun eventMouseClick(message: EventMouseClick) {
+    override fun eventMouseClickV1(message: EventMouseClickV1) {
     }
 
     override fun eventMouseMove(message: EventMouseMove) {

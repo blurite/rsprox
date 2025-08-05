@@ -266,7 +266,7 @@ public class TranscriberPlugin(
             GameClientProt.EVENT_MOUSE_SCROLL -> pass(message, Transcriber::eventMouseScroll)
             GameClientProt.EVENT_MOUSE_MOVE -> pass(message, Transcriber::eventMouseMove)
             GameClientProt.EVENT_NATIVE_MOUSE_MOVE -> pass(message, Transcriber::eventNativeMouseMove)
-            GameClientProt.EVENT_MOUSE_CLICK -> pass(message, Transcriber::eventMouseClick)
+            GameClientProt.EVENT_MOUSE_CLICK_V1 -> pass(message, Transcriber::eventMouseClickV1)
             GameClientProt.EVENT_NATIVE_MOUSE_CLICK -> pass(message, Transcriber::eventNativeMouseClick)
             GameClientProt.RESUME_PAUSEBUTTON -> pass(message, Transcriber::resumePauseButton)
             GameClientProt.RESUME_P_NAMEDIALOG -> pass(message, Transcriber::resumePNameDialog)

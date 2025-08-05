@@ -19,7 +19,7 @@ internal object GameClientProtId {
     const val IF_BUTTONT = 15
     const val IF_BUTTON5 = 16
     const val IF_BUTTON6 = 17
-    const val EVENT_MOUSE_CLICK = 18
+    const val EVENT_MOUSE_CLICK_V1 = 18
     const val OPLOC3 = 19
     const val IGNORELIST_ADD = 20
     const val UPDATE_PLAYER_MODEL_V1 = 21

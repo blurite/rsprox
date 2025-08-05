@@ -99,6 +99,6 @@ internal object GameClientProtId {
     const val AFFINEDCLANSETTINGS_SETMUTED_FROMCHANNEL = 95
     const val IF_BUTTONT = 96
     const val IF_SUBOP = 97
-    const val EVENT_MOUSE_CLICK = 98
+    const val EVENT_MOUSE_CLICK_V1 = 98
     const val RSEVEN_STATUS = 99
 }

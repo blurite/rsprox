@@ -71,7 +71,7 @@ public enum class GameClientProt : Prot {
     EVENT_MOUSE_SCROLL,
     EVENT_MOUSE_MOVE,
     EVENT_NATIVE_MOUSE_MOVE,
-    EVENT_MOUSE_CLICK,
+    EVENT_MOUSE_CLICK_V1,
     EVENT_NATIVE_MOUSE_CLICK,
 
     // Resume events

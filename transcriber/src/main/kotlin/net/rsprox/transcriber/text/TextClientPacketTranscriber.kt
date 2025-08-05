@@ -11,7 +11,7 @@ import net.rsprox.protocol.game.incoming.model.clan.ClanSettingsFullRequest
 import net.rsprox.protocol.game.incoming.model.events.EventAppletFocus
 import net.rsprox.protocol.game.incoming.model.events.EventCameraPosition
 import net.rsprox.protocol.game.incoming.model.events.EventKeyboard
-import net.rsprox.protocol.game.incoming.model.events.EventMouseClick
+import net.rsprox.protocol.game.incoming.model.events.EventMouseClickV1
 import net.rsprox.protocol.game.incoming.model.events.EventMouseMove
 import net.rsprox.protocol.game.incoming.model.events.EventMouseScroll
 import net.rsprox.protocol.game.incoming.model.events.EventNativeMouseClick
@@ -299,7 +299,7 @@ public open class TextClientPacketTranscriber(
         )
     }
 
-    override fun eventMouseClick(message: EventMouseClick) {
+    override fun eventMouseClickV1(message: EventMouseClickV1) {
         if (!filters[PropertyFilter.EVENT_MOUSE_CLICK]) return omit()
         root.formattedInt("lasttransmitted", message.lastTransmittedMouseClick, MS_NUMBER_FORMAT)
         root.int("x", message.x)

@@ -14,7 +14,7 @@ internal object GameClientProtId {
     const val OPPLAYER1 = 10
     const val OPNPCU = 11
     const val OPPLAYER7 = 12
-    const val EVENT_MOUSE_CLICK = 13
+    const val EVENT_MOUSE_CLICK_V1 = 13
     const val OPNPC3 = 14
     const val MESSAGE_PUBLIC = 15
     const val UPDATE_PLAYER_MODEL_V2 = 16

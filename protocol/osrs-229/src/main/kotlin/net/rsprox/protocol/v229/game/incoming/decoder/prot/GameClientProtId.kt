@@ -78,7 +78,7 @@ internal object GameClientProtId {
     const val OPOBJ6 = 74
     const val OPNPC3 = 75
     const val EVENT_NATIVE_MOUSE_CLICK = 76
-    const val EVENT_MOUSE_CLICK = 77
+    const val EVENT_MOUSE_CLICK_V1 = 77
     const val MAP_BUILD_COMPLETE = 78
     const val MESSAGE_PUBLIC = 79
     const val EVENT_APPLET_FOCUS = 80

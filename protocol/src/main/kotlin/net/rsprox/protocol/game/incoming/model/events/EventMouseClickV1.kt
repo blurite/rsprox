@@ -18,7 +18,7 @@ import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
  * client frame height.
  */
 @Suppress("MemberVisibilityCanBePrivate")
-public class EventMouseClick private constructor(
+public class EventMouseClickV1 private constructor(
     private val _lastTransmittedMouseClick: UShort,
     public val rightClick: Boolean,
     private val _x: UShort,
@@ -49,7 +49,7 @@ public class EventMouseClick private constructor(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as EventMouseClick
+        other as EventMouseClickV1
 
         if (_lastTransmittedMouseClick != other._lastTransmittedMouseClick) return false
         if (rightClick != other.rightClick) return false
@@ -68,7 +68,7 @@ public class EventMouseClick private constructor(
     }
 
     override fun toString(): String =
-        "EventMouseClick(" +
+        "EventMouseClickV1(" +
             "lastTransmittedMouseClick=$lastTransmittedMouseClick, " +
             "rightClick=$rightClick, " +
             "x=$x, " +

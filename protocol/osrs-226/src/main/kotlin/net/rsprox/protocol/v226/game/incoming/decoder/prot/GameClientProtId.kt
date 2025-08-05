@@ -56,7 +56,7 @@ internal object GameClientProtId {
     const val OPLOCT = 52
     const val OPPLAYER5 = 53
     const val RESUME_PAUSEBUTTON = 54
-    const val EVENT_MOUSE_CLICK = 55
+    const val EVENT_MOUSE_CLICK_V1 = 55
     const val IF_BUTTON6 = 56
     const val BUG_REPORT = 57
     const val OPNPC1 = 58
