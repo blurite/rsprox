@@ -10,14 +10,7 @@ import net.rsprox.protocol.game.incoming.model.clan.AffinedClanSettingsSetMutedF
 import net.rsprox.protocol.game.incoming.model.clan.ClanChannelFullRequest
 import net.rsprox.protocol.game.incoming.model.clan.ClanChannelKickUser
 import net.rsprox.protocol.game.incoming.model.clan.ClanSettingsFullRequest
-import net.rsprox.protocol.game.incoming.model.events.EventAppletFocus
-import net.rsprox.protocol.game.incoming.model.events.EventCameraPosition
-import net.rsprox.protocol.game.incoming.model.events.EventKeyboard
-import net.rsprox.protocol.game.incoming.model.events.EventMouseClickV1
-import net.rsprox.protocol.game.incoming.model.events.EventMouseMove
-import net.rsprox.protocol.game.incoming.model.events.EventMouseScroll
-import net.rsprox.protocol.game.incoming.model.events.EventNativeMouseClick
-import net.rsprox.protocol.game.incoming.model.events.EventNativeMouseMove
+import net.rsprox.protocol.game.incoming.model.events.*
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatJoinLeave
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatKick
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatSetRank
@@ -245,6 +238,9 @@ public class IndexerTranscriber(
     }
 
     override fun eventMouseClickV1(message: EventMouseClickV1) {
+    }
+
+    override fun eventMouseClickV2(message: EventMouseClickV2) {
     }
 
     override fun eventMouseMove(message: EventMouseMove) {
