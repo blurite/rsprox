@@ -10,16 +10,6 @@ public enum class GameClientProt(
     // If buttons
     IF_BUTTON(GameClientProtId.IF_BUTTON, 4),
     IF_BUTTONX(GameClientProtId.IF_BUTTONX, 9),
-    IF_BUTTON1(GameClientProtId.IF_BUTTON1, 8),
-    IF_BUTTON2(GameClientProtId.IF_BUTTON2, 8),
-    IF_BUTTON3(GameClientProtId.IF_BUTTON3, 8),
-    IF_BUTTON4(GameClientProtId.IF_BUTTON4, 8),
-    IF_BUTTON5(GameClientProtId.IF_BUTTON5, 8),
-    IF_BUTTON6(GameClientProtId.IF_BUTTON6, 8),
-    IF_BUTTON7(GameClientProtId.IF_BUTTON7, 8),
-    IF_BUTTON8(GameClientProtId.IF_BUTTON8, 8),
-    IF_BUTTON9(GameClientProtId.IF_BUTTON9, 8),
-    IF_BUTTON10(GameClientProtId.IF_BUTTON10, 8),
     IF_SUBOP(GameClientProtId.IF_SUBOP, 10),
     IF_BUTTOND(GameClientProtId.IF_BUTTOND, 16),
     IF_BUTTONT(GameClientProtId.IF_BUTTONT, 16),
@@ -98,7 +88,14 @@ public enum class GameClientProt(
     EVENT_MOUSE_SCROLL(GameClientProtId.EVENT_MOUSE_SCROLL, 2),
     EVENT_MOUSE_MOVE(GameClientProtId.EVENT_MOUSE_MOVE, Prot.VAR_BYTE),
     EVENT_NATIVE_MOUSE_MOVE(GameClientProtId.EVENT_NATIVE_MOUSE_MOVE, Prot.VAR_BYTE),
-    EVENT_MOUSE_CLICK(GameClientProtId.EVENT_MOUSE_CLICK, 6),
+    EVENT_MOUSE_CLICK_V1(GameClientProtId.EVENT_MOUSE_CLICK_V1, 6),
+    EVENT_MOUSE_CLICK_V2(GameClientProtId.EVENT_MOUSE_CLICK_V2, 7),
+
+    @Deprecated(
+        "Deprecated since rework in revision 232, " +
+            "where the platforms were joined into a single packet.",
+        replaceWith = ReplaceWith("EVENT_MOUSE_CLICK_V2"),
+    )
     EVENT_NATIVE_MOUSE_CLICK(GameClientProtId.EVENT_NATIVE_MOUSE_CLICK, 7),
 
     // Resume events
