@@ -10,14 +10,7 @@ import net.rsprox.protocol.v232.game.incoming.decoder.codec.clan.AffinedClanSett
 import net.rsprox.protocol.v232.game.incoming.decoder.codec.clan.ClanChannelFullRequestDecoder
 import net.rsprox.protocol.v232.game.incoming.decoder.codec.clan.ClanChannelKickUserDecoder
 import net.rsprox.protocol.v232.game.incoming.decoder.codec.clan.ClanSettingsFullRequestDecoder
-import net.rsprox.protocol.v232.game.incoming.decoder.codec.events.EventAppletFocusDecoder
-import net.rsprox.protocol.v232.game.incoming.decoder.codec.events.EventCameraPositionDecoder
-import net.rsprox.protocol.v232.game.incoming.decoder.codec.events.EventKeyboardDecoder
-import net.rsprox.protocol.v232.game.incoming.decoder.codec.events.EventMouseClickDecoder
-import net.rsprox.protocol.v232.game.incoming.decoder.codec.events.EventMouseMoveDecoder
-import net.rsprox.protocol.v232.game.incoming.decoder.codec.events.EventMouseScrollDecoder
-import net.rsprox.protocol.v232.game.incoming.decoder.codec.events.EventNativeMouseClickDecoder
-import net.rsprox.protocol.v232.game.incoming.decoder.codec.events.EventNativeMouseMoveDecoder
+import net.rsprox.protocol.v232.game.incoming.decoder.codec.events.*
 import net.rsprox.protocol.v232.game.incoming.decoder.codec.friendchat.FriendChatJoinLeaveDecoder
 import net.rsprox.protocol.v232.game.incoming.decoder.codec.friendchat.FriendChatKickDecoder
 import net.rsprox.protocol.v232.game.incoming.decoder.codec.friendchat.FriendChatSetRankDecoder
@@ -143,8 +136,8 @@ internal object ClientMessageDecoderRepository {
                 bind(EventMouseScrollDecoder())
                 bind(EventMouseMoveDecoder())
                 bind(EventNativeMouseMoveDecoder())
-                bind(EventMouseClickDecoder())
-                bind(EventNativeMouseClickDecoder())
+                bind(EventMouseClickV1Decoder())
+                bind(EventMouseClickV2Decoder())
 
                 bind(ResumePauseButtonDecoder())
                 bind(ResumePNameDialogDecoder())

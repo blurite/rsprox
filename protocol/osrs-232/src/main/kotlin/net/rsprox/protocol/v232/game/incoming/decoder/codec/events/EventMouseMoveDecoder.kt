@@ -2,12 +2,12 @@ package net.rsprox.protocol.v232.game.incoming.decoder.codec.events
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.metadata.Consistent
-import net.rsprox.protocol.ProxyMessageDecoder
+import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.game.incoming.model.events.EventMouseMove
 import net.rsprox.protocol.game.incoming.model.events.util.MouseMovements
-import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v232.game.incoming.decoder.prot.GameClientProt
+import net.rsprox.protocol.ProxyMessageDecoder
+import net.rsprot.protocol.metadata.Consistent
 
 @Suppress("DuplicatedCode")
 @Consistent
@@ -30,8 +30,8 @@ public class EventMouseMoveDecoder : ProxyMessageDecoder<EventMouseMove> {
             var delta: Boolean
             if (packed and 0xE0 == 0xE0) {
                 timeSinceLastMovement = packed and 0x1f shl 8 or buffer.g1()
-                y = buffer.g2s()
                 x = buffer.g2s()
+                y = buffer.g2s()
                 delta = false
                 if (x == 0 && y == -0x8000) {
                     x = -1
@@ -39,8 +39,8 @@ public class EventMouseMoveDecoder : ProxyMessageDecoder<EventMouseMove> {
                 }
             } else if (packed and 0xC0 == 0xC0) {
                 timeSinceLastMovement = packed and 0x3f
-                y = buffer.g2s()
                 x = buffer.g2s()
+                y = buffer.g2s()
                 delta = false
                 if (x == 0 && y == -0x8000) {
                     x = -1
