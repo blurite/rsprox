@@ -43,6 +43,10 @@ public class ProxyTarget(
         // RuneLite is detached from jav config and needs hard-coding
         val runelite = ClientTypeDictionary[channel.getPort()].startsWith("RuneLite")
         if (runelite) return CURRENT_REVISION
+        return javConfigVersion()
+    }
+
+    public fun javConfigVersion(): Int {
         return loadJavConfig(config.javConfigUrl).getRevision()
     }
 

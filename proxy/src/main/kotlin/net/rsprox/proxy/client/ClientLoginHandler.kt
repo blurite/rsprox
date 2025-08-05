@@ -125,6 +125,11 @@ public class ClientLoginHandler(
             throw IllegalStateException("Invalid revision for target ${target.config.name}: $version")
         }
         val subVersion = buffer.g4()
+        val javConfigVersion = target.javConfigVersion()
+        // Client's loaded version via jav config
+        if (javConfigVersion >= 232) {
+            buffer.g4()
+        }
         val clientType = buffer.g1()
         val platformType = buffer.g1()
         buffer.g1()
@@ -151,7 +156,8 @@ public class ClientLoginHandler(
         builder.js5MasterIndex(masterIndex)
 
         // The header^ will just naively be copied over
-        val headerSize = 4 + 4 + 1 + 1 + 1
+        val conditionalSize = if (javConfigVersion >= 232) 4 else 0
+        val headerSize = 4 + 4 + conditionalSize + 1 + 1 + 1
 
         val originalRsaSize = buffer.g2()
         if (!buffer.isReadable(originalRsaSize)) {
