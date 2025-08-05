@@ -6,20 +6,20 @@ import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.model.IncomingZoneProt
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
 import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.*
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.LocAnimDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.LocDelDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.LocMergeDecoder
+import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.MapAnimDecoder
+import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.MapProjAnimV2Decoder
+import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.ObjAddDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.ObjCountDecoder
+import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.ObjCustomiseDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.ObjDelDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.ObjEnabledOpsDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.ObjUncustomiseDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.SoundAreaDecoder
 import net.rsprox.protocol.v232.game.outgoing.decoder.prot.GameServerProt
-import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.*
-import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.MapAnimDecoder
-import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.MapProjAnimV2Decoder
-import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.ObjAddDecoder
-import net.rsprox.protocol.v232.game.outgoing.decoder.codec.zone.payload.ObjCustomiseDecoder
 
 internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZonePartialEnclosed> {
     override val prot: ClientProt = GameServerProt.UPDATE_ZONE_PARTIAL_ENCLOSED
