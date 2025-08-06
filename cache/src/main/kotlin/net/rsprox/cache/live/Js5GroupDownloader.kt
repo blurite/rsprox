@@ -165,7 +165,7 @@ public class Js5GroupDownloader internal constructor(
     }
 
     private fun awaitBulk(count: Int) {
-        while (this.responses.size < count) {
+        if (this.responses.size < count) {
             synchronized(lock) {
                 lock.wait(25_000)
             }

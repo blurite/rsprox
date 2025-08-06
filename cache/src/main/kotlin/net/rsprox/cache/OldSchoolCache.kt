@@ -122,7 +122,7 @@ public class OldSchoolCache(
             this.gameVals = gameValMap
             val bulkRequests =
                 GameVal.entries.map {
-                    CacheGroupRequest(GAMEVAL_ARCHIVE, getGameValGroupId(it))
+                    CacheGroupRequest(GAMEVAL_ARCHIVE, getGameValGroupId(masterIndex.revision, it))
                 }
             val totalTime =
                 measureTime {
@@ -163,9 +163,12 @@ public class OldSchoolCache(
         }
     }
 
-    private fun getGameValGroupId(gameVal: GameVal): Int {
+    private fun getGameValGroupId(
+        revision: Int,
+        gameVal: GameVal,
+    ): Int {
         return when (gameVal) {
-            GameVal.IF_TYPE -> GAMEVAL_IF_TYPES
+            GameVal.IF_TYPE -> if (revision >= 232) GAMEVAL_IF_TYPES else GAMEVAL_OLD_IF_TYPES
             GameVal.INV_TYPE -> GAMEVAL_INV_TYPES
             GameVal.LOC_TYPE -> GAMEVAL_LOC_TYPES
             GameVal.NPC_TYPE -> GAMEVAL_NPC_TYPES
@@ -181,7 +184,7 @@ public class OldSchoolCache(
 
     private fun getGameValGroup(groupId: Int): GameVal {
         return when (groupId) {
-            GAMEVAL_IF_TYPES -> GameVal.IF_TYPE
+            GAMEVAL_OLD_IF_TYPES -> GameVal.IF_TYPE
             GAMEVAL_INV_TYPES -> GameVal.INV_TYPE
             GAMEVAL_LOC_TYPES -> GameVal.LOC_TYPE
             GAMEVAL_NPC_TYPES -> GameVal.NPC_TYPE
@@ -317,6 +320,7 @@ public class OldSchoolCache(
         return "OldSchoolCache(masterIndex=$masterIndex)"
     }
 
+    @Suppress("unused")
     private companion object {
         private val logger = InlineLogger()
         private const val MASTER_INDEX: Int = 0xFF
@@ -334,7 +338,9 @@ public class OldSchoolCache(
         private const val GAMEVAL_SPOT_TYPES: Int = 8
         private const val GAMEVAL_ROW_TYPES: Int = 9
         private const val GAMEVAL_TABLE_TYPES: Int = 10
-        private const val GAMEVAL_IF_TYPES: Int = 13
+        private const val GAMEVAL_OLD_IF_TYPES: Int = 13
+        private const val GAMEVAL_IF_TYPES: Int = 14
+        private const val GAMEVAL_VARC_TYPES: Int = 15
 
         // Sound types unusable as jingles and midis are mixed with randomized ids in them
         @Suppress("unused")

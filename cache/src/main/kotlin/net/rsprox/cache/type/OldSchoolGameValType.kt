@@ -1,5 +1,6 @@
 package net.rsprox.cache.type
 
+import com.github.michaelbull.logging.InlineLogger
 import net.rsprot.buffer.JagByteBuf
 import net.rsprox.cache.api.type.GameVal
 import net.rsprox.cache.api.type.GameValType
@@ -21,30 +22,44 @@ public class OldSchoolGameValType(
     }
 
     public fun decode(
-        @Suppress("UNUSED_PARAMETER") revision: Int,
+        revision: Int,
         buffer: JagByteBuf,
     ) {
         when (gameVal) {
             GameVal.IF_TYPE -> {
                 this.value = buffer.gjstr()
 
-                var componentId = 0
-                while (true) {
-                    val check = buffer.g1()
-                    if (check == 0xFF) {
-                        // If there's nothing more to read, break early
-                        if (!buffer.isReadable) break
-
-                        // Otherwise try to see if we can read more, past the 255 limit.
-                        buffer.buffer.markReaderIndex()
-                        if (buffer.g2() == 0) {
-                            break
+                if (revision >= 232) {
+                    while (true) {
+                        val componentId = buffer.g2()
+                        if (componentId == 0xFFFF) break
+                        val componentName = buffer.gjstr()
+                        val old = childDictionary.put(componentId, componentName)
+                        if (old != null) {
+                            logger.warn {
+                                "Overlapping if type: $old, $componentName (${this.value}, id $componentId)"
+                            }
                         }
-                        buffer.buffer.resetReaderIndex()
                     }
+                } else {
+                    var componentId = 0
+                    while (true) {
+                        val check = buffer.g1()
+                        if (check == 0xFF) {
+                            // If there's nothing more to read, break early
+                            if (!buffer.isReadable) break
 
-                    val componentName = buffer.gjstr()
-                    childDictionary[componentId++] = componentName
+                            // Otherwise try to see if we can read more, past the 255 limit.
+                            buffer.buffer.markReaderIndex()
+                            if (buffer.g2() == 0) {
+                                break
+                            }
+                            buffer.buffer.resetReaderIndex()
+                        }
+
+                        val componentName = buffer.gjstr()
+                        childDictionary[componentId++] = componentName
+                    }
                 }
             }
             GameVal.TABLE_TYPE -> {
@@ -71,6 +86,8 @@ public class OldSchoolGameValType(
     }
 
     public companion object {
+        private val logger = InlineLogger()
+
         public fun get(
             revision: Int,
             gameVal: GameVal,
