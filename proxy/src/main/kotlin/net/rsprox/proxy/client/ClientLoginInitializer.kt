@@ -3,6 +3,7 @@ package net.rsprox.proxy.client
 import com.github.michaelbull.logging.InlineLogger
 import io.netty.channel.Channel
 import io.netty.channel.ChannelFutureListener
+import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInitializer
 import net.rsprot.crypto.cipher.NopStreamCipher
 import net.rsprox.proxy.attributes.BINARY_HEADER_BUILDER
@@ -21,6 +22,7 @@ import net.rsprox.proxy.worlds.LocalHostAddress
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.settings.SettingSetStore
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
+import java.io.IOException
 import java.net.Inet4Address
 import java.net.InetSocketAddress
 
@@ -96,6 +98,21 @@ public class ClientLoginInitializer(
                 serverChannel.setAutoRead()
             },
         )
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun exceptionCaught(
+        ctx: ChannelHandlerContext,
+        cause: Throwable,
+    ) {
+        // Ignore IOExceptions as those tend to spam whenever something disconnects
+        // Those exceptions are not very useful for us, but errors in our handling are.
+        if (cause is IOException) {
+            return
+        }
+        logger.error(cause) {
+            "Exception in netty channel $ctx"
+        }
     }
 
     private companion object {
