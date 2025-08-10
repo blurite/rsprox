@@ -408,7 +408,7 @@ internal class NpcInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val flag = buffer.g1Alt1()
+        val flag = buffer.g1Alt3()
         if (flag and 0x1 != 0) {
             blocks += BodyCustomisationExtendedInfo(ResetCustomisation)
             return
