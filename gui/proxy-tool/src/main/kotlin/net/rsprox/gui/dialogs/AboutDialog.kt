@@ -62,7 +62,6 @@ public class AboutDialog(
         )
 
         panel.add(createLinkLabel("GitHub Repository", "https://github.com/blurite/rsprox"), "skip 1, wrap")
-        panel.add(createLinkLabel("Join us at Discord", "https://discord.gg/blurite"), "skip 1, wrap")
 
         panel.add(
             FlatButton().apply {
