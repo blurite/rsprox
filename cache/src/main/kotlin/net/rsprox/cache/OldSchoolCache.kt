@@ -185,6 +185,7 @@ public class OldSchoolCache(
     private fun getGameValGroup(groupId: Int): GameVal {
         return when (groupId) {
             GAMEVAL_OLD_IF_TYPES -> GameVal.IF_TYPE
+            GAMEVAL_IF_TYPES -> GameVal.IF_TYPE
             GAMEVAL_INV_TYPES -> GameVal.INV_TYPE
             GAMEVAL_LOC_TYPES -> GameVal.LOC_TYPE
             GAMEVAL_NPC_TYPES -> GameVal.NPC_TYPE
