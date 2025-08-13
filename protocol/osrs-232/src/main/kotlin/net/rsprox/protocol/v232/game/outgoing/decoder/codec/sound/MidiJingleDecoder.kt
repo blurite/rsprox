@@ -14,7 +14,7 @@ internal class MidiJingleDecoder : ProxyMessageDecoder<MidiJingle> {
         buffer: JagByteBuf,
         session: Session,
     ): MidiJingle {
-        val id = buffer.g2Alt3()
+        val id = buffer.g2Alt2()
         val lengthInMillis = buffer.g3()
         return MidiJingle(
             id,
