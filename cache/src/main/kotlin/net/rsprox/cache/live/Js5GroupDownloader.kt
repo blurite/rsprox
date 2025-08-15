@@ -165,10 +165,22 @@ public class Js5GroupDownloader internal constructor(
     }
 
     private fun awaitBulk(count: Int) {
-        if (this.responses.size < count) {
-            synchronized(lock) {
-                lock.wait(25_000)
+        var lastCount = 0
+        while (true) {
+            // Once we have them all, break out of waiting
+            if (this.responses.size >= count) {
+                break
             }
+            // Wait for a single group response for up to 5 seconds
+            synchronized(lock) {
+                lock.wait(5_000)
+            }
+            // If the responses size is still the same as it was before the wait call,
+            // we couldn't get a response, and as such, break out of the loop
+            if (this.responses.size == lastCount) {
+                break
+            }
+            lastCount = this.responses.size
         }
     }
 
