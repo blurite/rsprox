@@ -1905,20 +1905,36 @@ public class TextServerPacketTranscriber(
         root.string("message", message.message)
     }
 
+    private fun String.quote(quoteChar: Char): String {
+        return "${quoteChar}$this$quoteChar"
+    }
+
     override fun runClientScript(message: RunClientScript) {
         if (!filters[PropertyFilter.RUNCLIENTSCRIPT]) return omit()
         root.script("id", message.id)
         if (message.types.isEmpty() || message.values.isEmpty()) {
             return
         }
+        val quoteChar =
+            if (settings[Setting.PREFER_SINGLE_QUOTE_ON_STRINGS]) {
+                '\''
+            } else {
+                '"'
+            }
         if (settings[Setting.COLLAPSE_CLIENTSCRIPT_PARAMS]) {
             val types =
                 message.types.joinToString { char ->
-                    val type =
-                        ScriptVarType.entries.first { type ->
-                            type.char == char
+                    when (char) {
+                        'X' -> "stringarray"
+                        'W' -> "intarray"
+                        else -> {
+                            val type =
+                                ScriptVarType.entries.first { type ->
+                                    type.char == char
+                                }
+                            type.fullName
                         }
-                    type.fullName
+                    }
                 }
             val values = mutableListOf<String>()
             for (i in message.types.indices) {
@@ -1929,8 +1945,10 @@ public class TextServerPacketTranscriber(
                     continue
                 }
                 if (char == 'X') {
-                    val array = message.values[i] as IntArray
-                    values += "string${array.contentToString()}"
+                    @Suppress("UNCHECKED_CAST")
+                    val array = message.values[i] as Array<String>
+                    val joined = array.joinToString(prefix = "[", postfix = "]") { it.quote(quoteChar) }
+                    values += "string$joined"
                     continue
                 }
                 val value = message.values[i].toString()
@@ -1963,23 +1981,51 @@ public class TextServerPacketTranscriber(
             }
             root.list("types") {
                 for (i in message.types.indices) {
-                    val char = message.types[i]
-                    val type =
-                        ScriptVarType.entries.first { type ->
-                            type.char == char
+                    when (val char = message.types[i]) {
+                        'W' -> {
+                            any("", "intarray")
                         }
-                    enum("", type)
+                        'X' -> {
+                            any("", "stringarray")
+                        }
+                        else -> {
+                            val type =
+                                ScriptVarType.entries.first { type ->
+                                    type.char == char
+                                }
+                            enum("", type)
+                        }
+                    }
                 }
             }
             root.list("values") {
                 for (i in message.types.indices) {
                     val char = message.types[i]
-                    val value = message.values[i].toString()
-                    val type =
-                        ScriptVarType.entries.first { type ->
-                            type.char == char
+                    val value = message.values[i]
+                    when (char) {
+                        'W' -> {
+                            val array = value as IntArray
+                            any("", "int${array.contentToString()}")
                         }
-                    scriptVarType("", type, if (type == ScriptVarType.STRING) value else value.toInt())
+                        'X' -> {
+                            @Suppress("UNCHECKED_CAST")
+                            val array = value as Array<String>
+                            val joined = array.joinToString(prefix = "[", postfix = "]") { it.quote(quoteChar) }
+                            any("", "string$joined")
+                        }
+                        else -> {
+                            val type =
+                                ScriptVarType.entries.first { type ->
+                                    type.char == char
+                                }
+                            val valueString = value.toString()
+                            scriptVarType(
+                                "",
+                                type,
+                                if (type == ScriptVarType.STRING) valueString else valueString.toInt(),
+                            )
+                        }
+                    }
                 }
             }
             return
@@ -1987,14 +2033,45 @@ public class TextServerPacketTranscriber(
         root.group("PARAMS") {
             for (i in message.types.indices) {
                 val char = message.types[i]
-                val value = message.values[i].toString()
-                val type =
-                    ScriptVarType.entries.first { type ->
-                        type.char == char
+                val value = message.values[i]
+                when (char) {
+                    'W' -> {
+                        val array = value as IntArray
+                        group {
+                            any("", "intarray")
+                            any("", "int${array.contentToString()}")
+                        }
                     }
-                group {
-                    enum("type", type)
-                    scriptVarType("value", type, if (type == ScriptVarType.STRING) value else value.toInt())
+
+                    'X' -> {
+                        @Suppress("UNCHECKED_CAST")
+                        val array = value as Array<String>
+                        group {
+                            any("", "stringarray")
+                            val joined = array.joinToString(prefix = "[", postfix = "]") { it.quote(quoteChar) }
+                            any("", "string$joined")
+                        }
+                    }
+                    else -> {
+                        val type =
+                            ScriptVarType.entries.first { type ->
+                                type.char == char
+                            }
+                        group {
+                            enum("type", type)
+                            scriptVarType(
+                                "value",
+                                type,
+                                if (type ==
+                                    ScriptVarType.STRING
+                                ) {
+                                    value
+                                } else {
+                                    value.toString().toInt()
+                                },
+                            )
+                        }
+                    }
                 }
             }
         }
