@@ -225,6 +225,12 @@ public class ProxyService(
             this.runeliteBootstrapCommitHash
                 ?: getBootstrapCommitHash(revision)
         val gamepackUrl = this.runeliteGamepackUrl ?: getGamepackUrl(revision)
+        val revisionString = this.revision?.substringBefore('.')
+        if (revisionString != null) {
+            check(revisionString.toInt() == revision) {
+                "Revision in jav-config mismatches with supplied revision: $revision vs $revisionString"
+            }
+        }
         return ProxyTargetConfig(
             id = index + 1,
             name = this.name,
