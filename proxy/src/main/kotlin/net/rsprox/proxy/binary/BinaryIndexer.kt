@@ -2,6 +2,7 @@ package net.rsprox.proxy.binary
 
 import net.rsprox.cache.Js5MasterIndex
 import net.rsprox.cache.resolver.HistoricCacheResolver
+import net.rsprox.proxy.cache.CachedCaches
 import net.rsprox.proxy.cache.StatefulCacheProvider
 import net.rsprox.proxy.config.FILTERS_DIRECTORY
 import net.rsprox.proxy.config.SETTINGS_DIRECTORY
@@ -26,7 +27,8 @@ import java.util.Locale
 @Suppress("DuplicatedCode")
 public class BinaryIndexer {
     private val decoderLoader: DecoderLoader = DecoderLoader()
-    private val statefulCacheProvider: StatefulCacheProvider = StatefulCacheProvider(HistoricCacheResolver())
+    private val statefulCacheProvider: StatefulCacheProvider =
+        StatefulCacheProvider(CachedCaches(HistoricCacheResolver()))
 
     public fun initialize() {
         Locale.setDefault(Locale.US)

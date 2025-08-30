@@ -7,23 +7,16 @@ import net.rsprox.cache.api.CacheProvider
 import net.rsprox.cache.resolver.CacheResolver
 
 public class StatefulCacheProvider(
-    private val resolver: CacheResolver,
+    private val cached: CachedCaches,
 ) : CacheProvider {
-    private val cachedCaches: MutableMap<Js5MasterIndex, Cache> = mutableMapOf()
-    private lateinit var cache: Cache
+    private lateinit var masterIndex: Js5MasterIndex
 
     override fun get(): Cache {
-        return cache
+        return cached.get(masterIndex)
     }
 
     public fun update(masterIndex: Js5MasterIndex) {
-        val existing = cachedCaches[masterIndex]
-        if (existing != null) {
-            this.cache = existing
-            return
-        }
-        val next = OldSchoolCache(resolver, masterIndex)
-        this.cachedCaches[masterIndex] = next
-        this.cache = next
+        this.masterIndex = masterIndex
+        cached.add(masterIndex)
     }
 }

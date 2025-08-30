@@ -54,6 +54,7 @@ import kotlin.time.measureTimedValue
 public class DecoderLoader {
     private val decoders: MutableMap<Int, RevisionDecoder> = mutableMapOf()
 
+    @Synchronized
     public fun load(
         cache: CacheProvider,
         revision: Int? = null,

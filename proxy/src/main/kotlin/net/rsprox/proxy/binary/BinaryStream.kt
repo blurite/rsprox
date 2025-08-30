@@ -22,6 +22,12 @@ public class BinaryStream(
         return !buffer.isReadable
     }
 
+    public fun readPercentage(): Int {
+        val index = buffer.readerIndex()
+        val total = buffer.writerIndex()
+        return index * 100 / total
+    }
+
     @Synchronized
     public fun append(
         direction: StreamDirection,

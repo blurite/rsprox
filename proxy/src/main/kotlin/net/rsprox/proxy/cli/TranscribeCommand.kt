@@ -7,6 +7,7 @@ import net.rsprox.cache.Js5MasterIndex
 import net.rsprox.cache.resolver.HistoricCacheResolver
 import net.rsprox.proxy.ProxyService
 import net.rsprox.proxy.binary.BinaryBlob
+import net.rsprox.proxy.cache.CachedCaches
 import net.rsprox.proxy.cache.StatefulCacheProvider
 import net.rsprox.proxy.config.BINARY_PATH
 import net.rsprox.proxy.config.FILTERS_DIRECTORY
@@ -17,6 +18,7 @@ import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.proxy.settings.DefaultSettingSetStore
 import net.rsprox.proxy.util.NopSessionMonitor
+import net.rsprox.proxy.util.TranscribeCallback
 import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.indexing.NopBinaryIndex
@@ -48,7 +50,7 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
         Locale.setDefault(Locale.US)
         val decoderLoader = DecoderLoader()
         HuffmanProvider.load()
-        val provider = StatefulCacheProvider(HistoricCacheResolver())
+        val provider = StatefulCacheProvider(CachedCaches(HistoricCacheResolver()))
         val filters = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY)
         val settings = DefaultSettingSetStore.load(SETTINGS_DIRECTORY)
         val fileName = this.name
@@ -93,17 +95,29 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
         public fun transcribe(
             proxyService: ProxyService,
             file: File,
+            cachedCaches: CachedCaches,
+            callback: TranscribeCallback,
         ) {
             try {
                 val path = file.toPath()
                 val filters = proxyService.filterSetStore
                 val settings = proxyService.settingsStore
                 val decoderLoader = proxyService.decoderLoader
+                callback.indeterminate("Decoding header...")
                 val binary = BinaryBlob.decode(path, filters, settings)
-                val provider = StatefulCacheProvider(HistoricCacheResolver())
+                val provider = StatefulCacheProvider(cachedCaches)
+                callback.indeterminate("Initializing decoder...")
                 val time =
                     measureTime {
-                        fileTranscribe(path, binary, decoderLoader, provider, filters, settings)
+                        fileTranscribe(
+                            path,
+                            binary,
+                            decoderLoader,
+                            provider,
+                            filters,
+                            settings,
+                            callback,
+                        )
                     }
                 logger.debug { "$file took $time to transcribe." }
             } catch (e: Exception) {
@@ -120,7 +134,9 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
             statefulCacheProvider: StatefulCacheProvider,
             filters: PropertyFilterSetStore,
             settings: SettingSetStore,
+            callback: TranscribeCallback? = null,
         ) {
+            if (callback?.isCancelled() == true) return
             val oldTextPath = binaryPath.parent.resolve(binaryPath.nameWithoutExtension + ".txt")
             val oldTextTime = if (oldTextPath.exists()) Files.getLastModifiedTime(oldTextPath) else null
             statefulCacheProvider.update(
@@ -153,7 +169,6 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
                     statefulCacheProvider.get(),
                     NopSessionMonitor,
                 )
-
             writer.appendLine("------------------")
             writer.appendLine("Header information")
             writer.appendLine("version: ${binary.header.revision}.${binary.header.subRevision}")
@@ -167,7 +182,7 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
             writer.appendLine("local player index: ${binary.header.localPlayerIndex}")
             writer.appendLine("-------------------")
             val revision = binary.header.revision
-            for ((direction, prot, packet) in session.sequence()) {
+            for ((direction, prot, packet) in session.sequence(callback)) {
                 try {
                     when (direction) {
                         StreamDirection.CLIENT_TO_SERVER -> {

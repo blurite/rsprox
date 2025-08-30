@@ -33,7 +33,8 @@ public class App {
     private val frame: JFrame = JFrame()
     private val sessionsPanel: SessionsPanel = SessionsPanel(this)
     private val launchBar: LaunchBar = LaunchBar(sessionsPanel)
-    public val statusBar: StatusBar = StatusBar()
+    private val transcriptionManager: TranscriptionManager = TranscriptionManager()
+    public val statusBar: StatusBar = StatusBar(transcriptionManager)
 
     public fun init() {
         val width = service.getAppWidth()
@@ -117,7 +118,7 @@ public class App {
         // Configure the app menu bar.
         setupMenuBar()
 
-        frame.transferHandler = FileDropHandler(service)
+        frame.transferHandler = FileDropHandler(service, transcriptionManager)
     }
 
     public fun start() {

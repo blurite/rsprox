@@ -6,7 +6,9 @@ import net.miginfocom.swing.MigLayout
 import javax.swing.Icon
 import javax.swing.JPanel
 
-public class StatusBar : JPanel() {
+public class StatusBar(
+    transcriptionManager: TranscriptionManager,
+) : JPanel() {
     private val userLabel = createIconLabel(AppIcons.User)
     private val worldLabel = createIconLabel(AppIcons.Web)
     private val bandInLabel =
@@ -19,12 +21,22 @@ public class StatusBar : JPanel() {
         }
 
     init {
-        layout = MigLayout("ins 0 n n n", "[fill][fill]push[fill][fill]", "[bottom][]")
+        layout =
+            MigLayout(
+                "ins 0 n n n",
+                "[fill][fill]push[fill][fill][fill]",
+                "[bottom][]",
+            )
 
         add(FlatSeparator(), "spanx 4, wrap")
 
         add(userLabel)
         add(worldLabel)
+        // Always pin it to be just left of the normal panel (assuming open)
+        add(
+            TranscriptionStatusBarPanel(transcriptionManager),
+            "pos (container.w-275)-pref (container.h - pref) (container.w-275) (container.h)",
+        )
         add(bandInLabel)
         add(bandOutLabel)
 

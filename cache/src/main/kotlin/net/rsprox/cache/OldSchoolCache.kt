@@ -55,10 +55,9 @@ public class OldSchoolCache(
         return this.varbits.values
     }
 
+    @Synchronized
     private fun resolveNpcs() {
-        check(!this::npcs.isInitialized) {
-            "Npcs already initialized."
-        }
+        if (this::npcs.isInitialized) return
         try {
             val buffers = getFiles(CONFIG_ARCHIVE, NPC_GROUP)
             logger.debug { "Decoding ${buffers.size} npc types." }
@@ -84,6 +83,7 @@ public class OldSchoolCache(
         }
     }
 
+    @Synchronized
     override fun getGameValType(
         gameVal: GameVal,
         id: Int,
@@ -94,6 +94,7 @@ public class OldSchoolCache(
         return gameVals[gameVal]?.get(id)
     }
 
+    @Synchronized
     override fun listGameValTypes(gameVal: GameVal): Collection<GameValType> {
         if (!this::gameVals.isInitialized) {
             resolveGameVals()
@@ -101,6 +102,7 @@ public class OldSchoolCache(
         return gameVals[gameVal]?.values ?: emptyList()
     }
 
+    @Synchronized
     override fun allGameValTypes(): Map<GameVal, Map<Int, GameValType>> {
         if (!this::gameVals.isInitialized) {
             resolveGameVals()
@@ -108,10 +110,9 @@ public class OldSchoolCache(
         return this.gameVals
     }
 
+    @Synchronized
     private fun resolveGameVals() {
-        check(!this::gameVals.isInitialized) {
-            "Game vals already initialized."
-        }
+        if (this::gameVals.isInitialized) return
         // Gamevals were only introduced in revision 230
         if (masterIndex.revision < 230) {
             this.gameVals = emptyMap()
@@ -200,10 +201,9 @@ public class OldSchoolCache(
         }
     }
 
+    @Synchronized
     private fun resolveVarBits() {
-        check(!this::varbits.isInitialized) {
-            "VarBits already initialized."
-        }
+        if (this::varbits.isInitialized) return
         try {
             val buffers = getFiles(CONFIG_ARCHIVE, VARBIT_GROUP)
             logger.debug { "Decoding ${buffers.size} varbit types." }

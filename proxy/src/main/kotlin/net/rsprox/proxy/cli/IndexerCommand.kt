@@ -6,6 +6,7 @@ import com.github.michaelbull.logging.InlineLogger
 import net.rsprox.cache.Js5MasterIndex
 import net.rsprox.cache.resolver.HistoricCacheResolver
 import net.rsprox.proxy.binary.BinaryBlob
+import net.rsprox.proxy.cache.CachedCaches
 import net.rsprox.proxy.cache.StatefulCacheProvider
 import net.rsprox.proxy.config.BINARY_PATH
 import net.rsprox.proxy.config.FILTERS_DIRECTORY
@@ -41,7 +42,7 @@ public class IndexerCommand : CliktCommand(name = "index") {
         Locale.setDefault(Locale.US)
         val decoderLoader = DecoderLoader()
         HuffmanProvider.load()
-        val provider = StatefulCacheProvider(HistoricCacheResolver())
+        val provider = StatefulCacheProvider(CachedCaches(HistoricCacheResolver()))
         val filters = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY)
         val settings = DefaultSettingSetStore.load(SETTINGS_DIRECTORY)
         val fileName = this.name

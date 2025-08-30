@@ -13,22 +13,31 @@ import net.rsprox.protocol.session.setBytesConsumed
 import net.rsprox.protocol.session.setRemainingBytesInPacketGroup
 import net.rsprox.proxy.binary.BinaryBlob
 import net.rsprox.proxy.binary.BinaryStream
+import net.rsprox.proxy.util.TranscribeCallback
 import net.rsprox.shared.StreamDirection
 
 public class DecodingSession(
     private val blob: BinaryBlob,
     private val plugin: RevisionDecoder,
 ) {
-    public fun sequence(): Sequence<DirectionalPacket> {
+    public fun sequence(callback: TranscribeCallback? = null): Sequence<DirectionalPacket> {
         val stream =
-            blob.stream.toBinaryPacketSequence(
-                blob.header,
-                plugin.gameClientProtProvider,
-                plugin.gameServerProtProvider,
-            )
+            blob.stream
+                .toBinaryPacketSequence(
+                    blob.header,
+                    plugin.gameClientProtProvider,
+                    plugin.gameServerProtProvider,
+                ).filterNot {
+                    if (callback?.isCancelled() == true) {
+                        callback.indeterminate("Cancelling...")
+                        return@filterNot true
+                    }
+                    return@filterNot false
+                }
         val session = Session(blob.header.localPlayerIndex, AttributeMap())
         return stream.flatMap { binaryPacket ->
             try {
+                callback?.report(blob.stream.readPercentage(), "Decoding stream...")
                 if (binaryPacket.direction == StreamDirection.CLIENT_TO_SERVER) {
                     val packet =
                         plugin.decodeClientPacket(
