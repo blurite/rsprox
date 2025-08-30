@@ -44,9 +44,10 @@ public class Js5MasterIndex(
             revision: Int,
             data: ByteArray,
         ): Js5MasterIndex {
+            val copyOfData = if (data.isEmpty()) data else data.copyOfRange(3, data.size)
             return Js5MasterIndex(
                 revision,
-                data.copyOfRange(3, data.size),
+                copyOfData,
             )
         }
     }
