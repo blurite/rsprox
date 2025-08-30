@@ -195,7 +195,8 @@ public class ProxyService(
                 runeliteGamepackUrl = null,
             )
         try {
-            val yamlTargets = YamlProxyTargetConfig.load(PROXY_TARGETS_FILE)
+            val path = if (PROXY_TARGETS_FILE.exists()) PROXY_TARGETS_FILE else ALT_PROXY_TARGETS_FILE
+            val yamlTargets = YamlProxyTargetConfig.load(path)
             val customTargets =
                 yamlTargets.entries.mapIndexedNotNull { index, yaml ->
                     yaml.mapToProxyTargetConfig(index)
@@ -932,6 +933,7 @@ public class ProxyService(
     public companion object {
         private val logger = InlineLogger()
         private val PROXY_TARGETS_FILE = CONFIGURATION_PATH.resolve("proxy-targets.yaml")
+        private val ALT_PROXY_TARGETS_FILE = CONFIGURATION_PATH.resolve("proxy-targets.yml")
         private val PROPERTIES_FILE = CONFIGURATION_PATH.resolve("proxy.properties")
 
         private inline fun <T> runCatching(

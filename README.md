@@ -197,7 +197,8 @@ the varp count in the client from the size-5000 int array.
 
 #### Setting Up Custom Targets
 In order to use the new proxy targets feature, one has to manually fill in the yaml file containing them.
-The file is located at `user.home/.rsprox/proxy-targets.yaml`
+The file is expected at `user.home/.rsprox/proxy-targets.yaml` (.yml suffix also supported).
+The file does not exist by default, so it must be created by the user!
 
 Here is an example RSPS target:
 ```yaml
