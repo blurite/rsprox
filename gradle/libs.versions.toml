@@ -1,6 +1,6 @@
 [versions]
 kotlin = "2.2.10"
-netty = "4.1.109.Final"
+netty = "4.2.2.Final"
 rsprot = "1.0.0-ALPHA-20250620"
 inlinelogger = "1.0.6"
 log4j = "2.23.1"
