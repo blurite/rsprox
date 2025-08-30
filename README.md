@@ -11,6 +11,17 @@ The original information that the patcher overwrote will be passed onto the prox
 what the client had originally intended. We intend to support most java clients, as well as the C++ client.
 A technical breakdown of the processes involved can be found in [issues/RSProx](https://github.com/blurite/rsprox/issues/1).
 
+## Installer
+
+> [!TIP]
+> Use the installer for better compatibility and ease of use.
+
+The installer for RSProx can be found [under releases](https://github.com/blurite/rsprox/releases),
+the latest installer is [v1.0](https://github.com/blurite/rsprox/releases/tag/v1.0).
+
+The installer comes with a bundled JDK which it utilizes. The launcher auto-updates
+RSProx whenever a new version is published.
+
 ## Guide
 Below is a quick guide demonstrating how to use RSProx.
 
