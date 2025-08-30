@@ -693,6 +693,7 @@ public class ProxyService(
                 character,
                 operatingSystem,
                 ClientType.RuneLite,
+                target = target,
             )
             logger.debug { "Waiting for client to connect to the server socket..." }
             if (target.gamePackProvider.gamepackUrl != null) {
@@ -817,6 +818,7 @@ public class ProxyService(
         operatingSystem: OperatingSystem,
         clientType: ClientType,
         proton: Boolean = false,
+        target: ProxyTarget? = null,
     ) {
         logger.debug { "Attempting to create process $command" }
         val builder =
@@ -844,7 +846,7 @@ public class ProxyService(
                 builder.environment()["JX_DISPLAY_NAME"] = character.displayName ?: ""
                 builder.environment()["JX_ACCESS_TOKEN"] = ""
             }
-        } else {
+        } else if (target != null && target.config.id == 0) {
             builder.environment().putAll(
                 Properties().let { props ->
                     val runeliteCreds =
