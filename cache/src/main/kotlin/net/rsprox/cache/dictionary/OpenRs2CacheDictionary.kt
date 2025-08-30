@@ -61,18 +61,18 @@ public class OpenRs2CacheDictionary {
         public val builds: List<Build>,
         public val timestamp: String?,
         public val sources: List<String>,
-        @JsonAlias("valid_indexes")
+        @field:JsonAlias("valid_indexes")
         public val validIndexes: Int?,
         public val indexes: Int?,
-        @JsonAlias("valid_groups")
+        @field:JsonAlias("valid_groups")
         public val validGroups: Int?,
         public val groups: Int?,
-        @JsonAlias("valid_keys")
+        @field:JsonAlias("valid_keys")
         public val validKeys: Int?,
         public val keys: Int?,
         public val size: Long?,
         public val blocks: Int?,
-        @JsonAlias("disk_store_valid")
+        @field:JsonAlias("disk_store_valid")
         public val diskStoreValid: Boolean?,
     ) {
         @JsonIgnoreProperties(ignoreUnknown = true)
