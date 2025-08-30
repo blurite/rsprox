@@ -46,7 +46,7 @@ public class BinaryIndexer {
             ),
         )
         decoderLoader.load(statefulCacheProvider)
-        val latestPlugin = decoderLoader.getDecoder(binary.header.revision)
+        val latestPlugin = decoderLoader.getDecoder(binary.header.revision, statefulCacheProvider)
         val transcriberProvider = IndexerTranscriberProvider()
         val session = DecodingSession(binary, latestPlugin)
         val folder = binaryPath.parent.resolve("indexed")

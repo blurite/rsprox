@@ -57,6 +57,10 @@ public data class BinaryBlob(
     private var lastOutgoingBytes: Int = 0
     private var lastIncomingBytes: Int = 0
 
+    public fun liveCache(): CacheProvider {
+        return liveSession?.cacheProvider ?: error("Cache unavailable.")
+    }
+
     public fun append(
         direction: StreamDirection,
         packet: ByteBuf,
@@ -269,7 +273,7 @@ public data class BinaryBlob(
                 }
             monitor.onCacheUpdate(provider)
             decoderLoader.load(provider, header.revision)
-            val latestPlugin = decoderLoader.getDecoderOrNull(header.revision)
+            val latestPlugin = decoderLoader.getDecoderOrNull(header.revision, provider)
             if (latestPlugin == null) {
                 logger.info { "Plugin for ${header.revision} missing, no live transcriber hooked." }
                 return

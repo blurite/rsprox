@@ -146,7 +146,7 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
                 ),
             )
             decoderLoader.load(statefulCacheProvider)
-            val latestPlugin = decoderLoader.getDecoder(binary.header.revision)
+            val latestPlugin = decoderLoader.getDecoder(binary.header.revision, statefulCacheProvider)
             val transcriberProvider = TextTranscriberProvider()
             val session = DecodingSession(binary, latestPlugin)
             val textPath = binaryPath.parent.resolve(binaryPath.nameWithoutExtension + ".txt")

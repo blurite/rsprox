@@ -20,7 +20,7 @@ public class LiveTranscriberSession(
     private val decodingSession: DecodingSession,
     private val runner: TranscriberRunner,
     private val sessionTracker: SessionTracker,
-    private val cacheProvider: CacheProvider,
+    internal val cacheProvider: CacheProvider,
 ) {
     @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
     private val lock: Object = Object()

@@ -11,6 +11,7 @@ import io.netty.handler.codec.ByteToMessageDecoder
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.crypto.xtea.XteaKey
+import net.rsprox.cache.api.CacheProvider
 import net.rsprox.proxy.attributes.BINARY_BLOB
 import net.rsprox.proxy.attributes.BINARY_HEADER_BUILDER
 import net.rsprox.proxy.binary.BinaryBlob
@@ -267,7 +268,8 @@ public class ServerGameLoginDecoder(
             writeToClient {
                 pdata(payload.copy())
             }
-            val prot = decoderLoader.getDecoder(target.revisionNum(clientChannel)).gameServerProtProvider[0xFF]
+            val cache = blob.liveCache()
+            val prot = decoderLoader.getDecoder(target.revisionNum(clientChannel), cache).gameServerProtProvider[0xFF]
             val packet =
                 ServerPacket(
                     prot,
@@ -280,11 +282,11 @@ public class ServerGameLoginDecoder(
             pipeline.replace<ServerGameLoginDecoder>(
                 ServerGenericDecoder(
                     serverChannel.getServerToClientStreamCipher(),
-                    decoderLoader.getDecoder(target.revisionNum(clientChannel)).gameServerProtProvider,
+                    decoderLoader.getDecoder(target.revisionNum(clientChannel), cache).gameServerProtProvider,
                 ),
             )
             pipeline.replace<ServerRelayHandler>(ServerGameHandler(clientChannel, target.worldListProvider))
-            switchClientToGameDecoding(ctx)
+            switchClientToGameDecoding(ctx, cache)
         }
         if (state == State.LOGIN_OK_READ_DATA) {
             if (!input.isReadable(stateValue)) {
@@ -357,26 +359,34 @@ public class ServerGameLoginDecoder(
                 p8(userId)
                 p8(userHash)
             }
+            val cache = blob.liveCache()
             val pipeline = ctx.pipeline()
             pipeline.replace<ServerGameLoginDecoder>(
                 ServerGenericDecoder(
                     serverChannel.getServerToClientStreamCipher(),
-                    decoderLoader.getDecoder(target.revisionNum(clientChannel)).gameServerProtProvider,
+                    decoderLoader
+                        .getDecoder(
+                            target.revisionNum(clientChannel),
+                            cache,
+                        ).gameServerProtProvider,
                 ),
             )
             pipeline.replace<ServerRelayHandler>(ServerGameHandler(clientChannel, target.worldListProvider))
-            switchClientToGameDecoding(ctx)
+            switchClientToGameDecoding(ctx, cache)
         }
     }
 
-    private fun switchClientToGameDecoding(ctx: ChannelHandlerContext) {
+    private fun switchClientToGameDecoding(
+        ctx: ChannelHandlerContext,
+        cache: CacheProvider,
+    ) {
         val cipher = ctx.channel().getClientToServerStreamCipher()
         val clientPipeline = clientChannel.pipeline()
         clientPipeline.remove<ClientRelayHandler>()
         clientPipeline.addLast(
             ClientGenericDecoder(
                 cipher,
-                decoderLoader.getDecoder(target.revisionNum(clientChannel)).gameClientProtProvider,
+                decoderLoader.getDecoder(target.revisionNum(clientChannel), cache).gameClientProtProvider,
             ),
         )
         clientPipeline.addLast(ClientGameHandler(ctx.channel()))

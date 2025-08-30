@@ -2,6 +2,7 @@ package net.rsprox.proxy.plugin
 
 import com.github.michaelbull.logging.InlineLogger
 import net.rsprot.compression.HuffmanCodec
+import net.rsprox.cache.api.Cache
 import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.v223.ClientPacketDecoderServiceV223
 import net.rsprox.protocol.v223.GameClientProtProviderV223
@@ -52,14 +53,30 @@ import kotlin.system.exitProcess
 import kotlin.time.measureTimedValue
 
 public class DecoderLoader {
-    private val decoders: MutableMap<Int, RevisionDecoder> = mutableMapOf()
+    private data class RevisionKey(
+        val revision: Int?,
+        val cache: Cache,
+    )
+
+    private fun key(
+        revision: Int?,
+        cache: CacheProvider,
+    ): RevisionKey {
+        return RevisionKey(
+            revision,
+            cache.get(),
+        )
+    }
+
+    private val decoders: MutableMap<RevisionKey, RevisionDecoder> = mutableMapOf()
 
     @Synchronized
     public fun load(
         cache: CacheProvider,
         revision: Int? = null,
     ) {
-        if (revision != null && revision in decoders) {
+        val key = key(revision, cache)
+        if (revision != null && key in decoders) {
             return
         }
         val huffmanCodec = HuffmanProvider.get()
@@ -70,7 +87,10 @@ public class DecoderLoader {
         // parallel class-loading, so it significantly speeds the process up.
         val loadJobs = buildLoadJobs(huffmanCodec, cache)
         if (revision == null) {
-            val missingJobs = loadJobs.filter { it.key !in decoders }
+            val missingJobs =
+                loadJobs.filter {
+                    key(it.key, cache) !in decoders
+                }
             tasks += missingJobs.values
         } else {
             tasks += loadJobs[revision] ?: error("Revision $revision decoder not found!")
@@ -83,7 +103,7 @@ public class DecoderLoader {
         logger.debug { "Finished loading decoders in $time" }
         for (result in results) {
             val plugin = result.get()
-            decoders[plugin.revision] = plugin
+            decoders[key(plugin.revision, cache)] = plugin
         }
         validateProtNames()
     }
@@ -293,12 +313,18 @@ public class DecoderLoader {
         )
     }
 
-    public fun getDecoder(revision: Int): RevisionDecoder {
-        return decoders.getValue(revision)
+    public fun getDecoder(
+        revision: Int,
+        cache: CacheProvider,
+    ): RevisionDecoder {
+        return decoders.getValue(key(revision, cache))
     }
 
-    public fun getDecoderOrNull(revision: Int): RevisionDecoder? {
-        return decoders[revision]
+    public fun getDecoderOrNull(
+        revision: Int,
+        cache: CacheProvider,
+    ): RevisionDecoder? {
+        return decoders[key(revision, cache)]
     }
 
     private companion object {

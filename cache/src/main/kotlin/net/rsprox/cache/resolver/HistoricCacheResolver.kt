@@ -162,7 +162,7 @@ public class HistoricCacheResolver : CacheResolver {
     ): Map<CacheGroupRequest, ByteBuf> {
         val cacheId =
             openrs2CacheIdentifier.identify(masterIndex)
-                ?: return emptyMap<CacheGroupRequest, ByteBuf>().also { println("Could not even identify masterindex") }
+                ?: return emptyMap<CacheGroupRequest, ByteBuf>()
         val jobs =
             requests.map {
                 Callable {

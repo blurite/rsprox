@@ -75,7 +75,7 @@ public class BinaryToStringCommand : CliktCommand(name = "tostring") {
             ),
         )
         decoderLoader.load(statefulCacheProvider)
-        val latestPlugin = decoderLoader.getDecoder(binary.header.revision)
+        val latestPlugin = decoderLoader.getDecoder(binary.header.revision, statefulCacheProvider)
         val session = DecodingSession(binary, latestPlugin)
         var tick = 0
         val output =
