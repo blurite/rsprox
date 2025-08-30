@@ -243,7 +243,10 @@ public class ProxyService(
         )
     }
 
-    private fun getGamepackUrl(revision: Int): String {
+    private fun getGamepackUrl(revision: Int): String? {
+        if (revision > 228) {
+            return null
+        }
         return "https://github.com/runetech/osrs-gamepacks/raw/refs/heads/master/gamepacks/osrs-$revision.jar"
     }
 
