@@ -4,8 +4,10 @@ import com.github.michaelbull.logging.InlineLogger
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInitializer
+import io.netty.channel.EventLoopGroup
+import io.netty.channel.MultiThreadIoEventLoopGroup
 import io.netty.channel.SimpleChannelInboundHandler
-import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.channel.nio.NioIoHandler
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.http.DefaultFullHttpResponse
@@ -29,11 +31,15 @@ public class AuthHttpServer {
         get() = bootstrap != null
     private var futures: MutableMap<Int, CompletableFuture<OAuth2Response>> = hashMapOf()
 
+    private fun group(numThreads: Int): EventLoopGroup {
+        return MultiThreadIoEventLoopGroup(numThreads, NioIoHandler.newFactory())
+    }
+
     public fun start() {
         check(bootstrap == null) { "Server is already running" }
         val bootstrap =
             ServerBootstrap().apply {
-                group(NioEventLoopGroup(1), NioEventLoopGroup(1))
+                group(group(1), group(0))
                 channel(NioServerSocketChannel::class.java)
                 childHandler(
                     object : ChannelInitializer<NioSocketChannel>() {
@@ -126,7 +132,20 @@ public class AuthHttpServer {
                 val response = OAuth2Response(code, idToken)
                 val future = futures[state.toInt()]
                 future?.complete(response)
-                sendHtmlResponse(ctx, createBasicHtmlPage("", "Everything is complete. You can close the window now."))
+                sendHtmlResponse(
+                    ctx,
+                    createSuccessHtmlPage(
+                        js = "",
+                        body =
+                            """
+                            <div class="container">
+                                <h1>✅ Account Linked Successfully</h1>
+                                <p>Your Jagex account has been successfully linked with RSProx.</p>
+                                <p>You may now close this window.</p>
+                            </div>
+                            """.trimIndent(),
+                    ),
+                )
             } else {
                 sendErrorResponse(ctx, HttpResponseStatus.NOT_FOUND)
             }
@@ -164,6 +183,53 @@ public class AuthHttpServer {
             body: String,
         ): String {
             return "<html><head><script>$js</script></head><body>$body</body></html>"
+        }
+
+        private fun createSuccessHtmlPage(
+            js: String,
+            body: String,
+        ): String {
+            return """
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8" />
+                    <title>Account Linked</title>
+                    <style>
+                        body {
+                            background-color: #f9fafb;
+                            font-family: Arial, sans-serif;
+                            color: #111827;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            height: 100vh;
+                            margin: 0;
+                        }
+                        .container {
+                            background: #ffffff;
+                            border: 1px solid #e5e7eb;
+                            border-radius: 12px;
+                            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                            padding: 2rem 3rem;
+                            text-align: center;
+                        }
+                        h1 {
+                            font-size: 1.75rem;
+                            color: #16a34a; /* green */
+                            margin-bottom: 0.75rem;
+                        }
+                        p {
+                            margin: 0.5rem 0;
+                        }
+                    </style>
+                    <script>$js</script>
+                </head>
+                <body>
+                    $body
+                </body>
+                </html>
+                """.trimIndent()
         }
     }
 }
