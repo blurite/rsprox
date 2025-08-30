@@ -58,6 +58,7 @@ import org.newsclub.net.unix.AFUNIXSocketAddress
 import java.io.File
 import java.io.IOException
 import java.math.BigInteger
+import java.net.URL
 import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
@@ -196,17 +197,8 @@ public class ProxyService(
         try {
             val yamlTargets = YamlProxyTargetConfig.load(PROXY_TARGETS_FILE)
             val customTargets =
-                yamlTargets.entries.mapIndexed { index, yaml ->
-                    ProxyTargetConfig(
-                        id = index + 1,
-                        name = yaml.name,
-                        javConfigUrl = yaml.javConfigUrl,
-                        modulus = yaml.modulus,
-                        varpCount = yaml.varpCount,
-                        revision = yaml.revision,
-                        runeliteBootstrapCommitHash = yaml.runeliteBootstrapCommitHash,
-                        runeliteGamepackUrl = yaml.runeliteGamepackUrl,
-                    )
+                yamlTargets.entries.mapIndexedNotNull { index, yaml ->
+                    yaml.mapToProxyTargetConfig(index)
                 }
             return listOf(oldschool) + customTargets
         } catch (e: Exception) {
@@ -214,6 +206,52 @@ public class ProxyService(
                 "Unable to load proxy target configs"
             }
             return listOf(oldschool)
+        }
+    }
+
+    private fun YamlProxyTargetConfig.mapToProxyTargetConfig(index: Int): ProxyTargetConfig? {
+        val config =
+            try {
+                JavConfig(URL(this.javConfigUrl))
+            } catch (e: Exception) {
+                logger.error(e) {
+                    "Unable to load proxy target ${this.name}"
+                }
+                return null
+            }
+        val revision = config.getRevision()
+        val commitHash =
+            this.runeliteBootstrapCommitHash
+                ?: getBootstrapCommitHash(revision)
+        val gamepackUrl = this.runeliteGamepackUrl ?: getGamepackUrl(revision)
+        return ProxyTargetConfig(
+            id = index + 1,
+            name = this.name,
+            javConfigUrl = this.javConfigUrl,
+            modulus = this.modulus,
+            varpCount = this.varpCount,
+            revision = this.revision,
+            runeliteBootstrapCommitHash = commitHash,
+            runeliteGamepackUrl = gamepackUrl,
+        )
+    }
+
+    private fun getGamepackUrl(revision: Int): String {
+        return "https://github.com/runetech/osrs-gamepacks/raw/refs/heads/master/gamepacks/osrs-$revision.jar"
+    }
+
+    private fun getBootstrapCommitHash(revision: Int): String? {
+        return when (revision) {
+            223 -> "b7c08f2a08be75cfbdb3a11b870b5a82c480267f"
+            224 -> "94578497efe13939b032f161d4a0d146b2123d01"
+            225 -> "84c5b3531c55657fdb66a90da7c6a723236cf32e"
+            226 -> "73cc7fff3224e5abdba9f3594f39899fdfdff4b2"
+            227 -> "96ae421d77c3e967faf5758b446d274770a9b453"
+            228 -> "dc197f1c305c712fcf496d8a2c3c0d02f3824d18"
+            229 -> "793a9df1ed8cdef5d6a324aeec0629fa0346d32b"
+            230 -> "34a480a260a68aaeb8d505b8c2cf17d8fbed9c30"
+            231 -> "8d2e0c60ecec85cffd7a84196aabf4effde55132"
+            else -> null
         }
     }
 

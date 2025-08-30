@@ -204,22 +204,19 @@ Here is an example RSPS target:
 config:
   - name: Blurite
     jav_config_url: https://client.blurite.io/jav_local_227.ws
-    varp_count: 15000
     revision: 227.3
     modulus: d2a780dccbcf534dc61a36deff725aabf9f46fc9ea298ac8c39b89b5bcb5d0817f8c9f59621187d448da9949aca848d0b2acae50c3122b7da53a79e6fe87ff76b675bcbf5bc18fbd2c9ed8f4cff2b7140508049eb119259af888eb9d20e8cea8a4384b06589483bcda11affd8d67756bc93a4d786494cdf7b634e3228b64116d
-    runelite_bootstrap_commithash: 793a9df1ed8cdef5d6a324aeec0629fa0346d32b
-    runelite_gamepack_url: https://github.com/runetech/osrs-gamepacks/raw/26ac3cf4bbabee86b47c9e26fb9f255db80c258d/gamepacks/osrs-227.jar
 ```
 
 Properties breakdown:
 
 - `name` - The name given to the client. Any references to `OldSchool RuneScape` will be replaced by this. This is a required property to ensure caches don't overwrite and cause crashing at runtime when loading different games simultaneously.
 - `jav_config_url` - The URL to the jav_config that will be used to load initial world and world list. This is a required property.
-- `varp_count` - Changes the array length used for varps in the client, the default value is 5000. This is an optional property.
-- `revision` - A revision number used to pick the client and correct decoders. The default is whatever is currently latest stable in Old School RuneScape. This is an optional property.
 - `modulus` - A hexadecimal (base-16) RSA modulus used to encrypt the login packet sent to the client. This is a required property.
-- `runelite_bootstrap_commithash` - A hash pointing to a version of RuneLite you wish to use. This is an optional property, not defining it will simply use latest RuneLite.
-- `runelite_gamepack_url` - A URL pointing to a valid gamepack file for the given revision. This is only necessary for revisions 228 and older. Anything newer can omit this field.
+- `revision` - A revision number used to pick the client and correct decoders. The default is whatever is currently latest stable in Old School RuneScape. The exact version and subversion must be defined for Native clients (see: https://archive.lostcity.rs/oldschool.runescape.com/native/osrs-win/). This is an optional property.
+- `varp_count` - (OPTIONAL) Changes the array length used for varps in the client, the default value is 5000. This is an optional property. As of revision 232, it is no longer patched as the value is now based on cache.
+- `runelite_bootstrap_commithash` - (OPTIONAL) A hash pointing to a version of RuneLite you wish to use. This is an optional property, not defining it will use the latest for your revision.
+- `runelite_gamepack_url` - (OPTIONAL) A URL pointing to a valid gamepack file for the given revision. This is only necessary for revisions 228 and older. Not defining it will use the latest for your revision.
 
 Short guide:
 1. Copy the config file from above and save it as described above.
