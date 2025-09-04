@@ -23,7 +23,7 @@ internal class MapProjAnimV2Decoder : ProxyMessageDecoder<MapProjAnimV2> {
         val endHeight = buffer.g2Alt3()
         val angle = buffer.g1Alt2()
         val end = CoordGrid(buffer.g4Alt1())
-        val sourceIndex = buffer.g3sAlt3()
+        val sourceIndex = buffer.g3sAlt2()
         val startTime = buffer.g2Alt3()
         val coordInZone = CoordInZone(buffer.g1())
         val targetIndex = buffer.g3sAlt2()
