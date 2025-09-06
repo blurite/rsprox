@@ -12,6 +12,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.nio.file.Path
+import java.util.concurrent.Callable
+import java.util.concurrent.ForkJoinPool
 import kotlin.io.path.exists
 import kotlin.io.path.readText
 
@@ -19,16 +21,20 @@ public class DefaultJagexAccountStore(
     private val path: Path,
 ) : JagexAccountStore {
     override val accounts: MutableList<JagexAccount> = arrayListOf<JagexAccount>()
-    override var selectedCharacterId: Int? = null
+    private var backingSelectedCharacterId: Int? = null
+    override var selectedCharacterId: Int?
+        get() = backingSelectedCharacterId
         set(value) {
-            field = value
+            backingSelectedCharacterId = value
             write()
         }
 
     private fun init() {
-        for (account in accounts) {
-            refreshCharacters(account)
-        }
+        val jobs =
+            accounts.map {
+                Callable { refreshCharacters(it) }
+            }
+        ForkJoinPool.commonPool().invokeAll(jobs)
 
         val characters = accounts.flatMap { it.characters }
         if (selectedCharacterId != null) {
@@ -51,6 +57,16 @@ public class DefaultJagexAccountStore(
         check(accounts.contains(account)) { "Account not found" }
         accounts.remove(account)
         write()
+    }
+
+    override fun populate(
+        accounts: List<JagexAccount>,
+        selectedCharacterId: Int?,
+    ) {
+        for (account in accounts) {
+            this.accounts.add(account)
+        }
+        this.backingSelectedCharacterId = selectedCharacterId
     }
 
     private fun write() {
@@ -128,6 +144,8 @@ public class DefaultJagexAccountStore(
             val store = DefaultJagexAccountStore(path)
             if (path.exists()) {
                 val text = path.readText()
+                val accountList = mutableListOf<JagexAccount>()
+                var selectedCharacterId: Int? = null
                 for (line in text.lineSequence()) {
                     if (line.startsWith("account=")) {
                         val parts = line.substringAfter("account=").split(",", limit = 3)
@@ -135,12 +153,13 @@ public class DefaultJagexAccountStore(
                         val idToken = parts[1]
                         val sessionId = parts.getOrNull(2)
                         val account = JagexAccount(code, idToken, sessionId)
-                        store.add(account)
+                        accountList += account
                     }
                     if (line.startsWith("selectedCharacterId=")) {
-                        store.selectedCharacterId = line.substringAfter("selectedCharacterId=").toInt()
+                        selectedCharacterId = line.substringAfter("selectedCharacterId=").toInt()
                     }
                 }
+                store.populate(accountList, selectedCharacterId)
             }
             store.init()
             return store

@@ -7,4 +7,9 @@ public interface JagexAccountStore {
     public fun add(account: JagexAccount)
 
     public fun delete(account: JagexAccount)
+
+    public fun populate(
+        accounts: List<JagexAccount>,
+        selectedCharacterId: Int?,
+    )
 }
