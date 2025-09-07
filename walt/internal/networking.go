@@ -9,7 +9,7 @@ import (
 )
 
 func EnsureMac() {
-	if runtime.GOOS != "Darwin" {
+	if runtime.GOOS != "darwin" {
 		panic("walt is only intended to be use on macOS")
 	}
 }
@@ -29,18 +29,20 @@ func Alias(ip string) error {
 	return RunElevated(true, "ifconfig", "lo0", "alias", ip)
 }
 
-func Unalias(ip string) error {
-	err := RunElevated(true, "ifconfig", "l0", "-alias", ip)
-	// if the address isn't aliased, an error will be thrown with this message - non-fatal.
-	if err != nil && strings.Contains(err.Error(), "cannot assign requested address") {
-		return nil
+func Unalias(ip string) (bool, error) {
+	if err := RunElevated(true, "ifconfig", "lo0", "-alias", ip); err != nil {
+		// if the address isn't aliased, an error will be thrown with this message - non-fatal.
+		if strings.Contains(err.Error(), "cannot assign requested address") {
+			return false, nil
+		}
+		return false, err
 	}
-	return err
+	return true, nil
 }
 
 // Incrementally sorts and fetches all the currently aliased local addresses, not including the default 127.0.0.1
 func GetLiveAliases() ([]string, error) {
-	out, err := exec.Command("ifconfig", "l0").CombinedOutput()
+	out, err := exec.Command("ifconfig", "lo0").CombinedOutput()
 	if err != nil {
 		return nil, err
 	}

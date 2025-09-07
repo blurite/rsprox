@@ -22,7 +22,9 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"fmt"
 	"os"
+	"rsprox/walt/internal"
 
 	"github.com/spf13/cobra"
 )
@@ -54,8 +56,8 @@ to be used in parallel with RSProx.`,
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	err := rootCmd.Execute()
-	if err != nil {
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}
 }
@@ -80,11 +82,16 @@ func init() {
 		"group",
 		"g",
 		defaultGroup,
-		"group ID (2 => OSRS, 3+ => custom targets)",
+		"group ID (2 => OSRS (DO NOT USE! Will fail), 3+ => custom targets)",
 	)
 }
 
 func rootPreRun(command *cobra.Command, args []string) {
-	// Need to do setup checks - ensure macOS, parameter validation
-	// Will declare and implement these functions in the internals.
+	internal.EnsureMac()
+	if minWorld > maxWorld {
+		minWorld, maxWorld = maxWorld, minWorld
+	}
+	if group < 3 {
+		panic(fmt.Errorf("macOS requires group >= 3, got %d", group))
+	}
 }
