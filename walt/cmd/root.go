@@ -76,13 +76,6 @@ func init() {
 		"world number upper bound (inclusive)",
 	)
 	rootCmd.PersistentFlags().IntVarP(
-		&maxWorld,
-		"max",
-		"M",
-		defaultMaxWorld,
-		"world number upper bound (inclusive)",
-	)
-	rootCmd.PersistentFlags().IntVarP(
 		&group,
 		"group",
 		"g",
