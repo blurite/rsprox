@@ -17,18 +17,20 @@ var removeCmd = &cobra.Command{
 			ip := internal.IPForWorld(w, group)
 			status, err := internal.Unalias(ip)
 			if err != nil {
-				fmt.Fprintf(cmd.ErrOrStderr(), "error: alias %s failed: %v\n", ip, err)
+				fmt.Fprintf(cmd.ErrOrStderr(), "error: unalias %s failed: %v\n", ip, err)
 				errCount++
 				continue
 			}
 			if !status {
 				fmt.Fprintf(cmd.ErrOrStderr(), "warn: alias %s not currently set - nothing to remove\n", ip)
 				warnCount++
+				// still attempt to remove from registry to reduce potential drift
+				internal.Remove(ip)
 				continue
 			}
 			if err := internal.Remove(ip); err != nil {
-				fmt.Fprintf(cmd.ErrOrStderr(), "warn: alias %s was removed but the registry failed to update - use the sync command. error: %v\n", ip, err)
-				warnCount++
+				fmt.Fprintf(cmd.ErrOrStderr(), "error: alias %s was removed but the registry failed to update - use the sync command. error: %v\n", ip, err)
+				errCount++
 				syncNeeded = true
 			}
 			removed++
@@ -41,7 +43,7 @@ var removeCmd = &cobra.Command{
 		fmt.Fprintf(cmd.OutOrStdout(), "(%d) warnings\n", warnCount)
 		fmt.Fprintf(cmd.ErrOrStderr(), "(%d) errors\n", errCount)
 		if syncNeeded {
-			fmt.Fprintln(cmd.OutOrStdout(), "One or more of your warnings were related to registry synchronization. Use the sync command to fix.")
+			fmt.Fprintln(cmd.OutOrStdout(), "One or more of your errors were related to registry synchronization; Try `walt sync --mode=merge` to fix.")
 		}
 	},
 }

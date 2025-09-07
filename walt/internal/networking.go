@@ -25,8 +25,15 @@ func IPForWorld(world, group int) string {
 	}, ".")
 }
 
-func Alias(ip string) error {
-	return RunElevated(true, "ifconfig", "lo0", "alias", ip)
+func Alias(ip string) (bool, error) {
+	if err := RunElevated(true, "ifconfig", "lo0", "alias", ip); err != nil {
+		// if the address is already aliased, an error will be thrown with this message - non-fatal
+		if strings.Contains(err.Error(), "File exists") {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
 }
 
 func Unalias(ip string) (bool, error) {

@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"bufio"
 	"errors"
 	"os"
 	"path/filepath"
@@ -65,36 +64,41 @@ func Save(ips []string) error {
 	if data != "" {
 		data += "\n"
 	}
-	if err := os.WriteFile(path, []byte(data), 0o644); err != nil {
+
+	// atomic write - do a tmp file and then rename
+	dir := filepath.Dir(path)
+	tmp, err := os.CreateTemp(dir, "walt-registry-*.tmp")
+	if err != nil {
 		return err
 	}
-	return nil
+	tmpName := tmp.Name()
+	_, werr := tmp.WriteString(data)
+	cerr := tmp.Close()
+	if werr != nil {
+		os.Remove(tmpName)
+		return werr
+	}
+	if cerr != nil {
+		os.Remove(tmpName)
+		return cerr
+	}
+
+	return os.Rename(tmpName, path)
 }
 
 // Appends a single IP to the loopback alias registry file
 func Append(ip string) error {
-	path, err := ensureRegistryPath()
+	ips, err := Load()
 	if err != nil {
 		return err
 	}
-
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0o644)
-	if err != nil {
-		return err
-	}
-
-	defer f.Close()
-
-	s := bufio.NewScanner(f)
-	for s.Scan() {
-		if strings.TrimSpace(s.Text()) == ip {
-			// already present
+	for _, x := range ips {
+		if x == ip {
 			return nil
 		}
 	}
-
-	_, err = f.WriteString(ip + "\n")
-	return err
+	ips = append(ips, ip)
+	return Save(ips)
 }
 
 // Removes an entry from the loopback alias registry file. If empty after removal, torch the file.
@@ -127,7 +131,8 @@ func Clear() error {
 	}
 
 	if path != "" {
-		if err := os.Remove(path); err != nil {
+		// don't create error if the registry file doesn't exist yet
+		if err := os.Remove(path); err != nil && !errors.Is(err, os.ErrNotExist) {
 			return err
 		}
 	}
