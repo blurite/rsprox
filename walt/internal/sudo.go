@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-// Runs a command (name args...) as sudo. If interactive, will re-prompt for sudo password if required.
-func RunElevated(name string, interactive bool, args ...string) error {
+// Runs a command (name args...) as sudo. If interactive, will re-prompt for sudo password if required (very unlikely).
+func RunElevated(interactive bool, name string, args ...string) error {
 	var all []string
 	if interactive {
 		all = []string{"-p", "[walt] sudo password for %u:", name}
