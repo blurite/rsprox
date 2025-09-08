@@ -1,13 +1,14 @@
 class Walt < Formula
   desc "Manage loopback address aliases for RSProx on macOS"
   homepage "https://github.com/blurite/rsprox"
-  # update these once tag present
-  url "https://github.com/blurite/rsprox/archive/refs/tags/v0.1.0.tar.gz"
-  sha256 "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+  
+  # update these on next release - can be automated via GH action
+  url "https://github.com/blurite/rsprox/archive/refs/tags/v1.0.tar.gz"
+  sha256 "be0a466572daa88ee6308da5bafe7d2072948097536bfc35a5b1eff5e5f1550a"
+
   license "MIT"
 
-  # dev-only: point head to fork
-  head "https://github.com/doneill612/rsprox.git", branch: "feature/mac-os-world-aliasing-hb"
+  head "https://github.com/blurite/rsprox.git", branch: "main"
 
   depends_on "go" => :build
 

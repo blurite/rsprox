@@ -37,7 +37,7 @@ var addCmd = &cobra.Command{
 		fmt.Fprintf(cmd.OutOrStdout(), "(%d) warnings\n", warnCount)
 		fmt.Fprintf(cmd.ErrOrStderr(), "(%d) errors\n", errCount)
 		if syncNeeded {
-			fmt.Fprintln(cmd.OutOrStdout(), "One or more of your errors were related to registry synchronization; Try `walt sync --mode=merge` to fix.")
+			fmt.Fprintln(cmd.OutOrStdout(), "One or more of your errors were related to registry synchronization; Try `walt sync` to fix.")
 		}
 	},
 }
