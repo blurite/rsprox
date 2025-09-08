@@ -1,0 +1,10 @@
+name: e2e
+on: [push, pull_request]
+jobs:
+  mac-e2e:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version: "1.25.1" }
+      - run: WALT_E2E=1 go test ./... -v
