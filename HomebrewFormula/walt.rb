@@ -1,4 +1,3 @@
-# HomebrewFormula/walt.rb
 class Walt < Formula
   desc "Manage loopback address aliases for RSProx on macOS"
   homepage "https://github.com/blurite/rsprox"
