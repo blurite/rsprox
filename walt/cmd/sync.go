@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"rsprox/walt/internal"
 	"sort"
 
+	"github.com/blurite/rsprox/walt/internal"
 	"github.com/spf13/cobra"
 )
 

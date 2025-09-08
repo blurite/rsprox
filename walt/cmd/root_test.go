@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"rsprox/walt/internal"
+	"github.com/blurite/rsprox/walt/internal"
 )
 
 func requireDarwin(t *testing.T) {

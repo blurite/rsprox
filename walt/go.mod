@@ -1,4 +1,4 @@
-module rsprox/walt
+module github.com/blurite/rsprox/walt
 
 go 1.25.1
 

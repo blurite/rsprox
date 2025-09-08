@@ -1,6 +1,6 @@
 package main
 
-import "rsprox/walt/cmd"
+import "github.com/blurite/rsprox/walt/cmd"
 
 func main() {
 	cmd.Execute()
