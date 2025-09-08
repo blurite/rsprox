@@ -42,6 +42,8 @@ brew tap blurite/rsprox https://github.com/blurite/rsprox.git
 brew install --HEAD blurite/rsprox/walt
 ```
 
+If `WALT` is incorporated into future releases, the `--HEAD` flag will not be required.
+
 ## Usage
 
 **NOTE**: `walt` requires `sudo` to run - most of these commands will prompt you for your `sudo` password if you have one.
