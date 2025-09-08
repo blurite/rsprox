@@ -17,7 +17,6 @@ type SyncConflicts struct {
 type SyncResult struct {
 	added    int // Number of loopback IPs that were added to lo0 from the registry during sync
 	adopted  int // Number of loopback IPs that were missing from, and as a result added to the registry from lo0
-	pruned   int // Number of loopback IPs that were live on lo0 but unaliased due to not being in the registry
 	errCount int // Number of errors encountered during sync
 }
 
@@ -26,9 +25,7 @@ type SyncResult struct {
 // adopt only = push live lo0 back to registry if needed - don't push any non-live loopbacks in the registry onto lo0.
 
 var (
-	syncMode  string
-	adoptOnly bool
-	dryRun    bool
+	dryRun bool
 )
 
 var syncCmd = &cobra.Command{
@@ -47,22 +44,11 @@ Sync policies:
 		if err != nil {
 			return err
 		}
-		var result SyncResult
-		switch syncMode {
-		case "merge":
-			result = merge(cmd, conflicts)
-		case "up":
-			result = up(cmd, conflicts.rml)
-		case "down":
-			result = down(cmd, conflicts.lmr)
-		default:
-			return fmt.Errorf("invalid --mode %q (use merge|up|down)", syncMode)
-		}
-
+		result := merge(cmd, conflicts)
 		fmt.Fprintf(
 			cmd.OutOrStdout(),
-			"Sync mode=%s	added=%d adopted=%d pruned=%d\n",
-			syncMode, result.added, result.adopted, result.pruned,
+			"Sync mode=merge	added=%d adopted=%d\n",
+			result.added, result.adopted,
 		)
 		if result.errCount > 0 {
 			return fmt.Errorf("(%d) errors", result.errCount)
@@ -74,7 +60,7 @@ Sync policies:
 
 func merge(cmd *cobra.Command, conflicts *SyncConflicts) SyncResult {
 	added, adopted, errCount := 0, 0, 0
-	if !adoptOnly {
+	if len(conflicts.rml) > 0 {
 		for _, ip := range conflicts.rml {
 			if dryRun {
 				fmt.Fprintf(cmd.OutOrStdout(), "[dry-run] add %s\n", ip)
@@ -111,61 +97,6 @@ func merge(cmd *cobra.Command, conflicts *SyncConflicts) SyncResult {
 	return SyncResult{
 		added:    added,
 		adopted:  adopted,
-		pruned:   0,
-		errCount: errCount,
-	}
-}
-
-func up(cmd *cobra.Command, rml []string) SyncResult {
-	added, errCount := 0, 0
-	for _, ip := range rml {
-		if dryRun {
-			fmt.Fprintf(cmd.OutOrStdout(), "[dry-run] add %s\n", ip)
-			added++
-			continue
-		}
-		status, err := internal.Alias(ip)
-		if err != nil {
-			fmt.Fprintf(cmd.ErrOrStderr(), "alias create for %s failed: %v\n", ip, err)
-			errCount++
-			continue
-		}
-		if status {
-			added++
-		}
-	}
-	return SyncResult{
-		added:    added,
-		adopted:  0,
-		pruned:   0,
-		errCount: errCount,
-	}
-}
-
-func down(cmd *cobra.Command, lmr []string) SyncResult {
-	pruned, errCount := 0, 0
-	for _, ip := range lmr {
-		if dryRun {
-			fmt.Fprintf(cmd.OutOrStdout(), "[dry-run] remove %s\n", ip)
-			pruned++
-			continue
-		}
-		status, err := internal.Unalias(ip)
-		if err != nil {
-			fmt.Fprintf(cmd.ErrOrStderr(), "unalias %s failed: %v\n", ip, err)
-			errCount++
-			continue
-		}
-		if status {
-			pruned++
-		}
-		// Also remove from registry if its still somehow in there
-		internal.Remove(ip)
-	}
-	return SyncResult{
-		added:    0,
-		adopted:  0,
-		pruned:   pruned,
 		errCount: errCount,
 	}
 }
@@ -205,7 +136,5 @@ func findSyncConflicts() (*SyncConflicts, error) {
 
 func init() {
 	rootCmd.AddCommand(syncCmd)
-	syncCmd.Flags().StringVar(&syncMode, "mode", "merge", "sync policy: merge|up|down")
-	syncCmd.Flags().BoolVar(&adoptOnly, "adopt-only", false, "merge mode: adopt live-but-untracked into registry, but do not add missing live aliases")
 	syncCmd.Flags().BoolVar(&dryRun, "dry-run", false, "preview actions without making changes")
 }

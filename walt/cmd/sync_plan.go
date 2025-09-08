@@ -1,13 +1,10 @@
 package cmd
 
-import "fmt"
-
 type ActionType int
 
 const (
 	Add   ActionType = iota // Add an IP present in the registry file to lo0
 	Adopt                   // Add an IP present on lo0 to the registry file (due to missing)
-	Prune                   // Remove an IP from lo0 due to not being present in registry file
 )
 
 // Encapsulation of an action taken on a loopabck IP address
@@ -20,32 +17,21 @@ type SyncPlan struct {
 	Actions []Action // Collection of actions required to synchronize registry file with lo0
 }
 
-func NewSyncPlan(mode string, adoptOnly bool, rml, lmr []string) (SyncPlan, error) {
+func NewSyncPlan(rml, lmr []string) SyncPlan {
 	rml = unique(rml)
 	lmr = unique(lmr)
 	var plan SyncPlan
-	switch mode {
-	case "merge":
-		if !adoptOnly {
-			for _, ip := range rml {
-				plan.Actions = append(plan.Actions, Action{Type: Add, Ip: ip})
-			}
-		}
-		for _, ip := range lmr {
-			plan.Actions = append(plan.Actions, Action{Type: Adopt, Ip: ip})
-		}
-	case "up":
+	if len(rml) > 0 {
 		for _, ip := range rml {
 			plan.Actions = append(plan.Actions, Action{Type: Add, Ip: ip})
 		}
-	case "down":
-		for _, ip := range lmr {
-			plan.Actions = append(plan.Actions, Action{Type: Prune, Ip: ip})
-		}
-	default:
-		return plan, fmt.Errorf("invalid mode %q (use merge|up|down)", mode)
 	}
-	return plan, nil
+	if len(lmr) > 0 {
+		for _, ip := range lmr {
+			plan.Actions = append(plan.Actions, Action{Type: Adopt, Ip: ip})
+		}
+	}
+	return plan
 }
 
 // Safety de-duplication of a list of loopback IPs
