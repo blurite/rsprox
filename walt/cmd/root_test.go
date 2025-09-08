@@ -59,7 +59,7 @@ func TestE2E(t *testing.T) {
 
 	const (
 		world = 300
-		group = 2
+		group = 3
 	)
 	ip := internal.IPForWorld(world, group)
 
@@ -68,7 +68,7 @@ func TestE2E(t *testing.T) {
 	internal.Remove(ip)  // ignore if absent
 
 	// add one world
-	stdout, stderr, err := runRootCmd(t, "add", "--min=300", "--max=300", "--group=2")
+	stdout, stderr, err := runRootCmd(t, "add", "--min=300", "--max=300", "--group=3")
 	if err != nil {
 		t.Fatalf("add failed: err=%v, out=%q, errout=%q", err, stdout, stderr)
 	}
@@ -91,7 +91,7 @@ func TestE2E(t *testing.T) {
 	}
 
 	// remove it
-	stdout, stderr, err = runRootCmd(t, "remove", "-m", "300", "-M", "300", "-g", "2")
+	stdout, stderr, err = runRootCmd(t, "remove", "-m", "300", "-M", "300", "-g", "3")
 	if err != nil {
 		t.Fatalf("remove failed: err=%v, out=%q, errout=%q", err, stdout, stderr)
 	}
@@ -144,7 +144,7 @@ func TestE2EDryRun(t *testing.T) {
 
 	const (
 		world = 301
-		group = 2
+		group = 3
 	)
 	ip := internal.IPForWorld(world, group)
 

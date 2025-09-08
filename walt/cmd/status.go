@@ -45,28 +45,28 @@ var statusCmd = &cobra.Command{
 
 		fmt.Fprintf(cmd.OutOrStdout(), "Registry (%d):\n", len(reg))
 		for _, ip := range reg {
-			fmt.Fprintf(cmd.OutOrStdout(), "\t%s\n", ip)
+			fmt.Fprintf(cmd.OutOrStdout(), "  %s\n", ip)
 		}
 		fmt.Fprintf(cmd.OutOrStdout(), "Live on lo0 (%d):\n", len(live))
 		for _, ip := range live {
-			fmt.Fprintf(cmd.OutOrStdout(), "\t%s\n", ip)
+			fmt.Fprintf(cmd.OutOrStdout(), "  %s\n", ip)
 		}
 
 		fmt.Fprintln(cmd.OutOrStdout(), "Registry but NOT live:")
 		if len(regOnly) == 0 {
-			fmt.Fprintln(cmd.OutOrStdout(), "\t(none)")
+			fmt.Fprintln(cmd.OutOrStdout(), "  (none)")
 		} else {
 			for _, ip := range regOnly {
-				fmt.Fprintf(cmd.OutOrStdout(), "\t%s\n", ip)
+				fmt.Fprintf(cmd.OutOrStdout(), "  %s\n", ip)
 			}
 		}
 
 		fmt.Fprintln(cmd.OutOrStdout(), "Live but NOT in registry:")
 		if len(liveOnly) == 0 {
-			fmt.Fprintln(cmd.OutOrStdout(), "\t(none)")
+			fmt.Fprintln(cmd.OutOrStdout(), "  (none)")
 		} else {
 			for _, ip := range liveOnly {
-				fmt.Fprintf(cmd.OutOrStdout(), "\t%s\n", ip)
+				fmt.Fprintf(cmd.OutOrStdout(), "  %s\n", ip)
 			}
 		}
 		return nil
