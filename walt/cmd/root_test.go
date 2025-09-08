@@ -30,8 +30,8 @@ func requireSudo(t *testing.T) {
 	t.Helper()
 	// CI on macOS runners via GH actions supports passwordless sudo
 	// locally this will pass only if cahced ticket present or passwordless sudo.
-	if err := exec.Command("sudo", "-n", "-v").Run(); err != nil {
-		t.Skip("e2e: sudo -n -v failed (no non-interactive sudo). Run locally with WALT_E2E=1 after elevating or configure CI on macOS.")
+	if err := exec.Command("sudo", "-v").Run(); err != nil {
+		t.Skip("e2e: sudo -v failed. Run locally with WALT_E2E=1 after elevating or configure CI on macOS.")
 	}
 }
 

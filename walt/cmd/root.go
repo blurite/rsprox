@@ -90,7 +90,7 @@ func init() {
 		"group",
 		"g",
 		defaultGroup,
-		"group ID (2 => OSRS (DO NOT USE! Will fail), 3+ => custom targets)",
+		"group ID (2 => OSRS, 3+ => custom targets)",
 	)
 }
 
@@ -101,7 +101,7 @@ func rootPreRun(command *cobra.Command, args []string) {
 	if minWorld > maxWorld {
 		minWorld, maxWorld = maxWorld, minWorld
 	}
-	if group < 3 {
-		panic(fmt.Errorf("macOS requires group >= 3, got %d", group))
+	if group < 2 {
+		panic(fmt.Errorf("macOS requires group >= 2, got %d", group))
 	}
 }
