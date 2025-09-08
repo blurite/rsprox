@@ -13,7 +13,9 @@ class Walt < Formula
 
   def install
     # The main package lives in ./walt
-    system "go", "build", *std_go_args(ldflags: "-s -w"), "./walt"
+    cd "walt" do
+      system "go", "build", *std_go_args(ldflags: "-s -w")
+    end
   end
 
   test do
