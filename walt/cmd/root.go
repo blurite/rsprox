@@ -24,7 +24,7 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"rsprox/walt/internal"
+	"runtime"
 
 	"github.com/spf13/cobra"
 )
@@ -88,7 +88,9 @@ func init() {
 }
 
 func rootPreRun(command *cobra.Command, args []string) {
-	internal.EnsureMac()
+	if runtime.GOOS != "darwin" {
+		panic("walt is only intended to be use on macOS")
+	}
 	if minWorld > maxWorld {
 		minWorld, maxWorld = maxWorld, minWorld
 	}

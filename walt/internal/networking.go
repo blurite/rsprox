@@ -2,17 +2,10 @@ package internal
 
 import (
 	"os/exec"
-	"runtime"
 	"sort"
 	"strconv"
 	"strings"
 )
-
-func EnsureMac() {
-	if runtime.GOOS != "darwin" {
-		panic("walt is only intended to be use on macOS")
-	}
-}
 
 func IPForWorld(world, group int) string {
 	a := world / 256
