@@ -94,7 +94,7 @@ func rootPreRun(command *cobra.Command, args []string) {
 	if minWorld > maxWorld {
 		minWorld, maxWorld = maxWorld, minWorld
 	}
-	if group < 3 {
-		panic(fmt.Errorf("macOS requires group >= 3, got %d", group))
+	if group < 2 {
+		panic(fmt.Errorf("macOS requires group >= 2, got %d", group))
 	}
 }
