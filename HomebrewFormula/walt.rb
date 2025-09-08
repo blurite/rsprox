@@ -8,7 +8,7 @@ class Walt < Formula
 
   license "MIT"
 
-  head "https://github.com/blurite/rsprox.git", branch: "main"
+  head "https://github.com/blurite/rsprox.git", branch: "master"
 
   depends_on "go" => :build
 
