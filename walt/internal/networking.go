@@ -46,6 +46,11 @@ func GetLiveAliases() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	ips := parseAliases(string(out))
+	return ips, nil
+}
+
+func parseAliases(out string) []string {
 	var ips []string
 	for ln := range strings.SplitSeq(string(out), "\n") {
 		ln = strings.TrimSpace(ln)
@@ -60,5 +65,5 @@ func GetLiveAliases() ([]string, error) {
 		}
 	}
 	sort.Strings(ips)
-	return ips, nil
+	return ips
 }

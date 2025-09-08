@@ -34,10 +34,8 @@ var syncCmd = &cobra.Command{
 	Long: `Sync definitions:
 	R\L: set of relevant loopback IPs which are tracked in the registry file, but not currently live on lo0 netiface
 	L\R: set of relevant loopback IPs which are live on the netiface, but not tracked in the registry file
-Sync policies:
-	merge (default): 	adopt L\R into the registry, and add R\L to lo0 (unless --adopt-only flag present)
-	up:								add R\L to lo0 only
-	down:							remove L\R from lo0 - prune with no adds/appends
+Sync strategy:
+	merge (default): 	adopt L\R into the registry, and add R\L to lo0
 `,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		conflicts, err := findSyncConflicts()
