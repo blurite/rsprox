@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"rsprox/walt/internal"
 	"sort"
@@ -58,9 +57,9 @@ Sync policies:
 		case "merge":
 			result = merge(cmd, conflicts)
 		case "up":
-			result = up(cmd, &conflicts.rml)
+			result = up(cmd, conflicts.rml)
 		case "down":
-			result = down(cmd, &conflicts.lmr)
+			result = down(cmd, conflicts.lmr)
 		default:
 			return fmt.Errorf("invalid --mode %q (use merge|up|down)", syncMode)
 		}
@@ -89,7 +88,7 @@ func merge(cmd *cobra.Command, conflicts *SyncConflicts) SyncResult {
 			}
 			status, err := internal.Alias(ip)
 			if err != nil {
-				fmt.Fprintf(cmd.ErrOrStderr(), "error: alias create for %s failed: %v\n", ip, err)
+				fmt.Fprintf(cmd.ErrOrStderr(), "alias create for %s failed: %v\n", ip, err)
 				errCount++
 				continue
 			}
@@ -99,7 +98,6 @@ func merge(cmd *cobra.Command, conflicts *SyncConflicts) SyncResult {
 		}
 	}
 	if len(conflicts.lmr) > 0 {
-
 		if dryRun {
 			for _, ip := range conflicts.lmr {
 				fmt.Fprintf(cmd.OutOrStdout(), "[dry-run] adopt into registry %s\n", ip)
@@ -108,7 +106,7 @@ func merge(cmd *cobra.Command, conflicts *SyncConflicts) SyncResult {
 		} else {
 			union := append(append([]string{}, conflicts.reg...), conflicts.lmr...)
 			if err := internal.Save(union); err != nil {
-				fmt.Fprintf(cmd.ErrOrStderr(), "error: registry adopt failed: %v\n", err)
+				fmt.Fprintf(cmd.ErrOrStderr(), "registry adopt failed: %v\n", err)
 				errCount++
 			} else {
 				adopted = len(conflicts.lmr)
@@ -123,9 +121,9 @@ func merge(cmd *cobra.Command, conflicts *SyncConflicts) SyncResult {
 	}
 }
 
-func up(cmd *cobra.Command, rml *[]string) SyncResult {
+func up(cmd *cobra.Command, rml []string) SyncResult {
 	added, errCount := 0, 0
-	for _, ip := range *rml {
+	for _, ip := range rml {
 		if dryRun {
 			fmt.Fprintf(cmd.OutOrStdout(), "[dry-run] add %s\n", ip)
 			added++
@@ -133,7 +131,7 @@ func up(cmd *cobra.Command, rml *[]string) SyncResult {
 		}
 		status, err := internal.Alias(ip)
 		if err != nil {
-			fmt.Fprintf(cmd.ErrOrStderr(), "error: alias create for %s failed: %v\n", ip, err)
+			fmt.Fprintf(cmd.ErrOrStderr(), "alias create for %s failed: %v\n", ip, err)
 			errCount++
 			continue
 		}
@@ -149,9 +147,9 @@ func up(cmd *cobra.Command, rml *[]string) SyncResult {
 	}
 }
 
-func down(cmd *cobra.Command, lmr *[]string) SyncResult {
+func down(cmd *cobra.Command, lmr []string) SyncResult {
 	pruned, errCount := 0, 0
-	for _, ip := range *lmr {
+	for _, ip := range lmr {
 		if dryRun {
 			fmt.Fprintf(cmd.OutOrStdout(), "[dry-run] remove %s\n", ip)
 			pruned++
@@ -159,7 +157,7 @@ func down(cmd *cobra.Command, lmr *[]string) SyncResult {
 		}
 		status, err := internal.Unalias(ip)
 		if err != nil {
-			fmt.Fprintf(cmd.ErrOrStderr(), "error: unalias %s failed: %v\n", ip, err)
+			fmt.Fprintf(cmd.ErrOrStderr(), "unalias %s failed: %v\n", ip, err)
 			errCount++
 			continue
 		}
@@ -180,7 +178,7 @@ func down(cmd *cobra.Command, lmr *[]string) SyncResult {
 func findSyncConflicts() (*SyncConflicts, error) {
 	curReg, err := internal.Load()
 	if err != nil {
-		return &SyncConflicts{}, errors.New("error: failed to load the registry file: error: " + err.Error())
+		return &SyncConflicts{}, fmt.Errorf("load registry: %w", err)
 	}
 	sets, err := makeSets(curReg)
 	if err != nil {
@@ -205,7 +203,7 @@ func findSyncConflicts() (*SyncConflicts, error) {
 func makeSets(ips []string) (IPSets, error) {
 	l, err := internal.GetLiveAliases()
 	if err != nil {
-		return IPSets{}, errors.New("error: failed to fetch live loopback aliases on lo0: error: " + err.Error())
+		return IPSets{}, fmt.Errorf("fetch live loopback aliases on lo0: %w", err)
 	}
 	reg := make(map[string]struct{}, len(ips))
 	for _, ip := range ips {
