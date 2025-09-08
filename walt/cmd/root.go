@@ -36,7 +36,7 @@ import (
 const (
 	defaultMinWorld = 255
 	defaultMaxWorld = 255
-	defaultGroup    = 2
+	defaultGroup    = 3
 )
 
 var (
