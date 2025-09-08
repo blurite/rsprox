@@ -49,7 +49,14 @@ var (
 var rootCmd = &cobra.Command{
 	Use:   "walt",
 	Short: "Manage loopback address aliases for RSProx on macOS.",
-	Long: `An easy-to-use CLI tool for managing loopback address aliases on macOS. Intended
+	Long: `
+ __        ___    _   _____ 
+ \ \      / / \  | | |_   _|
+  \ \ /\ / / _ \ | |   | |  
+   \ V  V / ___ \| |___| |  
+    \_/\_/_/   \_\_____|_|  
+                                                       	
+An easy-to-use CLI tool for managing loopback address aliases on macOS. Intended
 to be used in parallel with RSProx.`,
 	PersistentPreRun: rootPreRun,
 }
