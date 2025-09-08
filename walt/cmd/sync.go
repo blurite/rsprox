@@ -8,11 +8,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type IPSets struct {
-	reg  map[string]struct{} // Set of loopback aliases currently found in the registry
-	live map[string]struct{} // Set of loopback aliases currently live on lo0
-}
-
 type SyncConflicts struct {
 	reg []string // All Loopback IPs in the registry file
 	rml []string // Loopback IPs which are tracked in the registry file, but not currently live on lo0 netiface
@@ -66,7 +61,7 @@ Sync policies:
 
 		fmt.Fprintf(
 			cmd.OutOrStdout(),
-			"Sync mode=%s	added=%d	adopted=%d	pruned=%d\n",
+			"Sync mode=%s	added=%d adopted=%d pruned=%d\n",
 			syncMode, result.added, result.adopted, result.pruned,
 		)
 		if result.errCount > 0 {
@@ -180,40 +175,32 @@ func findSyncConflicts() (*SyncConflicts, error) {
 	if err != nil {
 		return &SyncConflicts{}, fmt.Errorf("load registry: %w", err)
 	}
-	sets, err := makeSets(curReg)
-	if err != nil {
-		return &SyncConflicts{}, err
-	}
-	var rml, lmr []string
-	for _, ip := range curReg {
-		if _, ok := sets.live[ip]; !ok {
-			rml = append(rml, ip)
-		}
-	}
-	for ip := range sets.live {
-		if _, ok := sets.reg[ip]; !ok {
-			lmr = append(lmr, ip)
-		}
-	}
-	sort.Strings(rml)
-	sort.Strings(lmr)
-	return &SyncConflicts{curReg, rml, lmr}, nil
-}
-
-func makeSets(ips []string) (IPSets, error) {
 	l, err := internal.GetLiveAliases()
 	if err != nil {
-		return IPSets{}, fmt.Errorf("fetch live loopback aliases on lo0: %w", err)
+		return &SyncConflicts{}, fmt.Errorf("fetch live loopback aliases on lo0: %w", err)
 	}
-	reg := make(map[string]struct{}, len(ips))
-	for _, ip := range ips {
+	reg := make(map[string]struct{}, len(curReg))
+	for _, ip := range curReg {
 		reg[ip] = struct{}{}
 	}
 	live := make(map[string]struct{}, len(l))
 	for _, ip := range l {
 		live[ip] = struct{}{}
 	}
-	return IPSets{reg, live}, nil
+	var rml, lmr []string
+	for _, ip := range curReg {
+		if _, ok := live[ip]; !ok {
+			rml = append(rml, ip)
+		}
+	}
+	for ip := range live {
+		if _, ok := reg[ip]; !ok {
+			lmr = append(lmr, ip)
+		}
+	}
+	sort.Strings(rml)
+	sort.Strings(lmr)
+	return &SyncConflicts{curReg, rml, lmr}, nil
 }
 
 func init() {
