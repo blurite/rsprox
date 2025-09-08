@@ -59,41 +59,49 @@ Sync policies:
 }
 
 func merge(cmd *cobra.Command, conflicts *SyncConflicts) SyncResult {
+	plan := NewSyncPlan(conflicts.rml, conflicts.lmr)
+
 	added, adopted, errCount := 0, 0, 0
-	if len(conflicts.rml) > 0 {
-		for _, ip := range conflicts.rml {
+	var toAdopt []string
+
+	for _, action := range plan.Actions {
+		switch action.Type {
+		case Add:
 			if dryRun {
-				fmt.Fprintf(cmd.OutOrStdout(), "[dry-run] add %s\n", ip)
+				fmt.Fprintf(cmd.OutOrStdout(), "[dry-run] add %s\n", action.Ip)
 				added++
 				continue
 			}
-			status, err := internal.Alias(ip)
+			status, err := internal.Alias(action.Ip)
 			if err != nil {
-				fmt.Fprintf(cmd.ErrOrStderr(), "alias create for %s failed: %v\n", ip, err)
+				fmt.Fprintf(cmd.ErrOrStderr(), "alias create for %s failed: %v\n", action.Ip, err)
 				errCount++
 				continue
 			}
 			if status {
 				added++
 			}
-		}
-	}
-	if len(conflicts.lmr) > 0 {
-		if dryRun {
-			for _, ip := range conflicts.lmr {
-				fmt.Fprintf(cmd.OutOrStdout(), "[dry-run] adopt into registry %s\n", ip)
+
+		case Adopt:
+			if dryRun {
+				fmt.Fprintf(cmd.OutOrStdout(), "[dry-run] adopt into registry %s\n", action.Ip)
 				adopted++
-			}
-		} else {
-			union := append(append([]string{}, conflicts.reg...), conflicts.lmr...)
-			if err := internal.Save(union); err != nil {
-				fmt.Fprintf(cmd.ErrOrStderr(), "registry adopt failed: %v\n", err)
-				errCount++
 			} else {
-				adopted = len(conflicts.lmr)
+				toAdopt = append(toAdopt, action.Ip)
 			}
 		}
 	}
+
+	if !dryRun && len(toAdopt) > 0 {
+		union := append(append([]string{}, conflicts.reg...), toAdopt...)
+		if err := internal.Save(union); err != nil {
+			fmt.Fprintf(cmd.ErrOrStderr(), "registry adopt failed: %v\n", err)
+			errCount++
+		} else {
+			adopted = len(toAdopt)
+		}
+	}
+
 	return SyncResult{
 		added:    added,
 		adopted:  adopted,
