@@ -36,7 +36,7 @@ public class OldSchoolNpcType(
     override var vislevel: Int = -1
     override var resizeh: Int = 128
     override var resizev: Int = 128
-    override var alwaysontop: Boolean = false
+    override var renderPriority: Int = 0
     override var ambient: Int = 0
     override var contrast: Int = 0
     override var turnspeed: Int = 32
@@ -52,6 +52,7 @@ public class OldSchoolNpcType(
     override var overlayheight: Int = -1
     override var stat: MutableList<Int> = mutableListOf(1, 1, 1, 1, 1, 1)
     override var params: MutableMap<Int, Any> = mutableMapOf()
+    override var footprintSize: Int = -1
 
     public fun decode(
         revision: Int,
@@ -63,6 +64,13 @@ public class OldSchoolNpcType(
                 break
             }
             decode(revision, opcode, buffer)
+        }
+        postDecode()
+    }
+
+    private fun postDecode() {
+        if (this.footprintSize == -1) {
+            this.footprintSize = (0.4f * (this.size * 128).toFloat()).toInt()
         }
     }
 
@@ -140,7 +148,7 @@ public class OldSchoolNpcType(
             95 -> this.vislevel = buffer.g2()
             97 -> this.resizeh = buffer.g2()
             98 -> this.resizev = buffer.g2()
-            99 -> this.alwaysontop = true
+            99 -> this.renderPriority = 1
             100 -> this.ambient = buffer.g1s()
             101 -> this.contrast = buffer.g1s() * 5
             102 -> {
@@ -169,6 +177,7 @@ public class OldSchoolNpcType(
             106 -> decodeMulti(buffer, false)
             107 -> this.active = false
             109 -> this.walksmoothing = false
+            111 -> this.renderPriority = 2
             114 -> this.runanim = buffer.g2()
             115 -> {
                 this.runanim = buffer.g2()
@@ -187,6 +196,7 @@ public class OldSchoolNpcType(
             122 -> this.follower = true
             123 -> this.lowpriorityops = true
             124 -> this.overlayheight = buffer.g2()
+            126 -> this.footprintSize = buffer.g2()
             249 -> ParamTypeHelper.unpackClientParams(buffer, params)
             else -> error("Invalid opcode: $opcode")
         }
@@ -253,7 +263,7 @@ public class OldSchoolNpcType(
         if (vislevel != other.vislevel) return false
         if (resizeh != other.resizeh) return false
         if (resizev != other.resizev) return false
-        if (alwaysontop != other.alwaysontop) return false
+        if (renderPriority != other.renderPriority) return false
         if (ambient != other.ambient) return false
         if (contrast != other.contrast) return false
         if (turnspeed != other.turnspeed) return false
@@ -269,6 +279,7 @@ public class OldSchoolNpcType(
         if (overlayheight != other.overlayheight) return false
         if (stat != other.stat) return false
         if (params != other.params) return false
+        if (footprintSize != other.footprintSize) return false
 
         return true
     }
@@ -304,7 +315,7 @@ public class OldSchoolNpcType(
         result = 31 * result + vislevel
         result = 31 * result + resizeh
         result = 31 * result + resizev
-        result = 31 * result + alwaysontop.hashCode()
+        result = 31 * result + renderPriority
         result = 31 * result + ambient
         result = 31 * result + contrast
         result = 31 * result + turnspeed
@@ -320,6 +331,7 @@ public class OldSchoolNpcType(
         result = 31 * result + overlayheight
         result = 31 * result + stat.hashCode()
         result = 31 * result + params.hashCode()
+        result = 31 * result + footprintSize
         return result
     }
 
@@ -355,7 +367,7 @@ public class OldSchoolNpcType(
             "vislevel=$vislevel, " +
             "resizeh=$resizeh, " +
             "resizev=$resizev, " +
-            "alwaysontop=$alwaysontop, " +
+            "renderPriority=$renderPriority, " +
             "ambient=$ambient, " +
             "contrast=$contrast, " +
             "turnspeed=$turnspeed, " +
@@ -370,7 +382,8 @@ public class OldSchoolNpcType(
             "headiconindices=$headiconindices, " +
             "overlayheight=$overlayheight, " +
             "stat=$stat, " +
-            "params=$params" +
+            "params=$params, " +
+            "footprintSize=$footprintSize" +
             ")"
     }
 
