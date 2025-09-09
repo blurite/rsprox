@@ -18,8 +18,8 @@ public class EventKeyboardDecoder : ProxyMessageDecoder<EventKeyboard> {
         val keys = ByteArray(count)
         var lastTransmittedKeyPress: Int = -1
         for (i in 0..<count) {
-            val key = buffer.g1()
-            val delta = buffer.g3Alt3()
+            val delta = buffer.g3Alt1()
+            val key = buffer.g1Alt3()
             if (i == 0) {
                 lastTransmittedKeyPress = delta
             }
