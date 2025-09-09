@@ -19,7 +19,7 @@ internal class WorldEntityInfoV2Decoder : ProxyMessageDecoder<WorldEntityInfo> {
     ): WorldEntityInfo {
         val activeWorld = session.getActiveWorld()
         val world = session.getWorld(activeWorld)
-        return world.worldEntityInfo.decode(
+        return world.worldEntity.decode(
             buffer,
             CoordGrid(world.level, world.baseX, world.baseZ),
             2,

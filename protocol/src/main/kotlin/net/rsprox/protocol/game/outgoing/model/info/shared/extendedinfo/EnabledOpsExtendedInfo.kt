@@ -1,6 +1,5 @@
-package net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo
+package net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo
 
-import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.util.OpFlags
 
 public class EnabledOpsExtendedInfo(

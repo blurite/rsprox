@@ -8,6 +8,7 @@ public enum class ProtCategory(
     LOCS("Locs"),
     OBJS("Objs"),
     PLAYERS("Players"),
+    WORLD_ENTITIES("World Entities"),
     EVENTS("Events"),
     PROT_RESUME("Protected access resume"),
     FRIENDCHAT("Friend chat"),

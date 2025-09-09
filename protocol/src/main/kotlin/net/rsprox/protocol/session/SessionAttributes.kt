@@ -3,6 +3,7 @@ package net.rsprox.protocol.session
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcInfoDecoder
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.PlayerInfoDecoder
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoDecoder
 import net.rsprox.protocol.reflection.ReflectionCheck
 import net.rsprox.protocol.world.World
 
@@ -33,6 +34,7 @@ public fun Session.allocateWorld(
     worldIndex: Int,
     playerInfoDecoder: PlayerInfoDecoder,
     npcInfoDecoder: NpcInfoDecoder,
+    worldEntityInfoDecoder: WorldEntityInfoDecoder,
     sizeX: Int = 16384,
     sizeZ: Int = 16384,
 ): World {
@@ -41,7 +43,14 @@ public fun Session.allocateWorld(
         worldMap = mutableMapOf()
         this.trackedWorldMap = worldMap
     }
-    val world = World(npcInfoDecoder, playerInfoDecoder, sizeX, sizeZ)
+    val world =
+        World(
+            npcInfoDecoder,
+            playerInfoDecoder,
+            worldEntityInfoDecoder,
+            sizeX,
+            sizeZ,
+        )
     worldMap[worldIndex] = world
     return world
 }

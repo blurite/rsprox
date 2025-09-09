@@ -9,6 +9,7 @@ import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.GenericWorldEntityInfoClient
 import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
 import net.rsprox.protocol.game.outgoing.model.map.RebuildNormal
 import net.rsprox.protocol.game.outgoing.model.map.StaticRebuildMessage
@@ -83,6 +84,7 @@ internal class StaticRebuildDecoder(
                         huffmanCodec,
                     ),
                     NpcInfoClient(cache),
+                    GenericWorldEntityInfoClient(),
                 )
             world.baseX = (zoneX - 6) * 8
             world.baseZ = (zoneZ - 6) * 8

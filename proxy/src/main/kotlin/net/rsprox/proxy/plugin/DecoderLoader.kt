@@ -44,6 +44,10 @@ import net.rsprox.protocol.v232.ClientPacketDecoderServiceV232
 import net.rsprox.protocol.v232.GameClientProtProviderV232
 import net.rsprox.protocol.v232.GameServerProtProviderV232
 import net.rsprox.protocol.v232.ServerPacketDecoderServiceV232
+import net.rsprox.protocol.v233.ClientPacketDecoderServiceV233
+import net.rsprox.protocol.v233.GameClientProtProviderV233
+import net.rsprox.protocol.v233.GameServerProtProviderV233
+import net.rsprox.protocol.v233.ServerPacketDecoderServiceV233
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.transcriber.prot.GameClientProt
 import net.rsprox.transcriber.prot.GameServerProt
@@ -170,6 +174,7 @@ public class DecoderLoader {
             230 to Callable { loadRevision230(huffmanCodec, cache) },
             231 to Callable { loadRevision231(huffmanCodec, cache) },
             232 to Callable { loadRevision232(huffmanCodec, cache) },
+            233 to Callable { loadRevision233(huffmanCodec, cache) },
         )
     }
 
@@ -310,6 +315,20 @@ public class DecoderLoader {
             ServerPacketDecoderServiceV232(huffmanCodec, cache),
             GameClientProtProviderV232,
             GameServerProtProviderV232,
+        )
+    }
+
+    private fun loadRevision233(
+        huffmanCodec: HuffmanCodec,
+        cache: CacheProvider,
+    ): RevisionDecoder {
+        logger.debug { "Loading revision 233 decoders" }
+        return RevisionDecoder(
+            233,
+            ClientPacketDecoderServiceV233(huffmanCodec),
+            ServerPacketDecoderServiceV233(huffmanCodec, cache),
+            GameClientProtProviderV233,
+            GameServerProtProviderV233,
         )
     }
 

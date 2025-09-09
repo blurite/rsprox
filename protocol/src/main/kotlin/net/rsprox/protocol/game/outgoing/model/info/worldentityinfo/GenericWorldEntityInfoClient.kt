@@ -4,13 +4,13 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprox.protocol.common.CoordFine
 import net.rsprox.protocol.common.CoordGrid
 
-public class WorldEntityInfoClient {
+public class GenericWorldEntityInfoClient : WorldEntityInfoDecoder {
     private var transmittedWorldEntityCount: Int = 0
     private val transmittedWorldEntity: IntArray = IntArray(25)
     private val worldEntity: Array<Any?> = arrayOfNulls(4096)
     private val updates: MutableMap<Int, WorldEntityUpdateType> = mutableMapOf()
 
-    public fun decode(
+    override fun decode(
         buffer: JagByteBuf,
         baseCoord: CoordGrid,
         version: Int,

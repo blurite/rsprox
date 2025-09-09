@@ -15,7 +15,6 @@ import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcUpdateType
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.BaseAnimationSetExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.BodyCustomisationExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.CombatLevelChangeExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.EnabledOpsExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.FaceCoordExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.HeadCustomisationExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.HeadIconCustomisationExtendedInfo
@@ -23,6 +22,7 @@ import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.NameCha
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.TransformationExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.customisation.ModelCustomisation
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.customisation.ResetCustomisation
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.EnabledOpsExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FacePathingEntityExtendedInfo

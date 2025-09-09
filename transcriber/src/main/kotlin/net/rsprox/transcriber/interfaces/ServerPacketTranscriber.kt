@@ -25,6 +25,7 @@ import net.rsprox.protocol.game.outgoing.model.logout.LogoutTransfer
 import net.rsprox.protocol.game.outgoing.model.logout.LogoutWithReason
 import net.rsprox.protocol.game.outgoing.model.map.*
 import net.rsprox.protocol.game.outgoing.model.misc.client.*
+import net.rsprox.protocol.game.outgoing.model.misc.player.AccountFlags
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettings
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettingsPrivateChat
 import net.rsprox.protocol.game.outgoing.model.misc.player.MessageGame
@@ -132,6 +133,8 @@ public interface ServerPacketTranscriber {
     public fun worldEntityInfoV4(message: WorldEntityInfoV4)
 
     public fun worldEntityInfoV5(message: WorldEntityInfoV5)
+
+    public fun worldEntityInfoV6(message: WorldEntityInfoV6)
 
     public fun ifClearInv(message: IfClearInv)
 
@@ -268,6 +271,8 @@ public interface ServerPacketTranscriber {
     public fun updateStatV1(message: UpdateStatV1)
 
     public fun updateStockMarketSlot(message: UpdateStockMarketSlot)
+
+    public fun accountFlags(message: AccountFlags)
 
     public fun updateTradingPost(message: UpdateTradingPost)
 
