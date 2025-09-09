@@ -32,7 +32,7 @@ public interface NpcType {
     public val vislevel: Int
     public val resizeh: Int
     public val resizev: Int
-    public val alwaysontop: Boolean
+    public val renderPriority: Int
     public val ambient: Int
     public val contrast: Int
     public val turnspeed: Int
@@ -48,4 +48,5 @@ public interface NpcType {
     public val overlayheight: Int
     public val stat: List<Int>
     public val params: Map<Int, Any>
+    public val footprintSize: Int
 }
