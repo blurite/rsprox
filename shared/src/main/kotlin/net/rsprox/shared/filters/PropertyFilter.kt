@@ -104,6 +104,20 @@ public enum class PropertyFilter(
         true,
         searchTerms = "opplayert,interacting,useonplayer,using,targetting,players",
     ),
+    OPWORLDENTITY(
+        CLIENT_TO_SERVER,
+        WORLD_ENTITIES,
+        "World Entity Clicks",
+        true,
+        searchTerms = "opworldentity,interacting,click",
+    ),
+    OPWORLDENTITYT(
+        CLIENT_TO_SERVER,
+        WORLD_ENTITIES,
+        "World Entity Targetting",
+        true,
+        searchTerms = "opworldentityt,interacting,useonworldentity,targetting,using",
+    ),
 
     EVENT_APPLET_FOCUS(
         CLIENT_TO_SERVER,
@@ -1100,6 +1114,13 @@ public enum class PropertyFilter(
         "Grand Exchange",
         true,
         searchTerms = "update,stockmarket,slot,grand,exchange,ge",
+    ),
+    ACCOUNT_FLAGS(
+        StreamDirection.SERVER_TO_CLIENT,
+        ProtCategory.OTHER,
+        "Account Flags",
+        true,
+        searchTerms = "account,flags,accflags",
     ),
 
     HINT_ARROW(

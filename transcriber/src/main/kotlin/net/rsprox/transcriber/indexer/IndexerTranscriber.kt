@@ -51,6 +51,9 @@ import net.rsprox.protocol.game.incoming.model.social.FriendListAdd
 import net.rsprox.protocol.game.incoming.model.social.FriendListDel
 import net.rsprox.protocol.game.incoming.model.social.IgnoreListAdd
 import net.rsprox.protocol.game.incoming.model.social.IgnoreListDel
+import net.rsprox.protocol.game.incoming.model.worldentities.OpWorldEntity
+import net.rsprox.protocol.game.incoming.model.worldentities.OpWorldEntity6
+import net.rsprox.protocol.game.incoming.model.worldentities.OpWorldEntityT
 import net.rsprox.protocol.game.outgoing.model.camera.*
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelDelta
 import net.rsprox.protocol.game.outgoing.model.clan.ClanChannelFull
@@ -104,6 +107,7 @@ import net.rsprox.protocol.game.outgoing.model.logout.LogoutTransfer
 import net.rsprox.protocol.game.outgoing.model.logout.LogoutWithReason
 import net.rsprox.protocol.game.outgoing.model.map.*
 import net.rsprox.protocol.game.outgoing.model.misc.client.*
+import net.rsprox.protocol.game.outgoing.model.misc.player.AccountFlags
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettings
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettingsPrivateChat
 import net.rsprox.protocol.game.outgoing.model.misc.player.MessageGame
@@ -383,6 +387,15 @@ public class IndexerTranscriber(
     override fun opPlayerT(message: OpPlayerT) {
     }
 
+    override fun opWorldEntity(message: OpWorldEntity) {
+    }
+
+    override fun opWorldEntity6(message: OpWorldEntity6) {
+    }
+
+    override fun opWorldEntityT(message: OpWorldEntityT) {
+    }
+
     override fun resumePauseButton(message: ResumePauseButton) {
         incrementComponent(CombinedId(message.interfaceId, message.componentId))
     }
@@ -517,6 +530,9 @@ public class IndexerTranscriber(
     }
 
     override fun worldEntityInfoV5(message: WorldEntityInfoV5) {
+    }
+
+    override fun worldEntityInfoV6(message: WorldEntityInfoV6) {
     }
 
     override fun ifClearInv(message: IfClearInv) {
@@ -898,6 +914,9 @@ public class IndexerTranscriber(
     }
 
     override fun updateStockMarketSlot(message: UpdateStockMarketSlot) {
+    }
+
+    override fun accountFlags(message: AccountFlags) {
     }
 
     override fun updateTradingPost(message: UpdateTradingPost) {

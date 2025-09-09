@@ -87,6 +87,24 @@ internal class WorldEntityInfoV6Decoder(
                         update.sizeZ,
                     )
                 }
+
+                is WorldEntityUpdateType.ActiveV3 -> {
+                }
+                is WorldEntityUpdateType.ExtendedInfoOnly -> {
+                }
+                is WorldEntityUpdateType.LowResolutionToHighResolutionV4 -> {
+                    session.allocateWorld(
+                        index,
+                        PlayerInfoClient(
+                            session.localPlayerIndex,
+                            huffmanCodec,
+                        ),
+                        NpcInfoClient(cache),
+                        WorldEntityInfoClient(),
+                        update.sizeX,
+                        update.sizeZ,
+                    )
+                }
             }
         }
         return message

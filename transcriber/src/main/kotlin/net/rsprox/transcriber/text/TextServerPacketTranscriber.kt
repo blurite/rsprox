@@ -21,7 +21,10 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChanne
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelSingleUser
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.EnabledOpsExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.*
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.extendedinfo.UnknownWorldEntityExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.interfaces.*
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvFull
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvPartial
@@ -50,6 +53,7 @@ import net.rsprox.protocol.game.outgoing.model.misc.client.SiteSettings
 import net.rsprox.protocol.game.outgoing.model.misc.client.UpdateRebootTimer
 import net.rsprox.protocol.game.outgoing.model.misc.client.UpdateUid192
 import net.rsprox.protocol.game.outgoing.model.misc.client.UrlOpen
+import net.rsprox.protocol.game.outgoing.model.misc.player.AccountFlags
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettings
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettingsPrivateChat
 import net.rsprox.protocol.game.outgoing.model.misc.player.MessageGame
@@ -96,6 +100,7 @@ import net.rsprox.shared.filters.PropertyFilterSet
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.property.*
 import net.rsprox.shared.property.regular.DecimalCoordGridProperty
+import net.rsprox.shared.property.regular.GroupProperty
 import net.rsprox.shared.property.regular.ScriptVarTypeProperty
 import net.rsprox.shared.property.regular.ZoneCoordProperty
 import net.rsprox.shared.settings.Setting
@@ -104,6 +109,7 @@ import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.interfaces.ServerPacketTranscriber
 import net.rsprox.transcriber.maxUShortToMinusOne
 import net.rsprox.transcriber.state.SessionState
+import net.rsprox.transcriber.toFullBinaryString
 import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
@@ -861,6 +867,10 @@ public class TextServerPacketTranscriber(
         worldEntityInfo(message)
     }
 
+    override fun worldEntityInfoV6(message: WorldEntityInfoV6) {
+        worldEntityInfo(message)
+    }
+
     private fun useDecimalWorldEntityCoords(): Boolean {
         return settings[Setting.WORLDENTITY_INFO_DECIMAL_COORDS] &&
             !settings[Setting.CONVERT_COORD_TO_JAGCOORD]
@@ -958,6 +968,54 @@ public class TextServerPacketTranscriber(
                                 }
                             }
                         }
+
+                        is WorldEntityUpdateType.ActiveV3 -> {
+                            group("ACTIVE") {
+                                worldentity(index)
+                                int("angle", update.angle)
+                                val world = sessionState.getWorld(index)
+                                val coordGrid = update.coordFine.toCoordGrid(world.level)
+                                val coordFine = update.coordFine
+                                val coordFineX = coordFine.x and 0x7F
+                                val coordFineY = coordFine.y
+                                val coordFineZ = coordFine.z and 0x7F
+                                if (decimalCoords) {
+                                    decimalCoordGrid("newcoord", coordGrid, coordFineX, coordFineZ)
+                                    int("finey", coordFineY)
+                                } else {
+                                    coordGrid("newcoord", coordGrid)
+                                    int("finex", coordFineX)
+                                    int("finey", coordFineY)
+                                    int("finez", coordFineZ)
+                                }
+                                logWorldEntityExtendedInfo(update.extendedInfo)
+                            }
+                        }
+                        is WorldEntityUpdateType.ExtendedInfoOnly -> {
+                            group("EXTENDED_INFO") {
+                                worldentity(index)
+                                logWorldEntityExtendedInfo(update.extendedInfo)
+                            }
+                        }
+                        is WorldEntityUpdateType.LowResolutionToHighResolutionV4 -> {
+                            group("ADD") {
+                                worldentity(index)
+                                int("priority", update.priority)
+                                int("angle", update.angle)
+                                val coordFine = update.coordFine
+                                val coordFineX = coordFine.x and 0x7F
+                                val coordFineY = coordFine.y
+                                val coordFineZ = coordFine.z and 0x7F
+                                if (decimalCoords) {
+                                    int("finey", coordFineY)
+                                } else {
+                                    int("finex", coordFineX)
+                                    int("finey", coordFineY)
+                                    int("finez", coordFineZ)
+                                }
+                                logWorldEntityExtendedInfo(update.extendedInfo)
+                            }
+                        }
                     }
                 }
             }
@@ -971,6 +1029,22 @@ public class TextServerPacketTranscriber(
         // Remove the empty line generated by the wrapper group
         root.children.clear()
         root.children.addAll(children)
+    }
+
+    private fun GroupProperty.logWorldEntityExtendedInfo(extendedInfo: List<ExtendedInfo>) {
+        if (extendedInfo.isEmpty()) return
+        group("EXTENDED_INFO") {
+            for (info in extendedInfo) {
+                when (info) {
+                    is UnknownWorldEntityExtendedInfo -> {
+                        any("bit0x1", "enabled")
+                    }
+                    is EnabledOpsExtendedInfo -> {
+                        any("opflags", info.value.toFullBinaryString(5))
+                    }
+                }
+            }
+        }
     }
 
     override fun ifClearInv(message: IfClearInv) {
@@ -2176,6 +2250,11 @@ public class TextServerPacketTranscriber(
                 root.formattedInt("completedgold", update.completedGold)
             }
         }
+    }
+
+    override fun accountFlags(message: AccountFlags) {
+        if (!filters[PropertyFilter.ACCOUNT_FLAGS]) return omit()
+        root.long("flags", message.flags)
     }
 
     override fun updateTradingPost(message: UpdateTradingPost) {

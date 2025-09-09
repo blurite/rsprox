@@ -204,6 +204,8 @@ public class TranscriberPlugin(
             GameServerProt.OBJ_UNCUSTOMISE -> pass(message, Transcriber::objUncustomise)
             GameServerProt.SET_INTERACTION_MODE -> pass(message, Transcriber::setInteractionMode)
             GameServerProt.RESET_INTERACTION_MODE -> pass(message, Transcriber::resetInteractionMode)
+            GameServerProt.WORLDENTITY_INFO_V6 -> pass(message, Transcriber::worldEntityInfoV6)
+            GameServerProt.ACCOUNT_FLAGS -> pass(message, Transcriber::accountFlags)
         }
     }
 
@@ -326,6 +328,14 @@ public class TranscriberPlugin(
             GameClientProt.WINDOW_STATUS -> pass(message, Transcriber::windowStatus)
             GameClientProt.SET_HEADING -> pass(message, Transcriber::setHeading)
             GameClientProt.RSEVEN_STATUS -> pass(message, Transcriber::rsevenStatus)
+            GameClientProt.OPWORLDENTITY1 -> pass(message, Transcriber::opWorldEntity)
+            GameClientProt.OPWORLDENTITY2 -> pass(message, Transcriber::opWorldEntity)
+            GameClientProt.OPWORLDENTITY3 -> pass(message, Transcriber::opWorldEntity)
+            GameClientProt.OPWORLDENTITY4 -> pass(message, Transcriber::opWorldEntity)
+            GameClientProt.OPWORLDENTITY5 -> pass(message, Transcriber::opWorldEntity)
+            GameClientProt.OPWORLDENTITY6 -> pass(message, Transcriber::opWorldEntity6)
+            GameClientProt.OPWORLDENTITYT -> pass(message, Transcriber::opWorldEntityT)
+            GameClientProt.OPWORLDENTITYU -> throw IllegalArgumentException("Unimplemented packet: $message")
         }
     }
 }

@@ -91,6 +91,7 @@ public enum class GameServerProt : Prot {
     CLEAR_ENTITIES,
     SET_ACTIVE_WORLD_V2,
     SET_ACTIVE_WORLD_V1,
+    WORLDENTITY_INFO_V6,
     WORLDENTITY_INFO_V5,
     WORLDENTITY_INFO_V4,
     WORLDENTITY_INFO_V3,
@@ -177,6 +178,7 @@ public enum class GameServerProt : Prot {
     CHAT_FILTER_SETTINGS_PRIVATECHAT,
     UPDATE_TRADINGPOST,
     UPDATE_STOCKMARKET_SLOT,
+    ACCOUNT_FLAGS,
 
     // Misc. client state packets
     HINT_ARROW,

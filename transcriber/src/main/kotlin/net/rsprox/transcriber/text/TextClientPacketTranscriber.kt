@@ -49,6 +49,9 @@ import net.rsprox.protocol.game.incoming.model.social.FriendListAdd
 import net.rsprox.protocol.game.incoming.model.social.FriendListDel
 import net.rsprox.protocol.game.incoming.model.social.IgnoreListAdd
 import net.rsprox.protocol.game.incoming.model.social.IgnoreListDel
+import net.rsprox.protocol.game.incoming.model.worldentities.OpWorldEntity
+import net.rsprox.protocol.game.incoming.model.worldentities.OpWorldEntity6
+import net.rsprox.protocol.game.incoming.model.worldentities.OpWorldEntityT
 import net.rsprox.protocol.reflection.ReflectionCheck
 import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.filters.PropertyFilter
@@ -72,6 +75,7 @@ import net.rsprox.shared.property.group
 import net.rsprox.shared.property.identifiedMultinpc
 import net.rsprox.shared.property.identifiedNpc
 import net.rsprox.shared.property.identifiedPlayer
+import net.rsprox.shared.property.identifiedWorldEntity
 import net.rsprox.shared.property.int
 import net.rsprox.shared.property.long
 import net.rsprox.shared.property.namedEnum
@@ -80,6 +84,7 @@ import net.rsprox.shared.property.scriptVarType
 import net.rsprox.shared.property.string
 import net.rsprox.shared.property.unidentifiedNpc
 import net.rsprox.shared.property.unidentifiedPlayer
+import net.rsprox.shared.property.unidentifiedWorldEntity
 import net.rsprox.shared.settings.Setting
 import net.rsprox.shared.settings.SettingSet
 import net.rsprox.shared.settings.SettingSetStore
@@ -166,6 +171,32 @@ public open class TextClientPacketTranscriber(
             )
         } else {
             unidentifiedPlayer(index, name)
+        }
+    }
+
+    private fun Property.worldEntity(
+        index: Int,
+        name: String = "worldentity",
+    ): ChildProperty<*> {
+        val world = sessionState.getWorldOrNull(index)
+        return if (world != null) {
+            val coord = sessionState.getWorld(-1).getInstancedCoordOrSelf(world.coord)
+            identifiedWorldEntity(
+                index,
+                world.id,
+                coord.level,
+                coord.x,
+                coord.z,
+                world.sizeX,
+                world.sizeZ,
+                world.coordFine.x,
+                world.coordFine.z,
+                world.centerFineOffsetX,
+                world.centerFineOffsetZ,
+                name,
+            )
+        } else {
+            unidentifiedWorldEntity(index, name)
         }
     }
 
@@ -796,6 +827,26 @@ public open class TextClientPacketTranscriber(
     override fun opPlayerT(message: OpPlayerT) {
         if (!filters[PropertyFilter.OPPLAYERT]) return omit()
         root.player(message.index)
+        root.filteredBoolean("ctrl", message.controlKey)
+        root.com(message.selectedInterfaceId, message.selectedComponentId)
+        root.filteredInt("sub", message.selectedSub, -1)
+        root.filteredScriptVarType("obj", ScriptVarType.OBJ, message.selectedObj, -1)
+    }
+
+    override fun opWorldEntity(message: OpWorldEntity) {
+        if (!filters[PropertyFilter.OPWORLDENTITY]) return omit()
+        root.worldEntity(message.index)
+        root.filteredBoolean("ctrl", message.controlKey)
+    }
+
+    override fun opWorldEntity6(message: OpWorldEntity6) {
+        if (!filters[PropertyFilter.OPWORLDENTITY]) return omit()
+        root.int("worldentity", message.id)
+    }
+
+    override fun opWorldEntityT(message: OpWorldEntityT) {
+        if (!filters[PropertyFilter.OPWORLDENTITYT]) return omit()
+        root.worldEntity(message.index)
         root.filteredBoolean("ctrl", message.controlKey)
         root.com(message.selectedInterfaceId, message.selectedComponentId)
         root.filteredInt("sub", message.selectedSub, -1)

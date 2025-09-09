@@ -47,6 +47,9 @@ import net.rsprox.protocol.game.incoming.model.social.FriendListAdd
 import net.rsprox.protocol.game.incoming.model.social.FriendListDel
 import net.rsprox.protocol.game.incoming.model.social.IgnoreListAdd
 import net.rsprox.protocol.game.incoming.model.social.IgnoreListDel
+import net.rsprox.protocol.game.incoming.model.worldentities.OpWorldEntity
+import net.rsprox.protocol.game.incoming.model.worldentities.OpWorldEntity6
+import net.rsprox.protocol.game.incoming.model.worldentities.OpWorldEntityT
 
 public interface ClientPacketTranscriber {
     public fun if1Button(message: If1Button)
@@ -168,6 +171,12 @@ public interface ClientPacketTranscriber {
     public fun opPlayer(message: OpPlayer)
 
     public fun opPlayerT(message: OpPlayerT)
+
+    public fun opWorldEntity(message: OpWorldEntity)
+
+    public fun opWorldEntity6(message: OpWorldEntity6)
+
+    public fun opWorldEntityT(message: OpWorldEntityT)
 
     public fun resumePauseButton(message: ResumePauseButton)
 

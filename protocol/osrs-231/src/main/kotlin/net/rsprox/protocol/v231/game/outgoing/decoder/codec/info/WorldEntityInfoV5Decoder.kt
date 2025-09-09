@@ -87,6 +87,8 @@ internal class WorldEntityInfoV5Decoder(
                         update.sizeZ,
                     )
                 }
+
+                else -> {}
             }
         }
         return message
