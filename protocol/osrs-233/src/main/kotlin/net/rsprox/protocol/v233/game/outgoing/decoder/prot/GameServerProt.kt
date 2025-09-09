@@ -91,7 +91,13 @@ public enum class GameServerProt(
 
     // World entity packets
     SET_ACTIVE_WORLD_V2(GameServerProtId.SET_ACTIVE_WORLD_V2, 3),
+
+    @Deprecated(
+        "Deprecated since 233. Use WORLDENTITY_INFO_V6.",
+        replaceWith = ReplaceWith("WORLDENTITY_INFO_V6"),
+    )
     WORLDENTITY_INFO_V5(GameServerProtId.WORLDENTITY_INFO_V5, Prot.VAR_SHORT),
+    WORLDENTITY_INFO_V6(GameServerProtId.WORLDENTITY_INFO_V6, Prot.VAR_SHORT),
 
     // Map packets
     REBUILD_NORMAL(GameServerProtId.REBUILD_NORMAL, Prot.VAR_SHORT),
@@ -167,6 +173,7 @@ public enum class GameServerProt(
     CHAT_FILTER_SETTINGS_PRIVATECHAT(GameServerProtId.CHAT_FILTER_SETTINGS_PRIVATECHAT, 1),
     UPDATE_TRADINGPOST(GameServerProtId.UPDATE_TRADINGPOST, Prot.VAR_SHORT),
     UPDATE_STOCKMARKET_SLOT(GameServerProtId.UPDATE_STOCKMARKET_SLOT, 20),
+    ACCOUNT_FLAGS(GameServerProtId.ACCOUNT_FLAGS, 8),
 
     // Misc. client state packets
     HINT_ARROW(GameServerProtId.HINT_ARROW, 6),

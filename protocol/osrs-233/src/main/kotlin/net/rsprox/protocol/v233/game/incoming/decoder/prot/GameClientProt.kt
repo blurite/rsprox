@@ -26,7 +26,7 @@ public enum class GameClientProt(
 
     @Deprecated(
         "Deprecated since inventory rework in revision 204, " +
-            "use all usages go through OPNPCT now.",
+            "all usagesgo through OPNPCT now.",
         replaceWith = ReplaceWith("OPNPCT"),
     )
     OPNPCU(GameClientProtId.OPNPCU, 11),
@@ -42,7 +42,7 @@ public enum class GameClientProt(
 
     @Deprecated(
         "Deprecated since inventory rework in revision 204, " +
-            "use all usages go through OPLOCT now.",
+            "all usagesgo through OPLOCT now.",
         replaceWith = ReplaceWith("OPLOCT"),
     )
     OPLOCU(GameClientProtId.OPLOCU, 15),
@@ -58,7 +58,7 @@ public enum class GameClientProt(
 
     @Deprecated(
         "Deprecated since inventory rework in revision 204, " +
-            "use all usages go through OPOBJT now.",
+            "all usagesgo through OPOBJT now.",
         replaceWith = ReplaceWith("OPOBJT"),
     )
     OPOBJU(GameClientProtId.OPOBJU, 15),
@@ -76,10 +76,25 @@ public enum class GameClientProt(
 
     @Deprecated(
         "Deprecated since inventory rework in revision 204, " +
-            "use all usages go through OPPLAYERT now.",
+            "all usagesgo through OPPLAYERT now.",
         replaceWith = ReplaceWith("OPPLAYERT"),
     )
     OPPLAYERU(GameClientProtId.OPPLAYERU, 11),
+
+    OPWORLDENTITY1(GameClientProtId.OPWORLDENTITY1, 3),
+    OPWORLDENTITY2(GameClientProtId.OPWORLDENTITY2, 3),
+    OPWORLDENTITY3(GameClientProtId.OPWORLDENTITY3, 3),
+    OPWORLDENTITY4(GameClientProtId.OPWORLDENTITY4, 3),
+    OPWORLDENTITY5(GameClientProtId.OPWORLDENTITY5, 3),
+    OPWORLDENTITY6(GameClientProtId.OPWORLDENTITY6, 2),
+    OPWORLDENTITYT(GameClientProtId.OPWORLDENTITYT, 11),
+
+    @Deprecated(
+        "Deprecated since inventory rework in revision 204, " +
+            "all usages go through OPWORLDENTITYT now.",
+        replaceWith = ReplaceWith("OPWORLDENTITYT"),
+    )
+    OPWORLDENTITYU(GameClientProtId.OPWORLDENTITYU, 11),
 
     // Events
     EVENT_APPLET_FOCUS(GameClientProtId.EVENT_APPLET_FOCUS, 1),
