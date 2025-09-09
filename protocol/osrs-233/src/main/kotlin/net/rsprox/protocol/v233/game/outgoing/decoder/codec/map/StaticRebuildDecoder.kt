@@ -18,6 +18,7 @@ import net.rsprox.protocol.session.getWorld
 import net.rsprox.protocol.v233.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.v233.game.outgoing.model.info.npcinfo.NpcInfoClient
 import net.rsprox.protocol.v233.game.outgoing.model.info.playerinfo.PlayerInfoClient
+import net.rsprox.protocol.v233.game.outgoing.model.info.worldentityinfo.WorldEntityInfoClient
 
 internal class StaticRebuildDecoder(
     private val huffmanCodec: HuffmanCodec,
@@ -83,6 +84,7 @@ internal class StaticRebuildDecoder(
                         huffmanCodec,
                     ),
                     NpcInfoClient(cache),
+                    WorldEntityInfoClient(),
                 )
             world.baseX = (zoneX - 6) * 8
             world.baseZ = (zoneZ - 6) * 8

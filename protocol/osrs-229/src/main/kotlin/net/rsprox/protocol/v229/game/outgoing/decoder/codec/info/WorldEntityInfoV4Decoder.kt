@@ -6,6 +6,7 @@ import net.rsprot.protocol.ClientProt
 import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.common.CoordGrid
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.GenericWorldEntityInfoClient
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfo
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityUpdateType
 import net.rsprox.protocol.session.Session
@@ -29,7 +30,7 @@ internal class WorldEntityInfoV4Decoder(
         val activeWorld = session.getActiveWorld()
         val world = session.getWorld(activeWorld)
         val message =
-            world.worldEntityInfo.decode(
+            world.worldEntity.decode(
                 buffer,
                 CoordGrid(world.level, world.baseX, world.baseZ),
                 4,
@@ -48,6 +49,7 @@ internal class WorldEntityInfoV4Decoder(
                             huffmanCodec,
                         ),
                         NpcInfoClient(cache),
+                        GenericWorldEntityInfoClient(),
                         update.sizeX,
                         update.sizeZ,
                     )
@@ -66,6 +68,7 @@ internal class WorldEntityInfoV4Decoder(
                             huffmanCodec,
                         ),
                         NpcInfoClient(cache),
+                        GenericWorldEntityInfoClient(),
                         update.sizeX,
                         update.sizeZ,
                     )
@@ -79,6 +82,7 @@ internal class WorldEntityInfoV4Decoder(
                             huffmanCodec,
                         ),
                         NpcInfoClient(cache),
+                        GenericWorldEntityInfoClient(),
                         update.sizeX,
                         update.sizeZ,
                     )

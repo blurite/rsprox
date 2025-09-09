@@ -1,4 +1,4 @@
-package net.rsprox.protocol.v231.game.outgoing.decoder.codec.info
+package net.rsprox.protocol.v233.game.outgoing.decoder.codec.info
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.compression.HuffmanCodec
@@ -6,22 +6,22 @@ import net.rsprot.protocol.ClientProt
 import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.common.CoordGrid
-import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.GenericWorldEntityInfoClient
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfo
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityUpdateType
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.session.allocateWorld
 import net.rsprox.protocol.session.getActiveWorld
 import net.rsprox.protocol.session.getWorld
-import net.rsprox.protocol.v231.game.outgoing.decoder.prot.GameServerProt
-import net.rsprox.protocol.v231.game.outgoing.model.info.npcinfo.NpcInfoClient
-import net.rsprox.protocol.v231.game.outgoing.model.info.playerinfo.PlayerInfoClient
+import net.rsprox.protocol.v233.game.outgoing.decoder.prot.GameServerProt
+import net.rsprox.protocol.v233.game.outgoing.model.info.npcinfo.NpcInfoClient
+import net.rsprox.protocol.v233.game.outgoing.model.info.playerinfo.PlayerInfoClient
+import net.rsprox.protocol.v233.game.outgoing.model.info.worldentityinfo.WorldEntityInfoClient
 
-internal class WorldEntityInfoV5Decoder(
+internal class WorldEntityInfoV6Decoder(
     private val huffmanCodec: HuffmanCodec,
     private val cache: CacheProvider,
 ) : ProxyMessageDecoder<WorldEntityInfo> {
-    override val prot: ClientProt = GameServerProt.WORLDENTITY_INFO_V5
+    override val prot: ClientProt = GameServerProt.WORLDENTITY_INFO_V6
 
     override fun decode(
         buffer: JagByteBuf,
@@ -33,7 +33,7 @@ internal class WorldEntityInfoV5Decoder(
             world.worldEntity.decode(
                 buffer,
                 CoordGrid(world.level, world.baseX, world.baseZ),
-                5,
+                6,
             )
         for ((index, update) in message.updates) {
             when (update) {
@@ -49,7 +49,7 @@ internal class WorldEntityInfoV5Decoder(
                             huffmanCodec,
                         ),
                         NpcInfoClient(cache),
-                        GenericWorldEntityInfoClient(),
+                        WorldEntityInfoClient(),
                         update.sizeX,
                         update.sizeZ,
                     )
@@ -68,7 +68,7 @@ internal class WorldEntityInfoV5Decoder(
                             huffmanCodec,
                         ),
                         NpcInfoClient(cache),
-                        GenericWorldEntityInfoClient(),
+                        WorldEntityInfoClient(),
                         update.sizeX,
                         update.sizeZ,
                     )
@@ -82,7 +82,7 @@ internal class WorldEntityInfoV5Decoder(
                             huffmanCodec,
                         ),
                         NpcInfoClient(cache),
-                        GenericWorldEntityInfoClient(),
+                        WorldEntityInfoClient(),
                         update.sizeX,
                         update.sizeZ,
                     )

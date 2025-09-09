@@ -15,6 +15,7 @@ import net.rsprox.protocol.session.getWorld
 import net.rsprox.protocol.v233.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.v233.game.outgoing.model.info.npcinfo.NpcInfoClient
 import net.rsprox.protocol.v233.game.outgoing.model.info.playerinfo.PlayerInfoClient
+import net.rsprox.protocol.v233.game.outgoing.model.info.worldentityinfo.WorldEntityInfoClient
 
 internal class WorldEntityInfoV5Decoder(
     private val huffmanCodec: HuffmanCodec,
@@ -29,7 +30,7 @@ internal class WorldEntityInfoV5Decoder(
         val activeWorld = session.getActiveWorld()
         val world = session.getWorld(activeWorld)
         val message =
-            world.worldEntityInfo.decode(
+            world.worldEntity.decode(
                 buffer,
                 CoordGrid(world.level, world.baseX, world.baseZ),
                 5,
@@ -48,6 +49,7 @@ internal class WorldEntityInfoV5Decoder(
                             huffmanCodec,
                         ),
                         NpcInfoClient(cache),
+                        WorldEntityInfoClient(),
                         update.sizeX,
                         update.sizeZ,
                     )
@@ -66,6 +68,7 @@ internal class WorldEntityInfoV5Decoder(
                             huffmanCodec,
                         ),
                         NpcInfoClient(cache),
+                        WorldEntityInfoClient(),
                         update.sizeX,
                         update.sizeZ,
                     )
@@ -79,6 +82,7 @@ internal class WorldEntityInfoV5Decoder(
                             huffmanCodec,
                         ),
                         NpcInfoClient(cache),
+                        WorldEntityInfoClient(),
                         update.sizeX,
                         update.sizeZ,
                     )
