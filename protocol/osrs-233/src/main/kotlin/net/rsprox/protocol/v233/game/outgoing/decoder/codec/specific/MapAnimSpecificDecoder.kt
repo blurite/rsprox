@@ -16,8 +16,8 @@ internal class MapAnimSpecificDecoder : ProxyMessageDecoder<MapAnimSpecific> {
         session: Session,
     ): MapAnimSpecific {
         val coordInBuildArea = CoordInBuildArea(buffer.g3())
-        val id = buffer.g2Alt3()
-        val delay = buffer.g2()
+        val id = buffer.g2()
+        val delay = buffer.g2Alt3()
         val height = buffer.g1()
         return MapAnimSpecific(
             id,

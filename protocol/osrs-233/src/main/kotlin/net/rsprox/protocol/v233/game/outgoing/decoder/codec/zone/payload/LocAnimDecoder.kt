@@ -16,9 +16,9 @@ internal class LocAnimDecoder : ProxyMessageDecoder<LocAnim> {
         buffer: JagByteBuf,
         session: Session,
     ): LocAnim {
-        val id = buffer.g2Alt2()
-        val coordInZone = CoordInZone(buffer.g1())
-        val locProperties = LocProperties(buffer.g1Alt1())
+        val id = buffer.g2()
+        val coordInZone = CoordInZone(buffer.g1Alt2())
+        val locProperties = LocProperties(buffer.g1Alt2())
         return LocAnim(
             id,
             coordInZone,

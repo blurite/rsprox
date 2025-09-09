@@ -15,8 +15,8 @@ internal class IfSetAnimDecoder : ProxyMessageDecoder<IfSetAnim> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetAnim {
-        val anim = buffer.g2()
         val combinedId = buffer.gCombinedIdAlt1()
+        val anim = buffer.g2Alt1()
         return IfSetAnim(
             combinedId.interfaceId,
             combinedId.componentId,

@@ -16,16 +16,16 @@ internal class LocMergeDecoder : ProxyMessageDecoder<LocMerge> {
         buffer: JagByteBuf,
         session: Session,
     ): LocMerge {
-        val id = buffer.g2Alt1()
-        val locProperties = LocProperties(buffer.g1Alt2())
-        val end = buffer.g2()
-        val start = buffer.g2Alt3()
-        val minX = buffer.g1()
-        val minZ = buffer.g1Alt3()
-        val maxZ = buffer.g1Alt3()
-        val maxX = buffer.g1()
-        val index = buffer.g2Alt3()
+        val minZ = buffer.g1Alt2()
+        val index = buffer.g2()
         val coordInZone = CoordInZone(buffer.g1Alt3())
+        val maxZ = buffer.g1Alt3()
+        val minX = buffer.g1Alt2()
+        val start = buffer.g2()
+        val locProperties = LocProperties(buffer.g1Alt1())
+        val maxX = buffer.g1Alt3()
+        val id = buffer.g2Alt1()
+        val end = buffer.g2Alt3()
         return LocMerge(
             index,
             id,

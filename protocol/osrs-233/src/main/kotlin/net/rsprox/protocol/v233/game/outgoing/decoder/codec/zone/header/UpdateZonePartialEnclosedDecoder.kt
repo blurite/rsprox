@@ -6,7 +6,7 @@ import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.model.IncomingZoneProt
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
 import net.rsprox.protocol.session.Session
-import net.rsprox.protocol.v233.game.outgoing.decoder.codec.zone.payload.*
+import net.rsprox.protocol.v233.game.outgoing.decoder.codec.zone.payload.LocAddChangeV2Decoder
 import net.rsprox.protocol.v233.game.outgoing.decoder.codec.zone.payload.LocAnimDecoder
 import net.rsprox.protocol.v233.game.outgoing.decoder.codec.zone.payload.LocDelDecoder
 import net.rsprox.protocol.v233.game.outgoing.decoder.codec.zone.payload.LocMergeDecoder
@@ -28,9 +28,9 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
         buffer: JagByteBuf,
         session: Session,
     ): UpdateZonePartialEnclosed {
-        val zoneZ = buffer.g1()
-        val zoneX = buffer.g1Alt2()
-        val level = buffer.g1Alt3()
+        val zoneX = buffer.g1Alt3()
+        val zoneZ = buffer.g1Alt3()
+        val level = buffer.g1Alt2()
         val packets =
             buildList {
                 while (buffer.isReadable) {
@@ -50,18 +50,18 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
     private enum class IndexedZoneProtDecoder(
         val decoder: ProxyMessageDecoder<*>,
     ) {
-        LOC_MERGE(LocMergeDecoder()),
-        OBJ_CUSTOMISE(ObjCustomiseDecoder()),
-        LOC_ADD_CHANGE_V2(LocAddChangeV2Decoder()),
-        LOC_DEL(LocDelDecoder()),
-        OBJ_UNCUSTOMISE(ObjUncustomiseDecoder()),
-        SOUND_AREA(SoundAreaDecoder()),
-        OBJ_ADD(ObjAddDecoder()),
         OBJ_COUNT(ObjCountDecoder()),
+        OBJ_UNCUSTOMISE(ObjUncustomiseDecoder()),
+        OBJ_ADD(ObjAddDecoder()),
+        OBJ_DEL(ObjDelDecoder()),
+        LOC_MERGE(LocMergeDecoder()),
+        LOC_DEL(LocDelDecoder()),
         MAP_ANIM(MapAnimDecoder()),
         OBJ_ENABLED_OPS(ObjEnabledOpsDecoder()),
-        OBJ_DEL(ObjDelDecoder()),
+        OBJ_CUSTOMISE(ObjCustomiseDecoder()),
+        SOUND_AREA(SoundAreaDecoder()),
         LOC_ANIM(LocAnimDecoder()),
+        LOC_ADD_CHANGE_V2(LocAddChangeV2Decoder()),
         MAP_PROJANIM_V2(MapProjAnimV2Decoder()),
     }
 }
