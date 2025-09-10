@@ -617,8 +617,14 @@ public class ProxyService(
                 .javConfig("http://127.0.0.1:${target.config.httpPort}/$javConfigEndpoint")
                 .worldList("http://127.0.0.1:${target.config.httpPort}/$worldlistEndpoint")
                 .port(port)
-        if (target.config.varpCount != YamlProxyTargetConfig.DEFAULT_VARP_COUNT) {
-            criteriaBuilder.varpCount(YamlProxyTargetConfig.DEFAULT_VARP_COUNT, target.config.varpCount)
+        val revConst = targetRev?.substringBefore('.')?.toIntOrNull()
+        if (revConst == null || revConst <= 231) {
+            if (target.config.varpCount != YamlProxyTargetConfig.DEFAULT_VARP_COUNT) {
+                criteriaBuilder.varpCount(
+                    YamlProxyTargetConfig.DEFAULT_VARP_COUNT,
+                    target.config.varpCount,
+                )
+            }
         }
         if (target.config.name != YamlProxyTargetConfig.DEFAULT_NAME) {
             criteriaBuilder.name(target.config.name)
