@@ -797,8 +797,9 @@ public class TextNpcInfoTranscriber(
                 if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
                     shortNpc(npc.index)
                 }
+                int("headiconslot", i)
                 scriptVarType("id", ScriptVarType.GRAPHIC, group)
-                int("index", index)
+                int("spriteindex", index)
             }
         }
     }
