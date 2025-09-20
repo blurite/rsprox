@@ -136,21 +136,6 @@ public enum class Setting(
         false,
         "Hides the index property in NPC info logs for all NPCs.",
     ),
-    NPC_REMOVAL(
-        SettingGroup.LOGGING,
-        SettingCategory.NPC_INFO,
-        "Npc Removal",
-        false,
-        "Whether to log NPCs being being removed from your view.",
-    ),
-    NPC_INFO_HIDE_INACTIVE_NPCS(
-        SettingGroup.LOGGING,
-        SettingCategory.NPC_INFO,
-        "Hide Inactive NPCs",
-        true,
-        "Hides any NPCs who do not have an active extended info block applied. " +
-            "This will hide NPCs that are moving if they do not have extended info applied.",
-    ),
     NPC_INFO_HIDE_EMPTY(
         SettingGroup.LOGGING,
         SettingCategory.NPC_INFO,

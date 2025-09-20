@@ -197,9 +197,9 @@ public class TextNpcInfoTranscriber(
                 for ((index, update) in message.updates) {
                     when (update) {
                         is NpcUpdateType.Active -> {
-                            if (settings[Setting.NPC_INFO_HIDE_INACTIVE_NPCS] &&
-                                update.extendedInfo.isEmpty()
-                            ) {
+                            val skipMovement = !filters[PropertyFilter.NPC_MOVEMENT]
+                            val skipExtendedInfo = !filters[PropertyFilter.NPC_EXT_INFO]
+                            if (skipMovement && (skipExtendedInfo || update.extendedInfo.isEmpty())) {
                                 continue
                             }
                             val npc = world.getNpc(index)
@@ -237,20 +237,22 @@ public class TextNpcInfoTranscriber(
                                 } else if (coordShift) {
                                     coordGrid(update.level, update.x, update.z, "newcoord")
                                 }
-                                appendExtendedInfo(npc, update.extendedInfo)
+                                if (!skipExtendedInfo) {
+                                    appendExtendedInfo(npc, update.extendedInfo)
+                                }
                             }
                         }
                         NpcUpdateType.HighResolutionToLowResolution -> {
-                            if (settings[Setting.NPC_REMOVAL]) {
+                            if (filters[PropertyFilter.NPC_DEL]) {
                                 group("DEL") {
                                     npc(index)
                                 }
                             }
                         }
                         is NpcUpdateType.LowResolutionToHighResolution -> {
-                            if (settings[Setting.NPC_INFO_HIDE_INACTIVE_NPCS] &&
-                                update.extendedInfo.isEmpty()
-                            ) {
+                            val skipAdd = !filters[PropertyFilter.NPC_ADD]
+                            val skipExtendedInfo = !filters[PropertyFilter.NPC_EXT_INFO]
+                            if (skipAdd && (skipExtendedInfo || update.extendedInfo.isEmpty())) {
                                 continue
                             }
                             val npc = world.getNpc(index)
@@ -259,7 +261,9 @@ public class TextNpcInfoTranscriber(
                                 filteredInt("creationcycle", update.spawnCycle, 0)
                                 int("angle", update.angle)
                                 filteredBoolean("jump", update.jump)
-                                appendExtendedInfo(npc, update.extendedInfo)
+                                if (!skipExtendedInfo) {
+                                    appendExtendedInfo(npc, update.extendedInfo)
+                                }
                             }
                         }
                         NpcUpdateType.Idle -> {
