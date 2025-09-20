@@ -187,7 +187,8 @@ public class TextPlayerInfoTranscriber(
                             // no-op
                         }
                         is PlayerUpdateType.HighResolutionIdle -> {
-                            if (update.extendedInfo.isEmpty()) {
+                            val skipExtendedInfo = !filters[PropertyFilter.PLAYER_EXT_INFO]
+                            if (skipExtendedInfo || update.extendedInfo.isEmpty()) {
                                 continue
                             }
                             val player = sessionState.getPlayer(index)
@@ -197,9 +198,9 @@ public class TextPlayerInfoTranscriber(
                             }
                         }
                         is PlayerUpdateType.HighResolutionMovement -> {
-                            if (settings[Setting.PLAYER_INFO_HIDE_INACTIVE_PLAYERS] &&
-                                update.extendedInfo.isEmpty()
-                            ) {
+                            val skipMovement = !filters[PropertyFilter.PLAYER_MOVEMENT]
+                            val skipExtendedInfo = !filters[PropertyFilter.PLAYER_EXT_INFO]
+                            if (skipMovement && (skipExtendedInfo || update.extendedInfo.isEmpty())) {
                                 continue
                             }
                             val player = sessionState.getPlayer(index)
@@ -215,26 +216,30 @@ public class TextPlayerInfoTranscriber(
                             group(label) {
                                 player(index)
                                 coordGrid("newcoord", update.coord)
-                                appendExtendedInfo(player, update.extendedInfo)
+                                if (!skipExtendedInfo) {
+                                    appendExtendedInfo(player, update.extendedInfo)
+                                }
                             }
                         }
                         is PlayerUpdateType.HighResolutionToLowResolution -> {
-                            if (settings[Setting.PLAYER_REMOVAL]) {
+                            if (filters[PropertyFilter.PLAYER_DEL]) {
                                 group("DEL") {
                                     player(index)
                                 }
                             }
                         }
                         is PlayerUpdateType.LowResolutionToHighResolution -> {
-                            if (settings[Setting.PLAYER_INFO_HIDE_INACTIVE_PLAYERS] &&
-                                update.extendedInfo.isEmpty()
-                            ) {
+                            val skipAdd = !filters[PropertyFilter.PLAYER_ADD]
+                            val skipExtendedInfo = !filters[PropertyFilter.PLAYER_EXT_INFO]
+                            if (skipAdd && (skipExtendedInfo || update.extendedInfo.isEmpty())) {
                                 continue
                             }
                             val player = sessionState.getPlayer(index)
                             group("ADD") {
                                 player(index)
-                                appendExtendedInfo(player, update.extendedInfo)
+                                if (!skipExtendedInfo) {
+                                    appendExtendedInfo(player, update.extendedInfo)
+                                }
                             }
                         }
                     }
