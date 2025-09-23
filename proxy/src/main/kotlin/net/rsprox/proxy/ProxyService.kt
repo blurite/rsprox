@@ -187,7 +187,7 @@ public class ProxyService(
             ProxyTargetConfig(
                 id = 0,
                 name = YamlProxyTargetConfig.DEFAULT_NAME,
-                javConfigUrl = overriddenJavConfig ?: "http://oldschool.runescape.com/jav_config.ws",
+                javConfigUrl = overriddenJavConfig ?: "https://oldschool.config.runescape.com/jav_config.ws",
                 modulus = null,
                 varpCount = YamlProxyTargetConfig.DEFAULT_VARP_COUNT,
                 revision = null,
