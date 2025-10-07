@@ -11,6 +11,7 @@ public data class ProxyTargetConfig(
     public val revision: String?,
     public val runeliteBootstrapCommitHash: String?,
     public val runeliteGamepackUrl: String?,
+    public val binaryFolder: String?,
 ) {
     public val httpPort: Int
         get() = HTTP_SERVER_PORT + id

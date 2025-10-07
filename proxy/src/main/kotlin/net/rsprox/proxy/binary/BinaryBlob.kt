@@ -38,6 +38,7 @@ import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.io.path.Path
+import kotlin.io.path.createDirectories
 import kotlin.time.TimeSource
 
 public data class BinaryBlob(
@@ -53,6 +54,7 @@ public data class BinaryBlob(
     private var lastWriteSize = 0
     private val closed = AtomicBoolean(false)
     private var liveSession: LiveTranscriberSession? = null
+    private var binaryFolder: String? = null
     private var lastBandwidthUpdate = TimeSource.Monotonic.markNow()
     private var lastOutgoingBytes: Int = 0
     private var lastIncomingBytes: Int = 0
@@ -179,7 +181,11 @@ public data class BinaryBlob(
     }
 
     private fun write() {
-        write(BINARY_PATH.resolve(header.fileName()))
+        val folder = binaryFolder ?: return
+        val directory = BINARY_PATH.resolve(folder)
+        directory.createDirectories()
+        val path = directory.resolve(header.fileName())
+        write(path)
     }
 
     private fun write(path: Path) {
@@ -244,6 +250,7 @@ public data class BinaryBlob(
     public fun hookLiveTranscriber(
         key: XteaKey,
         decoderLoader: DecoderLoader,
+        binaryFolder: String?,
     ) {
         check(this.liveSession == null) {
             "Live session already hooked."
@@ -252,6 +259,7 @@ public data class BinaryBlob(
             "Stream has already been launched - it is impossible to hook mid-session."
         }
         try {
+            this.binaryFolder = binaryFolder
             val masterIndex =
                 Js5MasterIndex.trimmed(
                     header.revision,

@@ -196,6 +196,7 @@ public class ProxyService(
                 revision = null,
                 runeliteBootstrapCommitHash = null,
                 runeliteGamepackUrl = null,
+                binaryFolder = "Old School RuneScape",
             )
         try {
             val path = if (PROXY_TARGETS_FILE.exists()) PROXY_TARGETS_FILE else ALT_PROXY_TARGETS_FILE
@@ -234,6 +235,12 @@ public class ProxyService(
                 "Revision in jav-config mismatches with supplied revision: $revision vs $revisionString"
             }
         }
+        val binaryFolder =
+            if (!exportBinaries) {
+                null
+            } else {
+                binaryFolder ?: name
+            }
         return ProxyTargetConfig(
             id = index + 1,
             name = this.name,
@@ -243,6 +250,7 @@ public class ProxyService(
             revision = this.revision,
             runeliteBootstrapCommitHash = commitHash,
             runeliteGamepackUrl = gamepackUrl,
+            binaryFolder = binaryFolder,
         )
     }
 

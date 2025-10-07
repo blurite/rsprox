@@ -24,6 +24,10 @@ public data class YamlProxyTargetConfig(
     public val runeliteBootstrapCommitHash: String? = null,
     @field:JsonProperty("runelite_gamepack_url")
     public val runeliteGamepackUrl: String? = null,
+    @field:JsonProperty("binary_folder")
+    public val binaryFolder: String? = null,
+    @field:JsonProperty("export_binaries")
+    public val exportBinaries: Boolean = true,
 ) {
     public companion object {
         public const val DEFAULT_NAME: String = "Old School RuneScape"
