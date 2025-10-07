@@ -22,6 +22,8 @@ import io.netty.handler.codec.http.QueryStringDecoder
 import io.netty.handler.logging.LogLevel
 import io.netty.handler.logging.LoggingHandler
 import io.netty.util.CharsetUtil
+import net.rsprox.gui.dialogs.ErrorDialog
+import java.net.BindException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
@@ -53,7 +55,20 @@ public class AuthHttpServer {
                 )
             }
         this.bootstrap = bootstrap
-        bootstrap.bind(80).sync()
+        try {
+            bootstrap.bind(80).sync()
+        } catch (e: BindException) {
+            val notif =
+                when (e.message) {
+                    null -> "Unknown"
+                    "Permission denied" -> "Must have root access to bind port 80"
+                    "Address already in use" -> "Port 80 already in use"
+                    "Address already in use: bind" -> "Port 80 already in use"
+                    else -> e.message
+                }
+            ErrorDialog.show("Jagex Account", "Unable to start Jagex Account HTTP Server:\n$notif")
+            throw e
+        }
 
         bootstrap.config().childGroup().schedule({
             stop()
