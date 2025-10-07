@@ -25,7 +25,6 @@ import io.netty.util.CharsetUtil
 import net.rsprox.gui.dialogs.ErrorDialog
 import java.net.BindException
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
 
 public class AuthHttpServer {
     private var bootstrap: ServerBootstrap? = null
@@ -69,15 +68,13 @@ public class AuthHttpServer {
             ErrorDialog.show("Jagex Account", "Unable to start Jagex Account HTTP Server:\n$notif")
             throw e
         }
-
-        bootstrap.config().childGroup().schedule({
-            stop()
-        }, 5, TimeUnit.MINUTES)
     }
 
     public fun stop() {
         val bootstrap = bootstrap ?: return
-
+        logger.debug {
+            "Shutting down Jagex Account HTTP server."
+        }
         bootstrap.config().group().shutdownGracefully()
         bootstrap.config().childGroup().shutdownGracefully()
 
@@ -112,6 +109,7 @@ public class AuthHttpServer {
         ) {
             if (request.method() != HttpMethod.GET) {
                 sendErrorResponse(ctx, HttpResponseStatus.METHOD_NOT_ALLOWED)
+                shutDownHttpServer()
                 return
             }
             val query = QueryStringDecoder(request.uri(), CharsetUtil.UTF_8)
@@ -161,8 +159,10 @@ public class AuthHttpServer {
                             """.trimIndent(),
                     ),
                 )
+                shutDownHttpServer()
             } else {
                 sendErrorResponse(ctx, HttpResponseStatus.NOT_FOUND)
+                shutDownHttpServer()
             }
         }
 
@@ -171,6 +171,10 @@ public class AuthHttpServer {
             status: HttpResponseStatus,
         ) {
             ctx.writeAndFlush(status)
+        }
+
+        private fun shutDownHttpServer() {
+            stop()
         }
     }
 
