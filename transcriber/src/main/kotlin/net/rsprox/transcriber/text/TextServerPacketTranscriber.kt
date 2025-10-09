@@ -23,8 +23,8 @@ import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.EnabledOpsExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SequenceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.*
-import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.extendedinfo.UnknownWorldEntityExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.interfaces.*
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvFull
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvPartial
@@ -1036,8 +1036,9 @@ public class TextServerPacketTranscriber(
         group("EXTENDED_INFO") {
             for (info in extendedInfo) {
                 when (info) {
-                    is UnknownWorldEntityExtendedInfo -> {
-                        any("bit0x1", "enabled")
+                    is SequenceExtendedInfo -> {
+                        scriptVarType("id", ScriptVarType.SEQ, info.id.maxUShortToMinusOne())
+                        filteredInt("delay", info.delay, 0)
                     }
                     is EnabledOpsExtendedInfo -> {
                         any("opflags", info.value.toFullBinaryString(5))

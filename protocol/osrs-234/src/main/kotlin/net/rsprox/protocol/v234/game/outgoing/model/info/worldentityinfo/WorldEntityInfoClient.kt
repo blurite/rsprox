@@ -5,6 +5,7 @@ import net.rsprox.protocol.common.CoordFine
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.EnabledOpsExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SequenceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfo
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoDecoder
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV1
@@ -15,7 +16,6 @@ import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityI
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV6
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityMoveSpeed
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityUpdateType
-import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.extendedinfo.UnknownWorldEntityExtendedInfo
 
 public class WorldEntityInfoClient : WorldEntityInfoDecoder {
     private var transmittedWorldEntityCount: Int = 0
@@ -256,7 +256,9 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
         }
         val blocks = mutableListOf<ExtendedInfo>()
         if (flags and 0x1 != 0) {
-            blocks += UnknownWorldEntityExtendedInfo
+            val id = buffer.g2()
+            val delay = buffer.g1()
+            blocks += SequenceExtendedInfo(id, delay)
         }
 
         if (flags and 0x2 != 0) {
