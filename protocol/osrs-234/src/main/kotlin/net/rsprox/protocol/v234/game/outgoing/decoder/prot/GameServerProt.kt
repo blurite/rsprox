@@ -54,12 +54,12 @@ public enum class GameServerProt(
     LOC_DEL(GameServerProtId.LOC_DEL, 2),
     LOC_ANIM(GameServerProtId.LOC_ANIM, 4),
     LOC_MERGE(GameServerProtId.LOC_MERGE, 14),
-    OBJ_ADD(GameServerProtId.OBJ_ADD, 14),
-    OBJ_DEL(GameServerProtId.OBJ_DEL, 7),
-    OBJ_COUNT(GameServerProtId.OBJ_COUNT, 11),
-    OBJ_ENABLED_OPS(GameServerProtId.OBJ_ENABLED_OPS, 4),
-    OBJ_CUSTOMISE(GameServerProtId.OBJ_CUSTOMISE, 17),
-    OBJ_UNCUSTOMISE(GameServerProtId.OBJ_UNCUSTOMISE, 7),
+    OBJ_ADD(-1, 14),
+    OBJ_DEL(-1, 7),
+    OBJ_COUNT(-1, 11),
+    OBJ_ENABLED_OPS(-1, 4),
+    OBJ_CUSTOMISE(-1, 17),
+    OBJ_UNCUSTOMISE(-1, 7),
     MAP_ANIM(GameServerProtId.MAP_ANIM, 6),
 
     // MAP_PROJANIM_V2 has no packet of its own. It can only be transmitted via the partial enclosed packet.
@@ -91,12 +91,6 @@ public enum class GameServerProt(
 
     // World entity packets
     SET_ACTIVE_WORLD_V2(GameServerProtId.SET_ACTIVE_WORLD_V2, 3),
-
-    @Deprecated(
-        "Deprecated since 233. Use WORLDENTITY_INFO_V6.",
-        replaceWith = ReplaceWith("WORLDENTITY_INFO_V6"),
-    )
-    WORLDENTITY_INFO_V5(GameServerProtId.WORLDENTITY_INFO_V5, Prot.VAR_SHORT),
     WORLDENTITY_INFO_V6(GameServerProtId.WORLDENTITY_INFO_V6, Prot.VAR_SHORT),
 
     // Map packets
@@ -187,6 +181,7 @@ public enum class GameServerProt(
     HIDELOCOPS(GameServerProtId.HIDELOCOPS, 1),
     SET_INTERACTION_MODE(GameServerProtId.SET_INTERACTION_MODE, 4),
     RESET_INTERACTION_MODE(GameServerProtId.RESET_INTERACTION_MODE, 2),
+    ZBUF(GameServerProtId.ZBUF, 1),
 
     // Misc. client packets
     URL_OPEN(GameServerProtId.URL_OPEN, Prot.VAR_SHORT),
