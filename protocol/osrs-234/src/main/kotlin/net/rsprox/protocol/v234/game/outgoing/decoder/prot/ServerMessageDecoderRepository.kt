@@ -137,12 +137,6 @@ import net.rsprox.protocol.v234.game.outgoing.decoder.codec.zone.payload.LocAnim
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.zone.payload.LocDelDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.zone.payload.LocMergeDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.zone.payload.MapAnimDecoder
-import net.rsprox.protocol.v234.game.outgoing.decoder.codec.zone.payload.ObjAddDecoder
-import net.rsprox.protocol.v234.game.outgoing.decoder.codec.zone.payload.ObjCountDecoder
-import net.rsprox.protocol.v234.game.outgoing.decoder.codec.zone.payload.ObjCustomiseDecoder
-import net.rsprox.protocol.v234.game.outgoing.decoder.codec.zone.payload.ObjDelDecoder
-import net.rsprox.protocol.v234.game.outgoing.decoder.codec.zone.payload.ObjEnabledOpsDecoder
-import net.rsprox.protocol.v234.game.outgoing.decoder.codec.zone.payload.ObjUncustomiseDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.zone.payload.SoundAreaDecoder
 
 internal object ServerMessageDecoderRepository {
@@ -307,13 +301,7 @@ internal object ServerMessageDecoderRepository {
                 bind(LocDelDecoder())
                 bind(LocMergeDecoder())
                 bind(MapAnimDecoder())
-                bind(ObjAddDecoder())
-                bind(ObjCountDecoder())
-                bind(ObjDelDecoder())
-                bind(ObjEnabledOpsDecoder())
                 bind(SoundAreaDecoder())
-                bind(ObjCustomiseDecoder())
-                bind(ObjUncustomiseDecoder())
 
                 bind(UnknownStringDecoder())
             }
