@@ -1258,6 +1258,13 @@ public enum class PropertyFilter(
         false,
         searchTerms = "packet,group,batch",
     ),
+    ZBUF(
+        SERVER_TO_CLIENT,
+        OTHER,
+        "ZBuf",
+        true,
+        searchTerms = "zbuf,depth,buffer",
+    ),
     SITE_SETTINGS(
         SERVER_TO_CLIENT,
         OTHER,

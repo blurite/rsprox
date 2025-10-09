@@ -206,6 +206,7 @@ public class TranscriberPlugin(
             GameServerProt.RESET_INTERACTION_MODE -> pass(message, Transcriber::resetInteractionMode)
             GameServerProt.WORLDENTITY_INFO_V6 -> pass(message, Transcriber::worldEntityInfoV6)
             GameServerProt.ACCOUNT_FLAGS -> pass(message, Transcriber::accountFlags)
+            GameServerProt.ZBUF -> pass(message, Transcriber::zbuf)
         }
     }
 

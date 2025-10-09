@@ -53,6 +53,7 @@ import net.rsprox.protocol.game.outgoing.model.misc.client.SiteSettings
 import net.rsprox.protocol.game.outgoing.model.misc.client.UpdateRebootTimer
 import net.rsprox.protocol.game.outgoing.model.misc.client.UpdateUid192
 import net.rsprox.protocol.game.outgoing.model.misc.client.UrlOpen
+import net.rsprox.protocol.game.outgoing.model.misc.client.ZBuf
 import net.rsprox.protocol.game.outgoing.model.misc.player.AccountFlags
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettings
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettingsPrivateChat
@@ -1891,6 +1892,11 @@ public class TextServerPacketTranscriber(
     override fun packetGroupEnd(message: PacketGroupEnd) {
         if (!filters[PropertyFilter.PACKET_GROUP]) return omit()
         root.int("bytesconsumed", message.bytesRead)
+    }
+
+    override fun zbuf(message: ZBuf) {
+        if (!filters[PropertyFilter.ZBUF]) return omit()
+        root.boolean("enabled", message.enabled)
     }
 
     private enum class ChatFilter(

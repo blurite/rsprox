@@ -88,6 +88,7 @@ import net.rsprox.protocol.v234.game.outgoing.decoder.codec.misc.client.SiteSett
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.misc.client.UpdateRebootTimerDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.misc.client.UpdateUid192Decoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.misc.client.UrlOpenDecoder
+import net.rsprox.protocol.v234.game.outgoing.decoder.codec.misc.client.ZBufDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.misc.player.AccountFlagsDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.misc.player.ChatFilterSettingsDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.misc.player.ChatFilterSettingsPrivateChatDecoder
@@ -246,6 +247,7 @@ internal object ServerMessageDecoderRepository {
                 bind(UrlOpenDecoder())
                 bind(PacketGroupStartDecoder())
                 bind(PacketGroupEndDecoder())
+                bind(ZBufDecoder())
 
                 bind(ChatFilterSettingsDecoder())
                 bind(ChatFilterSettingsPrivateChatDecoder())
