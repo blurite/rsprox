@@ -14,7 +14,7 @@ public class OpWorldEntity6Decoder : ProxyMessageDecoder<OpWorldEntity6> {
         buffer: JagByteBuf,
         session: Session,
     ): OpWorldEntity6 {
-        val id = buffer.g2Alt1()
+        val id = buffer.g2Alt3()
         return OpWorldEntity6(id)
     }
 }

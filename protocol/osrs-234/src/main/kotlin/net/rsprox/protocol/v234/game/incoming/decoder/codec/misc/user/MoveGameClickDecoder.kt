@@ -14,9 +14,9 @@ public class MoveGameClickDecoder : ProxyMessageDecoder<MoveGameClick> {
         buffer: JagByteBuf,
         session: Session,
     ): MoveGameClick {
-        val keyCombination = buffer.g1()
-        val x = buffer.g2Alt3()
         val z = buffer.g2Alt3()
+        val keyCombination = buffer.g1()
+        val x = buffer.g2Alt2()
         return MoveGameClick(
             x,
             z,

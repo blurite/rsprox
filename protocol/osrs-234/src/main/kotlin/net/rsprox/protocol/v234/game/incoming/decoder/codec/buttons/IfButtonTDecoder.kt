@@ -16,12 +16,12 @@ public class IfButtonTDecoder : ProxyMessageDecoder<IfButtonT> {
         buffer: JagByteBuf,
         session: Session,
     ): IfButtonT {
-        val selectedSub = buffer.g2Alt2()
-        val targetCombinedId = buffer.gCombinedIdAlt1()
-        val targetObj = buffer.g2Alt3()
-        val targetSub = buffer.g2Alt3()
+        val targetSub = buffer.g2Alt1()
+        val selectedSub = buffer.g2()
         val selectedCombinedId = buffer.gCombinedId()
-        val selectedObj = buffer.g2()
+        val targetCombinedId = buffer.gCombinedIdAlt1()
+        val selectedObj = buffer.g2Alt3()
+        val targetObj = buffer.g2Alt2()
         return IfButtonT(
             selectedCombinedId,
             selectedSub,
