@@ -192,6 +192,7 @@ public enum class GameServerProt : Prot {
     HIDELOCOPS,
     SET_INTERACTION_MODE,
     RESET_INTERACTION_MODE,
+    ZBUF,
 
     // Misc. client packets
     URL_OPEN,

@@ -248,6 +248,8 @@ public interface ServerPacketTranscriber {
 
     public fun packetGroupEnd(message: PacketGroupEnd)
 
+    public fun zbuf(message: ZBuf)
+
     public fun chatFilterSettings(message: ChatFilterSettings)
 
     public fun chatFilterSettingsPrivateChat(message: ChatFilterSettingsPrivateChat)
