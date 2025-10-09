@@ -15,14 +15,14 @@ internal class ObjCustomiseSpecificDecoder : ProxyMessageDecoder<ObjCustomiseSpe
         buffer: JagByteBuf,
         session: Session,
     ): ObjCustomiseSpecific {
+        val id = buffer.g2Alt2()
+        val model = buffer.g2Alt1()
+        val recol = buffer.g2Alt2()
+        val coordGrid = CoordGrid(buffer.g4Alt3())
+        val quantity = buffer.g4()
+        val retexIndex = buffer.g2Alt1()
+        val retex = buffer.g2Alt1()
         val recolIndex = buffer.g2()
-        val retexIndex = buffer.g2Alt2()
-        val model = buffer.g2Alt3()
-        val quantity = buffer.g4Alt3()
-        val coordGrid = CoordGrid(buffer.g4Alt1())
-        val id = buffer.g2Alt1()
-        val recol = buffer.g2Alt1()
-        val retex = buffer.g2Alt3()
         return ObjCustomiseSpecific(
             id,
             quantity,

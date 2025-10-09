@@ -14,7 +14,7 @@ internal class UpdateRebootTimerDecoder : ProxyMessageDecoder<UpdateRebootTimer>
         buffer: JagByteBuf,
         session: Session,
     ): UpdateRebootTimer {
-        val gameCycles = buffer.g2()
+        val gameCycles = buffer.g2Alt1()
         return UpdateRebootTimer(
             gameCycles,
         )
