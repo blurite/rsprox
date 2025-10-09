@@ -30,22 +30,27 @@ public class EventMouseMoveDecoder : ProxyMessageDecoder<EventMouseMove> {
             var delta: Boolean
             if (packed and 0xE0 == 0xE0) {
                 timeSinceLastMovement = packed and 0x1f shl 8 or buffer.g1()
-                y = buffer.g2s()
-                x = buffer.g2s()
-                delta = false
-                if (x == 0 && y == -0x8000) {
+                val packed = buffer.g4()
+                if (packed == Int.MIN_VALUE) {
                     x = -1
                     y = -1
+                } else {
+                    x = packed and 0xFFFF
+                    y = packed ushr 16 and 0xFFFF
                 }
+                delta = false
             } else if (packed and 0xC0 == 0xC0) {
                 timeSinceLastMovement = packed and 0x3f
-                y = buffer.g2s()
-                x = buffer.g2s()
-                delta = false
-                if (x == 0 && y == -0x8000) {
+
+                val packed = buffer.g4()
+                if (packed == Int.MIN_VALUE) {
                     x = -1
                     y = -1
+                } else {
+                    x = packed and 0xFFFF
+                    y = packed ushr 16 and 0xFFFF
                 }
+                delta = false
             } else if (packed and 0x80 == 0x80) {
                 timeSinceLastMovement = packed and 0x7f
                 x = buffer.g1() - 128
