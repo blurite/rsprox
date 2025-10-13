@@ -197,6 +197,7 @@ public class ProxyService(
                 runeliteBootstrapCommitHash = null,
                 runeliteGamepackUrl = null,
                 binaryFolder = "Old School RuneScape",
+                gameServerPort = ProxyTargetConfig.DEFAULT_GAME_SERVER_PORT,
             )
         try {
             val path = if (PROXY_TARGETS_FILE.exists()) PROXY_TARGETS_FILE else ALT_PROXY_TARGETS_FILE
@@ -251,6 +252,7 @@ public class ProxyService(
             runeliteBootstrapCommitHash = commitHash,
             runeliteGamepackUrl = gamepackUrl,
             binaryFolder = binaryFolder,
+            gameServerPort = this.gameServerPort,
         )
     }
 
