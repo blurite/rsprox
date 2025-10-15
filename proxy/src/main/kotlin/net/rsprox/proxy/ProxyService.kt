@@ -131,6 +131,13 @@ public class ProxyService(
         this.availablePort = properties.getProperty(PROXY_PORT_MIN)
         this.bootstrapFactory = BootstrapFactory(allocator, properties)
         progressCallback.update(0.15, "Proxy", "Loading RSProx (3/15)")
+        try {
+            refreshProxyTargetsFromSources()
+        } catch (t: Throwable) {
+            logger.error(t) {
+                "Unable to refresh proxy targets from stored sources"
+            }
+        }
         val proxyTargetConfigs = loadProxyTargetConfigs(rspsJavConfigUrl)
         val jobs = mutableListOf<Callable<Boolean>>()
         jobs += createJob(progressCallback) { HuffmanProvider.load() }
@@ -205,7 +212,6 @@ public class ProxyService(
                 gameServerPort = ProxyTargetConfig.DEFAULT_GAME_SERVER_PORT,
             )
         try {
-            refreshProxyTargetsFromSources()
             val path = if (PROXY_TARGETS_FILE.exists()) PROXY_TARGETS_FILE else ALT_PROXY_TARGETS_FILE
             val yamlTargets = YamlProxyTargetConfig.load(path)
             val customTargets =
