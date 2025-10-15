@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import java.io.InputStream
 import java.nio.file.Path
 import kotlin.io.path.exists
 
@@ -35,11 +37,20 @@ public data class YamlProxyTargetConfig(
         public const val DEFAULT_NAME: String = "Old School RuneScape"
         public const val DEFAULT_VARP_COUNT: Int = 5000
 
+        private val objectMapper =
+            ObjectMapper(YAMLFactory())
+                .registerKotlinModule()
+                .findAndRegisterModules()
+
         public fun load(path: Path): YamlProxyTargetConfigList {
             if (!path.exists()) return YamlProxyTargetConfigList(emptyList())
-            return ObjectMapper(YAMLFactory())
-                .findAndRegisterModules()
-                .readValue(path.toFile())
+            return objectMapper.readValue(path.toFile())
+        }
+
+        public fun parse(inputStream: InputStream): YamlProxyTargetConfigList {
+            inputStream.use { stream ->
+                return objectMapper.readValue(stream)
+            }
         }
     }
 }

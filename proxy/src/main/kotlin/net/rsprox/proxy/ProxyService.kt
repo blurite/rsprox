@@ -44,8 +44,12 @@ import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
 import net.rsprox.proxy.runelite.RuneliteLauncher
 import net.rsprox.proxy.settings.DefaultSettingSetStore
+import net.rsprox.proxy.target.ALT_PROXY_TARGETS_FILE
+import net.rsprox.proxy.target.PROXY_TARGETS_FILE
 import net.rsprox.proxy.target.ProxyTarget
 import net.rsprox.proxy.target.ProxyTargetConfig
+import net.rsprox.proxy.target.ProxyTargetImportResult
+import net.rsprox.proxy.target.ProxyTargetImporter
 import net.rsprox.proxy.target.YamlProxyTargetConfig
 import net.rsprox.proxy.util.*
 import net.rsprox.shared.SessionMonitor
@@ -437,6 +441,16 @@ public class ProxyService(
     public fun setSelectedProxyTarget(index: Int) {
         properties.setProperty(SELECTED_PROXY_TARGET, index)
         properties.saveProperties(PROPERTIES_FILE)
+    }
+
+    public fun importProxyTargets(path: Path): ProxyTargetImportResult {
+        val importer = ProxyTargetImporter()
+        return importer.import(path)
+    }
+
+    public fun importProxyTargets(url: URL): ProxyTargetImportResult {
+        val importer = ProxyTargetImporter()
+        return importer.import(url)
     }
 
     public fun setAppSize(
@@ -1026,8 +1040,6 @@ public class ProxyService(
 
     public companion object {
         private val logger = InlineLogger()
-        private val PROXY_TARGETS_FILE = CONFIGURATION_PATH.resolve("proxy-targets.yaml")
-        private val ALT_PROXY_TARGETS_FILE = CONFIGURATION_PATH.resolve("proxy-targets.yml")
         private val PROPERTIES_FILE = CONFIGURATION_PATH.resolve("proxy.properties")
 
         private inline fun <T> runCatching(

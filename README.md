@@ -207,17 +207,32 @@ the varp count in the client from the size-5000 int array.
 3. Must be on revision 223 or higher.
 
 #### Setting Up Custom Targets
-In order to use the new proxy targets feature, one has to manually fill in the yaml file containing them.
+In order to use the new proxy targets feature, one has to provide a yaml file containing them.
 The file is expected at `user.home/.rsprox/proxy-targets.yaml` (.yml suffix also supported).
 The file does not exist by default, so it must be created by the user!
+You can either create or edit this file manually, or import a ready-made configuration
+directly from the RSProx GUI by pressing the **+** button next to the proxy target selector
+and selecting a local `.yaml`/`.yml` file. The importer can also download a configuration
+hosted on the internet—choose **From URL…** in the dialog and paste a direct link to the YAML file.
+Make sure the link points at the *raw* contents of the YAML file (for example, the "Raw" view of a
+GitHub Gist). The importer will copy the configuration into the user folder for you; restart RSProx
+after importing to load the new targets.
 
-Here is an example RSPS target:
+If you need a starting point, copy [`docs/examples/proxy-targets.sample.yaml`](docs/examples/proxy-targets.sample.yaml)
+and adjust the values for your own server. This is the same structure that the importer expects when
+you supply a URL.
+
+The YAML format expects a top-level `config` array, with one object per target. Here is an example containing two entries:
 ```yaml
 config:
   - name: Blurite
     jav_config_url: https://client.blurite.io/jav_local_227.ws
     revision: 227.3
     modulus: d2a780dccbcf534dc61a36deff725aabf9f46fc9ea298ac8c39b89b5bcb5d0817f8c9f59621187d448da9949aca848d0b2acae50c3122b7da53a79e6fe87ff76b675bcbf5bc18fbd2c9ed8f4cff2b7140508049eb119259af888eb9d20e8cea8a4384b06589483bcda11affd8d67756bc93a4d786494cdf7b634e3228b64116d
+  - name: Local Test World
+    jav_config_url: https://example.com/jav_config.ws
+    modulus: 9fca1d4f3eaa48d1ac6b189b5c9a88c6fbf7f8b2b5b9f4923c9c088da6cb34c1f02f55d30f9ec0e25f20fba8eea741e2cb9408c4de61b935f1c36b3b21b7aa15
+    game_server_port: 50000
 ```
 
 Properties breakdown:
