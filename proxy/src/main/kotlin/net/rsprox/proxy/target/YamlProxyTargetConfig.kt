@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.io.InputStream
 import java.nio.file.Path
@@ -44,12 +43,14 @@ public data class YamlProxyTargetConfig(
 
         public fun load(path: Path): YamlProxyTargetConfigList {
             if (!path.exists()) return YamlProxyTargetConfigList(emptyList())
-            return objectMapper.readValue(path.toFile())
+            val root = objectMapper.readTree(path.toFile())
+            return YamlProxyTargetConfigList.fromNode(root)
         }
 
         public fun parse(inputStream: InputStream): YamlProxyTargetConfigList {
             inputStream.use { stream ->
-                return objectMapper.readValue(stream)
+                val root = objectMapper.readTree(stream)
+                return YamlProxyTargetConfigList.fromNode(root)
             }
         }
     }

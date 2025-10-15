@@ -222,7 +222,7 @@ If you need a starting point, copy [`docs/examples/proxy-targets.sample.yaml`](d
 and adjust the values for your own server. This is the same structure that the importer expects when
 you supply a URL.
 
-The YAML format expects a top-level `config` array, with one object per target. Here is an example containing two entries:
+The YAML format expects one object per target. When the file is stored locally it will be written with a top-level `config` array, but the importer will also accept a bare list when downloading from a URL. Here is an example containing two entries:
 ```yaml
 config:
   - name: Blurite
@@ -233,6 +233,17 @@ config:
     jav_config_url: https://example.com/jav_config.ws
     modulus: 9fca1d4f3eaa48d1ac6b189b5c9a88c6fbf7f8b2b5b9f4923c9c088da6cb34c1f02f55d30f9ec0e25f20fba8eea741e2cb9408c4de61b935f1c36b3b21b7aa15
     game_server_port: 50000
+```
+
+If you are hosting the configuration yourself and prefer a shorter document, the importer also understands the following equivalent structure:
+
+```yaml
+- name: Blurite
+  jav_config_url: https://client.blurite.io/jav_local_227.ws
+  revision: 227.3
+- name: Local Test World
+  jav_config_url: https://example.com/jav_config.ws
+  game_server_port: 50000
 ```
 
 Properties breakdown:
