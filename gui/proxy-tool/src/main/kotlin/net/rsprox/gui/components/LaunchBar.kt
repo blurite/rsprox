@@ -10,12 +10,17 @@ import net.rsprox.gui.sessions.SessionType
 import net.rsprox.gui.sessions.SessionsPanel
 import net.rsprox.proxy.target.ProxyTarget
 import net.rsprox.proxy.target.ProxyTargetConfig
+import net.rsprox.proxy.target.ProxyTargetImportResult
 import net.rsprox.proxy.util.OperatingSystem
 import net.rsprox.shared.account.JagexCharacter
+import java.net.MalformedURLException
+import java.net.URL
 import javax.swing.DefaultComboBoxModel
 import javax.swing.DefaultListCellRenderer
+import javax.swing.JFileChooser
 import javax.swing.JList
 import javax.swing.JMenuItem
+import javax.swing.JOptionPane
 import javax.swing.JPanel
 import javax.swing.event.PopupMenuEvent
 import javax.swing.event.PopupMenuListener
@@ -47,7 +52,7 @@ public class LaunchBar(
     private val charactersModel = DefaultComboBoxModel<JagexCharacter>()
 
     init {
-        layout = MigLayout("gap 10", "push[][][][]", "[]")
+        layout = MigLayout("gap 10", "push[][][][][]", "[]")
         val targetConfigs = App.service.proxyTargets.map(ProxyTarget::config)
         val targetConfigsModel = DefaultComboBoxModel(targetConfigs.toTypedArray())
         val proxyTargetDropdown =
@@ -62,6 +67,15 @@ public class LaunchBar(
 
         proxyTargetDropdown.minimumWidth = 160
         add(proxyTargetDropdown, "growx")
+
+        val importTargetsButton =
+            FlatButton().apply {
+                toolTipText = "Import Proxy Targets"
+                icon = AppIcons.Add
+                buttonType = FlatButton.ButtonType.toolBarButton
+                addActionListener { importProxyTargets() }
+            }
+        add(importTargetsButton)
 
         val characterDropdown = FlatComboBox<JagexCharacter>()
         characterDropdown.model = charactersModel
@@ -175,6 +189,129 @@ public class LaunchBar(
                 else -> character as JagexCharacter
             }
         sessionsPanel.createSession(sessionType, character)
+    }
+
+    private fun importProxyTargets() {
+        val options = arrayOf("From File…", "From URL…")
+        val choice =
+            JOptionPane.showOptionDialog(
+                this,
+                "How would you like to import proxy targets?",
+                "Import Proxy Targets",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options.first(),
+            )
+
+        when (choice) {
+            0 -> importProxyTargetsFromFile()
+            1 -> importProxyTargetsFromUrl()
+        }
+    }
+
+    private fun importProxyTargetsFromFile() {
+        val chooser = JFileChooser()
+        chooser.fileSelectionMode = JFileChooser.FILES_ONLY
+        val result = chooser.showOpenDialog(this)
+        if (result != JFileChooser.APPROVE_OPTION) {
+            return
+        }
+
+        val selectedFile = chooser.selectedFile ?: return
+        attemptImport { App.service.importProxyTargets(selectedFile.toPath()) }
+    }
+
+    private fun importProxyTargetsFromUrl() {
+        val input =
+            JOptionPane.showInputDialog(
+                this,
+                "Enter the URL of a proxy target YAML file:",
+                "Import Proxy Targets",
+                JOptionPane.QUESTION_MESSAGE,
+            ) ?: return
+
+        val trimmed = input.trim()
+        if (trimmed.isEmpty()) {
+            return
+        }
+
+        try {
+            val url = URL(trimmed)
+            attemptImport { App.service.importProxyTargets(url) }
+        } catch (malformed: MalformedURLException) {
+            JOptionPane.showMessageDialog(
+                this,
+                malformed.message ?: "The provided URL is invalid.",
+                "Import Failed",
+                JOptionPane.ERROR_MESSAGE,
+            )
+        }
+    }
+
+    private fun attemptImport(action: () -> ProxyTargetImportResult) {
+        try {
+            val importResult = action()
+            showImportSummary(importResult)
+        } catch (iae: IllegalArgumentException) {
+            JOptionPane.showMessageDialog(
+                this,
+                iae.message ?: "Unable to import proxy targets.",
+                "Import Failed",
+                JOptionPane.ERROR_MESSAGE,
+            )
+        } catch (t: Throwable) {
+            JOptionPane.showMessageDialog(
+                this,
+                t.message ?: "Unable to import proxy targets.",
+                "Import Failed",
+                JOptionPane.ERROR_MESSAGE,
+            )
+        }
+    }
+
+    private fun showImportSummary(result: ProxyTargetImportResult) {
+        val summaryParts = mutableListOf<String>()
+        if (result.addedCount > 0) {
+            summaryParts +=
+                if (result.addedCount == 1) "1 new target added" else "${result.addedCount} new targets added"
+        }
+        if (result.replacedCount > 0) {
+            summaryParts +=
+                if (result.replacedCount == 1) "1 target updated" else "${result.replacedCount} targets updated"
+        }
+        if (summaryParts.isEmpty()) {
+            summaryParts += "No targets were imported."
+        }
+
+        val message = StringBuilder(summaryParts.joinToString(separator = "\n"))
+        if (result.skippedTargets.isNotEmpty()) {
+            message.append('\n')
+            message.append('\n')
+            message.append("Skipped entries: ")
+            message.append(result.skippedTargets.joinToString())
+        }
+        message.append('\n')
+        message.append('\n')
+        message.append("Targets file: ")
+        message.append(result.destination)
+        message.append('\n')
+        message.append("Restart RSProx to use the updated targets.")
+
+        val messageType =
+            if (result.skippedTargets.isEmpty()) {
+                JOptionPane.INFORMATION_MESSAGE
+            } else {
+                JOptionPane.WARNING_MESSAGE
+            }
+
+        JOptionPane.showMessageDialog(
+            this,
+            message.toString(),
+            "Proxy Targets Import",
+            messageType,
+        )
     }
 
     private fun showManageLinkedAccounts() {
