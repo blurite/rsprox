@@ -6,6 +6,7 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.net.URL
 import java.nio.file.Path
 import java.util.LinkedHashMap
+import java.util.LinkedHashSet
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.extension
@@ -54,6 +55,7 @@ public class ProxyTargetImporter {
         val existingEntries = YamlProxyTargetConfig.load(destinationFile).entries
         val mergedEntries = LinkedHashMap<String, YamlProxyTargetConfig>()
         val insertionOrder = mutableListOf<String>()
+        val importedNames = LinkedHashSet<String>()
 
         for (entry in existingEntries) {
             val sanitized = sanitize(entry) ?: continue
@@ -75,6 +77,7 @@ public class ProxyTargetImporter {
             }
 
             val key = sanitized.name.lowercase()
+            importedNames += sanitized.name
             if (mergedEntries.containsKey(key)) {
                 replaced++
             } else {
@@ -87,7 +90,13 @@ public class ProxyTargetImporter {
         val finalEntries = insertionOrder.mapNotNull { mergedEntries[it] }
         objectMapper.writeValue(destinationFile.toFile(), YamlProxyTargetConfigList(finalEntries))
 
-        return ProxyTargetImportResult(added, replaced, skipped, destinationFile)
+        return ProxyTargetImportResult(
+            added,
+            replaced,
+            skipped,
+            destinationFile,
+            importedNames.toList(),
+        )
     }
 
     private fun sanitize(entry: YamlProxyTargetConfig): YamlProxyTargetConfig? {

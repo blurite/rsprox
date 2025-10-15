@@ -7,6 +7,7 @@ public data class ProxyTargetImportResult(
     val replacedCount: Int,
     val skippedTargets: List<String>,
     val destination: Path,
+    val importedTargets: List<String> = emptyList(),
 ) {
     public val totalImported: Int
         get() = addedCount + replacedCount

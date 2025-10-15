@@ -50,6 +50,7 @@ import net.rsprox.proxy.target.ProxyTarget
 import net.rsprox.proxy.target.ProxyTargetConfig
 import net.rsprox.proxy.target.ProxyTargetImportResult
 import net.rsprox.proxy.target.ProxyTargetImporter
+import net.rsprox.proxy.target.ProxyTargetSourceRegistry
 import net.rsprox.proxy.target.YamlProxyTargetConfig
 import net.rsprox.proxy.util.*
 import net.rsprox.shared.SessionMonitor
@@ -204,6 +205,7 @@ public class ProxyService(
                 gameServerPort = ProxyTargetConfig.DEFAULT_GAME_SERVER_PORT,
             )
         try {
+            refreshProxyTargetsFromSources()
             val path = if (PROXY_TARGETS_FILE.exists()) PROXY_TARGETS_FILE else ALT_PROXY_TARGETS_FILE
             val yamlTargets = YamlProxyTargetConfig.load(path)
             val customTargets =
@@ -216,6 +218,27 @@ public class ProxyService(
                 "Unable to load proxy target configs"
             }
             return listOf(oldschool)
+        }
+    }
+
+    private fun refreshProxyTargetsFromSources() {
+        val entries = ProxyTargetSourceRegistry.entries()
+        if (entries.isEmpty()) {
+            return
+        }
+
+        val importer = ProxyTargetImporter()
+        val groupedByUrl = entries.entries.groupBy { it.value }
+        for ((url, associatedNames) in groupedByUrl) {
+            try {
+                val result = importer.import(URL(url))
+                ProxyTargetSourceRegistry.replaceForUrl(url, result.importedTargets)
+            } catch (t: Throwable) {
+                val namesDescription = associatedNames.joinToString(", ") { it.key }
+                logger.error(t) {
+                    "Unable to refresh proxy targets from $url ($namesDescription)"
+                }
+            }
         }
     }
 
@@ -445,12 +468,20 @@ public class ProxyService(
 
     public fun importProxyTargets(path: Path): ProxyTargetImportResult {
         val importer = ProxyTargetImporter()
-        return importer.import(path)
+        val result = importer.import(path)
+        if (result.importedTargets.isNotEmpty()) {
+            ProxyTargetSourceRegistry.remove(result.importedTargets)
+        }
+        return result
     }
 
     public fun importProxyTargets(url: URL): ProxyTargetImportResult {
         val importer = ProxyTargetImporter()
-        return importer.import(url)
+        val result = importer.import(url)
+        if (result.importedTargets.isNotEmpty()) {
+            ProxyTargetSourceRegistry.replaceForUrl(url.toString(), result.importedTargets)
+        }
+        return result
     }
 
     public fun setAppSize(
