@@ -45,13 +45,14 @@ public class ClientLoginInitializer(
                 ?: throw IllegalStateException("Connection $clientChannel is missing a linked world: $worldList")
         logger.info { "Establishing a new connection to ${world.localHostAddress} @ ${world.activity}" }
         val clientBootstrap = bootstrapFactory.createClientBootstrap()
-        logger.info { "Connecting to ${world.host}@$SERVER_PORT -- $localHostAddress, $world" }
+        val serverPort = target.config.gameServerPort
+        logger.info { "Connecting to ${world.host}@$serverPort -- $localHostAddress, $world" }
         val future =
             try {
-                clientBootstrap.connect(world.host, SERVER_PORT).sync()
+                clientBootstrap.connect(world.host, serverPort).sync()
             } catch (t: Throwable) {
                 logger.error(t) {
-                    "Unable to connect to /${world.host}:$SERVER_PORT"
+                    "Unable to connect to /${world.host}:$serverPort"
                 }
                 clientChannel.close()
                 return
@@ -63,12 +64,12 @@ public class ClientLoginInitializer(
                     clientChannel.close()
                     serverChannel.close()
                     logger.debug {
-                        "Failure to connect to the server ${world.host}/$SERVER_PORT via $clientChannel"
+                        "Failure to connect to the server ${world.host}/$serverPort via $clientChannel"
                     }
                     return@ChannelFutureListener
                 }
                 logger.debug {
-                    "Successfully connected to server ${world.host}/$SERVER_PORT via $clientChannel"
+                    "Successfully connected to server ${world.host}/$serverPort via $clientChannel"
                 }
                 clientChannel.pipeline().addLast(
                     ClientGenericDecoder(NopStreamCipher, LoginClientProtProvider),
@@ -116,7 +117,6 @@ public class ClientLoginInitializer(
     }
 
     private companion object {
-        private const val SERVER_PORT: Int = 43594
         private val logger = InlineLogger()
 
         private fun getLocalHostAddress(channel: Channel): LocalHostAddress {

@@ -28,6 +28,8 @@ public data class YamlProxyTargetConfig(
     public val binaryFolder: String? = null,
     @field:JsonProperty("export_binaries")
     public val exportBinaries: Boolean = true,
+    @field:JsonProperty("game_server_port")
+    public val gameServerPort: Int = ProxyTargetConfig.DEFAULT_GAME_SERVER_PORT,
 ) {
     public companion object {
         public const val DEFAULT_NAME: String = "Old School RuneScape"
