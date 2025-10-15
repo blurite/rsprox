@@ -132,6 +132,13 @@ public class ProxyService(
         this.bootstrapFactory = BootstrapFactory(allocator, properties)
         progressCallback.update(0.15, "Proxy", "Loading RSProx (3/15)")
         try {
+            ProxyTargetSourceRegistry.syncFromExistingConfig()
+        } catch (t: Throwable) {
+            logger.error(t) {
+                "Unable to synchronize proxy target sources from configuration"
+            }
+        }
+        try {
             refreshProxyTargetsFromSources()
         } catch (t: Throwable) {
             logger.error(t) {

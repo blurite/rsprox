@@ -1,16 +1,70 @@
 package net.rsprox.proxy.target
 
 import net.rsprox.proxy.config.CONFIGURATION_PATH
+import kotlin.io.path.exists
 import java.nio.file.Path
 import java.util.Properties
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
-import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
 internal object ProxyTargetSourceRegistry {
     private val sourcesFile: Path = CONFIGURATION_PATH.resolve("proxy-target-sources.properties")
+
+    fun syncFromExistingConfig() {
+        val path =
+            when {
+                PROXY_TARGETS_FILE.exists() -> PROXY_TARGETS_FILE
+                ALT_PROXY_TARGETS_FILE.exists() -> ALT_PROXY_TARGETS_FILE
+                else -> null
+            } ?: return
+
+        val entries = YamlProxyTargetConfig.load(path).entries
+        if (entries.isEmpty()) {
+            return
+        }
+
+        val grouped =
+            entries
+                .mapNotNull { entry ->
+                    val name = entry.name.trim()
+                    val url = entry.sourceUrl?.trim()?.ifEmpty { null }
+                    if (name.isEmpty() || url == null) {
+                        return@mapNotNull null
+                    }
+                    url to name.lowercase()
+                }
+                .groupBy({ it.first }) { it.second }
+
+        if (grouped.isEmpty()) {
+            return
+        }
+
+        val data = load()
+        var changed = false
+
+        for ((url, names) in grouped) {
+            val normalizedNames = names.toSet()
+            val existingKeys = data.filterValues { it == url }.keys.toList()
+            for (key in existingKeys) {
+                if (key !in normalizedNames) {
+                    data.remove(key)
+                    changed = true
+                }
+            }
+            for (key in normalizedNames) {
+                val previous = data.put(key, url)
+                if (previous != url) {
+                    changed = true
+                }
+            }
+        }
+
+        if (changed) {
+            persist(data)
+        }
+    }
 
     fun load(): MutableMap<String, String> {
         if (!sourcesFile.exists()) {
