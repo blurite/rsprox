@@ -231,6 +231,7 @@ Properties breakdown:
 - `runelite_gamepack_url` - (OPTIONAL) A URL pointing to a valid gamepack file for the given revision. This is only necessary for revisions 228 and older. Not defining it will use the latest for your revision.
 - `binary_folder` - (OPTIONAL) The subdirectory name within `.rsprox/binary/` into which the files should be written. If omitted, the `name` of the Proxy Target is used instead.
 - `export_binaries` (OPTIONAL) A boolean for whether to write .bin files for this proxy target. Default is true. If set to false, no files are ever written to disk for the given target.
+- `game_server_port` (OPTIONAL) Set your server port if it not using 43594.
 
 Short guide:
 1. Copy the config file from above and save it as described above.
