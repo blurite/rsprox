@@ -256,6 +256,8 @@ Properties breakdown:
 - `export_binaries` (OPTIONAL) A boolean for whether to write .bin files for this proxy target. Default is true. If set to false, no files are ever written to disk for the given target.
 - `game_server_port` (OPTIONAL) Set your server port if it not using 43594.
 
+If you are using an external ip to connect to your server, make sure you have changed your world_list.ws also to the right target.
+
 Short guide:
 1. Copy the config file from above and save it as described above.
 2. Change the name to what you'd like to call the client.
