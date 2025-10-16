@@ -258,6 +258,7 @@ Properties breakdown:
 
 If you are using an external ip to connect to your server, make sure you have changed your world_list.ws also to the right target.
 
+
 Short guide:
 1. Copy the config file from above and save it as described above.
 2. Change the name to what you'd like to call the client.
