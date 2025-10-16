@@ -235,15 +235,12 @@ config:
     game_server_port: 50000
 ```
 
-If you are hosting the configuration yourself and prefer a shorter document, the importer also understands the following equivalent structure:
+If you are hosting the configuration yourself on a url and prefer a shorter document, the importer also understands the following equivalent structure:
 
 ```yaml
 - name: Blurite
   jav_config_url: https://client.blurite.io/jav_local_227.ws
   revision: 227.3
-- name: Local Test World
-  jav_config_url: https://example.com/jav_config.ws
-  game_server_port: 50000
 ```
 
 Properties breakdown:
