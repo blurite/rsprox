@@ -6,6 +6,7 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.net.URL
 import java.nio.file.Path
 import java.util.LinkedHashMap
+import java.util.LinkedHashSet
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.extension
@@ -26,7 +27,7 @@ public class ProxyTargetImporter {
         }
 
         val imported = YamlProxyTargetConfig.load(source)
-        return merge(imported)
+        return merge(imported, null)
     }
 
     public fun import(source: URL): ProxyTargetImportResult {
@@ -40,10 +41,13 @@ public class ProxyTargetImporter {
         val imported = source.openStream().use { stream ->
             YamlProxyTargetConfig.parse(stream)
         }
-        return merge(imported)
+        return merge(imported, source.toString())
     }
 
-    private fun merge(imported: YamlProxyTargetConfigList): ProxyTargetImportResult {
+    private fun merge(
+        imported: YamlProxyTargetConfigList,
+        sourceUrlOverride: String?,
+    ): ProxyTargetImportResult {
         if (imported.entries.isEmpty()) {
             return ProxyTargetImportResult(0, 0, listOf("Empty configuration"), determineDestinationFile())
         }
@@ -54,9 +58,10 @@ public class ProxyTargetImporter {
         val existingEntries = YamlProxyTargetConfig.load(destinationFile).entries
         val mergedEntries = LinkedHashMap<String, YamlProxyTargetConfig>()
         val insertionOrder = mutableListOf<String>()
+        val importedNames = LinkedHashSet<String>()
 
         for (entry in existingEntries) {
-            val sanitized = sanitize(entry) ?: continue
+            val sanitized = sanitizeExisting(entry) ?: continue
             val key = sanitized.name.lowercase()
             if (mergedEntries.putIfAbsent(key, sanitized) == null) {
                 insertionOrder += key
@@ -68,13 +73,14 @@ public class ProxyTargetImporter {
         val skipped = mutableListOf<String>()
 
         for (entry in imported.entries) {
-            val sanitized = sanitize(entry)
+            val sanitized = sanitizeImported(entry, sourceUrlOverride)
             if (sanitized == null) {
                 skipped += entry.name.ifBlank { "<unnamed>" }
                 continue
             }
 
             val key = sanitized.name.lowercase()
+            importedNames += sanitized.name
             if (mergedEntries.containsKey(key)) {
                 replaced++
             } else {
@@ -87,10 +93,30 @@ public class ProxyTargetImporter {
         val finalEntries = insertionOrder.mapNotNull { mergedEntries[it] }
         objectMapper.writeValue(destinationFile.toFile(), YamlProxyTargetConfigList(finalEntries))
 
-        return ProxyTargetImportResult(added, replaced, skipped, destinationFile)
+        return ProxyTargetImportResult(
+            added,
+            replaced,
+            skipped,
+            destinationFile,
+            importedNames.toList(),
+        )
     }
 
-    private fun sanitize(entry: YamlProxyTargetConfig): YamlProxyTargetConfig? {
+    private fun sanitizeExisting(entry: YamlProxyTargetConfig): YamlProxyTargetConfig? {
+        return sanitize(entry, entry.sourceUrl)
+    }
+
+    private fun sanitizeImported(
+        entry: YamlProxyTargetConfig,
+        sourceUrlOverride: String?,
+    ): YamlProxyTargetConfig? {
+        return sanitize(entry, sourceUrlOverride)
+    }
+
+    private fun sanitize(
+        entry: YamlProxyTargetConfig,
+        sourceUrl: String?,
+    ): YamlProxyTargetConfig? {
         val name = entry.name.trim()
         val javConfigUrl = entry.javConfigUrl.trim()
         if (name.isEmpty() || javConfigUrl.isEmpty()) {
@@ -104,6 +130,7 @@ public class ProxyTargetImporter {
             runeliteBootstrapCommitHash = entry.runeliteBootstrapCommitHash?.trim()?.ifEmpty { null },
             runeliteGamepackUrl = entry.runeliteGamepackUrl?.trim()?.ifEmpty { null },
             binaryFolder = entry.binaryFolder?.trim()?.ifEmpty { null },
+            sourceUrl = sourceUrl?.trim()?.ifEmpty { null },
         )
     }
 
