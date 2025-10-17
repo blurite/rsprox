@@ -33,7 +33,7 @@ internal class LocAddChangeV2Decoder : ProxyMessageDecoder<LocAddChangeV2> {
                 null
             }
         val locProperties = LocProperties(buffer.g1Alt3())
-        val coordInZone = CoordInZone(buffer.g1Alt3())
+        val coordInZone = CoordInZone(buffer.g1Alt1())
         return LocAddChangeV2(
             id,
             coordInZone,
