@@ -44,8 +44,13 @@ import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
 import net.rsprox.proxy.runelite.RuneliteLauncher
 import net.rsprox.proxy.settings.DefaultSettingSetStore
+import net.rsprox.proxy.target.ALT_PROXY_TARGETS_FILE
+import net.rsprox.proxy.target.PROXY_TARGETS_FILE
 import net.rsprox.proxy.target.ProxyTarget
 import net.rsprox.proxy.target.ProxyTargetConfig
+import net.rsprox.proxy.target.ProxyTargetImportResult
+import net.rsprox.proxy.target.ProxyTargetImporter
+import net.rsprox.proxy.target.ProxyTargetSourceRegistry
 import net.rsprox.proxy.target.YamlProxyTargetConfig
 import net.rsprox.proxy.util.*
 import net.rsprox.shared.SessionMonitor
@@ -126,6 +131,20 @@ public class ProxyService(
         this.availablePort = properties.getProperty(PROXY_PORT_MIN)
         this.bootstrapFactory = BootstrapFactory(allocator, properties)
         progressCallback.update(0.15, "Proxy", "Loading RSProx (3/15)")
+        try {
+            ProxyTargetSourceRegistry.syncFromExistingConfig()
+        } catch (t: Throwable) {
+            logger.error(t) {
+                "Unable to synchronize proxy target sources from configuration"
+            }
+        }
+        try {
+            refreshProxyTargetsFromSources()
+        } catch (t: Throwable) {
+            logger.error(t) {
+                "Unable to refresh proxy targets from stored sources"
+            }
+        }
         val proxyTargetConfigs = loadProxyTargetConfigs(rspsJavConfigUrl)
         val jobs = mutableListOf<Callable<Boolean>>()
         jobs += createJob(progressCallback) { HuffmanProvider.load() }
@@ -212,6 +231,27 @@ public class ProxyService(
                 "Unable to load proxy target configs"
             }
             return listOf(oldschool)
+        }
+    }
+
+    private fun refreshProxyTargetsFromSources() {
+        val entries = ProxyTargetSourceRegistry.entries()
+        if (entries.isEmpty()) {
+            return
+        }
+
+        val importer = ProxyTargetImporter()
+        val groupedByUrl = entries.entries.groupBy { it.value }
+        for ((url, associatedNames) in groupedByUrl) {
+            try {
+                val result = importer.import(URL(url))
+                ProxyTargetSourceRegistry.replaceForUrl(url, result.importedTargets)
+            } catch (t: Throwable) {
+                val namesDescription = associatedNames.joinToString(", ") { it.key }
+                logger.error(t) {
+                    "Unable to refresh proxy targets from $url ($namesDescription)"
+                }
+            }
         }
     }
 
@@ -437,6 +477,24 @@ public class ProxyService(
     public fun setSelectedProxyTarget(index: Int) {
         properties.setProperty(SELECTED_PROXY_TARGET, index)
         properties.saveProperties(PROPERTIES_FILE)
+    }
+
+    public fun importProxyTargets(path: Path): ProxyTargetImportResult {
+        val importer = ProxyTargetImporter()
+        val result = importer.import(path)
+        if (result.importedTargets.isNotEmpty()) {
+            ProxyTargetSourceRegistry.remove(result.importedTargets)
+        }
+        return result
+    }
+
+    public fun importProxyTargets(url: URL): ProxyTargetImportResult {
+        val importer = ProxyTargetImporter()
+        val result = importer.import(url)
+        if (result.importedTargets.isNotEmpty()) {
+            ProxyTargetSourceRegistry.replaceForUrl(url.toString(), result.importedTargets)
+        }
+        return result
     }
 
     public fun setAppSize(
@@ -1026,8 +1084,6 @@ public class ProxyService(
 
     public companion object {
         private val logger = InlineLogger()
-        private val PROXY_TARGETS_FILE = CONFIGURATION_PATH.resolve("proxy-targets.yaml")
-        private val ALT_PROXY_TARGETS_FILE = CONFIGURATION_PATH.resolve("proxy-targets.yml")
         private val PROPERTIES_FILE = CONFIGURATION_PATH.resolve("proxy.properties")
 
         private inline fun <T> runCatching(

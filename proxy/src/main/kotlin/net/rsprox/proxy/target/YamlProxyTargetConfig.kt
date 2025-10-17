@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import java.io.InputStream
 import java.nio.file.Path
 import kotlin.io.path.exists
 
@@ -30,16 +31,30 @@ public data class YamlProxyTargetConfig(
     public val exportBinaries: Boolean = true,
     @field:JsonProperty("game_server_port")
     public val gameServerPort: Int = ProxyTargetConfig.DEFAULT_GAME_SERVER_PORT,
+    @field:JsonProperty("source_url")
+    public val sourceUrl: String? = null,
+
 ) {
     public companion object {
         public const val DEFAULT_NAME: String = "Old School RuneScape"
         public const val DEFAULT_VARP_COUNT: Int = 5000
 
+        private val objectMapper =
+            ObjectMapper(YAMLFactory())
+                .registerKotlinModule()
+                .findAndRegisterModules()
+
         public fun load(path: Path): YamlProxyTargetConfigList {
             if (!path.exists()) return YamlProxyTargetConfigList(emptyList())
-            return ObjectMapper(YAMLFactory())
-                .findAndRegisterModules()
-                .readValue(path.toFile())
+            val root = objectMapper.readTree(path.toFile())
+            return YamlProxyTargetConfigList.fromNode(root)
+        }
+
+        public fun parse(inputStream: InputStream): YamlProxyTargetConfigList {
+            inputStream.use { stream ->
+                val root = objectMapper.readTree(stream)
+                return YamlProxyTargetConfigList.fromNode(root)
+            }
         }
     }
 }

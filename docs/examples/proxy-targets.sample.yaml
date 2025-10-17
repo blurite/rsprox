@@ -1,0 +1,7 @@
+# Example proxy target configuration that can be imported from a local file or URL.
+config:
+  - name: Example Server
+    jav_config_url: https://example.com/jav_config.ws
+    modulus: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+    revision: 227.1
+    game_server_port: 43594
