@@ -1969,6 +1969,7 @@ public class TextServerPacketTranscriber(
         CLANREQ_CLANCHAT(110),
         DIALOGUE(114),
         MESBOX(115),
+        NPC_SAY(116),
         ;
 
         override val prettyName: String = name.lowercase()
