@@ -18,11 +18,11 @@ internal class ObjCustomiseDecoder : ProxyMessageDecoder<ObjCustomise> {
         val id = buffer.g2Alt2()
         val model = buffer.g2Alt3()
         val coordInZone = CoordInZone(buffer.g1Alt3())
-        val retex = buffer.g2Alt3()
-        val recolIndex = buffer.g2()
+        val retex = buffer.g2sAlt3()
+        val recolIndex = buffer.g2s()
         val quantity = buffer.g4Alt3()
-        val recol = buffer.g2Alt1()
-        val retexIndex = buffer.g2()
+        val recol = buffer.g2sAlt1()
+        val retexIndex = buffer.g2s()
         return ObjCustomise(
             id,
             quantity,

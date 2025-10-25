@@ -16,7 +16,7 @@ internal class ProjAnimSpecificV2Decoder : ProxyMessageDecoder<ProjAnimSpecificV
         session: Session,
     ): ProjAnimSpecificV2 {
         val startHeight = buffer.g1Alt2()
-        val deltaX = buffer.g1()
+        val deltaX = buffer.g1s()
         val progress = buffer.g2Alt1()
         val angle = buffer.g1Alt1()
         val endHeight = buffer.g1Alt3()
@@ -24,7 +24,7 @@ internal class ProjAnimSpecificV2Decoder : ProxyMessageDecoder<ProjAnimSpecificV
         val id = buffer.g2()
         val targetIndex = buffer.g3s()
         val coordInBuildArea = CoordInBuildArea(buffer.g3Alt1())
-        val deltaZ = buffer.g1Alt3()
+        val deltaZ = buffer.g1sAlt3()
         val startTime = buffer.g2Alt2()
         return ProjAnimSpecificV2(
             id,

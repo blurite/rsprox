@@ -16,7 +16,7 @@ internal class ProjAnimSpecificV3Decoder : ProxyMessageDecoder<ProjAnimSpecificV
         session: Session,
     ): ProjAnimSpecificV3 {
         val coordInBuildArea = CoordInBuildArea(buffer.g3Alt1())
-        val deltaZ = buffer.g1()
+        val deltaZ = buffer.g1s()
         val targetIndex = buffer.g3sAlt3()
         val progress = buffer.g2Alt1()
         val angle = buffer.g1Alt3()
@@ -24,7 +24,7 @@ internal class ProjAnimSpecificV3Decoder : ProxyMessageDecoder<ProjAnimSpecificV
         val sourceIndex = buffer.g3sAlt2()
         val startTime = buffer.g2Alt2()
         val id = buffer.g2Alt1()
-        val deltaX = buffer.g1()
+        val deltaX = buffer.g1s()
         val endTime = buffer.g2Alt1()
         val startHeight = buffer.g1Alt1()
         return ProjAnimSpecificV3(

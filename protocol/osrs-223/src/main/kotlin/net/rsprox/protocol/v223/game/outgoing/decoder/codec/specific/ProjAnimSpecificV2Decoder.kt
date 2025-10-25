@@ -17,10 +17,10 @@ internal class ProjAnimSpecificV2Decoder : ProxyMessageDecoder<ProjAnimSpecificV
     ): ProjAnimSpecificV2 {
         val angle = buffer.g1()
         val targetIndex = buffer.g3sAlt2()
-        val deltaZ = buffer.g1Alt1()
+        val deltaZ = buffer.g1sAlt1()
         val endTime = buffer.g2Alt1()
         val endHeight = buffer.g1Alt2()
-        val deltaX = buffer.g1Alt3()
+        val deltaX = buffer.g1sAlt3()
         val startHeight = buffer.g1Alt3()
         val id = buffer.g2Alt1()
         val progress = buffer.g2Alt3()

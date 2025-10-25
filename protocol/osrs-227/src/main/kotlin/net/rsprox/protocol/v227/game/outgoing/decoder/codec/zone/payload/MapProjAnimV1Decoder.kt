@@ -23,9 +23,9 @@ internal class MapProjAnimV1Decoder : ProxyMessageDecoder<MapProjAnimV1> {
         val progress = buffer.g2Alt2()
         val targetIndex = buffer.g3sAlt2()
         val startHeight = buffer.g1()
-        val deltaX = buffer.g1Alt3()
+        val deltaX = buffer.g1sAlt3()
         val endHeight = buffer.g1Alt3()
-        val deltaZ = buffer.g1Alt3()
+        val deltaZ = buffer.g1sAlt3()
         val angle = buffer.g1Alt3()
         return MapProjAnimV1(
             id,

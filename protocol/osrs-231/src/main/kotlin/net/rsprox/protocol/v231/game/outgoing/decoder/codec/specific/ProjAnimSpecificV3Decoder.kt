@@ -15,12 +15,12 @@ internal class ProjAnimSpecificV3Decoder : ProxyMessageDecoder<ProjAnimSpecificV
         buffer: JagByteBuf,
         session: Session,
     ): ProjAnimSpecificV3 {
-        val deltaX = buffer.g1Alt3()
+        val deltaX = buffer.g1sAlt3()
         val endTime = buffer.g2Alt3()
         val id = buffer.g2Alt3()
         val startTime = buffer.g2()
         val targetIndex = buffer.g3sAlt2()
-        val deltaZ = buffer.g1Alt3()
+        val deltaZ = buffer.g1sAlt3()
         val endHeight = buffer.g1Alt3()
         val startHeight = buffer.g1Alt1()
         val sourceIndex = buffer.g3s()

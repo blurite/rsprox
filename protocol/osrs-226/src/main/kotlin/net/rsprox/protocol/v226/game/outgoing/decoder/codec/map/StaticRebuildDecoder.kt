@@ -50,7 +50,7 @@ internal class StaticRebuildDecoder(
             } else {
                 null
             }
-        val worldArea = buffer.g2Alt2()
+        val worldArea = buffer.g2sAlt2()
         val zoneX = buffer.g2Alt2()
         val zoneZ = buffer.g2()
         val xteaCount = buffer.g2()

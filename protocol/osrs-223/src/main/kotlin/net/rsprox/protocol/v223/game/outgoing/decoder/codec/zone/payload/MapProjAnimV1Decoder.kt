@@ -15,9 +15,9 @@ internal class MapProjAnimV1Decoder : ProxyMessageDecoder<MapProjAnimV1> {
         buffer: JagByteBuf,
         session: Session,
     ): MapProjAnimV1 {
-        val deltaX = buffer.g1()
+        val deltaX = buffer.g1s()
         val endTime = buffer.g2Alt1()
-        val deltaZ = buffer.g1Alt2()
+        val deltaZ = buffer.g1sAlt2()
         val targetIndex = buffer.g3s()
         val angle = buffer.g1()
         val coordInZone = CoordInZone(buffer.g1Alt3())

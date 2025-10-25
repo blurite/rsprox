@@ -20,11 +20,11 @@ internal class LocMergeDecoder : ProxyMessageDecoder<LocMerge> {
         val start = buffer.g2Alt2()
         val coordInZone = CoordInZone(buffer.g1Alt2())
         val locProperties = LocProperties(buffer.g1Alt3())
-        val maxZ = buffer.g1Alt3()
-        val minZ = buffer.g1Alt3()
+        val maxZ = buffer.g1sAlt3()
+        val minZ = buffer.g1sAlt3()
         val index = buffer.g2Alt1()
-        val minX = buffer.g1Alt2()
-        val maxX = buffer.g1()
+        val minX = buffer.g1sAlt2()
+        val maxX = buffer.g1s()
         val end = buffer.g2()
         return LocMerge(
             index,

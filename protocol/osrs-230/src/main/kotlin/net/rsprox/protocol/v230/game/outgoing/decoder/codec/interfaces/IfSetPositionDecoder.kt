@@ -16,8 +16,8 @@ internal class IfSetPositionDecoder : ProxyMessageDecoder<IfSetPosition> {
         session: Session,
     ): IfSetPosition {
         val combinedId = buffer.gCombinedIdAlt2()
-        val x = buffer.g2Alt3()
-        val y = buffer.g2()
+        val x = buffer.g2sAlt3()
+        val y = buffer.g2s()
         return IfSetPosition(
             combinedId.interfaceId,
             combinedId.componentId,

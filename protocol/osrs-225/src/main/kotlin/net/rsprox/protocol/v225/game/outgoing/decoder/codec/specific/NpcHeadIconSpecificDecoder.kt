@@ -16,7 +16,7 @@ internal class NpcHeadIconSpecificDecoder : ProxyMessageDecoder<NpcHeadIconSpeci
     ): NpcHeadIconSpecific {
         val spriteGroup = buffer.g4Alt3()
         val index = buffer.g2()
-        val spriteIndex = buffer.g2Alt2()
+        val spriteIndex = buffer.g2sAlt2()
         val headIconSlot = buffer.g1Alt1()
         return NpcHeadIconSpecific(
             index,

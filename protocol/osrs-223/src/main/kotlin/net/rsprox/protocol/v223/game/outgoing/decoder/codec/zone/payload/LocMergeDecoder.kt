@@ -17,11 +17,11 @@ internal class LocMergeDecoder : ProxyMessageDecoder<LocMerge> {
         session: Session,
     ): LocMerge {
         val id = buffer.g2()
-        val maxX = buffer.g1Alt3()
+        val maxX = buffer.g1sAlt3()
         val end = buffer.g2()
-        val minX = buffer.g1Alt2()
-        val maxZ = buffer.g1Alt1()
-        val minZ = buffer.g1Alt2()
+        val minX = buffer.g1sAlt2()
+        val maxZ = buffer.g1sAlt1()
+        val minZ = buffer.g1sAlt2()
         val coordInZone = CoordInZone(buffer.g1Alt3())
         val locProperties = LocProperties(buffer.g1Alt3())
         val start = buffer.g2Alt3()
