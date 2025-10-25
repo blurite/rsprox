@@ -15,8 +15,8 @@ internal class IfSetNpcHeadActiveDecoder : ProxyMessageDecoder<IfSetNpcHeadActiv
         buffer: JagByteBuf,
         session: Session,
     ): IfSetNpcHeadActive {
-        val combinedId = buffer.gCombinedIdAlt3()
         val index = buffer.g2Alt3()
+        val combinedId = buffer.gCombinedIdAlt3()
         return IfSetNpcHeadActive(
             combinedId.interfaceId,
             combinedId.componentId,

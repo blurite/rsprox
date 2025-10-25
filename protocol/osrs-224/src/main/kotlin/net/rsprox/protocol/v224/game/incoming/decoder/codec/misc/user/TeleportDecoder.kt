@@ -16,7 +16,7 @@ internal class TeleportDecoder : ProxyMessageDecoder<Teleport> {
     ): Teleport {
         val z = buffer.g2Alt3()
         val x = buffer.g2()
-        val oculusSyncValue = buffer.g4Alt1()
+        val oculusSyncValue = buffer.g4Alt3()
         val level = buffer.g1Alt1()
         return Teleport(
             oculusSyncValue,

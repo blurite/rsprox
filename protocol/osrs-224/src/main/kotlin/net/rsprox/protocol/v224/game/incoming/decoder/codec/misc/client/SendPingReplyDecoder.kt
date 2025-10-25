@@ -16,8 +16,8 @@ internal class SendPingReplyDecoder : ProxyMessageDecoder<SendPingReply> {
     ): SendPingReply {
         val value1 = buffer.g4Alt2()
         val value2 = buffer.g4Alt3()
-        val fps = buffer.g1Alt1()
-        val gcPercentTime = buffer.g1Alt3()
+        val fps = buffer.g1()
+        val gcPercentTime = buffer.g1()
         return SendPingReply(
             fps,
             gcPercentTime,
