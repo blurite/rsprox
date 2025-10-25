@@ -21,9 +21,9 @@
 				<TimeBasedTriggeringPolicy />
 			</Policies>
 			<DefaultRolloverStrategy>
-				<Delete basePath="${baseDir}" maxDepth="2">
-					<IfFileName glob="${sys:user.home}/.rsprox/logs/all-*.log" />
-					<IfLastModified age="20d" />
+				<Delete basePath="${sys:user.home}/.rsprox/logs" maxDepth="1">
+					<IfFileName glob="all-*.log"/>
+					<IfLastModified age="20d"/>
 				</Delete>
 			</DefaultRolloverStrategy>
 		</RollingFile>
@@ -33,7 +33,7 @@
 			<AppenderRef level="all" ref="Console"/>
 			<AppenderRef level="all" ref="roll-by-time-and-size"/>
 		</Root>
-		<logger name="io.netty" level="info"/>
+		<Logger name="io.netty" level="info"/>
 		<Logger name="org.openrs2.compress" level="warn" additivity="false"/>
 	</Loggers>
 </Configuration>
