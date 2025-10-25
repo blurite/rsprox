@@ -113,8 +113,8 @@ public enum class GameServerProt(
     CAM_ROTATEBY(GameServerProtId.CAM_ROTATEBY, 7),
     CAM_ROTATETO(GameServerProtId.CAM_ROTATETO, 7),
     CAM_MODE(GameServerProtId.CAM_MODE, 1),
-    CAM_TARGET_V2(GameServerProtId.CAM_TARGET, 5),
-    CAM_TARGET_V1(GameServerProtId.CAM_TARGET_OLD, 3),
+    CAM_TARGET_V2(GameServerProtId.CAM_TARGET_V2, 5),
+    CAM_TARGET_V1(GameServerProtId.CAM_TARGET_V1, 3),
     OCULUS_SYNC(GameServerProtId.OCULUS_SYNC, 4),
 
     // Inventory packets
@@ -156,8 +156,8 @@ public enum class GameServerProt(
     UPDATE_RUNENERGY(GameServerProtId.UPDATE_RUNENERGY, 2),
     SET_MAP_FLAG(GameServerProtId.SET_MAP_FLAG, 2),
     SET_PLAYER_OP(GameServerProtId.SET_PLAYER_OP, Prot.VAR_BYTE),
-    UPDATE_STAT_V2(GameServerProtId.UPDATE_STAT, 7),
-    UPDATE_STAT_V1(GameServerProtId.UPDATE_STAT_OLD, 6),
+    UPDATE_STAT_V2(GameServerProtId.UPDATE_STAT_V2, 7),
+    UPDATE_STAT_V1(GameServerProtId.UPDATE_STAT_V1, 6),
 
     // Misc. player packets
     RUNCLIENTSCRIPT(GameServerProtId.RUNCLIENTSCRIPT, Prot.VAR_SHORT),

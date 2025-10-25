@@ -42,8 +42,8 @@ internal object GameServerProtId {
     const val IF_RESYNC_V1 = 38
     const val IF_OPENTOP = 39
     const val UPDATE_FRIENDLIST = 40
-    const val UPDATE_STAT = 41
-    const val UPDATE_STAT_OLD = 42
+    const val UPDATE_STAT_V2 = 41
+    const val UPDATE_STAT_V1 = 42
     const val CAM_TARGET_V1 = 43
     const val MESSAGE_FRIENDCHANNEL = 44
     const val VARP_SYNC = 45

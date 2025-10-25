@@ -156,8 +156,8 @@ public enum class GameServerProt(
     UPDATE_RUNENERGY(GameServerProtId.UPDATE_RUNENERGY, 2),
     SET_MAP_FLAG(GameServerProtId.SET_MAP_FLAG, 2),
     SET_PLAYER_OP(GameServerProtId.SET_PLAYER_OP, Prot.VAR_BYTE),
-    UPDATE_STAT_V2(GameServerProtId.UPDATE_STAT, 7),
-    UPDATE_STAT_V1(GameServerProtId.UPDATE_STAT_OLD, 6),
+    UPDATE_STAT_V2(GameServerProtId.UPDATE_STAT_V2, 7),
+    UPDATE_STAT_V1(GameServerProtId.UPDATE_STAT_V1, 6),
 
     // Misc. player packets
     RUNCLIENTSCRIPT(GameServerProtId.RUNCLIENTSCRIPT, Prot.VAR_SHORT),

@@ -9,7 +9,7 @@ internal object GameServerProtId {
     const val UPDATE_ZONE_PARTIAL_ENCLOSED = 5
     const val IF_SETNPCHEAD_ACTIVE = 6
     const val LOC_ANIM = 7
-    const val UPDATE_STAT = 8
+    const val UPDATE_STAT_V2 = 8
     const val CAM_SHAKE = 9
     const val UPDATE_ZONE_FULL_FOLLOWS = 10
     const val UPDATE_ZONE_PARTIAL_FOLLOWS = 11
@@ -38,7 +38,7 @@ internal object GameServerProtId {
     const val MESSAGE_CLANCHANNEL = 34
     const val CAM_LOOKAT_EASED_COORD = 35
     const val IF_RESYNC_V1 = 36
-    const val CAM_TARGET_OLD = 37
+    const val CAM_TARGET_V1 = 37
     const val IF_SETPLAYERHEAD = 38
     const val OBJ_ENABLED_OPS = 39
     const val REBUILD_NORMAL = 40
@@ -114,7 +114,7 @@ internal object GameServerProtId {
     const val CAM_MOVETO_ARC = 110
     const val NPC_ANIM_SPECIFIC = 111
     const val SEND_PING = 112
-    const val UPDATE_STAT_OLD = 113
+    const val UPDATE_STAT_V1 = 113
     const val NPC_HEADICON_SPECIFIC = 114
     const val CLANSETTINGS_DELTA = 115
     const val PLAYER_SPOTANIM_SPECIFIC = 116
@@ -126,7 +126,7 @@ internal object GameServerProtId {
     const val LOGOUT_TRANSFER = 122
     const val MAP_PROJANIM_V1 = 123
     const val MIDI_SONG_V1 = 124
-    const val CAM_TARGET = 125
+    const val CAM_TARGET_V2 = 125
     const val SET_NPC_UPDATE_ORIGIN = 126
     const val UPDATE_UID192 = 127
     const val CLEAR_ENTITIES = 128

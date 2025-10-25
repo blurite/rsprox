@@ -24,7 +24,7 @@ internal object GameServerProtId {
     const val NPC_INFO_SMALL_V4 = 20
     const val HISCORE_REPLY = 21
     const val LOC_ANIM = 22
-    const val UPDATE_STAT = 23
+    const val UPDATE_STAT_V2 = 23
     const val IF_SETSCROLLPOS = 24
     const val VARP_SMALL = 25
     const val UPDATE_INV_FULL = 26
@@ -60,7 +60,7 @@ internal object GameServerProtId {
     const val PROJANIM_SPECIFIC_V1 = 56
     const val IF_SETPOSITION = 57
     const val UPDATE_FRIENDLIST = 58
-    const val UPDATE_STAT_OLD = 59
+    const val UPDATE_STAT_V1 = 59
     const val UPDATE_IGNORELIST = 60
     const val IF_SETPLAYERHEAD = 61
     const val UPDATE_UID192 = 62
@@ -126,9 +126,9 @@ internal object GameServerProtId {
     const val IF_SETHIDE = 122
     const val CAM_MOVETO_ARC = 123
     const val VARCLAN_ENABLE = 124
-    const val CAM_TARGET = 125
+    const val CAM_TARGET_V2 = 125
     const val HINT_ARROW = 126
-    const val CAM_TARGET_OLD = 127
+    const val CAM_TARGET_V1 = 127
     const val CLEAR_ENTITIES = 128
     const val HIDENPCOPS = 129
     const val SET_ACTIVE_WORLD_V1 = 130
