@@ -50,18 +50,18 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
     private enum class IndexedZoneProtDecoder(
         val decoder: ProxyMessageDecoder<*>,
     ) {
-        LOC_MERGE(LocMergeDecoder()),
-        OBJ_ADD(ObjAddDecoder()),
-        MAP_PROJANIM_V2(MapProjAnimV2Decoder()),
-        MAP_ANIM(MapAnimDecoder()),
-        LOC_ANIM(LocAnimDecoder()),
-        OBJ_UNCUSTOMISE(ObjUncustomiseDecoder()),
-        OBJ_ENABLED_OPS(ObjEnabledOpsDecoder()),
-        SOUND_AREA(SoundAreaDecoder()),
         OBJ_DEL(ObjDelDecoder()),
-        LOC_DEL(LocDelDecoder()),
         OBJ_COUNT(ObjCountDecoder()),
+        LOC_MERGE(LocMergeDecoder()),
         LOC_ADD_CHANGE_V2(LocAddChangeV2Decoder()),
+        OBJ_ENABLED_OPS(ObjEnabledOpsDecoder()),
+        MAP_ANIM(MapAnimDecoder()),
+        SOUND_AREA(SoundAreaDecoder()),
+        LOC_ANIM(LocAnimDecoder()),
         OBJ_CUSTOMISE(ObjCustomiseDecoder()),
+        LOC_DEL(LocDelDecoder()),
+        OBJ_UNCUSTOMISE(ObjUncustomiseDecoder()),
+        MAP_PROJANIM_V2(MapProjAnimV2Decoder()),
+        OBJ_ADD(ObjAddDecoder()),
     }
 }
