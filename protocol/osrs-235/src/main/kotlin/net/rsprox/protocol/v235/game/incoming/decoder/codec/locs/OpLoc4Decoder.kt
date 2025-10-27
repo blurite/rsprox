@@ -14,10 +14,10 @@ public class OpLoc4Decoder : ProxyMessageDecoder<OpLoc> {
         buffer: JagByteBuf,
         session: Session,
     ): OpLoc {
-        val id = buffer.g2Alt2()
-        val controlKey = buffer.g1Alt3() == 1
-        val x = buffer.g2Alt1()
-        val z = buffer.g2Alt1()
+        val x = buffer.g2Alt2()
+        val id = buffer.g2Alt1()
+        val z = buffer.g2Alt2()
+        val controlKey = buffer.g1Alt2() == 1
         return OpLoc(
             id,
             x,

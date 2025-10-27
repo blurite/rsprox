@@ -104,14 +104,14 @@ public enum class GameClientProt(
     EVENT_MOUSE_MOVE(GameClientProtId.EVENT_MOUSE_MOVE, Prot.VAR_BYTE),
     EVENT_NATIVE_MOUSE_MOVE(GameClientProtId.EVENT_NATIVE_MOUSE_MOVE, Prot.VAR_BYTE),
     EVENT_MOUSE_CLICK_V1(GameClientProtId.EVENT_MOUSE_CLICK_V1, 6),
-    EVENT_MOUSE_CLICK_V2(GameClientProtId.EVENT_MOUSE_CLICK_V2, 7),
+    EVENT_MOUSE_CLICK_V2(GameClientProtId.EVENT_NATIVE_MOUSE_CLICK_V2, 7),
 
     @Deprecated(
         "Deprecated since rework in revision 232, " +
             "where the platforms were joined into a single packet.",
         replaceWith = ReplaceWith("EVENT_MOUSE_CLICK_V2"),
     )
-    EVENT_NATIVE_MOUSE_CLICK(GameClientProtId.EVENT_NATIVE_MOUSE_CLICK, 7),
+    EVENT_NATIVE_MOUSE_CLICK(GameClientProtId.EVENT_NATIVE_MOUSE_CLICK_V1, 7),
 
     // Resume events
     RESUME_PAUSEBUTTON(GameClientProtId.RESUME_PAUSEBUTTON, 6),

@@ -15,10 +15,10 @@ internal class MapAnimSpecificDecoder : ProxyMessageDecoder<MapAnimSpecific> {
         buffer: JagByteBuf,
         session: Session,
     ): MapAnimSpecific {
+        val coordInBuildArea = CoordInBuildArea(buffer.g3Alt3())
+        val id = buffer.g2Alt2()
         val delay = buffer.g2Alt3()
-        val id = buffer.g2()
-        val height = buffer.g1Alt1()
-        val coordInBuildArea = CoordInBuildArea(buffer.g3())
+        val height = buffer.g1Alt3()
         return MapAnimSpecific(
             id,
             delay,

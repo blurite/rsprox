@@ -28,9 +28,9 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
         buffer: JagByteBuf,
         session: Session,
     ): UpdateZonePartialEnclosed {
-        val zoneX = buffer.g1Alt3()
         val zoneZ = buffer.g1Alt2()
         val level = buffer.g1()
+        val zoneX = buffer.g1Alt3()
         val packets =
             buildList {
                 while (buffer.isReadable) {

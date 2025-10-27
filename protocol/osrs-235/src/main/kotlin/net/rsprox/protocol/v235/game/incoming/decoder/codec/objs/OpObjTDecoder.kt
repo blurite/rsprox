@@ -15,13 +15,13 @@ public class OpObjTDecoder : ProxyMessageDecoder<OpObjT> {
         buffer: JagByteBuf,
         session: Session,
     ): OpObjT {
-        val selectedSub = buffer.g2Alt1()
-        val id = buffer.g2Alt1()
+        val x = buffer.g2Alt3()
+        val controlKey = buffer.g1Alt2() == 1
+        val selectedObj = buffer.g2Alt3()
+        val z = buffer.g2Alt1()
+        val id = buffer.g2()
         val selectedCombinedId = buffer.gCombinedIdAlt1()
-        val z = buffer.g2()
-        val selectedObj = buffer.g2Alt2()
-        val controlKey = buffer.g1Alt3() == 1
-        val x = buffer.g2Alt1()
+        val selectedSub = buffer.g2Alt3()
         return OpObjT(
             id,
             x,

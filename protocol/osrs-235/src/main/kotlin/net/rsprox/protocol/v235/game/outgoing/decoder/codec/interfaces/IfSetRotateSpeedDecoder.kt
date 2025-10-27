@@ -2,7 +2,7 @@ package net.rsprox.protocol.v235.game.outgoing.decoder.codec.interfaces
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.util.gCombinedIdAlt2
+import net.rsprot.protocol.util.gCombinedIdAlt3
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetRotateSpeed
 import net.rsprox.protocol.session.Session
@@ -15,9 +15,9 @@ internal class IfSetRotateSpeedDecoder : ProxyMessageDecoder<IfSetRotateSpeed> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetRotateSpeed {
-        val combinedId = buffer.gCombinedIdAlt2()
-        val ySpeed = buffer.g2Alt1()
-        val xSpeed = buffer.g2Alt1()
+        val xSpeed = buffer.g2Alt3()
+        val ySpeed = buffer.g2Alt3()
+        val combinedId = buffer.gCombinedIdAlt3()
         return IfSetRotateSpeed(
             combinedId.interfaceId,
             combinedId.componentId,

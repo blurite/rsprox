@@ -15,8 +15,8 @@ internal class IfSetScrollPosDecoder : ProxyMessageDecoder<IfSetScrollPos> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetScrollPos {
-        val scrollPos = buffer.g2()
         val combinedId = buffer.gCombinedIdAlt2()
+        val scrollPos = buffer.g2()
         return IfSetScrollPos(
             combinedId.interfaceId,
             combinedId.componentId,

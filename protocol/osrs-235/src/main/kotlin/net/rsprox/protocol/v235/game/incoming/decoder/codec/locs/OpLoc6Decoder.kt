@@ -14,7 +14,7 @@ public class OpLoc6Decoder : ProxyMessageDecoder<OpLoc6> {
         buffer: JagByteBuf,
         session: Session,
     ): OpLoc6 {
-        val id = buffer.g2Alt1()
+        val id = buffer.g2Alt3()
         return OpLoc6(id)
     }
 }

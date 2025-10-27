@@ -15,17 +15,17 @@ internal class ProjAnimSpecificV4Decoder : ProxyMessageDecoder<ProjAnimSpecificV
         buffer: JagByteBuf,
         session: Session,
     ): ProjAnimSpecificV4 {
-        val sourceIndex = buffer.g3sAlt2()
-        val startTime = buffer.g2Alt3()
-        val progress = buffer.g2()
-        val endTime = buffer.g2Alt1()
-        val endHeight = buffer.g2Alt1()
-        val startHeight = buffer.g2Alt1()
-        val angle = buffer.g1Alt3()
-        val targetIndex = buffer.g3sAlt1()
-        val id = buffer.g2Alt2()
-        val start = CoordGrid(buffer.g4Alt2())
+        val startTime = buffer.g2()
+        val endTime = buffer.g2Alt2()
         val end = CoordGrid(buffer.g4Alt1())
+        val endHeight = buffer.g2Alt1()
+        val start = CoordGrid(buffer.g4Alt2())
+        val targetIndex = buffer.g3sAlt1()
+        val startHeight = buffer.g2Alt3()
+        val sourceIndex = buffer.g3sAlt2()
+        val angle = buffer.g1Alt2()
+        val id = buffer.g2Alt2()
+        val progress = buffer.g2Alt1()
         return ProjAnimSpecificV4(
             id,
             startHeight,

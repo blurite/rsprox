@@ -15,9 +15,9 @@ public class OpLoc1Decoder : ProxyMessageDecoder<OpLoc> {
         session: Session,
     ): OpLoc {
         val x = buffer.g2Alt2()
-        val id = buffer.g2Alt2()
-        val controlKey = buffer.g1Alt1() == 1
-        val z = buffer.g2()
+        val z = buffer.g2Alt1()
+        val controlKey = buffer.g1Alt2() == 1
+        val id = buffer.g2Alt3()
         return OpLoc(
             id,
             x,

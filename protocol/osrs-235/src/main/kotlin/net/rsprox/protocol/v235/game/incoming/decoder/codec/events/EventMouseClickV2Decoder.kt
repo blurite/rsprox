@@ -14,10 +14,10 @@ public class EventMouseClickV2Decoder : ProxyMessageDecoder<EventMouseClickV2> {
         buffer: JagByteBuf,
         session: Session,
     ): EventMouseClickV2 {
-        val code = buffer.g1Alt3()
-        val x = buffer.g2Alt3()
-        val packed = buffer.g2Alt1()
-        val y = buffer.g2Alt1()
+        val x = buffer.g2()
+        val y = buffer.g2()
+        val code = buffer.g1Alt1()
+        val packed = buffer.g2Alt2()
         val rightClick = packed and 0x1 != 0
         val lastTransmittedMouseClick = packed ushr 1
         return EventMouseClickV2(
