@@ -150,20 +150,21 @@ public class SessionPanel(
             scrollbarMax = -1
             jumpToBottom = true
             val model = treeTable.treeTableModel as DefaultTreeTableModel
+            val root = model.root as DefaultMutableTreeTableNode
+            val streamNode = this@SessionPanel.streamNode
 
-            // Remove tick node content.
-            streamNode?.let {
-                while (it.childCount > 0) {
-                    val tickNode = it.getChildAt(it.childCount - 1) as AbstractMutableTreeTableNode
-                    model.removeNodeFromParent(tickNode)
+            if (streamNode != null) {
+                // Clear the root node (always <= 1 entry - the streamNode)
+                for (i in root.childCount - 1 downTo 0) {
+                    val node = root.getChildAt(i) as AbstractMutableTreeTableNode
+                    model.removeNodeFromParent(node)
                 }
-            }
 
-            // Remove other stream node content.
-            for (i in root.childCount - 1 downTo 0) {
-                val node = root.getChildAt(i) as AbstractMutableTreeTableNode
-                if (node === streamNode) continue
-                model.removeNodeFromParent(node)
+                // Replace the stream node directly instead of purging it one by one
+                // This avoids expensive UI rebuilding and event-firing per node deleted
+                val streamNode = StreamTreeTableNode(streamNode.header)
+                addNodeAndExpand(streamNode, root, root.childCount)
+                this@SessionPanel.streamNode = streamNode
             }
             this@SessionPanel.tickNode = null
         }
@@ -400,7 +401,7 @@ public class SessionPanel(
 
     private companion object {
         private class StreamTreeTableNode(
-            private val header: BinaryHeader,
+            val header: BinaryHeader,
         ) : SessionBaseTreeTableNode() {
             override fun getValueAt(column: Int) =
                 when (column) {
