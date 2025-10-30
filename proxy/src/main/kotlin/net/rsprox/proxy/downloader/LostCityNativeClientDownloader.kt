@@ -16,13 +16,14 @@ public object LostCityNativeClientDownloader {
         type: NativeClientType,
         version: String,
     ): Path {
+        val normalizedVersion = if ('.' !in version) "$version.1" else version
         val prefix = "https://archive.lostcity.rs/oldschool.runescape.com/native/"
         val typePath =
             when (type) {
                 NativeClientType.WIN -> "osrs-win/"
                 NativeClientType.MAC -> "osrs-mac/"
             }
-        val versionPath = "$version/"
+        val versionPath = "$normalizedVersion/"
         val filePath =
             when (type) {
                 NativeClientType.WIN -> "osclient.exe"
@@ -30,8 +31,8 @@ public object LostCityNativeClientDownloader {
             }
         val filePathWithVersion =
             when (type) {
-                NativeClientType.WIN -> "osclient-$version.exe"
-                NativeClientType.MAC -> "osclient.app/Contents/MacOS/osclient-$version"
+                NativeClientType.WIN -> "osclient-$normalizedVersion.exe"
+                NativeClientType.MAC -> "osclient.app/Contents/MacOS/osclient-$normalizedVersion"
             }
         val file = folder.resolve(filePathWithVersion)
         // Return the old file if it already exists, assume it is unchanged
@@ -44,7 +45,7 @@ public object LostCityNativeClientDownloader {
                 url.readBytes()
             } catch (t: Throwable) {
                 logger.error(t) {
-                    "Unable to download client $type/$version"
+                    "Unable to download client $type/$normalizedVersion"
                 }
                 throw t
             }
