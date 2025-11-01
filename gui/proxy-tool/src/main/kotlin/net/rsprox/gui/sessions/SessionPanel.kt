@@ -153,12 +153,13 @@ public class SessionPanel(
             val root = model.root as DefaultMutableTreeTableNode
             val streamNode = this@SessionPanel.streamNode
 
+            // Clear the root node (always <= 1 entry - the streamNode)
+            for (i in root.childCount - 1 downTo 0) {
+                val node = root.getChildAt(i) as AbstractMutableTreeTableNode
+                model.removeNodeFromParent(node)
+            }
+
             if (streamNode != null) {
-                // Clear the root node (always <= 1 entry - the streamNode)
-                for (i in root.childCount - 1 downTo 0) {
-                    val node = root.getChildAt(i) as AbstractMutableTreeTableNode
-                    model.removeNodeFromParent(node)
-                }
 
                 // Replace the stream node directly instead of purging it one by one
                 // This avoids expensive UI rebuilding and event-firing per node deleted
