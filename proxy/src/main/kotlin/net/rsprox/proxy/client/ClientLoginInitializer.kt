@@ -84,8 +84,8 @@ public class ClientLoginInitializer(
                         settings,
                     ),
                 )
-                clientChannel.pipeline().addLast(ChannelConnectionHandler(serverChannel))
-                serverChannel.pipeline().addLast(ChannelConnectionHandler(clientChannel))
+                clientChannel.pipeline().addLast(ChannelConnectionHandler(serverChannel, connections))
+                serverChannel.pipeline().addLast(ChannelConnectionHandler(clientChannel, connections))
                 val builder = BinaryHeader.Builder()
                 val name = ClientTypeDictionary[clientChannel.getPort()]
                 builder.clientName(name)

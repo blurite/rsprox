@@ -58,6 +58,8 @@ public data class BinaryBlob(
     private var lastBandwidthUpdate = TimeSource.Monotonic.markNow()
     private var lastOutgoingBytes: Int = 0
     private var lastIncomingBytes: Int = 0
+    var closeTimestamp: Long = 0L
+        private set
 
     public fun liveCache(): CacheProvider {
         return liveSession?.cacheProvider ?: error("Cache unavailable.")
@@ -110,6 +112,7 @@ public data class BinaryBlob(
         liveSession?.flush()
         this.lastIncomingBytes = 0
         this.lastOutgoingBytes = 0
+        this.closeTimestamp = System.currentTimeMillis()
         this.monitor.onIncomingBytesPerSecondUpdate(-1)
         this.monitor.onOutgoingBytesPerSecondUpdate(-1)
         this.monitor.onLogout(header)
@@ -178,6 +181,7 @@ public data class BinaryBlob(
         liveSession?.flush()
         closed.set(false)
         this.monitor.onLogin(header)
+        this.closeTimestamp = 0L
     }
 
     private fun write() {

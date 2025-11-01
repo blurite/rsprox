@@ -450,7 +450,7 @@ public class ClientLoginHandler(
         val pipeline = serverChannel.pipeline()
         pipeline.addLastWithName(ServerGenericDecoder(NopStreamCipher, LoginServerProtProvider))
         pipeline.addLastWithName(ServerJs5LoginHandler(ctx.channel()))
-        pipeline.addLastWithName(ChannelConnectionHandler(serverChannel))
+        pipeline.addLastWithName(ChannelConnectionHandler(serverChannel, connections))
     }
 
     private fun switchServerToGameLoginDecoding(ctx: ChannelHandlerContext) {
@@ -467,7 +467,7 @@ public class ClientLoginHandler(
             ),
         )
         pipeline.addLastWithName(ServerRelayHandler(ctx.channel()))
-        pipeline.addLastWithName(ChannelConnectionHandler(serverChannel))
+        pipeline.addLastWithName(ChannelConnectionHandler(serverChannel, connections))
     }
 
     private companion object {

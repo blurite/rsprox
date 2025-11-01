@@ -553,6 +553,7 @@ public class ProxyService(
     }
 
     public fun killAliveProcess(port: Int) {
+        removeSessionMonitor(port)
         val processList = processes.remove(port) ?: return
         for (process in processList) {
             try {
@@ -789,6 +790,10 @@ public class ProxyService(
         ClientTypeDictionary[port] = "Native (${os.shortName})"
         this.connections.addSessionMonitor(port, sessionMonitor)
         launchExecutable(port, result.outputPath, os, character)
+    }
+
+    private fun removeSessionMonitor(port: Int) {
+        this.connections.removeSessionMonitor(port)
     }
 
     private fun getHistoricNativeClient(

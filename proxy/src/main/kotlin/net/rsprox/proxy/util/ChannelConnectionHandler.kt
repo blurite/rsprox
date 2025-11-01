@@ -5,16 +5,20 @@ import io.netty.channel.Channel
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInboundHandlerAdapter
 import net.rsprox.proxy.attributes.BINARY_BLOB
+import net.rsprox.proxy.connection.ProxyConnectionContainer
 import java.io.IOException
 
 public class ChannelConnectionHandler(
     private val targetChannel: Channel,
+    private val connections: ProxyConnectionContainer,
 ) : ChannelInboundHandlerAdapter() {
     override fun channelInactive(ctx: ChannelHandlerContext) {
         if (targetChannel.isActive) {
             targetChannel.close()
         }
-        targetChannel.attr(BINARY_BLOB).get()?.close()
+        val blob = targetChannel.attr(BINARY_BLOB).get() ?: return
+        blob.close()
+        connections.removeConnection(blob)
     }
 
     @Deprecated("Deprecated in Java")
