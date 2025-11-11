@@ -30,19 +30,9 @@ dependencies {
     implementation(libs.junixsocket)
     implementation(libs.okhttp3)
     implementation(libs.gson)
-    implementation(projects.protocol.osrs223)
-    implementation(projects.protocol.osrs224)
-    implementation(projects.protocol.osrs225)
-    implementation(projects.protocol.osrs226)
-    implementation(projects.protocol.osrs227)
-    implementation(projects.protocol.osrs228)
-    implementation(projects.protocol.osrs229)
-    implementation(projects.protocol.osrs230)
-    implementation(projects.protocol.osrs231)
-    implementation(projects.protocol.osrs232)
-    implementation(projects.protocol.osrs233)
-    implementation(projects.protocol.osrs234)
-    implementation(projects.protocol.osrs235)
+    findSubprojects(projects.protocol.name).forEach {
+        implementation(it)
+    }
 }
 
 tasks.build.configure {
@@ -89,4 +79,8 @@ fun searchSubproject(
     val relativePath = projectPath.relativize(subprojectPath)
     val subprojectName = relativePath.toString().replace(File.separator, ":")
     return "$projectName:$subprojectName"
+}
+
+fun findSubprojects(parentProject: String): List<Project> {
+    return project(":$parentProject").subprojects.filter { it.buildFile.exists() }
 }

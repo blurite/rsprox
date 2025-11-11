@@ -15,6 +15,7 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 include(
     "proxy",
+    "processor",
     "protocol",
     "patch",
     "gui",
