@@ -16,7 +16,7 @@ internal class VarClanDecoder : ProxyMessageDecoder<VarClan> {
         buffer: JagByteBuf,
         session: Session,
     ): VarClan {
-        val id = buffer.g1()
+        val id = buffer.g2()
         val data = ByteArray(buffer.readableBytes())
         buffer.gdata(data)
         return VarClan(id, VarClan.UnknownVarClanData(data))
