@@ -141,15 +141,38 @@ transcripts.
 
 ### Jagex Accounts
 Jagex Accounts are now fully supported. There are two ways of using a Jagex
-account:
-[build.gradle.kts](build.gradle.kts)
-1. Using the built-in authentication system. RSProx allows you to login via
-your browser to authenticate yourself for the proxy tool, allowing easy access
-to all the characters under that Jagex account. You can also link multiple
-different Jagex accounts to make the process of switching accounts easier.
-2. The Default, legacy behaviour. In this mode, you need to export the
-credentials.properties file in `user.home/.runelite/credentials.properties` via
-[this](https://github.com/runelite/runelite/wiki/Using-Jagex-Accounts).
+account.
+
+#### Linking a Jagex Account
+The first option is to link the Jagex Account. You can do this by selecting
+the middle drop-down, and clicking the "Manage Linked Accounts" button.
+
+![Example](https://media.z-kris.com/2025/11/java_vhIgMxwunA.png)
+
+Afterward, a popup will show where you can add or delete existing Jagex Accounts.
+In order to add one, hit the `+` button. This should launch a new browser window
+to `account.jagex.com`, asking you to login. Complete the login, and you should
+see a window stating "Account Linked Successfully". You may close the browser
+window, and you should then see all your characters show up in the drop-down.
+Selecting the "Default" option will continue to show the e-mail/password box
+on any new clients you launch, while selecting a Jagex Account Character will
+launch a client that directly connects to that Jagex Account Character.
+
+Extra notes:
+- Linking a Jagex Account requires port 80 to be free, as it binds to it temporarily
+for the linking process. This is how the data is sent from your browser back to
+RSProx, allowing it to store the Jagex Account Token. On Linux, this requires
+Sudo access, as ports < 1000 are protected.
+- The Jagex accounts will refresh themselves every time you boot up RSProx,
+ensuring you never have to run the setup process again.
+
+If the process fails for you, please let us know so we can figure out a solution
+that will avoid it becoming an issue for other people in the future too.
+
+
+#### Exporting RuneLite Credentials
+The second option to using a Jagex Account is by exporting the short-term token
+via RuneLite, as explained [here](https://github.com/runelite/runelite/wiki/Using-Jagex-Accounts).
 Once you have exported the credentials.properties as shown in the tutorial,
 the RSProx tool will always load them up from `user.home/.runelite/credentials.properties`.
 If you wish to stop using a Jagex Account in this Default mode,
