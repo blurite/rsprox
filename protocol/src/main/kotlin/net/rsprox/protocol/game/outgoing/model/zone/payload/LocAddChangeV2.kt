@@ -113,9 +113,9 @@ public class LocAddChangeV2 private constructor(
             "xInZone=$xInZone, " +
             "zInZone=$zInZone, " +
             "shape=$shape, " +
-            "rotation=$rotation" +
+            "rotation=$rotation, " +
             "opFlags=$opFlags, " +
-            "ops=$ops, " +
+            "ops=$ops" +
             ")"
     }
 }
