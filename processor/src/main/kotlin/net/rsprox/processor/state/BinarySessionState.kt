@@ -27,7 +27,7 @@ public data class BinarySessionState(
      * For example, if [coord] is at (6405, 3) within a region (also known as an instance) zone that copied the
      * base world zone at (3200, 3200), this method returns (3205, 3203).
      */
-    public fun absCoords(coord: CoordGrid): CoordGrid {
+    public fun absCoord(coord: CoordGrid): CoordGrid {
         return absCoord(buildArea, regionZones, coord)
     }
 
