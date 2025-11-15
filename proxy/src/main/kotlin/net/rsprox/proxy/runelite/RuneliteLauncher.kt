@@ -95,7 +95,7 @@ public class RuneliteLauncher {
                 classpath.toString(),
                 bootstrap.launcher.mainClass,
                 "--port=$port",
-                "--world_client_port=${target.config.httpPort}",
+                "--world_client_port=${target.httpPort}",
                 "--rsa=$rsa",
                 "--jav_config=$javConfig",
                 "--socket_id=$socket",

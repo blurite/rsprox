@@ -8,7 +8,6 @@ import net.rsprox.gui.AppIcons
 import net.rsprox.gui.auth.JagexAuthenticator
 import net.rsprox.gui.sessions.SessionType
 import net.rsprox.gui.sessions.SessionsPanel
-import net.rsprox.proxy.target.ProxyTarget
 import net.rsprox.proxy.target.ProxyTargetConfig
 import net.rsprox.proxy.target.ProxyTargetImportResult
 import net.rsprox.proxy.util.OperatingSystem
@@ -53,7 +52,7 @@ public class LaunchBar(
 
     init {
         layout = MigLayout("gap 10", "push[][][][][]", "[]")
-        val targetConfigs = App.service.proxyTargets.map(ProxyTarget::config)
+        val targetConfigs = App.service.proxyTargets
         val targetConfigsModel = DefaultComboBoxModel(targetConfigs.toTypedArray())
         val proxyTargetDropdown =
             FlatComboBox<ProxyTargetConfig>().apply {

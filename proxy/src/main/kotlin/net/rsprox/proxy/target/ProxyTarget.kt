@@ -6,6 +6,7 @@ import io.netty.channel.Channel
 import net.rsprox.proxy.bootstrap.BootstrapFactory
 import net.rsprox.proxy.channel.getPort
 import net.rsprox.proxy.config.CURRENT_REVISION
+import net.rsprox.proxy.config.HTTP_SERVER_PORT
 import net.rsprox.proxy.config.JavConfig
 import net.rsprox.proxy.config.ProxyProperties
 import net.rsprox.proxy.config.ProxyProperty
@@ -22,7 +23,10 @@ import kotlin.system.exitProcess
 public class ProxyTarget(
     public val config: ProxyTargetConfig,
     public val gamePackProvider: GamePackProvider,
+    public val sessionId: Int,
 ) {
+    public val httpPort: Int
+        get() = HTTP_SERVER_PORT + sessionId
     private val name: String
         get() = config.name
     private lateinit var httpServerBootstrap: ServerBootstrap
@@ -113,7 +117,7 @@ public class ProxyTarget(
         return runCatching("Failed to rebuild jav_config.ws for target '$name'") {
             val oldWorldList = javConfig.getWorldListUrl()
             val oldCodebase = javConfig.getCodebase()
-            val changedWorldListUrl = "http://127.0.0.1:${config.httpPort}/worldlist.ws"
+            val changedWorldListUrl = "http://127.0.0.1:$httpPort/worldlist.ws"
             val changedCodebase = "http://${replacementWorld.localHostAddress}/"
             val updated =
                 javConfig
@@ -133,22 +137,20 @@ public class ProxyTarget(
         javConfig: JavConfig,
         gamePackProvider: GamePackProvider,
     ) {
-        runCatching("Failure to launch HTTP server for target '$name'") {
-            val httpServerBootstrap =
-                factory.createWorldListHttpServer(
-                    worldListProvider,
-                    javConfig,
-                    gamePackProvider,
-                )
-            val timeoutSeconds = properties.getProperty(ProxyProperty.BIND_TIMEOUT_SECONDS).toLong()
-            httpServerBootstrap
-                .bind(config.httpPort)
-                .asCompletableFuture()
-                .orTimeout(timeoutSeconds, TimeUnit.SECONDS)
-                .join()
-            this.httpServerBootstrap = httpServerBootstrap
-            logger.debug { "HTTP server bound to port ${config.httpPort} for target '$name'" }
-        }
+        val httpServerBootstrap =
+            factory.createWorldListHttpServer(
+                worldListProvider,
+                javConfig,
+                gamePackProvider,
+            )
+        val timeoutSeconds = properties.getProperty(ProxyProperty.BIND_TIMEOUT_SECONDS).toLong()
+        httpServerBootstrap
+            .bind(httpPort)
+            .asCompletableFuture()
+            .orTimeout(timeoutSeconds, TimeUnit.SECONDS)
+            .join()
+        this.httpServerBootstrap = httpServerBootstrap
+        logger.debug { "HTTP server bound to port $httpPort for target '$name'" }
     }
 
     private inline fun <T> runCatching(

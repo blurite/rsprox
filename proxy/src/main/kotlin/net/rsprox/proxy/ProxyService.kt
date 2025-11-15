@@ -98,13 +98,14 @@ public class ProxyService(
         private set
     private var properties: ProxyProperties by Delegates.notNull()
     private var availablePort: Int = -1
+    private var initialPort: Int = -1
     private val processes: MutableMap<Int, List<ProcessHandle>> = mutableMapOf()
     private val connections: ProxyConnectionContainer = ProxyConnectionContainer()
     private lateinit var credentials: BinaryCredentialsStore
     private var rspsModulus: String? = null
-    public lateinit var proxyTargets: List<ProxyTarget>
+    public lateinit var proxyTargets: List<ProxyTargetConfig>
         private set
-    private val currentProxyTarget: ProxyTarget
+    private val currentProxyTarget: ProxyTargetConfig
         get() = proxyTargets[getSelectedProxyTarget()]
 
     public fun start(
@@ -129,6 +130,7 @@ public class ProxyService(
         progressCallback.update(0.10, "Proxy", "Loading RSProx (2/15)")
         loadProperties()
         this.availablePort = properties.getProperty(PROXY_PORT_MIN)
+        this.initialPort = availablePort
         this.bootstrapFactory = BootstrapFactory(allocator, properties)
         progressCallback.update(0.15, "Proxy", "Loading RSProx (3/15)")
         try {
@@ -145,7 +147,7 @@ public class ProxyService(
                 "Unable to refresh proxy targets from stored sources"
             }
         }
-        val proxyTargetConfigs = loadProxyTargetConfigs(rspsJavConfigUrl)
+        this.proxyTargets = loadProxyTargetConfigs(rspsJavConfigUrl)
         val jobs = mutableListOf<Callable<Boolean>>()
         jobs += createJob(progressCallback) { HuffmanProvider.load() }
         jobs += createJob(progressCallback) { this.rsa = loadRsa() }
@@ -154,8 +156,6 @@ public class ProxyService(
         jobs +=
             createJob(progressCallback) { this.filterSetStore = DefaultPropertyFilterSetStore.load(FILTERS_DIRECTORY) }
         jobs += createJob(progressCallback) { this.settingsStore = DefaultSettingSetStore.load(SETTINGS_DIRECTORY) }
-
-        jobs += loadProxyTargets(progressCallback, proxyTargetConfigs)
 
         jobs += createJob(progressCallback) { this.credentials = BinaryCredentialsStore.read() }
 
@@ -174,7 +174,6 @@ public class ProxyService(
             "Unable to boot RSProx"
         }
         recategorizeBinaries(progressCallback)
-        this.proxyTargets = this.proxyTargets.filter(ProxyTarget::isSuccessfullyLoaded)
     }
 
     private val completedJobs = AtomicInteger(0)
@@ -318,30 +317,6 @@ public class ProxyService(
             233 -> "cea91b9921a3647683ba8a5c22ec75c752c91b07"
             234 -> "8e9f9cce7a5cbe205f7a7a84f8e329d25e810f5d"
             else -> null
-        }
-    }
-
-    private fun loadProxyTargets(
-        progressCallback: ProgressCallback,
-        configs: List<ProxyTargetConfig>,
-    ): List<Callable<Boolean>> {
-        this.proxyTargets =
-            configs.map {
-                ProxyTarget(
-                    it,
-                    GamePackProvider(it.runeliteGamepackUrl),
-                )
-            }
-        return this.proxyTargets.map { target ->
-            createJob(progressCallback) {
-                try {
-                    target.load(properties, bootstrapFactory)
-                } catch (e: Exception) {
-                    logger.error(e) {
-                        "Unable to load proxy target ${target.config.name}."
-                    }
-                }
-            }
         }
     }
 
@@ -673,8 +648,8 @@ public class ProxyService(
         sessionMonitor: SessionMonitor<BinaryHeader>,
         character: JagexCharacter?,
         port: Int,
+        target: ProxyTarget,
     ) {
-        val target = this.currentProxyTarget
         try {
             launchProxyServer(this.bootstrapFactory, target, rsa, port)
         } catch (t: Throwable) {
@@ -695,10 +670,28 @@ public class ProxyService(
         return this.availablePort++
     }
 
+    private fun portOffset(port: Int): Int {
+        check(this.initialPort != -1)
+        return port - this.initialPort
+    }
+
+    public fun initializeHttpServer(port: Int): ProxyTarget {
+        val sessionId = portOffset(port)
+        val target =
+            ProxyTarget(
+                currentProxyTarget,
+                GamePackProvider(currentProxyTarget.runeliteGamepackUrl),
+                sessionId,
+            )
+        target.load(properties, bootstrapFactory)
+        return target
+    }
+
     public fun launchNativeClient(
         sessionMonitor: SessionMonitor<BinaryHeader>,
         character: JagexCharacter?,
         port: Int,
+        proxyTarget: ProxyTarget,
     ) {
         launchNativeClient(
             operatingSystem,
@@ -706,6 +699,7 @@ public class ProxyService(
             sessionMonitor,
             character,
             port,
+            proxyTarget,
         )
     }
 
@@ -715,8 +709,8 @@ public class ProxyService(
         sessionMonitor: SessionMonitor<BinaryHeader>,
         character: JagexCharacter?,
         port: Int,
+        target: ProxyTarget,
     ) {
-        val target = this.currentProxyTarget
         try {
             launchProxyServer(this.bootstrapFactory, target, rsa, port)
         } catch (t: Throwable) {
@@ -750,8 +744,8 @@ public class ProxyService(
                 .Builder(nativeClientType)
                 .acceptAllLoopbackAddresses()
                 .rsaModulus(rsa.publicKey.modulus.toString(16))
-                .javConfig("http://127.0.0.1:${target.config.httpPort}/$javConfigEndpoint")
-                .worldList("http://127.0.0.1:${target.config.httpPort}/$worldlistEndpoint")
+                .javConfig("http://127.0.0.1:${target.httpPort}/$javConfigEndpoint")
+                .worldList("http://127.0.0.1:${target.httpPort}/$worldlistEndpoint")
                 .port(port)
         val revConst = targetRev?.substringBefore('.')?.toIntOrNull()
         if (revConst == null || revConst <= 231) {
@@ -827,7 +821,7 @@ public class ProxyService(
                 launcher.getLaunchArgs(
                     port,
                     rsa.publicKey.modulus.toString(16),
-                    javConfig = "http://127.0.0.1:${target.config.httpPort}/$javConfigEndpoint",
+                    javConfig = "http://127.0.0.1:${target.httpPort}/$javConfigEndpoint",
                     socket = timestamp.toString(),
                     target = target,
                 )

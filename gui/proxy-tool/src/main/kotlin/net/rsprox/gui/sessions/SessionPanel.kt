@@ -184,6 +184,7 @@ public class SessionPanel(
                 measureTime {
                     try {
                         portNumber = App.service.allocatePort()
+                        val target = App.service.initializeHttpServer(portNumber)
                         when (type) {
                             SessionType.Java -> TODO()
                             SessionType.Native -> {
@@ -191,6 +192,7 @@ public class SessionPanel(
                                     UiSessionMonitor(),
                                     character,
                                     portNumber,
+                                    target,
                                 )
                             }
 
@@ -199,6 +201,7 @@ public class SessionPanel(
                                     UiSessionMonitor(),
                                     character,
                                     portNumber,
+                                    target,
                                 )
                             }
                         }
