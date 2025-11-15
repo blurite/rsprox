@@ -25,8 +25,8 @@ public class BinarySessionStateIterator(
     }
 
     public class Entry(
-        private val state: BinarySessionState,
-        private val message: IncomingMessage,
+        public val state: BinarySessionState,
+        public val message: IncomingMessage,
     ) {
         public operator fun component1(): BinarySessionState {
             return state

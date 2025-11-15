@@ -18,6 +18,28 @@ public data class BinarySessionState(
     public val updateZone: CoordGrid,
     public val regionZones: BuildArea?,
 ) {
+    /**
+     * Returns the absolute (normalized) coordinates for the given [coord].
+     *
+     * If the coordinate is inside a region, this converts it back to its original position in the base world.
+     * Otherwise, it returns [coord] unchanged.
+     *
+     * For example, if [coord] is at (6405, 3) within a region (also known as an instance) zone that copied the
+     * base world zone at (3200, 3200), this method returns (3205, 3203).
+     */
+    public fun absCoord(coord: CoordGrid): CoordGrid {
+        return absCoord(buildArea, regionZones, coord)
+    }
+
+    /**
+     * Returns the absolute (normalized) coordinates for the given zone-local [xInZone] and [zInZone] values.
+     *
+     * The coordinates are first calculated by offsetting [xInZone] and [zInZone] from the last known [buildArea] and
+     * [updateZone]. If the resulting coordinate is inside a region (instance), it is then converted back to its
+     * original position in the base world using [regionZones].
+     *
+     * This method is mainly used for zone prots where limited coord information is available. (3-bit coordinate offset)
+     */
     public fun absCoord(xInZone: Int, zInZone: Int): CoordGrid {
         val zoneBase = CoordGrid(updateZone.level, buildArea.x + updateZone.x, buildArea.z + updateZone.z)
         val coord = CoordGrid(zoneBase.level, zoneBase.x + xInZone, zoneBase.z + zInZone)
@@ -64,8 +86,8 @@ public data class BinarySessionState(
         return this
     }
 
-    public companion object {
-        public val DEFAULT: BinarySessionState =
+    internal companion object {
+        val DEFAULT: BinarySessionState =
             BinarySessionState(
                 currentTick = 0,
                 localPlayerIndex = -1,
