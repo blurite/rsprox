@@ -8,28 +8,29 @@ import com.esotericsoftware.kryo.serializers.CollectionSerializer
 import com.github.michaelbull.logging.InlineLogger
 import net.rsprot.protocol.message.IncomingMessage
 import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
-import net.rsprox.proxy.connection.ProxyConnectionContainer
+import net.rsprox.proxy.config.SOCKETS_DIRECTORY
 import org.newsclub.net.unix.AFUNIXServerSocket
-import org.newsclub.net.unix.AFUNIXSocket
 import org.newsclub.net.unix.AFUNIXSocketAddress
 import org.objenesis.strategy.StdInstantiatorStrategy
-import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.net.SocketException
+import java.nio.file.FileSystems
 import java.nio.file.Path
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.atomic.AtomicBoolean
+import java.nio.file.StandardWatchEventKinds
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.thread
+import kotlin.io.path.deleteIfExists
+import kotlin.io.path.extension
+import kotlin.io.path.name
 
 public class UnixSocketConnection(
-    private val socketFile: Path,
-    private val connections: ProxyConnectionContainer,
+    private val port: Int,
 ) {
-    private lateinit var unixListenerThread: Thread
-    private lateinit var eventListenerThread: Thread
-    private val packets = ConcurrentLinkedQueue<UnixPacket>()
-    private val eventQueue = LinkedBlockingQueue<Event>()
+    private lateinit var socketConnectionListener: Thread
+    private val eventLog: EventLog = EventLog()
+    private val uniqueConnections = ConcurrentHashMap.newKeySet<Path>()
     private val kryo =
         Kryo().apply {
             isRegistrationRequired = false
@@ -51,93 +52,112 @@ public class UnixSocketConnection(
             }
         }
 
-    private val msgOutput = Output(4096, -1)
-    private val running: AtomicBoolean = AtomicBoolean(true)
-
     public fun start() {
-        check(!this::unixListenerThread.isInitialized) {
+        check(!this::socketConnectionListener.isInitialized) {
             "Unix socket already initialized."
         }
 
+        this.socketConnectionListener =
+            thread(start = true, isDaemon = true) {
+                watchDirectory(SOCKETS_DIRECTORY) { path ->
+                    if (!path.name.startsWith("rsprox-tunnel-$port-")) {
+                        return@watchDirectory
+                    }
+                    if (path.extension != "con") return@watchDirectory
+                    val socketPath = path.withExtension("socket")
+                    if (!uniqueConnections.add(socketPath)) {
+                        return@watchDirectory
+                    }
+                    createUnixServer(path, socketPath)
+                }
+            }
+    }
+
+    private fun Path.withExtension(ext: String): Path {
+        val name = this.fileName.toString()
+        val base = name.substringBeforeLast('.', name)
+        return this.resolveSibling("$base.$ext")
+    }
+
+    private fun watchDirectory(
+        path: Path,
+        onCreate: (Path) -> Unit,
+    ) {
+        val watchService = FileSystems.getDefault().newWatchService()
+        path.register(watchService, StandardWatchEventKinds.ENTRY_CREATE)
+
+        while (true) {
+            val key = watchService.take()
+
+            for (event in key.pollEvents()) {
+                if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
+                    val createdFile = path.resolve(event.context() as Path)
+                    onCreate(createdFile)
+                }
+            }
+
+            if (!key.reset()) {
+                break
+            }
+        }
+    }
+
+    private fun createUnixServer(
+        conFile: Path,
+        socketFile: Path,
+    ) {
         val address = AFUNIXSocketAddress.of(socketFile)
         val server = AFUNIXServerSocket.newInstance()
 
         server.bind(address)
-        logger.debug { "Waiting for RSProx-Connection plugin to establish a connection." }
-
-        this.unixListenerThread =
-            thread(start = true, isDaemon = true) {
-                server.use { srv ->
-                    val socket = srv.accept()
-                    logger.debug { "RSProx-Connection plugin has successfully established a connection." }
-                    beginEventListening(socket)
-
-                    val input = DataInputStream(socket.inputStream)
-
-                    while (running.get()) {
-                        try {
-                            when (val request = String(input.readMessage())) {
-                                "Sync" -> {
-                                    eventQueue.offer(UnixSyncEvent)
-                                }
-                                else -> {
-                                    logger.warn { "Unknown request: $request" }
-                                }
-                            }
-                        } catch (_: SocketException) {
-                            closeConnection()
-                            break
-                        }
-                    }
-                }
-            }
-    }
-
-    private fun beginEventListening(socket: AFUNIXSocket) {
-        this.eventListenerThread =
-            thread(start = true, isDaemon = true) {
+        conFile.deleteIfExists()
+        logger.debug { "Waiting for RSProx-Connection to establish a connection to $socketFile." }
+        thread(start = true, isDaemon = true) {
+            server.use { srv ->
+                val socket = srv.accept()
+                logger.debug { "RSProx-Connection has successfully established a connection to $socketFile." }
                 val outputStream = DataOutputStream(socket.outputStream)
-                while (running.get()) {
-                    try {
-                        when (val event = eventQueue.take()) {
-                            is UnixPacket -> {
-                                outputStream.writeMessage(event)
+                val msgOutput = Output(4096, -1)
+                val key = eventLog.consumerKey()
+                eventLog.addConsumer(
+                    key,
+                    syncBlock = {
+                        try {
+                            val snapshot = eventLog.snapshot(0)
+                            outputStream.writeIndicator(FLAG_BEGIN_SYNC)
+                            for (packet in snapshot) {
+                                outputStream.writeMessage(msgOutput, packet)
                             }
-                            UnixSyncEvent -> {
-                                outputStream.writeIndicator(FLAG_BEGIN_SYNC)
-                                for (packet in packets) {
-                                    outputStream.writeMessage(packet)
-                                }
-                                outputStream.writeIndicator(FLAG_END_SYNC)
-                            }
+                            outputStream.writeIndicator(FLAG_END_SYNC)
+                        } catch (_: SocketException) {
+                            eventLog.removeConsumer(key)
+                            uniqueConnections.remove(socketFile)
                         }
-                    } catch (_: SocketException) {
-                        closeConnection()
-                        break
-                    } catch (e: Exception) {
-                        logger.error(e) {
-                            "Unable to process event."
+                    },
+                    consumer = { event ->
+                        try {
+                            outputStream.writeMessage(msgOutput, event)
+                        } catch (_: SocketException) {
+                            eventLog.removeConsumer(key)
+                            uniqueConnections.remove(socketFile)
                         }
-                    }
-                }
+                    },
+                )
             }
+        }
     }
 
     public fun push(payload: IncomingMessage) {
         if (payload is RebuildLogin) {
-            packets.clear()
+            eventLog.clearEvents()
         }
-        val packet = UnixPacket(payload)
-        packets.add(packet)
-        eventQueue.offer(packet)
+        eventLog.append(UnixPacket(payload))
     }
 
-    private fun DataInputStream.readMessage(): ByteArray {
-        val len = readInt()
-        return ByteArray(len).also { readFully(it) }
-    }
-
-    private fun DataOutputStream.writeMessage(unixPacket: UnixPacket) {
+    private fun DataOutputStream.writeMessage(
+        msgOutput: Output,
+        unixPacket: UnixPacket,
+    ) {
         msgOutput.setPosition(0)
         kryo.writeClassAndObject(msgOutput, unixPacket.message)
         msgOutput.flush()
@@ -155,20 +175,79 @@ public class UnixSocketConnection(
         flush()
     }
 
-    private fun closeConnection() {
-        running.set(false)
-        packets.clear()
-        eventQueue.clear()
-        connections.removeUnixConnection(this)
-    }
-
     private sealed interface Event
-
-    private data object UnixSyncEvent : Event
 
     private class UnixPacket(
         val message: IncomingMessage,
     ) : Event
+
+    private class EventLog {
+        private val lock = ReentrantLock()
+        private val events = mutableListOf<UnixPacket>()
+        private val consumers = ConcurrentHashMap<Int, (UnixPacket) -> Unit>()
+        private val consumerKeyCount: AtomicInteger = AtomicInteger(0)
+
+        fun consumerKey(): Int {
+            return consumerKeyCount.incrementAndGet()
+        }
+
+        fun addConsumer(
+            key: Int,
+            syncBlock: () -> Unit,
+            consumer: (event: UnixPacket) -> Unit,
+        ) {
+            withLock {
+                syncBlock()
+                consumers.put(key, consumer)
+            }
+        }
+
+        fun removeConsumer(key: Int) {
+            withLock {
+                consumers.remove(key)
+            }
+        }
+
+        fun clearEvents() {
+            withLock {
+                events.clear()
+            }
+        }
+
+        fun append(event: UnixPacket) {
+            return withLock {
+                events.add(event)
+                for ((_, consumer) in consumers) {
+                    consumer(event)
+                }
+            }
+        }
+
+        fun snapshot(fromIndex: Int = 0): List<UnixPacket> {
+            return withLock {
+                if (fromIndex >= events.size) {
+                    emptyList()
+                } else {
+                    events.subList(fromIndex, events.size)
+                }
+            }
+        }
+
+        fun size(): Int {
+            return withLock {
+                events.size
+            }
+        }
+
+        private inline fun <T> withLock(block: () -> T): T {
+            lock.lock()
+            return try {
+                block()
+            } finally {
+                lock.unlock()
+            }
+        }
+    }
 
     private companion object {
         private val logger = InlineLogger()

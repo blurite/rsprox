@@ -696,9 +696,7 @@ public class ProxyService(
     }
 
     private fun initializeUnixSocketListener(port: Int): UnixSocketConnection {
-        val socketFile = SOCKETS_DIRECTORY.resolve("rsprox-tunnel-$port.socket")
-        socketFile.deleteIfExists()
-        return UnixSocketConnection(socketFile, connections)
+        return UnixSocketConnection(port)
     }
 
     public fun launchNativeClient(

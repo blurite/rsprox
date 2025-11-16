@@ -14,15 +14,18 @@ import org.newsclub.net.unix.AFUNIXSocketAddress
 import org.objenesis.strategy.StdInstantiatorStrategy
 import org.slf4j.LoggerFactory
 import java.io.DataInputStream
-import java.io.DataOutputStream
 import java.net.SocketException
+import java.nio.file.Path
 import java.util.Queue
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.concurrent.thread
 import kotlin.io.path.Path
+import kotlin.io.path.createFile
+import kotlin.io.path.deleteIfExists
+import kotlin.io.path.exists
 
 @Singleton
 public class RSProxConnection {
@@ -33,9 +36,8 @@ public class RSProxConnection {
 
     private val input = Input(ByteArray(0))
     private val messageQueue: Queue<Any> = ConcurrentLinkedQueue()
-    private val sync: AtomicBoolean = AtomicBoolean(false)
-    private val running: AtomicBoolean = AtomicBoolean(false)
-    private val connected: AtomicBoolean = AtomicBoolean(false)
+    private val connectedPlugins = ConcurrentHashMap.newKeySet<Class<*>>()
+    private val sockets = ConcurrentHashMap<Class<*>, AFUNIXSocket>()
 
     private val kryo =
         Kryo().apply {
@@ -58,13 +60,18 @@ public class RSProxConnection {
             }
         }
 
-    public fun startConnection(): Boolean {
-        connected.set(true)
-        sync.set(true)
-        if (running.getAndSet(true)) {
-            eventBus.register(this)
-            return true
-        }
+    /**
+     * Starts a connection with RSProx, and requests a full synchronization of the past state.
+     * New plugins shall wait until the next synchronization event occurs, before listening to
+     * any normal packets, allowing them to fully catch up to state.
+     *
+     * Note that it is not possible to stop a connection once started, as multiple plugins could
+     * rely on the same connection stream of events.
+     *
+     * @return true if the connection was successfully established (or is already running),
+     * false if unable to connect to RSProx.
+     */
+    public fun startConnection(pluginClass: Class<*>): Boolean {
         val port =
             System
                 .getProperty("sun.java.command")
@@ -72,61 +79,74 @@ public class RSProxConnection {
                 .substringBefore('/')
                 .toInt()
         log.info("RSProx port: $port")
-        return initializeUnixSocket(port)
+        if (connectedPlugins.add(pluginClass)) {
+            return initializeUnixSocket(pluginClass, port)
+        }
+        return false
     }
 
-    public fun stopConnection() {
-        connected.set(false)
+    public fun stopConnection(pluginClass: Class<*>): Boolean {
+        if (!connectedPlugins.remove(pluginClass)) {
+            return false
+        }
         eventBus.unregister(this)
+        sockets.remove(pluginClass)?.close()
+        return true
     }
 
-    private fun initializeUnixSocket(port: Int): Boolean {
+    private fun Path.withExtension(ext: String): Path {
+        val name = this.fileName.toString()
+        val base = name.substringBeforeLast('.', name)
+        return this.resolveSibling("$base.$ext")
+    }
+
+    private fun initializeUnixSocket(
+        pluginClass: Class<*>,
+        port: Int,
+    ): Boolean {
         val root = Path(System.getProperty("user.home"), ".rsprox", "sockets")
-        val socketFile = root.resolve("rsprox-tunnel-$port.socket")
+        val socketFile = root.resolve("rsprox-tunnel-$port-${pluginClass.simpleName}.con")
+        socketFile.deleteIfExists()
+        socketFile.createFile()
+        // Wait for RSProx side to delete the socket file,
+        // which acts as a signal that the server has initialized.
+        while (socketFile.exists()) {
+            Thread.sleep(20)
+        }
+        return listenToUnixSocket(
+            pluginClass,
+            socketFile.withExtension("socket"),
+        )
+    }
+
+    private fun listenToUnixSocket(
+        pluginClass: Class<*>,
+        socketFile: Path,
+    ): Boolean {
         val address = AFUNIXSocketAddress.of(socketFile)
         val socket = AFUNIXSocket.newInstance()
         try {
             socket.connect(address, 2_500)
         } catch (_: SocketException) {
-            log.info("Unable to establish a socket connection to the target.")
+            log.info("Unable to establish a socket connection to $socketFile")
             return false
         } catch (e: Exception) {
-            log.error("Unable to initialize a unix socket", e)
+            log.error("Unable to initialize a unix socket to $socketFile", e)
             return false
         }
         eventBus.register(this)
+        sockets[pluginClass] = socket
         thread(start = true, isDaemon = true) {
             log.info("Unix Socket connected via $socketFile")
             val inputStream = DataInputStream(socket.inputStream)
-            val outputStream = DataOutputStream(socket.outputStream)
-            var discardUntilSync = false
             while (true) {
-                val next = inputStream.readNext()
-                if (!connected.get()) {
-                    continue
-                }
-                // When a sync is requested, drop everything else and wait until the sync message comes in
-                if (sync.get()) {
-                    sync.set(false)
-                    messageQueue.clear()
-                    discardUntilSync = true
-                    outputStream.writeMessage("Sync".toByteArray())
-                }
-                if (discardUntilSync) {
-                    if (next !is RSProxSync) {
-                        continue
+                val next =
+                    try {
+                        inputStream.readNext()
+                    } catch (_: SocketException) {
+                        break
                     }
-                    discardUntilSync = false
-                    messageQueue.offer(next)
-                    continue
-                }
-
-                try {
-                    messageQueue.offer(next)
-                } catch (_: SocketException) {
-                    stopConnection()
-                    break
-                }
+                messageQueue.offer(next)
             }
         }
         return true
@@ -160,14 +180,8 @@ public class RSProxConnection {
         return kryo.readClassAndObject(input)
     }
 
-    private fun DataOutputStream.writeMessage(bytes: ByteArray) {
-        writeInt(bytes.size)
-        write(bytes)
-        flush()
-    }
-
     @Subscribe
-    public fun onGameTick(
+    private fun onGameTick(
         @Suppress("unused") gameTick: GameTick,
     ) {
         while (true) {
