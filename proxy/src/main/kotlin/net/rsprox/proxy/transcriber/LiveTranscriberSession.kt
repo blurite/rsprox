@@ -7,6 +7,7 @@ import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.exceptions.DecodeError
 import net.rsprox.protocol.session.Session
 import net.rsprox.proxy.plugin.DecodingSession
+import net.rsprox.proxy.unix.UnixSocketConnection
 import net.rsprox.shared.StreamDirection
 import net.rsprox.transcriber.Packet
 import net.rsprox.transcriber.TranscriberRunner
@@ -21,6 +22,7 @@ public class LiveTranscriberSession(
     private val runner: TranscriberRunner,
     private val sessionTracker: SessionTracker,
     internal val cacheProvider: CacheProvider,
+    private val unixSocketConnection: UnixSocketConnection?,
 ) {
     @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
     private val lock: Object = Object()
@@ -66,7 +68,9 @@ public class LiveTranscriberSession(
                     session,
                 )
             for (result in results) {
-                packetList += Packet(unidentified.direction, result.prot, result.message)
+                unixSocketConnection?.push(result.message)
+                val packet = Packet(unidentified.direction, result.prot, result.message)
+                packetList += packet
                 if (result.prot.toString() == "SERVER_TICK_END") {
                     executeRunner(runner.preprocess(packetList))
                     packetList.clear()

@@ -30,6 +30,7 @@ dependencies {
     implementation(libs.junixsocket)
     implementation(libs.okhttp3)
     implementation(libs.gson)
+    implementation(libs.kryo)
     findSubprojects(projects.protocol.name).forEach {
         implementation(it)
     }

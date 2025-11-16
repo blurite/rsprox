@@ -7,6 +7,7 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.BINARY_WRITE_INTERVAL_SEC
 import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
+import net.rsprox.proxy.config.ProxyProperty.Companion.RUNELITE_RSPROX_CONNECTION
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
 import java.nio.charset.Charset
@@ -92,6 +93,8 @@ public value class ProxyProperties private constructor(
             properties.setValue(APP_THEME, "RuneLite")
             properties.setValue(APP_WIDTH, 800)
             properties.setValue(APP_HEIGHT, 600)
+            // other
+            properties.setValue(RUNELITE_RSPROX_CONNECTION, false)
             return properties
         }
     }

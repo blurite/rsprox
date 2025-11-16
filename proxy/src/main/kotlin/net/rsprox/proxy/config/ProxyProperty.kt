@@ -24,5 +24,8 @@ public class ProxyProperty<T>(
         val FILTERS_STATUS = ProxyProperty("filters.status", IntProperty)
         val SELECTED_CLIENT = ProxyProperty("app.client", IntProperty)
         val SELECTED_PROXY_TARGET = ProxyProperty("app.target", IntProperty)
+
+        // other
+        val RUNELITE_RSPROX_CONNECTION = ProxyProperty("runelite.rsprox.connection", BooleanProperty)
     }
 }

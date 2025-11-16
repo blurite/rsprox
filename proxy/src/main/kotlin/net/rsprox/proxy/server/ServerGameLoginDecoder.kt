@@ -334,7 +334,8 @@ public class ServerGameLoginDecoder(
                     header.worldHost.endsWith(".runescape.com"),
                 )
             if (LATEST_SUPPORTED_PLUGIN >= target.revisionNum(clientChannel)) {
-                blob.hookLiveTranscriber(key, decoderLoader, target.config.binaryFolder)
+                val connection = connections.getUnixConnectionOrNull(target.httpPort)
+                blob.hookLiveTranscriber(key, decoderLoader, target.config.binaryFolder, connection)
             }
             val serverChannel = ctx.channel()
             connections.addConnection(

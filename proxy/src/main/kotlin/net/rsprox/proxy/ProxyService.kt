@@ -27,6 +27,7 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.FILTERS_STATUS
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
+import net.rsprox.proxy.config.ProxyProperty.Companion.RUNELITE_RSPROX_CONNECTION
 import net.rsprox.proxy.config.ProxyProperty.Companion.SELECTED_CLIENT
 import net.rsprox.proxy.config.ProxyProperty.Companion.SELECTED_PROXY_TARGET
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
@@ -52,6 +53,7 @@ import net.rsprox.proxy.target.ProxyTargetImportResult
 import net.rsprox.proxy.target.ProxyTargetImporter
 import net.rsprox.proxy.target.ProxyTargetSourceRegistry
 import net.rsprox.proxy.target.YamlProxyTargetConfig
+import net.rsprox.proxy.unix.UnixSocketConnection
 import net.rsprox.proxy.util.*
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.account.JagexAccountStore
@@ -684,7 +686,19 @@ public class ProxyService(
                 sessionId,
             )
         target.load(properties, bootstrapFactory)
+        val establishConnection = properties.getPropertyOrNull(RUNELITE_RSPROX_CONNECTION) == true
+        if (establishConnection) {
+            val connection = initializeUnixSocketListener(target.httpPort)
+            connection.start()
+            connections.addUnixConnection(target.httpPort, connection)
+        }
         return target
+    }
+
+    private fun initializeUnixSocketListener(port: Int): UnixSocketConnection {
+        val socketFile = SOCKETS_DIRECTORY.resolve("rsprox-tunnel-$port.socket")
+        socketFile.deleteIfExists()
+        return UnixSocketConnection(socketFile, connections)
     }
 
     public fun launchNativeClient(

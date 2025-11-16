@@ -3,7 +3,9 @@ package net.rsprox.proxy.connection
 import io.netty.channel.Channel
 import net.rsprox.proxy.binary.BinaryBlob
 import net.rsprox.proxy.binary.BinaryHeader
+import net.rsprox.proxy.unix.UnixSocketConnection
 import net.rsprox.shared.SessionMonitor
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -11,6 +13,7 @@ public class ProxyConnectionContainer {
     private val connections: MutableList<ProxyConnection> = mutableListOf()
     private val sessionMonitors: MutableMap<Int, SessionMonitor<BinaryHeader>> = mutableMapOf()
     private val cleanupExecutor = Executors.newSingleThreadScheduledExecutor()
+    private val unixConnections: MutableMap<Int, UnixSocketConnection> = ConcurrentHashMap()
 
     public fun addConnection(
         clientChannel: Channel,
@@ -23,6 +26,26 @@ public class ProxyConnectionContainer {
                 serverChannel,
                 blob,
             )
+    }
+
+    public fun addUnixConnection(
+        httpPort: Int,
+        connection: UnixSocketConnection,
+    ) {
+        val old = unixConnections.put(httpPort, connection)
+        check(old == null) {
+            "Overlapping unix connection: $httpPort, $connection, $old"
+        }
+    }
+
+    public fun removeUnixConnection(connection: UnixSocketConnection) {
+        unixConnections.entries.removeIf { (_, con) ->
+            con === connection
+        }
+    }
+
+    public fun getUnixConnectionOrNull(httpPort: Int): UnixSocketConnection? {
+        return unixConnections[httpPort]
     }
 
     public fun removeConnection(blob: BinaryBlob) {

@@ -18,6 +18,7 @@ import net.rsprox.proxy.config.BINARY_PATH
 import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.plugin.DecodingSession
 import net.rsprox.proxy.transcriber.LiveTranscriberSession
+import net.rsprox.proxy.unix.UnixSocketConnection
 import net.rsprox.proxy.util.NopSessionMonitor
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.StreamDirection
@@ -255,6 +256,7 @@ public data class BinaryBlob(
         key: XteaKey,
         decoderLoader: DecoderLoader,
         binaryFolder: String?,
+        unixSocketConnection: UnixSocketConnection?,
     ) {
         check(this.liveSession == null) {
             "Live session already hooked."
@@ -318,6 +320,7 @@ public data class BinaryBlob(
                     runner,
                     sessionTracker,
                     provider,
+                    unixSocketConnection,
                 )
             this.liveSession = liveSession
             liveSession.setRevision(header.revision)
