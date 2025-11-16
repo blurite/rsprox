@@ -23,6 +23,7 @@ include(
     "cache",
     "shared",
     "launcher",
+    "runelite",
 )
 
 includeSubprojects(":protocol")
@@ -30,6 +31,7 @@ includeSubprojects(":patch")
 includeSubprojects(":gui")
 includeSubprojects(":transcriber")
 includeSubprojects(":cache")
+includeSubprojects(":runelite")
 
 fun includeSubprojects(projectName: String) {
     val projectPath = project(projectName).projectDir.toPath()

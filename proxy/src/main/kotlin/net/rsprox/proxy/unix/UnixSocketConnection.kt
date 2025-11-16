@@ -7,6 +7,7 @@ import com.esotericsoftware.kryo.io.Output
 import com.esotericsoftware.kryo.serializers.CollectionSerializer
 import com.github.michaelbull.logging.InlineLogger
 import net.rsprot.protocol.message.IncomingMessage
+import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
 import net.rsprox.proxy.connection.ProxyConnectionContainer
 import org.newsclub.net.unix.AFUNIXServerSocket
 import org.newsclub.net.unix.AFUNIXSocket
@@ -16,6 +17,7 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.net.SocketException
 import java.nio.file.Path
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
@@ -26,7 +28,7 @@ public class UnixSocketConnection(
 ) {
     private lateinit var unixListenerThread: Thread
     private lateinit var eventListenerThread: Thread
-    private val packets = ArrayList<UnixPacket>(10_000)
+    private val packets = ConcurrentLinkedQueue<UnixPacket>()
     private val eventQueue = LinkedBlockingQueue<Event>()
     private val kryo =
         Kryo().apply {
@@ -122,6 +124,9 @@ public class UnixSocketConnection(
     }
 
     public fun push(payload: IncomingMessage) {
+        if (payload is RebuildLogin) {
+            packets.clear()
+        }
         val packet = UnixPacket(payload)
         packets.add(packet)
         eventQueue.offer(packet)

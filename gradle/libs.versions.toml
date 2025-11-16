@@ -22,6 +22,9 @@ aws-sdk-kotlin = "1.3.13"
 jaxb-api = "2.3.1"
 jopt-simple = "5.0.1"
 kryo = "5.6.2"
+junit = "4.12"
+lombok = "1.18.30"
+runelite = "latest.release"
 
 [libraries]
 netty-bom = { module = "io.netty:netty-bom", version.ref = "netty" }
@@ -61,6 +64,9 @@ aws-sdk-kotlin-s3 = { module = "aws.sdk.kotlin:s3", version.ref = "aws-sdk-kotli
 jaxb-api = { module = "javax.xml.bind:jaxb-api", version.ref = "jaxb-api" }
 jopt-simple = { module = "net.sf.jopt-simple:jopt-simple", version.ref = "jopt-simple" }
 kryo = { module = "com.esotericsoftware:kryo", version.ref = "kryo" }
+junit = { module = "junit:junit", version.ref = "junit" }
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+runelite-client = { module = "net.runelite:client", version.ref = "runelite" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
