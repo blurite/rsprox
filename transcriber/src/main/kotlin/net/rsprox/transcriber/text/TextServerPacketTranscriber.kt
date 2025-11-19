@@ -1733,6 +1733,10 @@ public class TextServerPacketTranscriber(
             is HintArrow.PlayerHintArrow -> {
                 root.player(type.index)
             }
+            is HintArrow.WorldEntityHintArrow -> {
+                root.worldentity(type.index)
+                root.int("height", type.height)
+            }
             HintArrow.ResetHintArrow -> {
                 root.string("type", "reset")
             }

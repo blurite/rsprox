@@ -31,6 +31,11 @@ internal class HintArrowDecoder : ProxyMessageDecoder<HintArrow> {
                 buffer.skipRead(3)
                 HintArrow(HintArrow.PlayerHintArrow(index))
             }
+            11 -> {
+                val index = buffer.g2()
+                val height = buffer.g3()
+                HintArrow(HintArrow.WorldEntityHintArrow(index, height))
+            }
             in 2..6 -> {
                 val x = buffer.g2()
                 val z = buffer.g2()
