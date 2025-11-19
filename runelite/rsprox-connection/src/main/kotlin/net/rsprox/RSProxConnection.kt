@@ -4,6 +4,7 @@ import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.Serializer
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.serializers.CollectionSerializer
+import com.esotericsoftware.kryo.serializers.MapSerializer
 import net.rsprox.events.RSProxPacket
 import net.rsprox.events.RSProxSync
 import net.runelite.api.events.GameTick
@@ -58,6 +59,14 @@ public class RSProxConnection {
                     collectionSerializer as Serializer<Any>,
                 )
             }
+
+            val mapBuilderClass = Class.forName("kotlin.collections.builders.MapBuilder")
+
+            @Suppress("UNCHECKED_CAST")
+            addDefaultSerializer(
+                mapBuilderClass as Class<Any>,
+                mapSerializer as Serializer<Any>,
+            )
         }
 
     /**
@@ -204,6 +213,19 @@ public class RSProxConnection {
                 ): MutableCollection<Any?> = ArrayList(size)
             }.apply {
                 setElementsCanBeNull(true)
+            }
+
+        private val mapSerializer =
+            object : MapSerializer<LinkedHashMap<Any?, Any?>>() {
+                @Suppress("UNCHECKED_CAST")
+                override fun create(
+                    kryo: Kryo,
+                    input: Input?,
+                    type: Class<out LinkedHashMap<Any?, Any?>>?,
+                    size: Int,
+                ): LinkedHashMap<Any?, Any?> {
+                    return LinkedHashMap(size)
+                }
             }
     }
 }

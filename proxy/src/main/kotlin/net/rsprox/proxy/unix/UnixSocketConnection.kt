@@ -5,6 +5,7 @@ import com.esotericsoftware.kryo.Serializer
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
 import com.esotericsoftware.kryo.serializers.CollectionSerializer
+import com.esotericsoftware.kryo.serializers.MapSerializer
 import com.github.michaelbull.logging.InlineLogger
 import net.rsprot.protocol.message.IncomingMessage
 import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
@@ -50,6 +51,13 @@ public class UnixSocketConnection(
                     collectionSerializer as Serializer<Any>,
                 )
             }
+
+            val mapBuilderClass = Class.forName("kotlin.collections.builders.MapBuilder")
+            @Suppress("UNCHECKED_CAST")
+            addDefaultSerializer(
+                mapBuilderClass as Class<Any>,
+                mapSerializer as Serializer<Any>,
+            )
         }
 
     public fun start() {
@@ -265,6 +273,19 @@ public class UnixSocketConnection(
                 ): MutableCollection<Any?> = ArrayList(size)
             }.apply {
                 setElementsCanBeNull(true)
+            }
+
+        private val mapSerializer =
+            object : MapSerializer<LinkedHashMap<Any?, Any?>>() {
+                @Suppress("UNCHECKED_CAST")
+                override fun create(
+                    kryo: Kryo,
+                    input: Input?,
+                    type: Class<out LinkedHashMap<Any?, Any?>>?,
+                    size: Int,
+                ): LinkedHashMap<Any?, Any?> {
+                    return LinkedHashMap(size)
+                }
             }
     }
 }
