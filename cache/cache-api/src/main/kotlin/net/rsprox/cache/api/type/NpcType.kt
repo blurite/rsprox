@@ -49,4 +49,6 @@ public interface NpcType {
     public val stat: List<Int>
     public val params: Map<Int, Any>
     public val footprintSize: Int
+    public val worldOverlapTint: Boolean
+    public val worldOverlapTintColour: Int
 }

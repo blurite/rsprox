@@ -53,6 +53,8 @@ public class OldSchoolNpcType(
     override var stat: MutableList<Int> = mutableListOf(1, 1, 1, 1, 1, 1)
     override var params: MutableMap<Int, Any> = mutableMapOf()
     override var footprintSize: Int = -1
+    override var worldOverlapTint: Boolean = false
+    override var worldOverlapTintColour: Int = 39188
 
     public fun decode(
         revision: Int,
@@ -197,6 +199,8 @@ public class OldSchoolNpcType(
             123 -> this.lowpriorityops = true
             124 -> this.overlayheight = buffer.g2()
             126 -> this.footprintSize = buffer.g2()
+            145 -> this.worldOverlapTint = true
+            146 -> this.worldOverlapTintColour = buffer.g2()
             249 -> ParamTypeHelper.unpackClientParams(buffer, params)
             else -> error("Invalid opcode: $opcode")
         }
