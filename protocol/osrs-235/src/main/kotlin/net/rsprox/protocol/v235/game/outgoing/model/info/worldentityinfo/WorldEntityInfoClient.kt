@@ -414,8 +414,8 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
                     id,
                     sizeX,
                     sizeZ,
-                    priority,
                     angle,
+                    priority,
                     coordFine,
                 )
         }
@@ -465,8 +465,8 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
                     id,
                     sizeX,
                     sizeZ,
-                    priority,
                     angle,
+                    priority,
                     coordFine,
                     extendedInfo,
                 )

@@ -322,8 +322,8 @@ public class GenericWorldEntityInfoClient : WorldEntityInfoDecoder {
                     id,
                     sizeX,
                     sizeZ,
-                    priority,
                     angle,
+                    priority,
                     coordFine,
                 )
         }
