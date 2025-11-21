@@ -22,7 +22,10 @@ public class BuildArea(
         zoneX: Int,
         zoneZ: Int,
     ): RebuildRegionZone {
-        return RebuildRegionZone(zones[level][zoneX][zoneZ])
+        val x = zones.getOrNull(level) ?: return INVALID
+        val y = x.getOrNull(zoneX) ?: return INVALID
+        val packed = y.getOrNull(zoneZ) ?: return INVALID
+        return RebuildRegionZone(packed)
     }
 
     public operator fun set(
@@ -32,5 +35,9 @@ public class BuildArea(
         value: RebuildRegionZone,
     ) {
         zones[level][zoneX][zoneZ] = value.packed
+    }
+
+    private companion object {
+        private val INVALID = RebuildRegionZone(-1)
     }
 }
