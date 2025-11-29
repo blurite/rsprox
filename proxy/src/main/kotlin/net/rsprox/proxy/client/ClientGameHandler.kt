@@ -21,7 +21,11 @@ public class ClientGameHandler(
             serverChannel.writeAndFlush(msg.encode(ctx.alloc()))
             val blob = ctx.channel().getBinaryBlob()
             eraseSensitiveContents(ctx, msg, blob.header.revision)
-            blob.append(StreamDirection.CLIENT_TO_SERVER, msg.encode(ctx.alloc(), mod = false))
+            blob.append(
+                StreamDirection.CLIENT_TO_SERVER,
+                msg.encode(ctx.alloc(), mod = false),
+                serverChannel,
+            )
         } finally {
             msg.payload.release()
         }

@@ -48,6 +48,7 @@ public class ServerGameHandler(
             blob.append(
                 StreamDirection.SERVER_TO_CLIENT,
                 msg.encode(ctx.alloc(), mod = false),
+                ctx.channel(),
             )
         } finally {
             msg.payload.release()

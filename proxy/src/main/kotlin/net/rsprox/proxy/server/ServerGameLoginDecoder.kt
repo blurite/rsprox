@@ -277,7 +277,12 @@ public class ServerGameLoginDecoder(
                     0,
                     payload,
                 )
-            blob.append(StreamDirection.SERVER_TO_CLIENT, packet.encode(ctx.alloc(), mod = false))
+            blob.setServerChannel(serverChannel)
+            blob.append(
+                StreamDirection.SERVER_TO_CLIENT,
+                packet.encode(ctx.alloc(), mod = false),
+                serverChannel,
+            )
             val pipeline = ctx.pipeline()
             pipeline.replace<ServerGameLoginDecoder>(
                 ServerGenericDecoder(
@@ -333,6 +338,7 @@ public class ServerGameLoginDecoder(
                     settings,
                     header.worldHost.endsWith(".runescape.com"),
                 )
+            blob.setServerChannel(ctx.channel())
             if (LATEST_SUPPORTED_PLUGIN >= target.revisionNum(clientChannel)) {
                 val connection = connections.getUnixConnectionOrNull(target.httpPort)
                 blob.hookLiveTranscriber(key, decoderLoader, target.config.binaryFolder, connection)

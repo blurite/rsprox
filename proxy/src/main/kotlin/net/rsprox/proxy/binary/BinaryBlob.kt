@@ -5,6 +5,7 @@ import com.github.michaelbull.logging.InlineLogger
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.Unpooled
+import io.netty.channel.Channel
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.crypto.xtea.XteaKey
 import net.rsprox.cache.Js5MasterIndex
@@ -61,15 +62,24 @@ public data class BinaryBlob(
     private var lastIncomingBytes: Int = 0
     var closeTimestamp: Long = 0L
         private set
+    private var serverChannel: Channel? = null
 
     public fun liveCache(): CacheProvider {
         return liveSession?.cacheProvider ?: error("Cache unavailable.")
     }
 
+    public fun setServerChannel(channel: Channel) {
+        this.serverChannel = channel
+    }
+
     public fun append(
         direction: StreamDirection,
         packet: ByteBuf,
+        serverChannel: Channel,
     ) {
+        if (this.serverChannel != serverChannel) {
+            return
+        }
         if (closed.get()) {
             throw IllegalStateException("Binary stream is closed.")
         }
@@ -109,6 +119,7 @@ public data class BinaryBlob(
         if (isClosed) {
             return
         }
+        this.serverChannel = null
         write()
         liveSession?.flush()
         this.lastIncomingBytes = 0
