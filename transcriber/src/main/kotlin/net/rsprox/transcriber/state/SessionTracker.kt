@@ -14,6 +14,8 @@ import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.Move
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.TemporaryMoveSpeedExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfo
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV5
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV6
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityUpdateType
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfMoveSub
@@ -180,6 +182,17 @@ public class SessionTracker(
                 sessionState.getActiveWorld().setActiveZone(message.zoneX, message.zoneZ, message.level)
             }
             is WorldEntityInfo -> {
+                val earlyRemovals =
+                    when (message) {
+                        is WorldEntityInfoV5 -> message.earlyRemovals
+                        is WorldEntityInfoV6 -> message.earlyRemovals
+                        else -> emptySet()
+                    }
+                if (earlyRemovals.isNotEmpty()) {
+                    for (index in earlyRemovals) {
+                        sessionState.destroyWorld(index)
+                    }
+                }
                 for ((index, update) in message.updates) {
                     when (update) {
                         is WorldEntityUpdateType.ActiveV2 -> {

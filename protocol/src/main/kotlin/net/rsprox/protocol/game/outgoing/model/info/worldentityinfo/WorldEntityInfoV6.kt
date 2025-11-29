@@ -1,13 +1,14 @@
 package net.rsprox.protocol.game.outgoing.model.info.worldentityinfo
 
 public class WorldEntityInfoV6(
+    public val earlyRemovals: Set<Int>,
     override val updates: Map<Int, WorldEntityUpdateType>,
 ) : WorldEntityInfo {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as WorldEntityInfoV6
+        other as WorldEntityInfoV5
 
         return updates == other.updates
     }
@@ -17,6 +18,6 @@ public class WorldEntityInfoV6(
     }
 
     override fun toString(): String {
-        return "WorldEntityInfoV6(updates=$updates)"
+        return "WorldEntityInfoV6(earlyRemovals=$earlyRemovals, updates=$updates)"
     }
 }

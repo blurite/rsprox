@@ -21,6 +21,7 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
     private var transmittedWorldEntityCount: Int = 0
     private val transmittedWorldEntity: IntArray = IntArray(25)
     private val worldEntity: Array<Any?> = arrayOfNulls(4096)
+    private val earlyRemovals: MutableSet<Int> = mutableSetOf()
     private val updates: MutableMap<Int, WorldEntityUpdateType> = mutableMapOf()
 
     override fun decode(
@@ -29,6 +30,7 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
         version: Int,
     ): WorldEntityInfo {
         updates.clear()
+        earlyRemovals.clear()
         if (version >= 6) {
             decodeHighResolutionV4(buffer)
             decodeLowResolutionV4(buffer, baseCoord)
@@ -48,8 +50,8 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
             2 -> WorldEntityInfoV2(updates)
             3 -> WorldEntityInfoV3(updates)
             4 -> WorldEntityInfoV4(updates)
-            5 -> WorldEntityInfoV5(updates)
-            6 -> WorldEntityInfoV6(updates)
+            5 -> WorldEntityInfoV5(earlyRemovals, updates)
+            6 -> WorldEntityInfoV6(earlyRemovals, updates)
             else -> error("Invalid version: $version")
         }
     }
@@ -150,7 +152,7 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
             for (i in count..<transmittedWorldEntityCount) {
                 val index = this.transmittedWorldEntity[i]
                 this.worldEntity[index] = null
-                updates[index] = WorldEntityUpdateType.HighResolutionToLowResolution
+                earlyRemovals.add(index)
             }
         }
         if (count > transmittedWorldEntityCount) {
@@ -199,7 +201,7 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
             for (i in count..<transmittedWorldEntityCount) {
                 val index = this.transmittedWorldEntity[i]
                 this.worldEntity[index] = null
-                updates[index] = WorldEntityUpdateType.HighResolutionToLowResolution
+                earlyRemovals.add(index)
             }
         }
         if (count > transmittedWorldEntityCount) {

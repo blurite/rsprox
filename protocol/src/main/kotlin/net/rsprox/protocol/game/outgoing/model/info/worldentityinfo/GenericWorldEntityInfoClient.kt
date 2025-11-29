@@ -8,6 +8,7 @@ public class GenericWorldEntityInfoClient : WorldEntityInfoDecoder {
     private var transmittedWorldEntityCount: Int = 0
     private val transmittedWorldEntity: IntArray = IntArray(25)
     private val worldEntity: Array<Any?> = arrayOfNulls(4096)
+    private val earlyRemovals: MutableSet<Int> = mutableSetOf()
     private val updates: MutableMap<Int, WorldEntityUpdateType> = mutableMapOf()
 
     override fun decode(
@@ -16,6 +17,7 @@ public class GenericWorldEntityInfoClient : WorldEntityInfoDecoder {
         version: Int,
     ): WorldEntityInfo {
         updates.clear()
+        earlyRemovals.clear()
         if (version >= 5) {
             decodeHighResolutionV3(buffer)
             decodeLowResolutionV3(buffer, baseCoord)
@@ -31,7 +33,7 @@ public class GenericWorldEntityInfoClient : WorldEntityInfoDecoder {
             2 -> WorldEntityInfoV2(updates.toMap())
             3 -> WorldEntityInfoV3(updates.toMap())
             4 -> WorldEntityInfoV4(updates.toMap())
-            5 -> WorldEntityInfoV5(updates.toMap())
+            5 -> WorldEntityInfoV5(earlyRemovals, updates.toMap())
             else -> error("Invalid version: $version")
         }
     }
@@ -132,7 +134,7 @@ public class GenericWorldEntityInfoClient : WorldEntityInfoDecoder {
             for (i in count..<transmittedWorldEntityCount) {
                 val index = this.transmittedWorldEntity[i]
                 this.worldEntity[index] = null
-                updates[index] = WorldEntityUpdateType.HighResolutionToLowResolution
+                earlyRemovals.add(index)
             }
         }
         if (count > transmittedWorldEntityCount) {
