@@ -1648,7 +1648,7 @@ public class TextServerPacketTranscriber(
                         mapsquares += block.mapsquareId
                         group {
                             zoneCoord("source", block.level, block.zoneX, block.zoneZ)
-                            zoneCoord("dest", level, baseZoneX + x, baseZoneZ)
+                            zoneCoord("dest", level, baseZoneX + x, baseZoneZ + z)
                             int("rotation", block.rotation)
                         }
                     }
@@ -3348,8 +3348,9 @@ public class TextServerPacketTranscriber(
         root.coordGrid(message.coordGrid)
     }
 
-    private companion object {
+    public companion object {
         private val MS_NUMBER_FORMAT: NumberFormat = DecimalFormat("###,###,###ms")
         private val KG_NUMBER_FORMAT: NumberFormat = DecimalFormat("###,###,###kg")
+        public val worldentityInstanceSwCoords: MutableSet<CoordGrid> = mutableSetOf()
     }
 }
