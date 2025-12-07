@@ -890,7 +890,8 @@ public class TextServerPacketTranscriber(
                 for ((index, update) in message.updates) {
                     when (update) {
                         is WorldEntityUpdateType.ActiveV2 -> {
-                            group("ACTIVE") {
+                            val label = if (update.teleport) "TELEPORT" else "ACTIVE"
+                            group(label) {
                                 worldentity(index)
                                 int("angle", update.angle)
                                 val world = sessionState.getWorld(index)
@@ -971,7 +972,8 @@ public class TextServerPacketTranscriber(
                         }
 
                         is WorldEntityUpdateType.ActiveV3 -> {
-                            group("ACTIVE") {
+                            val label = if (update.teleport) "TELEPORT" else "ACTIVE"
+                            group(label) {
                                 worldentity(index)
                                 int("angle", update.angle)
                                 val world = sessionState.getWorld(index)
