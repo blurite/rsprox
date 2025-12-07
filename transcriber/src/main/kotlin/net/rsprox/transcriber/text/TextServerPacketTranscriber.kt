@@ -901,11 +901,11 @@ public class TextServerPacketTranscriber(
                                 val coordFineZ = coordFine.z and 0x7F
                                 if (decimalCoords) {
                                     decimalCoordGrid("newcoord", coordGrid, coordFineX, coordFineZ)
-                                    int("finey", coordFineY)
+                                    filteredInt("finey", coordFineY, 0)
                                 } else {
                                     coordGrid("newcoord", coordGrid)
                                     int("finex", coordFineX)
-                                    int("finey", coordFineY)
+                                    filteredInt("finey", coordFineY, 0)
                                     int("finez", coordFineZ)
                                 }
                             }
@@ -927,10 +927,10 @@ public class TextServerPacketTranscriber(
                                 val coordFineY = coordFine.y
                                 val coordFineZ = coordFine.z and 0x7F
                                 if (decimalCoords) {
-                                    int("finey", coordFineY)
+                                    filteredInt("finey", coordFineY, 0)
                                 } else {
                                     int("finex", coordFineX)
-                                    int("finey", coordFineY)
+                                    filteredInt("finey", coordFineY, 0)
                                     int("finez", coordFineZ)
                                 }
                             }
@@ -961,10 +961,10 @@ public class TextServerPacketTranscriber(
                                 val coordFineY = coordFine.y
                                 val coordFineZ = coordFine.z and 0x7F
                                 if (decimalCoords) {
-                                    int("finey", coordFineY)
+                                    filteredInt("finey", coordFineY, 0)
                                 } else {
                                     int("finex", coordFineX)
-                                    int("finey", coordFineY)
+                                    filteredInt("finey", coordFineY, 0)
                                     int("finez", coordFineZ)
                                 }
                             }
@@ -982,11 +982,11 @@ public class TextServerPacketTranscriber(
                                 val coordFineZ = coordFine.z and 0x7F
                                 if (decimalCoords) {
                                     decimalCoordGrid("newcoord", coordGrid, coordFineX, coordFineZ)
-                                    int("finey", coordFineY)
+                                    filteredInt("finey", coordFineY, 0)
                                 } else {
                                     coordGrid("newcoord", coordGrid)
                                     int("finex", coordFineX)
-                                    int("finey", coordFineY)
+                                    filteredInt("finey", coordFineY, 0)
                                     int("finez", coordFineZ)
                                 }
                                 logWorldEntityExtendedInfo(update.extendedInfo)
@@ -1008,10 +1008,10 @@ public class TextServerPacketTranscriber(
                                 val coordFineY = coordFine.y
                                 val coordFineZ = coordFine.z and 0x7F
                                 if (decimalCoords) {
-                                    int("finey", coordFineY)
+                                    filteredInt("finey", coordFineY, 0)
                                 } else {
                                     int("finex", coordFineX)
-                                    int("finey", coordFineY)
+                                    filteredInt("finey", coordFineY, 0)
                                     int("finez", coordFineZ)
                                 }
                                 logWorldEntityExtendedInfo(update.extendedInfo)
