@@ -1138,7 +1138,7 @@ public class TextServerPacketTranscriber(
         DRAGTARGET(1 shl 20),
         TARGET(1 shl 21),
         CRMTARGET(1 shl 22),
-        BIT23(1 shl 23),
+        IF_RUNSCRIPT(1 shl 23),
         BIT24(1 shl 24),
         BIT25(1 shl 25),
         BIT26(1 shl 26),
