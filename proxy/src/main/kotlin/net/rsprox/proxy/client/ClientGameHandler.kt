@@ -142,6 +142,12 @@ public class ClientGameHandler(
                             replacement.p1Alt2(0)
                             replacement.p3Alt3(delta)
                         }
+                        236 -> {
+                            buffer.g1Alt1() // Key
+                            val delta = buffer.g3Alt2()
+                            replacement.p1Alt1(0)
+                            replacement.p3Alt2(delta)
+                        }
                     }
                 }
 
