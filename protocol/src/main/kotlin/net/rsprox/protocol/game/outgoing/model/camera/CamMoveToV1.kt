@@ -4,8 +4,8 @@ import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildArea
 
 /**
- * Cam lookat packet is used to make the camera look towards
- * a certain coordinate in the build area.
+ * Cam move to packet is used to move the position of the camera
+ * to a specific coordinate within the current build area.
  * It is important to note that if this is sent together with
  * a map reload, whether this packet comes before or after the
  * map reload makes a difference - as the build area itself changes.
@@ -15,12 +15,12 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildAre
  * @property destinationZInBuildArea the dest z coordinate within the build area,
  * in range of 0 to 103 (inclusive)
  * @property height the height of the camera
- * @property speed the constant speed at which the camera looks towards
+ * @property speed the constant speed at which the camera moves
  * to the new coordinate
- * @property acceleration the speed increase as the camera looks
+ * @property acceleration the speed increase as the camera moves
  * towards the end coordinate.
  */
-public class CamLookAt private constructor(
+public class CamMoveToV1 private constructor(
     private val destinationCoordInBuildArea: CoordInBuildArea,
     private val _height: UShort,
     private val _speed: UByte,
@@ -54,7 +54,7 @@ public class CamLookAt private constructor(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as CamLookAt
+        other as CamMoveToV1
 
         if (destinationCoordInBuildArea != other.destinationCoordInBuildArea) return false
         if (_height != other._height) return false
@@ -73,7 +73,7 @@ public class CamLookAt private constructor(
     }
 
     override fun toString(): String {
-        return "CamLookAt(" +
+        return "CamMoveToV1(" +
             "destinationXInBuildArea=$destinationXInBuildArea, " +
             "destinationZInBuildArea=$destinationZInBuildArea, " +
             "height=$height, " +

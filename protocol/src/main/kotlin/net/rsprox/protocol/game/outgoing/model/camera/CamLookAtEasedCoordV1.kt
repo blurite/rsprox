@@ -17,7 +17,7 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildAre
  * @property function the camera easing function, allowing for finer
  * control over the way it moves from the start coordinate to the end.
  */
-public class CamLookAtEasedCoord private constructor(
+public class CamLookAtEasedCoordV1 private constructor(
     private val destinationCoordInBuildArea: CoordInBuildArea,
     private val _height: UShort,
     private val _duration: UShort,
@@ -51,7 +51,7 @@ public class CamLookAtEasedCoord private constructor(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as CamLookAtEasedCoord
+        other as CamLookAtEasedCoordV1
 
         if (destinationCoordInBuildArea != other.destinationCoordInBuildArea) return false
         if (_height != other._height) return false
@@ -70,7 +70,7 @@ public class CamLookAtEasedCoord private constructor(
     }
 
     override fun toString(): String {
-        return "CamLookAtEasedCoord(" +
+        return "CamLookAtEasedCoordV1(" +
             "destinationXInBuildArea=$destinationXInBuildArea, " +
             "destinationZInBuildArea=$destinationZInBuildArea, " +
             "height=$height, " +

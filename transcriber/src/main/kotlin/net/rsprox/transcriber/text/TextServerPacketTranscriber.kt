@@ -50,7 +50,7 @@ import net.rsprox.protocol.game.outgoing.model.misc.client.ServerTickEnd
 import net.rsprox.protocol.game.outgoing.model.misc.client.SetHeatmapEnabled
 import net.rsprox.protocol.game.outgoing.model.misc.client.SetInteractionMode
 import net.rsprox.protocol.game.outgoing.model.misc.client.SiteSettings
-import net.rsprox.protocol.game.outgoing.model.misc.client.UpdateRebootTimer
+import net.rsprox.protocol.game.outgoing.model.misc.client.UpdateRebootTimerV1
 import net.rsprox.protocol.game.outgoing.model.misc.client.UpdateUid192
 import net.rsprox.protocol.game.outgoing.model.misc.client.UrlOpen
 import net.rsprox.protocol.game.outgoing.model.misc.client.ZBuf
@@ -59,7 +59,7 @@ import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettings
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettingsPrivateChat
 import net.rsprox.protocol.game.outgoing.model.misc.player.MessageGame
 import net.rsprox.protocol.game.outgoing.model.misc.player.RunClientScript
-import net.rsprox.protocol.game.outgoing.model.misc.player.SetMapFlag
+import net.rsprox.protocol.game.outgoing.model.misc.player.SetMapFlagV1
 import net.rsprox.protocol.game.outgoing.model.misc.player.SetPlayerOp
 import net.rsprox.protocol.game.outgoing.model.misc.player.TriggerOnDialogAbort
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunEnergy
@@ -284,7 +284,7 @@ public class TextServerPacketTranscriber(
         return zoneCoordGrid(level, zoneX shl 3, zoneZ shl 3, name)
     }
 
-    override fun camLookAt(message: CamLookAt) {
+    override fun camLookAt(message: CamLookAtV1) {
         if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
         if (coordInBuildArea.invalid()) {
@@ -301,7 +301,7 @@ public class TextServerPacketTranscriber(
         root.int("rate2", message.acceleration)
     }
 
-    override fun camLookAtEasedCoord(message: CamLookAtEasedCoord) {
+    override fun camLookAtEasedCoord(message: CamLookAtEasedCoordV1) {
         if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
         if (coordInBuildArea.invalid()) {
@@ -323,7 +323,7 @@ public class TextServerPacketTranscriber(
         root.int("mode", message.mode)
     }
 
-    override fun camMoveTo(message: CamMoveTo) {
+    override fun camMoveTo(message: CamMoveToV1) {
         if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
         if (coordInBuildArea.invalid()) {
@@ -340,7 +340,7 @@ public class TextServerPacketTranscriber(
         root.int("rate2", message.acceleration)
     }
 
-    override fun camMoveToArc(message: CamMoveToArc) {
+    override fun camMoveToArc(message: CamMoveToArcV1) {
         if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
         if (coordInBuildArea.invalid()) {
@@ -359,7 +359,7 @@ public class TextServerPacketTranscriber(
         root.enum("easing", message.function)
     }
 
-    override fun camMoveToCycles(message: CamMoveToCycles) {
+    override fun camMoveToCycles(message: CamMoveToCyclesV1) {
         if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
         if (coordInBuildArea.invalid()) {
@@ -1875,7 +1875,7 @@ public class TextServerPacketTranscriber(
         root.string("settings", message.settings)
     }
 
-    override fun updateRebootTimer(message: UpdateRebootTimer) {
+    override fun updateRebootTimer(message: UpdateRebootTimerV1) {
         if (!filters[PropertyFilter.UPDATE_REBOOT_TIMER]) return omit()
         root.formattedInt("gamecycles", message.gameCycles)
     }
@@ -2165,7 +2165,7 @@ public class TextServerPacketTranscriber(
         }
     }
 
-    override fun setMapFlag(message: SetMapFlag) {
+    override fun setMapFlag(message: SetMapFlagV1) {
         if (!filters[PropertyFilter.SET_MAP_FLAG]) return omit()
         if (message.xInBuildArea == 0xFF && message.zInBuildArea == 0xFF) {
             root.any<Any>("coord", null)

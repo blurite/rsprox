@@ -112,7 +112,7 @@ import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettings
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettingsPrivateChat
 import net.rsprox.protocol.game.outgoing.model.misc.player.MessageGame
 import net.rsprox.protocol.game.outgoing.model.misc.player.RunClientScript
-import net.rsprox.protocol.game.outgoing.model.misc.player.SetMapFlag
+import net.rsprox.protocol.game.outgoing.model.misc.player.SetMapFlagV1
 import net.rsprox.protocol.game.outgoing.model.misc.player.SetPlayerOp
 import net.rsprox.protocol.game.outgoing.model.misc.player.TriggerOnDialogAbort
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunEnergy
@@ -430,22 +430,22 @@ public class IndexerTranscriber(
     override fun rsevenStatus(message: RSevenStatus) {
     }
 
-    override fun camLookAt(message: CamLookAt) {
+    override fun camLookAt(message: CamLookAtV1) {
     }
 
-    override fun camLookAtEasedCoord(message: CamLookAtEasedCoord) {
+    override fun camLookAtEasedCoord(message: CamLookAtEasedCoordV1) {
     }
 
     override fun camMode(message: CamMode) {
     }
 
-    override fun camMoveTo(message: CamMoveTo) {
+    override fun camMoveTo(message: CamMoveToV1) {
     }
 
-    override fun camMoveToArc(message: CamMoveToArc) {
+    override fun camMoveToArc(message: CamMoveToArcV1) {
     }
 
-    override fun camMoveToCycles(message: CamMoveToCycles) {
+    override fun camMoveToCycles(message: CamMoveToCyclesV1) {
     }
 
     override fun camReset(message: CamReset) {
@@ -832,7 +832,7 @@ public class IndexerTranscriber(
     override fun siteSettings(message: SiteSettings) {
     }
 
-    override fun updateRebootTimer(message: UpdateRebootTimer) {
+    override fun updateRebootTimer(message: UpdateRebootTimerV1) {
     }
 
     override fun updateUid192(message: UpdateUid192) {
@@ -895,7 +895,7 @@ public class IndexerTranscriber(
         }
     }
 
-    override fun setMapFlag(message: SetMapFlag) {
+    override fun setMapFlag(message: SetMapFlagV1) {
     }
 
     override fun setPlayerOp(message: SetPlayerOp) {

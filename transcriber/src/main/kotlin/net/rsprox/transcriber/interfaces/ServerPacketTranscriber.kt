@@ -30,7 +30,7 @@ import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettings
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettingsPrivateChat
 import net.rsprox.protocol.game.outgoing.model.misc.player.MessageGame
 import net.rsprox.protocol.game.outgoing.model.misc.player.RunClientScript
-import net.rsprox.protocol.game.outgoing.model.misc.player.SetMapFlag
+import net.rsprox.protocol.game.outgoing.model.misc.player.SetMapFlagV1
 import net.rsprox.protocol.game.outgoing.model.misc.player.SetPlayerOp
 import net.rsprox.protocol.game.outgoing.model.misc.player.TriggerOnDialogAbort
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunEnergy
@@ -66,17 +66,17 @@ import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialFoll
 import net.rsprox.protocol.game.outgoing.model.zone.payload.*
 
 public interface ServerPacketTranscriber {
-    public fun camLookAt(message: CamLookAt)
+    public fun camLookAt(message: CamLookAtV1)
 
-    public fun camLookAtEasedCoord(message: CamLookAtEasedCoord)
+    public fun camLookAtEasedCoord(message: CamLookAtEasedCoordV1)
 
     public fun camMode(message: CamMode)
 
-    public fun camMoveTo(message: CamMoveTo)
+    public fun camMoveTo(message: CamMoveToV1)
 
-    public fun camMoveToArc(message: CamMoveToArc)
+    public fun camMoveToArc(message: CamMoveToArcV1)
 
-    public fun camMoveToCycles(message: CamMoveToCycles)
+    public fun camMoveToCycles(message: CamMoveToCyclesV1)
 
     public fun camReset(message: CamReset)
 
@@ -238,7 +238,7 @@ public interface ServerPacketTranscriber {
 
     public fun siteSettings(message: SiteSettings)
 
-    public fun updateRebootTimer(message: UpdateRebootTimer)
+    public fun updateRebootTimer(message: UpdateRebootTimerV1)
 
     public fun updateUid192(message: UpdateUid192)
 
@@ -258,7 +258,7 @@ public interface ServerPacketTranscriber {
 
     public fun runClientScript(message: RunClientScript)
 
-    public fun setMapFlag(message: SetMapFlag)
+    public fun setMapFlag(message: SetMapFlagV1)
 
     public fun setPlayerOp(message: SetPlayerOp)
 

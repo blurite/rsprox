@@ -16,7 +16,7 @@ internal object GameServerProtId {
     const val VARCLAN_ENABLE = 12
     const val PROJANIM_SPECIFIC_V1 = 13
     const val IF_SETROTATESPEED = 14
-    const val SET_MAP_FLAG = 15
+    const val SET_MAP_FLAG_V1 = 15
     const val MESSAGE_FRIENDCHANNEL = 16
     const val SOUND_AREA = 17
     const val OBJ_COUNT = 18
@@ -24,7 +24,7 @@ internal object GameServerProtId {
     const val MESSAGE_PRIVATE = 20
     const val PROJANIM_SPECIFIC_V2 = 21
     const val CHAT_FILTER_SETTINGS = 22
-    const val CAM_MOVETO = 23
+    const val CAM_MOVETO_V1 = 23
     const val CAM_ROTATEBY = 24
     const val VARP_SMALL = 25
     const val UPDATE_INV_FULL = 26
@@ -36,7 +36,7 @@ internal object GameServerProtId {
     const val CAM_MODE = 32
     const val IF_SETPLAYERMODEL_BODYTYPE = 33
     const val MESSAGE_CLANCHANNEL = 34
-    const val CAM_LOOKAT_EASED_COORD = 35
+    const val CAM_LOOKAT_EASED_COORD_V1 = 35
     const val IF_RESYNC_V1 = 36
     const val CAM_TARGET_V1 = 37
     const val IF_SETPLAYERHEAD = 38
@@ -48,7 +48,7 @@ internal object GameServerProtId {
     const val MAP_ANIM = 44
     const val SERVER_TICK_END = 45
     const val TRIGGER_ONDIALOGABORT = 46
-    const val UPDATE_REBOOT_TIMER = 47
+    const val UPDATE_REBOOT_TIMER_V1 = 47
     const val VARCLAN = 48
     const val MESSAGE_PRIVATE_ECHO = 49
     const val UPDATE_FRIENDCHAT_CHANNEL_FULL_V1 = 50
@@ -63,7 +63,7 @@ internal object GameServerProtId {
     const val LOGOUT = 59
     const val PLAYER_ANIM_SPECIFIC = 60
     const val UPDATE_FRIENDLIST = 61
-    const val CAM_LOOKAT = 62
+    const val CAM_LOOKAT_V1 = 62
     const val FRIENDLIST_LOADED = 63
     const val IF_SETANGLE = 64
     const val IF_SETANIM = 65
@@ -71,7 +71,7 @@ internal object GameServerProtId {
     const val LOGOUT_WITHREASON = 67
     const val UPDATE_RUNENERGY = 68
     const val REFLECTION_CHECKER = 69
-    const val CAM_MOVETO_CYCLES = 70
+    const val CAM_MOVETO_CYCLES_V1 = 70
     const val UPDATE_INV_PARTIAL = 71
     const val LOC_ADD_CHANGE_V1 = 72
     const val CAM_ROTATETO = 73
@@ -111,7 +111,7 @@ internal object GameServerProtId {
     const val MIDI_SONG_V2 = 107
     const val UPDATE_IGNORELIST = 108
     const val NPC_INFO_LARGE_V4 = 109
-    const val CAM_MOVETO_ARC = 110
+    const val CAM_MOVETO_ARC_V1 = 110
     const val NPC_ANIM_SPECIFIC = 111
     const val SEND_PING = 112
     const val UPDATE_STAT_V1 = 113

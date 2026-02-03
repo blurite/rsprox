@@ -11,7 +11,7 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildAre
  * @property zInBuildArea the z coordinate within the build area
  * to render the map flag at.
  */
-public class SetMapFlag private constructor(
+public class SetMapFlagV1 private constructor(
     private val coordInBuildArea: CoordInBuildArea,
 ) : IncomingServerGameMessage {
     public constructor(
@@ -30,7 +30,7 @@ public class SetMapFlag private constructor(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as SetMapFlag
+        other as SetMapFlagV1
 
         return coordInBuildArea == other.coordInBuildArea
     }

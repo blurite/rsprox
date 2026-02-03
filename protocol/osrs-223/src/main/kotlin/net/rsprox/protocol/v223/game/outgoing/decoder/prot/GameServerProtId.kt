@@ -4,7 +4,7 @@ internal object GameServerProtId {
     const val REFLECTION_CHECKER = 0
     const val UPDATE_ZONE_FULL_FOLLOWS = 1
     const val LOGOUT = 2
-    const val UPDATE_REBOOT_TIMER = 3
+    const val UPDATE_REBOOT_TIMER_V1 = 3
     const val CLANSETTINGS_DELTA = 4
     const val IF_SETPLAYERMODEL_BASECOLOUR = 5
     const val SYNTH_SOUND = 6
@@ -20,7 +20,7 @@ internal object GameServerProtId {
     const val MESSAGE_FRIENDCHANNEL = 16
     const val UPDATE_ZONE_PARTIAL_ENCLOSED = 17
     const val MESSAGE_PRIVATE_ECHO = 18
-    const val SET_MAP_FLAG = 19
+    const val SET_MAP_FLAG_V1 = 19
     const val NPC_INFO_SMALL_V4 = 20
     const val HISCORE_REPLY = 21
     const val LOC_ANIM = 22
@@ -37,7 +37,7 @@ internal object GameServerProtId {
     const val SET_HEATMAP_ENABLED = 33
     const val URL_OPEN = 34
     const val IF_MOVESUB = 35
-    const val CAM_LOOKAT_EASED_COORD = 36
+    const val CAM_LOOKAT_EASED_COORD_V1 = 36
     const val NPC_HEADICON_SPECIFIC = 37
     const val OBJ_ADD = 38
     const val CAM_SHAKE = 39
@@ -69,7 +69,7 @@ internal object GameServerProtId {
     const val SITE_SETTINGS = 65
     const val MAP_PROJANIM_V1 = 66
     const val OBJ_ENABLED_OPS = 67
-    const val CAM_MOVETO = 68
+    const val CAM_MOVETO_V1 = 68
     const val LOGOUT_WITHREASON = 69
     const val VARCLAN = 70
     const val CAM_MODE = 71
@@ -100,7 +100,7 @@ internal object GameServerProtId {
     const val IF_CLOSESUB = 96
     const val RESET_ANIMS = 97
     const val REBUILD_NORMAL = 98
-    const val CAM_LOOKAT = 99
+    const val CAM_LOOKAT_V1 = 99
     const val IF_SETNPCHEAD = 100
     const val UPDATE_INV_PARTIAL = 101
     const val IF_SETANIM = 102
@@ -121,10 +121,10 @@ internal object GameServerProtId {
     const val PLAYER_ANIM_SPECIFIC = 117
     const val PROJANIM_SPECIFIC_V2 = 118
     const val SET_PLAYER_OP = 119
-    const val CAM_MOVETO_CYCLES = 120
+    const val CAM_MOVETO_CYCLES_V1 = 120
     const val REBUILD_REGION = 121
     const val IF_SETHIDE = 122
-    const val CAM_MOVETO_ARC = 123
+    const val CAM_MOVETO_ARC_V1 = 123
     const val VARCLAN_ENABLE = 124
     const val CAM_TARGET_V2 = 125
     const val HINT_ARROW = 126

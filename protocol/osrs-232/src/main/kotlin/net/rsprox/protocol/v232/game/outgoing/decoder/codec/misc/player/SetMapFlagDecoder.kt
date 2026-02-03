@@ -4,21 +4,21 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.metadata.Consistent
 import net.rsprox.protocol.ProxyMessageDecoder
-import net.rsprox.protocol.game.outgoing.model.misc.player.SetMapFlag
+import net.rsprox.protocol.game.outgoing.model.misc.player.SetMapFlagV1
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v232.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-internal class SetMapFlagDecoder : ProxyMessageDecoder<SetMapFlag> {
-    override val prot: ClientProt = GameServerProt.SET_MAP_FLAG
+internal class SetMapFlagDecoder : ProxyMessageDecoder<SetMapFlagV1> {
+    override val prot: ClientProt = GameServerProt.SET_MAP_FLAG_V1
 
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
-    ): SetMapFlag {
+    ): SetMapFlagV1 {
         val xInBuildArea = buffer.g1()
         val zInBuildArea = buffer.g1()
-        return SetMapFlag(
+        return SetMapFlagV1(
             xInBuildArea,
             zInBuildArea,
         )

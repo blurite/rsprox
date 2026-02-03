@@ -92,6 +92,7 @@ public enum class GameServerProt(
     // World entity packets
     SET_ACTIVE_WORLD_V2(GameServerProtId.SET_ACTIVE_WORLD_V2, 3),
     WORLDENTITY_INFO_V6(GameServerProtId.WORLDENTITY_INFO_V6, Prot.VAR_SHORT),
+    WORLDENTITY_INFO_V7(GameServerProtId.WORLDENTITY_INFO_V7, Prot.VAR_SHORT),
 
     // Map packets
     REBUILD_NORMAL(GameServerProtId.REBUILD_NORMAL, Prot.VAR_SHORT),
@@ -108,11 +109,16 @@ public enum class GameServerProt(
     CAM_SHAKE(GameServerProtId.CAM_SHAKE, 4),
     CAM_RESET(GameServerProtId.CAM_RESET, 0),
     CAM_SMOOTHRESET(GameServerProtId.CAM_SMOOTHRESET, 4),
-    CAM_MOVETO(GameServerProtId.CAM_MOVETO, 6),
-    CAM_MOVETO_CYCLES(GameServerProtId.CAM_MOVETO_CYCLES, 8),
-    CAM_MOVETO_ARC(GameServerProtId.CAM_MOVETO_ARC, 10),
-    CAM_LOOKAT(GameServerProtId.CAM_LOOKAT, 6),
-    CAM_LOOKAT_EASED_COORD(GameServerProtId.CAM_LOOKAT_EASED_COORD, 7),
+    CAM_MOVETO_V1(GameServerProtId.CAM_MOVETO_V1, 6),
+    CAM_MOVETO_V2(GameServerProtId.CAM_MOVETO_V2, 8),
+    CAM_MOVETO_CYCLES_V1(GameServerProtId.CAM_MOVETO_CYCLES_V1, 8),
+    CAM_MOVETO_CYCLES_V2(GameServerProtId.CAM_MOVETO_CYCLES_V2, 10),
+    CAM_MOVETO_ARC_V1(GameServerProtId.CAM_MOVETO_ARC_V1, 10),
+    CAM_MOVETO_ARC_V2(GameServerProtId.CAM_MOVETO_ARC_V2, 14),
+    CAM_LOOKAT_V1(GameServerProtId.CAM_LOOKAT_V1, 6),
+    CAM_LOOKAT_V2(GameServerProtId.CAM_LOOKAT_V2, 8),
+    CAM_LOOKAT_EASED_COORD_V1(GameServerProtId.CAM_LOOKAT_EASED_COORD_V1, 7),
+    CAM_LOOKAT_EASED_COORD_V2(GameServerProtId.CAM_LOOKAT_EASED_COORD_V2, 9),
     CAM_ROTATEBY(GameServerProtId.CAM_ROTATEBY, 7),
     CAM_ROTATETO(GameServerProtId.CAM_ROTATETO, 7),
     CAM_MODE(GameServerProtId.CAM_MODE, 1),
@@ -155,7 +161,8 @@ public enum class GameServerProt(
     // Misc. player state packets
     UPDATE_RUNWEIGHT(GameServerProtId.UPDATE_RUNWEIGHT, 2),
     UPDATE_RUNENERGY(GameServerProtId.UPDATE_RUNENERGY, 2),
-    SET_MAP_FLAG(GameServerProtId.SET_MAP_FLAG, 2),
+    SET_MAP_FLAG_V1(GameServerProtId.SET_MAP_FLAG_V1, 2),
+    SET_MAP_FLAG_V2(GameServerProtId.SET_MAP_FLAG_V2, 4),
     SET_PLAYER_OP(GameServerProtId.SET_PLAYER_OP, Prot.VAR_BYTE),
     UPDATE_STAT_V2(GameServerProtId.UPDATE_STAT_V2, 7),
 
@@ -172,7 +179,8 @@ public enum class GameServerProt(
     // Misc. client state packets
     HINT_ARROW(GameServerProtId.HINT_ARROW, 6),
     RESET_ANIMS(GameServerProtId.RESET_ANIMS, 0),
-    UPDATE_REBOOT_TIMER(GameServerProtId.UPDATE_REBOOT_TIMER, 2),
+    UPDATE_REBOOT_TIMER_V1(GameServerProtId.UPDATE_REBOOT_TIMER_V1, 2),
+    UPDATE_REBOOT_TIMER_V2(GameServerProtId.UPDATE_REBOOT_TIMER_V2, Prot.VAR_BYTE),
     SET_HEATMAP_ENABLED(GameServerProtId.SET_HEATMAP_ENABLED, 1),
     MINIMAP_TOGGLE(GameServerProtId.MINIMAP_TOGGLE, 1),
     SERVER_TICK_END(GameServerProtId.SERVER_TICK_END, 0),

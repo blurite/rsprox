@@ -9,7 +9,7 @@ internal object GameServerProtId {
     const val REFLECTION_CHECKER = 5
     const val CLANSETTINGS_FULL = 6
     const val LOC_ANIM = 7
-    const val CAM_MOVETO_CYCLES = 8
+    const val CAM_MOVETO_CYCLES_V1 = 8
     const val TRIGGER_ONDIALOGABORT = 9
     const val UPDATE_ZONE_FULL_FOLLOWS = 10
     const val UPDATE_ZONE_PARTIAL_FOLLOWS = 11
@@ -26,7 +26,7 @@ internal object GameServerProtId {
     const val OBJ_COUNT = 22
     const val REBUILD_NORMAL = 23
     const val IF_MOVESUB = 24
-    const val UPDATE_REBOOT_TIMER = 25
+    const val UPDATE_REBOOT_TIMER_V1 = 25
     const val LOC_MERGE = 26
     const val UPDATE_FRIENDLIST = 27
     const val REBUILD_REGION = 28
@@ -40,7 +40,7 @@ internal object GameServerProtId {
     const val RUNCLIENTSCRIPT = 36
     const val MESSAGE_PRIVATE_ECHO = 37
     const val UPDATE_STAT_V2 = 38
-    const val CAM_LOOKAT_EASED_COORD = 39
+    const val CAM_LOOKAT_EASED_COORD_V1 = 39
     const val SERVER_TICK_END = 40
     const val IF_SETNPCHEAD = 41
     const val IF_RESYNC_V1 = 42
@@ -67,7 +67,7 @@ internal object GameServerProtId {
     const val UPDATE_UID192 = 63
     const val CAM_RESET = 64
     const val HIDEOBJOPS = 65
-    const val CAM_LOOKAT = 66
+    const val CAM_LOOKAT_V1 = 66
     const val MIDI_JINGLE = 67
     const val FRIENDLIST_LOADED = 68
     const val SEND_PING = 69
@@ -79,7 +79,7 @@ internal object GameServerProtId {
     const val SET_PLAYER_OP = 75
     const val SET_NPC_UPDATE_ORIGIN = 76
     const val NPC_INFO_LARGE_V5 = 77
-    const val CAM_MOVETO = 78
+    const val CAM_MOVETO_V1 = 78
     const val IF_SETEVENTS_V1 = 79
     const val IF_OPENTOP = 80
     const val IF_SETHIDE = 81
@@ -95,7 +95,7 @@ internal object GameServerProtId {
     const val CAM_TARGET_V3 = 91
     const val PLAYER_ANIM_SPECIFIC = 92
     const val UPDATE_INV_FULL = 93
-    const val SET_MAP_FLAG = 94
+    const val SET_MAP_FLAG_V1 = 94
     const val MESSAGE_GAME = 95
     const val LOGOUT = 96
     const val OCULUS_SYNC = 97
@@ -105,7 +105,7 @@ internal object GameServerProtId {
     const val UPDATE_IGNORELIST = 101
     const val MAP_ANIM = 102
     const val CAM_ROTATETO = 103
-    const val CAM_MOVETO_ARC = 104
+    const val CAM_MOVETO_ARC_V1 = 104
     const val IF_SETPLAYERMODEL_SELF = 105
     const val MIDI_SONG_V2 = 106
     const val RESET_ANIMS = 107

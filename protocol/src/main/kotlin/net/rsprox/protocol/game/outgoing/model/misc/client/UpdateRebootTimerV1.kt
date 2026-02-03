@@ -12,14 +12,14 @@ import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
  * The maximum possible value is 65535, which is equal to just
  * below 11 hours.
  */
-public class UpdateRebootTimer(
+public class UpdateRebootTimerV1(
     public val gameCycles: Int,
 ) : IncomingServerGameMessage {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as UpdateRebootTimer
+        other as UpdateRebootTimerV1
 
         return gameCycles == other.gameCycles
     }
@@ -29,7 +29,7 @@ public class UpdateRebootTimer(
     }
 
     override fun toString(): String {
-        return "UpdateRebootTimer(" +
+        return "UpdateRebootTimerV1(" +
             "gameCycles=$gameCycles" +
             ")"
     }

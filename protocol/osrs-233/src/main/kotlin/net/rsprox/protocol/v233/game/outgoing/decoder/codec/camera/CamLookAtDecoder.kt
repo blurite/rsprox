@@ -4,24 +4,24 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.metadata.Consistent
 import net.rsprox.protocol.ProxyMessageDecoder
-import net.rsprox.protocol.game.outgoing.model.camera.CamLookAt
+import net.rsprox.protocol.game.outgoing.model.camera.CamLookAtV1
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v233.game.outgoing.decoder.prot.GameServerProt
 
 @Consistent
-internal class CamLookAtDecoder : ProxyMessageDecoder<CamLookAt> {
-    override val prot: ClientProt = GameServerProt.CAM_LOOKAT
+internal class CamLookAtDecoder : ProxyMessageDecoder<CamLookAtV1> {
+    override val prot: ClientProt = GameServerProt.CAM_LOOKAT_V1
 
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
-    ): CamLookAt {
+    ): CamLookAtV1 {
         val destinationXInBuildArea = buffer.g1()
         val destinationZInBuildArea = buffer.g1()
         val height = buffer.g2()
         val speed = buffer.g1()
         val acceleration = buffer.g1()
-        return CamLookAt(
+        return CamLookAtV1(
             destinationXInBuildArea,
             destinationZInBuildArea,
             height,

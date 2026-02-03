@@ -17,9 +17,9 @@ internal object GameServerProtId {
     const val UPDATE_STOCKMARKET_SLOT = 13
     const val CHAT_FILTER_SETTINGS_PRIVATECHAT = 14
     const val MESSAGE_FRIENDCHANNEL = 15
-    const val CAM_LOOKAT_EASED_COORD = 16
+    const val CAM_LOOKAT_EASED_COORD_V1 = 16
     const val UPDATE_FRIENDLIST = 17
-    const val SET_MAP_FLAG = 18
+    const val SET_MAP_FLAG_V1 = 18
     const val PLAYER_ANIM_SPECIFIC = 19
     const val RESET_ANIMS = 20
     const val CLANCHANNEL_DELTA = 21
@@ -47,11 +47,11 @@ internal object GameServerProtId {
     const val FRIENDLIST_LOADED = 43
     const val IF_CLOSESUB = 44
     const val IF_SETANIM = 45
-    const val CAM_MOVETO_CYCLES = 46
+    const val CAM_MOVETO_CYCLES_V1 = 46
     const val SEND_PING = 47
     const val SYNTH_SOUND = 48
     const val OCULUS_SYNC = 49
-    const val CAM_MOVETO_ARC = 50
+    const val CAM_MOVETO_ARC_V1 = 50
     const val IF_SETPLAYERMODEL_BASECOLOUR = 51
     const val IF_CLEARINV = 52
     const val IF_SETTEXT = 53
@@ -66,7 +66,7 @@ internal object GameServerProtId {
     const val IF_OPENSUB = 62
     const val SET_PLAYER_OP = 63
     const val VARCLAN_ENABLE = 64
-    const val UPDATE_REBOOT_TIMER = 65
+    const val UPDATE_REBOOT_TIMER_V1 = 65
     const val UPDATE_ZONE_FULL_FOLLOWS = 66
     const val UPDATE_IGNORELIST = 67
     const val VARCLAN = 68
@@ -99,7 +99,7 @@ internal object GameServerProtId {
     const val IF_SETNPCHEAD = 95
     const val OBJ_ENABLED_OPS = 96
     const val VARCLAN_DISABLE = 97
-    const val CAM_MOVETO = 98
+    const val CAM_MOVETO_V1 = 98
     const val OBJ_COUNT = 99
     const val MAP_ANIM_SPECIFIC = 100
     const val OBJ_DEL = 101
@@ -128,7 +128,7 @@ internal object GameServerProtId {
     const val HISCORE_REPLY = 124
     const val MIDI_SONG_WITHSECONDARY = 125
     const val LOGOUT_TRANSFER = 126
-    const val CAM_LOOKAT = 127
+    const val CAM_LOOKAT_V1 = 127
     const val NPC_INFO_LARGE_V5 = 128
     const val WORLDENTITY_INFO_V5 = 129
     const val SET_ACTIVE_WORLD_V2 = 130

@@ -4,7 +4,7 @@ internal object GameServerProtId {
     const val SERVER_TICK_END = 0
     const val SET_PLAYER_OP = 1
     const val HISCORE_REPLY = 2
-    const val UPDATE_REBOOT_TIMER = 3
+    const val UPDATE_REBOOT_TIMER_V1 = 3
     const val HIDENPCOPS = 4
     const val REFLECTION_CHECKER = 5
     const val URL_OPEN = 6
@@ -18,7 +18,7 @@ internal object GameServerProtId {
     const val SOUND_AREA = 14
     const val CAM_ROTATETO = 15
     const val CAM_TARGET_V3 = 16
-    const val CAM_LOOKAT = 17
+    const val CAM_LOOKAT_V1 = 17
     const val IF_SETCOLOUR = 18
     const val UPDATE_IGNORELIST = 19
     const val MIDI_SONG_V2 = 20
@@ -26,7 +26,7 @@ internal object GameServerProtId {
     const val NPC_ANIM_SPECIFIC = 22
     const val SET_INTERACTION_MODE = 23
     const val VARP_SMALL = 24
-    const val CAM_LOOKAT_EASED_COORD = 25
+    const val CAM_LOOKAT_EASED_COORD_V1 = 25
     const val SYNTH_SOUND = 26
     const val MAP_ANIM_SPECIFIC = 27
     const val CAM_ROTATEBY = 28
@@ -71,7 +71,7 @@ internal object GameServerProtId {
     const val PROJANIM_SPECIFIC_V4 = 67
     const val CLANCHANNEL_FULL = 68
     const val SITE_SETTINGS = 69
-    const val SET_MAP_FLAG = 70
+    const val SET_MAP_FLAG_V1 = 70
     const val MESSAGE_CLANCHANNEL = 71
     const val VARCLAN_ENABLE = 72
     const val CLANSETTINGS_FULL = 73
@@ -107,12 +107,12 @@ internal object GameServerProtId {
     const val CLANSETTINGS_DELTA = 103
     const val REBUILD_REGION = 104
     const val UPDATE_FRIENDCHAT_CHANNEL_SINGLEUSER = 105
-    const val CAM_MOVETO_CYCLES = 106
+    const val CAM_MOVETO_CYCLES_V1 = 106
     const val LOGOUT_TRANSFER = 107
-    const val CAM_MOVETO_ARC = 108
+    const val CAM_MOVETO_ARC_V1 = 108
     const val UPDATE_ZONE_PARTIAL_ENCLOSED = 109
     const val IF_SETPLAYERMODEL_OBJ = 110
-    const val CAM_MOVETO = 111
+    const val CAM_MOVETO_V1 = 111
     const val UPDATE_RUNWEIGHT = 112
     const val SEND_PING = 113
     const val IF_SETPLAYERHEAD = 114

@@ -31,7 +31,7 @@ internal object GameServerProtId {
     const val MESSAGE_CLANCHANNEL_SYSTEM = 27
     const val SEND_PING = 28
     const val UPDATE_FRIENDCHAT_CHANNEL_FULL_V2 = 29
-    const val UPDATE_REBOOT_TIMER = 30
+    const val UPDATE_REBOOT_TIMER_V1 = 30
     const val LOGOUT_WITHREASON = 31
     const val UPDATE_ZONE_FULL_FOLLOWS = 32
     const val IF_CLOSESUB = 33
@@ -56,7 +56,7 @@ internal object GameServerProtId {
     const val SITE_SETTINGS = 52
     const val IF_SETPOSITION = 53
     const val UPDATE_ZONE_PARTIAL_FOLLOWS = 54
-    const val CAM_MOVETO_ARC = 55
+    const val CAM_MOVETO_ARC_V1 = 55
     const val OBJ_ADD = 56
     const val SERVER_TICK_END = 57
     const val MAP_PROJANIM_V1 = 58
@@ -66,12 +66,12 @@ internal object GameServerProtId {
     const val LOC_MERGE = 62
     const val VARP_LARGE = 63
     const val TRIGGER_ONDIALOGABORT = 64
-    const val CAM_LOOKAT = 65
+    const val CAM_LOOKAT_V1 = 65
     const val IF_SETPLAYERMODEL_OBJ = 66
     const val CAM_SHAKE = 67
     const val IF_SETNPCHEAD_ACTIVE = 68
     const val CAM_RESET = 69
-    const val CAM_MOVETO_CYCLES = 70
+    const val CAM_MOVETO_CYCLES_V1 = 70
     const val VARP_SMALL = 71
     const val LOGOUT_TRANSFER = 72
     const val VARCLAN_ENABLE = 73
@@ -82,7 +82,7 @@ internal object GameServerProtId {
     const val SET_PLAYER_OP = 78
     const val RESET_ANIMS = 79
     const val OCULUS_SYNC = 80
-    const val CAM_LOOKAT_EASED_COORD = 81
+    const val CAM_LOOKAT_EASED_COORD_V1 = 81
     const val MIDI_SWAP = 82
     const val IF_SETPLAYERHEAD = 83
     const val URL_OPEN = 84
@@ -92,7 +92,7 @@ internal object GameServerProtId {
     const val MAP_ANIM = 88
     const val VARCLAN_DISABLE = 89
     const val UPDATE_IGNORELIST = 90
-    const val SET_MAP_FLAG = 91
+    const val SET_MAP_FLAG_V1 = 91
     const val IF_SETPLAYERMODEL_BASECOLOUR = 92
     const val CLANCHANNEL_FULL = 93
     const val NPC_INFO_SMALL_V4 = 94
@@ -111,7 +111,7 @@ internal object GameServerProtId {
     const val CAM_ROTATEBY = 107
     const val CAM_ROTATETO = 108
     const val HINT_ARROW = 109
-    const val CAM_MOVETO = 110
+    const val CAM_MOVETO_V1 = 110
     const val SOUND_AREA = 111
     const val VARCLAN = 112
     const val CHAT_FILTER_SETTINGS_PRIVATECHAT = 113
