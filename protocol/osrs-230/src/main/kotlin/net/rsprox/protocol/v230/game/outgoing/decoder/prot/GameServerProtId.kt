@@ -3,7 +3,7 @@ package net.rsprox.protocol.v230.game.outgoing.decoder.prot
 internal object GameServerProtId {
     const val SET_NPC_UPDATE_ORIGIN = 0
     const val LOGOUT_TRANSFER = 1
-    const val SET_MAP_FLAG = 2
+    const val SET_MAP_FLAG_V1 = 2
     const val VARCLAN_DISABLE = 3
     const val HIDEOBJOPS = 4
     const val IF_CLEARINV = 5
@@ -25,13 +25,13 @@ internal object GameServerProtId {
     const val UPDATE_IGNORELIST = 21
     const val REFLECTION_CHECKER = 22
     const val PLAYER_INFO = 23
-    const val CAM_MOVETO_CYCLES = 24
+    const val CAM_MOVETO_CYCLES_V1 = 24
     const val MIDI_SWAP = 25
     const val MIDI_SONG_STOP = 26
     const val UPDATE_RUNWEIGHT = 27
     const val CLANCHANNEL_DELTA = 28
     const val MESSAGE_PRIVATE = 29
-    const val CAM_LOOKAT = 30
+    const val CAM_LOOKAT_V1 = 30
     const val UPDATE_FRIENDCHAT_CHANNEL_FULL_V2 = 31
     const val REBUILD_WORLDENTITY_V3 = 32
     const val HISCORE_REPLY = 33
@@ -68,7 +68,7 @@ internal object GameServerProtId {
     const val IF_SETMODEL = 64
     const val CAM_RESET = 65
     const val URL_OPEN = 66
-    const val CAM_MOVETO = 67
+    const val CAM_MOVETO_V1 = 67
     const val REBUILD_NORMAL = 68
     const val LOC_MERGE = 69
     const val MESSAGE_FRIENDCHANNEL = 70
@@ -92,11 +92,11 @@ internal object GameServerProtId {
     const val VARP_SYNC = 88
     const val MAP_ANIM_SPECIFIC = 89
     const val MESSAGE_GAME = 90
-    const val CAM_MOVETO_ARC = 91
+    const val CAM_MOVETO_ARC_V1 = 91
     const val OCULUS_SYNC = 92
     const val IF_SETSCROLLPOS = 93
     const val IF_SETTEXT = 94
-    const val CAM_LOOKAT_EASED_COORD = 95
+    const val CAM_LOOKAT_EASED_COORD_V1 = 95
     const val IF_SETPLAYERMODEL_BODYTYPE = 96
     const val PROJANIM_SPECIFIC_V3 = 97
     const val SOUND_AREA = 98
@@ -104,7 +104,7 @@ internal object GameServerProtId {
     const val MIDI_SONG_WITHSECONDARY = 100
     const val UNKNOWN_STRING = 101
     const val SYNTH_SOUND = 102
-    const val UPDATE_REBOOT_TIMER = 103
+    const val UPDATE_REBOOT_TIMER_V1 = 103
     const val NPC_INFO_SMALL_V5 = 104
     const val OBJ_DEL = 105
     const val UPDATE_ZONE_PARTIAL_FOLLOWS = 106

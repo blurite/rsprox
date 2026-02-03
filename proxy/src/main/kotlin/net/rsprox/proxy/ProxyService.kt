@@ -213,7 +213,7 @@ public class ProxyService(
                 javConfigUrl = overriddenJavConfig ?: "https://oldschool.config.runescape.com/jav_config.ws",
                 modulus = null,
                 varpCount = YamlProxyTargetConfig.DEFAULT_VARP_COUNT,
-                revision = null,
+                revision = "latest_supported",
                 runeliteBootstrapCommitHash = null,
                 runeliteGamepackUrl = null,
                 binaryFolder = "Old School RuneScape",
@@ -318,6 +318,7 @@ public class ProxyService(
             232 -> "89ed5837e047eeaa3d5528f6b684f0264d9d5a60"
             233 -> "cea91b9921a3647683ba8a5c22ec75c752c91b07"
             234 -> "8e9f9cce7a5cbe205f7a7a84f8e329d25e810f5d"
+            235 -> "205a25ff767fdfe8a461a18e1541ef20a90b0120"
             else -> null
         }
     }
@@ -739,7 +740,7 @@ public class ProxyService(
             }
         val targetRev = target.config.revision
         val binary =
-            if (targetRev == null) {
+            if (targetRev == null || targetRev == "latest_supported") {
                 JagexNativeClientDownloader.download(nativeClientType)
             } else {
                 getHistoricNativeClient(targetRev, nativeClientType)

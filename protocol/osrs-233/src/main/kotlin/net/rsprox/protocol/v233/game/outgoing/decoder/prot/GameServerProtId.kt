@@ -8,10 +8,10 @@ internal object GameServerProtId {
     const val IF_SETPLAYERMODEL_BODYTYPE = 4
     const val IF_SETSCROLLPOS = 5
     const val OBJ_ADD = 6
-    const val CAM_LOOKAT = 7
-    const val UPDATE_REBOOT_TIMER = 8
+    const val CAM_LOOKAT_V1 = 7
+    const val UPDATE_REBOOT_TIMER_V1 = 8
     const val UPDATE_STOCKMARKET_SLOT = 9
-    const val CAM_MOVETO = 10
+    const val CAM_MOVETO_V1 = 10
     const val IF_SETOBJECT = 11
     const val IF_SETPOSITION = 12
     const val IF_SETROTATESPEED = 13
@@ -52,7 +52,7 @@ internal object GameServerProtId {
     const val CAM_RESET = 48
     const val HIDENPCOPS = 49
     const val MESSAGE_PRIVATE = 50
-    const val SET_MAP_FLAG = 51
+    const val SET_MAP_FLAG_V1 = 51
     const val CAM_MODE = 52
     const val PLAYER_SPOTANIM_SPECIFIC = 53
     const val CLANCHANNEL_DELTA = 54
@@ -72,7 +72,7 @@ internal object GameServerProtId {
     const val IF_CLEARINV = 68
     const val IF_OPENTOP = 69
     const val OCULUS_SYNC = 70
-    const val CAM_MOVETO_ARC = 71
+    const val CAM_MOVETO_ARC_V1 = 71
     const val VARCLAN_DISABLE = 72
     const val LOC_ADD_CHANGE_V2 = 73
     const val CHAT_FILTER_SETTINGS_PRIVATECHAT = 74
@@ -85,7 +85,7 @@ internal object GameServerProtId {
     const val UNKNOWN_STRING = 81
     const val IF_SETTEXT = 82
     const val CLANCHANNEL_FULL = 83
-    const val CAM_MOVETO_CYCLES = 84
+    const val CAM_MOVETO_CYCLES_V1 = 84
     const val VARCLAN = 85
     const val IF_MOVESUB = 86
     const val IF_SETANGLE = 87
@@ -102,7 +102,7 @@ internal object GameServerProtId {
     const val UPDATE_STAT_V2 = 98
     const val MESSAGE_CLANCHANNEL = 99
     const val IF_SETPLAYERHEAD = 100
-    const val CAM_LOOKAT_EASED_COORD = 101
+    const val CAM_LOOKAT_EASED_COORD_V1 = 101
     const val LOGOUT_WITHREASON = 102
     const val CAM_TARGET_V3 = 103
     const val LOGOUT_TRANSFER = 104

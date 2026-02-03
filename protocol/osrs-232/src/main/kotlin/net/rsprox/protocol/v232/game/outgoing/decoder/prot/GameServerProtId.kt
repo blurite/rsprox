@@ -18,7 +18,7 @@ internal object GameServerProtId {
     const val IF_SETNPCHEAD_ACTIVE = 14
     const val IF_SETPLAYERMODEL_BASECOLOUR = 15
     const val SET_INTERACTION_MODE = 16
-    const val CAM_LOOKAT_EASED_COORD = 17
+    const val CAM_LOOKAT_EASED_COORD_V1 = 17
     const val CAM_ROTATETO = 18
     const val CLANSETTINGS_FULL = 19
     const val RESET_ANIMS = 20
@@ -33,7 +33,7 @@ internal object GameServerProtId {
     const val UPDATE_STAT_V2 = 29
     const val OBJ_COUNT = 30
     const val IF_SETROTATESPEED = 31
-    const val CAM_MOVETO_ARC = 32
+    const val CAM_MOVETO_ARC_V1 = 32
     const val CAM_RESET = 33
     const val HIDENPCOPS = 34
     const val SEND_PING = 35
@@ -43,7 +43,7 @@ internal object GameServerProtId {
     const val UNKNOWN_STRING = 39
     const val LOC_ADD_CHANGE_V2 = 40
     const val IF_SETNPCHEAD = 41
-    const val SET_MAP_FLAG = 42
+    const val SET_MAP_FLAG_V1 = 42
     const val OBJ_ADD_SPECIFIC = 43
     const val IF_SETHIDE = 44
     const val IF_SETOBJECT = 45
@@ -68,11 +68,11 @@ internal object GameServerProtId {
     const val MIDI_SWAP = 64
     const val HINT_ARROW = 65
     const val OCULUS_SYNC = 66
-    const val CAM_LOOKAT = 67
+    const val CAM_LOOKAT_V1 = 67
     const val CHAT_FILTER_SETTINGS = 68
     const val MINIMAP_TOGGLE = 69
     const val UPDATE_FRIENDCHAT_CHANNEL_FULL_V2 = 70
-    const val CAM_MOVETO = 71
+    const val CAM_MOVETO_V1 = 71
     const val IF_SETPLAYERMODEL_OBJ = 72
     const val IF_OPENTOP = 73
     const val IF_CLOSESUB = 74
@@ -80,11 +80,11 @@ internal object GameServerProtId {
     const val NPC_ANIM_SPECIFIC = 76
     const val UPDATE_IGNORELIST = 77
     const val NPC_HEADICON_SPECIFIC = 78
-    const val CAM_MOVETO_CYCLES = 79
+    const val CAM_MOVETO_CYCLES_V1 = 79
     const val RESET_INTERACTION_MODE = 80
     const val URL_OPEN = 81
     const val UPDATE_ZONE_PARTIAL_FOLLOWS = 82
-    const val UPDATE_REBOOT_TIMER = 83
+    const val UPDATE_REBOOT_TIMER_V1 = 83
     const val VARP_RESET = 84
     const val SOUND_AREA = 85
     const val IF_SETPLAYERMODEL_SELF = 86

@@ -30,7 +30,8 @@ import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettings
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettingsPrivateChat
 import net.rsprox.protocol.game.outgoing.model.misc.player.MessageGame
 import net.rsprox.protocol.game.outgoing.model.misc.player.RunClientScript
-import net.rsprox.protocol.game.outgoing.model.misc.player.SetMapFlag
+import net.rsprox.protocol.game.outgoing.model.misc.player.SetMapFlagV1
+import net.rsprox.protocol.game.outgoing.model.misc.player.SetMapFlagV2
 import net.rsprox.protocol.game.outgoing.model.misc.player.SetPlayerOp
 import net.rsprox.protocol.game.outgoing.model.misc.player.TriggerOnDialogAbort
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunEnergy
@@ -66,17 +67,27 @@ import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialFoll
 import net.rsprox.protocol.game.outgoing.model.zone.payload.*
 
 public interface ServerPacketTranscriber {
-    public fun camLookAt(message: CamLookAt)
+    public fun camLookAtV1(message: CamLookAtV1)
 
-    public fun camLookAtEasedCoord(message: CamLookAtEasedCoord)
+    public fun camLookAtV2(message: CamLookAtV2)
+
+    public fun camLookAtEasedCoordV1(message: CamLookAtEasedCoordV1)
+
+    public fun camLookAtEasedCoordV2(message: CamLookAtEasedCoordV2)
 
     public fun camMode(message: CamMode)
 
-    public fun camMoveTo(message: CamMoveTo)
+    public fun camMoveToV1(message: CamMoveToV1)
 
-    public fun camMoveToArc(message: CamMoveToArc)
+    public fun camMoveToV2(message: CamMoveToV2)
 
-    public fun camMoveToCycles(message: CamMoveToCycles)
+    public fun camMoveToArcV1(message: CamMoveToArcV1)
+
+    public fun camMoveToArcV2(message: CamMoveToArcV2)
+
+    public fun camMoveToCyclesV1(message: CamMoveToCyclesV1)
+
+    public fun camMoveToCyclesV2(message: CamMoveToCyclesV2)
 
     public fun camReset(message: CamReset)
 
@@ -135,6 +146,8 @@ public interface ServerPacketTranscriber {
     public fun worldEntityInfoV5(message: WorldEntityInfoV5)
 
     public fun worldEntityInfoV6(message: WorldEntityInfoV6)
+
+    public fun worldEntityInfoV7(message: WorldEntityInfoV7)
 
     public fun ifClearInv(message: IfClearInv)
 
@@ -238,7 +251,9 @@ public interface ServerPacketTranscriber {
 
     public fun siteSettings(message: SiteSettings)
 
-    public fun updateRebootTimer(message: UpdateRebootTimer)
+    public fun updateRebootTimerV1(message: UpdateRebootTimerV1)
+
+    public fun updateRebootTimerV2(message: UpdateRebootTimerV2)
 
     public fun updateUid192(message: UpdateUid192)
 
@@ -258,7 +273,9 @@ public interface ServerPacketTranscriber {
 
     public fun runClientScript(message: RunClientScript)
 
-    public fun setMapFlag(message: SetMapFlag)
+    public fun setMapFlagV1(message: SetMapFlagV1)
+
+    public fun setMapFlagV2(message: SetMapFlagV2)
 
     public fun setPlayerOp(message: SetPlayerOp)
 

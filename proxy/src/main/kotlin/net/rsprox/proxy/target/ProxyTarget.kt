@@ -38,6 +38,9 @@ public class ProxyTarget(
     }
 
     public fun revisionNum(channel: Channel): Int {
+        if (config.revision == "latest_supported") {
+            return CURRENT_REVISION
+        }
         val overriddenRevision =
             config.revision
                 ?.split(".")

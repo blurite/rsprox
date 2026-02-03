@@ -30,7 +30,7 @@ internal object GameServerProtId {
     const val NPC_SPOTANIM_SPECIFIC = 26
     const val VARP_SMALL = 27
     const val MAP_PROJANIM_V1 = 28
-    const val CAM_LOOKAT_EASED_COORD = 29
+    const val CAM_LOOKAT_EASED_COORD_V1 = 29
     const val CAM_SHAKE = 30
     const val REBUILD_REGION = 31
     const val IF_CLEARINV = 32
@@ -51,7 +51,7 @@ internal object GameServerProtId {
     const val LOGOUT = 47
     const val MESSAGE_CLANCHANNEL = 48
     const val UPDATE_RUNWEIGHT = 49
-    const val CAM_MOVETO_ARC = 50
+    const val CAM_MOVETO_ARC_V1 = 50
     const val IF_SETSCROLLPOS = 51
     const val PLAYER_SPOTANIM_SPECIFIC = 52
     const val UNKNOWN_STRING = 53
@@ -63,7 +63,7 @@ internal object GameServerProtId {
     const val IF_SETPLAYERHEAD = 59
     const val CLANCHANNEL_FULL = 60
     const val IF_SETHIDE = 61
-    const val SET_MAP_FLAG = 62
+    const val SET_MAP_FLAG_V1 = 62
     const val HISCORE_REPLY = 63
     const val UPDATE_STOCKMARKET_SLOT = 64
     const val VARP_LARGE = 65
@@ -74,14 +74,14 @@ internal object GameServerProtId {
     const val IF_SETPLAYERMODEL_BODYTYPE = 70
     const val TRIGGER_ONDIALOGABORT = 71
     const val SITE_SETTINGS = 72
-    const val UPDATE_REBOOT_TIMER = 73
-    const val CAM_MOVETO_CYCLES = 74
+    const val UPDATE_REBOOT_TIMER_V1 = 73
+    const val CAM_MOVETO_CYCLES_V1 = 74
     const val UPDATE_TRADINGPOST = 75
     const val UPDATE_INV_PARTIAL = 76
     const val HINT_ARROW = 77
     const val PLAYER_ANIM_SPECIFIC = 78
     const val IF_SETROTATESPEED = 79
-    const val CAM_MOVETO = 80
+    const val CAM_MOVETO_V1 = 80
     const val NPC_HEADICON_SPECIFIC = 81
     const val MAP_ANIM = 82
     const val LOC_ADD_CHANGE_V2 = 83
@@ -109,7 +109,7 @@ internal object GameServerProtId {
     const val MESSAGE_PRIVATE_ECHO = 105
     const val HIDENPCOPS = 106
     const val IF_SETPLAYERMODEL_OBJ = 107
-    const val CAM_LOOKAT = 108
+    const val CAM_LOOKAT_V1 = 108
     const val MIDI_SONG_V2 = 109
     const val CLANCHANNEL_DELTA = 110
     const val UPDATE_IGNORELIST = 111

@@ -17,7 +17,7 @@ internal object GameServerProtId {
     const val IF_SETTEXT = 13
     const val HIDEOBJOPS = 14
     const val MESSAGE_FRIENDCHANNEL = 15
-    const val CAM_LOOKAT_EASED_COORD = 16
+    const val CAM_LOOKAT_EASED_COORD_V1 = 16
     const val SITE_SETTINGS = 17
     const val CAM_TARGET_V2 = 18
     const val REFLECTION_CHECKER = 19
@@ -56,7 +56,7 @@ internal object GameServerProtId {
     const val CAM_ROTATETO = 52
     const val SOUND_AREA = 53
     const val UPDATE_STOCKMARKET_SLOT = 54
-    const val CAM_MOVETO = 55
+    const val CAM_MOVETO_V1 = 55
     const val MAP_PROJANIM_V1 = 56
     const val SET_NPC_UPDATE_ORIGIN = 57
     const val SET_PLAYER_OP = 58
@@ -64,7 +64,7 @@ internal object GameServerProtId {
     const val IF_SETANIM = 60
     const val IF_SETPOSITION = 61
     const val UPDATE_ZONE_PARTIAL_FOLLOWS = 62
-    const val CAM_MOVETO_CYCLES = 63
+    const val CAM_MOVETO_CYCLES_V1 = 63
     const val MIDI_SWAP = 64
     const val VARP_LARGE = 65
     const val NPC_ANIM_SPECIFIC = 66
@@ -86,7 +86,7 @@ internal object GameServerProtId {
     const val UPDATE_IGNORELIST = 82
     const val PLAYER_ANIM_SPECIFIC = 83
     const val URL_OPEN = 84
-    const val CAM_MOVETO_ARC = 85
+    const val CAM_MOVETO_ARC_V1 = 85
     const val MESSAGE_GAME = 86
     const val IF_SETEVENTS_V1 = 87
     const val CLANSETTINGS_DELTA = 88
@@ -96,7 +96,7 @@ internal object GameServerProtId {
     const val IF_SETPLAYERMODEL_BODYTYPE = 92
     const val LOC_ANIM_SPECIFIC = 93
     const val CAM_ROTATEBY = 94
-    const val SET_MAP_FLAG = 95
+    const val SET_MAP_FLAG_V1 = 95
     const val CHAT_FILTER_SETTINGS = 96
     const val NPC_SPOTANIM_SPECIFIC = 97
     const val IF_SETPLAYERHEAD = 98
@@ -112,13 +112,13 @@ internal object GameServerProtId {
     const val PROJANIM_SPECIFIC_V3 = 108
     const val UPDATE_FRIENDCHAT_CHANNEL_FULL_V2 = 109
     const val UNKNOWN_STRING = 110
-    const val UPDATE_REBOOT_TIMER = 111
+    const val UPDATE_REBOOT_TIMER_V1 = 111
     const val IF_SETROTATESPEED = 112
     const val SYNTH_SOUND = 113
     const val VARCLAN = 114
     const val SEND_PING = 115
     const val IF_OPENSUB = 116
-    const val CAM_LOOKAT = 117
+    const val CAM_LOOKAT_V1 = 117
     const val MESSAGE_PRIVATE_ECHO = 118
     const val LOGOUT_WITHREASON = 119
     const val LOC_ANIM = 120

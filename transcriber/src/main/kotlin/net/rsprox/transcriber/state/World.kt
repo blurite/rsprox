@@ -25,6 +25,7 @@ public class World(
     public var coord: CoordGrid = CoordGrid.INVALID
     private val npcs: MutableMap<Int, Npc> = mutableMapOf()
     private var rebuildRegionBuildArea: BuildArea? = null
+    public var activeLevel: Int = 0
 
     private val settings: SettingSet
         get() = settingSetStore.getActive()
@@ -37,7 +38,7 @@ public class World(
         this.buildAreaSouthWestCoord = southWestCoord
     }
 
-    public fun activeLevel(): Int {
+    public fun activeZoneLevel(): Int {
         return this.activeZoneSouthWestCoord.level
     }
 

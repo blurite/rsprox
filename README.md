@@ -249,8 +249,8 @@ The YAML format expects one object per target. When the file is stored locally i
 ```yaml
 config:
   - name: Blurite
-    jav_config_url: https://client.blurite.io/jav_local_227.ws
-    revision: 227.3
+    jav_config_url: https://client.blurite.io/jav_local_226.ws
+    revision: 236.1
     modulus: d2a780dccbcf534dc61a36deff725aabf9f46fc9ea298ac8c39b89b5bcb5d0817f8c9f59621187d448da9949aca848d0b2acae50c3122b7da53a79e6fe87ff76b675bcbf5bc18fbd2c9ed8f4cff2b7140508049eb119259af888eb9d20e8cea8a4384b06589483bcda11affd8d67756bc93a4d786494cdf7b634e3228b64116d
   - name: Local Test World
     jav_config_url: https://example.com/jav_config.ws
@@ -262,8 +262,8 @@ If you are hosting the configuration yourself on a url and prefer a shorter docu
 
 ```yaml
 - name: Blurite
-  jav_config_url: https://client.blurite.io/jav_local_227.ws
-  revision: 227.3
+  jav_config_url: https://client.blurite.io/jav_local_236.ws
+  revision: 236.1
 ```
 
 Properties breakdown:
