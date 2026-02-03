@@ -2,7 +2,7 @@ package net.rsprox.protocol.v236.game.outgoing.decoder.codec.interfaces
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.util.gCombinedId
+import net.rsprot.protocol.util.gCombinedIdAlt3
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfSetModel
 import net.rsprox.protocol.session.Session
@@ -15,8 +15,8 @@ internal class IfSetModelDecoder : ProxyMessageDecoder<IfSetModel> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetModel {
-        val model = buffer.g2Alt3()
-        val combinedId = buffer.gCombinedId()
+        val model = buffer.g2Alt1()
+        val combinedId = buffer.gCombinedIdAlt3()
         return IfSetModel(
             combinedId.interfaceId,
             combinedId.componentId,

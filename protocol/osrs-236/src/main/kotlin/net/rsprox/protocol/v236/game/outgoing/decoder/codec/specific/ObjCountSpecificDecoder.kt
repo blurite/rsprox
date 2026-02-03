@@ -15,10 +15,10 @@ internal class ObjCountSpecificDecoder : ProxyMessageDecoder<ObjCountSpecific> {
         buffer: JagByteBuf,
         session: Session,
     ): ObjCountSpecific {
+        val oldQuantity = buffer.g4Alt2()
+        val newQuantity = buffer.g4Alt2()
         val id = buffer.g2()
-        val oldQuantity = buffer.g4Alt1()
-        val coordGrid = CoordGrid(buffer.g4())
-        val newQuantity = buffer.g4Alt3()
+        val coordGrid = CoordGrid(buffer.g4Alt1())
         return ObjCountSpecific(
             id,
             oldQuantity,

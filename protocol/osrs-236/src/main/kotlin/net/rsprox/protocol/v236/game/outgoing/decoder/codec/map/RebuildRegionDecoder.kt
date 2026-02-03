@@ -20,8 +20,8 @@ internal class RebuildRegionDecoder : ProxyMessageDecoder<RebuildRegion> {
         session: Session,
     ): RebuildRegion {
         val zoneZ = buffer.g2()
-        val reload = buffer.g1Alt1() == 1
-        val zoneX = buffer.g2Alt2()
+        val zoneX = buffer.g2Alt3()
+        val reload = buffer.g1Alt3() == 1
         val xteaCount = buffer.g2()
         val buildArea = BuildArea()
         buffer.buffer.toBitBuf().use { bitBuf ->

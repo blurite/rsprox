@@ -15,7 +15,7 @@ public class OpWorldEntity3Decoder : ProxyMessageDecoder<OpWorldEntity> {
         session: Session,
     ): OpWorldEntity {
         val controlKey = buffer.g1Alt1() == 1
-        val index = buffer.g2Alt3()
+        val index = buffer.g2Alt1()
         return OpWorldEntity(
             index,
             controlKey,

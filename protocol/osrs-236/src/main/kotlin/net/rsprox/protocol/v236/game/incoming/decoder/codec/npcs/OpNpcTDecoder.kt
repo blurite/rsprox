@@ -15,11 +15,11 @@ public class OpNpcTDecoder : ProxyMessageDecoder<OpNpcT> {
         buffer: JagByteBuf,
         session: Session,
     ): OpNpcT {
-        val selectedObj = buffer.g2Alt3()
+        val index = buffer.g2Alt2()
+        val selectedSub = buffer.g2Alt3()
         val selectedCombinedId = buffer.gCombinedIdAlt3()
-        val selectedSub = buffer.g2Alt1()
-        val controlKey = buffer.g1Alt3() == 1
-        val index = buffer.g2Alt3()
+        val controlKey = buffer.g1Alt1() == 1
+        val selectedObj = buffer.g2Alt2()
         return OpNpcT(
             index,
             controlKey,

@@ -14,10 +14,10 @@ public class TeleportDecoder : ProxyMessageDecoder<Teleport> {
         buffer: JagByteBuf,
         session: Session,
     ): Teleport {
-        val x = buffer.g2Alt3()
-        val z = buffer.g2Alt2()
-        val oculusSyncValue = buffer.g4Alt2()
-        val level = buffer.g1Alt1()
+        val level = buffer.g1()
+        val z = buffer.g2Alt3()
+        val oculusSyncValue = buffer.g4Alt1()
+        val x = buffer.g2()
         return Teleport(
             oculusSyncValue,
             x,

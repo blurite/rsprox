@@ -14,9 +14,9 @@ internal class UpdateZonePartialFollowsDecoder : ProxyMessageDecoder<UpdateZoneP
         buffer: JagByteBuf,
         session: Session,
     ): UpdateZonePartialFollows {
+        val level = buffer.g1Alt2()
+        val zoneX = buffer.g1Alt1()
         val zoneZ = buffer.g1Alt1()
-        val level = buffer.g1Alt3()
-        val zoneX = buffer.g1Alt2()
         return UpdateZonePartialFollows(
             zoneX,
             zoneZ,

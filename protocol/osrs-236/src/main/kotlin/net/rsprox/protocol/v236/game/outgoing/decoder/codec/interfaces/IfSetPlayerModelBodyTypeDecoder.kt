@@ -16,7 +16,7 @@ internal class IfSetPlayerModelBodyTypeDecoder : ProxyMessageDecoder<IfSetPlayer
         session: Session,
     ): IfSetPlayerModelBodyType {
         val combinedId = buffer.gCombinedId()
-        val bodyType = buffer.g1Alt3()
+        val bodyType = buffer.g1Alt2()
         return IfSetPlayerModelBodyType(
             combinedId.interfaceId,
             combinedId.componentId,

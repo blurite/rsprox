@@ -15,7 +15,7 @@ public class ClickWorldMapDecoder : ProxyMessageDecoder<ClickWorldMap> {
         buffer: JagByteBuf,
         session: Session,
     ): ClickWorldMap {
-        val packed = buffer.g4Alt3()
+        val packed = buffer.g4()
         return ClickWorldMap(CoordGrid(packed))
     }
 }
