@@ -430,22 +430,22 @@ public class IndexerTranscriber(
     override fun rsevenStatus(message: RSevenStatus) {
     }
 
-    override fun camLookAt(message: CamLookAtV1) {
+    override fun camLookAtV1(message: CamLookAtV1) {
     }
 
-    override fun camLookAtEasedCoord(message: CamLookAtEasedCoordV1) {
+    override fun camLookAtEasedCoordV1(message: CamLookAtEasedCoordV1) {
     }
 
     override fun camMode(message: CamMode) {
     }
 
-    override fun camMoveTo(message: CamMoveToV1) {
+    override fun camMoveToV1(message: CamMoveToV1) {
     }
 
-    override fun camMoveToArc(message: CamMoveToArcV1) {
+    override fun camMoveToArcV1(message: CamMoveToArcV1) {
     }
 
-    override fun camMoveToCycles(message: CamMoveToCyclesV1) {
+    override fun camMoveToCyclesV1(message: CamMoveToCyclesV1) {
     }
 
     override fun camReset(message: CamReset) {
@@ -835,7 +835,7 @@ public class IndexerTranscriber(
     override fun siteSettings(message: SiteSettings) {
     }
 
-    override fun updateRebootTimer(message: UpdateRebootTimerV1) {
+    override fun updateRebootTimerV1(message: UpdateRebootTimerV1) {
     }
 
     override fun updateUid192(message: UpdateUid192) {
@@ -898,7 +898,7 @@ public class IndexerTranscriber(
         }
     }
 
-    override fun setMapFlag(message: SetMapFlagV1) {
+    override fun setMapFlagV1(message: SetMapFlagV1) {
     }
 
     override fun setPlayerOp(message: SetPlayerOp) {

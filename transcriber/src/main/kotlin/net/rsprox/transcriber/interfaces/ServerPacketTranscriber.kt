@@ -66,17 +66,17 @@ import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialFoll
 import net.rsprox.protocol.game.outgoing.model.zone.payload.*
 
 public interface ServerPacketTranscriber {
-    public fun camLookAt(message: CamLookAtV1)
+    public fun camLookAtV1(message: CamLookAtV1)
 
-    public fun camLookAtEasedCoord(message: CamLookAtEasedCoordV1)
+    public fun camLookAtEasedCoordV1(message: CamLookAtEasedCoordV1)
 
     public fun camMode(message: CamMode)
 
-    public fun camMoveTo(message: CamMoveToV1)
+    public fun camMoveToV1(message: CamMoveToV1)
 
-    public fun camMoveToArc(message: CamMoveToArcV1)
+    public fun camMoveToArcV1(message: CamMoveToArcV1)
 
-    public fun camMoveToCycles(message: CamMoveToCyclesV1)
+    public fun camMoveToCyclesV1(message: CamMoveToCyclesV1)
 
     public fun camReset(message: CamReset)
 
@@ -240,7 +240,7 @@ public interface ServerPacketTranscriber {
 
     public fun siteSettings(message: SiteSettings)
 
-    public fun updateRebootTimer(message: UpdateRebootTimerV1)
+    public fun updateRebootTimerV1(message: UpdateRebootTimerV1)
 
     public fun updateUid192(message: UpdateUid192)
 
@@ -260,7 +260,7 @@ public interface ServerPacketTranscriber {
 
     public fun runClientScript(message: RunClientScript)
 
-    public fun setMapFlag(message: SetMapFlagV1)
+    public fun setMapFlagV1(message: SetMapFlagV1)
 
     public fun setPlayerOp(message: SetPlayerOp)
 

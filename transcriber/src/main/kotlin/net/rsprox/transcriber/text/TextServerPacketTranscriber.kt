@@ -284,7 +284,7 @@ public class TextServerPacketTranscriber(
         return zoneCoordGrid(level, zoneX shl 3, zoneZ shl 3, name)
     }
 
-    override fun camLookAt(message: CamLookAtV1) {
+    override fun camLookAtV1(message: CamLookAtV1) {
         if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
         if (coordInBuildArea.invalid()) {
@@ -301,7 +301,7 @@ public class TextServerPacketTranscriber(
         root.int("rate2", message.acceleration)
     }
 
-    override fun camLookAtEasedCoord(message: CamLookAtEasedCoordV1) {
+    override fun camLookAtEasedCoordV1(message: CamLookAtEasedCoordV1) {
         if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
         if (coordInBuildArea.invalid()) {
@@ -323,7 +323,7 @@ public class TextServerPacketTranscriber(
         root.int("mode", message.mode)
     }
 
-    override fun camMoveTo(message: CamMoveToV1) {
+    override fun camMoveToV1(message: CamMoveToV1) {
         if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
         if (coordInBuildArea.invalid()) {
@@ -340,7 +340,7 @@ public class TextServerPacketTranscriber(
         root.int("rate2", message.acceleration)
     }
 
-    override fun camMoveToArc(message: CamMoveToArcV1) {
+    override fun camMoveToArcV1(message: CamMoveToArcV1) {
         if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
         if (coordInBuildArea.invalid()) {
@@ -359,7 +359,7 @@ public class TextServerPacketTranscriber(
         root.enum("easing", message.function)
     }
 
-    override fun camMoveToCycles(message: CamMoveToCyclesV1) {
+    override fun camMoveToCyclesV1(message: CamMoveToCyclesV1) {
         if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
         if (coordInBuildArea.invalid()) {
@@ -1879,7 +1879,7 @@ public class TextServerPacketTranscriber(
         root.string("settings", message.settings)
     }
 
-    override fun updateRebootTimer(message: UpdateRebootTimerV1) {
+    override fun updateRebootTimerV1(message: UpdateRebootTimerV1) {
         if (!filters[PropertyFilter.UPDATE_REBOOT_TIMER]) return omit()
         root.formattedInt("gamecycles", message.gameCycles)
     }
@@ -2169,7 +2169,7 @@ public class TextServerPacketTranscriber(
         }
     }
 
-    override fun setMapFlag(message: SetMapFlagV1) {
+    override fun setMapFlagV1(message: SetMapFlagV1) {
         if (!filters[PropertyFilter.SET_MAP_FLAG]) return omit()
         if (message.xInBuildArea == 0xFF && message.zInBuildArea == 0xFF) {
             root.any<Any>("coord", null)
