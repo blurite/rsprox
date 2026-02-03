@@ -585,8 +585,8 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
                     (baseCoord.z shl 7) + coordFine.z,
                 )
 
-            val sizeX = packedSize ushr 4 and 0xF
-            val sizeZ = packedSize and 0xF
+            val sizeX = (packedSize ushr 4 and 0xF) * 8
+            val sizeZ = (packedSize and 0xF) * 8
             val worldEntity =
                 WorldEntityV3(
                     index,
