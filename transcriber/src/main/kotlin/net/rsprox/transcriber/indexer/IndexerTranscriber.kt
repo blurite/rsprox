@@ -113,6 +113,7 @@ import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettingsPri
 import net.rsprox.protocol.game.outgoing.model.misc.player.MessageGame
 import net.rsprox.protocol.game.outgoing.model.misc.player.RunClientScript
 import net.rsprox.protocol.game.outgoing.model.misc.player.SetMapFlagV1
+import net.rsprox.protocol.game.outgoing.model.misc.player.SetMapFlagV2
 import net.rsprox.protocol.game.outgoing.model.misc.player.SetPlayerOp
 import net.rsprox.protocol.game.outgoing.model.misc.player.TriggerOnDialogAbort
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunEnergy
@@ -433,7 +434,13 @@ public class IndexerTranscriber(
     override fun camLookAtV1(message: CamLookAtV1) {
     }
 
+    override fun camLookAtV2(message: CamLookAtV2) {
+    }
+
     override fun camLookAtEasedCoordV1(message: CamLookAtEasedCoordV1) {
+    }
+
+    override fun camLookAtEasedCoordV2(message: CamLookAtEasedCoordV2) {
     }
 
     override fun camMode(message: CamMode) {
@@ -442,10 +449,19 @@ public class IndexerTranscriber(
     override fun camMoveToV1(message: CamMoveToV1) {
     }
 
+    override fun camMoveToV2(message: CamMoveToV2) {
+    }
+
     override fun camMoveToArcV1(message: CamMoveToArcV1) {
     }
 
+    override fun camMoveToArcV2(message: CamMoveToArcV2) {
+    }
+
     override fun camMoveToCyclesV1(message: CamMoveToCyclesV1) {
+    }
+
+    override fun camMoveToCyclesV2(message: CamMoveToCyclesV2) {
     }
 
     override fun camReset(message: CamReset) {
@@ -838,6 +854,18 @@ public class IndexerTranscriber(
     override fun updateRebootTimerV1(message: UpdateRebootTimerV1) {
     }
 
+    override fun updateRebootTimerV2(message: UpdateRebootTimerV2) {
+        when (val mes = message.messageType) {
+            UpdateRebootTimerV2.ClearUpdateMessage -> {
+            }
+            UpdateRebootTimerV2.IgnoreUpdateMessage -> {
+            }
+            is UpdateRebootTimerV2.SetUpdateMessage -> {
+                binaryIndex.increment(IndexedType.MESSAGE_GAME, mes.message)
+            }
+        }
+    }
+
     override fun updateUid192(message: UpdateUid192) {
     }
 
@@ -899,6 +927,9 @@ public class IndexerTranscriber(
     }
 
     override fun setMapFlagV1(message: SetMapFlagV1) {
+    }
+
+    override fun setMapFlagV2(message: SetMapFlagV2) {
     }
 
     override fun setPlayerOp(message: SetPlayerOp) {

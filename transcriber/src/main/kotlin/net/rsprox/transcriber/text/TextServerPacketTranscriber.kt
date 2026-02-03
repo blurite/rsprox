@@ -51,6 +51,7 @@ import net.rsprox.protocol.game.outgoing.model.misc.client.SetHeatmapEnabled
 import net.rsprox.protocol.game.outgoing.model.misc.client.SetInteractionMode
 import net.rsprox.protocol.game.outgoing.model.misc.client.SiteSettings
 import net.rsprox.protocol.game.outgoing.model.misc.client.UpdateRebootTimerV1
+import net.rsprox.protocol.game.outgoing.model.misc.client.UpdateRebootTimerV2
 import net.rsprox.protocol.game.outgoing.model.misc.client.UpdateUid192
 import net.rsprox.protocol.game.outgoing.model.misc.client.UrlOpen
 import net.rsprox.protocol.game.outgoing.model.misc.client.ZBuf
@@ -60,6 +61,7 @@ import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettingsPri
 import net.rsprox.protocol.game.outgoing.model.misc.player.MessageGame
 import net.rsprox.protocol.game.outgoing.model.misc.player.RunClientScript
 import net.rsprox.protocol.game.outgoing.model.misc.player.SetMapFlagV1
+import net.rsprox.protocol.game.outgoing.model.misc.player.SetMapFlagV2
 import net.rsprox.protocol.game.outgoing.model.misc.player.SetPlayerOp
 import net.rsprox.protocol.game.outgoing.model.misc.player.TriggerOnDialogAbort
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunEnergy
@@ -301,6 +303,15 @@ public class TextServerPacketTranscriber(
         root.int("rate2", message.acceleration)
     }
 
+    override fun camLookAtV2(message: CamLookAtV2) {
+        if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
+        val coord = CoordGrid(sessionState.getRootWorldActiveLevel(), message.x, message.z)
+        root.coordGrid(coord)
+        root.int("height", message.height)
+        root.int("rate", message.rate)
+        root.int("rate2", message.rate2)
+    }
+
     override fun camLookAtEasedCoordV1(message: CamLookAtEasedCoordV1) {
         if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
@@ -316,6 +327,15 @@ public class TextServerPacketTranscriber(
         root.int("height", message.height)
         root.int("cycles", message.duration)
         root.enum("easing", message.function)
+    }
+
+    override fun camLookAtEasedCoordV2(message: CamLookAtEasedCoordV2) {
+        if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
+        val coord = CoordGrid(sessionState.getRootWorldActiveLevel(), message.x, message.z)
+        root.coordGrid(coord)
+        root.int("height", message.height)
+        root.int("cycles", message.cycles)
+        root.enum("easing", message.easing)
     }
 
     override fun camMode(message: CamMode) {
@@ -340,23 +360,46 @@ public class TextServerPacketTranscriber(
         root.int("rate2", message.acceleration)
     }
 
+    override fun camMoveToV2(message: CamMoveToV2) {
+        if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
+        val coord = CoordGrid(sessionState.getRootWorldActiveLevel(), message.x, message.z)
+        root.coordGrid(coord)
+        root.int("height", message.height)
+        root.int("rate", message.rate)
+        root.int("rate2", message.rate2)
+    }
+
     override fun camMoveToArcV1(message: CamMoveToArcV1) {
         if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
+        root.coordGrid("centercoord", buildAreaCoordGrid(message.centerXInBuildArea, message.centerZInBuildArea))
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
         if (coordInBuildArea.invalid()) {
             root.any(
-                "outofboundsbuildareacoord",
+                "outofboundsdestinationbuildareacoord",
                 "[zoneX=${coordInBuildArea.zoneX}, xInZone=${coordInBuildArea.xInZone}, " +
                     "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]",
             )
         } else {
-            root.coordGrid(buildAreaCoordGrid(coordInBuildArea.xInBuildArea, coordInBuildArea.zInBuildArea))
+            root.coordGrid("destinationcoord",
+                buildAreaCoordGrid(coordInBuildArea.xInBuildArea, coordInBuildArea.zInBuildArea))
         }
         root.int("height", message.height)
-        root.coordGrid("tertiarycoord", buildAreaCoordGrid(message.centerXInBuildArea, message.centerZInBuildArea))
         root.int("cycles", message.duration)
         root.boolean("ignoreterrain", message.ignoreTerrain)
         root.enum("easing", message.function)
+    }
+
+    override fun camMoveToArcV2(message: CamMoveToArcV2) {
+        if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
+        val center = CoordGrid(sessionState.getRootWorldActiveLevel(), message.centerX, message.centerZ)
+
+        root.coordGrid("centercoord", center)
+        val destination = CoordGrid(sessionState.getRootWorldActiveLevel(), message.destinationX, message.destinationZ)
+        root.coordGrid("destinationcoord", destination)
+        root.int("height", message.height)
+        root.int("cycles", message.cycles)
+        root.boolean("ignoreterrain", message.ignoreTerrain)
+        root.enum("easing", message.easing)
     }
 
     override fun camMoveToCyclesV1(message: CamMoveToCyclesV1) {
@@ -375,6 +418,16 @@ public class TextServerPacketTranscriber(
         root.int("cycles", message.duration)
         root.boolean("ignoreterrain", message.ignoreTerrain)
         root.enum("easing", message.function)
+    }
+
+    override fun camMoveToCyclesV2(message: CamMoveToCyclesV2) {
+        if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
+        val coord = CoordGrid(sessionState.getRootWorldActiveLevel(), message.x, message.z)
+        root.coordGrid(coord)
+        root.int("height", message.height)
+        root.int("cycles", message.cycles)
+        root.boolean("ignoreterrain", message.ignoreTerrain)
+        root.enum("easing", message.easing)
     }
 
     override fun camReset(message: CamReset) {
@@ -1884,6 +1937,22 @@ public class TextServerPacketTranscriber(
         root.formattedInt("gamecycles", message.gameCycles)
     }
 
+    override fun updateRebootTimerV2(message: UpdateRebootTimerV2) {
+        if (!filters[PropertyFilter.UPDATE_REBOOT_TIMER]) return omit()
+        root.formattedInt("gamecycles", message.gameCycles)
+        when (val mes = message.messageType) {
+            UpdateRebootTimerV2.ClearUpdateMessage -> {
+                root.any("clear_message", "true")
+            }
+            UpdateRebootTimerV2.IgnoreUpdateMessage -> {
+                root.any("ignore_message", true)
+            }
+            is UpdateRebootTimerV2.SetUpdateMessage -> {
+                root.string("message", mes.message)
+            }
+        }
+    }
+
     override fun updateUid192(message: UpdateUid192) {
         if (!filters[PropertyFilter.UPDATE_UID192]) return omit()
         root.string("uid", message.uid.toString(Charsets.UTF_8))
@@ -2175,6 +2244,15 @@ public class TextServerPacketTranscriber(
             root.any<Any>("coord", null)
         } else {
             root.coordGrid(buildAreaCoordGrid(message.xInBuildArea, message.zInBuildArea))
+        }
+    }
+
+    override fun setMapFlagV2(message: SetMapFlagV2) {
+        if (!filters[PropertyFilter.SET_MAP_FLAG]) return omit()
+        if (message.coordGrid.packed == -1) {
+            root.any<Any>("coord", null)
+        } else {
+            root.coordGrid(message.coordGrid)
         }
     }
 

@@ -31,6 +31,7 @@ import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettingsPri
 import net.rsprox.protocol.game.outgoing.model.misc.player.MessageGame
 import net.rsprox.protocol.game.outgoing.model.misc.player.RunClientScript
 import net.rsprox.protocol.game.outgoing.model.misc.player.SetMapFlagV1
+import net.rsprox.protocol.game.outgoing.model.misc.player.SetMapFlagV2
 import net.rsprox.protocol.game.outgoing.model.misc.player.SetPlayerOp
 import net.rsprox.protocol.game.outgoing.model.misc.player.TriggerOnDialogAbort
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunEnergy
@@ -68,15 +69,25 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.*
 public interface ServerPacketTranscriber {
     public fun camLookAtV1(message: CamLookAtV1)
 
+    public fun camLookAtV2(message: CamLookAtV2)
+
     public fun camLookAtEasedCoordV1(message: CamLookAtEasedCoordV1)
+
+    public fun camLookAtEasedCoordV2(message: CamLookAtEasedCoordV2)
 
     public fun camMode(message: CamMode)
 
     public fun camMoveToV1(message: CamMoveToV1)
 
+    public fun camMoveToV2(message: CamMoveToV2)
+
     public fun camMoveToArcV1(message: CamMoveToArcV1)
 
+    public fun camMoveToArcV2(message: CamMoveToArcV2)
+
     public fun camMoveToCyclesV1(message: CamMoveToCyclesV1)
+
+    public fun camMoveToCyclesV2(message: CamMoveToCyclesV2)
 
     public fun camReset(message: CamReset)
 
@@ -242,6 +253,8 @@ public interface ServerPacketTranscriber {
 
     public fun updateRebootTimerV1(message: UpdateRebootTimerV1)
 
+    public fun updateRebootTimerV2(message: UpdateRebootTimerV2)
+
     public fun updateUid192(message: UpdateUid192)
 
     public fun urlOpen(message: UrlOpen)
@@ -261,6 +274,8 @@ public interface ServerPacketTranscriber {
     public fun runClientScript(message: RunClientScript)
 
     public fun setMapFlagV1(message: SetMapFlagV1)
+
+    public fun setMapFlagV2(message: SetMapFlagV2)
 
     public fun setPlayerOp(message: SetPlayerOp)
 

@@ -88,6 +88,10 @@ public class SessionState(
         return worlds[id]
     }
 
+    public fun getRootWorldActiveLevel(): Int {
+        return getWorld(-1).activeLevel
+    }
+
     public fun getActiveWorld(): World {
         return worlds[activeWorldId] ?: error("World $activeWorldId not available.")
     }
@@ -98,6 +102,7 @@ public class SessionState(
     ) {
         this.activeWorldId = id
         this.activeLevel = level
+        getWorldOrNull(id)?.activeLevel = level
     }
 
     public fun incrementCycle() {
