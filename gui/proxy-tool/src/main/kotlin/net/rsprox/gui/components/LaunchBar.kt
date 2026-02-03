@@ -343,7 +343,7 @@ public class LaunchBar(
         ) = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus).apply {
             if (value is ProxyTargetConfig) {
                 text =
-                    if (value.revision != null) {
+                    if (value.revision != null && value.revision != "latest_supported") {
                         "${value.name} (${value.revision})"
                     } else {
                         value.name
