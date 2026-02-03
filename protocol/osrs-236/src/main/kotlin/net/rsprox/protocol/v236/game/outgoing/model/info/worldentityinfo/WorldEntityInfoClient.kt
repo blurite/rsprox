@@ -14,6 +14,7 @@ import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityI
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV4
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV5
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV6
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV7
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityMoveSpeed
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityUpdateType
 
@@ -31,7 +32,10 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
     ): WorldEntityInfo {
         updates.clear()
         earlyRemovals.clear()
-        if (version >= 6) {
+        if (version >= 7) {
+            decodeHighResolutionV5(buffer)
+            decodeLowResolutionV5(buffer, baseCoord)
+        } else if (version >= 6) {
             decodeHighResolutionV4(buffer)
             decodeLowResolutionV4(buffer, baseCoord)
         } else if (version >= 5) {
@@ -52,6 +56,7 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
             4 -> WorldEntityInfoV4(updates)
             5 -> WorldEntityInfoV5(earlyRemovals, updates)
             6 -> WorldEntityInfoV6(earlyRemovals, updates)
+            7 -> WorldEntityInfoV7(earlyRemovals, updates)
             else -> error("Invalid version: $version")
         }
     }
@@ -220,7 +225,7 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
             }
             this.transmittedWorldEntity[this.transmittedWorldEntityCount++] = index
             if (opcode == 1) {
-                val extendedInfo = decodeWorldEntityInfoExtendedInfo(buffer)
+                val extendedInfo = decodeWorldEntityInfoExtendedInfoUnobfuscated(buffer)
                 if (extendedInfo.isEmpty()) {
                     updates[index] = WorldEntityUpdateType.Idle
                 } else {
@@ -240,7 +245,63 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
                 worldEntity.coordFine = next
                 worldEntity.angle = (worldEntity.angle + angle) and 2047
             }
-            val extendedInfo = decodeWorldEntityInfoExtendedInfo(buffer)
+            val extendedInfo = decodeWorldEntityInfoExtendedInfoUnobfuscated(buffer)
+            updates[index] =
+                WorldEntityUpdateType.ActiveV3(
+                    worldEntity.angle,
+                    worldEntity.coordFine,
+                    teleport,
+                    extendedInfo,
+                )
+        }
+    }
+    private fun decodeHighResolutionV5(buffer: JagByteBuf) {
+        val count = buffer.g1()
+        if (count < transmittedWorldEntityCount) {
+            for (i in count..<transmittedWorldEntityCount) {
+                val index = this.transmittedWorldEntity[i]
+                this.worldEntity[index] = null
+                earlyRemovals.add(index)
+            }
+        }
+        if (count > transmittedWorldEntityCount) {
+            throw RuntimeException("dang!")
+        }
+        this.transmittedWorldEntityCount = 0
+        for (i in 0..<count) {
+            val index = this.transmittedWorldEntity[i]
+            val worldEntity = checkNotNull(this.worldEntity[index]) as WorldEntityV3
+            val opcode = buffer.g1()
+            val remove = opcode == 0
+            if (remove) {
+                this.worldEntity[index] = null
+                updates[index] = WorldEntityUpdateType.HighResolutionToLowResolution
+                continue
+            }
+            this.transmittedWorldEntity[this.transmittedWorldEntityCount++] = index
+            if (opcode == 1) {
+                val extendedInfo = decodeWorldEntityInfoExtendedInfoUnobfuscated(buffer)
+                if (extendedInfo.isEmpty()) {
+                    updates[index] = WorldEntityUpdateType.Idle
+                } else {
+                    updates[index] = WorldEntityUpdateType.ExtendedInfoOnly(extendedInfo)
+                }
+                continue
+            }
+            val teleport = opcode == 3
+            val bitpackedAngledCoordFineOpcodes = buffer.g1s()
+            if (bitpackedAngledCoordFineOpcodes != 0) {
+                val deltaX = decodeAngledCoordFineComponent(buffer, bitpackedAngledCoordFineOpcodes, 0)
+                val deltaY = decodeAngledCoordFineComponent(buffer, bitpackedAngledCoordFineOpcodes, 2)
+                val deltaZ = decodeAngledCoordFineComponent(buffer, bitpackedAngledCoordFineOpcodes, 4)
+                val angle = decodeAngledCoordFineComponent(buffer, bitpackedAngledCoordFineOpcodes, 6)
+                val current = worldEntity.coordFine
+                val next = CoordFine(current.x + deltaX, current.y + deltaY, current.z + deltaZ)
+                worldEntity.coordFine = next
+                worldEntity.angle = (worldEntity.angle + angle) and 2047
+            }
+            val flags = buffer.g1()
+            val extendedInfo = decodeWorldEntityInfoExtendedInfoObfuscated(buffer, flags)
             updates[index] =
                 WorldEntityUpdateType.ActiveV3(
                     worldEntity.angle,
@@ -251,19 +312,39 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
         }
     }
 
-    private fun decodeWorldEntityInfoExtendedInfo(buffer: JagByteBuf): List<ExtendedInfo> {
+    private fun decodeWorldEntityInfoExtendedInfoUnobfuscated(buffer: JagByteBuf): List<ExtendedInfo> {
         val flags = buffer.g1()
         if (flags == 0) {
             return emptyList()
         }
         val blocks = mutableListOf<ExtendedInfo>()
-        if (flags and 0x1 != 0) {
+        if (flags and 0x2 != 0) {
             val id = buffer.g2()
             val delay = buffer.g1()
             blocks += SequenceExtendedInfo(id, delay)
         }
 
+        if (flags and 0x1 != 0) {
+            blocks += EnabledOpsExtendedInfo(buffer.g1())
+        }
+        return blocks
+    }
+
+    private fun decodeWorldEntityInfoExtendedInfoObfuscated(
+        buffer: JagByteBuf,
+        flags: Int,
+    ): List<ExtendedInfo> {
+        if (flags == 0) {
+            return emptyList()
+        }
+        val blocks = mutableListOf<ExtendedInfo>()
         if (flags and 0x2 != 0) {
+            val id = buffer.g2Alt2()
+            val delay = buffer.g1Alt3()
+            blocks += SequenceExtendedInfo(id, delay)
+        }
+
+        if (flags and 0x1 != 0) {
             blocks += EnabledOpsExtendedInfo(buffer.g1())
         }
         return blocks
@@ -460,7 +541,7 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
                     coordFine,
                     angle,
                 )
-            val extendedInfo = decodeWorldEntityInfoExtendedInfo(buffer)
+            val extendedInfo = decodeWorldEntityInfoExtendedInfoUnobfuscated(buffer)
             this.worldEntity[index] = worldEntity
             this.updates[index] =
                 WorldEntityUpdateType.LowResolutionToHighResolutionV4(
@@ -475,6 +556,61 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
         }
     }
 
+    private fun decodeLowResolutionV5(
+        buffer: JagByteBuf,
+        baseCoord: CoordGrid,
+    ) {
+        while (buffer.isReadable) {
+            val index = buffer.g2()
+            this.transmittedWorldEntity[this.transmittedWorldEntityCount++] = index
+            val packedSize = buffer.g1()
+            val extendedInfoFlags = buffer.g1()
+            val priority = buffer.g1Alt2()
+            val id = buffer.g2sAlt2()
+
+            var coordFine = CoordFine(0, 0, 0)
+            var angle = 0
+            val bitpackedAngledCoordFineOpcodes = buffer.g1s()
+            if (bitpackedAngledCoordFineOpcodes != 0) {
+                val deltaX = decodeAngledCoordFineComponent(buffer, bitpackedAngledCoordFineOpcodes, 0)
+                val deltaY = decodeAngledCoordFineComponent(buffer, bitpackedAngledCoordFineOpcodes, 2)
+                val deltaZ = decodeAngledCoordFineComponent(buffer, bitpackedAngledCoordFineOpcodes, 4)
+                angle = decodeAngledCoordFineComponent(buffer, bitpackedAngledCoordFineOpcodes, 6)
+                coordFine = CoordFine(coordFine.x + deltaX, coordFine.y + deltaY, coordFine.z + deltaZ)
+            }
+            coordFine =
+                CoordFine(
+                    (baseCoord.x shl 7) + coordFine.x,
+                    coordFine.y,
+                    (baseCoord.z shl 7) + coordFine.z,
+                )
+
+            val sizeX = packedSize ushr 4 and 0xF
+            val sizeZ = packedSize and 0xF
+            val worldEntity =
+                WorldEntityV3(
+                    index,
+                    id,
+                    sizeX,
+                    sizeZ,
+                    priority,
+                    coordFine,
+                    angle,
+                )
+            val extendedInfo = decodeWorldEntityInfoExtendedInfoObfuscated(buffer, extendedInfoFlags)
+            this.worldEntity[index] = worldEntity
+            this.updates[index] =
+                WorldEntityUpdateType.LowResolutionToHighResolutionV4(
+                    id,
+                    sizeX,
+                    sizeZ,
+                    angle,
+                    priority,
+                    coordFine,
+                    extendedInfo,
+                )
+        }
+    }
     @Suppress("unused")
     private class WorldEntityV1(
         val index: Int,

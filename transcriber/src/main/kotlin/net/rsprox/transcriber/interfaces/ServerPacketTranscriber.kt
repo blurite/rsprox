@@ -136,6 +136,8 @@ public interface ServerPacketTranscriber {
 
     public fun worldEntityInfoV6(message: WorldEntityInfoV6)
 
+    public fun worldEntityInfoV7(message: WorldEntityInfoV7)
+
     public fun ifClearInv(message: IfClearInv)
 
     public fun ifCloseSub(message: IfCloseSub)

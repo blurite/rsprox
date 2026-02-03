@@ -872,6 +872,10 @@ public class TextServerPacketTranscriber(
         worldEntityInfo(message)
     }
 
+    override fun worldEntityInfoV7(message: WorldEntityInfoV7) {
+        worldEntityInfo(message)
+    }
+
     private fun useDecimalWorldEntityCoords(): Boolean {
         return settings[Setting.WORLDENTITY_INFO_DECIMAL_COORDS] &&
             !settings[Setting.CONVERT_COORD_TO_JAGCOORD]

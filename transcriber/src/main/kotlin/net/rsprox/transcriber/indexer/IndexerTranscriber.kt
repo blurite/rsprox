@@ -535,6 +535,9 @@ public class IndexerTranscriber(
     override fun worldEntityInfoV6(message: WorldEntityInfoV6) {
     }
 
+    override fun worldEntityInfoV7(message: WorldEntityInfoV7) {
+    }
+
     override fun ifClearInv(message: IfClearInv) {
         incrementInterfaceId(message.interfaceId)
     }
