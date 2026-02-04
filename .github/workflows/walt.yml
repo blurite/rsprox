@@ -1,0 +1,25 @@
+name: e2e
+on: [push, pull_request]
+
+jobs:
+  mac-e2e:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: walt
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.1'
+          cache: true
+          cache-dependency-path: walt/go.sum  # cache correct go.sum
+
+      - name: Sudo preflight
+        run: sudo -n -v
+
+      - name: Run tests (includes E2E when WALT_E2E=1)
+        env:
+          WALT_E2E: "1"
+        run: go test ./... -v
