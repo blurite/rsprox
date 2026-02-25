@@ -18,7 +18,7 @@ internal class RsaModulusProcessor(
         // Begin searching for the modulus before the exponent.
         // In some clients, it comes just before; in most, it comes just after it.
         val sliceIndices =
-            client.bytes.firstSliceIndices(index - 300, 256) { byte ->
+            client.bytes.firstSliceIndices(index - 500, 256) { byte ->
                 isHex(byte.toInt().toChar())
             }
         val slice = client.bytes.sliceArray(sliceIndices)
