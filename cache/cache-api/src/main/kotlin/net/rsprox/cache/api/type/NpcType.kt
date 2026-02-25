@@ -51,4 +51,5 @@ public interface NpcType {
     public val footprintSize: Int
     public val worldOverlapTint: Boolean
     public val worldOverlapTintColour: Int
+    public val zbuffer: Boolean
 }

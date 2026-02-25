@@ -55,6 +55,7 @@ public class OldSchoolNpcType(
     override var footprintSize: Int = -1
     override var worldOverlapTint: Boolean = false
     override var worldOverlapTintColour: Int = 39188
+    override var zbuffer: Boolean = true
 
     public fun decode(
         revision: Int,
@@ -201,6 +202,7 @@ public class OldSchoolNpcType(
             126 -> this.footprintSize = buffer.g2()
             145 -> this.worldOverlapTint = true
             146 -> this.worldOverlapTintColour = buffer.g2()
+            147 -> this.zbuffer = false
             249 -> ParamTypeHelper.unpackClientParams(buffer, params)
             else -> error("Invalid opcode: $opcode")
         }
