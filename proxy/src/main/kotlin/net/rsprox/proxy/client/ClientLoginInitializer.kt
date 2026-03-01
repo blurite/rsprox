@@ -36,6 +36,14 @@ public class ClientLoginInitializer(
     private val filters: PropertyFilterSetStore,
     private val settings: SettingSetStore,
 ) : ChannelInitializer<Channel>() {
+    /**
+     * Public method to initialize OSRS protocol handlers on a channel.
+     * Used by SocksProxyHandler after SOCKS handshake completes.
+     */
+    public fun initializeOsrsProtocol(clientChannel: Channel) {
+        initChannel(clientChannel)
+    }
+
     override fun initChannel(clientChannel: Channel) {
         val localHostAddress = getLocalHostAddress(clientChannel)
         val worldListProvider = target.worldListProvider

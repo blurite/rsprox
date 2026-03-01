@@ -176,6 +176,18 @@ tasks.create<JavaExec>("proxy") {
     mainClass.set(guiMainClass)
 }
 
+tasks.create<JavaExec>("proxyHeadless") {
+    environment("APP_VERSION", project.version)
+    group = "run"
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("net.rsprox.proxy.ProxyHeadlessKt")
+    // Parse application arguments from -PappArgs="..."
+    val appArgs = project.findProperty("appArgs") as? String
+    if (appArgs != null) {
+        args(appArgs.split(" ").filter { it.isNotBlank() })
+    }
+}
+
 tasks.create<JavaExec>("download") {
     environment("APP_VERSION", project.version)
     group = "run"

@@ -9,6 +9,8 @@ import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.http.HttpRequestDecoder
 import io.netty.handler.codec.http.HttpResponseEncoder
+import io.netty.handler.codec.socksx.v5.Socks5InitialRequestDecoder
+import io.netty.handler.codec.socksx.v5.Socks5ServerEncoder
 import net.rsprox.proxy.client.ClientLoginInitializer
 import net.rsprox.proxy.config.JavConfig
 import net.rsprox.proxy.config.ProxyProperties
@@ -17,6 +19,7 @@ import net.rsprox.proxy.http.GamePackProvider
 import net.rsprox.proxy.http.HttpServerHandler
 import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.server.ServerConnectionInitializer
+import net.rsprox.proxy.socks.Socks5ServerHandler
 import net.rsprox.proxy.target.ProxyTarget
 import net.rsprox.proxy.worlds.WorldListProvider
 import net.rsprox.shared.filters.PropertyFilterSetStore
@@ -40,6 +43,18 @@ public class BootstrapFactory(
         filters: PropertyFilterSetStore,
         settings: SettingSetStore,
     ): ServerBootstrap {
+        val loginInitializer =
+            ClientLoginInitializer(
+                this,
+                target,
+                rsa,
+                decoderLoader,
+                binaryWriteInterval,
+                connections,
+                filters,
+                settings,
+            )
+
         return ServerBootstrap()
             .group(group(PARENT_GROUP_THREADS), group(CHILD_GROUP_THREADS))
             .channel(NioServerSocketChannel::class.java)
@@ -51,16 +66,17 @@ public class BootstrapFactory(
             .childOption(ChannelOption.SO_SNDBUF, SOCKET_BUFFER_CAPACITY)
             .childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, CONNECT_TIMEOUT_MILLIS)
             .childHandler(
-                ClientLoginInitializer(
-                    this,
-                    target,
-                    rsa,
-                    decoderLoader,
-                    binaryWriteInterval,
-                    connections,
-                    filters,
-                    settings,
-                ),
+                object : ChannelInitializer<Channel>() {
+                    override fun initChannel(ch: Channel) {
+                        val pipeline = ch.pipeline()
+                        // Enable AUTO_READ for SOCKS protocol negotiation
+                        ch.config().isAutoRead = true
+                        // Add SOCKS5 protocol handlers
+                        pipeline.addLast(Socks5ServerEncoder.DEFAULT)
+                        pipeline.addLast(Socks5InitialRequestDecoder())
+                        pipeline.addLast(Socks5ServerHandler(loginInitializer))
+                    }
+                },
             )
     }
 

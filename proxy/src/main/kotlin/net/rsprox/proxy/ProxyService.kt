@@ -700,6 +700,23 @@ public class ProxyService(
         return UnixSocketConnection(port)
     }
 
+    public fun launchHeadlessProxy(
+        sessionMonitor: SessionMonitor<BinaryHeader>,
+        port: Int,
+        proxyTarget: ProxyTarget,
+        clientTypeName: String = "Headless",
+    ) {
+        try {
+            launchProxyServer(this.bootstrapFactory, proxyTarget, rsa, port)
+        } catch (t: Throwable) {
+            logger.error(t) { "Unable to bind network port $port for headless proxy." }
+            throw t
+        }
+        this.connections.addSessionMonitor(port, sessionMonitor)
+        ClientTypeDictionary[port] = clientTypeName
+        logger.info { "Headless proxy server launched on port $port" }
+    }
+
     public fun launchNativeClient(
         sessionMonitor: SessionMonitor<BinaryHeader>,
         character: JagexCharacter?,
