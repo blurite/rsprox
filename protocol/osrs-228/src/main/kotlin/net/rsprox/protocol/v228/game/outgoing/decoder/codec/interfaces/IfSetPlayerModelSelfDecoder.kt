@@ -15,7 +15,7 @@ internal class IfSetPlayerModelSelfDecoder : ProxyMessageDecoder<IfSetPlayerMode
         buffer: JagByteBuf,
         session: Session,
     ): IfSetPlayerModelSelf {
-        val copyObjs = buffer.g1Alt3() == 0
+        val copyObjs = buffer.g1Alt3() == 1
         val combinedId = buffer.gCombinedIdAlt2()
         return IfSetPlayerModelSelf(
             combinedId.interfaceId,
