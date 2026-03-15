@@ -1737,17 +1737,53 @@ public class TextServerPacketTranscriber(
         }
         val mapsquares = mutableSetOf<Int>()
         root.group("BUILD_AREA") {
-            for (level in 0..<4) {
-                for (x in 0..<(sizeX / 8)) {
-                    for (z in 0..<(sizeZ / 8)) {
-                        val block = buildArea[level, x, z]
-                        // Invalid zone
-                        if (block.mapsquareId == 32767) continue
-                        mapsquares += block.mapsquareId
-                        group {
-                            zoneCoord("source", block.level, block.zoneX, block.zoneZ)
-                            zoneCoord("dest", level, baseZoneX + x, baseZoneZ + z)
-                            int("rotation", block.rotation)
+            val simpleBlock = buildArea.calculateSimpleBlockOrNull()
+            if (simpleBlock != null) {
+                // Collect xteas anyway
+                for (level in 0..<4) {
+                    for (x in 0..<(sizeX / 8)) {
+                        for (z in 0..<(sizeZ / 8)) {
+                            val block = buildArea[level, x, z]
+                            // Invalid zone
+                            if (block.mapsquareId == 32767) continue
+                            mapsquares += block.mapsquareId
+                        }
+                    }
+                }
+
+                group {
+                    val sw = buildArea[simpleBlock.minLevel, simpleBlock.minX, simpleBlock.minZ]
+                    val ne = buildArea[simpleBlock.maxLevel, simpleBlock.maxX, simpleBlock.maxZ]
+                    zoneCoord("minsource", sw.level, sw.zoneX, sw.zoneZ)
+                    zoneCoord("maxsource", ne.level, ne.zoneX, ne.zoneZ)
+                    zoneCoord(
+                        "mindest",
+                        simpleBlock.minLevel,
+                        simpleBlock.minX + baseZoneX,
+                        simpleBlock.minZ + baseZoneZ,
+                    )
+                    zoneCoord(
+                        "maxdest",
+                        simpleBlock.maxLevel,
+                        simpleBlock.maxX + baseZoneX,
+                        simpleBlock.maxZ + baseZoneZ,
+                    )
+                    // Always consistent rotation 0 here
+                    int("rotation", sw.rotation)
+                }
+            } else {
+                for (level in 0..<4) {
+                    for (x in 0..<(sizeX / 8)) {
+                        for (z in 0..<(sizeZ / 8)) {
+                            val block = buildArea[level, x, z]
+                            // Invalid zone
+                            if (block.mapsquareId == 32767) continue
+                            mapsquares += block.mapsquareId
+                            group {
+                                zoneCoord("source", block.level, block.zoneX, block.zoneZ)
+                                zoneCoord("dest", level, baseZoneX + x, baseZoneZ + z)
+                                int("rotation", block.rotation)
+                            }
                         }
                     }
                 }
