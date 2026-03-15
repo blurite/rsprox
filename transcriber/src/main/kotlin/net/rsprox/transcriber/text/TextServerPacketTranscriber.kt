@@ -380,8 +380,10 @@ public class TextServerPacketTranscriber(
                     "zoneZ=${coordInBuildArea.zoneZ}, zInZone=${coordInBuildArea.zInZone}]",
             )
         } else {
-            root.coordGrid("destinationcoord",
-                buildAreaCoordGrid(coordInBuildArea.xInBuildArea, coordInBuildArea.zInBuildArea))
+            root.coordGrid(
+                "destinationcoord",
+                buildAreaCoordGrid(coordInBuildArea.xInBuildArea, coordInBuildArea.zInBuildArea),
+            )
         }
         root.int("height", message.height)
         root.int("cycles", message.duration)
@@ -1645,18 +1647,55 @@ public class TextServerPacketTranscriber(
         root.group("BUILD_AREA") {
             val startZoneX = message.zoneX - 6
             val startZoneZ = message.zoneZ - 6
-            for (level in 0..<4) {
-                for (zoneX in startZoneX..(message.zoneX + 6)) {
-                    for (zoneZ in startZoneZ..(message.zoneZ + 6)) {
-                        val block = message.buildArea[level, zoneX - startZoneX, zoneZ - startZoneZ]
-                        // Invalid zone
-                        if (block.mapsquareId == 32767) continue
-                        mapsquares += block.mapsquareId
-                        group {
-                            zoneCoord("source", block.level, block.zoneX, block.zoneZ)
-                            zoneCoord("dest", level, zoneX, zoneZ)
-                            int("rotation", block.rotation)
-                            filteredInt("firstbit", block.packed and 0x1, 0)
+            val simpleBlock = message.buildArea.calculateSimpleBlockOrNull()
+            if (simpleBlock != null) {
+                // Collect xteas anyway
+                for (level in 0..<4) {
+                    for (zoneX in startZoneX..(message.zoneX + 6)) {
+                        for (zoneZ in startZoneZ..(message.zoneZ + 6)) {
+                            val block = message.buildArea[level, zoneX - startZoneX, zoneZ - startZoneZ]
+                            // Invalid zone
+                            if (block.mapsquareId == 32767) continue
+                            mapsquares += block.mapsquareId
+                        }
+                    }
+                }
+
+                group {
+                    val sw = message.buildArea[simpleBlock.minLevel, simpleBlock.minX, simpleBlock.minZ]
+                    val ne = message.buildArea[simpleBlock.maxLevel, simpleBlock.maxX, simpleBlock.maxZ]
+                    zoneCoord("minsource", sw.level, sw.zoneX, sw.zoneZ)
+                    zoneCoord("maxsource", ne.level, ne.zoneX, ne.zoneZ)
+                    zoneCoord(
+                        "mindest",
+                        simpleBlock.minLevel,
+                        simpleBlock.minX + startZoneX,
+                        simpleBlock.minZ + startZoneZ,
+                    )
+                    zoneCoord(
+                        "maxdest",
+                        simpleBlock.maxLevel,
+                        simpleBlock.maxX + startZoneX,
+                        simpleBlock.maxZ + startZoneZ,
+                    )
+                    // Always consistent rotation 0 here
+                    int("rotation", sw.rotation)
+                    filteredInt("firstbit", sw.packed and 0x1, 0)
+                }
+            } else {
+                for (level in 0..<4) {
+                    for (zoneX in startZoneX..(message.zoneX + 6)) {
+                        for (zoneZ in startZoneZ..(message.zoneZ + 6)) {
+                            val block = message.buildArea[level, zoneX - startZoneX, zoneZ - startZoneZ]
+                            // Invalid zone
+                            if (block.mapsquareId == 32767) continue
+                            mapsquares += block.mapsquareId
+                            group {
+                                zoneCoord("source", block.level, block.zoneX, block.zoneZ)
+                                zoneCoord("dest", level, zoneX, zoneZ)
+                                int("rotation", block.rotation)
+                                filteredInt("firstbit", block.packed and 0x1, 0)
+                            }
                         }
                     }
                 }
