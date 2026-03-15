@@ -2,7 +2,6 @@ package net.rsprox.shared.property.regular
 
 import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.property.SymbolDictionary
-import net.rsprox.shared.property.jagAngleToDirectionInWords
 import net.rsprox.shared.property.toJagCoordsText
 import net.rsprox.shared.settings.Setting
 import net.rsprox.shared.settings.SettingSet
@@ -61,8 +60,6 @@ public class IdentifiedMultinpcProperty(
             } else {
                 append("coord=($x, $z, $level)")
             }
-
-            append(", spawndirection=${jagAngleToDirectionInWords(angle)}")
 
             append(')')
         }
