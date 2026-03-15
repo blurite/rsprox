@@ -611,3 +611,17 @@ internal fun toJagCoordsText(
     val (lvl, mx, mz, lx, lz) = toJagCoords(level, x, z)
     return "${lvl}_${mx}_${mz}_${lx}_$lz"
 }
+
+internal fun jagAngleToDirectionInWords(angle: Int): String {
+    return when (angle) {
+        0 -> "south"
+        256 -> "south-west"
+        512 -> "west"
+        768 -> "north-west"
+        1024 -> "north"
+        1280 -> "north-east"
+        1536 -> "east"
+        1792 -> "south-east"
+        else -> "angle($angle)"
+    }
+}
