@@ -505,16 +505,24 @@ public class TextPlayerInfoTranscriber(
                     shortPlayer(player.index)
                 }
                 scriptVarType("id", ScriptVarType.HEADBAR, headbar.type)
-                val logTime = headbar.startTime != 0 || headbar.endTime != 0
-                if (headbar.startFill == headbar.endFill && !logTime) {
-                    int("fill", headbar.startFill)
+                if (headbar.startFill == -1 &&
+                    headbar.endFill == -1 &&
+                    headbar.startTime == -1 &&
+                    headbar.endTime == -1
+                ) {
+                    boolean("removed", true)
                 } else {
-                    int("startfill", headbar.startFill)
-                    int("endfill", headbar.endFill)
-                }
-                if (logTime) {
-                    int("starttime", headbar.startTime)
-                    int("endtime", headbar.endTime)
+                    val logTime = headbar.startTime != 0 || headbar.endTime != 0
+                    if (headbar.startFill == headbar.endFill && !logTime) {
+                        int("fill", headbar.startFill)
+                    } else {
+                        int("startfill", headbar.startFill)
+                        int("endfill", headbar.endFill)
+                    }
+                    if (logTime) {
+                        int("starttime", headbar.startTime)
+                        int("endtime", headbar.endTime)
+                    }
                 }
             }
         }
