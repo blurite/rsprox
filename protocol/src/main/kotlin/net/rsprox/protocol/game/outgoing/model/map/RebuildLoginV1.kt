@@ -14,13 +14,13 @@ import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoIn
  * @property playerInfoInitBlock the initialization block of player info, containing the
  * absolute coordinate of the local player, and low resolution positions of everyone else.
  */
-public class RebuildLogin private constructor(
+public class RebuildLoginV1 private constructor(
     private val _zoneX: UShort,
     private val _zoneZ: UShort,
     private val _worldArea: UShort,
     override val keys: List<XteaKey>,
     public val playerInfoInitBlock: PlayerInfoInitBlock,
-) : StaticRebuildMessage {
+) : StaticRebuildMessageV1 {
     public constructor(
         zoneX: Int,
         zoneZ: Int,
@@ -46,7 +46,7 @@ public class RebuildLogin private constructor(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as RebuildLogin
+        other as RebuildLoginV1
 
         if (_zoneX != other._zoneX) return false
         if (_zoneZ != other._zoneZ) return false
@@ -65,7 +65,7 @@ public class RebuildLogin private constructor(
     }
 
     override fun toString(): String {
-        return "RebuildLogin(" +
+        return "RebuildLoginV1(" +
             "zoneX=$zoneX, " +
             "zoneZ=$zoneZ, " +
             "worldArea=$worldArea, " +

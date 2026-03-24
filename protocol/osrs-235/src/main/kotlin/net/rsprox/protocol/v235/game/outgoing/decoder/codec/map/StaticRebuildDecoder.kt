@@ -9,9 +9,9 @@ import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
-import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
-import net.rsprox.protocol.game.outgoing.model.map.RebuildNormal
-import net.rsprox.protocol.game.outgoing.model.map.StaticRebuildMessage
+import net.rsprox.protocol.game.outgoing.model.map.RebuildLoginV1
+import net.rsprox.protocol.game.outgoing.model.map.RebuildNormalV1
+import net.rsprox.protocol.game.outgoing.model.map.StaticRebuildMessageV1
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.session.allocateWorld
 import net.rsprox.protocol.session.getWorld
@@ -23,13 +23,13 @@ import net.rsprox.protocol.v235.game.outgoing.model.info.worldentityinfo.WorldEn
 internal class StaticRebuildDecoder(
     private val huffmanCodec: HuffmanCodec,
     private val cache: CacheProvider,
-) : ProxyMessageDecoder<StaticRebuildMessage> {
+) : ProxyMessageDecoder<StaticRebuildMessageV1> {
     override val prot: ClientProt = GameServerProt.REBUILD_NORMAL
 
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
-    ): StaticRebuildMessage {
+    ): StaticRebuildMessageV1 {
         val playerInfoInitBlock =
             if (buffer.isReadable(MINIMUM_REBUILD_LOGIN_CAPACITY)) {
                 buffer.buffer
@@ -69,7 +69,7 @@ internal class StaticRebuildDecoder(
             }
         return if (playerInfoInitBlock != null) {
             val message =
-                RebuildLogin(
+                RebuildLoginV1(
                     zoneX,
                     zoneZ,
                     worldArea,
@@ -94,7 +94,7 @@ internal class StaticRebuildDecoder(
             val world = session.getWorld(-1)
             world.baseX = (zoneX - 6) * 8
             world.baseZ = (zoneZ - 6) * 8
-            RebuildNormal(
+            RebuildNormalV1(
                 zoneX,
                 zoneZ,
                 worldArea,

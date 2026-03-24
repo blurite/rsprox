@@ -9,12 +9,12 @@ import net.rsprot.crypto.xtea.XteaKey
  * @property worldArea the current world area in which the player resides.
  * @property keys the list of xtea keys needed to decrypt the map.
  */
-public class RebuildNormal private constructor(
+public class RebuildNormalV1 private constructor(
     private val _zoneX: UShort,
     private val _zoneZ: UShort,
     private val _worldArea: UShort,
     override val keys: List<XteaKey>,
-) : StaticRebuildMessage {
+) : StaticRebuildMessageV1 {
     public constructor(
         zoneX: Int,
         zoneZ: Int,
@@ -38,7 +38,7 @@ public class RebuildNormal private constructor(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as RebuildNormal
+        other as RebuildNormalV1
 
         if (_zoneX != other._zoneX) return false
         if (_zoneZ != other._zoneZ) return false
@@ -57,7 +57,7 @@ public class RebuildNormal private constructor(
     }
 
     override fun toString(): String {
-        return "RebuildNormal(" +
+        return "RebuildNormalV1(" +
             "zoneX=$zoneX, " +
             "zoneZ=$zoneZ, " +
             "worldArea=$worldArea, " +

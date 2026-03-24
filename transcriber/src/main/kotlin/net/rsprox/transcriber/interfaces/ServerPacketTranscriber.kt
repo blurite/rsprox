@@ -215,11 +215,11 @@ public interface ServerPacketTranscriber {
 
     public fun reconnect(message: Reconnect)
 
-    public fun rebuildLogin(message: RebuildLogin)
+    public fun rebuildLogin(message: RebuildLoginV1)
 
-    public fun rebuildNormal(message: RebuildNormal)
+    public fun rebuildNormalV1(message: RebuildNormalV1)
 
-    public fun rebuildRegion(message: RebuildRegion)
+    public fun rebuildRegionV1(message: RebuildRegionV1)
 
     public fun rebuildWorldEntityV1(message: RebuildWorldEntityV1)
 

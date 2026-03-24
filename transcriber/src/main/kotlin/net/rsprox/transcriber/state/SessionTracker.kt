@@ -64,8 +64,8 @@ public class SessionTracker(
                 "Exception processing keys for message: $message"
             }
         }
-        if (message is RebuildLogin) {
-            setCurrentProt(GameServerProt.REBUILD_NORMAL)
+        if (message is RebuildLoginV1) {
+            setCurrentProt(GameServerProt.REBUILD_NORMAL_V1)
             return
         }
         val toString = LegacyServerProt[prot.toString()]
@@ -75,11 +75,11 @@ public class SessionTracker(
 
     private fun processKeys(message: IncomingMessage) {
         when (message) {
-            is StaticRebuildMessage -> {
+            is StaticRebuildMessageV1 -> {
                 keyStorage.onStaticRebuild(message)
             }
 
-            is RebuildRegion -> {
+            is RebuildRegionV1 -> {
                 keyStorage.onRebuildRegion(message)
             }
 
@@ -123,17 +123,17 @@ public class SessionTracker(
 
     public fun beforeTranscribe(message: IncomingMessage) {
         when (message) {
-            is RebuildNormal -> {
+            is RebuildNormalV1 -> {
                 val world = sessionState.getWorld(-1)
                 world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
                 world.setBuildArea(null)
             }
-            is RebuildRegion -> {
+            is RebuildRegionV1 -> {
                 val world = sessionState.getWorld(-1)
                 world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
                 world.setBuildArea(message.buildArea)
             }
-            is RebuildLogin -> {
+            is RebuildLoginV1 -> {
                 sessionState.overridePlayer(
                     Player(
                         message.playerInfoInitBlock.localPlayerIndex,

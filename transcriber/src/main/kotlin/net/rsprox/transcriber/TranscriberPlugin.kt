@@ -2,7 +2,7 @@ package net.rsprox.transcriber
 
 import net.rsprot.protocol.Prot
 import net.rsprot.protocol.message.IncomingMessage
-import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
+import net.rsprox.protocol.game.outgoing.model.map.RebuildLoginV1
 import net.rsprox.transcriber.legacy.LegacyClientProt
 import net.rsprox.transcriber.legacy.LegacyServerProt
 import net.rsprox.transcriber.prot.GameClientProt
@@ -31,7 +31,7 @@ public class TranscriberPlugin(
         val toString = LegacyServerProt[prot.toString()]
         val serverProt = GameServerProt.valueOf(toString)
         // Special exception as it has its own dedicated class
-        if (message is RebuildLogin) {
+        if (message is RebuildLoginV1) {
             pass(message, Transcriber::rebuildLogin)
             return
         }
@@ -114,8 +114,8 @@ public class TranscriberPlugin(
             GameServerProt.WORLDENTITY_INFO_V3 -> pass(message, Transcriber::worldEntityInfoV3)
             GameServerProt.WORLDENTITY_INFO_V2 -> pass(message, Transcriber::worldEntityInfoV2)
             GameServerProt.WORLDENTITY_INFO_V1 -> pass(message, Transcriber::worldEntityInfoV1)
-            GameServerProt.REBUILD_NORMAL -> pass(message, Transcriber::rebuildNormal)
-            GameServerProt.REBUILD_REGION -> pass(message, Transcriber::rebuildRegion)
+            GameServerProt.REBUILD_NORMAL_V1 -> pass(message, Transcriber::rebuildNormalV1)
+            GameServerProt.REBUILD_REGION_V1 -> pass(message, Transcriber::rebuildRegionV1)
             GameServerProt.REBUILD_WORLDENTITY_V1 -> pass(message, Transcriber::rebuildWorldEntityV1)
             GameServerProt.REBUILD_WORLDENTITY_V2 -> pass(message, Transcriber::rebuildWorldEntityV2)
             GameServerProt.REBUILD_WORLDENTITY_V3 -> pass(message, Transcriber::rebuildWorldEntityV3)

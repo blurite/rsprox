@@ -71,10 +71,10 @@ import net.rsprox.protocol.v237.game.outgoing.decoder.codec.inv.UpdateInvStopTra
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.logout.LogoutDecoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.logout.LogoutTransferDecoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.logout.LogoutWithReasonDecoder
-import net.rsprox.protocol.v237.game.outgoing.decoder.codec.map.RebuildRegionDecoder
+import net.rsprox.protocol.v237.game.outgoing.decoder.codec.map.RebuildRegionV1Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.map.RebuildWorldEntityV3Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.map.ReconnectDecoder
-import net.rsprox.protocol.v237.game.outgoing.decoder.codec.map.StaticRebuildDecoder
+import net.rsprox.protocol.v237.game.outgoing.decoder.codec.map.StaticRebuildV1Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.misc.client.HideLocOpsDecoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.misc.client.HideNpcOpsDecoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.misc.client.HideObjOpsDecoder
@@ -232,8 +232,8 @@ internal object ServerMessageDecoderRepository {
                 bind(LogoutWithReasonDecoder())
 
                 bind(ReconnectDecoder())
-                bind(StaticRebuildDecoder(huffmanCodec, cache))
-                bind(RebuildRegionDecoder())
+                bind(StaticRebuildV1Decoder(huffmanCodec, cache))
+                bind(RebuildRegionV1Decoder())
                 bind(RebuildWorldEntityV3Decoder())
 
                 bind(SetHeatmapEnabledDecoder())

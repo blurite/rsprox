@@ -713,7 +713,7 @@ public class IndexerTranscriber(
     override fun reconnect(message: Reconnect) {
     }
 
-    override fun rebuildLogin(message: RebuildLogin) {
+    override fun rebuildLogin(message: RebuildLoginV1) {
         val minMapsquareX = (message.zoneX - 6) ushr 3
         val maxMapsquareX = (message.zoneX + 6) ushr 3
         val minMapsquareZ = (message.zoneZ - 6) ushr 3
@@ -726,7 +726,7 @@ public class IndexerTranscriber(
         }
     }
 
-    override fun rebuildNormal(message: RebuildNormal) {
+    override fun rebuildNormalV1(message: RebuildNormalV1) {
         val minMapsquareX = (message.zoneX - 6) ushr 3
         val maxMapsquareX = (message.zoneX + 6) ushr 3
         val minMapsquareZ = (message.zoneZ - 6) ushr 3
@@ -739,7 +739,7 @@ public class IndexerTranscriber(
         }
     }
 
-    override fun rebuildRegion(message: RebuildRegion) {
+    override fun rebuildRegionV1(message: RebuildRegionV1) {
         val startZoneX = message.zoneX - 6
         val startZoneZ = message.zoneZ - 6
         val mapsquares = mutableSetOf<Int>()

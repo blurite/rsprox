@@ -1583,7 +1583,7 @@ public class TextServerPacketTranscriber(
         root.coordGrid("localplayercoord", message.playerInfoInitBlock.localPlayerCoord)
     }
 
-    override fun rebuildLogin(message: RebuildLogin) {
+    override fun rebuildLogin(message: RebuildLoginV1) {
         if (!filters[PropertyFilter.REBUILD]) return omit()
         root.int("zonex", message.zoneX)
         root.int("zonez", message.zoneZ)
@@ -1611,7 +1611,7 @@ public class TextServerPacketTranscriber(
         }
     }
 
-    override fun rebuildNormal(message: RebuildNormal) {
+    override fun rebuildNormalV1(message: RebuildNormalV1) {
         if (!filters[PropertyFilter.REBUILD]) return omit()
         root.int("zonex", message.zoneX)
         root.int("zonez", message.zoneZ)
@@ -1638,7 +1638,7 @@ public class TextServerPacketTranscriber(
         }
     }
 
-    override fun rebuildRegion(message: RebuildRegion) {
+    override fun rebuildRegionV1(message: RebuildRegionV1) {
         if (!filters[PropertyFilter.REBUILD]) return omit()
         root.int("zonex", message.zoneX)
         root.int("zonez", message.zoneZ)

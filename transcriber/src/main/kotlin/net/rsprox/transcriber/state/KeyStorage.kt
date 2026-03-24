@@ -4,8 +4,8 @@ package net.rsprox.transcriber.state
 
 import com.github.michaelbull.logging.InlineLogger
 import net.rsprot.crypto.xtea.XteaKey
-import net.rsprox.protocol.game.outgoing.model.map.RebuildRegion
-import net.rsprox.protocol.game.outgoing.model.map.StaticRebuildMessage
+import net.rsprox.protocol.game.outgoing.model.map.RebuildRegionV1
+import net.rsprox.protocol.game.outgoing.model.map.StaticRebuildMessageV1
 import net.rsprox.protocol.game.outgoing.model.map.util.BuildArea
 
 public class KeyStorage {
@@ -27,7 +27,7 @@ public class KeyStorage {
         }
     }
 
-    public fun onStaticRebuild(message: StaticRebuildMessage) {
+    public fun onStaticRebuild(message: StaticRebuildMessageV1) {
         val minMapsquareX = (message.zoneX - 6) ushr 3
         val maxMapsquareX = (message.zoneX + 6) ushr 3
         val minMapsquareZ = (message.zoneZ - 6) ushr 3
@@ -42,7 +42,7 @@ public class KeyStorage {
         }
     }
 
-    public fun onRebuildRegion(message: RebuildRegion) {
+    public fun onRebuildRegion(message: RebuildRegionV1) {
         val mapsquares = mutableSetOf<Int>()
         val startZoneX = message.zoneX - 6
         val startZoneZ = message.zoneZ - 6

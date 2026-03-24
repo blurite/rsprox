@@ -19,7 +19,7 @@ import net.rsprox.protocol.game.outgoing.model.map.util.BuildArea
  * @property buildArea the build area consisting of all the zones
  * @property keys the unique set of keys in order of the zones.
  */
-public class RebuildRegion private constructor(
+public class RebuildRegionV1 private constructor(
     private val _zoneX: UShort,
     private val _zoneZ: UShort,
     public val reload: Boolean,
@@ -49,7 +49,7 @@ public class RebuildRegion private constructor(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as RebuildRegion
+        other as RebuildRegionV1
 
         if (_zoneX != other._zoneX) return false
         if (_zoneZ != other._zoneZ) return false
@@ -70,7 +70,7 @@ public class RebuildRegion private constructor(
     }
 
     override fun toString(): String {
-        return "RebuildRegion(" +
+        return "RebuildRegionV1(" +
             "zoneX=$zoneX, " +
             "zoneZ=$zoneZ, " +
             "reload=$reload, " +

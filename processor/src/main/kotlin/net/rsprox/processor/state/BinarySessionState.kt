@@ -2,9 +2,9 @@ package net.rsprox.processor.state
 
 import net.rsprot.protocol.message.IncomingMessage
 import net.rsprox.protocol.common.CoordGrid
-import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
-import net.rsprox.protocol.game.outgoing.model.map.RebuildNormal
-import net.rsprox.protocol.game.outgoing.model.map.RebuildRegion
+import net.rsprox.protocol.game.outgoing.model.map.RebuildLoginV1
+import net.rsprox.protocol.game.outgoing.model.map.RebuildNormalV1
+import net.rsprox.protocol.game.outgoing.model.map.RebuildRegionV1
 import net.rsprox.protocol.game.outgoing.model.map.util.BuildArea
 import net.rsprox.protocol.game.outgoing.model.misc.client.ServerTickEnd
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZoneFullFollows
@@ -40,7 +40,10 @@ public data class BinarySessionState(
      *
      * This method is mainly used for zone prots where limited coord information is available. (3-bit coordinate offset)
      */
-    public fun absCoord(xInZone: Int, zInZone: Int): CoordGrid {
+    public fun absCoord(
+        xInZone: Int,
+        zInZone: Int,
+    ): CoordGrid {
         val zoneBase = CoordGrid(updateZone.level, buildArea.x + updateZone.x, buildArea.z + updateZone.z)
         val coord = CoordGrid(zoneBase.level, zoneBase.x + xInZone, zoneBase.z + zInZone)
         return absCoord(buildArea, regionZones, coord)
@@ -51,19 +54,19 @@ public data class BinarySessionState(
             is ServerTickEnd -> {
                 return copy(currentTick = currentTick + 1)
             }
-            is RebuildNormal -> {
+            is RebuildNormalV1 -> {
                 val buildAreaX = (message.zoneX - 6) shl 3
                 val buildAreaZ = (message.zoneZ - 6) shl 3
                 val buildArea = CoordGrid(0, buildAreaX, buildAreaZ)
                 return copy(buildArea = buildArea, regionZones = null)
             }
-            is RebuildRegion -> {
+            is RebuildRegionV1 -> {
                 val buildAreaX = (message.zoneX - 6) shl 3
                 val buildAreaZ = (message.zoneZ - 6) shl 3
                 val buildArea = CoordGrid(0, buildAreaX, buildAreaZ)
                 return copy(buildArea = buildArea, regionZones = message.buildArea)
             }
-            is RebuildLogin -> {
+            is RebuildLoginV1 -> {
                 val localIndex = message.playerInfoInitBlock.localPlayerIndex
                 val buildAreaX = (message.zoneX - 6) shl 3
                 val buildAreaZ = (message.zoneZ - 6) shl 3
@@ -96,7 +99,11 @@ public data class BinarySessionState(
                 regionZones = null,
             )
 
-        private fun absCoord(buildArea: CoordGrid, regionZones: BuildArea?, coord: CoordGrid): CoordGrid {
+        private fun absCoord(
+            buildArea: CoordGrid,
+            regionZones: BuildArea?,
+            coord: CoordGrid,
+        ): CoordGrid {
             if (regionZones == null || coord.x < 6400) {
                 return coord
             }

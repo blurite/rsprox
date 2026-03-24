@@ -20,7 +20,7 @@ public class SessionState(
     private val worlds: MutableMap<Int, World> = mutableMapOf()
     private val players: MutableMap<Int, Player> = mutableMapOf()
     private val lastKnownPlayerNames: MutableMap<Int, String> = mutableMapOf()
-    public var currentProt: String = GameServerProt.REBUILD_NORMAL.name
+    public var currentProt: String = GameServerProt.REBUILD_NORMAL_V1.name
     public var localPlayerIndex: Int = -1
     private val openInterfaces: MutableMap<CombinedId, Int> = mutableMapOf()
     public var toplevelInterface: Int = -1

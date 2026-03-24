@@ -35,7 +35,7 @@ internal object GameServerProtId {
     const val IF_MOVESUB = 31
     const val VARCLAN = 32
     const val OBJ_ENABLED_OPS_SPECIFIC = 33
-    const val REBUILD_NORMAL = 34
+    const val REBUILD_NORMAL_V1 = 34
     const val MIDI_JINGLE = 35
     const val MESSAGE_FRIENDCHANNEL = 36
     const val VARP_SYNC = 37
@@ -73,7 +73,7 @@ internal object GameServerProtId {
     const val SET_PLAYER_OP = 69
     const val UPDATE_IGNORELIST = 70
     const val VARP_RESET = 71
-    const val REBUILD_REGION = 72
+    const val REBUILD_REGION_V1 = 72
     const val SET_ACTIVE_WORLD_V2 = 73
     const val IF_SETPLAYERMODEL_SELF = 74
     const val CAM_MODE = 75
