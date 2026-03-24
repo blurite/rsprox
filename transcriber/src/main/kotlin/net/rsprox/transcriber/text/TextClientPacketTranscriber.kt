@@ -408,7 +408,7 @@ public open class TextClientPacketTranscriber(
         root.int("rank", message.rank)
     }
 
-    override fun opLoc(message: OpLocV1) {
+    override fun opLocV1(message: OpLocV1) {
         if (!filters[PropertyFilter.OPLOC]) return omit()
         root.scriptVarType("id", ScriptVarType.LOC, message.id)
         root.coordGrid(sessionState.level(), message.x, message.z)
@@ -775,7 +775,7 @@ public open class TextClientPacketTranscriber(
         root.string("colours", message.getColoursByteArray().contentToString())
     }
 
-    override fun opNpc(message: OpNpcV1) {
+    override fun opNpcV1(message: OpNpcV1) {
         if (!filters[PropertyFilter.OPNPC]) return omit()
         root.npc(message.index)
         root.filteredBoolean("ctrl", message.controlKey)
@@ -795,7 +795,7 @@ public open class TextClientPacketTranscriber(
         root.filteredScriptVarType("obj", ScriptVarType.OBJ, message.selectedObj, -1)
     }
 
-    override fun opObj(message: OpObjV1) {
+    override fun opObjV1(message: OpObjV1) {
         if (!filters[PropertyFilter.OPOBJ]) return omit()
         root.scriptVarType("id", ScriptVarType.OBJ, message.id)
         root.coordGrid(sessionState.level(), message.x, message.z)

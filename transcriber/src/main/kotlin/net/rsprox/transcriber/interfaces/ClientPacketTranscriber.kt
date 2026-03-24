@@ -100,7 +100,7 @@ public interface ClientPacketTranscriber {
 
     public fun friendChatSetRank(message: FriendChatSetRank)
 
-    public fun opLoc(message: OpLocV1)
+    public fun opLocV1(message: OpLocV1)
 
     public fun opLoc6(message: OpLoc6)
 
@@ -156,13 +156,13 @@ public interface ClientPacketTranscriber {
 
     public fun updatePlayerModelV1(message: UpdatePlayerModelV1)
 
-    public fun opNpc(message: OpNpcV1)
+    public fun opNpcV1(message: OpNpcV1)
 
     public fun opNpc6(message: OpNpc6)
 
     public fun opNpcT(message: OpNpcT)
 
-    public fun opObj(message: OpObjV1)
+    public fun opObjV1(message: OpObjV1)
 
     public fun opObj6(message: OpObj6)
 

@@ -269,7 +269,7 @@ public class IndexerTranscriber(
     override fun friendChatSetRank(message: FriendChatSetRank) {
     }
 
-    override fun opLoc(message: OpLocV1) {
+    override fun opLocV1(message: OpLocV1) {
         binaryIndex.increment(IndexedType.LOC, message.id)
     }
 
@@ -356,7 +356,7 @@ public class IndexerTranscriber(
     override fun updatePlayerModelV1(message: UpdatePlayerModelV1) {
     }
 
-    override fun opNpc(message: OpNpcV1) {
+    override fun opNpcV1(message: OpNpcV1) {
         val npc = getNpcInAnyWorld(message.index) ?: return
         binaryIndex.increment(IndexedType.NPC, npc.id)
     }
@@ -370,7 +370,7 @@ public class IndexerTranscriber(
         binaryIndex.increment(IndexedType.NPC, npc.id)
     }
 
-    override fun opObj(message: OpObjV1) {
+    override fun opObjV1(message: OpObjV1) {
         binaryIndex.increment(IndexedType.OBJ, message.id)
     }
 
