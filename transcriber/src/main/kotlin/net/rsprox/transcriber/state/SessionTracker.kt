@@ -36,6 +36,8 @@ import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialEncl
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialFollows
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.transcriber.firstOfInstanceOfNull
+import net.rsprox.transcriber.legacy.LegacyClientProt
+import net.rsprox.transcriber.legacy.LegacyServerProt
 import net.rsprox.transcriber.prot.GameClientProt
 import net.rsprox.transcriber.prot.GameServerProt
 import net.rsprox.transcriber.prot.Prot
@@ -66,7 +68,7 @@ public class SessionTracker(
             setCurrentProt(GameServerProt.REBUILD_NORMAL)
             return
         }
-        val toString = prot.toString()
+        val toString = LegacyServerProt[prot.toString()]
         val serverProt = GameServerProt.valueOf(toString)
         setCurrentProt(serverProt)
     }
@@ -114,7 +116,7 @@ public class SessionTracker(
         @Suppress("UNUSED_PARAMETER") message: IncomingMessage,
         prot: net.rsprot.protocol.Prot,
     ) {
-        val toString = prot.toString()
+        val toString = LegacyClientProt[prot.toString()]
         val clientProt = GameClientProt.valueOf(toString)
         setCurrentProt(clientProt)
     }

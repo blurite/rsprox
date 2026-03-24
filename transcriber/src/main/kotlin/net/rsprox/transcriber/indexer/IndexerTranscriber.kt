@@ -14,9 +14,9 @@ import net.rsprox.protocol.game.incoming.model.events.*
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatJoinLeave
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatKick
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatSetRank
-import net.rsprox.protocol.game.incoming.model.locs.OpLoc
 import net.rsprox.protocol.game.incoming.model.locs.OpLoc6
 import net.rsprox.protocol.game.incoming.model.locs.OpLocT
+import net.rsprox.protocol.game.incoming.model.locs.OpLocV1
 import net.rsprox.protocol.game.incoming.model.messaging.MessagePrivate
 import net.rsprox.protocol.game.incoming.model.messaging.MessagePublic
 import net.rsprox.protocol.game.incoming.model.misc.client.*
@@ -34,12 +34,12 @@ import net.rsprox.protocol.game.incoming.model.misc.user.SetChatFilterSettings
 import net.rsprox.protocol.game.incoming.model.misc.user.SetHeading
 import net.rsprox.protocol.game.incoming.model.misc.user.Teleport
 import net.rsprox.protocol.game.incoming.model.misc.user.UpdatePlayerModelV1
-import net.rsprox.protocol.game.incoming.model.npcs.OpNpc
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpc6
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpcT
-import net.rsprox.protocol.game.incoming.model.objs.OpObj
+import net.rsprox.protocol.game.incoming.model.npcs.OpNpcV1
 import net.rsprox.protocol.game.incoming.model.objs.OpObj6
 import net.rsprox.protocol.game.incoming.model.objs.OpObjT
+import net.rsprox.protocol.game.incoming.model.objs.OpObjV1
 import net.rsprox.protocol.game.incoming.model.players.OpPlayer
 import net.rsprox.protocol.game.incoming.model.players.OpPlayerT
 import net.rsprox.protocol.game.incoming.model.resumed.ResumePCountDialog
@@ -269,7 +269,7 @@ public class IndexerTranscriber(
     override fun friendChatSetRank(message: FriendChatSetRank) {
     }
 
-    override fun opLoc(message: OpLoc) {
+    override fun opLoc(message: OpLocV1) {
         binaryIndex.increment(IndexedType.LOC, message.id)
     }
 
@@ -356,7 +356,7 @@ public class IndexerTranscriber(
     override fun updatePlayerModelV1(message: UpdatePlayerModelV1) {
     }
 
-    override fun opNpc(message: OpNpc) {
+    override fun opNpc(message: OpNpcV1) {
         val npc = getNpcInAnyWorld(message.index) ?: return
         binaryIndex.increment(IndexedType.NPC, npc.id)
     }
@@ -370,7 +370,7 @@ public class IndexerTranscriber(
         binaryIndex.increment(IndexedType.NPC, npc.id)
     }
 
-    override fun opObj(message: OpObj) {
+    override fun opObj(message: OpObjV1) {
         binaryIndex.increment(IndexedType.OBJ, message.id)
     }
 

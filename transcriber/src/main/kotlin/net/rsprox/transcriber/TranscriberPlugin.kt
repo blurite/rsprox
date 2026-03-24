@@ -3,6 +3,8 @@ package net.rsprox.transcriber
 import net.rsprot.protocol.Prot
 import net.rsprot.protocol.message.IncomingMessage
 import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
+import net.rsprox.transcriber.legacy.LegacyClientProt
+import net.rsprox.transcriber.legacy.LegacyServerProt
 import net.rsprox.transcriber.prot.GameClientProt
 import net.rsprox.transcriber.prot.GameServerProt
 
@@ -26,7 +28,7 @@ public class TranscriberPlugin(
         message: IncomingMessage,
         revision: Int,
     ) {
-        val toString = prot.toString()
+        val toString = LegacyServerProt[prot.toString()]
         val serverProt = GameServerProt.valueOf(toString)
         // Special exception as it has its own dedicated class
         if (message is RebuildLogin) {
@@ -223,7 +225,7 @@ public class TranscriberPlugin(
         message: IncomingMessage,
         revision: Int,
     ) {
-        val toString = prot.toString()
+        val toString = LegacyClientProt[prot.toString()]
         val clientProt = GameClientProt.valueOf(toString)
         when (clientProt) {
             GameClientProt.IF_BUTTON -> pass(message, Transcriber::if1Button)
@@ -242,27 +244,27 @@ public class TranscriberPlugin(
             GameClientProt.IF_BUTTOND -> pass(message, Transcriber::ifButtonD)
             GameClientProt.IF_BUTTONT -> pass(message, Transcriber::ifButtonT)
             GameClientProt.IF_RUNSCRIPT -> pass(message, Transcriber::ifRunScript)
-            GameClientProt.OPNPC1 -> pass(message, Transcriber::opNpc)
-            GameClientProt.OPNPC2 -> pass(message, Transcriber::opNpc)
-            GameClientProt.OPNPC3 -> pass(message, Transcriber::opNpc)
-            GameClientProt.OPNPC4 -> pass(message, Transcriber::opNpc)
-            GameClientProt.OPNPC5 -> pass(message, Transcriber::opNpc)
+            GameClientProt.OPNPC1_V1 -> pass(message, Transcriber::opNpc)
+            GameClientProt.OPNPC2_V1 -> pass(message, Transcriber::opNpc)
+            GameClientProt.OPNPC3_V1 -> pass(message, Transcriber::opNpc)
+            GameClientProt.OPNPC4_V1 -> pass(message, Transcriber::opNpc)
+            GameClientProt.OPNPC5_V1 -> pass(message, Transcriber::opNpc)
             GameClientProt.OPNPC6 -> pass(message, Transcriber::opNpc6)
             GameClientProt.OPNPCT -> pass(message, Transcriber::opNpcT)
             GameClientProt.OPNPCU -> throw IllegalArgumentException("Unimplemented packet: $message")
-            GameClientProt.OPLOC1 -> pass(message, Transcriber::opLoc)
-            GameClientProt.OPLOC2 -> pass(message, Transcriber::opLoc)
-            GameClientProt.OPLOC3 -> pass(message, Transcriber::opLoc)
-            GameClientProt.OPLOC4 -> pass(message, Transcriber::opLoc)
-            GameClientProt.OPLOC5 -> pass(message, Transcriber::opLoc)
+            GameClientProt.OPLOC1_V1 -> pass(message, Transcriber::opLoc)
+            GameClientProt.OPLOC2_V1 -> pass(message, Transcriber::opLoc)
+            GameClientProt.OPLOC3_V1 -> pass(message, Transcriber::opLoc)
+            GameClientProt.OPLOC4_V1 -> pass(message, Transcriber::opLoc)
+            GameClientProt.OPLOC5_V1 -> pass(message, Transcriber::opLoc)
             GameClientProt.OPLOC6 -> pass(message, Transcriber::opLoc6)
             GameClientProt.OPLOCT -> pass(message, Transcriber::opLocT)
             GameClientProt.OPLOCU -> throw IllegalArgumentException("Unimplemented packet: $message")
-            GameClientProt.OPOBJ1 -> pass(message, Transcriber::opObj)
-            GameClientProt.OPOBJ2 -> pass(message, Transcriber::opObj)
-            GameClientProt.OPOBJ3 -> pass(message, Transcriber::opObj)
-            GameClientProt.OPOBJ4 -> pass(message, Transcriber::opObj)
-            GameClientProt.OPOBJ5 -> pass(message, Transcriber::opObj)
+            GameClientProt.OPOBJ1_V1 -> pass(message, Transcriber::opObj)
+            GameClientProt.OPOBJ2_V1 -> pass(message, Transcriber::opObj)
+            GameClientProt.OPOBJ3_V1 -> pass(message, Transcriber::opObj)
+            GameClientProt.OPOBJ4_V1 -> pass(message, Transcriber::opObj)
+            GameClientProt.OPOBJ5_V1 -> pass(message, Transcriber::opObj)
             GameClientProt.OPOBJ6 -> pass(message, Transcriber::opObj6)
             GameClientProt.OPOBJT -> pass(message, Transcriber::opObjT)
             GameClientProt.OPOBJU -> throw IllegalArgumentException("Unimplemented packet: $message")

@@ -16,11 +16,11 @@ public enum class GameClientProt(
     IF_RUNSCRIPT(GameClientProtId.IF_RUNSCRIPT, Prot.VAR_SHORT),
 
     // Op npc
-    OPNPC1(GameClientProtId.OPNPC1, 3),
-    OPNPC2(GameClientProtId.OPNPC2, 3),
-    OPNPC3(GameClientProtId.OPNPC3, 3),
-    OPNPC4(GameClientProtId.OPNPC4, 3),
-    OPNPC5(GameClientProtId.OPNPC5, 3),
+    OPNPC1_V1(GameClientProtId.OPNPC1_V1, 3),
+    OPNPC2_V1(GameClientProtId.OPNPC2_V1, 3),
+    OPNPC3_V1(GameClientProtId.OPNPC3_V1, 3),
+    OPNPC4_V1(GameClientProtId.OPNPC4_V1, 3),
+    OPNPC5_V1(GameClientProtId.OPNPC5_V1, 3),
     OPNPC6(GameClientProtId.OPNPC6, 2),
     OPNPCT(GameClientProtId.OPNPCT, 11),
 
@@ -32,11 +32,11 @@ public enum class GameClientProt(
     OPNPCU(GameClientProtId.OPNPCU, 11),
 
     // Op loc
-    OPLOC1(GameClientProtId.OPLOC1, 7),
-    OPLOC2(GameClientProtId.OPLOC2, 7),
-    OPLOC3(GameClientProtId.OPLOC3, 7),
-    OPLOC4(GameClientProtId.OPLOC4, 7),
-    OPLOC5(GameClientProtId.OPLOC5, 7),
+    OPLOC1_V1(GameClientProtId.OPLOC1_V1, 7),
+    OPLOC2_V1(GameClientProtId.OPLOC2_V1, 7),
+    OPLOC3_V1(GameClientProtId.OPLOC3_V1, 7),
+    OPLOC4_V1(GameClientProtId.OPLOC4_V1, 7),
+    OPLOC5_V1(GameClientProtId.OPLOC5_V1, 7),
     OPLOC6(GameClientProtId.OPLOC6, 2),
     OPLOCT(GameClientProtId.OPLOCT, 15),
 
@@ -48,11 +48,11 @@ public enum class GameClientProt(
     OPLOCU(GameClientProtId.OPLOCU, 15),
 
     // Op obj
-    OPOBJ1(GameClientProtId.OPOBJ1, 7),
-    OPOBJ2(GameClientProtId.OPOBJ2, 7),
-    OPOBJ3(GameClientProtId.OPOBJ3, 7),
-    OPOBJ4(GameClientProtId.OPOBJ4, 7),
-    OPOBJ5(GameClientProtId.OPOBJ5, 7),
+    OPOBJ1_V1(GameClientProtId.OPOBJ1_V1, 7),
+    OPOBJ2_V1(GameClientProtId.OPOBJ2_V1, 7),
+    OPOBJ3_V1(GameClientProtId.OPOBJ3_V1, 7),
+    OPOBJ4_V1(GameClientProtId.OPOBJ4_V1, 7),
+    OPOBJ5_V1(GameClientProtId.OPOBJ5_V1, 7),
     OPOBJ6(GameClientProtId.OPOBJ6, 6),
     OPOBJT(GameClientProtId.OPOBJT, 15),
 

@@ -14,7 +14,7 @@ import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
  * @property op the option clicked, ranging from 1 to 5 (inclusive)
  */
 @Suppress("DuplicatedCode", "MemberVisibilityCanBePrivate")
-public class OpObj private constructor(
+public class OpObjV1 private constructor(
     private val _id: UShort,
     private val _x: UShort,
     private val _z: UShort,
@@ -50,7 +50,7 @@ public class OpObj private constructor(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as OpObj
+        other as OpObjV1
 
         if (_id != other._id) return false
         if (_x != other._x) return false
@@ -71,7 +71,7 @@ public class OpObj private constructor(
     }
 
     override fun toString(): String =
-        "OpObj(" +
+        "OpObjV1(" +
             "id=$id, " +
             "x=$x, " +
             "z=$z, " +

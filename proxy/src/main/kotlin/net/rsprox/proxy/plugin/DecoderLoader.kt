@@ -61,6 +61,8 @@ import net.rsprox.protocol.v236.GameClientProtProviderV236
 import net.rsprox.protocol.v236.GameServerProtProviderV236
 import net.rsprox.protocol.v236.ServerPacketDecoderServiceV236
 import net.rsprox.proxy.huffman.HuffmanProvider
+import net.rsprox.transcriber.legacy.LegacyClientProt
+import net.rsprox.transcriber.legacy.LegacyServerProt
 import net.rsprox.transcriber.prot.GameClientProt
 import net.rsprox.transcriber.prot.GameServerProt
 import java.util.concurrent.Callable
@@ -128,7 +130,8 @@ public class DecoderLoader {
         var errorCount = 0
         for ((rev, decoder) in decoders) {
             for (serverProt in decoder.gameServerProtProvider.allProts()) {
-                val prot = serverProtOrNull(serverProt.toString())
+                val name = LegacyServerProt[serverProt.toString()]
+                val prot = serverProtOrNull(name)
                 if (prot == null) {
                     errorCount++
                     logger.error {
@@ -138,7 +141,8 @@ public class DecoderLoader {
             }
 
             for (clientProt in decoder.gameClientProtProvider.allProts()) {
-                val prot = clientProtOrNull(clientProt.toString())
+                val name = LegacyClientProt[clientProt.toString()]
+                val prot = clientProtOrNull(name)
                 if (prot == null) {
                     errorCount++
                     logger.error {

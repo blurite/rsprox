@@ -13,7 +13,7 @@ import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
  * @property op the option clicked, ranging from 1 to 5(inclusive).
  */
 @Suppress("MemberVisibilityCanBePrivate")
-public class OpNpc private constructor(
+public class OpNpcV1 private constructor(
     private val _index: UShort,
     public val controlKey: Boolean,
     private val _op: UByte,
@@ -39,7 +39,7 @@ public class OpNpc private constructor(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as OpNpc
+        other as OpNpcV1
 
         if (_index != other._index) return false
         if (controlKey != other.controlKey) return false
@@ -56,7 +56,7 @@ public class OpNpc private constructor(
     }
 
     override fun toString(): String =
-        "OpNpc(" +
+        "OpNpcV1(" +
             "index=$index, " +
             "controlKey=$controlKey, " +
             "op=$op" +
