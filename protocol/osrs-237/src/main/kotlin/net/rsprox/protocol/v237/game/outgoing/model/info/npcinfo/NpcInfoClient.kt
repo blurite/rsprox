@@ -638,7 +638,7 @@ internal class NpcInfoClient(
                 val models = ArrayList<Int>(count)
                 for (i in 0..<count) {
                     val modelId = buffer.g4Alt2()
-                    models += if (modelId == 0xFFFF) -1 else modelId
+                    models += modelId
                 }
                 models
             } else {
@@ -707,7 +707,7 @@ internal class NpcInfoClient(
                 val models = ArrayList<Int>(count)
                 for (i in 0..<count) {
                     val modelId = buffer.g4()
-                    models += if (modelId == 0xFFFF) -1 else modelId
+                    models += modelId
                 }
                 models
             } else {
