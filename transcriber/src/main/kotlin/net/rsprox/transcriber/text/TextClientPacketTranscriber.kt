@@ -15,6 +15,7 @@ import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatSetRank
 import net.rsprox.protocol.game.incoming.model.locs.OpLoc6
 import net.rsprox.protocol.game.incoming.model.locs.OpLocT
 import net.rsprox.protocol.game.incoming.model.locs.OpLocV1
+import net.rsprox.protocol.game.incoming.model.locs.OpLocV2
 import net.rsprox.protocol.game.incoming.model.messaging.MessagePrivate
 import net.rsprox.protocol.game.incoming.model.messaging.MessagePublic
 import net.rsprox.protocol.game.incoming.model.misc.client.*
@@ -35,12 +36,15 @@ import net.rsprox.protocol.game.incoming.model.misc.user.UpdatePlayerModelV1
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpc6
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpcT
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpcV1
+import net.rsprox.protocol.game.incoming.model.npcs.OpNpcV2
 import net.rsprox.protocol.game.incoming.model.objs.OpObj6
 import net.rsprox.protocol.game.incoming.model.objs.OpObjT
 import net.rsprox.protocol.game.incoming.model.objs.OpObjV1
+import net.rsprox.protocol.game.incoming.model.objs.OpObjV2
 import net.rsprox.protocol.game.incoming.model.players.OpPlayer
 import net.rsprox.protocol.game.incoming.model.players.OpPlayerT
 import net.rsprox.protocol.game.incoming.model.resumed.ResumePCountDialog
+import net.rsprox.protocol.game.incoming.model.resumed.ResumePCountDialogLong
 import net.rsprox.protocol.game.incoming.model.resumed.ResumePNameDialog
 import net.rsprox.protocol.game.incoming.model.resumed.ResumePObjDialog
 import net.rsprox.protocol.game.incoming.model.resumed.ResumePStringDialog
@@ -71,6 +75,7 @@ import net.rsprox.shared.property.filteredNamedEnum
 import net.rsprox.shared.property.filteredScriptVarType
 import net.rsprox.shared.property.filteredString
 import net.rsprox.shared.property.formattedInt
+import net.rsprox.shared.property.formattedLong
 import net.rsprox.shared.property.group
 import net.rsprox.shared.property.identifiedMultinpc
 import net.rsprox.shared.property.identifiedNpc
@@ -413,6 +418,14 @@ public open class TextClientPacketTranscriber(
         root.scriptVarType("id", ScriptVarType.LOC, message.id)
         root.coordGrid(sessionState.level(), message.x, message.z)
         root.filteredBoolean("ctrl", message.controlKey)
+    }
+
+    override fun opLocV2(message: OpLocV2) {
+        if (!filters[PropertyFilter.OPLOC]) return omit()
+        root.scriptVarType("id", ScriptVarType.LOC, message.id)
+        root.coordGrid(sessionState.level(), message.x, message.z)
+        root.filteredBoolean("ctrl", message.controlKey)
+        root.filteredInt("subop", message.subop, 0)
     }
 
     override fun opLoc6(message: OpLoc6) {
@@ -781,6 +794,13 @@ public open class TextClientPacketTranscriber(
         root.filteredBoolean("ctrl", message.controlKey)
     }
 
+    override fun opNpcV2(message: OpNpcV2) {
+        if (!filters[PropertyFilter.OPNPC]) return omit()
+        root.npc(message.index)
+        root.filteredBoolean("ctrl", message.controlKey)
+        root.filteredInt("subop", message.subop, 0)
+    }
+
     override fun opNpc6(message: OpNpc6) {
         if (!filters[PropertyFilter.OPNPC]) return omit()
         root.scriptVarType("id", ScriptVarType.NPC, message.id)
@@ -800,6 +820,14 @@ public open class TextClientPacketTranscriber(
         root.scriptVarType("id", ScriptVarType.OBJ, message.id)
         root.coordGrid(sessionState.level(), message.x, message.z)
         root.filteredBoolean("ctrl", message.controlKey)
+    }
+
+    override fun opObjV2(message: OpObjV2) {
+        if (!filters[PropertyFilter.OPOBJ]) return omit()
+        root.scriptVarType("id", ScriptVarType.OBJ, message.id)
+        root.coordGrid(sessionState.level(), message.x, message.z)
+        root.filteredBoolean("ctrl", message.controlKey)
+        root.filteredInt("subop", message.subop, 0)
     }
 
     override fun opObj6(message: OpObj6) {
@@ -862,6 +890,11 @@ public open class TextClientPacketTranscriber(
     override fun resumePCountDialog(message: ResumePCountDialog) {
         if (!filters[PropertyFilter.RESUME_P_COUNTDIALOG]) return omit()
         root.formattedInt("count", message.count)
+    }
+
+    override fun resumePCountDialogLong(message: ResumePCountDialogLong) {
+        if (!filters[PropertyFilter.RESUME_P_COUNTDIALOG]) return omit()
+        root.formattedLong("count", message.count)
     }
 
     override fun resumePNameDialog(message: ResumePNameDialog) {

@@ -5,6 +5,7 @@ public enum class LegacyServerProt(
 ) {
     REBUILD_NORMAL("REBUILD_NORMAL_V1"),
     REBUILD_REGION("REBUILD_REGION_V1"),
+    IF_SETMODEL("IF_SETMODEL_V1"),
     ;
 
     public companion object {

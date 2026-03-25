@@ -13,6 +13,7 @@ import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatSetRank
 import net.rsprox.protocol.game.incoming.model.locs.OpLoc6
 import net.rsprox.protocol.game.incoming.model.locs.OpLocT
 import net.rsprox.protocol.game.incoming.model.locs.OpLocV1
+import net.rsprox.protocol.game.incoming.model.locs.OpLocV2
 import net.rsprox.protocol.game.incoming.model.messaging.MessagePrivate
 import net.rsprox.protocol.game.incoming.model.messaging.MessagePublic
 import net.rsprox.protocol.game.incoming.model.misc.client.*
@@ -33,12 +34,15 @@ import net.rsprox.protocol.game.incoming.model.misc.user.UpdatePlayerModelV1
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpc6
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpcT
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpcV1
+import net.rsprox.protocol.game.incoming.model.npcs.OpNpcV2
 import net.rsprox.protocol.game.incoming.model.objs.OpObj6
 import net.rsprox.protocol.game.incoming.model.objs.OpObjT
 import net.rsprox.protocol.game.incoming.model.objs.OpObjV1
+import net.rsprox.protocol.game.incoming.model.objs.OpObjV2
 import net.rsprox.protocol.game.incoming.model.players.OpPlayer
 import net.rsprox.protocol.game.incoming.model.players.OpPlayerT
 import net.rsprox.protocol.game.incoming.model.resumed.ResumePCountDialog
+import net.rsprox.protocol.game.incoming.model.resumed.ResumePCountDialogLong
 import net.rsprox.protocol.game.incoming.model.resumed.ResumePNameDialog
 import net.rsprox.protocol.game.incoming.model.resumed.ResumePObjDialog
 import net.rsprox.protocol.game.incoming.model.resumed.ResumePStringDialog
@@ -102,6 +106,8 @@ public interface ClientPacketTranscriber {
 
     public fun opLocV1(message: OpLocV1)
 
+    public fun opLocV2(message: OpLocV2)
+
     public fun opLoc6(message: OpLoc6)
 
     public fun opLocT(message: OpLocT)
@@ -158,11 +164,15 @@ public interface ClientPacketTranscriber {
 
     public fun opNpcV1(message: OpNpcV1)
 
+    public fun opNpcV2(message: OpNpcV2)
+
     public fun opNpc6(message: OpNpc6)
 
     public fun opNpcT(message: OpNpcT)
 
     public fun opObjV1(message: OpObjV1)
+
+    public fun opObjV2(message: OpObjV2)
 
     public fun opObj6(message: OpObj6)
 
@@ -181,6 +191,8 @@ public interface ClientPacketTranscriber {
     public fun resumePauseButton(message: ResumePauseButton)
 
     public fun resumePCountDialog(message: ResumePCountDialog)
+
+    public fun resumePCountDialogLong(message: ResumePCountDialogLong)
 
     public fun resumePNameDialog(message: ResumePNameDialog)
 

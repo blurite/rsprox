@@ -3,6 +3,7 @@ package net.rsprox.transcriber
 import net.rsprot.protocol.Prot
 import net.rsprot.protocol.message.IncomingMessage
 import net.rsprox.protocol.game.outgoing.model.map.RebuildLoginV1
+import net.rsprox.protocol.game.outgoing.model.map.RebuildLoginV2
 import net.rsprox.transcriber.legacy.LegacyClientProt
 import net.rsprox.transcriber.legacy.LegacyServerProt
 import net.rsprox.transcriber.prot.GameClientProt
@@ -32,7 +33,11 @@ public class TranscriberPlugin(
         val serverProt = GameServerProt.valueOf(toString)
         // Special exception as it has its own dedicated class
         if (message is RebuildLoginV1) {
-            pass(message, Transcriber::rebuildLogin)
+            pass(message, Transcriber::rebuildLoginV1)
+            return
+        }
+        if (message is RebuildLoginV2) {
+            pass(message, Transcriber::rebuildLoginV2)
             return
         }
         when (serverProt) {
@@ -57,7 +62,8 @@ public class TranscriberPlugin(
             GameServerProt.IF_SETNPCHEAD -> pass(message, Transcriber::ifSetNpcHead)
             GameServerProt.IF_SETNPCHEAD_ACTIVE -> pass(message, Transcriber::ifSetNpcHeadActive)
             GameServerProt.IF_SETPLAYERHEAD -> pass(message, Transcriber::ifSetPlayerHead)
-            GameServerProt.IF_SETMODEL -> pass(message, Transcriber::ifSetModel)
+            GameServerProt.IF_SETMODEL_V1 -> pass(message, Transcriber::ifSetModelV1)
+            GameServerProt.IF_SETMODEL_V2 -> pass(message, Transcriber::ifSetModelV2)
             GameServerProt.IF_SETPLAYERMODEL_BASECOLOUR -> pass(message, Transcriber::ifSetPlayerModelBaseColour)
             GameServerProt.IF_SETPLAYERMODEL_BODYTYPE -> pass(message, Transcriber::ifSetPlayerModelBodyType)
             GameServerProt.IF_SETPLAYERMODEL_OBJ -> pass(message, Transcriber::ifSetPlayerModelObj)
@@ -115,10 +121,13 @@ public class TranscriberPlugin(
             GameServerProt.WORLDENTITY_INFO_V2 -> pass(message, Transcriber::worldEntityInfoV2)
             GameServerProt.WORLDENTITY_INFO_V1 -> pass(message, Transcriber::worldEntityInfoV1)
             GameServerProt.REBUILD_NORMAL_V1 -> pass(message, Transcriber::rebuildNormalV1)
+            GameServerProt.REBUILD_NORMAL_V2 -> pass(message, Transcriber::rebuildNormalV2)
             GameServerProt.REBUILD_REGION_V1 -> pass(message, Transcriber::rebuildRegionV1)
+            GameServerProt.REBUILD_REGION_V2 -> pass(message, Transcriber::rebuildRegionV2)
             GameServerProt.REBUILD_WORLDENTITY_V1 -> pass(message, Transcriber::rebuildWorldEntityV1)
             GameServerProt.REBUILD_WORLDENTITY_V2 -> pass(message, Transcriber::rebuildWorldEntityV2)
             GameServerProt.REBUILD_WORLDENTITY_V3 -> pass(message, Transcriber::rebuildWorldEntityV3)
+            GameServerProt.REBUILD_WORLDENTITY_V4 -> pass(message, Transcriber::rebuildWorldEntityV4)
             GameServerProt.VARP_SMALL -> pass(message, Transcriber::varpSmall)
             GameServerProt.VARP_LARGE -> pass(message, Transcriber::varpLarge)
             GameServerProt.VARP_RESET -> pass(message, Transcriber::varpReset)
@@ -249,6 +258,11 @@ public class TranscriberPlugin(
             GameClientProt.OPNPC3_V1 -> pass(message, Transcriber::opNpcV1)
             GameClientProt.OPNPC4_V1 -> pass(message, Transcriber::opNpcV1)
             GameClientProt.OPNPC5_V1 -> pass(message, Transcriber::opNpcV1)
+            GameClientProt.OPNPC1_V2 -> pass(message, Transcriber::opNpcV2)
+            GameClientProt.OPNPC2_V2 -> pass(message, Transcriber::opNpcV2)
+            GameClientProt.OPNPC3_V2 -> pass(message, Transcriber::opNpcV2)
+            GameClientProt.OPNPC4_V2 -> pass(message, Transcriber::opNpcV2)
+            GameClientProt.OPNPC5_V2 -> pass(message, Transcriber::opNpcV2)
             GameClientProt.OPNPC6 -> pass(message, Transcriber::opNpc6)
             GameClientProt.OPNPCT -> pass(message, Transcriber::opNpcT)
             GameClientProt.OPNPCU -> throw IllegalArgumentException("Unimplemented packet: $message")
@@ -257,6 +271,11 @@ public class TranscriberPlugin(
             GameClientProt.OPLOC3_V1 -> pass(message, Transcriber::opLocV1)
             GameClientProt.OPLOC4_V1 -> pass(message, Transcriber::opLocV1)
             GameClientProt.OPLOC5_V1 -> pass(message, Transcriber::opLocV1)
+            GameClientProt.OPLOC1_V2 -> pass(message, Transcriber::opLocV2)
+            GameClientProt.OPLOC2_V2 -> pass(message, Transcriber::opLocV2)
+            GameClientProt.OPLOC3_V2 -> pass(message, Transcriber::opLocV2)
+            GameClientProt.OPLOC4_V2 -> pass(message, Transcriber::opLocV2)
+            GameClientProt.OPLOC5_V2 -> pass(message, Transcriber::opLocV2)
             GameClientProt.OPLOC6 -> pass(message, Transcriber::opLoc6)
             GameClientProt.OPLOCT -> pass(message, Transcriber::opLocT)
             GameClientProt.OPLOCU -> throw IllegalArgumentException("Unimplemented packet: $message")
@@ -265,6 +284,11 @@ public class TranscriberPlugin(
             GameClientProt.OPOBJ3_V1 -> pass(message, Transcriber::opObjV1)
             GameClientProt.OPOBJ4_V1 -> pass(message, Transcriber::opObjV1)
             GameClientProt.OPOBJ5_V1 -> pass(message, Transcriber::opObjV1)
+            GameClientProt.OPOBJ1_V2 -> pass(message, Transcriber::opObjV2)
+            GameClientProt.OPOBJ2_V2 -> pass(message, Transcriber::opObjV2)
+            GameClientProt.OPOBJ3_V2 -> pass(message, Transcriber::opObjV2)
+            GameClientProt.OPOBJ4_V2 -> pass(message, Transcriber::opObjV2)
+            GameClientProt.OPOBJ5_V2 -> pass(message, Transcriber::opObjV2)
             GameClientProt.OPOBJ6 -> pass(message, Transcriber::opObj6)
             GameClientProt.OPOBJT -> pass(message, Transcriber::opObjT)
             GameClientProt.OPOBJU -> throw IllegalArgumentException("Unimplemented packet: $message")
@@ -292,6 +316,7 @@ public class TranscriberPlugin(
             GameClientProt.RESUME_P_NAMEDIALOG -> pass(message, Transcriber::resumePNameDialog)
             GameClientProt.RESUME_P_STRINGDIALOG -> pass(message, Transcriber::resumePStringDialog)
             GameClientProt.RESUME_P_COUNTDIALOG -> pass(message, Transcriber::resumePCountDialog)
+            GameClientProt.RESUME_P_COUNTDIALOG_LONG -> pass(message, Transcriber::resumePCountDialogLong)
             GameClientProt.RESUME_P_OBJDIALOG -> pass(message, Transcriber::resumePObjDialog)
             GameClientProt.FRIENDCHAT_KICK -> pass(message, Transcriber::friendChatKick)
             GameClientProt.FRIENDCHAT_SETRANK -> pass(message, Transcriber::friendChatSetRank)

@@ -1380,7 +1380,13 @@ public class TextServerPacketTranscriber(
         root.boolean("hide", message.hidden)
     }
 
-    override fun ifSetModel(message: IfSetModelV1) {
+    override fun ifSetModelV1(message: IfSetModelV1) {
+        if (!filters[PropertyFilter.IF_SETMODEL]) return omit()
+        root.com(message.interfaceId, message.componentId)
+        root.scriptVarType("id", ScriptVarType.MODEL, message.model)
+    }
+
+    override fun ifSetModelV2(message: IfSetModelV2) {
         if (!filters[PropertyFilter.IF_SETMODEL]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.scriptVarType("id", ScriptVarType.MODEL, message.model)
@@ -1583,7 +1589,7 @@ public class TextServerPacketTranscriber(
         root.coordGrid("localplayercoord", message.playerInfoInitBlock.localPlayerCoord)
     }
 
-    override fun rebuildLogin(message: RebuildLoginV1) {
+    override fun rebuildLoginV1(message: RebuildLoginV1) {
         if (!filters[PropertyFilter.REBUILD]) return omit()
         root.int("zonex", message.zoneX)
         root.int("zonez", message.zoneZ)
@@ -1611,6 +1617,14 @@ public class TextServerPacketTranscriber(
         }
     }
 
+    override fun rebuildLoginV2(message: RebuildLoginV2) {
+        if (!filters[PropertyFilter.REBUILD]) return omit()
+        root.int("zonex", message.zoneX)
+        root.int("zonez", message.zoneZ)
+        root.int("worldarea", message.worldArea)
+        root.coordGrid("localplayercoord", message.playerInfoInitBlock.localPlayerCoord)
+    }
+
     override fun rebuildNormalV1(message: RebuildNormalV1) {
         if (!filters[PropertyFilter.REBUILD]) return omit()
         root.int("zonex", message.zoneX)
@@ -1636,6 +1650,13 @@ public class TextServerPacketTranscriber(
         check(!iterator.hasNext()) {
             "Xtea keys leftover"
         }
+    }
+
+    override fun rebuildNormalV2(message: RebuildNormalV2) {
+        if (!filters[PropertyFilter.REBUILD]) return omit()
+        root.int("zonex", message.zoneX)
+        root.int("zonez", message.zoneZ)
+        root.int("worldarea", message.worldArea)
     }
 
     override fun rebuildRegionV1(message: RebuildRegionV1) {
@@ -1716,6 +1737,57 @@ public class TextServerPacketTranscriber(
         }
     }
 
+    override fun rebuildRegionV2(message: RebuildRegionV2) {
+        if (!filters[PropertyFilter.REBUILD]) return omit()
+        root.int("zonex", message.zoneX)
+        root.int("zonez", message.zoneZ)
+        root.boolean("reload", message.reload)
+        root.group("BUILD_AREA") {
+            val startZoneX = message.zoneX - 6
+            val startZoneZ = message.zoneZ - 6
+            val simpleBlock = message.buildArea.calculateSimpleBlockOrNull()
+            if (simpleBlock != null) {
+                group {
+                    val sw = message.buildArea[simpleBlock.minLevel, simpleBlock.minX, simpleBlock.minZ]
+                    val ne = message.buildArea[simpleBlock.maxLevel, simpleBlock.maxX, simpleBlock.maxZ]
+                    zoneCoord("minsource", sw.level, sw.zoneX, sw.zoneZ)
+                    zoneCoord("maxsource", ne.level, ne.zoneX, ne.zoneZ)
+                    zoneCoord(
+                        "mindest",
+                        simpleBlock.minLevel,
+                        simpleBlock.minX + startZoneX,
+                        simpleBlock.minZ + startZoneZ,
+                    )
+                    zoneCoord(
+                        "maxdest",
+                        simpleBlock.maxLevel,
+                        simpleBlock.maxX + startZoneX,
+                        simpleBlock.maxZ + startZoneZ,
+                    )
+                    // Always consistent rotation 0 here
+                    int("rotation", sw.rotation)
+                    filteredInt("firstbit", sw.packed and 0x1, 0)
+                }
+            } else {
+                for (level in 0..<4) {
+                    for (zoneX in startZoneX..(message.zoneX + 6)) {
+                        for (zoneZ in startZoneZ..(message.zoneZ + 6)) {
+                            val block = message.buildArea[level, zoneX - startZoneX, zoneZ - startZoneZ]
+                            // Invalid zone
+                            if (block.mapsquareId == 32767) continue
+                            group {
+                                zoneCoord("source", block.level, block.zoneX, block.zoneZ)
+                                zoneCoord("dest", level, zoneX, zoneZ)
+                                int("rotation", block.rotation)
+                                filteredInt("firstbit", block.packed and 0x1, 0)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private fun rebuildWorldEntity(
         index: Int,
         baseX: Int,
@@ -1789,18 +1861,20 @@ public class TextServerPacketTranscriber(
                 }
             }
         }
-        val iterator = keys.listIterator()
-        root.group("KEYS") {
-            for (mapsquareId in mapsquares) {
-                val key = iterator.next()
-                group {
-                    int("mapsquareid", mapsquareId)
-                    any("key", key.key.contentToString())
+        if (keys.isNotEmpty()) {
+            val iterator = keys.listIterator()
+            root.group("KEYS") {
+                for (mapsquareId in mapsquares) {
+                    val key = iterator.next()
+                    group {
+                        int("mapsquareid", mapsquareId)
+                        any("key", key.key.contentToString())
+                    }
                 }
             }
-        }
-        check(!iterator.hasNext()) {
-            "Xtea keys leftover"
+            check(!iterator.hasNext()) {
+                "Xtea keys leftover"
+            }
         }
     }
 
@@ -1839,6 +1913,19 @@ public class TextServerPacketTranscriber(
             sessionState.getActiveWorld().sizeZ,
             message.buildArea,
             message.keys,
+            null,
+        )
+    }
+
+    override fun rebuildWorldEntityV4(message: RebuildWorldEntityV4) {
+        rebuildWorldEntity(
+            sessionState.getActiveWorld().index,
+            message.baseX,
+            message.baseZ,
+            sessionState.getActiveWorld().sizeX,
+            sessionState.getActiveWorld().sizeZ,
+            message.buildArea,
+            emptyList(),
             null,
         )
     }
