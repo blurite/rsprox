@@ -18,7 +18,13 @@ internal class SetActiveWorldV2Decoder : ProxyMessageDecoder<SetActiveWorldV2> {
         buffer: JagByteBuf,
         session: Session,
     ): SetActiveWorldV2 {
-        val index = buffer.g2s()
+        var index = buffer.g2s()
+        // 237 made toplevel/root world into id 0
+        // but because our transcriber handles all revisions, we need it to be a uniform value
+        // within logic processing.
+        if (index == 0) {
+            index = -1
+        }
         val activeLevel = buffer.g1()
         session.setActiveWorld(index, activeLevel)
         val world = session.getWorld(index)

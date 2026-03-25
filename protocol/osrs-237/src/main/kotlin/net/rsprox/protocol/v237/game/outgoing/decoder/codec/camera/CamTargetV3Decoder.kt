@@ -17,7 +17,13 @@ internal class CamTargetV3Decoder : ProxyMessageDecoder<CamTargetV3> {
         session: Session,
     ): CamTargetV3 {
         val type = buffer.g1()
-        val worldEntityIndex = buffer.g2s()
+        var worldEntityIndex = buffer.g2s()
+        // 237 made toplevel/root world into id 0
+        // but because our transcriber handles all revisions, we need it to be a uniform value
+        // within logic processing.
+        if (worldEntityIndex == 0) {
+            worldEntityIndex = -1
+        }
         val targetIndex = buffer.g2()
         return CamTargetV3(
             when (type) {
