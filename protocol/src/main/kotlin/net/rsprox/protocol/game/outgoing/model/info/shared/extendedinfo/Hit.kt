@@ -6,6 +6,7 @@ public class Hit(
     public val soakType: Int,
     public val soakValue: Int,
     public val delay: Int,
+    public val limit: Int = -1,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -18,6 +19,7 @@ public class Hit(
         if (soakType != other.soakType) return false
         if (soakValue != other.soakValue) return false
         if (delay != other.delay) return false
+        if (limit != other.limit) return false
 
         return true
     }
@@ -28,6 +30,7 @@ public class Hit(
         result = 31 * result + soakType
         result = 31 * result + soakValue
         result = 31 * result + delay
+        result = 31 * result + limit
         return result
     }
 
@@ -37,7 +40,8 @@ public class Hit(
             "value=$value, " +
             "soakType=$soakType, " +
             "soakValue=$soakValue, " +
-            "delay=$delay" +
+            "delay=$delay, " +
+            "limit=$limit" +
             ")"
     }
 }
