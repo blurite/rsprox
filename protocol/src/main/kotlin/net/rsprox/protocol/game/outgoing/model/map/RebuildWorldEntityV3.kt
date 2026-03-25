@@ -58,7 +58,7 @@ public class RebuildWorldEntityV3(
     }
 
     override fun toString(): String {
-        return "RebuildWorldEntityV2(" +
+        return "RebuildWorldEntityV3(" +
             "baseX=$baseX, " +
             "baseZ=$baseZ, " +
             "buildArea=$buildArea, " +

@@ -6,6 +6,7 @@ import net.rsprox.shared.property.filtered.FilteredAnyProperty
 import net.rsprox.shared.property.filtered.FilteredNamedEnumProperty
 import net.rsprox.shared.property.filtered.FilteredScriptVarTypeProperty
 import net.rsprox.shared.property.formatted.FormattedIntProperty
+import net.rsprox.shared.property.formatted.FormattedLongProperty
 import net.rsprox.shared.property.regular.*
 import java.text.NumberFormat
 import kotlin.contracts.ExperimentalContracts
@@ -185,6 +186,20 @@ public fun Property.formattedInt(
 ): FormattedIntProperty {
     return child(
         FormattedIntProperty(
+            name,
+            value,
+            format,
+        ),
+    )
+}
+
+public fun Property.formattedLong(
+    name: String,
+    value: Long,
+    format: NumberFormat = NumberFormat.getIntegerInstance(),
+): FormattedLongProperty {
+    return child(
+        FormattedLongProperty(
             name,
             value,
             format,

@@ -6,6 +6,7 @@ import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.property.filtered.FilteredNamedEnumProperty
 import net.rsprox.shared.property.filtered.FilteredScriptVarTypeProperty
 import net.rsprox.shared.property.formatted.FormattedIntProperty
+import net.rsprox.shared.property.formatted.FormattedLongProperty
 import net.rsprox.shared.property.regular.*
 import net.rsprox.shared.settings.Setting
 import net.rsprox.shared.settings.SettingSetStore
@@ -140,6 +141,9 @@ public class PropertyFormatterCollection private constructor(
                 }
             }
             builder.add<FormattedIntProperty> {
+                it.format.format(it.value)
+            }
+            builder.add<FormattedLongProperty> {
                 it.format.format(it.value)
             }
             val scriptVarTypePropertyFormatter =

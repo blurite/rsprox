@@ -14,9 +14,10 @@ import net.rsprox.protocol.game.incoming.model.events.*
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatJoinLeave
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatKick
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatSetRank
-import net.rsprox.protocol.game.incoming.model.locs.OpLoc
 import net.rsprox.protocol.game.incoming.model.locs.OpLoc6
 import net.rsprox.protocol.game.incoming.model.locs.OpLocT
+import net.rsprox.protocol.game.incoming.model.locs.OpLocV1
+import net.rsprox.protocol.game.incoming.model.locs.OpLocV2
 import net.rsprox.protocol.game.incoming.model.messaging.MessagePrivate
 import net.rsprox.protocol.game.incoming.model.messaging.MessagePublic
 import net.rsprox.protocol.game.incoming.model.misc.client.*
@@ -34,15 +35,18 @@ import net.rsprox.protocol.game.incoming.model.misc.user.SetChatFilterSettings
 import net.rsprox.protocol.game.incoming.model.misc.user.SetHeading
 import net.rsprox.protocol.game.incoming.model.misc.user.Teleport
 import net.rsprox.protocol.game.incoming.model.misc.user.UpdatePlayerModelV1
-import net.rsprox.protocol.game.incoming.model.npcs.OpNpc
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpc6
 import net.rsprox.protocol.game.incoming.model.npcs.OpNpcT
-import net.rsprox.protocol.game.incoming.model.objs.OpObj
+import net.rsprox.protocol.game.incoming.model.npcs.OpNpcV1
+import net.rsprox.protocol.game.incoming.model.npcs.OpNpcV2
 import net.rsprox.protocol.game.incoming.model.objs.OpObj6
 import net.rsprox.protocol.game.incoming.model.objs.OpObjT
+import net.rsprox.protocol.game.incoming.model.objs.OpObjV1
+import net.rsprox.protocol.game.incoming.model.objs.OpObjV2
 import net.rsprox.protocol.game.incoming.model.players.OpPlayer
 import net.rsprox.protocol.game.incoming.model.players.OpPlayerT
 import net.rsprox.protocol.game.incoming.model.resumed.ResumePCountDialog
+import net.rsprox.protocol.game.incoming.model.resumed.ResumePCountDialogLong
 import net.rsprox.protocol.game.incoming.model.resumed.ResumePNameDialog
 import net.rsprox.protocol.game.incoming.model.resumed.ResumePObjDialog
 import net.rsprox.protocol.game.incoming.model.resumed.ResumePStringDialog
@@ -269,7 +273,11 @@ public class IndexerTranscriber(
     override fun friendChatSetRank(message: FriendChatSetRank) {
     }
 
-    override fun opLoc(message: OpLoc) {
+    override fun opLocV1(message: OpLocV1) {
+        binaryIndex.increment(IndexedType.LOC, message.id)
+    }
+
+    override fun opLocV2(message: OpLocV2) {
         binaryIndex.increment(IndexedType.LOC, message.id)
     }
 
@@ -356,7 +364,12 @@ public class IndexerTranscriber(
     override fun updatePlayerModelV1(message: UpdatePlayerModelV1) {
     }
 
-    override fun opNpc(message: OpNpc) {
+    override fun opNpcV1(message: OpNpcV1) {
+        val npc = getNpcInAnyWorld(message.index) ?: return
+        binaryIndex.increment(IndexedType.NPC, npc.id)
+    }
+
+    override fun opNpcV2(message: OpNpcV2) {
         val npc = getNpcInAnyWorld(message.index) ?: return
         binaryIndex.increment(IndexedType.NPC, npc.id)
     }
@@ -370,7 +383,11 @@ public class IndexerTranscriber(
         binaryIndex.increment(IndexedType.NPC, npc.id)
     }
 
-    override fun opObj(message: OpObj) {
+    override fun opObjV1(message: OpObjV1) {
+        binaryIndex.increment(IndexedType.OBJ, message.id)
+    }
+
+    override fun opObjV2(message: OpObjV2) {
         binaryIndex.increment(IndexedType.OBJ, message.id)
     }
 
@@ -402,6 +419,9 @@ public class IndexerTranscriber(
     }
 
     override fun resumePCountDialog(message: ResumePCountDialog) {
+    }
+
+    override fun resumePCountDialogLong(message: ResumePCountDialogLong) {
     }
 
     override fun resumePNameDialog(message: ResumePNameDialog) {
@@ -607,7 +627,11 @@ public class IndexerTranscriber(
         incrementComponent(message.combinedId)
     }
 
-    override fun ifSetModel(message: IfSetModel) {
+    override fun ifSetModelV1(message: IfSetModelV1) {
+        incrementComponent(message.combinedId)
+    }
+
+    override fun ifSetModelV2(message: IfSetModelV2) {
         incrementComponent(message.combinedId)
     }
 
@@ -713,7 +737,7 @@ public class IndexerTranscriber(
     override fun reconnect(message: Reconnect) {
     }
 
-    override fun rebuildLogin(message: RebuildLogin) {
+    override fun rebuildLoginV1(message: RebuildLoginV1) {
         val minMapsquareX = (message.zoneX - 6) ushr 3
         val maxMapsquareX = (message.zoneX + 6) ushr 3
         val minMapsquareZ = (message.zoneZ - 6) ushr 3
@@ -726,7 +750,7 @@ public class IndexerTranscriber(
         }
     }
 
-    override fun rebuildNormal(message: RebuildNormal) {
+    override fun rebuildLoginV2(message: RebuildLoginV2) {
         val minMapsquareX = (message.zoneX - 6) ushr 3
         val maxMapsquareX = (message.zoneX + 6) ushr 3
         val minMapsquareZ = (message.zoneZ - 6) ushr 3
@@ -739,7 +763,52 @@ public class IndexerTranscriber(
         }
     }
 
-    override fun rebuildRegion(message: RebuildRegion) {
+    override fun rebuildNormalV1(message: RebuildNormalV1) {
+        val minMapsquareX = (message.zoneX - 6) ushr 3
+        val maxMapsquareX = (message.zoneX + 6) ushr 3
+        val minMapsquareZ = (message.zoneZ - 6) ushr 3
+        val maxMapsquareZ = (message.zoneZ + 6) ushr 3
+        for (mapsquareX in minMapsquareX..maxMapsquareX) {
+            for (mapsquareZ in minMapsquareZ..maxMapsquareZ) {
+                val mapsquareId = (mapsquareX shl 8) or mapsquareZ
+                binaryIndex.increment(IndexedType.MAPSQUARE, mapsquareId)
+            }
+        }
+    }
+
+    override fun rebuildNormalV2(message: RebuildNormalV2) {
+        val minMapsquareX = (message.zoneX - 6) ushr 3
+        val maxMapsquareX = (message.zoneX + 6) ushr 3
+        val minMapsquareZ = (message.zoneZ - 6) ushr 3
+        val maxMapsquareZ = (message.zoneZ + 6) ushr 3
+        for (mapsquareX in minMapsquareX..maxMapsquareX) {
+            for (mapsquareZ in minMapsquareZ..maxMapsquareZ) {
+                val mapsquareId = (mapsquareX shl 8) or mapsquareZ
+                binaryIndex.increment(IndexedType.MAPSQUARE, mapsquareId)
+            }
+        }
+    }
+
+    override fun rebuildRegionV1(message: RebuildRegionV1) {
+        val startZoneX = message.zoneX - 6
+        val startZoneZ = message.zoneZ - 6
+        val mapsquares = mutableSetOf<Int>()
+        for (level in 0..<4) {
+            for (zoneX in startZoneX..(message.zoneX + 6)) {
+                for (zoneZ in startZoneZ..(message.zoneZ + 6)) {
+                    val block = message.buildArea[level, zoneX - startZoneX, zoneZ - startZoneZ]
+                    // Invalid zone
+                    if (block.mapsquareId == 32767) continue
+                    mapsquares += block.mapsquareId
+                }
+            }
+        }
+        for (mapsquare in mapsquares) {
+            binaryIndex.increment(IndexedType.MAPSQUARE, mapsquare)
+        }
+    }
+
+    override fun rebuildRegionV2(message: RebuildRegionV2) {
         val startZoneX = message.zoneX - 6
         val startZoneZ = message.zoneZ - 6
         val mapsquares = mutableSetOf<Int>()
@@ -797,6 +866,25 @@ public class IndexerTranscriber(
     }
 
     override fun rebuildWorldEntityV3(message: RebuildWorldEntityV3) {
+        val startZoneX = message.baseX - 6
+        val startZoneZ = message.baseZ - 6
+        val mapsquares = mutableSetOf<Int>()
+        for (level in 0..<4) {
+            for (zoneX in startZoneX..(message.baseX + 6)) {
+                for (zoneZ in startZoneZ..(message.baseZ + 6)) {
+                    val block = message.buildArea[level, zoneX - startZoneX, zoneZ - startZoneZ]
+                    // Invalid zone
+                    if (block.mapsquareId == 32767) continue
+                    mapsquares += block.mapsquareId
+                }
+            }
+        }
+        for (mapsquare in mapsquares) {
+            binaryIndex.increment(IndexedType.MAPSQUARE, mapsquare)
+        }
+    }
+
+    override fun rebuildWorldEntityV4(message: RebuildWorldEntityV4) {
         val startZoneX = message.baseX - 6
         val startZoneZ = message.baseZ - 6
         val mapsquares = mutableSetOf<Int>()

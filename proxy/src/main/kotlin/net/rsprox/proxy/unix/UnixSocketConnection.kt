@@ -8,7 +8,7 @@ import com.esotericsoftware.kryo.serializers.CollectionSerializer
 import com.esotericsoftware.kryo.serializers.MapSerializer
 import com.github.michaelbull.logging.InlineLogger
 import net.rsprot.protocol.message.IncomingMessage
-import net.rsprox.protocol.game.outgoing.model.map.RebuildLogin
+import net.rsprox.protocol.game.outgoing.model.map.RebuildLoginV1
 import net.rsprox.proxy.config.SOCKETS_DIRECTORY
 import org.newsclub.net.unix.AFUNIXServerSocket
 import org.newsclub.net.unix.AFUNIXSocketAddress
@@ -156,7 +156,7 @@ public class UnixSocketConnection(
     }
 
     public fun push(payload: IncomingMessage) {
-        if (payload is RebuildLogin) {
+        if (payload is RebuildLoginV1) {
             eventLog.clearEvents()
         }
         eventLog.append(UnixPacket(payload))

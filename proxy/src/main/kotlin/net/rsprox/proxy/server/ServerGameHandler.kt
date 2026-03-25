@@ -219,6 +219,11 @@ public class ServerGameHandler(
                         buf.skipRead(1)
                         interfaceId = buf.g2()
                     }
+                    237 -> {
+                        targetComponent = buf.gCombinedIdAlt3()
+                        buf.skipRead(1)
+                        interfaceId = buf.g2()
+                    }
 
                     else -> {
                         error("Unsupported revision: $revision")

@@ -36,6 +36,8 @@ import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialEncl
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialFollows
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.transcriber.firstOfInstanceOfNull
+import net.rsprox.transcriber.legacy.LegacyClientProt
+import net.rsprox.transcriber.legacy.LegacyServerProt
 import net.rsprox.transcriber.prot.GameClientProt
 import net.rsprox.transcriber.prot.GameServerProt
 import net.rsprox.transcriber.prot.Prot
@@ -62,22 +64,22 @@ public class SessionTracker(
                 "Exception processing keys for message: $message"
             }
         }
-        if (message is RebuildLogin) {
-            setCurrentProt(GameServerProt.REBUILD_NORMAL)
+        if (message is RebuildLoginV1) {
+            setCurrentProt(GameServerProt.REBUILD_NORMAL_V1)
             return
         }
-        val toString = prot.toString()
+        val toString = LegacyServerProt[prot.toString()]
         val serverProt = GameServerProt.valueOf(toString)
         setCurrentProt(serverProt)
     }
 
     private fun processKeys(message: IncomingMessage) {
         when (message) {
-            is StaticRebuildMessage -> {
+            is StaticRebuildMessageV1 -> {
                 keyStorage.onStaticRebuild(message)
             }
 
-            is RebuildRegion -> {
+            is RebuildRegionV1 -> {
                 keyStorage.onRebuildRegion(message)
             }
 
@@ -114,24 +116,47 @@ public class SessionTracker(
         @Suppress("UNUSED_PARAMETER") message: IncomingMessage,
         prot: net.rsprot.protocol.Prot,
     ) {
-        val toString = prot.toString()
+        val toString = LegacyClientProt[prot.toString()]
         val clientProt = GameClientProt.valueOf(toString)
         setCurrentProt(clientProt)
     }
 
     public fun beforeTranscribe(message: IncomingMessage) {
         when (message) {
-            is RebuildNormal -> {
+            is RebuildNormalV1 -> {
                 val world = sessionState.getWorld(-1)
                 world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
                 world.setBuildArea(null)
             }
-            is RebuildRegion -> {
+            is RebuildNormalV2 -> {
+                val world = sessionState.getWorld(-1)
+                world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
+                world.setBuildArea(null)
+            }
+            is RebuildRegionV1 -> {
                 val world = sessionState.getWorld(-1)
                 world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
                 world.setBuildArea(message.buildArea)
             }
-            is RebuildLogin -> {
+            is RebuildRegionV2 -> {
+                val world = sessionState.getWorld(-1)
+                world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
+                world.setBuildArea(message.buildArea)
+            }
+            is RebuildLoginV1 -> {
+                sessionState.overridePlayer(
+                    Player(
+                        message.playerInfoInitBlock.localPlayerIndex,
+                        "uninitialized",
+                        message.playerInfoInitBlock.localPlayerCoord,
+                    ),
+                )
+                sessionState.localPlayerIndex = message.playerInfoInitBlock.localPlayerIndex
+                val world = sessionState.createWorld(-1)
+                world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
+                world.setBuildArea(null)
+            }
+            is RebuildLoginV2 -> {
                 sessionState.overridePlayer(
                     Player(
                         message.playerInfoInitBlock.localPlayerIndex,
@@ -159,6 +184,11 @@ public class SessionTracker(
                 world.rebuild(CoordGrid(0, message.baseX, message.baseZ))
                 world.setBuildArea(message.buildArea)
             }
+            is RebuildWorldEntityV4 -> {
+                val world = sessionState.getActiveWorld()
+                world.rebuild(CoordGrid(0, message.baseX, message.baseZ))
+                world.setBuildArea(message.buildArea)
+            }
             is VarpSmall -> {
                 if (!sessionState.varbitsLoaded()) {
                     sessionState.associateVarbits(cache.listVarBitTypes())
@@ -170,6 +200,9 @@ public class SessionTracker(
                 }
             }
             ClearEntities -> {
+                sessionState.destroyDynamicWorlds()
+            }
+            is Reconnect -> {
                 sessionState.destroyDynamicWorlds()
             }
             is UpdateZoneFullFollows -> {

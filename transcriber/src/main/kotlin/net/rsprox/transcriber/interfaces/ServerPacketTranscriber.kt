@@ -175,7 +175,9 @@ public interface ServerPacketTranscriber {
 
     public fun ifSetHide(message: IfSetHide)
 
-    public fun ifSetModel(message: IfSetModel)
+    public fun ifSetModelV1(message: IfSetModelV1)
+
+    public fun ifSetModelV2(message: IfSetModelV2)
 
     public fun ifSetNpcHead(message: IfSetNpcHead)
 
@@ -215,17 +217,25 @@ public interface ServerPacketTranscriber {
 
     public fun reconnect(message: Reconnect)
 
-    public fun rebuildLogin(message: RebuildLogin)
+    public fun rebuildLoginV1(message: RebuildLoginV1)
 
-    public fun rebuildNormal(message: RebuildNormal)
+    public fun rebuildLoginV2(message: RebuildLoginV2)
 
-    public fun rebuildRegion(message: RebuildRegion)
+    public fun rebuildNormalV1(message: RebuildNormalV1)
+
+    public fun rebuildNormalV2(message: RebuildNormalV2)
+
+    public fun rebuildRegionV1(message: RebuildRegionV1)
+
+    public fun rebuildRegionV2(message: RebuildRegionV2)
 
     public fun rebuildWorldEntityV1(message: RebuildWorldEntityV1)
 
     public fun rebuildWorldEntityV2(message: RebuildWorldEntityV2)
 
     public fun rebuildWorldEntityV3(message: RebuildWorldEntityV3)
+
+    public fun rebuildWorldEntityV4(message: RebuildWorldEntityV4)
 
     public fun hideLocOps(message: HideLocOps)
 
