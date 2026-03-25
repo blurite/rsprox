@@ -21,7 +21,9 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMov
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceAngleExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FacePathingEntityExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HeadbarExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HitExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HitmarkExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SayExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SequenceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
@@ -327,6 +329,16 @@ public class TextNpcInfoTranscriber(
                         hits(npc, info)
                     }
                 }
+                is HitmarkExtendedInfo -> {
+                    if (filters[PropertyFilter.NPC_HITS]) {
+                        hitmarks(npc, info)
+                    }
+                }
+                is HeadbarExtendedInfo -> {
+                    if (filters[PropertyFilter.NPC_HITS]) {
+                        headbars(npc, info)
+                    }
+                }
                 is SayExtendedInfo -> {
                     if (filters[PropertyFilter.NPC_SAY]) {
                         group("SAY") {
@@ -490,6 +502,56 @@ public class TextNpcInfoTranscriber(
                 filteredInt("delay", hit.delay, 0)
             }
         }
+        for (headbar in info.headbars) {
+            group("HEADBAR") {
+                if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
+                    shortNpc(npc.index)
+                }
+                scriptVarType("id", ScriptVarType.HEADBAR, headbar.type)
+                if (headbar.startFill == -1 &&
+                    headbar.endFill == -1 &&
+                    headbar.startTime == -1 &&
+                    headbar.endTime == -1
+                ) {
+                    boolean("removed", true)
+                } else {
+                    val logTime = headbar.startTime != 0 || headbar.endTime != 0
+                    if (headbar.startFill == headbar.endFill && !logTime) {
+                        int("fill", headbar.startFill)
+                    } else {
+                        int("startfill", headbar.startFill)
+                        int("endfill", headbar.endFill)
+                    }
+                    if (logTime) {
+                        int("starttime", headbar.startTime)
+                        int("endtime", headbar.endTime)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun Property.hitmarks(
+        npc: Npc,
+        info: HitmarkExtendedInfo,
+    ) {
+        for (hit in info.hits) {
+            group("HIT") {
+                if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
+                    shortNpc(npc.index)
+                }
+                scriptVarType("id", ScriptVarType.HITMARK, hit.type)
+                int("value", hit.value)
+                filteredInt("delay", hit.delay, 0)
+                filteredInt("limit", hit.limit, 4)
+            }
+        }
+    }
+
+    private fun Property.headbars(
+        npc: Npc,
+        info: HeadbarExtendedInfo,
+    ) {
         for (headbar in info.headbars) {
             group("HEADBAR") {
                 if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {

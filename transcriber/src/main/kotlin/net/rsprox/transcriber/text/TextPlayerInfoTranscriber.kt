@@ -13,7 +13,9 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMov
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceAngleExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FacePathingEntityExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HeadbarExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HitExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HitmarkExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SayExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SequenceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
@@ -327,6 +329,16 @@ public class TextPlayerInfoTranscriber(
                         appendHitExtendedInfo(player, info)
                     }
                 }
+                is HitmarkExtendedInfo -> {
+                    if (filters[PropertyFilter.PLAYER_HITS]) {
+                        appendHitmarkExtendedInfo(player, info)
+                    }
+                }
+                is HeadbarExtendedInfo -> {
+                    if (filters[PropertyFilter.PLAYER_HITS]) {
+                        appendHeadbarExtendedInfo(player, info)
+                    }
+                }
                 is TintingExtendedInfo -> {
                     if (filters[PropertyFilter.PLAYER_TINTING]) {
                         group("TINTING") {
@@ -499,6 +511,56 @@ public class TextPlayerInfoTranscriber(
                 filteredInt("delay", hit.delay, 0)
             }
         }
+        for (headbar in info.headbars) {
+            group("HEADBAR") {
+                if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
+                    shortPlayer(player.index)
+                }
+                scriptVarType("id", ScriptVarType.HEADBAR, headbar.type)
+                if (headbar.startFill == -1 &&
+                    headbar.endFill == -1 &&
+                    headbar.startTime == -1 &&
+                    headbar.endTime == -1
+                ) {
+                    boolean("removed", true)
+                } else {
+                    val logTime = headbar.startTime != 0 || headbar.endTime != 0
+                    if (headbar.startFill == headbar.endFill && !logTime) {
+                        int("fill", headbar.startFill)
+                    } else {
+                        int("startfill", headbar.startFill)
+                        int("endfill", headbar.endFill)
+                    }
+                    if (logTime) {
+                        int("starttime", headbar.startTime)
+                        int("endtime", headbar.endTime)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun Property.appendHitmarkExtendedInfo(
+        player: Player,
+        info: HitmarkExtendedInfo,
+    ) {
+        for (hit in info.hits) {
+            group("HIT") {
+                if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
+                    shortPlayer(player.index)
+                }
+                scriptVarType("id", ScriptVarType.HITMARK, hit.type)
+                int("value", hit.value)
+                filteredInt("delay", hit.delay, 0)
+                filteredInt("limit", hit.limit, 4)
+            }
+        }
+    }
+
+    private fun Property.appendHeadbarExtendedInfo(
+        player: Player,
+        info: HeadbarExtendedInfo,
+    ) {
         for (headbar in info.headbars) {
             group("HEADBAR") {
                 if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
