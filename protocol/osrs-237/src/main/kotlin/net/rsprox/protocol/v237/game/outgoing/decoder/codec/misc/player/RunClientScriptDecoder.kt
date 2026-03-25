@@ -40,6 +40,9 @@ internal class RunClientScriptDecoder : ProxyMessageDecoder<RunClientScript> {
                 's' -> {
                     arguments.addFirst(buffer.gjstr())
                 }
+                'Ï' -> {
+                    arguments.addFirst(buffer.g8())
+                }
                 else -> {
                     arguments.addFirst(buffer.g4())
                 }

@@ -2276,19 +2276,21 @@ public class TextServerPacketTranscriber(
                 }
                 val value = message.values[i].toString()
                 val type =
-                    ScriptVarType.entries.first { type ->
-                        type.char == char
+                    if (char == 'Ï') {
+                        ScriptVarType.LONG
+                    } else {
+                        ScriptVarType.entries.first { type ->
+                            type.char == char
+                        }
                     }
                 val property =
                     createScriptVarType(
                         "",
                         type,
-                        if (type ==
-                            ScriptVarType.STRING
-                        ) {
-                            value
-                        } else {
-                            value.toInt()
+                        when (type) {
+                            ScriptVarType.STRING -> value
+                            ScriptVarType.LONG -> value.toLong()
+                            else -> value.toInt()
                         },
                     )
                 val formatter = formatterCollection.getTypedFormatter(property.javaClass)
@@ -2313,8 +2315,12 @@ public class TextServerPacketTranscriber(
                         }
                         else -> {
                             val type =
-                                ScriptVarType.entries.first { type ->
-                                    type.char == char
+                                if (char == 'Ï') {
+                                    ScriptVarType.LONG
+                                } else {
+                                    ScriptVarType.entries.first { type ->
+                                        type.char == char
+                                    }
                                 }
                             enum("", type)
                         }
@@ -2338,14 +2344,22 @@ public class TextServerPacketTranscriber(
                         }
                         else -> {
                             val type =
-                                ScriptVarType.entries.first { type ->
-                                    type.char == char
+                                if (char == 'Ï') {
+                                    ScriptVarType.LONG
+                                } else {
+                                    ScriptVarType.entries.first { type ->
+                                        type.char == char
+                                    }
                                 }
                             val valueString = value.toString()
                             scriptVarType(
                                 "",
                                 type,
-                                if (type == ScriptVarType.STRING) valueString else valueString.toInt(),
+                                when (type) {
+                                    ScriptVarType.STRING -> valueString
+                                    ScriptVarType.LONG -> valueString.toLong()
+                                    else -> valueString.toInt()
+                                },
                             )
                         }
                     }
@@ -2377,20 +2391,23 @@ public class TextServerPacketTranscriber(
                     }
                     else -> {
                         val type =
-                            ScriptVarType.entries.first { type ->
-                                type.char == char
+                            if (char == 'Ï') {
+                                ScriptVarType.LONG
+                            } else {
+                                ScriptVarType.entries.first { type ->
+                                    type.char == char
+                                }
                             }
+                        val valueString = value.toString()
                         group {
                             enum("type", type)
                             scriptVarType(
                                 "value",
                                 type,
-                                if (type ==
-                                    ScriptVarType.STRING
-                                ) {
-                                    value
-                                } else {
-                                    value.toString().toInt()
+                                when (type) {
+                                    ScriptVarType.STRING -> valueString
+                                    ScriptVarType.LONG -> valueString.toLong()
+                                    else -> valueString.toInt()
                                 },
                             )
                         }
