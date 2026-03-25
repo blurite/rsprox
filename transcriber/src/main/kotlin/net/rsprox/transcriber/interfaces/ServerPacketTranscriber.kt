@@ -175,7 +175,7 @@ public interface ServerPacketTranscriber {
 
     public fun ifSetHide(message: IfSetHide)
 
-    public fun ifSetModel(message: IfSetModel)
+    public fun ifSetModel(message: IfSetModelV1)
 
     public fun ifSetNpcHead(message: IfSetNpcHead)
 

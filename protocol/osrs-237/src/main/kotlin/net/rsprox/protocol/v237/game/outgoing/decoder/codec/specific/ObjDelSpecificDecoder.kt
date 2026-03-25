@@ -16,8 +16,8 @@ internal class ObjDelSpecificDecoder : ProxyMessageDecoder<ObjDelSpecific> {
         session: Session,
     ): ObjDelSpecific {
         val quantity = buffer.g4Alt2()
-        val coordGrid = CoordGrid(buffer.g4Alt3())
-        val id = buffer.g2Alt1()
+        val coordGrid = CoordGrid(buffer.g4Alt2())
+        val id = buffer.g2Alt3()
         return ObjDelSpecific(
             id,
             quantity,

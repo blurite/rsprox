@@ -15,9 +15,9 @@ internal class CamLookAtEasedCoordV2Decoder : ProxyMessageDecoder<CamLookAtEased
         session: Session,
     ): CamLookAtEasedCoordV2 {
         val height = buffer.g2Alt1()
-        val z = buffer.g2Alt3()
-        val x = buffer.g2Alt2()
-        val easing = buffer.g1Alt3()
+        val z = buffer.g2Alt1()
+        val easing = buffer.g1()
+        val x = buffer.g2()
         val cycles = buffer.g2()
         return CamLookAtEasedCoordV2(
             x,

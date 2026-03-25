@@ -1380,7 +1380,7 @@ public class TextServerPacketTranscriber(
         root.boolean("hide", message.hidden)
     }
 
-    override fun ifSetModel(message: IfSetModel) {
+    override fun ifSetModel(message: IfSetModelV1) {
         if (!filters[PropertyFilter.IF_SETMODEL]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.scriptVarType("id", ScriptVarType.MODEL, message.model)

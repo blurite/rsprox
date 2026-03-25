@@ -14,7 +14,7 @@ public class OpPlayer5Decoder : ProxyMessageDecoder<OpPlayer> {
         buffer: JagByteBuf,
         session: Session,
     ): OpPlayer {
-        val index = buffer.g2()
+        val index = buffer.g2Alt2()
         val controlKey = buffer.g1Alt2() == 1
         return OpPlayer(
             index,

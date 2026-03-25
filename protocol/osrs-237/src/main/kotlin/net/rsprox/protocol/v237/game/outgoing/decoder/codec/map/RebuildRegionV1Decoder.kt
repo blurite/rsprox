@@ -19,9 +19,9 @@ internal class RebuildRegionV1Decoder : ProxyMessageDecoder<RebuildRegionV1> {
         buffer: JagByteBuf,
         session: Session,
     ): RebuildRegionV1 {
-        val zoneZ = buffer.g2()
+        val zoneZ = buffer.g2Alt1()
         val zoneX = buffer.g2Alt3()
-        val reload = buffer.g1Alt3() == 1
+        val reload = buffer.g1() == 1
         val xteaCount = buffer.g2()
         val buildArea = BuildArea()
         buffer.buffer.toBitBuf().use { bitBuf ->

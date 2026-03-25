@@ -10,7 +10,7 @@ import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
  * @property componentId the component on that interface to set the events on
  * @property model the id of the model to render.
  */
-public class IfSetModel private constructor(
+public class IfSetModelV1 private constructor(
     public val combinedId: CombinedId,
     private val _model: UShort,
 ) : IncomingServerGameMessage {
@@ -34,7 +34,7 @@ public class IfSetModel private constructor(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as IfSetModel
+        other as IfSetModelV1
 
         if (combinedId != other.combinedId) return false
         if (_model != other._model) return false
@@ -49,7 +49,7 @@ public class IfSetModel private constructor(
     }
 
     override fun toString(): String {
-        return "IfSetModel(" +
+        return "IfSetModelV1(" +
             "interfaceId=$interfaceId, " +
             "componentId=$componentId, " +
             "model=$model" +

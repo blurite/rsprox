@@ -5,16 +5,11 @@ import net.rsprot.protocol.ProtRepository
 import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.MessageDecoderRepository
 import net.rsprox.protocol.MessageDecoderRepositoryBuilder
-import net.rsprox.protocol.v237.game.outgoing.decoder.codec.camera.CamLookAtEasedCoordV1Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.camera.CamLookAtEasedCoordV2Decoder
-import net.rsprox.protocol.v237.game.outgoing.decoder.codec.camera.CamLookAtV1Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.camera.CamLookAtV2Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.camera.CamModeDecoder
-import net.rsprox.protocol.v237.game.outgoing.decoder.codec.camera.CamMoveToArcV1Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.camera.CamMoveToArcV2Decoder
-import net.rsprox.protocol.v237.game.outgoing.decoder.codec.camera.CamMoveToCyclesV1Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.camera.CamMoveToCyclesV2Decoder
-import net.rsprox.protocol.v237.game.outgoing.decoder.codec.camera.CamMoveToV1Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.camera.CamMoveToV2Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.camera.CamResetDecoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.camera.CamRotateBy
@@ -39,7 +34,6 @@ import net.rsprox.protocol.v237.game.outgoing.decoder.codec.info.NpcInfoLargeV5D
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.info.NpcInfoSmallV5Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.info.PlayerInfoDecoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.info.SetNpcUpdateOriginDecoder
-import net.rsprox.protocol.v237.game.outgoing.decoder.codec.info.WorldEntityInfoV6Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.info.WorldEntityInfoV7Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.interfaces.*
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.interfaces.IfClearInvDecoder
@@ -52,7 +46,7 @@ import net.rsprox.protocol.v237.game.outgoing.decoder.codec.interfaces.IfSetAngl
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.interfaces.IfSetAnimDecoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.interfaces.IfSetColourDecoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.interfaces.IfSetHideDecoder
-import net.rsprox.protocol.v237.game.outgoing.decoder.codec.interfaces.IfSetModelDecoder
+import net.rsprox.protocol.v237.game.outgoing.decoder.codec.interfaces.IfSetModelV1Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.interfaces.IfSetNpcHeadActiveDecoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.interfaces.IfSetNpcHeadDecoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.interfaces.IfSetObjectDecoder
@@ -72,9 +66,11 @@ import net.rsprox.protocol.v237.game.outgoing.decoder.codec.logout.LogoutDecoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.logout.LogoutTransferDecoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.logout.LogoutWithReasonDecoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.map.RebuildRegionV1Decoder
+import net.rsprox.protocol.v237.game.outgoing.decoder.codec.map.RebuildRegionV2Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.map.RebuildWorldEntityV3Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.map.ReconnectDecoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.map.StaticRebuildV1Decoder
+import net.rsprox.protocol.v237.game.outgoing.decoder.codec.map.StaticRebuildV2Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.misc.client.HideLocOpsDecoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.misc.client.HideNpcOpsDecoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.misc.client.HideObjOpsDecoder
@@ -91,7 +87,6 @@ import net.rsprox.protocol.v237.game.outgoing.decoder.codec.misc.client.ServerTi
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.misc.client.SetHeatmapEnabledDecoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.misc.client.SetInteractionModeDecoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.misc.client.SiteSettingsDecoder
-import net.rsprox.protocol.v237.game.outgoing.decoder.codec.misc.client.UpdateRebootTimerV1Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.misc.client.UpdateRebootTimerV2Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.misc.client.UpdateUid192Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.misc.client.UrlOpenDecoder
@@ -101,7 +96,6 @@ import net.rsprox.protocol.v237.game.outgoing.decoder.codec.misc.player.ChatFilt
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.misc.player.ChatFilterSettingsPrivateChatDecoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.misc.player.MessageGameDecoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.misc.player.RunClientScriptDecoder
-import net.rsprox.protocol.v237.game.outgoing.decoder.codec.misc.player.SetMapFlagV1Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.misc.player.SetMapFlagV2Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.misc.player.SetPlayerOpDecoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.misc.player.TriggerOnDialogAbortDecoder
@@ -160,16 +154,11 @@ internal object ServerMessageDecoderRepository {
             ).apply {
                 bind(CamRotateToDecoder())
                 bind(CamRotateBy())
-                bind(CamLookAtEasedCoordV1Decoder())
                 bind(CamLookAtEasedCoordV2Decoder())
-                bind(CamLookAtV1Decoder())
                 bind(CamLookAtV2Decoder())
                 bind(CamModeDecoder())
-                bind(CamMoveToArcV1Decoder())
                 bind(CamMoveToArcV2Decoder())
-                bind(CamMoveToCyclesV1Decoder())
                 bind(CamMoveToCyclesV2Decoder())
-                bind(CamMoveToV1Decoder())
                 bind(CamMoveToV2Decoder())
                 bind(CamResetDecoder())
                 bind(CamShakeDecoder())
@@ -195,7 +184,6 @@ internal object ServerMessageDecoderRepository {
                 bind(NpcInfoSmallV5Decoder())
                 bind(NpcInfoLargeV5Decoder())
                 bind(SetNpcUpdateOriginDecoder())
-                bind(WorldEntityInfoV6Decoder(huffmanCodec, cache))
                 bind(WorldEntityInfoV7Decoder(huffmanCodec, cache))
 
                 bind(IfClearInvDecoder())
@@ -209,7 +197,8 @@ internal object ServerMessageDecoderRepository {
                 bind(IfSetColourDecoder())
                 bind(IfSetEventsV2Decoder())
                 bind(IfSetHideDecoder())
-                bind(IfSetModelDecoder())
+                bind(IfSetModelV1Decoder())
+                bind(IfSetModelV2Decoder())
                 bind(IfSetNpcHeadActiveDecoder())
                 bind(IfSetNpcHeadDecoder())
                 bind(IfSetObjectDecoder())
@@ -233,7 +222,9 @@ internal object ServerMessageDecoderRepository {
 
                 bind(ReconnectDecoder())
                 bind(StaticRebuildV1Decoder(huffmanCodec, cache))
+                bind(StaticRebuildV2Decoder(huffmanCodec, cache))
                 bind(RebuildRegionV1Decoder())
+                bind(RebuildRegionV2Decoder())
                 bind(RebuildWorldEntityV3Decoder())
 
                 bind(SetHeatmapEnabledDecoder())
@@ -249,7 +240,6 @@ internal object ServerMessageDecoderRepository {
                 bind(ResetAnimsDecoder())
                 bind(SendPingDecoder())
                 bind(ServerTickEndDecoder())
-                bind(UpdateRebootTimerV1Decoder())
                 bind(UpdateRebootTimerV2Decoder())
                 bind(SiteSettingsDecoder())
                 bind(UpdateUid192Decoder())
@@ -262,7 +252,6 @@ internal object ServerMessageDecoderRepository {
                 bind(ChatFilterSettingsPrivateChatDecoder())
                 bind(MessageGameDecoder())
                 bind(RunClientScriptDecoder())
-                bind(SetMapFlagV1Decoder())
                 bind(SetMapFlagV2Decoder())
                 bind(SetPlayerOpDecoder())
                 bind(TriggerOnDialogAbortDecoder())

@@ -607,7 +607,7 @@ public class IndexerTranscriber(
         incrementComponent(message.combinedId)
     }
 
-    override fun ifSetModel(message: IfSetModel) {
+    override fun ifSetModel(message: IfSetModelV1) {
         incrementComponent(message.combinedId)
     }
 

@@ -16,7 +16,7 @@ internal class IfOpenSubDecoder : ProxyMessageDecoder<IfOpenSub> {
         session: Session,
     ): IfOpenSub {
         val combinedId = buffer.gCombinedIdAlt3()
-        val type = buffer.g1Alt3()
+        val type = buffer.g1Alt2()
         val interfaceId = buffer.g2()
         return IfOpenSub(
             combinedId.interfaceId,

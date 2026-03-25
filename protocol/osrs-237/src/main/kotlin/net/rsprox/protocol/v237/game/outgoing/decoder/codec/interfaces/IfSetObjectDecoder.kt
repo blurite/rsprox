@@ -15,9 +15,9 @@ internal class IfSetObjectDecoder : ProxyMessageDecoder<IfSetObject> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetObject {
-        val count = buffer.g4Alt2()
+        val count = buffer.g4Alt1()
+        val obj = buffer.g2Alt3()
         val combinedId = buffer.gCombinedIdAlt2()
-        val obj = buffer.g2Alt1()
         return IfSetObject(
             combinedId.interfaceId,
             combinedId.componentId,
