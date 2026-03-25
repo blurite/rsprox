@@ -141,6 +141,24 @@ public class OldSchoolNpcType(
                         }
                     }
             }
+            61 -> {
+                val count = buffer.g1()
+                this.model =
+                    buildList(count) {
+                        for (i in 0..<count) {
+                            add(buffer.g4())
+                        }
+                    }
+            }
+            62 -> {
+                val count = buffer.g1()
+                this.headmodel =
+                    buildList(count) {
+                        for (i in 0..<count) {
+                            add(buffer.g4())
+                        }
+                    }
+            }
             74 -> this.stat[0] = buffer.g2()
             75 -> this.stat[1] = buffer.g2()
             76 -> this.stat[2] = buffer.g2()

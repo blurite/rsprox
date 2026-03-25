@@ -9,13 +9,13 @@ internal object ParamTypeHelper {
     ) {
         val count = buffer.g1()
         for (i in 0..<count) {
-            val isString = buffer.g1() == 1
+            val type = buffer.g1()
             val id = buffer.g3()
             val value =
-                if (isString) {
-                    buffer.gjstr()
-                } else {
-                    buffer.g4()
+                when (type) {
+                    1 -> buffer.gjstr()
+                    2 -> buffer.g8()
+                    else -> buffer.g4()
                 }
             params[id] = value
         }
