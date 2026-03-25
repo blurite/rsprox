@@ -202,6 +202,9 @@ public class SessionTracker(
             ClearEntities -> {
                 sessionState.destroyDynamicWorlds()
             }
+            is Reconnect -> {
+                sessionState.destroyDynamicWorlds()
+            }
             is UpdateZoneFullFollows -> {
                 sessionState.getActiveWorld().setActiveZone(message.zoneX, message.zoneZ, message.level)
             }
