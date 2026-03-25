@@ -36,7 +36,7 @@ internal class RebuildRegionV2Decoder : ProxyMessageDecoder<RebuildRegionV2> {
                 }
             }
         }
-        val world = session.getWorld(0)
+        val world = session.getWorld(-1)
         world.baseX = (zoneX - 6) * 8
         world.baseZ = (zoneZ - 6) * 8
         return RebuildRegionV2(
