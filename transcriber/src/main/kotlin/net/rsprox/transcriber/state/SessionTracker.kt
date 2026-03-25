@@ -128,12 +128,35 @@ public class SessionTracker(
                 world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
                 world.setBuildArea(null)
             }
+            is RebuildNormalV2 -> {
+                val world = sessionState.getWorld(-1)
+                world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
+                world.setBuildArea(null)
+            }
             is RebuildRegionV1 -> {
                 val world = sessionState.getWorld(-1)
                 world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
                 world.setBuildArea(message.buildArea)
             }
+            is RebuildRegionV2 -> {
+                val world = sessionState.getWorld(-1)
+                world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
+                world.setBuildArea(message.buildArea)
+            }
             is RebuildLoginV1 -> {
+                sessionState.overridePlayer(
+                    Player(
+                        message.playerInfoInitBlock.localPlayerIndex,
+                        "uninitialized",
+                        message.playerInfoInitBlock.localPlayerCoord,
+                    ),
+                )
+                sessionState.localPlayerIndex = message.playerInfoInitBlock.localPlayerIndex
+                val world = sessionState.createWorld(-1)
+                world.rebuild(CoordGrid(0, (message.zoneX - 6) shl 3, (message.zoneZ - 6) shl 3))
+                world.setBuildArea(null)
+            }
+            is RebuildLoginV2 -> {
                 sessionState.overridePlayer(
                     Player(
                         message.playerInfoInitBlock.localPlayerIndex,
@@ -157,6 +180,11 @@ public class SessionTracker(
                 world.setBuildArea(message.buildArea)
             }
             is RebuildWorldEntityV3 -> {
+                val world = sessionState.getActiveWorld()
+                world.rebuild(CoordGrid(0, message.baseX, message.baseZ))
+                world.setBuildArea(message.buildArea)
+            }
+            is RebuildWorldEntityV4 -> {
                 val world = sessionState.getActiveWorld()
                 world.rebuild(CoordGrid(0, message.baseX, message.baseZ))
                 world.setBuildArea(message.buildArea)
