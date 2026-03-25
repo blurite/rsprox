@@ -68,6 +68,7 @@ import net.rsprox.protocol.v237.game.outgoing.decoder.codec.logout.LogoutWithRea
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.map.RebuildRegionV1Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.map.RebuildRegionV2Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.map.RebuildWorldEntityV3Decoder
+import net.rsprox.protocol.v237.game.outgoing.decoder.codec.map.RebuildWorldEntityV4Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.map.ReconnectDecoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.map.StaticRebuildV1Decoder
 import net.rsprox.protocol.v237.game.outgoing.decoder.codec.map.StaticRebuildV2Decoder
@@ -226,6 +227,7 @@ internal object ServerMessageDecoderRepository {
                 bind(RebuildRegionV1Decoder())
                 bind(RebuildRegionV2Decoder())
                 bind(RebuildWorldEntityV3Decoder())
+                bind(RebuildWorldEntityV4Decoder())
 
                 bind(SetHeatmapEnabledDecoder())
                 bind(HideLocOpsDecoder())
