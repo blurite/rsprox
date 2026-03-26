@@ -1,5 +1,7 @@
 package net.rsprox.cache.api.type
 
+import net.rsprox.cache.api.type.util.Ops
+
 @Suppress("SpellCheckingInspection")
 public interface NpcType {
     public val id: Int
@@ -27,7 +29,7 @@ public interface NpcType {
     public val recoldest: List<Int>
     public val retexsource: List<Int>
     public val retexdest: List<Int>
-    public val op: List<String?>
+    public val ops: Ops
     public val minimap: Boolean
     public val vislevel: Int
     public val resizeh: Int

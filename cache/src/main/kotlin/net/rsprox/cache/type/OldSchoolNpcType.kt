@@ -2,6 +2,7 @@ package net.rsprox.cache.type
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprox.cache.api.type.NpcType
+import net.rsprox.cache.type.util.EntityOps
 
 @Suppress("DuplicatedCode")
 public class OldSchoolNpcType(
@@ -31,7 +32,7 @@ public class OldSchoolNpcType(
     override var recoldest: List<Int> = emptyList()
     override var retexsource: List<Int> = emptyList()
     override var retexdest: List<Int> = emptyList()
-    override var op: MutableList<String?> = mutableListOf(null, null, null, null, null)
+    override var ops: EntityOps = EntityOps()
     override var minimap: Boolean = true
     override var vislevel: Int = -1
     override var resizeh: Int = 128
@@ -105,11 +106,17 @@ public class OldSchoolNpcType(
                 this.walkanimright = buffer.g2()
             }
             18 -> this.category = buffer.g2()
-            30 -> this.op[0] = buffer.gjstr()
-            31 -> this.op[1] = buffer.gjstr()
-            32 -> this.op[2] = buffer.gjstr()
-            33 -> this.op[3] = buffer.gjstr()
-            34 -> this.op[4] = buffer.gjstr()
+            30, 31, 32, 33, 34, 251, 252, 253 -> {
+                this.ops.gOps(
+                    buffer,
+                    opcode,
+                    30,
+                    34,
+                    251,
+                    252,
+                    253,
+                )
+            }
             40 -> {
                 val count = buffer.g1()
                 val source = IntArray(count)
@@ -282,7 +289,7 @@ public class OldSchoolNpcType(
         if (recoldest != other.recoldest) return false
         if (retexsource != other.retexsource) return false
         if (retexdest != other.retexdest) return false
-        if (op != other.op) return false
+        if (ops != other.ops) return false
         if (minimap != other.minimap) return false
         if (vislevel != other.vislevel) return false
         if (resizeh != other.resizeh) return false
@@ -334,7 +341,7 @@ public class OldSchoolNpcType(
         result = 31 * result + recoldest.hashCode()
         result = 31 * result + retexsource.hashCode()
         result = 31 * result + retexdest.hashCode()
-        result = 31 * result + op.hashCode()
+        result = 31 * result + ops.hashCode()
         result = 31 * result + minimap.hashCode()
         result = 31 * result + vislevel
         result = 31 * result + resizeh
@@ -386,7 +393,7 @@ public class OldSchoolNpcType(
             "recoldest=$recoldest, " +
             "retexsource=$retexsource, " +
             "retexdest=$retexdest, " +
-            "op=$op, " +
+            "ops=$ops, " +
             "minimap=$minimap, " +
             "vislevel=$vislevel, " +
             "resizeh=$resizeh, " +
