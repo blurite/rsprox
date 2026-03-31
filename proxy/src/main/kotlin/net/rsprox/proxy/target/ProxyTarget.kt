@@ -18,7 +18,6 @@ import net.rsprox.proxy.worlds.World
 import net.rsprox.proxy.worlds.WorldListProvider
 import java.net.URL
 import java.util.concurrent.TimeUnit
-import kotlin.system.exitProcess
 
 public class ProxyTarget(
     public val config: ProxyTargetConfig,
@@ -75,27 +74,23 @@ public class ProxyTarget(
     }
 
     private fun loadJavConfig(url: String): JavConfig {
-        return runCatching("Failed to load jav_config.ws from $url for target '$name'") {
-            val config = JavConfig(URL(url))
-            logger.debug { "Jav config loaded from $url for target '$name'" }
-            config
-        }
+        val config = JavConfig(URL(url))
+        logger.debug { "Jav config loaded from $url for target '$name'" }
+        return config
     }
 
     private fun loadWorldListProvider(
         properties: ProxyProperties,
         url: String,
     ): WorldListProvider {
-        return runCatching("Failed to instantiate world list provider for target '$name'") {
-            val provider =
-                DynamicWorldListProvider(
-                    config,
-                    URL(url),
-                    properties.getProperty(ProxyProperty.WORLDLIST_REFRESH_SECONDS),
-                )
-            logger.debug { "World list provider loaded from $url for target '$name'" }
-            provider
-        }
+        val provider =
+            DynamicWorldListProvider(
+                config,
+                URL(url),
+                properties.getProperty(ProxyProperty.WORLDLIST_REFRESH_SECONDS),
+            )
+        logger.debug { "World list provider loaded from $url for target '$name'" }
+        return provider
     }
 
     private fun findCodebaseReplacementWorld(
@@ -117,20 +112,18 @@ public class ProxyTarget(
         javConfig: JavConfig,
         replacementWorld: World,
     ): JavConfig {
-        return runCatching("Failed to rebuild jav_config.ws for target '$name'") {
-            val oldWorldList = javConfig.getWorldListUrl()
-            val oldCodebase = javConfig.getCodebase()
-            val changedWorldListUrl = "http://127.0.0.1:$httpPort/worldlist.ws"
-            val changedCodebase = "http://${replacementWorld.localHostAddress}/"
-            val updated =
-                javConfig
-                    .replaceWorldListUrl(changedWorldListUrl)
-                    .replaceCodebase(changedCodebase)
-            logger.debug { "Rebuilt jav_config.ws for target '$name':" }
-            logger.debug { "Codebase changed from '$oldCodebase' to '$changedCodebase'" }
-            logger.debug { "Worldlist changed from '$oldWorldList' to '$changedWorldListUrl'" }
-            updated
-        }
+        val oldWorldList = javConfig.getWorldListUrl()
+        val oldCodebase = javConfig.getCodebase()
+        val changedWorldListUrl = "http://127.0.0.1:$httpPort/worldlist.ws"
+        val changedCodebase = "http://${replacementWorld.localHostAddress}/"
+        val updated =
+            javConfig
+                .replaceWorldListUrl(changedWorldListUrl)
+                .replaceCodebase(changedCodebase)
+        logger.debug { "Rebuilt jav_config.ws for target '$name':" }
+        logger.debug { "Codebase changed from '$oldCodebase' to '$changedCodebase'" }
+        logger.debug { "Worldlist changed from '$oldWorldList' to '$changedWorldListUrl'" }
+        return updated
     }
 
     private fun launchHttpServer(
@@ -154,20 +147,6 @@ public class ProxyTarget(
             .join()
         this.httpServerBootstrap = httpServerBootstrap
         logger.debug { "HTTP server bound to port $httpPort for target '$name'" }
-    }
-
-    private inline fun <T> runCatching(
-        errorMessage: String,
-        block: () -> T,
-    ): T {
-        try {
-            return block()
-        } catch (t: Throwable) {
-            logger.error(t) {
-                errorMessage
-            }
-            exitProcess(-1)
-        }
     }
 
     private companion object {
