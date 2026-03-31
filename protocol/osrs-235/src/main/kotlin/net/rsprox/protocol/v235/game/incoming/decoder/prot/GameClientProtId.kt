@@ -31,7 +31,7 @@ internal object GameClientProtId {
     const val FRIENDLIST_DEL = 27
     const val OPLOC4 = 28
     const val OPPLAYER7 = 29
-    const val IF_RUNSCRIPT = 30
+    const val IF_SCRIPT_TRIGGER = 30
     const val OPOBJ1 = 31
     const val RESUME_P_STRINGDIALOG = 32
     const val EVENT_MOUSE_SCROLL = 33

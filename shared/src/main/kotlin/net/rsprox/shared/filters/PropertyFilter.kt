@@ -37,12 +37,14 @@ public enum class PropertyFilter(
         true,
         searchTerms = "if,interface,ifbuttont,buttons,targetting,use,using",
     ),
+
+    // for legacy purposes (retaining old setting), keep the name as-is
     IF_RUNSCRIPT(
         CLIENT_TO_SERVER,
         INTERFACES,
         "Interface Scripts",
         true,
-        searchTerms = "if,interface,ifrunscript,scripts,serverscript,clientscript,cs2,rs2",
+        searchTerms = "if,interface,ifrunscript,ifscripttrigger,scripts,serverscript,clientscript,cs2,rs2",
     ),
 
     OPNPC(

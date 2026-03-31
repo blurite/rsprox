@@ -96,7 +96,7 @@ internal object GameClientProtId {
     const val EVENT_MOUSE_CLICK_V2 = 92
     const val OPNPC3 = 93
     const val IF_BUTTOND = 94
-    const val IF_RUNSCRIPT = 95
+    const val IF_SCRIPT_TRIGGER = 95
     const val IDLE = 96
     const val OPLOC1 = 97
     const val OPLOC2 = 98

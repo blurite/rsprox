@@ -76,7 +76,7 @@ internal object GameClientProtId {
     const val MEMBERSHIP_PROMOTION_ELIGIBILITY = 72
     const val FRIENDLIST_ADD = 73
     const val AFFINEDCLANSETTINGS_ADDBANNED_FROMCHANNEL = 74
-    const val IF_RUNSCRIPT = 75
+    const val IF_SCRIPT_TRIGGER = 75
     const val OPLOC3 = 76
     const val OPNPCT = 77
     const val OPPLAYER5 = 78

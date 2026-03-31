@@ -10,7 +10,7 @@ internal object GameClientProtId {
     const val OPOBJ3 = 6
     const val IF_BUTTOND = 7
     const val FRIENDCHAT_SETRANK = 8
-    const val IF_RUNSCRIPT = 9
+    const val IF_SCRIPT_TRIGGER = 9
     const val OPPLAYER1 = 10
     const val OPNPCU = 11
     const val OPPLAYER7 = 12

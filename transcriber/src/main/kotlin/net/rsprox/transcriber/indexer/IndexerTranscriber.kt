@@ -218,7 +218,7 @@ public class IndexerTranscriber(
         incrementInterfaceId(message.targetInterfaceId)
     }
 
-    override fun ifRunScript(message: IfRunScript) {
+    override fun ifScriptTrigger(message: IfScriptTrigger) {
         incrementInterfaceId(message.interfaceId)
     }
 

@@ -43,7 +43,7 @@ internal object GameClientProtId {
     const val IDLE = 39
     const val OPWORLDENTITY4 = 40
     const val OPPLAYER4 = 41
-    const val IF_RUNSCRIPT = 42
+    const val IF_SCRIPT_TRIGGER = 42
     const val OPOBJ5_V2 = 43
     const val FRIENDLIST_ADD = 44
     const val OPWORLDENTITY3 = 45

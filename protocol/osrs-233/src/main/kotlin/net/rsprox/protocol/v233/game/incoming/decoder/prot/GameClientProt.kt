@@ -13,7 +13,7 @@ public enum class GameClientProt(
     IF_SUBOP(GameClientProtId.IF_SUBOP, 10),
     IF_BUTTOND(GameClientProtId.IF_BUTTOND, 16),
     IF_BUTTONT(GameClientProtId.IF_BUTTONT, 16),
-    IF_RUNSCRIPT(GameClientProtId.IF_RUNSCRIPT, Prot.VAR_SHORT),
+    IF_SCRIPT_TRIGGER(GameClientProtId.IF_SCRIPT_TRIGGER, Prot.VAR_SHORT),
 
     // Op npc
     OPNPC1(GameClientProtId.OPNPC1, 3),

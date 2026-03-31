@@ -68,7 +68,7 @@ public interface ClientPacketTranscriber {
 
     public fun ifButtonT(message: IfButtonT)
 
-    public fun ifRunScript(message: IfRunScript)
+    public fun ifScriptTrigger(message: IfScriptTrigger)
 
     public fun affinedClanSettingsAddBannedFromChannel(message: AffinedClanSettingsAddBannedFromChannel)
 

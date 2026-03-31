@@ -17,7 +17,7 @@ public enum class GameClientProt : Prot {
     IF_SUBOP,
     IF_BUTTOND,
     IF_BUTTONT,
-    IF_RUNSCRIPT,
+    IF_SCRIPT_TRIGGER,
 
     // Op npc
     OPNPC1_V1,

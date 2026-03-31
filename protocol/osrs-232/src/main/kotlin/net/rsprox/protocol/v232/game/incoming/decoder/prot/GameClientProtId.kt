@@ -75,7 +75,7 @@ internal object GameClientProtId {
     const val OPOBJ1 = 71
     const val SEND_SNAPSHOT = 72
     const val FRIENDLIST_ADD = 73
-    const val IF_RUNSCRIPT = 74
+    const val IF_SCRIPT_TRIGGER = 74
     const val CLOSE_MODAL = 75
     const val OPOBJT = 76
     const val OPNPCT = 77

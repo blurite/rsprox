@@ -264,12 +264,12 @@ public open class TextClientPacketTranscriber(
         root.filteredScriptVarType("targetobj", ScriptVarType.OBJ, message.targetObj, -1)
     }
 
-    override fun ifRunScript(message: IfRunScript) {
+    override fun ifScriptTrigger(message: IfScriptTrigger) {
         if (!filters[PropertyFilter.IF_RUNSCRIPT]) return omit()
         root.com(message.interfaceId, message.componentId)
         root.filteredInt("sub", message.sub, -1)
         root.filteredScriptVarType("obj", ScriptVarType.OBJ, message.obj, -1)
-        root.int("script", message.script)
+        root.int("crc", message.crc)
         root.any("payload", message.bytes.contentToString())
     }
 

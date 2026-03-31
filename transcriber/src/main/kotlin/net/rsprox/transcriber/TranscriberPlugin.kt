@@ -252,7 +252,7 @@ public class TranscriberPlugin(
             GameClientProt.IF_SUBOP -> pass(message, Transcriber::ifSubOp)
             GameClientProt.IF_BUTTOND -> pass(message, Transcriber::ifButtonD)
             GameClientProt.IF_BUTTONT -> pass(message, Transcriber::ifButtonT)
-            GameClientProt.IF_RUNSCRIPT -> pass(message, Transcriber::ifRunScript)
+            GameClientProt.IF_SCRIPT_TRIGGER -> pass(message, Transcriber::ifScriptTrigger)
             GameClientProt.OPNPC1_V1 -> pass(message, Transcriber::opNpcV1)
             GameClientProt.OPNPC2_V1 -> pass(message, Transcriber::opNpcV1)
             GameClientProt.OPNPC3_V1 -> pass(message, Transcriber::opNpcV1)

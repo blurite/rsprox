@@ -101,7 +101,7 @@ internal object ClientMessageDecoderRepository {
                 bind(IfSubOpDecoder())
                 bind(IfButtonDDecoder())
                 bind(IfButtonTDecoder())
-                bind(IfRunScriptDecoder())
+                bind(IfScriptTriggerDecoder())
 
                 bind(OpNpc1Decoder())
                 bind(OpNpc2Decoder())

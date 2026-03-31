@@ -5,29 +5,28 @@ import net.rsprot.buffer.extensions.toByteArray
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.util.gCombinedIdAlt2
 import net.rsprox.protocol.ProxyMessageDecoder
-import net.rsprox.protocol.game.incoming.model.buttons.IfRunScript
+import net.rsprox.protocol.game.incoming.model.buttons.IfScriptTrigger
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v237.game.incoming.decoder.prot.GameClientProt
 
-public class IfRunScriptDecoder : ProxyMessageDecoder<IfRunScript> {
-    override val prot: ClientProt = GameClientProt.IF_RUNSCRIPT
+public class IfScriptTriggerDecoder : ProxyMessageDecoder<IfScriptTrigger> {
+    override val prot: ClientProt = GameClientProt.IF_SCRIPT_TRIGGER
 
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
-    ): IfRunScript {
-        // Function is method(int combinedId, int sub, int obj, int script, Object[] args)
-        // The order of argument does not seem to change (based on two revisions)
+    ): IfScriptTrigger {
+        // Function is method(int combinedId, int sub, int obj, int crc, Object[] args)
         val sub = buffer.g2Alt3()
         val combinedId = buffer.gCombinedIdAlt2()
-        val script = buffer.g4Alt1()
+        val crc = buffer.g4Alt1()
         val obj = buffer.g2Alt3()
         val bytes = buffer.buffer.toByteArray()
-        return IfRunScript(
+        return IfScriptTrigger(
             combinedId,
             sub,
             obj,
-            script,
+            crc,
             bytes,
         )
     }
