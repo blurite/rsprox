@@ -26,6 +26,7 @@ public class World(
     private val npcs: MutableMap<Int, Npc> = mutableMapOf()
     private var rebuildRegionBuildArea: BuildArea? = null
     public var activeLevel: Int = 0
+    public var consistentRegion: Boolean = false
 
     private val settings: SettingSet
         get() = settingSetStore.getActive()
@@ -85,7 +86,22 @@ public class World(
         }
         val localX = coordGrid.x - buildAreaSouthWestCoord.x
         val localZ = coordGrid.z - buildAreaSouthWestCoord.z
-        if (localX < 0 || localX >= 104 || localZ < 0 || localZ >= 104) {
+        if (localX !in 0..<104 || localZ !in 0..<104) {
+            if (consistentRegion) {
+                // Anchor against the centre of the build area as that is guaranteed
+                // to always exist (local player is here during map reload)
+                val offset = 6
+                val template = buildArea[coordGrid.level, offset, offset]
+                if (template.invalid) {
+                    return null
+                }
+                val swZoneX = template.zoneX
+                val swZoneZ = template.zoneZ
+                val level = template.level
+                val x = (swZoneX shl 3) + (localX - (offset shl 3))
+                val z = (swZoneZ shl 3) + (localZ - (offset shl 3))
+                return CoordGrid(level, x, z)
+            }
             return null
         }
         val localZoneX = localX ushr 3

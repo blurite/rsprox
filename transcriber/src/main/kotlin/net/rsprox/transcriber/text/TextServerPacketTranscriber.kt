@@ -1664,12 +1664,15 @@ public class TextServerPacketTranscriber(
         root.int("zonex", message.zoneX)
         root.int("zonez", message.zoneZ)
         root.boolean("reload", message.reload)
+        val world = sessionState.getWorld(-1)
+        world.consistentRegion = false
         val mapsquares = mutableSetOf<Int>()
         root.group("BUILD_AREA") {
             val startZoneX = message.zoneX - 6
             val startZoneZ = message.zoneZ - 6
             val simpleBlock = message.buildArea.calculateSimpleBlockOrNull()
             if (simpleBlock != null) {
+                world.consistentRegion = true
                 // Collect xteas anyway
                 for (level in 0..<4) {
                     for (zoneX in startZoneX..(message.zoneX + 6)) {
@@ -1742,11 +1745,14 @@ public class TextServerPacketTranscriber(
         root.int("zonex", message.zoneX)
         root.int("zonez", message.zoneZ)
         root.boolean("reload", message.reload)
+        val world = sessionState.getWorld(-1)
+        world.consistentRegion = false
         root.group("BUILD_AREA") {
             val startZoneX = message.zoneX - 6
             val startZoneZ = message.zoneZ - 6
             val simpleBlock = message.buildArea.calculateSimpleBlockOrNull()
             if (simpleBlock != null) {
+                world.consistentRegion = true
                 group {
                     val sw = message.buildArea[simpleBlock.minLevel, simpleBlock.minX, simpleBlock.minZ]
                     val ne = message.buildArea[simpleBlock.maxLevel, simpleBlock.maxX, simpleBlock.maxZ]
