@@ -100,6 +100,9 @@ public class World(
                 val level = template.level
                 val x = (swZoneX shl 3) + (localX - (offset shl 3))
                 val z = (swZoneZ shl 3) + (localZ - (offset shl 3))
+                if (x !in 0..<16384 || z !in 0..<16384) {
+                    return null
+                }
                 return CoordGrid(level, x, z)
             }
             return null
