@@ -173,6 +173,11 @@ public class ServerGameLoginDecoder(
             if (!input.isReadable(stateValue)) return
             val data = ByteArray(stateValue)
             input.gdata(data)
+            // Read 'stateValue' number of cipher values
+            val cipher = ctx.channel().getServerToClientStreamCipher()
+            for (i in 0..<stateValue) {
+                cipher.nextInt()
+            }
             writeToClient {
                 pdata(data)
             }
