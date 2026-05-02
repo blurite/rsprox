@@ -6,6 +6,7 @@ import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.property.OmitFilteredPropertyTreeFormatter
 import net.rsprox.shared.property.PropertyTreeFormatter
 import net.rsprox.shared.property.RootProperty
+import net.rsprox.shared.settings.Setting
 import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.MessageConsumerContainer
 import net.rsprox.transcriber.Transcriber
@@ -66,8 +67,12 @@ public class TextTranscriber private constructor(
 
     override val cache: Cache = cacheProvider.get()
 
-    override fun onTranscribeStart() {
+    override fun onTranscribeStart(): Boolean {
+        if (sessionState.cycle == 0 && settingSetStore.getActive()[Setting.SKIP_FIRST_TICK]) {
+            return false
+        }
         sessionState.setRoot()
+        return true
     }
 
     override fun onTranscribeEnd() {

@@ -36,6 +36,13 @@ public enum class Setting(
         true,
         "Translates instanced coords to the static counterparts if possible.",
     ),
+    SKIP_FIRST_TICK(
+        SettingGroup.LOGGING,
+        SettingCategory.MISC,
+        "Skip First Tick",
+        false,
+        "Skips logging all packets on tick 0. Most of this is the initial state being assigned.",
+    ),
     HIDE_UNNECESSARY_VARPS(
         SettingGroup.LOGGING,
         SettingCategory.MISC,

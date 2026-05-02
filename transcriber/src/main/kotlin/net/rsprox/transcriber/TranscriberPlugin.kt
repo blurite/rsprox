@@ -16,7 +16,8 @@ public class TranscriberPlugin(
         value: IncomingMessage,
         block: Transcriber.(instance: T) -> Unit,
     ) {
-        transcriber.onTranscribeStart()
+        val transcribe = transcriber.onTranscribeStart()
+        if (!transcribe) return
         try {
             block(transcriber, value as T)
         } finally {

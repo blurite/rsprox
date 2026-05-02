@@ -177,7 +177,8 @@ public class IndexerTranscriber(
 
     override val cache: Cache = cacheProvider.get()
 
-    override fun onTranscribeStart() {
+    override fun onTranscribeStart(): Boolean {
+        return true
     }
 
     override fun onTranscribeEnd() {

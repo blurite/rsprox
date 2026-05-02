@@ -13,7 +13,7 @@ public interface Transcriber :
     NpcInfoTranscriber {
     public val cache: Cache
 
-    public fun onTranscribeStart()
+    public fun onTranscribeStart(): Boolean
 
     public fun onTranscribeEnd()
 }
