@@ -18,9 +18,9 @@ public class IfScriptTriggerDecoder : ProxyMessageDecoder<IfScriptTrigger> {
     ): IfScriptTrigger {
         // Function is method(int combinedId, int sub, int obj, int crc, Object[] args)
         val sub = buffer.g2Alt3()
+        val obj = buffer.g2Alt2()
         val combinedId = buffer.gCombinedIdAlt2()
-        val crc = buffer.g4Alt1()
-        val obj = buffer.g2Alt3()
+        val crc = buffer.g4Alt2()
         val bytes = buffer.buffer.toByteArray()
         return IfScriptTrigger(
             combinedId,

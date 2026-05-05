@@ -3,7 +3,7 @@ package net.rsprox.protocol.v238.game.incoming.decoder.codec.buttons
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.util.gCombinedId
-import net.rsprot.protocol.util.gCombinedIdAlt1
+import net.rsprot.protocol.util.gCombinedIdAlt2
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.incoming.model.buttons.IfButtonT
 import net.rsprox.protocol.session.Session
@@ -16,12 +16,12 @@ public class IfButtonTDecoder : ProxyMessageDecoder<IfButtonT> {
         buffer: JagByteBuf,
         session: Session,
     ): IfButtonT {
-        val selectedSub = buffer.g2()
-        val targetObj = buffer.g2()
         val targetCombinedId = buffer.gCombinedId()
+        val selectedSub = buffer.g2Alt2()
+        val selectedObj = buffer.g2Alt3()
+        val selectedCombinedId = buffer.gCombinedIdAlt2()
         val targetSub = buffer.g2()
-        val selectedObj = buffer.g2()
-        val selectedCombinedId = buffer.gCombinedIdAlt1()
+        val targetObj = buffer.g2Alt3()
         return IfButtonT(
             selectedCombinedId,
             selectedSub,

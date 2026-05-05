@@ -16,14 +16,14 @@ internal class ObjAddSpecificDecoder : ProxyMessageDecoder<ObjAddSpecific> {
         buffer: JagByteBuf,
         session: Session,
     ): ObjAddSpecific {
-        val quantity = buffer.g4Alt2()
-        val ownershipType = buffer.g1Alt2()
-        val neverBecomesPublic = buffer.g1() == 1
-        val opFlags = OpFlags(buffer.g1Alt3())
-        val coordGrid = CoordGrid(buffer.g4())
-        val id = buffer.g2Alt2()
         val timeUntilDespawn = buffer.g2()
-        val timeUntilPublic = buffer.g2Alt1()
+        val quantity = buffer.g4Alt1()
+        val coordGrid = CoordGrid(buffer.g4Alt2())
+        val opFlags = OpFlags(buffer.g1Alt2())
+        val ownershipType = buffer.g1()
+        val id = buffer.g2()
+        val neverBecomesPublic = buffer.g1() == 1
+        val timeUntilPublic = buffer.g2Alt2()
         return ObjAddSpecific(
             id,
             quantity,

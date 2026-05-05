@@ -46,7 +46,6 @@ import net.rsprox.protocol.v238.game.outgoing.decoder.codec.interfaces.IfSetAngl
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.interfaces.IfSetAnimDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.interfaces.IfSetColourDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.interfaces.IfSetHideDecoder
-import net.rsprox.protocol.v238.game.outgoing.decoder.codec.interfaces.IfSetModelV1Decoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.interfaces.IfSetNpcHeadActiveDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.interfaces.IfSetNpcHeadDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.interfaces.IfSetObjectDecoder
@@ -65,12 +64,9 @@ import net.rsprox.protocol.v238.game.outgoing.decoder.codec.inv.UpdateInvStopTra
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.logout.LogoutDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.logout.LogoutTransferDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.logout.LogoutWithReasonDecoder
-import net.rsprox.protocol.v238.game.outgoing.decoder.codec.map.RebuildRegionV1Decoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.map.RebuildRegionV2Decoder
-import net.rsprox.protocol.v238.game.outgoing.decoder.codec.map.RebuildWorldEntityV3Decoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.map.RebuildWorldEntityV4Decoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.map.ReconnectDecoder
-import net.rsprox.protocol.v238.game.outgoing.decoder.codec.map.StaticRebuildV1Decoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.map.StaticRebuildV2Decoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.misc.client.HideLocOpsDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.misc.client.HideNpcOpsDecoder
@@ -91,7 +87,6 @@ import net.rsprox.protocol.v238.game.outgoing.decoder.codec.misc.client.SiteSett
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.misc.client.UpdateRebootTimerV2Decoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.misc.client.UpdateUid192Decoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.misc.client.UrlOpenDecoder
-import net.rsprox.protocol.v238.game.outgoing.decoder.codec.misc.client.ZBufDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.misc.player.AccountFlagsDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.misc.player.ChatFilterSettingsDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.misc.player.ChatFilterSettingsPrivateChatDecoder
@@ -198,7 +193,6 @@ internal object ServerMessageDecoderRepository {
                 bind(IfSetColourDecoder())
                 bind(IfSetEventsV2Decoder())
                 bind(IfSetHideDecoder())
-                bind(IfSetModelV1Decoder())
                 bind(IfSetModelV2Decoder())
                 bind(IfSetNpcHeadActiveDecoder())
                 bind(IfSetNpcHeadDecoder())
@@ -222,11 +216,8 @@ internal object ServerMessageDecoderRepository {
                 bind(LogoutWithReasonDecoder())
 
                 bind(ReconnectDecoder())
-                bind(StaticRebuildV1Decoder(huffmanCodec, cache))
                 bind(StaticRebuildV2Decoder(huffmanCodec, cache))
-                bind(RebuildRegionV1Decoder())
                 bind(RebuildRegionV2Decoder())
-                bind(RebuildWorldEntityV3Decoder())
                 bind(RebuildWorldEntityV4Decoder())
 
                 bind(SetHeatmapEnabledDecoder())
@@ -248,7 +239,6 @@ internal object ServerMessageDecoderRepository {
                 bind(UrlOpenDecoder())
                 bind(PacketGroupStartDecoder())
                 bind(PacketGroupEndDecoder())
-                bind(ZBufDecoder())
 
                 bind(ChatFilterSettingsDecoder())
                 bind(ChatFilterSettingsPrivateChatDecoder())

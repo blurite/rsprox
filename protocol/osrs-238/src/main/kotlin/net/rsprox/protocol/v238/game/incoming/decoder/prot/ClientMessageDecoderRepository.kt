@@ -14,15 +14,10 @@ import net.rsprox.protocol.v238.game.incoming.decoder.codec.events.*
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.friendchat.FriendChatJoinLeaveDecoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.friendchat.FriendChatKickDecoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.friendchat.FriendChatSetRankDecoder
-import net.rsprox.protocol.v238.game.incoming.decoder.codec.locs.OpLoc1V1Decoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.locs.OpLoc1V2Decoder
-import net.rsprox.protocol.v238.game.incoming.decoder.codec.locs.OpLoc2V1Decoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.locs.OpLoc2V2Decoder
-import net.rsprox.protocol.v238.game.incoming.decoder.codec.locs.OpLoc3V1Decoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.locs.OpLoc3V2Decoder
-import net.rsprox.protocol.v238.game.incoming.decoder.codec.locs.OpLoc4V1Decoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.locs.OpLoc4V2Decoder
-import net.rsprox.protocol.v238.game.incoming.decoder.codec.locs.OpLoc5V1Decoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.locs.OpLoc5V2Decoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.locs.OpLoc6Decoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.locs.OpLocTDecoder
@@ -43,27 +38,17 @@ import net.rsprox.protocol.v238.game.incoming.decoder.codec.misc.user.SendSnapsh
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.misc.user.SetChatFilterSettingsDecoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.misc.user.SetHeadingDecoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.misc.user.TeleportDecoder
-import net.rsprox.protocol.v238.game.incoming.decoder.codec.npcs.OpNpc1V1Decoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.npcs.OpNpc1V2Decoder
-import net.rsprox.protocol.v238.game.incoming.decoder.codec.npcs.OpNpc2V1Decoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.npcs.OpNpc2V2Decoder
-import net.rsprox.protocol.v238.game.incoming.decoder.codec.npcs.OpNpc3V1Decoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.npcs.OpNpc3V2Decoder
-import net.rsprox.protocol.v238.game.incoming.decoder.codec.npcs.OpNpc4V1Decoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.npcs.OpNpc4V2Decoder
-import net.rsprox.protocol.v238.game.incoming.decoder.codec.npcs.OpNpc5V1Decoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.npcs.OpNpc5V2Decoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.npcs.OpNpc6Decoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.npcs.OpNpcTDecoder
-import net.rsprox.protocol.v238.game.incoming.decoder.codec.objs.OpObj1V1Decoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.objs.OpObj1V2Decoder
-import net.rsprox.protocol.v238.game.incoming.decoder.codec.objs.OpObj2V1Decoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.objs.OpObj2V2Decoder
-import net.rsprox.protocol.v238.game.incoming.decoder.codec.objs.OpObj3V1Decoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.objs.OpObj3V2Decoder
-import net.rsprox.protocol.v238.game.incoming.decoder.codec.objs.OpObj4V1Decoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.objs.OpObj4V2Decoder
-import net.rsprox.protocol.v238.game.incoming.decoder.codec.objs.OpObj5V1Decoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.objs.OpObj5V2Decoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.objs.OpObj6Decoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.objs.OpObjTDecoder
@@ -102,11 +87,6 @@ internal object ClientMessageDecoderRepository {
                 bind(IfButtonTDecoder())
                 bind(IfScriptTriggerDecoder())
 
-                bind(OpNpc1V1Decoder())
-                bind(OpNpc2V1Decoder())
-                bind(OpNpc3V1Decoder())
-                bind(OpNpc4V1Decoder())
-                bind(OpNpc5V1Decoder())
                 bind(OpNpc1V2Decoder())
                 bind(OpNpc2V2Decoder())
                 bind(OpNpc3V2Decoder())
@@ -115,11 +95,6 @@ internal object ClientMessageDecoderRepository {
                 bind(OpNpc6Decoder())
                 bind(OpNpcTDecoder())
 
-                bind(OpLoc1V1Decoder())
-                bind(OpLoc2V1Decoder())
-                bind(OpLoc3V1Decoder())
-                bind(OpLoc4V1Decoder())
-                bind(OpLoc5V1Decoder())
                 bind(OpLoc1V2Decoder())
                 bind(OpLoc2V2Decoder())
                 bind(OpLoc3V2Decoder())
@@ -128,11 +103,6 @@ internal object ClientMessageDecoderRepository {
                 bind(OpLoc6Decoder())
                 bind(OpLocTDecoder())
 
-                bind(OpObj1V1Decoder())
-                bind(OpObj2V1Decoder())
-                bind(OpObj3V1Decoder())
-                bind(OpObj4V1Decoder())
-                bind(OpObj5V1Decoder())
                 bind(OpObj1V2Decoder())
                 bind(OpObj2V2Decoder())
                 bind(OpObj3V2Decoder())

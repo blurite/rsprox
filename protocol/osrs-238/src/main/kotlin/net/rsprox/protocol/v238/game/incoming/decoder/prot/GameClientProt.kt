@@ -16,11 +16,6 @@ public enum class GameClientProt(
     IF_SCRIPT_TRIGGER(GameClientProtId.IF_SCRIPT_TRIGGER, Prot.VAR_SHORT),
 
     // Op npc
-    OPNPC1_V1(GameClientProtId.OPNPC1_V1, 3),
-    OPNPC2_V1(GameClientProtId.OPNPC2_V1, 3),
-    OPNPC3_V1(GameClientProtId.OPNPC3_V1, 3),
-    OPNPC4_V1(GameClientProtId.OPNPC4_V1, 3),
-    OPNPC5_V1(GameClientProtId.OPNPC5_V1, 3),
     OPNPC1_V2(GameClientProtId.OPNPC1_V2, 4),
     OPNPC2_V2(GameClientProtId.OPNPC2_V2, 4),
     OPNPC3_V2(GameClientProtId.OPNPC3_V2, 4),
@@ -37,11 +32,6 @@ public enum class GameClientProt(
     OPNPCU(GameClientProtId.OPNPCU, 11),
 
     // Op loc
-    OPLOC1_V1(GameClientProtId.OPLOC1_V1, 7),
-    OPLOC2_V1(GameClientProtId.OPLOC2_V1, 7),
-    OPLOC3_V1(GameClientProtId.OPLOC3_V1, 7),
-    OPLOC4_V1(GameClientProtId.OPLOC4_V1, 7),
-    OPLOC5_V1(GameClientProtId.OPLOC5_V1, 7),
     OPLOC1_V2(GameClientProtId.OPLOC1_V2, 8),
     OPLOC2_V2(GameClientProtId.OPLOC2_V2, 8),
     OPLOC3_V2(GameClientProtId.OPLOC3_V2, 8),
@@ -58,11 +48,6 @@ public enum class GameClientProt(
     OPLOCU(GameClientProtId.OPLOCU, 15),
 
     // Op obj
-    OPOBJ1_V1(GameClientProtId.OPOBJ1_V1, 7),
-    OPOBJ2_V1(GameClientProtId.OPOBJ2_V1, 7),
-    OPOBJ3_V1(GameClientProtId.OPOBJ3_V1, 7),
-    OPOBJ4_V1(GameClientProtId.OPOBJ4_V1, 7),
-    OPOBJ5_V1(GameClientProtId.OPOBJ5_V1, 7),
     OPOBJ1_V2(GameClientProtId.OPOBJ1_V2, 8),
     OPOBJ2_V2(GameClientProtId.OPOBJ2_V2, 8),
     OPOBJ3_V2(GameClientProtId.OPOBJ3_V2, 8),
@@ -119,14 +104,7 @@ public enum class GameClientProt(
     EVENT_MOUSE_MOVE(GameClientProtId.EVENT_MOUSE_MOVE, Prot.VAR_BYTE),
     EVENT_NATIVE_MOUSE_MOVE(GameClientProtId.EVENT_NATIVE_MOUSE_MOVE, Prot.VAR_BYTE),
     EVENT_MOUSE_CLICK_V1(GameClientProtId.EVENT_MOUSE_CLICK_V1, 6),
-    EVENT_MOUSE_CLICK_V2(GameClientProtId.EVENT_NATIVE_MOUSE_CLICK_V2, 7),
-
-    @Deprecated(
-        "Deprecated since rework in revision 232, " +
-            "where the platforms were joined into a single packet.",
-        replaceWith = ReplaceWith("EVENT_MOUSE_CLICK_V2"),
-    )
-    EVENT_NATIVE_MOUSE_CLICK(GameClientProtId.EVENT_NATIVE_MOUSE_CLICK_V1, 7),
+    EVENT_MOUSE_CLICK_V2(GameClientProtId.EVENT_MOUSE_CLICK_V2, 7),
 
     // Resume events
     RESUME_PAUSEBUTTON(GameClientProtId.RESUME_PAUSEBUTTON, 6),

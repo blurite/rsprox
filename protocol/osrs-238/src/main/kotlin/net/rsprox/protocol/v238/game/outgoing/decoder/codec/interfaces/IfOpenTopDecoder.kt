@@ -14,7 +14,7 @@ internal class IfOpenTopDecoder : ProxyMessageDecoder<IfOpenTop> {
         buffer: JagByteBuf,
         session: Session,
     ): IfOpenTop {
-        val interfaceId = buffer.g2Alt1()
+        val interfaceId = buffer.g2Alt3()
         return IfOpenTop(
             interfaceId,
         )

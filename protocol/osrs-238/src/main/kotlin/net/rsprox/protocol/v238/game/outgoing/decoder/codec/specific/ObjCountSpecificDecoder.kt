@@ -16,9 +16,9 @@ internal class ObjCountSpecificDecoder : ProxyMessageDecoder<ObjCountSpecific> {
         session: Session,
     ): ObjCountSpecific {
         val oldQuantity = buffer.g4Alt3()
+        val newQuantity = buffer.g4Alt3()
         val coordGrid = CoordGrid(buffer.g4Alt3())
-        val id = buffer.g2Alt1()
-        val newQuantity = buffer.g4Alt1()
+        val id = buffer.g2Alt3()
         return ObjCountSpecific(
             id,
             oldQuantity,
