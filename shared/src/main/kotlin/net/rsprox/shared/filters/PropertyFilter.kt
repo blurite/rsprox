@@ -669,6 +669,13 @@ public enum class PropertyFilter(
         true,
         searchTerms = "music,song,midi,play,track,patch,sample,synth,soundeffects",
     ),
+    AMBIENCE(
+        SERVER_TO_CLIENT,
+        MIDI,
+        "Ambience",
+        true,
+        searchTerms = "ambience,ambiance,background,midi,synth,sound,soundeffects",
+    ),
 
     ZONE_HEADER(
         SERVER_TO_CLIENT,
@@ -1012,6 +1019,20 @@ public enum class PropertyFilter(
         "Oculus Sync",
         true,
         searchTerms = "orb,of,oculus,synchroniztion",
+    ),
+    CAM_SKYBOX(
+        SERVER_TO_CLIENT,
+        CAMERA,
+        "Camera Skybox",
+        true,
+        searchTerms = "camera,skybox",
+    ),
+    CAM_UNLOCK(
+        SERVER_TO_CLIENT,
+        CAMERA,
+        "Camera Unlock",
+        true,
+        searchTerms = "camera,unlock,pitch",
     ),
 
     UPDATE_INV(

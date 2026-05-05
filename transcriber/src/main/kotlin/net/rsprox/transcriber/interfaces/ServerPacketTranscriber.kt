@@ -45,6 +45,8 @@ import net.rsprox.protocol.game.outgoing.model.social.MessagePrivate
 import net.rsprox.protocol.game.outgoing.model.social.MessagePrivateEcho
 import net.rsprox.protocol.game.outgoing.model.social.UpdateFriendList
 import net.rsprox.protocol.game.outgoing.model.social.UpdateIgnoreList
+import net.rsprox.protocol.game.outgoing.model.sound.AmbienceStart
+import net.rsprox.protocol.game.outgoing.model.sound.AmbienceStop
 import net.rsprox.protocol.game.outgoing.model.sound.MidiJingle
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongStop
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV1
@@ -99,6 +101,8 @@ public interface ServerPacketTranscriber {
 
     public fun camSmoothReset(message: CamSmoothReset)
 
+    public fun camTargetV4(message: CamTargetV4)
+
     public fun camTargetV3(message: CamTargetV3)
 
     public fun camTargetV2(message: CamTargetV2)
@@ -106,6 +110,10 @@ public interface ServerPacketTranscriber {
     public fun camTargetV1(message: CamTargetV1)
 
     public fun oculusSync(message: OculusSync)
+
+    public fun camSkybox(message: CamSkybox)
+
+    public fun camUnlock(message: CamUnlock)
 
     public fun clanChannelDelta(message: ClanChannelDelta)
 
@@ -328,6 +336,10 @@ public interface ServerPacketTranscriber {
     public fun midiSwap(message: MidiSwap)
 
     public fun synthSound(message: SynthSound)
+
+    public fun ambienceStart(message: AmbienceStart)
+
+    public fun ambienceStop(message: AmbienceStop)
 
     public fun locAnimSpecific(message: LocAnimSpecific)
 

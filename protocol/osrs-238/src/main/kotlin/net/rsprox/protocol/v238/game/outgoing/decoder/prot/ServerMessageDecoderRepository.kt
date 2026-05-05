@@ -15,8 +15,11 @@ import net.rsprox.protocol.v238.game.outgoing.decoder.codec.camera.CamResetDecod
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.camera.CamRotateBy
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.camera.CamRotateToDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.camera.CamShakeDecoder
+import net.rsprox.protocol.v238.game.outgoing.decoder.codec.camera.CamSkyboxDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.camera.CamSmoothResetDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.camera.CamTargetV3Decoder
+import net.rsprox.protocol.v238.game.outgoing.decoder.codec.camera.CamTargetV4Decoder
+import net.rsprox.protocol.v238.game.outgoing.decoder.codec.camera.CamUnlockDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.camera.OculusSyncDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.clan.ClanChannelDeltaDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.clan.ClanChannelFullDecoder
@@ -105,6 +108,8 @@ import net.rsprox.protocol.v238.game.outgoing.decoder.codec.social.MessagePrivat
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.social.MessagePrivateEchoDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.social.UpdateFriendListDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.social.UpdateIgnoreListDecoder
+import net.rsprox.protocol.v238.game.outgoing.decoder.codec.sound.AmbienceStartDecoder
+import net.rsprox.protocol.v238.game.outgoing.decoder.codec.sound.AmbienceStopDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.sound.MidiJingleDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.sound.MidiSongStopDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.sound.MidiSongV2Decoder
@@ -160,7 +165,10 @@ internal object ServerMessageDecoderRepository {
                 bind(CamShakeDecoder())
                 bind(CamSmoothResetDecoder())
                 bind(CamTargetV3Decoder())
+                bind(CamTargetV4Decoder())
                 bind(OculusSyncDecoder())
+                bind(CamSkyboxDecoder())
+                bind(CamUnlockDecoder())
 
                 bind(ClanChannelDeltaDecoder())
                 bind(ClanChannelFullDecoder())
@@ -266,6 +274,8 @@ internal object ServerMessageDecoderRepository {
                 bind(MidiSongWithSecondaryDecoder())
                 bind(MidiSwapDecoder())
                 bind(SynthSoundDecoder())
+                bind(AmbienceStartDecoder())
+                bind(AmbienceStopDecoder())
 
                 bind(LocAnimSpecificDecoder())
                 bind(MapAnimSpecificDecoder())

@@ -130,6 +130,8 @@ import net.rsprox.protocol.game.outgoing.model.social.FriendListLoaded
 import net.rsprox.protocol.game.outgoing.model.social.MessagePrivateEcho
 import net.rsprox.protocol.game.outgoing.model.social.UpdateFriendList
 import net.rsprox.protocol.game.outgoing.model.social.UpdateIgnoreList
+import net.rsprox.protocol.game.outgoing.model.sound.AmbienceStart
+import net.rsprox.protocol.game.outgoing.model.sound.AmbienceStop
 import net.rsprox.protocol.game.outgoing.model.sound.MidiJingle
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongStop
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV1
@@ -500,6 +502,9 @@ public class IndexerTranscriber(
     override fun camSmoothReset(message: CamSmoothReset) {
     }
 
+    override fun camTargetV4(message: CamTargetV4) {
+    }
+
     override fun camTargetV3(message: CamTargetV3) {
     }
 
@@ -510,6 +515,12 @@ public class IndexerTranscriber(
     }
 
     override fun oculusSync(message: OculusSync) {
+    }
+
+    override fun camSkybox(message: CamSkybox) {
+    }
+
+    override fun camUnlock(message: CamUnlock) {
     }
 
     override fun clanChannelDelta(message: ClanChannelDelta) {
@@ -1088,6 +1099,13 @@ public class IndexerTranscriber(
 
     override fun synthSound(message: SynthSound) {
         binaryIndex.increment(IndexedType.SYNTH, message.id)
+    }
+
+    override fun ambienceStart(message: AmbienceStart) {
+        binaryIndex.increment(IndexedType.SYNTH, message.id)
+    }
+
+    override fun ambienceStop(message: AmbienceStop) {
     }
 
     override fun locAnimSpecific(message: LocAnimSpecific) {

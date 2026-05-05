@@ -60,6 +60,8 @@ public enum class GameServerProt : Prot {
     MAP_PROJANIM_V1,
     MAP_PROJANIM_V2,
     SOUND_AREA,
+    AMBIENCE_START,
+    AMBIENCE_STOP,
 
     // Specific packets
     PROJANIM_SPECIFIC_V4,
@@ -133,10 +135,13 @@ public enum class GameServerProt : Prot {
     CAM_ROTATEBY,
     CAM_ROTATETO,
     CAM_MODE,
+    CAM_TARGET_V4,
     CAM_TARGET_V3,
     CAM_TARGET_V2,
     CAM_TARGET_V1,
     OCULUS_SYNC,
+    CAM_SKYBOX,
+    CAM_UNLOCK,
 
     // Inventory packets
     UPDATE_INV_FULL,
