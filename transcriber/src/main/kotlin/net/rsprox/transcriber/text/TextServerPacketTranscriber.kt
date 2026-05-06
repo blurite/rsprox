@@ -75,6 +75,8 @@ import net.rsprox.protocol.game.outgoing.model.social.MessagePrivate
 import net.rsprox.protocol.game.outgoing.model.social.MessagePrivateEcho
 import net.rsprox.protocol.game.outgoing.model.social.UpdateFriendList
 import net.rsprox.protocol.game.outgoing.model.social.UpdateIgnoreList
+import net.rsprox.protocol.game.outgoing.model.sound.AmbienceStart
+import net.rsprox.protocol.game.outgoing.model.sound.AmbienceStop
 import net.rsprox.protocol.game.outgoing.model.sound.MidiJingle
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongStop
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV1
@@ -468,6 +470,24 @@ public class TextServerPacketTranscriber(
         root.int("lookproportionalspeed", message.cameraLookProportionalSpeed)
     }
 
+    override fun camTargetV4(message: CamTargetV4) {
+        if (!filters[PropertyFilter.CAM_TARGET]) return omit()
+        when (val type = message.type) {
+            is CamTargetV4.NpcCamTarget -> {
+                root.npc(type.index)
+            }
+            is CamTargetV4.PlayerCamTarget -> {
+                root.player(type.index)
+            }
+            is CamTargetV4.WorldEntityTarget -> {
+                root.worldentity(type.index)
+            }
+            is CamTargetV4.CoordGridTarget -> {
+                root.coordGrid(type.coordGrid)
+            }
+        }
+    }
+
     override fun camTargetV3(message: CamTargetV3) {
         if (!filters[PropertyFilter.CAM_TARGET]) return omit()
         when (val type = message.type) {
@@ -522,6 +542,16 @@ public class TextServerPacketTranscriber(
     override fun oculusSync(message: OculusSync) {
         if (!filters[PropertyFilter.OCULUS_SYNC]) return omit()
         root.int("value", message.value)
+    }
+
+    override fun camSkybox(message: CamSkybox) {
+        if (!filters[PropertyFilter.CAM_SKYBOX]) return omit()
+        root.scriptVarType("model", ScriptVarType.MODEL, message.model)
+    }
+
+    override fun camUnlock(message: CamUnlock) {
+        if (!filters[PropertyFilter.CAM_UNLOCK]) return omit()
+        root.boolean("unlock", message.unlock)
     }
 
     override fun clanChannelDelta(message: ClanChannelDelta) {
@@ -2694,6 +2724,17 @@ public class TextServerPacketTranscriber(
         root.scriptVarType("id", ScriptVarType.SYNTH, message.id.maxUShortToMinusOne())
         root.filteredInt("loops", message.loops, 1)
         root.filteredInt("delay", message.delay, 0)
+    }
+
+    override fun ambienceStart(message: AmbienceStart) {
+        if (!filters[PropertyFilter.AMBIENCE]) return omit()
+        root.scriptVarType("id", ScriptVarType.SYNTH, message.id.maxUShortToMinusOne())
+        root.boolean("fade", message.fade)
+    }
+
+    override fun ambienceStop(message: AmbienceStop) {
+        if (!filters[PropertyFilter.AMBIENCE]) return omit()
+        root.boolean("fade", message.fade)
     }
 
     override fun locAnimSpecific(message: LocAnimSpecific) {

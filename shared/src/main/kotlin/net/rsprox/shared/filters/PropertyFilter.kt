@@ -669,6 +669,13 @@ public enum class PropertyFilter(
         true,
         searchTerms = "music,song,midi,play,track,patch,sample,synth,soundeffects",
     ),
+    AMBIENCE(
+        SERVER_TO_CLIENT,
+        MIDI,
+        "Ambience",
+        true,
+        searchTerms = "ambience,ambiance,background,midi,synth,sound,soundeffects",
+    ),
 
     ZONE_HEADER(
         SERVER_TO_CLIENT,
@@ -1013,6 +1020,20 @@ public enum class PropertyFilter(
         true,
         searchTerms = "orb,of,oculus,synchroniztion",
     ),
+    CAM_SKYBOX(
+        SERVER_TO_CLIENT,
+        CAMERA,
+        "Camera Skybox",
+        true,
+        searchTerms = "camera,skybox",
+    ),
+    CAM_UNLOCK(
+        SERVER_TO_CLIENT,
+        CAMERA,
+        "Camera Unlock",
+        true,
+        searchTerms = "camera,unlock,pitch",
+    ),
 
     UPDATE_INV(
         SERVER_TO_CLIENT,
@@ -1310,13 +1331,6 @@ public enum class PropertyFilter(
         false,
         searchTerms = "player,extended,info,updating,chat,talking,messages,messaging",
     ),
-    PLAYER_FACE_ANGLE(
-        SERVER_TO_CLIENT,
-        PLAYER_EXTENDED_INFO,
-        "Face Angle",
-        true,
-        searchTerms = "player,extended,info,updating,angle,facing,face,direction",
-    ),
     PLAYER_MOVE_SPEED(
         SERVER_TO_CLIENT,
         PLAYER_EXTENDED_INFO,
@@ -1373,12 +1387,12 @@ public enum class PropertyFilter(
         true,
         searchTerms = "player,extended,info,spotanim,gfx,graphics,animations,sequences",
     ),
-    PLAYER_FACE_PATHINGENTITY(
+    PLAYER_FACING(
         SERVER_TO_CLIENT,
         PLAYER_EXTENDED_INFO,
-        "Face Pathingentity",
+        "Facing",
         true,
-        searchTerms = "player,extended,info,face,pathingentity,faceentity,locked,locking,focus",
+        searchTerms = "player,extended,info,face,pathingentity,faceentity,locked,locking,focus,angle",
     ),
     PLAYER_APPEARANCE(
         SERVER_TO_CLIENT,
@@ -1458,12 +1472,12 @@ public enum class PropertyFilter(
         true,
         searchTerms = "npcs,extended,info,exact,move,forcemove",
     ),
-    NPC_FACE_PATHINGENTITY(
+    NPC_FACING(
         SERVER_TO_CLIENT,
         NPC_EXTENDED_INFO,
-        "Face Pathingentity",
+        "Facing",
         true,
-        searchTerms = "npcs,extended,info,face,pathingentity,faceentity,facelock",
+        searchTerms = "npcs,extended,info,face,pathingentity,faceentity,facelock,angle",
     ),
     NPC_HITS(
         SERVER_TO_CLIENT,
@@ -1534,13 +1548,6 @@ public enum class PropertyFilter(
         "Enabled Ops",
         true,
         searchTerms = "npcs,extended,info,enabled,ops,options,right,click,menu",
-    ),
-    NPC_FACE_COORD(
-        SERVER_TO_CLIENT,
-        NPC_EXTENDED_INFO,
-        "Face Coord",
-        true,
-        searchTerms = "npcs,extended,info,face,coords,coordinate,turn,look",
     ),
     NPC_NAME_CHANGE(
         SERVER_TO_CLIENT,
