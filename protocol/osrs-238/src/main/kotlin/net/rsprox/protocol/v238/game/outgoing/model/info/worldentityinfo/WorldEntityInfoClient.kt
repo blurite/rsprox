@@ -340,12 +340,12 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
         }
         val blocks = mutableListOf<ExtendedInfo>()
         if (flags and 0x2 != 0) {
-            blocks += EnabledOpsExtendedInfo(buffer.g1Alt2())
+            val id = buffer.g2Alt3()
+            val delay = buffer.g1()
+            blocks += SequenceExtendedInfo(id, delay)
         }
         if (flags and 0x1 != 0) {
-            val id = buffer.g2Alt1()
-            val delay = buffer.g1Alt3()
-            blocks += SequenceExtendedInfo(id, delay)
+            blocks += EnabledOpsExtendedInfo(buffer.g1Alt1())
         }
         return blocks
     }
@@ -564,10 +564,10 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
             val index = buffer.g2()
             // Note: If serverVersion < 237, add +1 to index
             this.transmittedWorldEntity[this.transmittedWorldEntityCount++] = index
+            val extendedInfoFlags = buffer.g1Alt1()
             val id = buffer.g2sAlt1()
-            val priority = buffer.g1Alt3()
-            val packedSize = buffer.g1Alt3()
-            val extendedInfoFlags = buffer.g1Alt3()
+            val priority = buffer.g1Alt2()
+            val packedSize = buffer.g1()
 
             var coordFine = CoordFine(0, 0, 0)
             var angle = 0
