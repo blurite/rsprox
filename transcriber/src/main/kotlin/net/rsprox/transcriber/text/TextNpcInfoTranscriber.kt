@@ -509,15 +509,18 @@ public class TextNpcInfoTranscriber(
             }
             is FaceExtendedInfo.LocFaceType -> {
                 coordGrid(sessionState.level(), type.x, type.z)
-                int("sizex", type.sizeX)
-                int("sizez", type.sizeZ)
+                filteredInt("sizex", type.sizeX, 1)
+                filteredInt("sizez", type.sizeZ, 1)
             }
             FaceExtendedInfo.ResetFaceType -> {
                 any("type", "reset")
             }
         }
         when (info.walkType) {
-            FaceExtendedInfo.WalkType.CancelOnWalk -> any("walktype", "cancelonwalk")
+            FaceExtendedInfo.WalkType.CancelOnWalk -> {
+                // cancel-on-walk is the default behaviour; omit it
+                // any("walktype", "cancelonwalk")
+            }
             FaceExtendedInfo.WalkType.TurnOnWalk -> any("walktype", "turnonwalk")
         }
     }
