@@ -20,6 +20,7 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.EnabledO
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceAngleExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FacePathingEntityExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HeadbarExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HitExtendedInfo
@@ -54,6 +55,7 @@ import net.rsprox.shared.property.shortNpc
 import net.rsprox.shared.property.string
 import net.rsprox.shared.property.unidentifiedNpc
 import net.rsprox.shared.property.unidentifiedPlayer
+import net.rsprox.shared.property.unidentifiedWorldEntity
 import net.rsprox.shared.settings.Setting
 import net.rsprox.shared.settings.SettingSet
 import net.rsprox.shared.settings.SettingSetStore
@@ -318,9 +320,16 @@ public class TextNpcInfoTranscriber(
                     }
                 }
                 is FacePathingEntityExtendedInfo -> {
-                    if (filters[PropertyFilter.NPC_FACE_PATHINGENTITY]) {
+                    if (filters[PropertyFilter.NPC_FACING]) {
                         group("FACE_PATHINGENTITY") {
                             facePathingEntity(npc, info)
+                        }
+                    }
+                }
+                is FaceExtendedInfo -> {
+                    if (filters[PropertyFilter.NPC_FACING]) {
+                        group("FACING") {
+                            facing(npc, info)
                         }
                     }
                 }
@@ -408,14 +417,14 @@ public class TextNpcInfoTranscriber(
                     }
                 }
                 is FaceCoordExtendedInfo -> {
-                    if (filters[PropertyFilter.NPC_FACE_COORD]) {
+                    if (filters[PropertyFilter.NPC_FACING]) {
                         group("FACE_COORD") {
                             faceCoord(npc, info)
                         }
                     }
                 }
                 is FaceAngleExtendedInfo -> {
-                    if (filters[PropertyFilter.NPC_FACE_COORD]) {
+                    if (filters[PropertyFilter.NPC_FACING]) {
                         group("FACE_ANGLE") {
                             faceAngle(npc, info)
                         }
@@ -468,6 +477,49 @@ public class TextNpcInfoTranscriber(
             int("delay2", info.delay2)
         }
         int("angle", info.direction)
+    }
+
+    private fun Property.facing(
+        npc: Npc,
+        info: FaceExtendedInfo,
+    ) {
+        if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
+            shortNpc(npc.index)
+        }
+        when (val type = info.faceType) {
+            is FaceExtendedInfo.AngleFaceType -> {
+                int("angle", type.angle)
+            }
+            is FaceExtendedInfo.EntityFaceType -> {
+                when (type.entityType) {
+                    FaceExtendedInfo.EntityType.None -> {
+                        any("entitytype", "none")
+                    }
+                    FaceExtendedInfo.EntityType.Npc -> {
+                        npc(type.index)
+                    }
+                    FaceExtendedInfo.EntityType.Player -> {
+                        player(type.index)
+                    }
+                    FaceExtendedInfo.EntityType.WorldEntity -> {
+                        unidentifiedWorldEntity(type.index)
+                    }
+                }
+                int("fallbackangle", type.fallbackAngle)
+            }
+            is FaceExtendedInfo.LocFaceType -> {
+                coordGrid(sessionState.level(), type.x, type.z)
+                int("sizex", type.sizeX)
+                int("sizez", type.sizeZ)
+            }
+            FaceExtendedInfo.ResetFaceType -> {
+                any("type", "reset")
+            }
+        }
+        when (info.walkType) {
+            FaceExtendedInfo.WalkType.CancelOnWalk -> any("walktype", "cancelonwalk")
+            FaceExtendedInfo.WalkType.TurnOnWalk -> any("walktype", "turnonwalk")
+        }
     }
 
     private fun Property.facePathingEntity(
