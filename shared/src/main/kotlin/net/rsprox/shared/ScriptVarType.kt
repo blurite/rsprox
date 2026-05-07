@@ -123,6 +123,7 @@ public enum class ScriptVarType(
     ENTITYOVERLAY(117, '-', BaseVarType.INTEGER),
     DBTABLE(118, 'Ø', BaseVarType.INTEGER),
     STRINGVECTOR(-1, '¸', BaseVarType.INTEGER),
+    AMBIENCE(-2, '.', BaseVarType.INTEGER),
     ;
 
     public val fullName: String

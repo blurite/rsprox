@@ -2728,7 +2728,7 @@ public class TextServerPacketTranscriber(
 
     override fun ambienceStart(message: AmbienceStart) {
         if (!filters[PropertyFilter.AMBIENCE]) return omit()
-        root.scriptVarType("id", ScriptVarType.SYNTH, message.id.maxUShortToMinusOne())
+        root.scriptVarType("id", ScriptVarType.AMBIENCE, message.id.maxUShortToMinusOne())
         root.boolean("fade", message.fade)
     }
 

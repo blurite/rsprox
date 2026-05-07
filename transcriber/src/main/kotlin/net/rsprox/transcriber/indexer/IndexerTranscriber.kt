@@ -1102,7 +1102,7 @@ public class IndexerTranscriber(
     }
 
     override fun ambienceStart(message: AmbienceStart) {
-        binaryIndex.increment(IndexedType.SYNTH, message.id)
+        binaryIndex.increment(IndexedType.AMBIENCE, message.id)
     }
 
     override fun ambienceStop(message: AmbienceStop) {

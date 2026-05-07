@@ -18,4 +18,5 @@ public enum class IndexedType(
     JINGLE(12),
     CLIENTSCRIPTS(13),
     TEXT(14),
+    AMBIENCE(15),
 }
