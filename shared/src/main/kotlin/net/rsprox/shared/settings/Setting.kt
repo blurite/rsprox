@@ -36,6 +36,13 @@ public enum class Setting(
         true,
         "Translates instanced coords to the static counterparts if possible.",
     ),
+    COLLAPSE_INSTANCE_ZONES(
+        SettingGroup.LOGGING,
+        SettingCategory.MISC,
+        "Collapse Instanced Zones",
+        false,
+        "Collapses a set of zones that is copied in a 1:1 manner in logging.",
+    ),
     SKIP_FIRST_TICK(
         SettingGroup.LOGGING,
         SettingCategory.MISC,

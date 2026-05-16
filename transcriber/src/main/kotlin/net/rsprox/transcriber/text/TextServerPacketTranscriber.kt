@@ -1700,44 +1700,40 @@ public class TextServerPacketTranscriber(
         root.group("BUILD_AREA") {
             val startZoneX = message.zoneX - 6
             val startZoneZ = message.zoneZ - 6
-            val simpleBlock = message.buildArea.calculateSimpleBlockOrNull()
-            if (simpleBlock != null) {
-                world.consistentRegion = true
-                // Collect xteas anyway
-                for (level in 0..<4) {
-                    for (zoneX in startZoneX..(message.zoneX + 6)) {
-                        for (zoneZ in startZoneZ..(message.zoneZ + 6)) {
-                            val block = message.buildArea[level, zoneX - startZoneX, zoneZ - startZoneZ]
-                            // Invalid zone
-                            if (block.mapsquareId == 32767) continue
-                            mapsquares += block.mapsquareId
+            for (level in 0..<4) {
+                val simpleBlock = message.buildArea.calculateSimpleBlockOrNull(level)
+                if (simpleBlock != null && settings[Setting.COLLAPSE_INSTANCE_ZONES]) {
+                    world.consistentRegion = true
+                    // Collect xteas anyway
+                    for (level in 0..<4) {
+                        for (zoneX in startZoneX..(message.zoneX + 6)) {
+                            for (zoneZ in startZoneZ..(message.zoneZ + 6)) {
+                                val block = message.buildArea[level, zoneX - startZoneX, zoneZ - startZoneZ]
+                                // Invalid zone
+                                if (block.mapsquareId == 32767) continue
+                                mapsquares += block.mapsquareId
+                            }
                         }
                     }
-                }
 
-                group {
-                    val sw = message.buildArea[simpleBlock.minLevel, simpleBlock.minX, simpleBlock.minZ]
-                    val ne = message.buildArea[simpleBlock.maxLevel, simpleBlock.maxX, simpleBlock.maxZ]
-                    zoneCoord("minsource", sw.level, sw.zoneX, sw.zoneZ)
-                    zoneCoord("maxsource", ne.level, ne.zoneX, ne.zoneZ)
-                    zoneCoord(
-                        "mindest",
-                        simpleBlock.minLevel,
-                        simpleBlock.minX + startZoneX,
-                        simpleBlock.minZ + startZoneZ,
-                    )
-                    zoneCoord(
-                        "maxdest",
-                        simpleBlock.maxLevel,
-                        simpleBlock.maxX + startZoneX,
-                        simpleBlock.maxZ + startZoneZ,
-                    )
-                    // Always consistent rotation 0 here
-                    int("rotation", sw.rotation)
-                    filteredInt("firstbit", sw.packed and 0x1, 0)
-                }
-            } else {
-                for (level in 0..<4) {
+                    group {
+                        val sw = message.buildArea[simpleBlock.level, simpleBlock.minX, simpleBlock.minZ]
+                        val widthInZones = (simpleBlock.maxX - simpleBlock.minX) + 1
+                        val lengthInZones = (simpleBlock.maxZ - simpleBlock.minZ) + 1
+                        zoneCoord("minsource", sw.level, sw.zoneX, sw.zoneZ)
+                        zoneCoord(
+                            "mindest",
+                            simpleBlock.level,
+                            simpleBlock.minX + startZoneX,
+                            simpleBlock.minZ + startZoneZ,
+                        )
+                        int("widthinzones", widthInZones)
+                        int("lengthinzones", lengthInZones)
+                        // Always consistent rotation 0 here
+                        int("rotation", sw.rotation)
+                        filteredInt("firstbit", sw.packed and 0x1, 0)
+                    }
+                } else {
                     for (zoneX in startZoneX..(message.zoneX + 6)) {
                         for (zoneZ in startZoneZ..(message.zoneZ + 6)) {
                             val block = message.buildArea[level, zoneX - startZoneX, zoneZ - startZoneZ]
@@ -1780,32 +1776,28 @@ public class TextServerPacketTranscriber(
         root.group("BUILD_AREA") {
             val startZoneX = message.zoneX - 6
             val startZoneZ = message.zoneZ - 6
-            val simpleBlock = message.buildArea.calculateSimpleBlockOrNull()
-            if (simpleBlock != null) {
-                world.consistentRegion = true
-                group {
-                    val sw = message.buildArea[simpleBlock.minLevel, simpleBlock.minX, simpleBlock.minZ]
-                    val ne = message.buildArea[simpleBlock.maxLevel, simpleBlock.maxX, simpleBlock.maxZ]
-                    zoneCoord("minsource", sw.level, sw.zoneX, sw.zoneZ)
-                    zoneCoord("maxsource", ne.level, ne.zoneX, ne.zoneZ)
-                    zoneCoord(
-                        "mindest",
-                        simpleBlock.minLevel,
-                        simpleBlock.minX + startZoneX,
-                        simpleBlock.minZ + startZoneZ,
-                    )
-                    zoneCoord(
-                        "maxdest",
-                        simpleBlock.maxLevel,
-                        simpleBlock.maxX + startZoneX,
-                        simpleBlock.maxZ + startZoneZ,
-                    )
-                    // Always consistent rotation 0 here
-                    int("rotation", sw.rotation)
-                    filteredInt("firstbit", sw.packed and 0x1, 0)
-                }
-            } else {
-                for (level in 0..<4) {
+            for (level in 0..<4) {
+                val simpleBlock = message.buildArea.calculateSimpleBlockOrNull(level)
+                if (simpleBlock != null && settings[Setting.COLLAPSE_INSTANCE_ZONES]) {
+                    world.consistentRegion = true
+                    group {
+                        val sw = message.buildArea[simpleBlock.level, simpleBlock.minX, simpleBlock.minZ]
+                        val widthInZones = (simpleBlock.maxX - simpleBlock.minX) + 1
+                        val lengthInZones = (simpleBlock.maxZ - simpleBlock.minZ) + 1
+                        zoneCoord("minsource", sw.level, sw.zoneX, sw.zoneZ)
+                        zoneCoord(
+                            "mindest",
+                            simpleBlock.level,
+                            simpleBlock.minX + startZoneX,
+                            simpleBlock.minZ + startZoneZ,
+                        )
+                        int("widthinzones", widthInZones)
+                        int("lengthinzones", lengthInZones)
+                        // Always consistent rotation 0 here
+                        int("rotation", sw.rotation)
+                        filteredInt("firstbit", sw.packed and 0x1, 0)
+                    }
+                } else {
                     for (zoneX in startZoneX..(message.zoneX + 6)) {
                         for (zoneZ in startZoneZ..(message.zoneZ + 6)) {
                             val block = message.buildArea[level, zoneX - startZoneX, zoneZ - startZoneZ]
@@ -1845,10 +1837,10 @@ public class TextServerPacketTranscriber(
         }
         val mapsquares = mutableSetOf<Int>()
         root.group("BUILD_AREA") {
-            val simpleBlock = buildArea.calculateSimpleBlockOrNull()
-            if (simpleBlock != null) {
-                // Collect xteas anyway
-                for (level in 0..<4) {
+            for (level in 0..<4) {
+                val simpleBlock = buildArea.calculateSimpleBlockOrNull(level)
+                if (simpleBlock != null && settings[Setting.COLLAPSE_INSTANCE_ZONES]) {
+                    // Collect xteas anyway
                     for (x in 0..<(sizeX / 8)) {
                         for (z in 0..<(sizeZ / 8)) {
                             val block = buildArea[level, x, z]
@@ -1857,30 +1849,24 @@ public class TextServerPacketTranscriber(
                             mapsquares += block.mapsquareId
                         }
                     }
-                }
-
-                group {
-                    val sw = buildArea[simpleBlock.minLevel, simpleBlock.minX, simpleBlock.minZ]
-                    val ne = buildArea[simpleBlock.maxLevel, simpleBlock.maxX, simpleBlock.maxZ]
-                    zoneCoord("minsource", sw.level, sw.zoneX, sw.zoneZ)
-                    zoneCoord("maxsource", ne.level, ne.zoneX, ne.zoneZ)
-                    zoneCoord(
-                        "mindest",
-                        simpleBlock.minLevel,
-                        simpleBlock.minX + baseZoneX,
-                        simpleBlock.minZ + baseZoneZ,
-                    )
-                    zoneCoord(
-                        "maxdest",
-                        simpleBlock.maxLevel,
-                        simpleBlock.maxX + baseZoneX,
-                        simpleBlock.maxZ + baseZoneZ,
-                    )
-                    // Always consistent rotation 0 here
-                    int("rotation", sw.rotation)
-                }
-            } else {
-                for (level in 0..<4) {
+                    group {
+                        val sw = buildArea[simpleBlock.level, simpleBlock.minX, simpleBlock.minZ]
+                        val widthInZones = (simpleBlock.maxX - simpleBlock.minX) + 1
+                        val lengthInZones = (simpleBlock.maxZ - simpleBlock.minZ) + 1
+                        zoneCoord("minsource", sw.level, sw.zoneX, sw.zoneZ)
+                        zoneCoord(
+                            "mindest",
+                            simpleBlock.level,
+                            simpleBlock.minX + baseZoneX,
+                            simpleBlock.minZ + baseZoneZ,
+                        )
+                        int("widthinzones", widthInZones)
+                        int("lengthinzones", lengthInZones)
+                        // Always consistent rotation 0 here
+                        int("rotation", sw.rotation)
+                        filteredInt("firstbit", sw.packed and 0x1, 0)
+                    }
+                } else {
                     for (x in 0..<(sizeX / 8)) {
                         for (z in 0..<(sizeZ / 8)) {
                             val block = buildArea[level, x, z]
