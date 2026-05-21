@@ -71,6 +71,13 @@ import net.rsprox.protocol.v238.game.incoming.decoder.codec.social.FriendListAdd
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.social.FriendListDelDecoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.social.IgnoreListAddDecoder
 import net.rsprox.protocol.v238.game.incoming.decoder.codec.social.IgnoreListDelDecoder
+import net.rsprox.protocol.v238.game.incoming.decoder.codec.worldentities.OpWorldEntity1Decoder
+import net.rsprox.protocol.v238.game.incoming.decoder.codec.worldentities.OpWorldEntity2Decoder
+import net.rsprox.protocol.v238.game.incoming.decoder.codec.worldentities.OpWorldEntity3Decoder
+import net.rsprox.protocol.v238.game.incoming.decoder.codec.worldentities.OpWorldEntity4Decoder
+import net.rsprox.protocol.v238.game.incoming.decoder.codec.worldentities.OpWorldEntity5Decoder
+import net.rsprox.protocol.v238.game.incoming.decoder.codec.worldentities.OpWorldEntity6Decoder
+import net.rsprox.protocol.v238.game.incoming.decoder.codec.worldentities.OpWorldEntityTDecoder
 
 internal object ClientMessageDecoderRepository {
     @ExperimentalStdlibApi
@@ -120,6 +127,14 @@ internal object ClientMessageDecoderRepository {
                 bind(OpPlayer7Decoder())
                 bind(OpPlayer8Decoder())
                 bind(OpPlayerTDecoder())
+
+                bind(OpWorldEntity1Decoder())
+                bind(OpWorldEntity2Decoder())
+                bind(OpWorldEntity3Decoder())
+                bind(OpWorldEntity4Decoder())
+                bind(OpWorldEntity5Decoder())
+                bind(OpWorldEntity6Decoder())
+                bind(OpWorldEntityTDecoder())
 
                 bind(EventAppletFocusDecoder())
                 bind(EventCameraPositionDecoder())
