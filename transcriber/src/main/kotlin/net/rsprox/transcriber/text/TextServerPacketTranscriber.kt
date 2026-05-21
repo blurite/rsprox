@@ -2218,6 +2218,7 @@ public class TextServerPacketTranscriber(
         CLANMESSAGE(43),
         CLANGUESTCHAT(44),
         CLANGUESTMESSAGE(46),
+        WORLDENTITY_EXAMINE(47),
         AUTOTYPER(90),
         MODAUTOTYPER(91),
         CONSOLE(99),
