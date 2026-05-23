@@ -7,6 +7,7 @@ public data class ProxyTargetConfig(
     public val modulus: String?,
     public val varpCount: Int,
     public val revision: String?,
+    public val runeliteBootstrapUrl: String?,
     public val runeliteBootstrapCommitHash: String?,
     public val runeliteGamepackUrl: String?,
     public val binaryFolder: String?,

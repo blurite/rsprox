@@ -88,11 +88,12 @@ public class RuneliteLauncher {
         // Any other time, just rely on the latest bootstrap.
         val bootstrapUrl = "https://static.runelite.net/bootstrap.json"
         val bootstrapSigUrl = "https://static.runelite.net/bootstrap.json.sha256"
+        val localClasspath: String? = System.getProperty("rsprox.runelite.localClasspath")
         val primaryArgs =
             listOf(
                 getJava(),
                 "-cp",
-                classpath.toString(),
+                localClasspath ?: classpath.toString(),
                 bootstrap.launcher.mainClass,
                 "--port=$port",
                 "--world_client_port=${target.httpPort}",
@@ -105,12 +106,19 @@ public class RuneliteLauncher {
             )
         val conditionalArgs =
             if (target.config.id != 0) {
+                val bootstrapFullUrl = target.config.runeliteBootstrapUrl
                 val bootstrapCommitHash = target.config.runeliteBootstrapCommitHash
                 val bootstrap =
-                    if (bootstrapCommitHash != null) {
-                        "$repository/$bootstrapCommitHash/bootstrap.json"
-                    } else {
-                        null
+                    when {
+                        bootstrapFullUrl != null -> {
+                            bootstrapFullUrl
+                        }
+                        bootstrapCommitHash != null -> {
+                            "$repository/$bootstrapCommitHash/bootstrap.json"
+                        }
+                        else -> {
+                            null
+                        }
                     }
                 val bootstrapArg =
                     if (bootstrap != null) {

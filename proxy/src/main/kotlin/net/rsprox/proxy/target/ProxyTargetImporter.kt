@@ -38,9 +38,10 @@ public class ProxyTargetImporter {
             }
         }
 
-        val imported = source.openStream().use { stream ->
-            YamlProxyTargetConfig.parse(stream)
-        }
+        val imported =
+            source.openStream().use { stream ->
+                YamlProxyTargetConfig.parse(stream)
+            }
         return merge(imported, source.toString())
     }
 
@@ -128,6 +129,7 @@ public class ProxyTargetImporter {
             modulus = entry.modulus?.trim()?.ifEmpty { null },
             revision = entry.revision?.trim()?.ifEmpty { null },
             runeliteBootstrapCommitHash = entry.runeliteBootstrapCommitHash?.trim()?.ifEmpty { null },
+            runeliteBootstrapUrl = entry.runeliteBootstrapUrl?.trim()?.ifEmpty { null },
             runeliteGamepackUrl = entry.runeliteGamepackUrl?.trim()?.ifEmpty { null },
             binaryFolder = entry.binaryFolder?.trim()?.ifEmpty { null },
             sourceUrl = sourceUrl?.trim()?.ifEmpty { null },

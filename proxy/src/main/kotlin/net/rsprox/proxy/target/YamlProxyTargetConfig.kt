@@ -23,6 +23,8 @@ public data class YamlProxyTargetConfig(
     public val revision: String? = null,
     @field:JsonProperty("runelite_bootstrap_commithash")
     public val runeliteBootstrapCommitHash: String? = null,
+    @field:JsonProperty("runelite_bootstrap_url")
+    public val runeliteBootstrapUrl: String? = null,
     @field:JsonProperty("runelite_gamepack_url")
     public val runeliteGamepackUrl: String? = null,
     @field:JsonProperty("binary_folder")
@@ -33,7 +35,6 @@ public data class YamlProxyTargetConfig(
     public val gameServerPort: Int = ProxyTargetConfig.DEFAULT_GAME_SERVER_PORT,
     @field:JsonProperty("source_url")
     public val sourceUrl: String? = null,
-
 ) {
     public companion object {
         public const val DEFAULT_NAME: String = "Old School RuneScape"
