@@ -41,3 +41,24 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### Go ###
+
+# Ignore only build artifacts inside walt/, not the source code
+/walt/walt
+/walt/walt-*
+/walt/*.test
+/walt/*.out
+/walt/*.log
+/walt/*.prof
+/walt/*.pprof
+
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+bin/
+pkg/
+
