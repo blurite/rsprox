@@ -449,7 +449,7 @@ internal class NpcInfoClient(
                 val length = npc.retexdest.size
                 val retextures = ArrayList<Int>(length)
                 for (i in 0..<length) {
-                    retextures += buffer.g2Alt1()
+                    retextures += buffer.g2()
                 }
                 retextures
             } else {
