@@ -715,7 +715,6 @@ internal class NpcInfoClient(
                     val npc = checkNotNull(npc[index])
                     transmittedNPC[transmittedNPCCount++] = index
                     npc.lastTransmitCycle = cycle
-
                     val deltaX = decodeDelta(large, buffer)
                     val jump = buffer.gBits(1)
                     val deltaZ = decodeDelta(large, buffer)
@@ -725,9 +724,6 @@ internal class NpcInfoClient(
                         npc.spawnCycle = buffer.gBits(32)
                     }
                     val extendedInfo = buffer.gBits(1)
-                    if (extendedInfo == 1) {
-                        this.extraUpdateNPC[extraUpdateNPCCount++] = index
-                    }
                     val angle = NPC_TURN_ANGLES[buffer.gBits(3)]
                     if (isNew) {
                         npc.turnAngle = angle
@@ -736,6 +732,9 @@ internal class NpcInfoClient(
                     // reset bas
                     if (npc.turnSpeed == 0) {
                         npc.angle = 0
+                    }
+                    if (extendedInfo == 1) {
+                        this.extraUpdateNPC[extraUpdateNPCCount++] = index
                     }
                     npc.addRouteWaypoint(
                         baseCoord,
