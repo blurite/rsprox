@@ -257,12 +257,6 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
             return emptyList()
         }
         val blocks = mutableListOf<ExtendedInfo>()
-        if (flags and 0x1 != 0) {
-            val id = buffer.g2()
-            val delay = buffer.g1()
-            blocks += SequenceExtendedInfo(id, delay)
-        }
-
         if (flags and 0x2 != 0) {
             blocks += EnabledOpsExtendedInfo(buffer.g1())
         }
@@ -432,7 +426,7 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
             this.transmittedWorldEntity[this.transmittedWorldEntityCount++] = index
             val sizeX = buffer.g1() * 8
             val sizeZ = buffer.g1() * 8
-            val id = buffer.g2()
+            val id = buffer.g2s()
             var coordFine = CoordFine(0, 0, 0)
             var angle = 0
             val bitpackedAngledCoordFineOpcodes = buffer.g1s()

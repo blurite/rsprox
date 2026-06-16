@@ -432,7 +432,7 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
             this.transmittedWorldEntity[this.transmittedWorldEntityCount++] = index
             val sizeX = buffer.g1() * 8
             val sizeZ = buffer.g1() * 8
-            val id = buffer.g2()
+            val id = buffer.g2s()
             var coordFine = CoordFine(0, 0, 0)
             var angle = 0
             val bitpackedAngledCoordFineOpcodes = buffer.g1s()
