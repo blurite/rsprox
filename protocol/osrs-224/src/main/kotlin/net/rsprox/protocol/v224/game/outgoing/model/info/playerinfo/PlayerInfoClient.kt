@@ -345,14 +345,14 @@ internal class PlayerInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        blocks += MoveSpeedExtendedInfo(buffer.g1Alt2())
+        blocks += MoveSpeedExtendedInfo(buffer.g1sAlt2())
     }
 
     private fun decodeTemporaryMoveSpeed(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        blocks += TemporaryMoveSpeedExtendedInfo(buffer.g1Alt1())
+        blocks += TemporaryMoveSpeedExtendedInfo(buffer.g1sAlt1())
     }
 
     private fun decodeSequence(
@@ -439,7 +439,7 @@ internal class PlayerInfoClient(
             if (patternLength in 1..8) {
                 val array = ByteArray(patternLength)
                 for (i in 0..<patternLength) {
-                    array[i] = buffer.g1Alt2().toByte()
+                    array[i] = buffer.g1().toByte()
                 }
                 array
             } else {
@@ -587,9 +587,9 @@ internal class PlayerInfoClient(
     ) {
         val start = buffer.g2Alt3()
         val end = buffer.g2Alt2()
-        val hue = buffer.g1Alt1()
-        val saturation = buffer.g1Alt1()
-        val lightness = buffer.g1()
+        val hue = buffer.g1sAlt1()
+        val saturation = buffer.g1sAlt1()
+        val lightness = buffer.g1s()
         val weight = buffer.g1Alt2()
         blocks +=
             TintingExtendedInfo(
