@@ -22,7 +22,7 @@ internal class UpdateRebootTimerV2Decoder : ProxyMessageDecoder<UpdateRebootTime
                 message.isEmpty() -> UpdateRebootTimerV2.IgnoreUpdateMessage
                 message == CANCEL -> UpdateRebootTimerV2.ClearUpdateMessage
                 else -> UpdateRebootTimerV2.SetUpdateMessage(message)
-            }
+            },
         )
     }
 
