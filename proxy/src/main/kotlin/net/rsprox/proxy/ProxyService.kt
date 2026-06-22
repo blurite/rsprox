@@ -33,7 +33,6 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.SELECTED_PROXY_TARGET
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.connection.ClientTypeDictionary
 import net.rsprox.proxy.connection.ProxyConnectionContainer
-import net.rsprox.proxy.downloader.JagexNativeClientDownloader
 import net.rsprox.proxy.downloader.LostCityNativeClientDownloader
 import net.rsprox.proxy.exceptions.MissingLibraryException
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
@@ -323,6 +322,7 @@ public class ProxyService(
             235 -> "205a25ff767fdfe8a461a18e1541ef20a90b0120"
             236 -> "0357970b30978614936a80b725a27bdc538bef24"
             237 -> "34b84f8f8a37f1c615d5d99db2fce7df3a269c45"
+            238 -> "350ac50d2be83c72b3e35169bc52cb2a1fc53ce3"
             else -> null
         }
     }
@@ -745,7 +745,8 @@ public class ProxyService(
         val targetRev = target.config.revision
         val binary =
             if (targetRev == null || targetRev == "latest_supported") {
-                JagexNativeClientDownloader.download(nativeClientType)
+                // JagexNativeClientDownloader.download(nativeClientType)
+                getHistoricNativeClient("238.5", nativeClientType)
             } else {
                 getHistoricNativeClient(targetRev, nativeClientType)
             }
