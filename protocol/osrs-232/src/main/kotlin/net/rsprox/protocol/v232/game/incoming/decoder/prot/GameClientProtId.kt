@@ -17,7 +17,7 @@ internal object GameClientProtId {
     const val OPPLAYER6 = 13
     const val HISCORE_REQUEST = 14
     const val OPNPC4 = 15
-    const val OCULUS_LEAVE = 16
+    const val EXIT_FREECAM = 16
     const val AFFINEDCLANSETTINGS_SETMUTED_FROMCHANNEL = 17
     const val MAP_BUILD_COMPLETE = 18
     const val OPOBJ4 = 19

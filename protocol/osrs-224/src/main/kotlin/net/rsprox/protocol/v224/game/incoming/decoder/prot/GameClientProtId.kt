@@ -52,7 +52,7 @@ internal object GameClientProtId {
     const val CLIENT_CHEAT = 48
     const val DETECT_MODIFIED_CLIENT = 49
     const val EVENT_APPLET_FOCUS = 50
-    const val OCULUS_LEAVE = 51
+    const val EXIT_FREECAM = 51
     const val OPLOC6 = 52
     const val OPOBJT = 53
     const val RESUME_PAUSEBUTTON = 54

@@ -29,7 +29,7 @@ import net.rsprox.protocol.game.incoming.model.misc.user.HiscoreRequest
 import net.rsprox.protocol.game.incoming.model.misc.user.IfCrmViewOp
 import net.rsprox.protocol.game.incoming.model.misc.user.MoveGameClick
 import net.rsprox.protocol.game.incoming.model.misc.user.MoveMinimapClick
-import net.rsprox.protocol.game.incoming.model.misc.user.OculusLeave
+import net.rsprox.protocol.game.incoming.model.misc.user.ExitFreecam
 import net.rsprox.protocol.game.incoming.model.misc.user.SendSnapshot
 import net.rsprox.protocol.game.incoming.model.misc.user.SetChatFilterSettings
 import net.rsprox.protocol.game.incoming.model.misc.user.SetHeading
@@ -352,7 +352,7 @@ public class IndexerTranscriber(
     override fun moveMinimapClick(message: MoveMinimapClick) {
     }
 
-    override fun oculusLeave(message: OculusLeave) {
+    override fun exitFreecam(message: ExitFreecam) {
     }
 
     override fun sendSnapshot(message: SendSnapshot) {

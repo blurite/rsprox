@@ -14,7 +14,7 @@ internal object GameClientProtId {
     const val SEND_SNAPSHOT = 10
     const val OPPLAYER4 = 11
     const val CLICKWORLDMAP = 12
-    const val OCULUS_LEAVE = 13
+    const val EXIT_FREECAM = 13
     const val OPPLAYER1 = 14
     const val OPWORLDENTITY2 = 15
     const val OPWORLDENTITYU = 16

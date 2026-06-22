@@ -82,7 +82,7 @@ internal object GameClientProtId {
     const val TELEPORT = 78
     const val FRIENDCHAT_KICK = 79
     const val IF_BUTTON1 = 80
-    const val OCULUS_LEAVE = 81
+    const val EXIT_FREECAM = 81
     const val EVENT_APPLET_FOCUS = 82
     const val CLIENT_CHEAT = 83
     const val EVENT_MOUSE_MOVE = 84

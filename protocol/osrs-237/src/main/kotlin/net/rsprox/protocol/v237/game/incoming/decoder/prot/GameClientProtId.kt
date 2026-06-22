@@ -72,7 +72,7 @@ internal object GameClientProtId {
     const val CLIENT_CHEAT = 68
     const val OPWORLDENTITY2 = 69
     const val OPLOC6 = 70
-    const val OCULUS_LEAVE = 71
+    const val EXIT_FREECAM = 71
     const val OPPLAYERT = 72
     const val AFFINEDCLANSETTINGS_ADDBANNED_FROMCHANNEL = 73
     const val OPPLAYER6 = 74

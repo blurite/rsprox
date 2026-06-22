@@ -351,12 +351,12 @@ public enum class PropertyFilter(
         false,
         searchTerms = "worldmap,hints,clickworldmap",
     ),
-    OCULUS_LEAVE(
+    EXIT_FREECAM(
         CLIENT_TO_SERVER,
         OTHER,
-        "Oculus Leaving",
+        "Freecam Exits",
         false,
-        searchTerms = "orb,of,oculus,leave,leaving",
+        searchTerms = "freecam,exit,exiting,orb,oculus,leave,leaving",
     ),
     CLOSE_MODAL(
         CLIENT_TO_SERVER,

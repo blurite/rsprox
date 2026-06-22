@@ -47,7 +47,7 @@ internal object GameClientProtId {
     const val IF_SUBOP = 43
     const val IF_BUTTON9 = 44
     const val OPPLAYER5 = 45
-    const val OCULUS_LEAVE = 46
+    const val EXIT_FREECAM = 46
     const val IF_CRMVIEW_OP = 47
     const val IF_BUTTON4 = 48
     const val CLIENT_CHEAT = 49

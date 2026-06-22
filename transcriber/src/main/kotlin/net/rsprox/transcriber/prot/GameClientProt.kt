@@ -135,7 +135,7 @@ public enum class GameClientProt : Prot {
     CLIENT_CHEAT,
     SET_CHATFILTERSETTINGS,
     CLICKWORLDMAP,
-    OCULUS_LEAVE,
+    EXIT_FREECAM,
     CLOSE_MODAL,
     TELEPORT,
     BUG_REPORT,

@@ -48,7 +48,7 @@ internal object GameClientProtId {
     const val OPOBJ3 = 44
     const val OPOBJ1 = 45
     const val RESUME_P_COUNTDIALOG = 46
-    const val OCULUS_LEAVE = 47
+    const val EXIT_FREECAM = 47
     const val IGNORELIST_DEL = 48
     const val OPWORLDENTITY5 = 49
     const val OPLOCT = 50

@@ -96,7 +96,7 @@ internal object GameClientProtId {
     const val SEND_PING_REPLY = 92
     const val OPPLAYER6 = 93
     const val OPNPC3 = 94
-    const val OCULUS_LEAVE = 95
+    const val EXIT_FREECAM = 95
     const val IF_CRMVIEW_OP = 96
     const val SET_CHATFILTERSETTINGS = 97
     const val MOVE_GAMECLICK = 98

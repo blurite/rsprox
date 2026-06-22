@@ -72,7 +72,7 @@ internal object GameClientProtId {
     const val CLICKWORLDMAP = 81
     const val DETECT_MODIFIED_CLIENT = 82
     const val EVENT_MOUSE_SCROLL = 83
-    const val OCULUS_LEAVE = 84
+    const val EXIT_FREECAM = 84
     const val RESUME_P_COUNTDIALOG = 85
     const val OPLOC4_V2 = 86
     const val OPWORLDENTITY5 = 87

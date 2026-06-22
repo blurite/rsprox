@@ -2,7 +2,7 @@ package net.rsprox.protocol.v228.game.incoming.decoder.prot
 
 internal object GameClientProtId {
     const val OPNPCU = 0
-    const val OCULUS_LEAVE = 1
+    const val EXIT_FREECAM = 1
     const val OPOBJ3 = 2
     const val CONNECTION_TELEMETRY = 3
     const val EVENT_MOUSE_MOVE = 4

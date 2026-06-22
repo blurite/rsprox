@@ -27,7 +27,7 @@ import net.rsprox.protocol.game.incoming.model.misc.user.HiscoreRequest
 import net.rsprox.protocol.game.incoming.model.misc.user.IfCrmViewOp
 import net.rsprox.protocol.game.incoming.model.misc.user.MoveGameClick
 import net.rsprox.protocol.game.incoming.model.misc.user.MoveMinimapClick
-import net.rsprox.protocol.game.incoming.model.misc.user.OculusLeave
+import net.rsprox.protocol.game.incoming.model.misc.user.ExitFreecam
 import net.rsprox.protocol.game.incoming.model.misc.user.SendSnapshot
 import net.rsprox.protocol.game.incoming.model.misc.user.SetChatFilterSettings
 import net.rsprox.protocol.game.incoming.model.misc.user.SetHeading
@@ -712,8 +712,8 @@ public open class TextClientPacketTranscriber(
         root.int("finez", message.fineZ)
     }
 
-    override fun oculusLeave(message: OculusLeave) {
-        if (!filters[PropertyFilter.OCULUS_LEAVE]) return omit()
+    override fun exitFreecam(message: ExitFreecam) {
+        if (!filters[PropertyFilter.EXIT_FREECAM]) return omit()
     }
 
     private fun getRule(id: Int): String {

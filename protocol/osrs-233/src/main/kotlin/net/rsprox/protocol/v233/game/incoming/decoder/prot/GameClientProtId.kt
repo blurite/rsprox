@@ -72,7 +72,7 @@ internal object GameClientProtId {
     const val FRIENDCHAT_KICK = 68
     const val SET_HEADING = 69
     const val HISCORE_REQUEST = 70
-    const val OCULUS_LEAVE = 71
+    const val EXIT_FREECAM = 71
     const val MEMBERSHIP_PROMOTION_ELIGIBILITY = 72
     const val OPLOCU = 73
     const val OPPLAYER4 = 74

@@ -139,7 +139,7 @@ public enum class GameClientProt(
     CLIENT_CHEAT(GameClientProtId.CLIENT_CHEAT, Prot.VAR_BYTE),
     SET_CHATFILTERSETTINGS(GameClientProtId.SET_CHATFILTERSETTINGS, 3),
     CLICKWORLDMAP(GameClientProtId.CLICKWORLDMAP, 4),
-    OCULUS_LEAVE(GameClientProtId.OCULUS_LEAVE, 0),
+    EXIT_FREECAM(GameClientProtId.EXIT_FREECAM, 0),
     CLOSE_MODAL(GameClientProtId.CLOSE_MODAL, 0),
     TELEPORT(GameClientProtId.TELEPORT, 9),
     BUG_REPORT(GameClientProtId.BUG_REPORT, Prot.VAR_SHORT),

@@ -30,7 +30,7 @@ internal object GameClientProtId {
     const val CONNECTION_TELEMETRY = 26
     const val MESSAGE_PRIVATE = 27
     const val CLOSE_MODAL = 28
-    const val OCULUS_LEAVE = 29
+    const val EXIT_FREECAM = 29
     const val OPOBJ5 = 30
     const val AFFINEDCLANSETTINGS_SETMUTED_FROMCHANNEL = 31
     const val TELEPORT = 32

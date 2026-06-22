@@ -347,7 +347,7 @@ public class TranscriberPlugin(
             GameClientProt.CLIENT_CHEAT -> pass(message, Transcriber::clientCheat)
             GameClientProt.SET_CHATFILTERSETTINGS -> pass(message, Transcriber::setChatFilterSettings)
             GameClientProt.CLICKWORLDMAP -> pass(message, Transcriber::clickWorldMap)
-            GameClientProt.OCULUS_LEAVE -> pass(message, Transcriber::oculusLeave)
+            GameClientProt.EXIT_FREECAM -> pass(message, Transcriber::exitFreecam)
             GameClientProt.CLOSE_MODAL -> pass(message, Transcriber::closeModal)
             GameClientProt.TELEPORT -> pass(message, Transcriber::teleport)
             GameClientProt.BUG_REPORT -> pass(message, Transcriber::bugReport)

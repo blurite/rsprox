@@ -70,7 +70,7 @@ internal object GameClientProtId {
     const val DETECT_MODIFIED_CLIENT = 66
     const val HISCORE_REQUEST = 67
     const val UPDATE_PLAYER_MODEL_V2 = 68
-    const val OCULUS_LEAVE = 69
+    const val EXIT_FREECAM = 69
     const val IF_BUTTON = 70
     const val IF_SUBOP = 71
     const val MOVE_GAMECLICK = 72
