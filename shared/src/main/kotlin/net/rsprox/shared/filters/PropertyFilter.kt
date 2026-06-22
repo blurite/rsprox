@@ -393,12 +393,12 @@ public enum class PropertyFilter(
         false,
         searchTerms = "hiscore,highscore,request,lookup",
     ),
-    IF_CRMVIEW_CLICK(
+    IF_CRMVIEW_OP(
         CLIENT_TO_SERVER,
         OTHER,
-        "CRM Clicks",
+        "CRM Ops",
         true,
-        searchTerms = "interfaces,if,button,crm,content,recommendation,click",
+        searchTerms = "interfaces,if,button,crm,content,recommendation,op,ops,click",
     ),
 
     CONNECTION_TELEMETRY(

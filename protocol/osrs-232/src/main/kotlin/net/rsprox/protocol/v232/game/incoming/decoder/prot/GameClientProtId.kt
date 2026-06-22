@@ -81,7 +81,7 @@ internal object GameClientProtId {
     const val OPNPCT = 77
     const val IF_SUBOP = 78
     const val REFLECTION_CHECK_REPLY = 79
-    const val IF_CRMVIEW_CLICK = 80
+    const val IF_CRMVIEW_OP = 80
     const val IF_BUTTOND = 81
     const val OPPLAYERT = 82
     const val OPLOC4 = 83

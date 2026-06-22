@@ -353,7 +353,7 @@ public class TranscriberPlugin(
             GameClientProt.BUG_REPORT -> pass(message, Transcriber::bugReport)
             GameClientProt.SEND_SNAPSHOT -> pass(message, Transcriber::sendSnapshot)
             GameClientProt.HISCORE_REQUEST -> pass(message, Transcriber::hiscoreRequest)
-            GameClientProt.IF_CRMVIEW_CLICK -> pass(message, Transcriber::ifCrmViewClick)
+            GameClientProt.IF_CRMVIEW_OP -> pass(message, Transcriber::ifCrmViewOp)
             GameClientProt.UPDATE_PLAYER_MODEL_V1 -> pass(message, Transcriber::updatePlayerModelV1)
             GameClientProt.UPDATE_PLAYER_MODEL_V2 -> throw IllegalArgumentException("Unexpected packet")
             GameClientProt.CONNECTION_TELEMETRY -> pass(message, Transcriber::connectionTelemetry)

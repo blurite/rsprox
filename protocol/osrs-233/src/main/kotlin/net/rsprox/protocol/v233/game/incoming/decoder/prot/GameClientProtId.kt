@@ -81,7 +81,7 @@ internal object GameClientProtId {
     const val IGNORELIST_ADD = 77
     const val OPNPC6 = 78
     const val REFLECTION_CHECK_REPLY = 79
-    const val IF_CRMVIEW_CLICK = 80
+    const val IF_CRMVIEW_OP = 80
     const val TELEPORT = 81
     const val OPNPCU = 82
     const val FRIENDLIST_DEL = 83

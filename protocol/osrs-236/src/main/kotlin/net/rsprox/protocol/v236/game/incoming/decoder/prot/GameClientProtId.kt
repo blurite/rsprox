@@ -81,7 +81,7 @@ internal object GameClientProtId {
     const val EVENT_NATIVE_MOUSE_CLICK_V2 = 77
     const val EVENT_KEYBOARD = 78
     const val OPPLAYERT = 79
-    const val IF_CRMVIEW_CLICK = 80
+    const val IF_CRMVIEW_OP = 80
     const val SET_HEADING = 81
     const val SOUND_JINGLEEND = 82
     const val OPPLAYER7 = 83

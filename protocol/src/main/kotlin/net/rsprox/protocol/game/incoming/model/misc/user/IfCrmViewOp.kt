@@ -22,7 +22,7 @@ import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
  * @property behaviour2 the second CRM behaviour, an integer
  * @property behaviour3 the third CRM behaviour, an integer
  */
-public class IfCrmViewClick private constructor(
+public class IfCrmViewOp private constructor(
     public val crmServerTarget: Int,
     private val _combinedId: CombinedId,
     private val _sub: UShort,
@@ -61,7 +61,7 @@ public class IfCrmViewClick private constructor(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as IfCrmViewClick
+        other as IfCrmViewOp
 
         if (crmServerTarget != other.crmServerTarget) return false
         if (_combinedId != other._combinedId) return false
@@ -84,7 +84,7 @@ public class IfCrmViewClick private constructor(
     }
 
     override fun toString(): String =
-        "IfCrmViewClick(" +
+        "IfCrmViewOp(" +
             "crmServerTarget=$crmServerTarget, " +
             "interfaceId=$interfaceId, " +
             "componentId=$componentId, " +

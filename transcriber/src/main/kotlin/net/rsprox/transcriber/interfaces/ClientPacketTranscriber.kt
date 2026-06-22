@@ -22,7 +22,7 @@ import net.rsprox.protocol.game.incoming.model.misc.user.ClickWorldMap
 import net.rsprox.protocol.game.incoming.model.misc.user.ClientCheat
 import net.rsprox.protocol.game.incoming.model.misc.user.CloseModal
 import net.rsprox.protocol.game.incoming.model.misc.user.HiscoreRequest
-import net.rsprox.protocol.game.incoming.model.misc.user.IfCrmViewClick
+import net.rsprox.protocol.game.incoming.model.misc.user.IfCrmViewOp
 import net.rsprox.protocol.game.incoming.model.misc.user.MoveGameClick
 import net.rsprox.protocol.game.incoming.model.misc.user.MoveMinimapClick
 import net.rsprox.protocol.game.incoming.model.misc.user.OculusLeave
@@ -146,7 +146,7 @@ public interface ClientPacketTranscriber {
 
     public fun hiscoreRequest(message: HiscoreRequest)
 
-    public fun ifCrmViewClick(message: IfCrmViewClick)
+    public fun ifCrmViewOp(message: IfCrmViewOp)
 
     public fun moveGameClick(message: MoveGameClick)
 

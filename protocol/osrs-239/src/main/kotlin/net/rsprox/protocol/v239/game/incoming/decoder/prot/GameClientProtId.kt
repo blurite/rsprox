@@ -6,7 +6,7 @@ internal object GameClientProtId {
     const val OPNPCT = 3
     const val TELEPORT = 4
     const val OPNPC5_V2 = 5
-    const val IF_CRMVIEW_CLICK = 6
+    const val IF_CRMVIEW_OP = 6
     const val IGNORELIST_DEL = 7
     const val SEND_PING_REPLY = 8
     const val IDLE = 9

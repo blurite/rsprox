@@ -66,7 +66,7 @@ internal object GameClientProtId {
     const val OPOBJ5 = 62
     const val MAP_BUILD_COMPLETE = 63
     const val OPLOC2 = 64
-    const val IF_CRMVIEW_CLICK = 65
+    const val IF_CRMVIEW_OP = 65
     const val OPPLAYER7 = 66
     const val MESSAGE_PUBLIC = 67
     const val CLICKWORLDMAP = 68

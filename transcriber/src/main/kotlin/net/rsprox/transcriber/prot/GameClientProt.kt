@@ -141,7 +141,7 @@ public enum class GameClientProt : Prot {
     BUG_REPORT,
     SEND_SNAPSHOT,
     HISCORE_REQUEST,
-    IF_CRMVIEW_CLICK,
+    IF_CRMVIEW_OP,
     UPDATE_PLAYER_MODEL_V2,
     UPDATE_PLAYER_MODEL_V1,
 

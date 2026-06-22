@@ -31,7 +31,7 @@ internal object GameClientProtId {
     const val OPOBJ2 = 27
     const val OPOBJU = 28
     const val IF_BUTTON1 = 29
-    const val IF_CRMVIEW_CLICK = 30
+    const val IF_CRMVIEW_OP = 30
     const val RESUME_P_NAMEDIALOG = 31
     const val OPNPC1 = 32
     const val IF_BUTTON10 = 33

@@ -91,7 +91,7 @@ internal object GameClientProtId {
     const val IF_BUTTON3 = 87
     const val OPLOCT = 88
     const val IF_BUTTON8 = 89
-    const val IF_CRMVIEW_CLICK = 90
+    const val IF_CRMVIEW_OP = 90
     const val OPNPC6 = 91
     const val IF_BUTTON1 = 92
     const val RESUME_P_OBJDIALOG = 93

@@ -24,7 +24,7 @@ import net.rsprox.protocol.game.incoming.model.misc.user.ClickWorldMap
 import net.rsprox.protocol.game.incoming.model.misc.user.ClientCheat
 import net.rsprox.protocol.game.incoming.model.misc.user.CloseModal
 import net.rsprox.protocol.game.incoming.model.misc.user.HiscoreRequest
-import net.rsprox.protocol.game.incoming.model.misc.user.IfCrmViewClick
+import net.rsprox.protocol.game.incoming.model.misc.user.IfCrmViewOp
 import net.rsprox.protocol.game.incoming.model.misc.user.MoveGameClick
 import net.rsprox.protocol.game.incoming.model.misc.user.MoveMinimapClick
 import net.rsprox.protocol.game.incoming.model.misc.user.OculusLeave
@@ -661,8 +661,8 @@ public open class TextClientPacketTranscriber(
         root.string("name", message.name)
     }
 
-    override fun ifCrmViewClick(message: IfCrmViewClick) {
-        if (!filters[PropertyFilter.IF_CRMVIEW_CLICK]) return omit()
+    override fun ifCrmViewOp(message: IfCrmViewOp) {
+        if (!filters[PropertyFilter.IF_CRMVIEW_OP]) return omit()
         root.int("crmservertarget", message.crmServerTarget)
         root.com(message.interfaceId, message.componentId)
         root.filteredInt("sub", message.sub, -1)

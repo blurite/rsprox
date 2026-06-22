@@ -96,7 +96,7 @@ internal object GameClientProtId {
     const val FRIENDLIST_ADD = 92
     const val RESUME_PAUSEBUTTON = 93
     const val CLICKWORLDMAP = 94
-    const val IF_CRMVIEW_CLICK = 95
+    const val IF_CRMVIEW_OP = 95
     const val MOVE_MINIMAPCLICK = 96
     const val EVENT_NATIVE_MOUSE_CLICK = 97
     const val AFFINEDCLANSETTINGS_ADDBANNED_FROMCHANNEL = 98

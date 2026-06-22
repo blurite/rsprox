@@ -91,7 +91,7 @@ internal object GameClientProtId {
     const val IF_BUTTON7 = 87
     const val CLIENT_CHEAT = 88
     const val OPPLAYER1 = 89
-    const val IF_CRMVIEW_CLICK = 90
+    const val IF_CRMVIEW_OP = 90
     const val EVENT_MOUSE_MOVE = 91
     const val SOUND_JINGLEEND = 92
     const val EVENT_MOUSE_SCROLL = 93

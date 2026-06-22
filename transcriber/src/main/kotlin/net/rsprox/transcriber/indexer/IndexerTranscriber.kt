@@ -26,7 +26,7 @@ import net.rsprox.protocol.game.incoming.model.misc.user.ClickWorldMap
 import net.rsprox.protocol.game.incoming.model.misc.user.ClientCheat
 import net.rsprox.protocol.game.incoming.model.misc.user.CloseModal
 import net.rsprox.protocol.game.incoming.model.misc.user.HiscoreRequest
-import net.rsprox.protocol.game.incoming.model.misc.user.IfCrmViewClick
+import net.rsprox.protocol.game.incoming.model.misc.user.IfCrmViewOp
 import net.rsprox.protocol.game.incoming.model.misc.user.MoveGameClick
 import net.rsprox.protocol.game.incoming.model.misc.user.MoveMinimapClick
 import net.rsprox.protocol.game.incoming.model.misc.user.OculusLeave
@@ -343,7 +343,7 @@ public class IndexerTranscriber(
     override fun hiscoreRequest(message: HiscoreRequest) {
     }
 
-    override fun ifCrmViewClick(message: IfCrmViewClick) {
+    override fun ifCrmViewOp(message: IfCrmViewOp) {
     }
 
     override fun moveGameClick(message: MoveGameClick) {

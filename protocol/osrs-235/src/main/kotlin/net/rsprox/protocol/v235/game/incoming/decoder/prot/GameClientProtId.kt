@@ -46,7 +46,7 @@ internal object GameClientProtId {
     const val SEND_PING_REPLY = 42
     const val OPNPC5 = 43
     const val IDLE = 44
-    const val IF_CRMVIEW_CLICK = 45
+    const val IF_CRMVIEW_OP = 45
     const val OPOBJT = 46
     const val SET_CHATFILTERSETTINGS = 47
     const val OPPLAYER8 = 48

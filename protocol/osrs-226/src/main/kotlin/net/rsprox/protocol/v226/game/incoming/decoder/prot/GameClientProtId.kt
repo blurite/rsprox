@@ -97,7 +97,7 @@ internal object GameClientProtId {
     const val IF_BUTTON10 = 93
     const val EVENT_CAMERA_POSITION = 94
     const val OPLOC2 = 95
-    const val IF_CRMVIEW_CLICK = 96
+    const val IF_CRMVIEW_OP = 96
     const val CLANSETTINGS_FULL_REQUEST = 97
     const val OPNPC4 = 98
     const val OPNPCU = 99
