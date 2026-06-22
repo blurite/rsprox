@@ -2784,8 +2784,8 @@ public class TextServerPacketTranscriber(
         root.filteredInt("delay", message.delay, 0)
     }
 
-    override fun playerAnimSpecific(message: PlayerAnimSpecific) {
-        if (!filters[PropertyFilter.PLAYER_ANIM_SPECIFIC]) return omit()
+    override fun animSpecific(message: AnimSpecific) {
+        if (!filters[PropertyFilter.ANIM_SPECIFIC]) return omit()
         root.scriptVarType("anim", ScriptVarType.SEQ, message.id)
         root.filteredInt("delay", message.delay, 0)
     }

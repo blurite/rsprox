@@ -811,7 +811,7 @@ public enum class PropertyFilter(
         true,
         searchTerms = "npcs,anim,animations,sequences,specifics",
     ),
-    PLAYER_ANIM_SPECIFIC(
+    ANIM_SPECIFIC(
         SERVER_TO_CLIENT,
         SPECIFIC,
         "Player Anims",

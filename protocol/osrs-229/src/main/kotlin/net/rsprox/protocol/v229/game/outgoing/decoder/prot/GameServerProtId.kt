@@ -20,7 +20,7 @@ internal object GameServerProtId {
     const val CAM_LOOKAT_EASED_COORD_V1 = 16
     const val UPDATE_FRIENDLIST = 17
     const val SET_MAP_FLAG_V1 = 18
-    const val PLAYER_ANIM_SPECIFIC = 19
+    const val ANIM_SPECIFIC = 19
     const val RESET_ANIMS = 20
     const val CLANCHANNEL_DELTA = 21
     const val IF_SETHIDE = 22

@@ -3,14 +3,14 @@ package net.rsprox.protocol.game.outgoing.model.specific
 import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
- * Player anim specifics are used to play an animation on the local player for the local player,
+ * Anim specifics are used to play an animation on the local player for the local player,
  * not the entire world.
  * Note that unlike most other packets, this one does not provide the index, so it can only
  * be played on the local player and no one else.
  * @property id the id of the animation
  * @property delay the delay of the animation before it begins playing in client cycles (20ms/cc)
  */
-public class PlayerAnimSpecific private constructor(
+public class AnimSpecific private constructor(
     private val _id: UShort,
     private val _delay: UByte,
 ) : IncomingServerGameMessage {
@@ -31,7 +31,7 @@ public class PlayerAnimSpecific private constructor(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as PlayerAnimSpecific
+        other as AnimSpecific
 
         if (_id != other._id) return false
         if (_delay != other._delay) return false
@@ -46,7 +46,7 @@ public class PlayerAnimSpecific private constructor(
     }
 
     override fun toString(): String {
-        return "PlayerAnimSpecific(" +
+        return "AnimSpecific(" +
             "id=$id, " +
             "delay=$delay" +
             ")"

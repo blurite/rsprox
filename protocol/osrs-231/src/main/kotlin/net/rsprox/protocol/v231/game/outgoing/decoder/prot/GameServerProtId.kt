@@ -93,7 +93,7 @@ internal object GameServerProtId {
     const val MIDI_SONG_STOP = 89
     const val IF_CLOSESUB = 90
     const val CAM_TARGET_V3 = 91
-    const val PLAYER_ANIM_SPECIFIC = 92
+    const val ANIM_SPECIFIC = 92
     const val UPDATE_INV_FULL = 93
     const val SET_MAP_FLAG_V1 = 94
     const val MESSAGE_GAME = 95

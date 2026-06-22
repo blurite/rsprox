@@ -51,7 +51,7 @@ internal object GameServerProtId {
     const val IF_SETEVENTS_V1 = 47
     const val IF_SETPLAYERMODEL_OBJ = 48
     const val IF_SETANGLE = 49
-    const val PLAYER_ANIM_SPECIFIC = 50
+    const val ANIM_SPECIFIC = 50
     const val NPC_HEADICON_SPECIFIC = 51
     const val SEND_PING = 52
     const val IF_RESYNC_V1 = 53

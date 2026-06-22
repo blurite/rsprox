@@ -37,7 +37,7 @@ internal object GameServerProtId {
     const val MINIMAP_TOGGLE = 33
     const val MESSAGE_FRIENDCHANNEL = 34
     const val UPDATE_STAT_V2 = 35
-    const val PLAYER_ANIM_SPECIFIC = 36
+    const val ANIM_SPECIFIC = 36
     const val IF_SETSCROLLPOS = 37
     const val OBJ_ENABLED_OPS_SPECIFIC = 38
     const val IF_SETOBJECT = 39

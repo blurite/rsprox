@@ -8,7 +8,7 @@ internal object GameServerProtId {
     const val CAM_MOVETO_ARC_V1 = 4
     const val UPDATE_REBOOT_TIMER_V1 = 5
     const val MIDI_SONG_V2 = 6
-    const val PLAYER_ANIM_SPECIFIC = 7
+    const val ANIM_SPECIFIC = 7
     const val LOGOUT_WITHREASON = 8
     const val REBUILD_REGION = 9
     const val CHAT_FILTER_SETTINGS = 10

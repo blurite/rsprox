@@ -76,7 +76,7 @@ internal object GameServerProtId {
     const val LOGOUT_TRANSFER = 72
     const val VARCLAN_ENABLE = 73
     const val MIDI_SONG_V1 = 74
-    const val PLAYER_ANIM_SPECIFIC = 75
+    const val ANIM_SPECIFIC = 75
     const val CAM_TARGET_V2 = 76
     const val MINIMAP_TOGGLE = 77
     const val SET_PLAYER_OP = 78

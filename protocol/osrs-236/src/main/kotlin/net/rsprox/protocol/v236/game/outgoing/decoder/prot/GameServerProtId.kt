@@ -110,7 +110,7 @@ internal object GameServerProtId {
     const val IF_SETPLAYERMODEL_BODYTYPE = 106
     const val MESSAGE_CLANCHANNEL = 107
     const val PLAYER_SPOTANIM_SPECIFIC = 108
-    const val PLAYER_ANIM_SPECIFIC = 109
+    const val ANIM_SPECIFIC = 109
     const val MIDI_SONG_V2 = 110
     const val UPDATE_RUNENERGY = 111
     const val HISCORE_REPLY = 112

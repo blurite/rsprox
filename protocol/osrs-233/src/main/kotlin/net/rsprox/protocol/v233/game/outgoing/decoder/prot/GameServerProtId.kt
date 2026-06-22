@@ -91,7 +91,7 @@ internal object GameServerProtId {
     const val IF_SETANGLE = 87
     const val UPDATE_RUNENERGY = 88
     const val UPDATE_FRIENDCHAT_CHANNEL_FULL_V2 = 89
-    const val PLAYER_ANIM_SPECIFIC = 90
+    const val ANIM_SPECIFIC = 90
     const val CAM_ROTATEBY = 91
     const val MAP_ANIM_SPECIFIC = 92
     const val REBUILD_WORLDENTITY_V3 = 93

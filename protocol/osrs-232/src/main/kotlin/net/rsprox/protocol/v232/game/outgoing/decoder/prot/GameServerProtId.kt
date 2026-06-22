@@ -27,7 +27,7 @@ internal object GameServerProtId {
     const val VARP_LARGE = 23
     const val LOGOUT = 24
     const val UPDATE_INV_FULL = 25
-    const val PLAYER_ANIM_SPECIFIC = 26
+    const val ANIM_SPECIFIC = 26
     const val SYNTH_SOUND = 27
     const val UPDATE_STOCKMARKET_SLOT = 28
     const val UPDATE_STAT_V2 = 29

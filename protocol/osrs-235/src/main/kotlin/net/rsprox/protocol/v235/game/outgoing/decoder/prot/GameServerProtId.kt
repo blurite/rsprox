@@ -76,7 +76,7 @@ internal object GameServerProtId {
     const val VARCLAN_ENABLE = 72
     const val CLANSETTINGS_FULL = 73
     const val VARP_SYNC = 74
-    const val PLAYER_ANIM_SPECIFIC = 75
+    const val ANIM_SPECIFIC = 75
     const val RESET_ANIMS = 76
     const val NPC_SPOTANIM_SPECIFIC = 77
     const val UPDATE_UID192 = 78

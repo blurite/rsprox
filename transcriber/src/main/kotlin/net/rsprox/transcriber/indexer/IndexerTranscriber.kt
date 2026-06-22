@@ -1133,7 +1133,7 @@ public class IndexerTranscriber(
         binaryIndex.increment(IndexedType.NPC, npc.id)
     }
 
-    override fun playerAnimSpecific(message: PlayerAnimSpecific) {
+    override fun animSpecific(message: AnimSpecific) {
         binaryIndex.increment(IndexedType.SEQ, message.id)
     }
 

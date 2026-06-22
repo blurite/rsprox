@@ -61,7 +61,7 @@ internal object GameServerProtId {
     const val IF_SETHIDE = 57
     const val UPDATE_TRADINGPOST = 58
     const val LOGOUT = 59
-    const val PLAYER_ANIM_SPECIFIC = 60
+    const val ANIM_SPECIFIC = 60
     const val UPDATE_FRIENDLIST = 61
     const val CAM_LOOKAT_V1 = 62
     const val FRIENDLIST_LOADED = 63

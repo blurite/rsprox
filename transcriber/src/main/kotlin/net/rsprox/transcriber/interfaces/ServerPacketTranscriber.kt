@@ -351,7 +351,7 @@ public interface ServerPacketTranscriber {
 
     public fun npcSpotAnimSpecific(message: NpcSpotAnimSpecific)
 
-    public fun playerAnimSpecific(message: PlayerAnimSpecific)
+    public fun animSpecific(message: AnimSpecific)
 
     public fun playerSpotAnimSpecific(message: PlayerSpotAnimSpecific)
 

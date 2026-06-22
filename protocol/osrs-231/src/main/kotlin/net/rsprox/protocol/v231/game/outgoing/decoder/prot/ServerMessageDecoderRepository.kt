@@ -112,12 +112,12 @@ import net.rsprox.protocol.v231.game.outgoing.decoder.codec.sound.MidiSongWithSe
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.sound.MidiSwapDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.sound.SynthSoundDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.specific.*
+import net.rsprox.protocol.v231.game.outgoing.decoder.codec.specific.AnimSpecificDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.specific.LocAnimSpecificDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.specific.MapAnimSpecificDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.specific.NpcAnimSpecificDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.specific.NpcHeadIconSpecificDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.specific.NpcSpotAnimSpecificDecoder
-import net.rsprox.protocol.v231.game.outgoing.decoder.codec.specific.PlayerAnimSpecificDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.specific.PlayerSpotAnimSpecificDecoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.specific.ProjAnimSpecificV3Decoder
 import net.rsprox.protocol.v231.game.outgoing.decoder.codec.unknown.UnknownStringDecoder
@@ -279,7 +279,7 @@ internal object ServerMessageDecoderRepository {
                 bind(NpcAnimSpecificDecoder())
                 bind(NpcHeadIconSpecificDecoder())
                 bind(NpcSpotAnimSpecificDecoder())
-                bind(PlayerAnimSpecificDecoder())
+                bind(AnimSpecificDecoder())
                 bind(PlayerSpotAnimSpecificDecoder())
                 bind(ProjAnimSpecificV3Decoder())
                 bind(ProjAnimSpecificV4Decoder())

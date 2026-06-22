@@ -65,7 +65,7 @@ internal object GameServerProtId {
     const val UPDATE_UID192 = 61
     const val CAM_RESET = 62
     const val LOC_MERGE = 63
-    const val PLAYER_ANIM_SPECIFIC = 64
+    const val ANIM_SPECIFIC = 64
     const val SERVER_TICK_END = 65
     const val NPC_INFO_SMALL_V5 = 66
     const val IF_OPENSUB = 67

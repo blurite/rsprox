@@ -79,7 +79,7 @@ internal object GameServerProtId {
     const val UPDATE_TRADINGPOST = 75
     const val UPDATE_INV_PARTIAL = 76
     const val HINT_ARROW = 77
-    const val PLAYER_ANIM_SPECIFIC = 78
+    const val ANIM_SPECIFIC = 78
     const val IF_SETROTATESPEED = 79
     const val CAM_MOVETO_V1 = 80
     const val NPC_HEADICON_SPECIFIC = 81

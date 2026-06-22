@@ -103,7 +103,7 @@ public class TranscriberPlugin(
             GameServerProt.NPC_HEADICON_SPECIFIC -> pass(message, Transcriber::npcHeadIconSpecific)
             GameServerProt.NPC_SPOTANIM_SPECIFIC -> pass(message, Transcriber::npcSpotAnimSpecific)
             GameServerProt.NPC_ANIM_SPECIFIC -> pass(message, Transcriber::npcAnimSpecific)
-            GameServerProt.PLAYER_ANIM_SPECIFIC -> pass(message, Transcriber::playerAnimSpecific)
+            GameServerProt.ANIM_SPECIFIC -> pass(message, Transcriber::animSpecific)
             GameServerProt.PLAYER_SPOTANIM_SPECIFIC -> pass(message, Transcriber::playerSpotAnimSpecific)
             GameServerProt.OBJ_ADD_SPECIFIC -> pass(message, Transcriber::objAddSpecific)
             GameServerProt.OBJ_DEL_SPECIFIC -> pass(message, Transcriber::objDelSpecific)

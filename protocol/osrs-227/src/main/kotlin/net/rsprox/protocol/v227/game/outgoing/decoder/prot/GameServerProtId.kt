@@ -84,7 +84,7 @@ internal object GameServerProtId {
     const val RESET_ANIMS = 80
     const val MIDI_JINGLE = 81
     const val UPDATE_IGNORELIST = 82
-    const val PLAYER_ANIM_SPECIFIC = 83
+    const val ANIM_SPECIFIC = 83
     const val URL_OPEN = 84
     const val CAM_MOVETO_ARC_V1 = 85
     const val MESSAGE_GAME = 86
