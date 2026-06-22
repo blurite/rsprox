@@ -136,7 +136,7 @@ internal object GameServerProtId {
     const val CAM_MOVETO_CYCLES_V2 = 132
     const val SET_MAP_FLAG_V2 = 133
     const val IF_SETMODEL_V2 = 134
-    const val CAM_LOOKAT_EASED_COORD_V2 = 135
+    const val CAM_ROTATETO_COORDINATE_V2 = 135
     const val AMBIENCE_START = 136
     const val CAM_SKYBOX = 137
     const val CAM_MOVETO_V2 = 138

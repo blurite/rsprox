@@ -5,7 +5,7 @@ import net.rsprox.protocol.game.outgoing.model.camera.util.CameraEaseFunction
 import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildArea
 
 /**
- * Cam look at eased coord is used to make the camera look towards
+ * Cam rotateto coordinate is used to make the camera look towards
  * a certain coordinate with various easing functions.
  *
  * @property destinationXInBuildArea the dest x coordinate within the build area,
@@ -17,7 +17,7 @@ import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildAre
  * @property function the camera easing function, allowing for finer
  * control over the way it moves from the start coordinate to the end.
  */
-public class CamLookAtEasedCoordV1 private constructor(
+public class CamRotateToCoordinateV1 private constructor(
     private val destinationCoordInBuildArea: CoordInBuildArea,
     private val _height: UShort,
     private val _duration: UShort,
@@ -51,7 +51,7 @@ public class CamLookAtEasedCoordV1 private constructor(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as CamLookAtEasedCoordV1
+        other as CamRotateToCoordinateV1
 
         if (destinationCoordInBuildArea != other.destinationCoordInBuildArea) return false
         if (_height != other._height) return false
@@ -70,7 +70,7 @@ public class CamLookAtEasedCoordV1 private constructor(
     }
 
     override fun toString(): String {
-        return "CamLookAtEasedCoordV1(" +
+        return "CamRotateToCoordinateV1(" +
             "destinationXInBuildArea=$destinationXInBuildArea, " +
             "destinationZInBuildArea=$destinationZInBuildArea, " +
             "height=$height, " +

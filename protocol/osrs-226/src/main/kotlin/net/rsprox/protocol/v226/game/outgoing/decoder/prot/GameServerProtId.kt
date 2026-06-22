@@ -23,7 +23,7 @@ internal object GameServerProtId {
     const val SET_PLAYER_OP = 19
     const val UPDATE_STAT_V1 = 20
     const val MESSAGE_FRIENDCHANNEL = 21
-    const val CAM_LOOKAT_EASED_COORD_V1 = 22
+    const val CAM_ROTATETO_COORDINATE_V1 = 22
     const val UPDATE_ZONE_FULL_FOLLOWS = 23
     const val UPDATE_INV_PARTIAL = 24
     const val IF_CLOSESUB = 25

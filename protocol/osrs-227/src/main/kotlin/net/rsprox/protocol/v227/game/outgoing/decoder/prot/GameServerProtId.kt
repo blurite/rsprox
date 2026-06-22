@@ -17,7 +17,7 @@ internal object GameServerProtId {
     const val IF_SETTEXT = 13
     const val HIDEOBJOPS = 14
     const val MESSAGE_FRIENDCHANNEL = 15
-    const val CAM_LOOKAT_EASED_COORD_V1 = 16
+    const val CAM_ROTATETO_COORDINATE_V1 = 16
     const val SITE_SETTINGS = 17
     const val CAM_TARGET_V2 = 18
     const val REFLECTION_CHECKER = 19

@@ -40,7 +40,7 @@ internal object GameServerProtId {
     const val RUNCLIENTSCRIPT = 36
     const val MESSAGE_PRIVATE_ECHO = 37
     const val UPDATE_STAT_V2 = 38
-    const val CAM_LOOKAT_EASED_COORD_V1 = 39
+    const val CAM_ROTATETO_COORDINATE_V1 = 39
     const val SERVER_TICK_END = 40
     const val IF_SETNPCHEAD = 41
     const val IF_RESYNC_V1 = 42

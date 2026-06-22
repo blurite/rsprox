@@ -36,7 +36,7 @@ internal object GameServerProtId {
     const val CAM_MODE = 32
     const val IF_SETPLAYERMODEL_BODYTYPE = 33
     const val MESSAGE_CLANCHANNEL = 34
-    const val CAM_LOOKAT_EASED_COORD_V1 = 35
+    const val CAM_ROTATETO_COORDINATE_V1 = 35
     const val IF_RESYNC_V1 = 36
     const val CAM_TARGET_V1 = 37
     const val IF_SETPLAYERHEAD = 38

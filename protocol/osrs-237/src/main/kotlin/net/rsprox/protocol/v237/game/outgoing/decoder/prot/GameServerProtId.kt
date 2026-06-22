@@ -134,7 +134,7 @@ internal object GameServerProtId {
     const val CAM_MOVETO_CYCLES_V2 = 130
     const val ZBUF = 131
     const val SET_MAP_FLAG_V2 = 132
-    const val CAM_LOOKAT_EASED_COORD_V2 = 133
+    const val CAM_ROTATETO_COORDINATE_V2 = 133
     const val OBJ_CUSTOMISE_SPECIFIC = 134
     const val CAM_MOVETO_ARC_V2 = 135
     const val WORLDENTITY_INFO_V7 = 136

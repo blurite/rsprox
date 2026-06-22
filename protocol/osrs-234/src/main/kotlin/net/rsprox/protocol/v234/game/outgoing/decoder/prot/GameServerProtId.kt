@@ -117,7 +117,7 @@ internal object GameServerProtId {
     const val IF_SETPLAYERMODEL_OBJ = 113
     const val VARCLAN_ENABLE = 114
     const val IF_SETANGLE = 115
-    const val CAM_LOOKAT_EASED_COORD_V1 = 116
+    const val CAM_ROTATETO_COORDINATE_V1 = 116
     const val HIDELOCOPS = 117
     const val MESSAGE_CLANCHANNEL = 118
     const val UPDATE_TRADINGPOST = 119

@@ -18,7 +18,7 @@ internal object GameServerProtId {
     const val IF_SETNPCHEAD_ACTIVE = 14
     const val IF_SETPLAYERMODEL_BASECOLOUR = 15
     const val SET_INTERACTION_MODE = 16
-    const val CAM_LOOKAT_EASED_COORD_V1 = 17
+    const val CAM_ROTATETO_COORDINATE_V1 = 17
     const val CAM_ROTATETO = 18
     const val CLANSETTINGS_FULL = 19
     const val RESET_ANIMS = 20

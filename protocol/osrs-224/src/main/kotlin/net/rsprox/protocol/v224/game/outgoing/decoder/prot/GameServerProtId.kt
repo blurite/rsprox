@@ -82,7 +82,7 @@ internal object GameServerProtId {
     const val SET_PLAYER_OP = 78
     const val RESET_ANIMS = 79
     const val OCULUS_SYNC = 80
-    const val CAM_LOOKAT_EASED_COORD_V1 = 81
+    const val CAM_ROTATETO_COORDINATE_V1 = 81
     const val MIDI_SWAP = 82
     const val IF_SETPLAYERHEAD = 83
     const val URL_OPEN = 84

@@ -96,7 +96,7 @@ internal object GameServerProtId {
     const val OCULUS_SYNC = 92
     const val IF_SETSCROLLPOS = 93
     const val IF_SETTEXT = 94
-    const val CAM_LOOKAT_EASED_COORD_V1 = 95
+    const val CAM_ROTATETO_COORDINATE_V1 = 95
     const val IF_SETPLAYERMODEL_BODYTYPE = 96
     const val PROJANIM_SPECIFIC_V3 = 97
     const val SOUND_AREA = 98

@@ -314,7 +314,7 @@ public class TextServerPacketTranscriber(
         root.int("rate2", message.rate2)
     }
 
-    override fun camLookAtEasedCoordV1(message: CamLookAtEasedCoordV1) {
+    override fun camRotateToCoordinateV1(message: CamRotateToCoordinateV1) {
         if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
         if (coordInBuildArea.invalid()) {
@@ -331,7 +331,7 @@ public class TextServerPacketTranscriber(
         root.enum("easing", message.function)
     }
 
-    override fun camLookAtEasedCoordV2(message: CamLookAtEasedCoordV2) {
+    override fun camRotateToCoordinateV2(message: CamRotateToCoordinateV2) {
         if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
         val coord = CoordGrid(sessionState.getRootWorldActiveLevel(), message.x, message.z)
         root.coordGrid(coord)

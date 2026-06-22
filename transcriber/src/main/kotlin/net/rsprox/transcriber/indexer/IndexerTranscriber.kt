@@ -460,10 +460,10 @@ public class IndexerTranscriber(
     override fun camLookAtV2(message: CamLookAtV2) {
     }
 
-    override fun camLookAtEasedCoordV1(message: CamLookAtEasedCoordV1) {
+    override fun camRotateToCoordinateV1(message: CamRotateToCoordinateV1) {
     }
 
-    override fun camLookAtEasedCoordV2(message: CamLookAtEasedCoordV2) {
+    override fun camRotateToCoordinateV2(message: CamRotateToCoordinateV2) {
     }
 
     override fun camMode(message: CamMode) {

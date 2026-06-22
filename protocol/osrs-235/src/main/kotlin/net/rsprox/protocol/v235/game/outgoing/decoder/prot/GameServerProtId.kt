@@ -26,7 +26,7 @@ internal object GameServerProtId {
     const val NPC_ANIM_SPECIFIC = 22
     const val SET_INTERACTION_MODE = 23
     const val VARP_SMALL = 24
-    const val CAM_LOOKAT_EASED_COORD_V1 = 25
+    const val CAM_ROTATETO_COORDINATE_V1 = 25
     const val SYNTH_SOUND = 26
     const val MAP_ANIM_SPECIFIC = 27
     const val CAM_ROTATEBY = 28

@@ -4,7 +4,7 @@ import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 import net.rsprox.protocol.game.outgoing.model.camera.util.CameraEaseFunction
 
 /**
- * Cam look at eased coord is used to make the camera look towards
+ * Cam rotateto coordinate is used to make the camera look towards
  * a certain coordinate with various easing functions.
  *
  * @property x the absolute x coordinate to look at.
@@ -14,7 +14,7 @@ import net.rsprox.protocol.game.outgoing.model.camera.util.CameraEaseFunction
  * @property easing the camera easing function, allowing for finer
  * control over the way it moves from the start coordinate to the end.
  */
-public class CamLookAtEasedCoordV2 private constructor(
+public class CamRotateToCoordinateV2 private constructor(
     private val _x: UShort,
     private val _z: UShort,
     private val _height: UShort,
@@ -50,7 +50,7 @@ public class CamLookAtEasedCoordV2 private constructor(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as CamLookAtEasedCoordV2
+        other as CamRotateToCoordinateV2
 
         if (_x != other._x) return false
         if (_z != other._z) return false
@@ -71,7 +71,7 @@ public class CamLookAtEasedCoordV2 private constructor(
     }
 
     override fun toString(): String {
-        return "CamLookAtEasedCoordV2(" +
+        return "CamRotateToCoordinateV2(" +
             "x=$x, " +
             "z=$z, " +
             "height=$height, " +

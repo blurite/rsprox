@@ -30,7 +30,7 @@ internal object GameServerProtId {
     const val NPC_SPOTANIM_SPECIFIC = 26
     const val VARP_SMALL = 27
     const val MAP_PROJANIM_V1 = 28
-    const val CAM_LOOKAT_EASED_COORD_V1 = 29
+    const val CAM_ROTATETO_COORDINATE_V1 = 29
     const val CAM_SHAKE = 30
     const val REBUILD_REGION = 31
     const val IF_CLEARINV = 32
