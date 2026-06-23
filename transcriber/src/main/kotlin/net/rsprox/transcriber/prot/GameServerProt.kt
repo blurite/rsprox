@@ -127,6 +127,7 @@ public enum class GameServerProt : Prot {
     CAM_MOVETO_V3,
     CAM_MOVETO_CYCLES_V1,
     CAM_MOVETO_CYCLES_V2,
+    CAM_MOVETO_CYCLES_V3,
     CAM_MOVETO_ARC_V1,
     CAM_MOVETO_ARC_V2,
     CAM_LOOKAT_V1,

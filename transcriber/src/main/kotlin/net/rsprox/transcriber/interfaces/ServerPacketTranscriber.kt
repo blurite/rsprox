@@ -95,6 +95,8 @@ public interface ServerPacketTranscriber {
 
     public fun camMoveToCyclesV2(message: CamMoveToCyclesV2)
 
+    public fun camMoveToCyclesV3(message: CamMoveToCyclesV3)
+
     public fun camReset(message: CamReset)
 
     public fun camRotateBy(message: CamRotateBy)

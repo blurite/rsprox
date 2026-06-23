@@ -493,6 +493,9 @@ public class IndexerTranscriber(
     override fun camMoveToCyclesV2(message: CamMoveToCyclesV2) {
     }
 
+    override fun camMoveToCyclesV3(message: CamMoveToCyclesV3) {
+    }
+
     override fun camReset(message: CamReset) {
     }
 

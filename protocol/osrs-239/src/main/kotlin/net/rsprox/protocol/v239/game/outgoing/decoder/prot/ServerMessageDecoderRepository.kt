@@ -10,6 +10,7 @@ import net.rsprox.protocol.v239.game.outgoing.decoder.codec.camera.CamLookAtV3De
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.camera.CamModeDecoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.camera.CamMoveToArcV2Decoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.camera.CamMoveToCyclesV2Decoder
+import net.rsprox.protocol.v239.game.outgoing.decoder.codec.camera.CamMoveToCyclesV3Decoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.camera.CamMoveToV2Decoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.camera.CamMoveToV3Decoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.camera.CamResetDecoder
@@ -163,6 +164,7 @@ internal object ServerMessageDecoderRepository {
                 bind(CamModeDecoder())
                 bind(CamMoveToArcV2Decoder())
                 bind(CamMoveToCyclesV2Decoder())
+                bind(CamMoveToCyclesV3Decoder())
                 bind(CamMoveToV2Decoder())
                 bind(CamMoveToV3Decoder())
                 bind(CamResetDecoder())
