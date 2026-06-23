@@ -14,11 +14,11 @@ internal class CamRotateToCoordinateV2Decoder : ProxyMessageDecoder<CamRotateToC
         buffer: JagByteBuf,
         session: Session,
     ): CamRotateToCoordinateV2 {
-        val height = buffer.g2Alt3()
-        val x = buffer.g2()
+        val cycles = buffer.g2()
+        val z = buffer.g2()
+        val height = buffer.g2()
         val easing = buffer.g1Alt1()
-        val z = buffer.g2Alt3()
-        val cycles = buffer.g2Alt2()
+        val x = buffer.g2Alt3()
         return CamRotateToCoordinateV2(
             x,
             z,

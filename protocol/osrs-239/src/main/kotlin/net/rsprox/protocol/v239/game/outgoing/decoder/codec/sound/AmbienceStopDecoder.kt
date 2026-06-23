@@ -14,7 +14,7 @@ internal class AmbienceStopDecoder : ProxyMessageDecoder<AmbienceStop> {
         buffer: JagByteBuf,
         session: Session,
     ): AmbienceStop {
-        val fade = buffer.g1Alt3() == 1
+        val fade = buffer.g1() == 1
         return AmbienceStop(
             fade,
         )

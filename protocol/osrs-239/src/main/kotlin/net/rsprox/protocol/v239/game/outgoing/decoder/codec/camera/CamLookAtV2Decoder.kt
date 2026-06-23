@@ -14,11 +14,11 @@ internal class CamLookAtV2Decoder : ProxyMessageDecoder<CamLookAtV2> {
         buffer: JagByteBuf,
         session: Session,
     ): CamLookAtV2 {
-        val x = buffer.g2Alt1()
-        val height = buffer.g2()
-        val rate = buffer.g1Alt2()
+        val z = buffer.g2()
+        val height = buffer.g2Alt2()
         val rate2 = buffer.g1()
-        val z = buffer.g2Alt1()
+        val rate = buffer.g1Alt3()
+        val x = buffer.g2Alt1()
         return CamLookAtV2(
             x,
             z,

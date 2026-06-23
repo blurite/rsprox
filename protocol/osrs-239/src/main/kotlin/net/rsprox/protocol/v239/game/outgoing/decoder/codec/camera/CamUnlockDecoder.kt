@@ -14,7 +14,7 @@ internal class CamUnlockDecoder : ProxyMessageDecoder<CamUnlock> {
         buffer: JagByteBuf,
         session: Session,
     ): CamUnlock {
-        val unlock = buffer.g1Alt1() == 1
+        val unlock = buffer.g1() == 1
         return CamUnlock(
             unlock,
         )

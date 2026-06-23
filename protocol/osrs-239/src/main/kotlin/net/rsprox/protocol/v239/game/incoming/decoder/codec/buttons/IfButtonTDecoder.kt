@@ -18,10 +18,10 @@ public class IfButtonTDecoder : ProxyMessageDecoder<IfButtonT> {
     ): IfButtonT {
         val targetCombinedId = buffer.gCombinedId()
         val selectedSub = buffer.g2Alt2()
-        val selectedObj = buffer.g2Alt3()
-        val selectedCombinedId = buffer.gCombinedIdAlt2()
-        val targetSub = buffer.g2()
         val targetObj = buffer.g2Alt3()
+        val targetSub = buffer.g2Alt1()
+        val selectedObj = buffer.g2Alt2()
+        val selectedCombinedId = buffer.gCombinedIdAlt2()
         return IfButtonT(
             selectedCombinedId,
             selectedSub,

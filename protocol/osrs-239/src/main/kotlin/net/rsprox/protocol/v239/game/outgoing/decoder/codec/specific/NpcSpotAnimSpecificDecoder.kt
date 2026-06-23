@@ -14,10 +14,10 @@ internal class NpcSpotAnimSpecificDecoder : ProxyMessageDecoder<NpcSpotAnimSpeci
         buffer: JagByteBuf,
         session: Session,
     ): NpcSpotAnimSpecific {
-        val packed = buffer.g4Alt3()
         val slot = buffer.g1Alt1()
-        val id = buffer.g2Alt2()
-        val index = buffer.g2Alt2()
+        val index = buffer.g2()
+        val id = buffer.g2()
+        val packed = buffer.g4Alt2()
         val height = packed ushr 16
         val delay = packed and 0xFFFF
         return NpcSpotAnimSpecific(

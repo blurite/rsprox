@@ -14,10 +14,10 @@ internal class MidiSwapDecoder : ProxyMessageDecoder<MidiSwap> {
         buffer: JagByteBuf,
         session: Session,
     ): MidiSwap {
-        val fadeOutDelay = buffer.g2()
-        val fadeOutSpeed = buffer.g2Alt2()
+        val fadeOutSpeed = buffer.g2()
         val fadeInDelay = buffer.g2()
         val fadeInSpeed = buffer.g2Alt2()
+        val fadeOutDelay = buffer.g2()
         return MidiSwap(
             fadeOutDelay,
             fadeOutSpeed,
