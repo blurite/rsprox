@@ -9,6 +9,7 @@ import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.Chat
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.MoveSpeedExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.NameExtrasExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.TemporaryMoveSpeedExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ContrastExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceAngleExtendedInfo
@@ -356,6 +357,13 @@ public class TextPlayerInfoTranscriber(
                         }
                     }
                 }
+                is ContrastExtendedInfo -> {
+                    if (filters[PropertyFilter.PLAYER_TINTING]) {
+                        group("CONTRAST") {
+                            appendContrastExtendedInfo(player, info)
+                        }
+                    }
+                }
                 is SpotanimExtendedInfo -> {
                     if (filters[PropertyFilter.PLAYER_SPOTANIMS]) {
                         appendSpotanimExtendedInfo(player, info)
@@ -650,6 +658,20 @@ public class TextPlayerInfoTranscriber(
                 }
             }
         }
+    }
+
+    private fun Property.appendContrastExtendedInfo(
+        player: Player,
+        info: ContrastExtendedInfo,
+    ) {
+        if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
+            shortPlayer(player.index)
+        }
+        int("start", info.start)
+        int("end", info.end)
+        int("startcontrast", info.startContrast)
+        int("endcontrast", info.endContrast)
+        boolean("usestartcontrast", info.useStartContrast)
     }
 
     private fun Property.appendTintingExtendedInfo(

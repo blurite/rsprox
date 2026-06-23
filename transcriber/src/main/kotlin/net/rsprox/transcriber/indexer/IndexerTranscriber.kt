@@ -92,6 +92,7 @@ import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.Move
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.NameExtrasExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.TemporaryMoveSpeedExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.EnabledOpsExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ContrastExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceAngleExtendedInfo
@@ -1422,6 +1423,8 @@ public class IndexerTranscriber(
                 }
                 is TintingExtendedInfo -> {
                 }
+                is ContrastExtendedInfo -> {
+                }
                 is SpotanimExtendedInfo -> {
                     for (spotanim in info.spotanims.values) {
                         appendCheckedSpotanim(spotanim.id)
@@ -1495,6 +1498,8 @@ public class IndexerTranscriber(
                     binaryIndex.increment(IndexedType.SEQ, info.id)
                 }
                 is TintingExtendedInfo -> {
+                }
+                is ContrastExtendedInfo -> {
                 }
                 is SpotanimExtendedInfo -> {
                     for (spotanim in info.spotanims.values) {

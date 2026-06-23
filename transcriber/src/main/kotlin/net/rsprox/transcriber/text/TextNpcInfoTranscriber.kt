@@ -17,6 +17,7 @@ import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.Transfo
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.customisation.ModelCustomisation
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.customisation.ResetCustomisation
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.EnabledOpsExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ContrastExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceAngleExtendedInfo
@@ -369,6 +370,13 @@ public class TextNpcInfoTranscriber(
                         }
                     }
                 }
+                is ContrastExtendedInfo -> {
+                    if (filters[PropertyFilter.NPC_TINTING]) {
+                        group("CONTRAST") {
+                            contrast(npc, info)
+                        }
+                    }
+                }
                 is SpotanimExtendedInfo -> {
                     if (filters[PropertyFilter.NPC_SPOTANIMS]) {
                         spotanim(npc, info)
@@ -655,6 +663,20 @@ public class TextNpcInfoTranscriber(
         }
         scriptVarType("id", ScriptVarType.SEQ, info.id.maxUShortToMinusOne())
         filteredInt("delay", info.delay, 0)
+    }
+
+    private fun Property.contrast(
+        npc: Npc,
+        info: ContrastExtendedInfo,
+    ) {
+        if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
+            shortNpc(npc.index)
+        }
+        int("start", info.start)
+        int("end", info.end)
+        int("startcontrast", info.startContrast)
+        int("endcontrast", info.endContrast)
+        boolean("usestartcontrast", info.useStartContrast)
     }
 
     private fun Property.tinting(

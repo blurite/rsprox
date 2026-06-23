@@ -19,9 +19,9 @@ import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.ObjT
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.TemporaryMoveSpeedExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.LowResolutionPosition
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ContrastExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceAngleExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FacePathingEntityExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Headbar
@@ -321,6 +321,9 @@ internal class PlayerInfoClient(
         if (flags and CHAT != 0) {
             decodeChat(buffer, blocks)
         }
+        if (flags and PLAYER_CONTRAST != 0) {
+            decodeContrast(buffer, blocks)
+        }
         if (flags and TINTING != 0) {
             decodeTinting(buffer, blocks)
         }
@@ -341,9 +344,6 @@ internal class PlayerInfoClient(
             val data = ByteArray(len)
             buffer.gdataAlt2(data)
             decodeAppearance(Unpooled.wrappedBuffer(data).toJagByteBuf(), blocks)
-        }
-        if (flags and FACE_ANGLE != 0) {
-            decodeFaceAngle(buffer, blocks)
         }
         if (flags and EXACT_MOVE != 0) {
             decodeExactMove(buffer, blocks)
@@ -380,13 +380,6 @@ internal class PlayerInfoClient(
         var index = buffer.g2Alt3()
         index += buffer.g1() shl 16
         blocks += FacePathingEntityExtendedInfo(index)
-    }
-
-    private fun decodeFaceAngle(
-        buffer: JagByteBuf,
-        blocks: MutableList<ExtendedInfo>,
-    ) {
-        blocks += FaceAngleExtendedInfo(buffer.g2Alt3())
     }
 
     private fun decodeFacing(
@@ -620,6 +613,25 @@ internal class PlayerInfoClient(
                 )
         }
         blocks += HeadbarExtendedInfo(headbars)
+    }
+
+    private fun decodeContrast(
+        buffer: JagByteBuf,
+        blocks: MutableList<ExtendedInfo>,
+    ) {
+        val start = buffer.g2sAlt2()
+        val end = buffer.g2s()
+        val startContrast = buffer.g1sAlt3()
+        val endContrast = buffer.g1sAlt3()
+        val useStartContrast = buffer.g1Alt3() == 1
+        blocks +=
+            ContrastExtendedInfo(
+                start,
+                end,
+                startContrast,
+                endContrast,
+                useStartContrast,
+            )
     }
 
     private fun decodeTinting(
@@ -1114,13 +1126,14 @@ internal class PlayerInfoClient(
         private const val MOVE_SPEED = 0x400
         private const val TINTING = 0x200
         private const val EXACT_MOVE = 0x4000
+        private const val PLAYER_CONTRAST = 0x100000
         private const val TEMP_MOVE_SPEED = 0x1000
         private const val SPOTANIM = 0x20000
         private const val HEADBARS = 0x10000
         private const val HITMARKS = 0x40000
         private const val FACE_PATHINGENTITY = 0x10
 
-        private const val UNUSED_FLAGS = 0x2 or 0x80 or 0x100000 or 0x80000
+        private const val UNUSED_FLAGS = 0x2 or 0x80 or 0x80000
 
         private class Player {
             var queuedMove: Boolean = false
