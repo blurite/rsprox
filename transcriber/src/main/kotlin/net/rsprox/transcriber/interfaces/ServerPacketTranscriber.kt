@@ -79,6 +79,8 @@ public interface ServerPacketTranscriber {
 
     public fun camRotateToCoordinateV2(message: CamRotateToCoordinateV2)
 
+    public fun camRotateToCoordinateV3(message: CamRotateToCoordinateV3)
+
     public fun camMode(message: CamMode)
 
     public fun camMoveToV1(message: CamMoveToV1)

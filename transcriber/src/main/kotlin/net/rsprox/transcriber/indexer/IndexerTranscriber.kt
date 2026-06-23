@@ -469,6 +469,9 @@ public class IndexerTranscriber(
     override fun camRotateToCoordinateV2(message: CamRotateToCoordinateV2) {
     }
 
+    override fun camRotateToCoordinateV3(message: CamRotateToCoordinateV3) {
+    }
+
     override fun camMode(message: CamMode) {
     }
 

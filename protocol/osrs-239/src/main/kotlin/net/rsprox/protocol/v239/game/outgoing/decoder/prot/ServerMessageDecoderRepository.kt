@@ -16,6 +16,7 @@ import net.rsprox.protocol.v239.game.outgoing.decoder.codec.camera.CamMoveToV3De
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.camera.CamResetDecoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.camera.CamRotateBy
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.camera.CamRotateToCoordinateV2Decoder
+import net.rsprox.protocol.v239.game.outgoing.decoder.codec.camera.CamRotateToCoordinateV3Decoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.camera.CamRotateToDecoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.camera.CamShakeDecoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.camera.CamSkyboxDecoder
@@ -159,6 +160,7 @@ internal object ServerMessageDecoderRepository {
                 bind(CamRotateToDecoder())
                 bind(CamRotateBy())
                 bind(CamRotateToCoordinateV2Decoder())
+                bind(CamRotateToCoordinateV3Decoder())
                 bind(CamLookAtV2Decoder())
                 bind(CamLookAtV3Decoder())
                 bind(CamModeDecoder())

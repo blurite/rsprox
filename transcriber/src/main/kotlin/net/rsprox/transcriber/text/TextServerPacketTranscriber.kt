@@ -350,6 +350,17 @@ public class TextServerPacketTranscriber(
         root.enum("easing", message.easing)
     }
 
+    override fun camRotateToCoordinateV3(message: CamRotateToCoordinateV3) {
+        if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
+        val coord = CoordGrid(sessionState.getRootWorldActiveLevel(), message.x, message.z)
+        root.coordGrid(coord)
+        root.int("height", message.height)
+        root.int("cycles", message.cycles)
+        root.enum("easing", message.easing)
+        root.boolean("heightrelative", message.heightRelative)
+        root.boolean("tracktarget", message.trackTarget)
+    }
+
     override fun camMode(message: CamMode) {
         if (!filters[PropertyFilter.CAM_MODE]) return omit()
         root.int("mode", message.mode)
