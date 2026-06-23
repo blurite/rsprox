@@ -93,6 +93,8 @@ public class TranscriberPlugin(
             GameServerProt.MAP_ANIM -> pass(message, Transcriber::mapAnim)
             GameServerProt.MAP_PROJANIM_V1 -> pass(message, Transcriber::mapProjAnimV1)
             GameServerProt.MAP_PROJANIM_V2 -> pass(message, Transcriber::mapProjAnimV2)
+            GameServerProt.SCRIPTEDPROJ_ADD -> pass(message, Transcriber::scriptedProjAdd)
+            GameServerProt.SCRIPTEDPROJ_CHANGE -> pass(message, Transcriber::scriptedProjChange)
             GameServerProt.SOUND_AREA -> pass(message, Transcriber::soundArea)
             GameServerProt.PROJANIM_SPECIFIC_V4 -> pass(message, Transcriber::projAnimSpecificV4)
             GameServerProt.PROJANIM_SPECIFIC_V3 -> pass(message, Transcriber::projAnimSpecificV3)

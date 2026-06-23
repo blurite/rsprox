@@ -59,6 +59,8 @@ public enum class GameServerProt : Prot {
     MAP_ANIM,
     MAP_PROJANIM_V1,
     MAP_PROJANIM_V2,
+    SCRIPTEDPROJ_ADD,
+    SCRIPTEDPROJ_CHANGE,
     SOUND_AREA,
     AMBIENCE_START,
     AMBIENCE_STOP,

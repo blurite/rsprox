@@ -419,6 +419,8 @@ public interface ServerPacketTranscriber {
     public fun mapProjAnimV1(message: MapProjAnimV1)
 
     public fun mapProjAnimV2(message: MapProjAnimV2)
+    public fun scriptedProjAdd(message: ScriptedProjAdd)
+    public fun scriptedProjChange(message: ScriptedProjChange)
 
     public fun objAdd(message: ObjAdd)
 

@@ -18,6 +18,8 @@ import net.rsprox.protocol.v239.game.outgoing.decoder.codec.zone.payload.ObjCust
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.zone.payload.ObjDelDecoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.zone.payload.ObjEnabledOpsDecoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.zone.payload.ObjUncustomiseDecoder
+import net.rsprox.protocol.v239.game.outgoing.decoder.codec.zone.payload.ScriptedProjAddDecoder
+import net.rsprox.protocol.v239.game.outgoing.decoder.codec.zone.payload.ScriptedProjChangeDecoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.zone.payload.SoundAreaDecoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.prot.GameServerProt
 
@@ -51,8 +53,7 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
         val decoder: ProxyMessageDecoder<*>,
     ) {
         LOC_DEL(LocDelDecoder()),
-
-        // TODO: SCRIPTEDPROJ_CHANGE
+        SCRIPTEDPROJ_CHANGE(ScriptedProjChangeDecoder()),
         LOC_MERGE(LocMergeDecoder()),
         OBJ_CUSTOMISE(ObjCustomiseDecoder()),
         OBJ_COUNT(ObjCountDecoder()),
@@ -63,8 +64,7 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
         LOC_ANIM(LocAnimDecoder()),
         OBJ_DEL(ObjDelDecoder()),
         OBJ_ENABLED_OPS(ObjEnabledOpsDecoder()),
-
-        // TODO: SCRIPTEDPROJ_ADD
+        SCRIPTEDPROJ_ADD(ScriptedProjAddDecoder()),
         MAP_PROJANIM_V2(MapProjAnimV2Decoder()),
         SOUND_AREA(SoundAreaDecoder()),
     }

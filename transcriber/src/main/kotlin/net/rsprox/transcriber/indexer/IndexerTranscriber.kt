@@ -1245,6 +1245,17 @@ public class IndexerTranscriber(
                 is MapProjAnimV1 -> {
                     appendCheckedSpotanim(update.id)
                 }
+                is MapProjAnimV2 -> {
+                    appendCheckedSpotanim(update.id)
+                }
+                is ScriptedProjAdd -> {
+                    appendCheckedSpotanim(update.id)
+                    binaryIndex.increment(IndexedType.CLIENTSCRIPTS, update.curveScriptH)
+                    binaryIndex.increment(IndexedType.CLIENTSCRIPTS, update.curveScriptA)
+                    binaryIndex.increment(IndexedType.CLIENTSCRIPTS, update.curveScriptT)
+                }
+                is ScriptedProjChange -> {
+                }
                 is ObjAdd -> {
                     binaryIndex.increment(IndexedType.OBJ, update.id)
                 }
@@ -1296,6 +1307,16 @@ public class IndexerTranscriber(
 
     override fun mapProjAnimV2(message: MapProjAnimV2) {
         appendCheckedSpotanim(message.id)
+    }
+
+    override fun scriptedProjAdd(message: ScriptedProjAdd) {
+        appendCheckedSpotanim(message.id)
+        binaryIndex.increment(IndexedType.CLIENTSCRIPTS, message.curveScriptH)
+        binaryIndex.increment(IndexedType.CLIENTSCRIPTS, message.curveScriptA)
+        binaryIndex.increment(IndexedType.CLIENTSCRIPTS, message.curveScriptT)
+    }
+
+    override fun scriptedProjChange(message: ScriptedProjChange) {
     }
 
     override fun objAdd(message: ObjAdd) {

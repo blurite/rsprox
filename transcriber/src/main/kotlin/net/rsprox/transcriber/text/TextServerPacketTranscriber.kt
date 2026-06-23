@@ -3187,6 +3187,16 @@ public class TextServerPacketTranscriber(
                     val root = sessionState.createFakeServerRoot("MAP_PROJANIM_V2")
                     root.buildMapProjAnimV2(event)
                 }
+                is ScriptedProjAdd -> {
+                    if (!filters[PropertyFilter.MAP_PROJANIM]) continue
+                    val root = sessionState.createFakeServerRoot("SCRIPTEDPROJ_ADD")
+                    root.buildScriptedProjAdd(event)
+                }
+                is ScriptedProjChange -> {
+                    if (!filters[PropertyFilter.MAP_PROJANIM]) continue
+                    val root = sessionState.createFakeServerRoot("SCRIPTEDPROJ_CHANGE")
+                    root.buildScriptedProjChange(event)
+                }
                 is ObjAdd -> {
                     if (!filters[PropertyFilter.OBJ_ADD]) continue
                     val root = sessionState.createFakeServerRoot("OBJ_ADD")
@@ -3281,6 +3291,18 @@ public class TextServerPacketTranscriber(
                             buildMapProjAnimV2(event)
                         }
                     }
+                    is ScriptedProjAdd -> {
+                        if (!filters[PropertyFilter.MAP_PROJANIM]) continue
+                        group("SCRIPTEDPROJ_ADD") {
+                            buildScriptedProjAdd(event)
+                        }
+                    }
+                    is ScriptedProjChange -> {
+                        if (!filters[PropertyFilter.MAP_PROJANIM]) continue
+                        group("SCRIPTEDPROJ_CHANGE") {
+                            buildScriptedProjChange(event)
+                        }
+                    }
                     is ObjAdd -> {
                         if (!filters[PropertyFilter.OBJ_ADD]) continue
                         group("OBJ_ADD") {
@@ -3371,6 +3393,16 @@ public class TextServerPacketTranscriber(
     override fun mapProjAnimV2(message: MapProjAnimV2) {
         if (!filters[PropertyFilter.MAP_PROJANIM]) return omit()
         root.buildMapProjAnimV2(message)
+    }
+
+    override fun scriptedProjAdd(message: ScriptedProjAdd) {
+        if (!filters[PropertyFilter.MAP_PROJANIM]) return omit()
+        root.buildScriptedProjAdd(message)
+    }
+
+    override fun scriptedProjChange(message: ScriptedProjChange) {
+        if (!filters[PropertyFilter.MAP_PROJANIM]) return omit()
+        root.buildScriptedProjChange(message)
     }
 
     override fun objAdd(message: ObjAdd) {
@@ -3513,6 +3545,64 @@ public class TextServerPacketTranscriber(
         }
         group("TARGET") {
             coordGrid(message.end)
+            val ambiguousIndex = message.targetIndex
+            if (ambiguousIndex != 0) {
+                if (ambiguousIndex > 0) {
+                    npc(ambiguousIndex - 1)
+                } else {
+                    player(-ambiguousIndex - 1)
+                }
+            }
+        }
+    }
+
+    private fun Property.buildScriptedProjAdd(message: ScriptedProjAdd) {
+        scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
+        int("slot", message.slot)
+        int("starttime", message.startTime)
+        int("endtime", message.endTime)
+        int("curvescripth", message.curveScriptH)
+        int("curvescripta", message.curveScriptA)
+        int("curvescriptt", message.curveScriptT)
+        group("SOURCE") {
+            coordGrid(coordInZone(message.xInZone, message.zInZone))
+            int("offsetx", message.sourceOffsetX)
+            int("offsetz", message.sourceOffsetZ)
+            int("height", message.sourceHeight)
+            val ambiguousIndex = message.sourceIndex
+            if (ambiguousIndex != 0) {
+                if (ambiguousIndex > 0) {
+                    npc(ambiguousIndex - 1)
+                } else {
+                    player(-ambiguousIndex - 1)
+                }
+            }
+        }
+        group("TARGET") {
+            coordGrid(message.targetCoord)
+            int("offsetx", message.targetOffsetX)
+            int("offsetz", message.targetOffsetZ)
+            int("height", message.targetHeight)
+            val ambiguousIndex = message.targetIndex
+            if (ambiguousIndex != 0) {
+                if (ambiguousIndex > 0) {
+                    npc(ambiguousIndex - 1)
+                } else {
+                    player(-ambiguousIndex - 1)
+                }
+            }
+        }
+    }
+
+    private fun Property.buildScriptedProjChange(message: ScriptedProjChange) {
+        int("slot", message.slot)
+        int("freeze", message.freezeDuration)
+        boolean("deleteonfreezeend", message.deleteOnFreezeEnd)
+        group("TARGET") {
+            coordGrid(message.targetCoord)
+            int("offsetx", message.targetOffsetX)
+            int("offsetz", message.targetOffsetZ)
+            int("height", message.targetHeight)
             val ambiguousIndex = message.targetIndex
             if (ambiguousIndex != 0) {
                 if (ambiguousIndex > 0) {
