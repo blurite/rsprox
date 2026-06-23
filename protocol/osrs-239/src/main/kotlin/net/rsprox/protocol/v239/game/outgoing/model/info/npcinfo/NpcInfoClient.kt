@@ -21,13 +21,12 @@ import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.NameCha
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.TransformationExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.customisation.ModelCustomisation
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.customisation.ResetCustomisation
-import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.EnabledOpsExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ContrastExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.EnabledOpsExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceAngleExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FacePathingEntityExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FreezeExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Headbar
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HeadbarExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Hit
@@ -37,7 +36,6 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Sequence
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Spotanim
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FreezeExtendedInfo
 
 @Suppress("DuplicatedCode")
 internal class NpcInfoClient(
@@ -192,17 +190,11 @@ internal class NpcInfoClient(
             if (flag and NPC_FREEZE != 0) {
                 decodeFreeze(buffer, blocks)
             }
-            if (flag and FACE_ANGLE != 0) {
-                decodeFaceAngle(buffer, blocks)
-            }
             if (flag and HEAD_CUSTOMISATION != 0) {
                 decodeHeadCustomisationV2(npc.id, buffer, blocks)
             }
             if (flag and SPOTANIM != 0) {
                 decodeSpotanim(buffer, blocks)
-            }
-            if (flag and FACE_PATHINGENTITY != 0) {
-                decodeFacePathingEntity(buffer, blocks)
             }
             if (flag and NAME_CHANGE != 0) {
                 decodeNameChange(buffer, blocks)
@@ -420,15 +412,6 @@ internal class NpcInfoClient(
     ) {
         val flag = buffer.g1Alt2()
         blocks += EnabledOpsExtendedInfo(flag)
-    }
-
-    private fun decodeFacePathingEntity(
-        buffer: JagByteBuf,
-        blocks: MutableList<ExtendedInfo>,
-    ) {
-        var index = buffer.g2Alt3()
-        index += buffer.g1Alt1() shl 16
-        blocks += FacePathingEntityExtendedInfo(index)
     }
 
     private fun decodeBodyCustomisationV3(
@@ -696,15 +679,6 @@ internal class NpcInfoClient(
             }
         }
         blocks += HeadIconCustomisationExtendedInfo(groups, indices)
-    }
-
-    private fun decodeFaceAngle(
-        buffer: JagByteBuf,
-        blocks: MutableList<ExtendedInfo>,
-    ) {
-        val angle = buffer.g2Alt1()
-        val instant = buffer.g1Alt1() == 1
-        blocks += FaceAngleExtendedInfo(angle, instant)
     }
 
     private fun decodeFacing(
@@ -1040,8 +1014,6 @@ internal class NpcInfoClient(
         private const val EXACT_MOVE: Int = 0x200
         private const val HITMARKS: Int = 0x80_000
         private const val TRANSFORMATION: Int = 0x1
-        private const val FACE_PATHINGENTITY: Int = 0x10
-        private const val FACE_ANGLE: Int = 0x10_000
         private const val FACING: Int = 0x8
         private const val HEADICON_CUSTOMISATION: Int = 0x400_000
         private const val BODY_CUSTOMISATION_V2: Int = 0x800_000
@@ -1051,7 +1023,7 @@ internal class NpcInfoClient(
         private const val NPC_CONTRAST: Int = 0x400
         private const val NPC_FREEZE: Int = 0x20
 
-        private const val UNUSED_FLAGS = 0x40 or 0x1_000 or 0x4 or 0x200
+        private const val UNUSED_FLAGS = 0x10000 or 0x2000 or 0x10 or 0x4
 
         private enum class UpdateType {
             IDLE,
