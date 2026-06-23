@@ -146,6 +146,7 @@ public class TranscriberPlugin(
             GameServerProt.CAM_MOVETO_CYCLES_V3 -> pass(message, Transcriber::camMoveToCyclesV3)
             GameServerProt.CAM_MOVETO_ARC_V1 -> pass(message, Transcriber::camMoveToArcV1)
             GameServerProt.CAM_MOVETO_ARC_V2 -> pass(message, Transcriber::camMoveToArcV2)
+            GameServerProt.CAM_MOVETO_ARC_V3 -> pass(message, Transcriber::camMoveToArcV3)
             GameServerProt.CAM_LOOKAT_V1 -> pass(message, Transcriber::camLookAtV1)
             GameServerProt.CAM_LOOKAT_V2 -> pass(message, Transcriber::camLookAtV2)
             GameServerProt.CAM_LOOKAT_V3 -> pass(message, Transcriber::camLookAtV3)

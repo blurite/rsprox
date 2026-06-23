@@ -490,6 +490,8 @@ public class IndexerTranscriber(
     override fun camMoveToArcV2(message: CamMoveToArcV2) {
     }
 
+    override fun camMoveToArcV3(message: CamMoveToArcV3) {
+    }
     override fun camMoveToCyclesV1(message: CamMoveToCyclesV1) {
     }
 

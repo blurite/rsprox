@@ -437,6 +437,19 @@ public class TextServerPacketTranscriber(
         root.enum("easing", message.easing)
     }
 
+    override fun camMoveToArcV3(message: CamMoveToArcV3) {
+        if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
+        val center = CoordGrid(sessionState.getRootWorldActiveLevel(), message.centerX, message.centerZ)
+
+        root.coordGrid("centercoord", center)
+        val destination = CoordGrid(sessionState.getRootWorldActiveLevel(), message.destinationX, message.destinationZ)
+        root.coordGrid("destinationcoord", destination)
+        root.int("height", message.height)
+        root.int("cycles", message.cycles)
+        root.boolean("ignoreterrain", message.ignoreTerrain)
+        root.enum("easing", message.easing)
+        root.boolean("heightrelative", message.heightRelative)
+    }
     override fun camMoveToCyclesV1(message: CamMoveToCyclesV1) {
         if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
