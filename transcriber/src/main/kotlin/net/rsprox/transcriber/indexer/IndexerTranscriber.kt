@@ -463,6 +463,8 @@ public class IndexerTranscriber(
     override fun camLookAtV3(message: CamLookAtV3) {
     }
 
+    override fun camLookAtCycles(message: CamLookAtCycles) {
+    }
     override fun camRotateToCoordinateV1(message: CamRotateToCoordinateV1) {
     }
 
