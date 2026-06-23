@@ -148,7 +148,7 @@ internal class NpcInfoClient(
                 throw IllegalStateException("Unused flag used: $flag!")
             }
 
-            if (flag and BODY_CUSTOMISATION != 0) {
+            if (flag and BODY_CUSTOMISATION_V2 != 0) {
                 decodeBodyCustomisationV2(npc.id, buffer, blocks)
             }
             if (flag and LEVEL_CHANGE != 0) {
@@ -165,6 +165,9 @@ internal class NpcInfoClient(
             }
             if (flag and EXACT_MOVE != 0) {
                 decodeExactMove(buffer, blocks)
+            }
+            if (flag and BODY_CUSTOMISATION_V3 != 0) {
+                decodeBodyCustomisationV3(buffer, blocks)
             }
             if (flag and HEADBARS != 0) {
                 decodeHeadbars(buffer, blocks)
@@ -389,6 +392,77 @@ internal class NpcInfoClient(
         var index = buffer.g2Alt3()
         index += buffer.g1Alt1() shl 16
         blocks += FacePathingEntityExtendedInfo(index)
+    }
+
+    private fun decodeBodyCustomisationV3(
+        buffer: JagByteBuf,
+        blocks: MutableList<ExtendedInfo>,
+    ) {
+        val flag = buffer.g1Alt2()
+        if (flag and 0x1 != 0) {
+            blocks += BodyCustomisationExtendedInfo(ResetCustomisation)
+            return
+        }
+        val models =
+            if (flag and 0x2 != 0) {
+                val count = buffer.g1Alt1()
+                val models = ArrayList<Int>(count)
+                for (i in 0..<count) {
+                    val modelId = buffer.g4()
+                    models += modelId
+                }
+                models
+            } else {
+                null
+            }
+        val recolours =
+            if (flag and 0x4 != 0) {
+                val count = buffer.g1Alt2()
+                val recolours = ArrayList<Int>(count)
+                for (i in 0..<count) {
+                    recolours += buffer.g2Alt1()
+                }
+                recolours
+            } else {
+                null
+            }
+        val retextures =
+            if (flag and 0x8 != 0) {
+                val count = buffer.g1Alt2()
+                val retextures = ArrayList<Int>(count)
+                for (i in 0..<count) {
+                    retextures += buffer.g2Alt3()
+                }
+                retextures
+            } else {
+                null
+            }
+        val mirror = flag and 0x10 != 0
+        val playerComposition =
+            if (flag and 0x20 != 0) {
+                val bodyType = buffer.g1Alt1()
+                val identKitCount = buffer.g1Alt1()
+                val identKit =
+                    List(identKitCount) {
+                        buffer.g2()
+                    }
+                BodyCustomisationExtendedInfo.PlayerComposition(
+                    bodyType,
+                    identKit,
+                )
+            } else {
+                null
+            }
+        blocks +=
+            BodyCustomisationExtendedInfo(
+                ModelCustomisation(
+                    models,
+                    recolours,
+                    retextures,
+                    mirror,
+                ),
+                playerComposition,
+            )
     }
 
     private fun decodeBodyCustomisationV2(
@@ -933,7 +1007,8 @@ internal class NpcInfoClient(
         private const val FACE_ANGLE: Int = 0x10_000
         private const val FACING: Int = 0x8
         private const val HEADICON_CUSTOMISATION: Int = 0x400_000
-        private const val BODY_CUSTOMISATION: Int = 0x800_000
+        private const val BODY_CUSTOMISATION_V2: Int = 0x800_000
+        private const val BODY_CUSTOMISATION_V3: Int = 0x2_000_000
         private const val HEAD_CUSTOMISATION: Int = 0x20_000
         private const val TINTING: Int = 0x100
 

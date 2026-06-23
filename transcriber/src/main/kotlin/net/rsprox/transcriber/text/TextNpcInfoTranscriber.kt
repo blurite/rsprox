@@ -779,6 +779,38 @@ public class TextNpcInfoTranscriber(
         }
         when (val type = info.type) {
             is ModelCustomisation -> {
+                val composition = info.playerComposition
+                if (composition != null) {
+                    val models = type.models
+                    if (models != null) {
+                        group("composition") {
+                            for (element in models) {
+                                if (element >= 2048) {
+                                    val objId = element - 2048
+                                    scriptVarType("obj", ScriptVarType.OBJ, objId)
+                                } else {
+                                    scriptVarType("identkit", ScriptVarType.IDKIT, element)
+                                }
+                            }
+                        }
+                    }
+
+                    if (composition.identKit.isNotEmpty()) {
+                        group("identkit") {
+                            for (element in composition.identKit) {
+                                scriptVarType("identkit", ScriptVarType.IDKIT, element)
+                            }
+                        }
+                    }
+
+                    val recol = type.recolours
+                    if (recol != null) {
+                        any("skincolour", recol)
+                    }
+
+                    int("bodytype", composition.bodyType)
+                    return
+                }
                 val models = type.models
                 if (models != null) {
                     for (model in models) {

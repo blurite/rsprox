@@ -5,7 +5,13 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Extended
 
 public class BodyCustomisationExtendedInfo(
     public val type: CustomisationType,
+    public val playerComposition: PlayerComposition? = null,
 ) : ExtendedInfo {
+    public class PlayerComposition(
+        public val bodyType: Int,
+        public val identKit: List<Int>,
+    )
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
