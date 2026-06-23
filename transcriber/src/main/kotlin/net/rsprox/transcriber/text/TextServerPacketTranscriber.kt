@@ -314,6 +314,16 @@ public class TextServerPacketTranscriber(
         root.int("rate2", message.rate2)
     }
 
+    override fun camLookAtV3(message: CamLookAtV3) {
+        if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
+        val coord = CoordGrid(sessionState.getRootWorldActiveLevel(), message.x, message.z)
+        root.coordGrid(coord)
+        root.int("height", message.height)
+        root.int("rate", message.rate)
+        root.int("rate2", message.rate2)
+        root.boolean("heightrelative", message.heightRelative)
+    }
+
     override fun camRotateToCoordinateV1(message: CamRotateToCoordinateV1) {
         if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
