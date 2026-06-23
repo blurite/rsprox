@@ -8,14 +8,15 @@ import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.Appe
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.ChatExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.MoveSpeedExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.NameExtrasExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.PlayerResetExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.TemporaryMoveSpeedExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ContrastExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FreezeExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceAngleExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FacePathingEntityExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FreezeExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HeadbarExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HitExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HitmarkExtendedInfo
@@ -372,6 +373,13 @@ public class TextPlayerInfoTranscriber(
                         }
                     }
                 }
+                is PlayerResetExtendedInfo -> {
+                    if (filters[PropertyFilter.PLAYER_EXT_INFO]) {
+                        group("PLAYER_RESET") {
+                            appendPlayerResetExtendedInfo(player, info)
+                        }
+                    }
+                }
                 is SpotanimExtendedInfo -> {
                     if (filters[PropertyFilter.PLAYER_SPOTANIMS]) {
                         appendSpotanimExtendedInfo(player, info)
@@ -692,6 +700,16 @@ public class TextPlayerInfoTranscriber(
         int("delay", info.delay)
         int("duration", info.duration)
         boolean("cancelsequence", info.cancelSequence)
+    }
+
+    private fun Property.appendPlayerResetExtendedInfo(
+        player: Player,
+        info: PlayerResetExtendedInfo,
+    ) {
+        if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
+            shortPlayer(player.index)
+        }
+        int("value", info.value)
     }
 
     private fun Property.appendTintingExtendedInfo(

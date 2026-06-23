@@ -90,6 +90,7 @@ import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.Appe
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.ChatExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.MoveSpeedExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.NameExtrasExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.PlayerResetExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.TemporaryMoveSpeedExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.EnabledOpsExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ContrastExtendedInfo
@@ -1427,6 +1428,8 @@ public class IndexerTranscriber(
                 is ContrastExtendedInfo -> {
                 }
                 is FreezeExtendedInfo -> {
+                }
+                is PlayerResetExtendedInfo -> {
                 }
                 is SpotanimExtendedInfo -> {
                     for (spotanim in info.spotanims.values) {

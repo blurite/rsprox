@@ -34,6 +34,7 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Spotanim
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FreezeExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.PlayerResetExtendedInfo
 
 @Suppress("DuplicatedCode")
 internal class PlayerInfoClient(
@@ -306,6 +307,9 @@ internal class PlayerInfoClient(
         }
         if (flags and HITMARKS != 0) {
             decodeHitmark(buffer, blocks)
+        }
+        if (flags and PLAYER_RESET != 0) {
+            decodePlayerReset(buffer, blocks)
         }
         if (flags and FACE != 0) {
             decodeFacing(buffer, blocks)
@@ -617,6 +621,13 @@ internal class PlayerInfoClient(
                 )
         }
         blocks += HeadbarExtendedInfo(headbars)
+    }
+
+    private fun decodePlayerReset(
+        buffer: JagByteBuf,
+        blocks: MutableList<ExtendedInfo>,
+    ) {
+        blocks += PlayerResetExtendedInfo(buffer.g1Alt2())
     }
 
     private fun decodeFreeze(
@@ -1148,7 +1159,8 @@ internal class PlayerInfoClient(
         private const val FACE_PATHINGENTITY = 0x10
 
         private const val PLAYER_FREEZE = 0x80_000
-        private const val UNUSED_FLAGS = 0x2 or 0x80
+        private const val PLAYER_RESET = 0x2
+        private const val UNUSED_FLAGS = 0x80
 
         private class Player {
             var queuedMove: Boolean = false
