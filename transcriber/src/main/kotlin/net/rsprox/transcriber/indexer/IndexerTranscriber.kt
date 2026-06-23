@@ -95,6 +95,7 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.EnabledO
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ContrastExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FreezeExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceAngleExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FacePathingEntityExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HitExtendedInfo
@@ -1425,6 +1426,8 @@ public class IndexerTranscriber(
                 }
                 is ContrastExtendedInfo -> {
                 }
+                is FreezeExtendedInfo -> {
+                }
                 is SpotanimExtendedInfo -> {
                     for (spotanim in info.spotanims.values) {
                         appendCheckedSpotanim(spotanim.id)
@@ -1500,6 +1503,8 @@ public class IndexerTranscriber(
                 is TintingExtendedInfo -> {
                 }
                 is ContrastExtendedInfo -> {
+                }
+                is FreezeExtendedInfo -> {
                 }
                 is SpotanimExtendedInfo -> {
                     for (spotanim in info.spotanims.values) {

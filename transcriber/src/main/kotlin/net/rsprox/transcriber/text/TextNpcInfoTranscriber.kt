@@ -20,6 +20,7 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.EnabledO
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ContrastExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FreezeExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceAngleExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FacePathingEntityExtendedInfo
@@ -377,6 +378,13 @@ public class TextNpcInfoTranscriber(
                         }
                     }
                 }
+                is FreezeExtendedInfo -> {
+                    if (filters[PropertyFilter.NPC_TINTING]) {
+                        group("FREEZE") {
+                            freeze(npc, info)
+                        }
+                    }
+                }
                 is SpotanimExtendedInfo -> {
                     if (filters[PropertyFilter.NPC_SPOTANIMS]) {
                         spotanim(npc, info)
@@ -677,6 +685,18 @@ public class TextNpcInfoTranscriber(
         int("startcontrast", info.startContrast)
         int("endcontrast", info.endContrast)
         boolean("usestartcontrast", info.useStartContrast)
+    }
+
+    private fun Property.freeze(
+        npc: Npc,
+        info: FreezeExtendedInfo,
+    ) {
+        if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
+            shortNpc(npc.index)
+        }
+        int("delay", info.delay)
+        int("duration", info.duration)
+        boolean("cancelsequence", info.cancelSequence)
     }
 
     private fun Property.tinting(

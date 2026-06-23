@@ -33,6 +33,7 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Sequence
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Spotanim
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FreezeExtendedInfo
 
 @Suppress("DuplicatedCode")
 internal class PlayerInfoClient(
@@ -348,6 +349,9 @@ internal class PlayerInfoClient(
         if (flags and EXACT_MOVE != 0) {
             decodeExactMove(buffer, blocks)
         }
+        if (flags and PLAYER_FREEZE != 0) {
+            decodeFreeze(buffer, blocks)
+        }
     }
 
     private fun decodeMoveSpeed(
@@ -613,6 +617,16 @@ internal class PlayerInfoClient(
                 )
         }
         blocks += HeadbarExtendedInfo(headbars)
+    }
+
+    private fun decodeFreeze(
+        buffer: JagByteBuf,
+        blocks: MutableList<ExtendedInfo>,
+    ) {
+        val delay = buffer.g2Alt3()
+        val duration = buffer.g2Alt3()
+        val cancelSequence = buffer.g1Alt1() == 1
+        blocks += FreezeExtendedInfo(delay, duration, cancelSequence)
     }
 
     private fun decodeContrast(
@@ -1133,7 +1147,8 @@ internal class PlayerInfoClient(
         private const val HITMARKS = 0x40000
         private const val FACE_PATHINGENTITY = 0x10
 
-        private const val UNUSED_FLAGS = 0x2 or 0x80 or 0x80000
+        private const val PLAYER_FREEZE = 0x80_000
+        private const val UNUSED_FLAGS = 0x2 or 0x80
 
         private class Player {
             var queuedMove: Boolean = false

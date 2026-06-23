@@ -37,6 +37,7 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Sequence
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Spotanim
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FreezeExtendedInfo
 
 @Suppress("DuplicatedCode")
 internal class NpcInfoClient(
@@ -187,6 +188,9 @@ internal class NpcInfoClient(
             }
             if (flag and BAS_CHANGE != 0) {
                 decodeBaseAnimationSet(buffer, blocks)
+            }
+            if (flag and NPC_FREEZE != 0) {
+                decodeFreeze(buffer, blocks)
             }
             if (flag and FACE_ANGLE != 0) {
                 decodeFaceAngle(buffer, blocks)
@@ -348,6 +352,16 @@ internal class NpcInfoClient(
     ) {
         val level = buffer.g4Alt1()
         blocks += CombatLevelChangeExtendedInfo(level)
+    }
+
+    private fun decodeFreeze(
+        buffer: JagByteBuf,
+        blocks: MutableList<ExtendedInfo>,
+    ) {
+        val delay = buffer.g2()
+        val duration = buffer.g2()
+        val cancelSequence = buffer.g1Alt2() == 1
+        blocks += FreezeExtendedInfo(delay, duration, cancelSequence)
     }
 
     private fun decodeContrast(
@@ -1035,6 +1049,7 @@ internal class NpcInfoClient(
         private const val HEAD_CUSTOMISATION: Int = 0x20_000
         private const val TINTING: Int = 0x100
         private const val NPC_CONTRAST: Int = 0x400
+        private const val NPC_FREEZE: Int = 0x20
 
         private const val UNUSED_FLAGS = 0x40 or 0x1_000 or 0x4 or 0x200
 

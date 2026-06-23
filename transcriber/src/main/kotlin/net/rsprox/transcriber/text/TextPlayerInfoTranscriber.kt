@@ -11,6 +11,7 @@ import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.Name
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.TemporaryMoveSpeedExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ContrastExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FreezeExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceAngleExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceExtendedInfo
@@ -364,6 +365,13 @@ public class TextPlayerInfoTranscriber(
                         }
                     }
                 }
+                is FreezeExtendedInfo -> {
+                    if (filters[PropertyFilter.PLAYER_TINTING]) {
+                        group("FREEZE") {
+                            appendFreezeExtendedInfo(player, info)
+                        }
+                    }
+                }
                 is SpotanimExtendedInfo -> {
                     if (filters[PropertyFilter.PLAYER_SPOTANIMS]) {
                         appendSpotanimExtendedInfo(player, info)
@@ -672,6 +680,18 @@ public class TextPlayerInfoTranscriber(
         int("startcontrast", info.startContrast)
         int("endcontrast", info.endContrast)
         boolean("usestartcontrast", info.useStartContrast)
+    }
+
+    private fun Property.appendFreezeExtendedInfo(
+        player: Player,
+        info: FreezeExtendedInfo,
+    ) {
+        if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
+            shortPlayer(player.index)
+        }
+        int("delay", info.delay)
+        int("duration", info.duration)
+        boolean("cancelsequence", info.cancelSequence)
     }
 
     private fun Property.appendTintingExtendedInfo(
