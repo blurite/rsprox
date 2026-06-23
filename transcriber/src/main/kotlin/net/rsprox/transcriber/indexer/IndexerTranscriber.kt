@@ -72,6 +72,10 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.MessageFriendChannel
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV1
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV2
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelSingleUser
+import net.rsprox.protocol.game.outgoing.model.group.GroupFull
+import net.rsprox.protocol.game.outgoing.model.group.GroupVar
+import net.rsprox.protocol.game.outgoing.model.group.GroupVarInt
+import net.rsprox.protocol.game.outgoing.model.group.GroupVarLong
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcInfo
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcUpdateType
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
@@ -567,6 +571,18 @@ public class IndexerTranscriber(
     }
 
     override fun varClanEnable(message: VarClanEnable) {
+    }
+
+    override fun groupFull(message: GroupFull) {
+    }
+
+    override fun groupVar(message: GroupVar) {
+    }
+
+    override fun groupVarInt(message: GroupVarInt) {
+    }
+
+    override fun groupVarLong(message: GroupVarLong) {
     }
 
     override fun messageFriendChannel(message: MessageFriendChannel) {

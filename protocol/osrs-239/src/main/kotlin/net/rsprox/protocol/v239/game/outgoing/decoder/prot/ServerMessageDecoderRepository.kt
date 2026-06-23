@@ -39,6 +39,10 @@ import net.rsprox.protocol.v239.game.outgoing.decoder.codec.clan.VarClanEnableDe
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.friendchat.MessageFriendChannelDecoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.friendchat.UpdateFriendChatChannelFullV2Decoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.friendchat.UpdateFriendChatChannelSingleUserDecoder
+import net.rsprox.protocol.v239.game.outgoing.decoder.codec.group.GroupFullDecoder
+import net.rsprox.protocol.v239.game.outgoing.decoder.codec.group.GroupVarDecoder
+import net.rsprox.protocol.v239.game.outgoing.decoder.codec.group.GroupVarIntDecoder
+import net.rsprox.protocol.v239.game.outgoing.decoder.codec.group.GroupVarLongDecoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.info.NpcInfoLargeV5Decoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.info.NpcInfoSmallV5Decoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.info.PlayerInfoDecoder
@@ -191,6 +195,10 @@ internal object ServerMessageDecoderRepository {
                 bind(VarClanDisableDecoder())
                 bind(VarClanEnableDecoder())
                 bind(VarClanDecoder())
+                bind(GroupFullDecoder(cache))
+                bind(GroupVarDecoder())
+                bind(GroupVarIntDecoder())
+                bind(GroupVarLongDecoder())
 
                 bind(MessageFriendChannelDecoder(huffmanCodec))
                 bind(UpdateFriendChatChannelFullV2Decoder())

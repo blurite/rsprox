@@ -19,6 +19,12 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.MessageFriendChannel
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV1
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV2
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelSingleUser
+import net.rsprox.protocol.game.outgoing.model.group.GroupFull
+import net.rsprox.protocol.game.outgoing.model.group.GroupVar
+import net.rsprox.protocol.game.outgoing.model.group.GroupVarInt
+import net.rsprox.protocol.game.outgoing.model.group.GroupVarLong
+import net.rsprox.protocol.game.outgoing.model.group.util.GroupVarUpdate
+import net.rsprox.protocol.game.outgoing.model.group.util.GroupVariable
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.EnabledOpsExtendedInfo
@@ -915,6 +921,84 @@ public class TextServerPacketTranscriber(
 
     override fun varClanEnable(message: VarClanEnable) {
         if (!filters[PropertyFilter.VARCLAN]) return omit()
+    }
+
+    override fun groupFull(message: GroupFull) {
+        if (!filters[PropertyFilter.GROUP]) return omit()
+        root.group("UPDATES") {
+            for (update in message.updates) {
+                group {
+                    when (update) {
+                        is GroupFull.GroupDelete -> {
+                            string("op", "delete")
+                            int("index", update.index)
+                        }
+                        is GroupFull.GroupAddChange -> {
+                            string("op", "addchange")
+                            int("index", update.index)
+                            int("id", update.id)
+                            long("uid", update.uid)
+                            string("variabledata", update.variableData.contentToString())
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    override fun groupVar(message: GroupVar) {
+        if (!filters[PropertyFilter.GROUP]) return omit()
+        root.group("UPDATES") {
+            for (update in message.updates) {
+                group {
+                    groupVarUpdate(update)
+                }
+            }
+        }
+    }
+
+    override fun groupVarInt(message: GroupVarInt) {
+        if (!filters[PropertyFilter.GROUP]) return omit()
+        root.groupVarUpdate(message.update)
+    }
+
+    override fun groupVarLong(message: GroupVarLong) {
+        if (!filters[PropertyFilter.GROUP]) return omit()
+        root.groupVarUpdate(message.update)
+    }
+
+    private fun Property.groupVarUpdate(update: GroupVarUpdate<*>) {
+        int("index", update.index)
+        int("packedgroupvar", update.packedGroupVar)
+        int("id", update.id)
+        boolean("member", update.isMember)
+        int("basevartype", update.baseVarType)
+        int("varindex", update.varIndex)
+        group("VARIABLE") {
+            groupVariable(update.variable)
+        }
+    }
+
+    private fun Property.groupVariable(variable: GroupVariable<*>) {
+        when (variable) {
+            is GroupVariable.IntGroupVariable -> {
+                string("type", "int")
+                int("value", variable.value)
+            }
+            is GroupVariable.LongGroupVariable -> {
+                string("type", "long")
+                long("value", variable.value)
+            }
+            is GroupVariable.StringGroupVariable -> {
+                string("type", "string")
+                string("value", variable.value)
+            }
+            is GroupVariable.UnknownGroupVariable -> {
+                string("type", "unknown")
+                int("basevartype", variable.baseVarType)
+                string("data", variable.data.contentToString())
+            }
+        }
     }
 
     override fun messageFriendChannel(message: MessageFriendChannel) {

@@ -151,6 +151,12 @@ public enum class GameServerProt : Prot {
     CAM_SKYBOX,
     CAM_UNLOCK,
 
+    // Group packets
+    GROUP_FULL,
+    GROUP_VAR,
+    GROUP_VAR_INT,
+    GROUP_VAR_LONG,
+
     // Inventory packets
     UPDATE_INV_FULL,
     UPDATE_INV_PARTIAL,

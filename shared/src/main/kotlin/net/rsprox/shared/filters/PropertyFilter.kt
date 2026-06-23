@@ -1101,6 +1101,13 @@ public enum class PropertyFilter(
         false,
         searchTerms = "variable,clans,varps,vars,channel",
     ),
+    GROUP(
+        SERVER_TO_CLIENT,
+        CLAN,
+        "Groups",
+        false,
+        searchTerms = "group,groups,groupvar,groupfull,party,vars,variables",
+    ),
     CLANCHANNEL(
         SERVER_TO_CLIENT,
         CLAN,

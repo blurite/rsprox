@@ -14,6 +14,10 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.MessageFriendChannel
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV1
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV2
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelSingleUser
+import net.rsprox.protocol.game.outgoing.model.group.GroupFull
+import net.rsprox.protocol.game.outgoing.model.group.GroupVar
+import net.rsprox.protocol.game.outgoing.model.group.GroupVarInt
+import net.rsprox.protocol.game.outgoing.model.group.GroupVarLong
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.*
 import net.rsprox.protocol.game.outgoing.model.interfaces.*
@@ -143,6 +147,14 @@ public interface ServerPacketTranscriber {
     public fun varClanDisable(message: VarClanDisable)
 
     public fun varClanEnable(message: VarClanEnable)
+
+    public fun groupFull(message: GroupFull)
+
+    public fun groupVar(message: GroupVar)
+
+    public fun groupVarInt(message: GroupVarInt)
+
+    public fun groupVarLong(message: GroupVarLong)
 
     public fun messageFriendChannel(message: MessageFriendChannel)
 
