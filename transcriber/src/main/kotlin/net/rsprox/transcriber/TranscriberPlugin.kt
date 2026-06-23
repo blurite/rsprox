@@ -140,6 +140,7 @@ public class TranscriberPlugin(
             GameServerProt.CAM_SMOOTHRESET -> pass(message, Transcriber::camSmoothReset)
             GameServerProt.CAM_MOVETO_V1 -> pass(message, Transcriber::camMoveToV1)
             GameServerProt.CAM_MOVETO_V2 -> pass(message, Transcriber::camMoveToV2)
+            GameServerProt.CAM_MOVETO_V3 -> pass(message, Transcriber::camMoveToV3)
             GameServerProt.CAM_MOVETO_CYCLES_V1 -> pass(message, Transcriber::camMoveToCyclesV1)
             GameServerProt.CAM_MOVETO_CYCLES_V2 -> pass(message, Transcriber::camMoveToCyclesV2)
             GameServerProt.CAM_MOVETO_ARC_V1 -> pass(message, Transcriber::camMoveToArcV1)

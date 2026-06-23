@@ -124,6 +124,7 @@ public enum class GameServerProt : Prot {
     CAM_SMOOTHRESET,
     CAM_MOVETO_V1,
     CAM_MOVETO_V2,
+    CAM_MOVETO_V3,
     CAM_MOVETO_CYCLES_V1,
     CAM_MOVETO_CYCLES_V2,
     CAM_MOVETO_ARC_V1,

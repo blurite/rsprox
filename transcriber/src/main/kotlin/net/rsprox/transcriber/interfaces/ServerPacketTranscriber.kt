@@ -83,6 +83,8 @@ public interface ServerPacketTranscriber {
 
     public fun camMoveToV2(message: CamMoveToV2)
 
+    public fun camMoveToV3(message: CamMoveToV3)
+
     public fun camMoveToArcV1(message: CamMoveToArcV1)
 
     public fun camMoveToArcV2(message: CamMoveToArcV2)
