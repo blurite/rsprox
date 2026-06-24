@@ -1,7 +1,7 @@
 [versions]
 kotlin = "2.2.10"
 netty = "4.2.2.Final"
-rsprot = "1.0.0-ALPHA-20250620"
+rsprot = "1.0.0-ALPHA-20260624"
 inlinelogger = "1.0.6"
 log4j = "2.23.1"
 bouncycastle = "1.70"

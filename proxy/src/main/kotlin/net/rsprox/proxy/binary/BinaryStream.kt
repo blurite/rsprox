@@ -4,8 +4,8 @@ import com.github.michaelbull.logging.InlineLogger
 import io.netty.buffer.ByteBuf
 import net.rsprot.buffer.extensions.g1
 import net.rsprot.buffer.extensions.g2
-import net.rsprot.buffer.extensions.gVarInt
-import net.rsprot.buffer.extensions.pVarInt
+import net.rsprot.buffer.extensions.gMidiVarLen
+import net.rsprot.buffer.extensions.pMidiVarLen
 import net.rsprot.buffer.extensions.pdata
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.Prot
@@ -44,7 +44,7 @@ public class BinaryStream(
         }
         val delta = min(MAX_31BIT_INT, millisecondDelta).toInt()
         val bitpacked = directionOpcode or (delta shl 1)
-        this.buffer.pVarInt(bitpacked)
+        this.buffer.pMidiVarLen(bitpacked)
         try {
             this.buffer.pdata(packet)
         } finally {
@@ -65,7 +65,7 @@ public class BinaryStream(
         var timeMillis = header.timestamp
         return sequence {
             while (buffer.isReadable) {
-                val packed = buffer.gVarInt()
+                val packed = buffer.gMidiVarLen()
                 val direction =
                     if (packed and 0x1 == 1) {
                         StreamDirection.SERVER_TO_CLIENT
