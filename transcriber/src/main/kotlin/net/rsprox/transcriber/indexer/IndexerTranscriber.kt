@@ -97,7 +97,7 @@ import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.Name
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.PlayerResetExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.TemporaryMoveSpeedExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.EnabledOpsExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ContrastExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TransparencyExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FreezeExtendedInfo
@@ -1441,7 +1441,7 @@ public class IndexerTranscriber(
                 }
                 is TintingExtendedInfo -> {
                 }
-                is ContrastExtendedInfo -> {
+                is TransparencyExtendedInfo -> {
                 }
                 is FreezeExtendedInfo -> {
                 }
@@ -1521,7 +1521,7 @@ public class IndexerTranscriber(
                 }
                 is TintingExtendedInfo -> {
                 }
-                is ContrastExtendedInfo -> {
+                is TransparencyExtendedInfo -> {
                 }
                 is FreezeExtendedInfo -> {
                 }

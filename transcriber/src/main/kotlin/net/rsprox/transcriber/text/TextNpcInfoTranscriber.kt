@@ -17,13 +17,12 @@ import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.Transfo
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.customisation.ModelCustomisation
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.customisation.ResetCustomisation
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.EnabledOpsExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ContrastExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FreezeExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceAngleExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FacePathingEntityExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FreezeExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HeadbarExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HitExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HitmarkExtendedInfo
@@ -31,6 +30,7 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SayExten
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SequenceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TransparencyExtendedInfo
 import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.filters.PropertyFilter
 import net.rsprox.shared.filters.PropertyFilterSet
@@ -371,10 +371,10 @@ public class TextNpcInfoTranscriber(
                         }
                     }
                 }
-                is ContrastExtendedInfo -> {
+                is TransparencyExtendedInfo -> {
                     if (filters[PropertyFilter.NPC_TINTING]) {
-                        group("CONTRAST") {
-                            contrast(npc, info)
+                        group("TRANSPARENCY") {
+                            transparency(npc, info)
                         }
                     }
                 }
@@ -673,18 +673,18 @@ public class TextNpcInfoTranscriber(
         filteredInt("delay", info.delay, 0)
     }
 
-    private fun Property.contrast(
+    private fun Property.transparency(
         npc: Npc,
-        info: ContrastExtendedInfo,
+        info: TransparencyExtendedInfo,
     ) {
         if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
             shortNpc(npc.index)
         }
         int("start", info.start)
         int("end", info.end)
-        int("startcontrast", info.startContrast)
-        int("endcontrast", info.endContrast)
-        boolean("usestartcontrast", info.useStartContrast)
+        int("starttransparency", info.startTransparency and 0xFF)
+        int("endtransparency", info.endTransparency and 0xFF)
+        boolean("usestarttransparency", info.useStartTransparency)
     }
 
     private fun Property.freeze(

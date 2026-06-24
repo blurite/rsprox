@@ -10,7 +10,6 @@ import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.Move
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.NameExtrasExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.PlayerResetExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.TemporaryMoveSpeedExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ContrastExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceAngleExtendedInfo
@@ -24,6 +23,7 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SayExten
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SequenceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TransparencyExtendedInfo
 import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.filters.PropertyFilter
 import net.rsprox.shared.filters.PropertyFilterSet
@@ -359,10 +359,10 @@ public class TextPlayerInfoTranscriber(
                         }
                     }
                 }
-                is ContrastExtendedInfo -> {
+                is TransparencyExtendedInfo -> {
                     if (filters[PropertyFilter.PLAYER_TINTING]) {
-                        group("CONTRAST") {
-                            appendContrastExtendedInfo(player, info)
+                        group("TRANSPARENCY") {
+                            appendTransparencyExtendedInfo(player, info)
                         }
                     }
                 }
@@ -676,18 +676,18 @@ public class TextPlayerInfoTranscriber(
         }
     }
 
-    private fun Property.appendContrastExtendedInfo(
+    private fun Property.appendTransparencyExtendedInfo(
         player: Player,
-        info: ContrastExtendedInfo,
+        info: TransparencyExtendedInfo,
     ) {
         if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
             shortPlayer(player.index)
         }
         int("start", info.start)
         int("end", info.end)
-        int("startcontrast", info.startContrast)
-        int("endcontrast", info.endContrast)
-        boolean("usestartcontrast", info.useStartContrast)
+        int("starttransparency", info.startTransparency and 0xFF)
+        int("endtransparency", info.endTransparency and 0xFF)
+        boolean("usestarttransparency", info.useStartTransparency)
     }
 
     private fun Property.appendFreezeExtendedInfo(

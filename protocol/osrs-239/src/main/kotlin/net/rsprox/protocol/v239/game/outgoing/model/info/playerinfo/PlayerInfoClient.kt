@@ -19,7 +19,7 @@ import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.ObjT
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.TemporaryMoveSpeedExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.LowResolutionPosition
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
-import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ContrastExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TransparencyExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceExtendedInfo
@@ -326,8 +326,8 @@ internal class PlayerInfoClient(
         if (flags and CHAT != 0) {
             decodeChat(buffer, blocks)
         }
-        if (flags and PLAYER_CONTRAST != 0) {
-            decodeContrast(buffer, blocks)
+        if (flags and PLAYER_TRANSPARENCY != 0) {
+            decodeTransparency(buffer, blocks)
         }
         if (flags and TINTING != 0) {
             decodeTinting(buffer, blocks)
@@ -640,22 +640,22 @@ internal class PlayerInfoClient(
         blocks += FreezeExtendedInfo(delay, duration, cancelSequence)
     }
 
-    private fun decodeContrast(
+    private fun decodeTransparency(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
         val start = buffer.g2sAlt2()
         val end = buffer.g2s()
-        val startContrast = buffer.g1sAlt3()
-        val endContrast = buffer.g1sAlt3()
-        val useStartContrast = buffer.g1Alt3() == 1
+        val startTransparency = buffer.g1sAlt3()
+        val endTransparency = buffer.g1sAlt3()
+        val useStartTransparency = buffer.g1Alt3() == 1
         blocks +=
-            ContrastExtendedInfo(
+            TransparencyExtendedInfo(
                 start,
                 end,
-                startContrast,
-                endContrast,
-                useStartContrast,
+                startTransparency,
+                endTransparency,
+                useStartTransparency,
             )
     }
 
@@ -1151,7 +1151,7 @@ internal class PlayerInfoClient(
         private const val MOVE_SPEED = 0x400
         private const val TINTING = 0x200
         private const val EXACT_MOVE = 0x4000
-        private const val PLAYER_CONTRAST = 0x100000
+        private const val PLAYER_TRANSPARENCY = 0x100000
         private const val TEMP_MOVE_SPEED = 0x1000
         private const val SPOTANIM = 0x20000
         private const val HEADBARS = 0x10000

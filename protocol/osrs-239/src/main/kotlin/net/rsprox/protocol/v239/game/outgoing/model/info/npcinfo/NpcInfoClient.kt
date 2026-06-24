@@ -21,7 +21,7 @@ import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.NameCha
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.TransformationExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.customisation.ModelCustomisation
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.extendedinfo.customisation.ResetCustomisation
-import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ContrastExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TransparencyExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.EnabledOpsExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
@@ -181,8 +181,8 @@ internal class NpcInfoClient(
             if (flag and TINTING != 0) {
                 decodeTinting(buffer, blocks)
             }
-            if (flag and NPC_CONTRAST != 0) {
-                decodeContrast(buffer, blocks)
+            if (flag and NPC_TRANSPARENCY != 0) {
+                decodeTransparency(buffer, blocks)
             }
             if (flag and BAS_CHANGE != 0) {
                 decodeBaseAnimationSet(buffer, blocks)
@@ -356,22 +356,22 @@ internal class NpcInfoClient(
         blocks += FreezeExtendedInfo(delay, duration, cancelSequence)
     }
 
-    private fun decodeContrast(
+    private fun decodeTransparency(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
         val start = buffer.g2sAlt3()
         val end = buffer.g2s()
-        val startContrast = buffer.g1sAlt1()
-        val endContrast = buffer.g1sAlt2()
-        val useStartContrast = buffer.g1Alt2() == 1
+        val startTransparency = buffer.g1sAlt1()
+        val endTransparency = buffer.g1sAlt2()
+        val useStartTransparency = buffer.g1Alt2() == 1
         blocks +=
-            ContrastExtendedInfo(
+            TransparencyExtendedInfo(
                 start,
                 end,
-                startContrast,
-                endContrast,
-                useStartContrast,
+                startTransparency,
+                endTransparency,
+                useStartTransparency,
             )
     }
 
@@ -1020,7 +1020,7 @@ internal class NpcInfoClient(
         private const val BODY_CUSTOMISATION_V3: Int = 0x2_000_000
         private const val HEAD_CUSTOMISATION: Int = 0x20_000
         private const val TINTING: Int = 0x100
-        private const val NPC_CONTRAST: Int = 0x400
+        private const val NPC_TRANSPARENCY: Int = 0x400
         private const val NPC_FREEZE: Int = 0x20
 
         private const val UNUSED_FLAGS = 0x10000 or 0x2000 or 0x10 or 0x4
