@@ -22,6 +22,7 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.Extended
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceAngleExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FacePathingEntityExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FreezeExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HeadbarExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HitExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HitmarkExtendedInfo
@@ -29,6 +30,7 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SayExten
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SequenceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TransparencyExtendedInfo
 import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.filters.PropertyFilter
 import net.rsprox.shared.filters.PropertyFilterSet
@@ -369,6 +371,20 @@ public class TextNpcInfoTranscriber(
                         }
                     }
                 }
+                is TransparencyExtendedInfo -> {
+                    if (filters[PropertyFilter.NPC_TINTING]) {
+                        group("TRANSPARENCY") {
+                            transparency(npc, info)
+                        }
+                    }
+                }
+                is FreezeExtendedInfo -> {
+                    if (filters[PropertyFilter.NPC_TINTING]) {
+                        group("FREEZE") {
+                            freeze(npc, info)
+                        }
+                    }
+                }
                 is SpotanimExtendedInfo -> {
                     if (filters[PropertyFilter.NPC_SPOTANIMS]) {
                         spotanim(npc, info)
@@ -657,6 +673,32 @@ public class TextNpcInfoTranscriber(
         filteredInt("delay", info.delay, 0)
     }
 
+    private fun Property.transparency(
+        npc: Npc,
+        info: TransparencyExtendedInfo,
+    ) {
+        if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
+            shortNpc(npc.index)
+        }
+        int("start", info.start)
+        int("end", info.end)
+        int("starttransparency", info.startTransparency and 0xFF)
+        int("endtransparency", info.endTransparency and 0xFF)
+        boolean("usestarttransparency", info.useStartTransparency)
+    }
+
+    private fun Property.freeze(
+        npc: Npc,
+        info: FreezeExtendedInfo,
+    ) {
+        if (settings[Setting.NPC_EXT_INFO_INDICATOR]) {
+            shortNpc(npc.index)
+        }
+        int("delay", info.delay)
+        int("duration", info.duration)
+        boolean("cancelsequence", info.cancelSequence)
+    }
+
     private fun Property.tinting(
         npc: Npc,
         info: TintingExtendedInfo,
@@ -779,6 +821,38 @@ public class TextNpcInfoTranscriber(
         }
         when (val type = info.type) {
             is ModelCustomisation -> {
+                val composition = info.playerComposition
+                if (composition != null) {
+                    val models = type.models
+                    if (models != null) {
+                        group("composition") {
+                            for (element in models) {
+                                if (element >= 2048) {
+                                    val objId = element - 2048
+                                    scriptVarType("obj", ScriptVarType.OBJ, objId)
+                                } else {
+                                    scriptVarType("identkit", ScriptVarType.IDKIT, element)
+                                }
+                            }
+                        }
+                    }
+
+                    if (composition.identKit.isNotEmpty()) {
+                        group("identkit") {
+                            for (element in composition.identKit) {
+                                scriptVarType("identkit", ScriptVarType.IDKIT, element)
+                            }
+                        }
+                    }
+
+                    val recol = type.recolours
+                    if (recol != null) {
+                        any("skincolour", recol)
+                    }
+
+                    int("bodytype", composition.bodyType)
+                    return
+                }
                 val models = type.models
                 if (models != null) {
                     for (model in models) {

@@ -6,7 +6,7 @@ internal object GameClientProtId {
     const val OPNPCT = 3
     const val TELEPORT = 4
     const val OPNPC5_V2 = 5
-    const val IF_CRMVIEW_CLICK = 6
+    const val IF_CRMVIEW_OP = 6
     const val IGNORELIST_DEL = 7
     const val SEND_PING_REPLY = 8
     const val IDLE = 9
@@ -72,7 +72,7 @@ internal object GameClientProtId {
     const val CLICKWORLDMAP = 81
     const val DETECT_MODIFIED_CLIENT = 82
     const val EVENT_MOUSE_SCROLL = 83
-    const val OCULUS_LEAVE = 84
+    const val EXIT_FREECAM = 84
     const val RESUME_P_COUNTDIALOG = 85
     const val OPLOC4_V2 = 86
     const val OPWORLDENTITY5 = 87

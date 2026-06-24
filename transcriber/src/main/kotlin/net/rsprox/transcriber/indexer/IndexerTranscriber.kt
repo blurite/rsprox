@@ -26,10 +26,10 @@ import net.rsprox.protocol.game.incoming.model.misc.user.ClickWorldMap
 import net.rsprox.protocol.game.incoming.model.misc.user.ClientCheat
 import net.rsprox.protocol.game.incoming.model.misc.user.CloseModal
 import net.rsprox.protocol.game.incoming.model.misc.user.HiscoreRequest
-import net.rsprox.protocol.game.incoming.model.misc.user.IfCrmViewClick
+import net.rsprox.protocol.game.incoming.model.misc.user.IfCrmViewOp
 import net.rsprox.protocol.game.incoming.model.misc.user.MoveGameClick
 import net.rsprox.protocol.game.incoming.model.misc.user.MoveMinimapClick
-import net.rsprox.protocol.game.incoming.model.misc.user.OculusLeave
+import net.rsprox.protocol.game.incoming.model.misc.user.ExitFreecam
 import net.rsprox.protocol.game.incoming.model.misc.user.SendSnapshot
 import net.rsprox.protocol.game.incoming.model.misc.user.SetChatFilterSettings
 import net.rsprox.protocol.game.incoming.model.misc.user.SetHeading
@@ -72,6 +72,10 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.MessageFriendChannel
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV1
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV2
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelSingleUser
+import net.rsprox.protocol.game.outgoing.model.group.GroupFull
+import net.rsprox.protocol.game.outgoing.model.group.GroupVar
+import net.rsprox.protocol.game.outgoing.model.group.GroupVarInt
+import net.rsprox.protocol.game.outgoing.model.group.GroupVarLong
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcInfo
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.NpcUpdateType
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
@@ -90,10 +94,13 @@ import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.Appe
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.ChatExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.MoveSpeedExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.NameExtrasExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.PlayerResetExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.TemporaryMoveSpeedExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.EnabledOpsExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TransparencyExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FreezeExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceAngleExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FacePathingEntityExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HitExtendedInfo
@@ -343,7 +350,7 @@ public class IndexerTranscriber(
     override fun hiscoreRequest(message: HiscoreRequest) {
     }
 
-    override fun ifCrmViewClick(message: IfCrmViewClick) {
+    override fun ifCrmViewOp(message: IfCrmViewOp) {
     }
 
     override fun moveGameClick(message: MoveGameClick) {
@@ -352,7 +359,7 @@ public class IndexerTranscriber(
     override fun moveMinimapClick(message: MoveMinimapClick) {
     }
 
-    override fun oculusLeave(message: OculusLeave) {
+    override fun exitFreecam(message: ExitFreecam) {
     }
 
     override fun sendSnapshot(message: SendSnapshot) {
@@ -460,10 +467,18 @@ public class IndexerTranscriber(
     override fun camLookAtV2(message: CamLookAtV2) {
     }
 
-    override fun camLookAtEasedCoordV1(message: CamLookAtEasedCoordV1) {
+    override fun camLookAtV3(message: CamLookAtV3) {
     }
 
-    override fun camLookAtEasedCoordV2(message: CamLookAtEasedCoordV2) {
+    override fun camLookAtCycles(message: CamLookAtCycles) {
+    }
+    override fun camRotateToCoordinateV1(message: CamRotateToCoordinateV1) {
+    }
+
+    override fun camRotateToCoordinateV2(message: CamRotateToCoordinateV2) {
+    }
+
+    override fun camRotateToCoordinateV3(message: CamRotateToCoordinateV3) {
     }
 
     override fun camMode(message: CamMode) {
@@ -475,16 +490,24 @@ public class IndexerTranscriber(
     override fun camMoveToV2(message: CamMoveToV2) {
     }
 
+    override fun camMoveToV3(message: CamMoveToV3) {
+    }
+
     override fun camMoveToArcV1(message: CamMoveToArcV1) {
     }
 
     override fun camMoveToArcV2(message: CamMoveToArcV2) {
     }
 
+    override fun camMoveToArcV3(message: CamMoveToArcV3) {
+    }
     override fun camMoveToCyclesV1(message: CamMoveToCyclesV1) {
     }
 
     override fun camMoveToCyclesV2(message: CamMoveToCyclesV2) {
+    }
+
+    override fun camMoveToCyclesV3(message: CamMoveToCyclesV3) {
     }
 
     override fun camReset(message: CamReset) {
@@ -548,6 +571,18 @@ public class IndexerTranscriber(
     }
 
     override fun varClanEnable(message: VarClanEnable) {
+    }
+
+    override fun groupFull(message: GroupFull) {
+    }
+
+    override fun groupVar(message: GroupVar) {
+    }
+
+    override fun groupVarInt(message: GroupVarInt) {
+    }
+
+    override fun groupVarLong(message: GroupVarLong) {
     }
 
     override fun messageFriendChannel(message: MessageFriendChannel) {
@@ -1133,7 +1168,7 @@ public class IndexerTranscriber(
         binaryIndex.increment(IndexedType.NPC, npc.id)
     }
 
-    override fun playerAnimSpecific(message: PlayerAnimSpecific) {
+    override fun animSpecific(message: AnimSpecific) {
         binaryIndex.increment(IndexedType.SEQ, message.id)
     }
 
@@ -1229,6 +1264,17 @@ public class IndexerTranscriber(
                 is MapProjAnimV1 -> {
                     appendCheckedSpotanim(update.id)
                 }
+                is MapProjAnimV2 -> {
+                    appendCheckedSpotanim(update.id)
+                }
+                is ScriptedProjAdd -> {
+                    appendCheckedSpotanim(update.id)
+                    binaryIndex.increment(IndexedType.CLIENTSCRIPTS, update.curveScriptH)
+                    binaryIndex.increment(IndexedType.CLIENTSCRIPTS, update.curveScriptA)
+                    binaryIndex.increment(IndexedType.CLIENTSCRIPTS, update.curveScriptT)
+                }
+                is ScriptedProjChange -> {
+                }
                 is ObjAdd -> {
                     binaryIndex.increment(IndexedType.OBJ, update.id)
                 }
@@ -1280,6 +1326,16 @@ public class IndexerTranscriber(
 
     override fun mapProjAnimV2(message: MapProjAnimV2) {
         appendCheckedSpotanim(message.id)
+    }
+
+    override fun scriptedProjAdd(message: ScriptedProjAdd) {
+        appendCheckedSpotanim(message.id)
+        binaryIndex.increment(IndexedType.CLIENTSCRIPTS, message.curveScriptH)
+        binaryIndex.increment(IndexedType.CLIENTSCRIPTS, message.curveScriptA)
+        binaryIndex.increment(IndexedType.CLIENTSCRIPTS, message.curveScriptT)
+    }
+
+    override fun scriptedProjChange(message: ScriptedProjChange) {
     }
 
     override fun objAdd(message: ObjAdd) {
@@ -1385,6 +1441,12 @@ public class IndexerTranscriber(
                 }
                 is TintingExtendedInfo -> {
                 }
+                is TransparencyExtendedInfo -> {
+                }
+                is FreezeExtendedInfo -> {
+                }
+                is PlayerResetExtendedInfo -> {
+                }
                 is SpotanimExtendedInfo -> {
                     for (spotanim in info.spotanims.values) {
                         appendCheckedSpotanim(spotanim.id)
@@ -1458,6 +1520,10 @@ public class IndexerTranscriber(
                     binaryIndex.increment(IndexedType.SEQ, info.id)
                 }
                 is TintingExtendedInfo -> {
+                }
+                is TransparencyExtendedInfo -> {
+                }
+                is FreezeExtendedInfo -> {
                 }
                 is SpotanimExtendedInfo -> {
                     for (spotanim in info.spotanims.values) {

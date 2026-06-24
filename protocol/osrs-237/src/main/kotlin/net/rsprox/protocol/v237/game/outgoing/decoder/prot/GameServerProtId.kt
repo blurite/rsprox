@@ -58,7 +58,7 @@ internal object GameServerProtId {
     const val LOGOUT_WITHREASON = 54
     const val IF_OPENSUB = 55
     const val REBUILD_WORLDENTITY_V3 = 56
-    const val PLAYER_ANIM_SPECIFIC = 57
+    const val ANIM_SPECIFIC = 57
     const val IF_SETPLAYERHEAD = 58
     const val UPDATE_ZONE_FULL_FOLLOWS = 59
     const val UPDATE_TRADINGPOST = 60
@@ -134,7 +134,7 @@ internal object GameServerProtId {
     const val CAM_MOVETO_CYCLES_V2 = 130
     const val ZBUF = 131
     const val SET_MAP_FLAG_V2 = 132
-    const val CAM_LOOKAT_EASED_COORD_V2 = 133
+    const val CAM_ROTATETO_COORDINATE_V2 = 133
     const val OBJ_CUSTOMISE_SPECIFIC = 134
     const val CAM_MOVETO_ARC_V2 = 135
     const val WORLDENTITY_INFO_V7 = 136

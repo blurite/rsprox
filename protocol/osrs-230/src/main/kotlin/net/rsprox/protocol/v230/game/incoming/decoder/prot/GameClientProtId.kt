@@ -46,7 +46,7 @@ internal object GameClientProtId {
     const val OPLOC5 = 42
     const val OPOBJ3 = 43
     const val OPNPC3 = 44
-    const val OCULUS_LEAVE = 45
+    const val EXIT_FREECAM = 45
     const val IDLE = 46
     const val OPPLAYER4 = 47
     const val OPPLAYER5 = 48
@@ -91,7 +91,7 @@ internal object GameClientProtId {
     const val IF_BUTTON3 = 87
     const val OPLOCT = 88
     const val IF_BUTTON8 = 89
-    const val IF_CRMVIEW_CLICK = 90
+    const val IF_CRMVIEW_OP = 90
     const val OPNPC6 = 91
     const val IF_BUTTON1 = 92
     const val RESUME_P_OBJDIALOG = 93

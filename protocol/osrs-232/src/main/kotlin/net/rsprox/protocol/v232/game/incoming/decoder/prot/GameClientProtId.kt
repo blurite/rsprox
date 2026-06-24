@@ -17,7 +17,7 @@ internal object GameClientProtId {
     const val OPPLAYER6 = 13
     const val HISCORE_REQUEST = 14
     const val OPNPC4 = 15
-    const val OCULUS_LEAVE = 16
+    const val EXIT_FREECAM = 16
     const val AFFINEDCLANSETTINGS_SETMUTED_FROMCHANNEL = 17
     const val MAP_BUILD_COMPLETE = 18
     const val OPOBJ4 = 19
@@ -81,7 +81,7 @@ internal object GameClientProtId {
     const val OPNPCT = 77
     const val IF_SUBOP = 78
     const val REFLECTION_CHECK_REPLY = 79
-    const val IF_CRMVIEW_CLICK = 80
+    const val IF_CRMVIEW_OP = 80
     const val IF_BUTTOND = 81
     const val OPPLAYERT = 82
     const val OPLOC4 = 83

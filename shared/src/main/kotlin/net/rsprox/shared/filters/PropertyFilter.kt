@@ -351,12 +351,12 @@ public enum class PropertyFilter(
         false,
         searchTerms = "worldmap,hints,clickworldmap",
     ),
-    OCULUS_LEAVE(
+    EXIT_FREECAM(
         CLIENT_TO_SERVER,
         OTHER,
-        "Oculus Leaving",
+        "Freecam Exits",
         false,
-        searchTerms = "orb,of,oculus,leave,leaving",
+        searchTerms = "freecam,exit,exiting,orb,oculus,leave,leaving",
     ),
     CLOSE_MODAL(
         CLIENT_TO_SERVER,
@@ -393,12 +393,12 @@ public enum class PropertyFilter(
         false,
         searchTerms = "hiscore,highscore,request,lookup",
     ),
-    IF_CRMVIEW_CLICK(
+    IF_CRMVIEW_OP(
         CLIENT_TO_SERVER,
         OTHER,
-        "CRM Clicks",
+        "CRM Ops",
         true,
-        searchTerms = "interfaces,if,button,crm,content,recommendation,click",
+        searchTerms = "interfaces,if,button,crm,content,recommendation,op,ops,click",
     ),
 
     CONNECTION_TELEMETRY(
@@ -811,7 +811,7 @@ public enum class PropertyFilter(
         true,
         searchTerms = "npcs,anim,animations,sequences,specifics",
     ),
-    PLAYER_ANIM_SPECIFIC(
+    ANIM_SPECIFIC(
         SERVER_TO_CLIENT,
         SPECIFIC,
         "Player Anims",
@@ -1100,6 +1100,13 @@ public enum class PropertyFilter(
         "Clan Vars",
         false,
         searchTerms = "variable,clans,varps,vars,channel",
+    ),
+    GROUP(
+        SERVER_TO_CLIENT,
+        CLAN,
+        "Groups",
+        false,
+        searchTerms = "group,groups,groupvar,groupfull,party,vars,variables",
     ),
     CLANCHANNEL(
         SERVER_TO_CLIENT,

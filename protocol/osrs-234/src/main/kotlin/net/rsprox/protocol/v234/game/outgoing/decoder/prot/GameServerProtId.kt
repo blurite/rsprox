@@ -37,7 +37,7 @@ internal object GameServerProtId {
     const val MINIMAP_TOGGLE = 33
     const val MESSAGE_FRIENDCHANNEL = 34
     const val UPDATE_STAT_V2 = 35
-    const val PLAYER_ANIM_SPECIFIC = 36
+    const val ANIM_SPECIFIC = 36
     const val IF_SETSCROLLPOS = 37
     const val OBJ_ENABLED_OPS_SPECIFIC = 38
     const val IF_SETOBJECT = 39
@@ -117,7 +117,7 @@ internal object GameServerProtId {
     const val IF_SETPLAYERMODEL_OBJ = 113
     const val VARCLAN_ENABLE = 114
     const val IF_SETANGLE = 115
-    const val CAM_LOOKAT_EASED_COORD_V1 = 116
+    const val CAM_ROTATETO_COORDINATE_V1 = 116
     const val HIDELOCOPS = 117
     const val MESSAGE_CLANCHANNEL = 118
     const val UPDATE_TRADINGPOST = 119

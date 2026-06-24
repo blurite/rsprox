@@ -2,7 +2,7 @@ package net.rsprox.protocol.v228.game.incoming.decoder.prot
 
 internal object GameClientProtId {
     const val OPNPCU = 0
-    const val OCULUS_LEAVE = 1
+    const val EXIT_FREECAM = 1
     const val OPOBJ3 = 2
     const val CONNECTION_TELEMETRY = 3
     const val EVENT_MOUSE_MOVE = 4
@@ -75,7 +75,7 @@ internal object GameClientProtId {
     const val OPOBJU = 71
     const val EVENT_MOUSE_SCROLL = 72
     const val EVENT_CAMERA_POSITION = 73
-    const val IF_CRMVIEW_CLICK = 74
+    const val IF_CRMVIEW_OP = 74
     const val OPOBJ5 = 75
     const val HISCORE_REQUEST = 76
     const val OPLOCU = 77

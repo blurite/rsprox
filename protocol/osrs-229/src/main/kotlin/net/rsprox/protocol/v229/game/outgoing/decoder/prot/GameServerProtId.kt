@@ -17,10 +17,10 @@ internal object GameServerProtId {
     const val UPDATE_STOCKMARKET_SLOT = 13
     const val CHAT_FILTER_SETTINGS_PRIVATECHAT = 14
     const val MESSAGE_FRIENDCHANNEL = 15
-    const val CAM_LOOKAT_EASED_COORD_V1 = 16
+    const val CAM_ROTATETO_COORDINATE_V1 = 16
     const val UPDATE_FRIENDLIST = 17
     const val SET_MAP_FLAG_V1 = 18
-    const val PLAYER_ANIM_SPECIFIC = 19
+    const val ANIM_SPECIFIC = 19
     const val RESET_ANIMS = 20
     const val CLANCHANNEL_DELTA = 21
     const val IF_SETHIDE = 22

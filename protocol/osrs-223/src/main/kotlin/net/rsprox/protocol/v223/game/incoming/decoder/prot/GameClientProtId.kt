@@ -31,7 +31,7 @@ internal object GameClientProtId {
     const val OPOBJ2 = 27
     const val OPOBJU = 28
     const val IF_BUTTON1 = 29
-    const val IF_CRMVIEW_CLICK = 30
+    const val IF_CRMVIEW_OP = 30
     const val RESUME_P_NAMEDIALOG = 31
     const val OPNPC1 = 32
     const val IF_BUTTON10 = 33
@@ -84,7 +84,7 @@ internal object GameClientProtId {
     const val FRIENDCHAT_KICK = 80
     const val RESUME_P_COUNTDIALOG = 81
     const val SEND_PING_REPLY = 82
-    const val OCULUS_LEAVE = 83
+    const val EXIT_FREECAM = 83
     const val OPNPC4 = 84
     const val OPLOCU = 85
     const val EVENT_CAMERA_POSITION = 86

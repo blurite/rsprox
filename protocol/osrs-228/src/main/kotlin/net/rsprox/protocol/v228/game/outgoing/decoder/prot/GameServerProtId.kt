@@ -30,7 +30,7 @@ internal object GameServerProtId {
     const val NPC_SPOTANIM_SPECIFIC = 26
     const val VARP_SMALL = 27
     const val MAP_PROJANIM_V1 = 28
-    const val CAM_LOOKAT_EASED_COORD_V1 = 29
+    const val CAM_ROTATETO_COORDINATE_V1 = 29
     const val CAM_SHAKE = 30
     const val REBUILD_REGION = 31
     const val IF_CLEARINV = 32
@@ -79,7 +79,7 @@ internal object GameServerProtId {
     const val UPDATE_TRADINGPOST = 75
     const val UPDATE_INV_PARTIAL = 76
     const val HINT_ARROW = 77
-    const val PLAYER_ANIM_SPECIFIC = 78
+    const val ANIM_SPECIFIC = 78
     const val IF_SETROTATESPEED = 79
     const val CAM_MOVETO_V1 = 80
     const val NPC_HEADICON_SPECIFIC = 81

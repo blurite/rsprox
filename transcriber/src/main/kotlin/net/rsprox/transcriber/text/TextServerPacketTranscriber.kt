@@ -19,6 +19,12 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.MessageFriendChannel
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV1
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV2
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelSingleUser
+import net.rsprox.protocol.game.outgoing.model.group.GroupFull
+import net.rsprox.protocol.game.outgoing.model.group.GroupVar
+import net.rsprox.protocol.game.outgoing.model.group.GroupVarInt
+import net.rsprox.protocol.game.outgoing.model.group.GroupVarLong
+import net.rsprox.protocol.game.outgoing.model.group.util.GroupVarUpdate
+import net.rsprox.protocol.game.outgoing.model.group.util.GroupVariable
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.EnabledOpsExtendedInfo
@@ -314,7 +320,26 @@ public class TextServerPacketTranscriber(
         root.int("rate2", message.rate2)
     }
 
-    override fun camLookAtEasedCoordV1(message: CamLookAtEasedCoordV1) {
+    override fun camLookAtV3(message: CamLookAtV3) {
+        if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
+        val coord = CoordGrid(sessionState.getRootWorldActiveLevel(), message.x, message.z)
+        root.coordGrid(coord)
+        root.int("height", message.height)
+        root.int("rate", message.rate)
+        root.int("rate2", message.rate2)
+        root.boolean("heightrelative", message.heightRelative)
+    }
+
+    override fun camLookAtCycles(message: CamLookAtCycles) {
+        if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
+        val coord = CoordGrid(sessionState.getRootWorldActiveLevel(), message.x, message.z)
+        root.coordGrid(coord)
+        root.int("height", message.height)
+        root.int("cycles", message.cycles)
+        root.enum("easing", message.easing)
+        root.boolean("heightrelative", message.heightRelative)
+    }
+    override fun camRotateToCoordinateV1(message: CamRotateToCoordinateV1) {
         if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
         if (coordInBuildArea.invalid()) {
@@ -331,13 +356,24 @@ public class TextServerPacketTranscriber(
         root.enum("easing", message.function)
     }
 
-    override fun camLookAtEasedCoordV2(message: CamLookAtEasedCoordV2) {
+    override fun camRotateToCoordinateV2(message: CamRotateToCoordinateV2) {
         if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
         val coord = CoordGrid(sessionState.getRootWorldActiveLevel(), message.x, message.z)
         root.coordGrid(coord)
         root.int("height", message.height)
         root.int("cycles", message.cycles)
         root.enum("easing", message.easing)
+    }
+
+    override fun camRotateToCoordinateV3(message: CamRotateToCoordinateV3) {
+        if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
+        val coord = CoordGrid(sessionState.getRootWorldActiveLevel(), message.x, message.z)
+        root.coordGrid(coord)
+        root.int("height", message.height)
+        root.int("cycles", message.cycles)
+        root.enum("easing", message.easing)
+        root.boolean("heightrelative", message.heightRelative)
+        root.boolean("tracktarget", message.trackTarget)
     }
 
     override fun camMode(message: CamMode) {
@@ -369,6 +405,16 @@ public class TextServerPacketTranscriber(
         root.int("height", message.height)
         root.int("rate", message.rate)
         root.int("rate2", message.rate2)
+    }
+
+    override fun camMoveToV3(message: CamMoveToV3) {
+        if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
+        val coord = CoordGrid(sessionState.getRootWorldActiveLevel(), message.x, message.z)
+        root.coordGrid(coord)
+        root.int("height", message.height)
+        root.int("rate", message.rate)
+        root.int("rate2", message.rate2)
+        root.boolean("heightrelative", message.heightRelative)
     }
 
     override fun camMoveToArcV1(message: CamMoveToArcV1) {
@@ -406,6 +452,19 @@ public class TextServerPacketTranscriber(
         root.enum("easing", message.easing)
     }
 
+    override fun camMoveToArcV3(message: CamMoveToArcV3) {
+        if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
+        val center = CoordGrid(sessionState.getRootWorldActiveLevel(), message.centerX, message.centerZ)
+
+        root.coordGrid("centercoord", center)
+        val destination = CoordGrid(sessionState.getRootWorldActiveLevel(), message.destinationX, message.destinationZ)
+        root.coordGrid("destinationcoord", destination)
+        root.int("height", message.height)
+        root.int("cycles", message.cycles)
+        root.boolean("ignoreterrain", message.ignoreTerrain)
+        root.enum("easing", message.easing)
+        root.boolean("heightrelative", message.heightRelative)
+    }
     override fun camMoveToCyclesV1(message: CamMoveToCyclesV1) {
         if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
@@ -432,6 +491,17 @@ public class TextServerPacketTranscriber(
         root.int("cycles", message.cycles)
         root.boolean("ignoreterrain", message.ignoreTerrain)
         root.enum("easing", message.easing)
+    }
+
+    override fun camMoveToCyclesV3(message: CamMoveToCyclesV3) {
+        if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
+        val coord = CoordGrid(sessionState.getRootWorldActiveLevel(), message.x, message.z)
+        root.coordGrid(coord)
+        root.int("height", message.height)
+        root.int("cycles", message.cycles)
+        root.boolean("ignoreterrain", message.ignoreTerrain)
+        root.enum("easing", message.easing)
+        root.boolean("heightrelative", message.heightRelative)
     }
 
     override fun camReset(message: CamReset) {
@@ -851,6 +921,84 @@ public class TextServerPacketTranscriber(
 
     override fun varClanEnable(message: VarClanEnable) {
         if (!filters[PropertyFilter.VARCLAN]) return omit()
+    }
+
+    override fun groupFull(message: GroupFull) {
+        if (!filters[PropertyFilter.GROUP]) return omit()
+        root.group("UPDATES") {
+            for (update in message.updates) {
+                group {
+                    when (update) {
+                        is GroupFull.GroupDelete -> {
+                            string("op", "delete")
+                            int("index", update.index)
+                        }
+                        is GroupFull.GroupAddChange -> {
+                            string("op", "addchange")
+                            int("index", update.index)
+                            int("id", update.id)
+                            long("uid", update.uid)
+                            string("variabledata", update.variableData.contentToString())
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    override fun groupVar(message: GroupVar) {
+        if (!filters[PropertyFilter.GROUP]) return omit()
+        root.group("UPDATES") {
+            for (update in message.updates) {
+                group {
+                    groupVarUpdate(update)
+                }
+            }
+        }
+    }
+
+    override fun groupVarInt(message: GroupVarInt) {
+        if (!filters[PropertyFilter.GROUP]) return omit()
+        root.groupVarUpdate(message.update)
+    }
+
+    override fun groupVarLong(message: GroupVarLong) {
+        if (!filters[PropertyFilter.GROUP]) return omit()
+        root.groupVarUpdate(message.update)
+    }
+
+    private fun Property.groupVarUpdate(update: GroupVarUpdate<*>) {
+        int("index", update.index)
+        int("packedgroupvar", update.packedGroupVar)
+        int("id", update.id)
+        boolean("member", update.isMember)
+        int("basevartype", update.baseVarType)
+        int("varindex", update.varIndex)
+        group("VARIABLE") {
+            groupVariable(update.variable)
+        }
+    }
+
+    private fun Property.groupVariable(variable: GroupVariable<*>) {
+        when (variable) {
+            is GroupVariable.IntGroupVariable -> {
+                string("type", "int")
+                int("value", variable.value)
+            }
+            is GroupVariable.LongGroupVariable -> {
+                string("type", "long")
+                long("value", variable.value)
+            }
+            is GroupVariable.StringGroupVariable -> {
+                string("type", "string")
+                string("value", variable.value)
+            }
+            is GroupVariable.UnknownGroupVariable -> {
+                string("type", "unknown")
+                int("basevartype", variable.baseVarType)
+                string("data", variable.data.contentToString())
+            }
+        }
     }
 
     override fun messageFriendChannel(message: MessageFriendChannel) {
@@ -2784,8 +2932,8 @@ public class TextServerPacketTranscriber(
         root.filteredInt("delay", message.delay, 0)
     }
 
-    override fun playerAnimSpecific(message: PlayerAnimSpecific) {
-        if (!filters[PropertyFilter.PLAYER_ANIM_SPECIFIC]) return omit()
+    override fun animSpecific(message: AnimSpecific) {
+        if (!filters[PropertyFilter.ANIM_SPECIFIC]) return omit()
         root.scriptVarType("anim", ScriptVarType.SEQ, message.id)
         root.filteredInt("delay", message.delay, 0)
     }
@@ -3123,6 +3271,16 @@ public class TextServerPacketTranscriber(
                     val root = sessionState.createFakeServerRoot("MAP_PROJANIM_V2")
                     root.buildMapProjAnimV2(event)
                 }
+                is ScriptedProjAdd -> {
+                    if (!filters[PropertyFilter.MAP_PROJANIM]) continue
+                    val root = sessionState.createFakeServerRoot("SCRIPTEDPROJ_ADD")
+                    root.buildScriptedProjAdd(event)
+                }
+                is ScriptedProjChange -> {
+                    if (!filters[PropertyFilter.MAP_PROJANIM]) continue
+                    val root = sessionState.createFakeServerRoot("SCRIPTEDPROJ_CHANGE")
+                    root.buildScriptedProjChange(event)
+                }
                 is ObjAdd -> {
                     if (!filters[PropertyFilter.OBJ_ADD]) continue
                     val root = sessionState.createFakeServerRoot("OBJ_ADD")
@@ -3217,6 +3375,18 @@ public class TextServerPacketTranscriber(
                             buildMapProjAnimV2(event)
                         }
                     }
+                    is ScriptedProjAdd -> {
+                        if (!filters[PropertyFilter.MAP_PROJANIM]) continue
+                        group("SCRIPTEDPROJ_ADD") {
+                            buildScriptedProjAdd(event)
+                        }
+                    }
+                    is ScriptedProjChange -> {
+                        if (!filters[PropertyFilter.MAP_PROJANIM]) continue
+                        group("SCRIPTEDPROJ_CHANGE") {
+                            buildScriptedProjChange(event)
+                        }
+                    }
                     is ObjAdd -> {
                         if (!filters[PropertyFilter.OBJ_ADD]) continue
                         group("OBJ_ADD") {
@@ -3307,6 +3477,16 @@ public class TextServerPacketTranscriber(
     override fun mapProjAnimV2(message: MapProjAnimV2) {
         if (!filters[PropertyFilter.MAP_PROJANIM]) return omit()
         root.buildMapProjAnimV2(message)
+    }
+
+    override fun scriptedProjAdd(message: ScriptedProjAdd) {
+        if (!filters[PropertyFilter.MAP_PROJANIM]) return omit()
+        root.buildScriptedProjAdd(message)
+    }
+
+    override fun scriptedProjChange(message: ScriptedProjChange) {
+        if (!filters[PropertyFilter.MAP_PROJANIM]) return omit()
+        root.buildScriptedProjChange(message)
     }
 
     override fun objAdd(message: ObjAdd) {
@@ -3449,6 +3629,64 @@ public class TextServerPacketTranscriber(
         }
         group("TARGET") {
             coordGrid(message.end)
+            val ambiguousIndex = message.targetIndex
+            if (ambiguousIndex != 0) {
+                if (ambiguousIndex > 0) {
+                    npc(ambiguousIndex - 1)
+                } else {
+                    player(-ambiguousIndex - 1)
+                }
+            }
+        }
+    }
+
+    private fun Property.buildScriptedProjAdd(message: ScriptedProjAdd) {
+        scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
+        int("slot", message.slot)
+        int("starttime", message.startTime)
+        int("endtime", message.endTime)
+        int("curvescripth", message.curveScriptH)
+        int("curvescripta", message.curveScriptA)
+        int("curvescriptt", message.curveScriptT)
+        group("SOURCE") {
+            coordGrid(coordInZone(message.xInZone, message.zInZone))
+            int("offsetx", message.sourceOffsetX)
+            int("offsetz", message.sourceOffsetZ)
+            int("height", message.sourceHeight)
+            val ambiguousIndex = message.sourceIndex
+            if (ambiguousIndex != 0) {
+                if (ambiguousIndex > 0) {
+                    npc(ambiguousIndex - 1)
+                } else {
+                    player(-ambiguousIndex - 1)
+                }
+            }
+        }
+        group("TARGET") {
+            coordGrid(message.targetCoord)
+            int("offsetx", message.targetOffsetX)
+            int("offsetz", message.targetOffsetZ)
+            int("height", message.targetHeight)
+            val ambiguousIndex = message.targetIndex
+            if (ambiguousIndex != 0) {
+                if (ambiguousIndex > 0) {
+                    npc(ambiguousIndex - 1)
+                } else {
+                    player(-ambiguousIndex - 1)
+                }
+            }
+        }
+    }
+
+    private fun Property.buildScriptedProjChange(message: ScriptedProjChange) {
+        int("slot", message.slot)
+        int("freeze", message.freezeDuration)
+        boolean("deleteonfreezeend", message.deleteOnFreezeEnd)
+        group("TARGET") {
+            coordGrid(message.targetCoord)
+            int("offsetx", message.targetOffsetX)
+            int("offsetz", message.targetOffsetZ)
+            int("height", message.targetHeight)
             val ambiguousIndex = message.targetIndex
             if (ambiguousIndex != 0) {
                 if (ambiguousIndex > 0) {

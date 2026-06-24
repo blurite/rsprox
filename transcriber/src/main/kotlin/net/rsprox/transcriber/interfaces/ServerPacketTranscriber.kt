@@ -14,6 +14,10 @@ import net.rsprox.protocol.game.outgoing.model.friendchat.MessageFriendChannel
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV1
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelFullV2
 import net.rsprox.protocol.game.outgoing.model.friendchat.UpdateFriendChatChannelSingleUser
+import net.rsprox.protocol.game.outgoing.model.group.GroupFull
+import net.rsprox.protocol.game.outgoing.model.group.GroupVar
+import net.rsprox.protocol.game.outgoing.model.group.GroupVarInt
+import net.rsprox.protocol.game.outgoing.model.group.GroupVarLong
 import net.rsprox.protocol.game.outgoing.model.info.npcinfo.SetNpcUpdateOrigin
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.*
 import net.rsprox.protocol.game.outgoing.model.interfaces.*
@@ -73,9 +77,14 @@ public interface ServerPacketTranscriber {
 
     public fun camLookAtV2(message: CamLookAtV2)
 
-    public fun camLookAtEasedCoordV1(message: CamLookAtEasedCoordV1)
+    public fun camLookAtV3(message: CamLookAtV3)
+    public fun camLookAtCycles(message: CamLookAtCycles)
 
-    public fun camLookAtEasedCoordV2(message: CamLookAtEasedCoordV2)
+    public fun camRotateToCoordinateV1(message: CamRotateToCoordinateV1)
+
+    public fun camRotateToCoordinateV2(message: CamRotateToCoordinateV2)
+
+    public fun camRotateToCoordinateV3(message: CamRotateToCoordinateV3)
 
     public fun camMode(message: CamMode)
 
@@ -83,13 +92,19 @@ public interface ServerPacketTranscriber {
 
     public fun camMoveToV2(message: CamMoveToV2)
 
+    public fun camMoveToV3(message: CamMoveToV3)
+
     public fun camMoveToArcV1(message: CamMoveToArcV1)
 
     public fun camMoveToArcV2(message: CamMoveToArcV2)
 
+    public fun camMoveToArcV3(message: CamMoveToArcV3)
+
     public fun camMoveToCyclesV1(message: CamMoveToCyclesV1)
 
     public fun camMoveToCyclesV2(message: CamMoveToCyclesV2)
+
+    public fun camMoveToCyclesV3(message: CamMoveToCyclesV3)
 
     public fun camReset(message: CamReset)
 
@@ -132,6 +147,14 @@ public interface ServerPacketTranscriber {
     public fun varClanDisable(message: VarClanDisable)
 
     public fun varClanEnable(message: VarClanEnable)
+
+    public fun groupFull(message: GroupFull)
+
+    public fun groupVar(message: GroupVar)
+
+    public fun groupVarInt(message: GroupVarInt)
+
+    public fun groupVarLong(message: GroupVarLong)
 
     public fun messageFriendChannel(message: MessageFriendChannel)
 
@@ -351,7 +374,7 @@ public interface ServerPacketTranscriber {
 
     public fun npcSpotAnimSpecific(message: NpcSpotAnimSpecific)
 
-    public fun playerAnimSpecific(message: PlayerAnimSpecific)
+    public fun animSpecific(message: AnimSpecific)
 
     public fun playerSpotAnimSpecific(message: PlayerSpotAnimSpecific)
 
@@ -408,6 +431,8 @@ public interface ServerPacketTranscriber {
     public fun mapProjAnimV1(message: MapProjAnimV1)
 
     public fun mapProjAnimV2(message: MapProjAnimV2)
+    public fun scriptedProjAdd(message: ScriptedProjAdd)
+    public fun scriptedProjChange(message: ScriptedProjChange)
 
     public fun objAdd(message: ObjAdd)
 

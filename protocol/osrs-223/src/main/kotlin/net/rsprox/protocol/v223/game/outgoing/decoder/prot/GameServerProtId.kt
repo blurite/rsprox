@@ -37,7 +37,7 @@ internal object GameServerProtId {
     const val SET_HEATMAP_ENABLED = 33
     const val URL_OPEN = 34
     const val IF_MOVESUB = 35
-    const val CAM_LOOKAT_EASED_COORD_V1 = 36
+    const val CAM_ROTATETO_COORDINATE_V1 = 36
     const val NPC_HEADICON_SPECIFIC = 37
     const val OBJ_ADD = 38
     const val CAM_SHAKE = 39
@@ -118,7 +118,7 @@ internal object GameServerProtId {
     const val UPDATE_FRIENDCHAT_CHANNEL_FULL_V1 = 114
     const val NPC_SPOTANIM_SPECIFIC = 115
     const val PLAYER_SPOTANIM_SPECIFIC = 116
-    const val PLAYER_ANIM_SPECIFIC = 117
+    const val ANIM_SPECIFIC = 117
     const val PROJANIM_SPECIFIC_V2 = 118
     const val SET_PLAYER_OP = 119
     const val CAM_MOVETO_CYCLES_V1 = 120

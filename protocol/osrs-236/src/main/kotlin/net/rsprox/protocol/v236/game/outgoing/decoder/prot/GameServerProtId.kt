@@ -100,7 +100,7 @@ internal object GameServerProtId {
     const val IF_CLOSESUB = 96
     const val IF_SETNPCHEAD_ACTIVE = 97
     const val HIDELOCOPS = 98
-    const val CAM_LOOKAT_EASED_COORD_V1 = 99
+    const val CAM_ROTATETO_COORDINATE_V1 = 99
     const val UPDATE_ZONE_FULL_FOLLOWS = 100
     const val UPDATE_ZONE_PARTIAL_ENCLOSED = 101
     const val CLANCHANNEL_DELTA = 102
@@ -110,7 +110,7 @@ internal object GameServerProtId {
     const val IF_SETPLAYERMODEL_BODYTYPE = 106
     const val MESSAGE_CLANCHANNEL = 107
     const val PLAYER_SPOTANIM_SPECIFIC = 108
-    const val PLAYER_ANIM_SPECIFIC = 109
+    const val ANIM_SPECIFIC = 109
     const val MIDI_SONG_V2 = 110
     const val UPDATE_RUNENERGY = 111
     const val HISCORE_REPLY = 112
@@ -139,7 +139,7 @@ internal object GameServerProtId {
     const val ZBUF = 135
     const val OBJ_COUNT_SPECIFIC = 136
     const val CAM_MOVETO_ARC_V2 = 137
-    const val CAM_LOOKAT_EASED_COORD_V2 = 138
+    const val CAM_ROTATETO_COORDINATE_V2 = 138
     const val SET_MAP_FLAG_V2 = 139
     const val CAM_LOOKAT_V2 = 140
     const val IF_RESYNC_V2 = 141

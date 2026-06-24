@@ -70,7 +70,7 @@ internal object GameClientProtId {
     const val SET_CHATFILTERSETTINGS = 66
     const val SEND_PING_REPLY = 67
     const val CLANCHANNEL_FULL_REQUEST = 68
-    const val OCULUS_LEAVE = 69
+    const val EXIT_FREECAM = 69
     const val MEMBERSHIP_PROMOTION_ELIGIBILITY = 70
     const val EVENT_NATIVE_MOUSE_CLICK = 71
     const val MOVE_MINIMAPCLICK = 72
@@ -97,7 +97,7 @@ internal object GameClientProtId {
     const val IF_BUTTON10 = 93
     const val EVENT_CAMERA_POSITION = 94
     const val OPLOC2 = 95
-    const val IF_CRMVIEW_CLICK = 96
+    const val IF_CRMVIEW_OP = 96
     const val CLANSETTINGS_FULL_REQUEST = 97
     const val OPNPC4 = 98
     const val OPNPCU = 99

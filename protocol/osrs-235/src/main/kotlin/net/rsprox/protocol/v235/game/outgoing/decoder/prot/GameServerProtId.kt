@@ -26,7 +26,7 @@ internal object GameServerProtId {
     const val NPC_ANIM_SPECIFIC = 22
     const val SET_INTERACTION_MODE = 23
     const val VARP_SMALL = 24
-    const val CAM_LOOKAT_EASED_COORD_V1 = 25
+    const val CAM_ROTATETO_COORDINATE_V1 = 25
     const val SYNTH_SOUND = 26
     const val MAP_ANIM_SPECIFIC = 27
     const val CAM_ROTATEBY = 28
@@ -76,7 +76,7 @@ internal object GameServerProtId {
     const val VARCLAN_ENABLE = 72
     const val CLANSETTINGS_FULL = 73
     const val VARP_SYNC = 74
-    const val PLAYER_ANIM_SPECIFIC = 75
+    const val ANIM_SPECIFIC = 75
     const val RESET_ANIMS = 76
     const val NPC_SPOTANIM_SPECIFIC = 77
     const val UPDATE_UID192 = 78

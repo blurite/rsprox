@@ -6,13 +6,13 @@ import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.MessageDecoderRepository
 import net.rsprox.protocol.MessageDecoderRepositoryBuilder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.camera.CamLookAtDecoder
-import net.rsprox.protocol.v234.game.outgoing.decoder.codec.camera.CamLookAtEasedCoordDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.camera.CamModeDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.camera.CamMoveToArcDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.camera.CamMoveToCyclesDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.camera.CamMoveToDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.camera.CamResetDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.camera.CamRotateBy
+import net.rsprox.protocol.v234.game.outgoing.decoder.codec.camera.CamRotateToCoordinateDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.camera.CamRotateToDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.camera.CamShakeDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.camera.CamSmoothResetDecoder
@@ -114,13 +114,13 @@ import net.rsprox.protocol.v234.game.outgoing.decoder.codec.sound.MidiSongWithSe
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.sound.MidiSwapDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.sound.SynthSoundDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.specific.*
+import net.rsprox.protocol.v234.game.outgoing.decoder.codec.specific.AnimSpecificDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.specific.LocAnimSpecificDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.specific.MapAnimSpecificDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.specific.NpcAnimSpecificDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.specific.NpcHeadIconSpecificDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.specific.NpcSpotAnimSpecificDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.specific.ObjAddSpecificDecoder
-import net.rsprox.protocol.v234.game.outgoing.decoder.codec.specific.PlayerAnimSpecificDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.specific.PlayerSpotAnimSpecificDecoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.specific.ProjAnimSpecificV4Decoder
 import net.rsprox.protocol.v234.game.outgoing.decoder.codec.unknown.UnknownStringDecoder
@@ -152,7 +152,7 @@ internal object ServerMessageDecoderRepository {
             ).apply {
                 bind(CamRotateToDecoder())
                 bind(CamRotateBy())
-                bind(CamLookAtEasedCoordDecoder())
+                bind(CamRotateToCoordinateDecoder())
                 bind(CamLookAtDecoder())
                 bind(CamModeDecoder())
                 bind(CamMoveToArcDecoder())
@@ -275,7 +275,7 @@ internal object ServerMessageDecoderRepository {
                 bind(NpcAnimSpecificDecoder())
                 bind(NpcHeadIconSpecificDecoder())
                 bind(NpcSpotAnimSpecificDecoder())
-                bind(PlayerAnimSpecificDecoder())
+                bind(AnimSpecificDecoder())
                 bind(PlayerSpotAnimSpecificDecoder())
                 bind(ProjAnimSpecificV4Decoder())
                 bind(ObjAddSpecificDecoder())

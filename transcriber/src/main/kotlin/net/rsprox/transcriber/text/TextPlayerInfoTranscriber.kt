@@ -8,12 +8,14 @@ import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.Appe
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.ChatExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.MoveSpeedExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.NameExtrasExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.PlayerResetExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.TemporaryMoveSpeedExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceAngleExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FacePathingEntityExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FreezeExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HeadbarExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HitExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HitmarkExtendedInfo
@@ -21,6 +23,7 @@ import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SayExten
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SequenceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TransparencyExtendedInfo
 import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.filters.PropertyFilter
 import net.rsprox.shared.filters.PropertyFilterSet
@@ -356,6 +359,27 @@ public class TextPlayerInfoTranscriber(
                         }
                     }
                 }
+                is TransparencyExtendedInfo -> {
+                    if (filters[PropertyFilter.PLAYER_TINTING]) {
+                        group("TRANSPARENCY") {
+                            appendTransparencyExtendedInfo(player, info)
+                        }
+                    }
+                }
+                is FreezeExtendedInfo -> {
+                    if (filters[PropertyFilter.PLAYER_TINTING]) {
+                        group("FREEZE") {
+                            appendFreezeExtendedInfo(player, info)
+                        }
+                    }
+                }
+                is PlayerResetExtendedInfo -> {
+                    if (filters[PropertyFilter.PLAYER_EXT_INFO]) {
+                        group("PLAYER_RESET") {
+                            appendPlayerResetExtendedInfo(player, info)
+                        }
+                    }
+                }
                 is SpotanimExtendedInfo -> {
                     if (filters[PropertyFilter.PLAYER_SPOTANIMS]) {
                         appendSpotanimExtendedInfo(player, info)
@@ -650,6 +674,42 @@ public class TextPlayerInfoTranscriber(
                 }
             }
         }
+    }
+
+    private fun Property.appendTransparencyExtendedInfo(
+        player: Player,
+        info: TransparencyExtendedInfo,
+    ) {
+        if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
+            shortPlayer(player.index)
+        }
+        int("start", info.start)
+        int("end", info.end)
+        int("starttransparency", info.startTransparency and 0xFF)
+        int("endtransparency", info.endTransparency and 0xFF)
+        boolean("usestarttransparency", info.useStartTransparency)
+    }
+
+    private fun Property.appendFreezeExtendedInfo(
+        player: Player,
+        info: FreezeExtendedInfo,
+    ) {
+        if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
+            shortPlayer(player.index)
+        }
+        int("delay", info.delay)
+        int("duration", info.duration)
+        boolean("cancelsequence", info.cancelSequence)
+    }
+
+    private fun Property.appendPlayerResetExtendedInfo(
+        player: Player,
+        info: PlayerResetExtendedInfo,
+    ) {
+        if (settings[Setting.PLAYER_EXT_INFO_INLINE]) {
+            shortPlayer(player.index)
+        }
+        int("value", info.value)
     }
 
     private fun Property.appendTintingExtendedInfo(

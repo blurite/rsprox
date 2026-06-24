@@ -91,7 +91,7 @@ internal object GameServerProtId {
     const val IF_SETANGLE = 87
     const val UPDATE_RUNENERGY = 88
     const val UPDATE_FRIENDCHAT_CHANNEL_FULL_V2 = 89
-    const val PLAYER_ANIM_SPECIFIC = 90
+    const val ANIM_SPECIFIC = 90
     const val CAM_ROTATEBY = 91
     const val MAP_ANIM_SPECIFIC = 92
     const val REBUILD_WORLDENTITY_V3 = 93
@@ -102,7 +102,7 @@ internal object GameServerProtId {
     const val UPDATE_STAT_V2 = 98
     const val MESSAGE_CLANCHANNEL = 99
     const val IF_SETPLAYERHEAD = 100
-    const val CAM_LOOKAT_EASED_COORD_V1 = 101
+    const val CAM_ROTATETO_COORDINATE_V1 = 101
     const val LOGOUT_WITHREASON = 102
     const val CAM_TARGET_V3 = 103
     const val LOGOUT_TRANSFER = 104

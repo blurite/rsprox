@@ -255,6 +255,7 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
                 )
         }
     }
+
     private fun decodeHighResolutionV5(buffer: JagByteBuf) {
         val count = buffer.g1()
         if (count < transmittedWorldEntityCount) {
@@ -611,6 +612,7 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
                 )
         }
     }
+
     @Suppress("unused")
     private class WorldEntityV1(
         val index: Int,

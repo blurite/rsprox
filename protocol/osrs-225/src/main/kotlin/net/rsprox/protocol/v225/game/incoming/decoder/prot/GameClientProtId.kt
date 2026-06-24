@@ -30,7 +30,7 @@ internal object GameClientProtId {
     const val CONNECTION_TELEMETRY = 26
     const val MESSAGE_PRIVATE = 27
     const val CLOSE_MODAL = 28
-    const val OCULUS_LEAVE = 29
+    const val EXIT_FREECAM = 29
     const val OPOBJ5 = 30
     const val AFFINEDCLANSETTINGS_SETMUTED_FROMCHANNEL = 31
     const val TELEPORT = 32
@@ -96,7 +96,7 @@ internal object GameClientProtId {
     const val FRIENDLIST_ADD = 92
     const val RESUME_PAUSEBUTTON = 93
     const val CLICKWORLDMAP = 94
-    const val IF_CRMVIEW_CLICK = 95
+    const val IF_CRMVIEW_OP = 95
     const val MOVE_MINIMAPCLICK = 96
     const val EVENT_NATIVE_MOUSE_CLICK = 97
     const val AFFINEDCLANSETTINGS_ADDBANNED_FROMCHANNEL = 98

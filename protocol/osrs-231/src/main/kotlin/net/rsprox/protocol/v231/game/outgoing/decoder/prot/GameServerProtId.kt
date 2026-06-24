@@ -40,7 +40,7 @@ internal object GameServerProtId {
     const val RUNCLIENTSCRIPT = 36
     const val MESSAGE_PRIVATE_ECHO = 37
     const val UPDATE_STAT_V2 = 38
-    const val CAM_LOOKAT_EASED_COORD_V1 = 39
+    const val CAM_ROTATETO_COORDINATE_V1 = 39
     const val SERVER_TICK_END = 40
     const val IF_SETNPCHEAD = 41
     const val IF_RESYNC_V1 = 42
@@ -93,7 +93,7 @@ internal object GameServerProtId {
     const val MIDI_SONG_STOP = 89
     const val IF_CLOSESUB = 90
     const val CAM_TARGET_V3 = 91
-    const val PLAYER_ANIM_SPECIFIC = 92
+    const val ANIM_SPECIFIC = 92
     const val UPDATE_INV_FULL = 93
     const val SET_MAP_FLAG_V1 = 94
     const val MESSAGE_GAME = 95

@@ -5,7 +5,6 @@ import net.rsprox.protocol.common.CoordFine
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.EnabledOpsExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SequenceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfo
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoDecoder
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV1

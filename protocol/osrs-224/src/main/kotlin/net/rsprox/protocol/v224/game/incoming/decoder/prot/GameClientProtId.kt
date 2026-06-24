@@ -52,7 +52,7 @@ internal object GameClientProtId {
     const val CLIENT_CHEAT = 48
     const val DETECT_MODIFIED_CLIENT = 49
     const val EVENT_APPLET_FOCUS = 50
-    const val OCULUS_LEAVE = 51
+    const val EXIT_FREECAM = 51
     const val OPLOC6 = 52
     const val OPOBJT = 53
     const val RESUME_PAUSEBUTTON = 54
@@ -66,7 +66,7 @@ internal object GameClientProtId {
     const val OPOBJ5 = 62
     const val MAP_BUILD_COMPLETE = 63
     const val OPLOC2 = 64
-    const val IF_CRMVIEW_CLICK = 65
+    const val IF_CRMVIEW_OP = 65
     const val OPPLAYER7 = 66
     const val MESSAGE_PUBLIC = 67
     const val CLICKWORLDMAP = 68

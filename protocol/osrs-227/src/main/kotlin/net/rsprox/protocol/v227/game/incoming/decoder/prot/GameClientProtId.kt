@@ -70,7 +70,7 @@ internal object GameClientProtId {
     const val DETECT_MODIFIED_CLIENT = 66
     const val HISCORE_REQUEST = 67
     const val UPDATE_PLAYER_MODEL_V2 = 68
-    const val OCULUS_LEAVE = 69
+    const val EXIT_FREECAM = 69
     const val IF_BUTTON = 70
     const val IF_SUBOP = 71
     const val MOVE_GAMECLICK = 72
@@ -91,7 +91,7 @@ internal object GameClientProtId {
     const val IF_BUTTON7 = 87
     const val CLIENT_CHEAT = 88
     const val OPPLAYER1 = 89
-    const val IF_CRMVIEW_CLICK = 90
+    const val IF_CRMVIEW_OP = 90
     const val EVENT_MOUSE_MOVE = 91
     const val SOUND_JINGLEEND = 92
     const val EVENT_MOUSE_SCROLL = 93

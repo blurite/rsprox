@@ -36,11 +36,11 @@ import net.rsprox.protocol.v231.game.incoming.decoder.codec.misc.user.BugReportD
 import net.rsprox.protocol.v231.game.incoming.decoder.codec.misc.user.ClickWorldMapDecoder
 import net.rsprox.protocol.v231.game.incoming.decoder.codec.misc.user.ClientCheatDecoder
 import net.rsprox.protocol.v231.game.incoming.decoder.codec.misc.user.CloseModalDecoder
+import net.rsprox.protocol.v231.game.incoming.decoder.codec.misc.user.ExitFreecamDecoder
 import net.rsprox.protocol.v231.game.incoming.decoder.codec.misc.user.HiscoreRequestDecoder
-import net.rsprox.protocol.v231.game.incoming.decoder.codec.misc.user.IfCrmViewClickDecoder
+import net.rsprox.protocol.v231.game.incoming.decoder.codec.misc.user.IfCrmViewOpDecoder
 import net.rsprox.protocol.v231.game.incoming.decoder.codec.misc.user.MoveGameClickDecoder
 import net.rsprox.protocol.v231.game.incoming.decoder.codec.misc.user.MoveMinimapClickDecoder
-import net.rsprox.protocol.v231.game.incoming.decoder.codec.misc.user.OculusLeaveDecoder
 import net.rsprox.protocol.v231.game.incoming.decoder.codec.misc.user.SendSnapshotDecoder
 import net.rsprox.protocol.v231.game.incoming.decoder.codec.misc.user.SetChatFilterSettingsDecoder
 import net.rsprox.protocol.v231.game.incoming.decoder.codec.misc.user.SetHeadingDecoder
@@ -176,13 +176,13 @@ internal object ClientMessageDecoderRepository {
                 bind(SetChatFilterSettingsDecoder())
                 bind(SetHeadingDecoder())
                 bind(ClickWorldMapDecoder())
-                bind(OculusLeaveDecoder())
+                bind(ExitFreecamDecoder())
                 bind(CloseModalDecoder())
                 bind(TeleportDecoder())
                 bind(BugReportDecoder())
                 bind(SendSnapshotDecoder())
                 bind(HiscoreRequestDecoder())
-                bind(IfCrmViewClickDecoder())
+                bind(IfCrmViewOpDecoder())
 
                 bind(ConnectionTelemetryDecoder())
                 bind(SendPingReplyDecoder())
