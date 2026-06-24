@@ -49,7 +49,13 @@ public data class YamlProxyTargetConfigList(
                 }
                 this.isObject -> {
                     val entry = this.toConfigOrNull()
-                    if (entry != null) YamlProxyTargetConfigList(listOf(entry)) else YamlProxyTargetConfigList(emptyList())
+                    if (entry !=
+                        null
+                    ) {
+                        YamlProxyTargetConfigList(listOf(entry))
+                    } else {
+                        YamlProxyTargetConfigList(emptyList())
+                    }
                 }
                 else -> YamlProxyTargetConfigList(emptyList())
             }

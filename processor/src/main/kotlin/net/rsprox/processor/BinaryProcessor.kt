@@ -19,7 +19,9 @@ import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
 
-public sealed class BinaryProcessor(private val files: Collection<Path>) {
+public sealed class BinaryProcessor(
+    private val files: Collection<Path>,
+) {
     protected fun collectAll(): List<ProcessedBinarySession> {
         val decoderLoader = DecoderLoader()
         HuffmanProvider.load()
@@ -31,7 +33,7 @@ public sealed class BinaryProcessor(private val files: Collection<Path>) {
         filters: PropertyFilterSetStore,
         settings: SettingSetStore,
         decoderLoader: DecoderLoader,
-        cacheProvider: StatefulCacheProvider
+        cacheProvider: StatefulCacheProvider,
     ): List<ProcessedBinarySession> {
         val fileTreeWalk =
             files.map { it to BinaryBlob.decode(it, filters, settings) }.sortedBy { it.second.header.revision }
@@ -57,14 +59,18 @@ public sealed class BinaryProcessor(private val files: Collection<Path>) {
         return ProcessedBinarySession(binaryPath, binary.header, messages)
     }
 
-    public class SingleBinaryProcessor(file: Path) : BinaryProcessor(listOf(file)) {
+    public class SingleBinaryProcessor(
+        file: Path,
+    ) : BinaryProcessor(listOf(file)) {
         public fun collect(): ProcessedBinarySession {
             val sessions = collectAll()
             return sessions.single()
         }
     }
 
-    public class MultiBinaryProcessor(files: Collection<Path>) : BinaryProcessor(files) {
+    public class MultiBinaryProcessor(
+        files: Collection<Path>,
+    ) : BinaryProcessor(files) {
         public fun collect(): List<ProcessedBinarySession> {
             return collectAll()
         }
@@ -73,7 +79,12 @@ public sealed class BinaryProcessor(private val files: Collection<Path>) {
     public companion object {
         public fun fromFolder(path: Path): MultiBinaryProcessor {
             require(path.isDirectory()) { "Path must be a directory: ${path.absolutePathString()}" }
-            val fileTreeWalk = path.toFile().walkTopDown().filter { it.extension == "bin" }.map { it.toPath() }
+            val fileTreeWalk =
+                path
+                    .toFile()
+                    .walkTopDown()
+                    .filter { it.extension == "bin" }
+                    .map { it.toPath() }
             return MultiBinaryProcessor(fileTreeWalk.toList())
         }
 

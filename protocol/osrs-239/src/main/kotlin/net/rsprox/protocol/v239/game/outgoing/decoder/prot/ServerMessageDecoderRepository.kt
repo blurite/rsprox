@@ -5,9 +5,9 @@ import net.rsprot.protocol.ProtRepository
 import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.MessageDecoderRepository
 import net.rsprox.protocol.MessageDecoderRepositoryBuilder
+import net.rsprox.protocol.v239.game.outgoing.decoder.codec.camera.CamLookAtCyclesDecoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.camera.CamLookAtV2Decoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.camera.CamLookAtV3Decoder
-import net.rsprox.protocol.v239.game.outgoing.decoder.codec.camera.CamLookAtCyclesDecoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.camera.CamModeDecoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.camera.CamMoveToArcV2Decoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.camera.CamMoveToArcV3Decoder

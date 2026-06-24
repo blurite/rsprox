@@ -54,15 +54,24 @@ public object ProcessorSettingSetStore : SettingSetStore {
             return true
         }
 
-        override fun set(setting: Setting, enabled: Boolean) {
+        override fun set(
+            setting: Setting,
+            enabled: Boolean,
+        ) {
             throw UnsupportedOperationException("Cannot mutate processor settings set.")
         }
 
-        override fun set(category: SettingCategory, enabled: Boolean) {
+        override fun set(
+            category: SettingCategory,
+            enabled: Boolean,
+        ) {
             throw UnsupportedOperationException("Cannot mutate processor settings set.")
         }
 
-        override fun set(group: SettingGroup, enabled: Boolean) {
+        override fun set(
+            group: SettingGroup,
+            enabled: Boolean,
+        ) {
             throw UnsupportedOperationException("Cannot mutate processor settings set.")
         }
 

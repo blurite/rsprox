@@ -78,6 +78,7 @@ public interface ServerPacketTranscriber {
     public fun camLookAtV2(message: CamLookAtV2)
 
     public fun camLookAtV3(message: CamLookAtV3)
+
     public fun camLookAtCycles(message: CamLookAtCycles)
 
     public fun camRotateToCoordinateV1(message: CamRotateToCoordinateV1)
@@ -431,7 +432,9 @@ public interface ServerPacketTranscriber {
     public fun mapProjAnimV1(message: MapProjAnimV1)
 
     public fun mapProjAnimV2(message: MapProjAnimV2)
+
     public fun scriptedProjAdd(message: ScriptedProjAdd)
+
     public fun scriptedProjChange(message: ScriptedProjChange)
 
     public fun objAdd(message: ObjAdd)

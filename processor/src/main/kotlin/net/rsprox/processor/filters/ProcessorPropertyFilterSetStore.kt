@@ -55,15 +55,24 @@ public object ProcessorPropertyFilterSetStore : PropertyFilterSetStore {
             return true
         }
 
-        override fun set(filter: PropertyFilter, enabled: Boolean) {
+        override fun set(
+            filter: PropertyFilter,
+            enabled: Boolean,
+        ) {
             throw UnsupportedOperationException("Cannot mutate processor property filter set.")
         }
 
-        override fun set(category: ProtCategory, enabled: Boolean) {
+        override fun set(
+            category: ProtCategory,
+            enabled: Boolean,
+        ) {
             throw UnsupportedOperationException("Cannot mutate processor property filter set.")
         }
 
-        override fun set(streamDirection: StreamDirection, enabled: Boolean) {
+        override fun set(
+            streamDirection: StreamDirection,
+            enabled: Boolean,
+        ) {
             throw UnsupportedOperationException("Cannot mutate processor property filter set.")
         }
 
@@ -89,7 +98,7 @@ public object ProcessorPropertyFilterSetStore : PropertyFilterSetStore {
 
         override fun replaceRegexFilter(
             oldRegexFilter: RegexFilter,
-            newRegexFilter: RegexFilter
+            newRegexFilter: RegexFilter,
         ) {
             throw UnsupportedOperationException("Cannot mutate processor property filter set.")
         }

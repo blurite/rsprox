@@ -9,7 +9,9 @@ public class BinarySessionStateIterator(
         return EntryIterator(messages)
     }
 
-    public class EntryIterator(private val messages: List<IncomingMessage>) : Iterator<Entry> {
+    public class EntryIterator(
+        private val messages: List<IncomingMessage>,
+    ) : Iterator<Entry> {
         private var state = BinarySessionState.DEFAULT
         private var cursor = 0
 

@@ -1,9 +1,9 @@
 package net.rsprox.protocol.game.outgoing.model.zone.payload
 
-import net.rsprox.protocol.common.OldSchoolZoneProt
-import net.rsprox.protocol.common.CoordGrid
-import net.rsprox.protocol.game.outgoing.model.IncomingZoneProt
 import net.rsprot.protocol.message.toIntOrMinusOne
+import net.rsprox.protocol.common.CoordGrid
+import net.rsprox.protocol.common.OldSchoolZoneProt
+import net.rsprox.protocol.game.outgoing.model.IncomingZoneProt
 
 /**
  * Scripted projectile changes are used to alter the target of a scripted

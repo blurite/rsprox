@@ -1,9 +1,9 @@
 package net.rsprox.protocol.game.outgoing.model.zone.payload
 
-import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInZone
-import net.rsprox.protocol.common.OldSchoolZoneProt
 import net.rsprox.protocol.common.CoordGrid
+import net.rsprox.protocol.common.OldSchoolZoneProt
 import net.rsprox.protocol.game.outgoing.model.IncomingZoneProt
+import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInZone
 
 /**
  * Scripted projectiles are used to send projectiles which can be

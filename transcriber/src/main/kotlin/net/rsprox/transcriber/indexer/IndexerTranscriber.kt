@@ -25,11 +25,11 @@ import net.rsprox.protocol.game.incoming.model.misc.user.BugReport
 import net.rsprox.protocol.game.incoming.model.misc.user.ClickWorldMap
 import net.rsprox.protocol.game.incoming.model.misc.user.ClientCheat
 import net.rsprox.protocol.game.incoming.model.misc.user.CloseModal
+import net.rsprox.protocol.game.incoming.model.misc.user.ExitFreecam
 import net.rsprox.protocol.game.incoming.model.misc.user.HiscoreRequest
 import net.rsprox.protocol.game.incoming.model.misc.user.IfCrmViewOp
 import net.rsprox.protocol.game.incoming.model.misc.user.MoveGameClick
 import net.rsprox.protocol.game.incoming.model.misc.user.MoveMinimapClick
-import net.rsprox.protocol.game.incoming.model.misc.user.ExitFreecam
 import net.rsprox.protocol.game.incoming.model.misc.user.SendSnapshot
 import net.rsprox.protocol.game.incoming.model.misc.user.SetChatFilterSettings
 import net.rsprox.protocol.game.incoming.model.misc.user.SetHeading
@@ -97,17 +97,17 @@ import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.Name
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.PlayerResetExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.TemporaryMoveSpeedExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.EnabledOpsExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TransparencyExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExactMoveExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
-import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FreezeExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FaceAngleExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FacePathingEntityExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.FreezeExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.HitExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SayExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SequenceExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.SpotanimExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TintingExtendedInfo
+import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.TransparencyExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.*
 import net.rsprox.protocol.game.outgoing.model.interfaces.*
 import net.rsprox.protocol.game.outgoing.model.inv.UpdateInvFull
@@ -472,6 +472,7 @@ public class IndexerTranscriber(
 
     override fun camLookAtCycles(message: CamLookAtCycles) {
     }
+
     override fun camRotateToCoordinateV1(message: CamRotateToCoordinateV1) {
     }
 
@@ -501,6 +502,7 @@ public class IndexerTranscriber(
 
     override fun camMoveToArcV3(message: CamMoveToArcV3) {
     }
+
     override fun camMoveToCyclesV1(message: CamMoveToCyclesV1) {
     }
 

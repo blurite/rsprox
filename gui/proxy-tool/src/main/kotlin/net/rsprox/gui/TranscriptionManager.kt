@@ -739,7 +739,8 @@ private fun installActionsHover(
             override fun mouseMoved(e: MouseEvent) {
                 val viewRow = table.rowAtPoint(e.point)
                 val viewCol = table.columnAtPoint(e.point)
-                if (viewRow >= 0 && viewCol >= 0 &&
+                if (viewRow >= 0 &&
+                    viewCol >= 0 &&
                     table.convertColumnIndexToModel(viewCol) == actionsModelCol &&
                     isOverAnyAction(table, viewRow, viewCol, e.point)
                 ) {

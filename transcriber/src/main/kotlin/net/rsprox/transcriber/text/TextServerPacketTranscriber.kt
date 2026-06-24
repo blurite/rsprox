@@ -339,6 +339,7 @@ public class TextServerPacketTranscriber(
         root.enum("easing", message.easing)
         root.boolean("heightrelative", message.heightRelative)
     }
+
     override fun camRotateToCoordinateV1(message: CamRotateToCoordinateV1) {
         if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)
@@ -465,6 +466,7 @@ public class TextServerPacketTranscriber(
         root.enum("easing", message.easing)
         root.boolean("heightrelative", message.heightRelative)
     }
+
     override fun camMoveToCyclesV1(message: CamMoveToCyclesV1) {
         if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
         val coordInBuildArea = CoordInBuildArea(message.destinationXInBuildArea, message.destinationZInBuildArea)

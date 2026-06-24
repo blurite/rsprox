@@ -1,11 +1,11 @@
 package net.rsprox.proxy.target
 
 import net.rsprox.proxy.config.CONFIGURATION_PATH
-import kotlin.io.path.exists
 import java.nio.file.Path
 import java.util.Properties
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
+import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 
@@ -34,8 +34,7 @@ internal object ProxyTargetSourceRegistry {
                         return@mapNotNull null
                     }
                     url to name.lowercase()
-                }
-                .groupBy({ it.first }) { it.second }
+                }.groupBy({ it.first }) { it.second }
 
         if (grouped.isEmpty()) {
             return
@@ -85,21 +84,25 @@ internal object ProxyTargetSourceRegistry {
         }
     }
 
-    fun replaceForUrl(url: String, names: Collection<String>) {
+    fun replaceForUrl(
+        url: String,
+        names: Collection<String>,
+    ) {
         val trimmedUrl = url.trim()
         if (trimmedUrl.isEmpty()) {
             return
         }
 
         val data = load()
-        val normalizedNames = names.mapNotNull { name ->
-            val trimmed = name.trim()
-            if (trimmed.isEmpty()) {
-                null
-            } else {
-                trimmed.lowercase()
+        val normalizedNames =
+            names.mapNotNull { name ->
+                val trimmed = name.trim()
+                if (trimmed.isEmpty()) {
+                    null
+                } else {
+                    trimmed.lowercase()
+                }
             }
-        }
 
         val existingKeys = data.filterValues { it == trimmedUrl }.keys
         for (key in existingKeys) {
@@ -149,4 +152,3 @@ internal object ProxyTargetSourceRegistry {
         }
     }
 }
-

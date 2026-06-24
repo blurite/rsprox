@@ -1,10 +1,8 @@
 package net.rsprox.proxy.cache
 
 import net.rsprox.cache.Js5MasterIndex
-import net.rsprox.cache.OldSchoolCache
 import net.rsprox.cache.api.Cache
 import net.rsprox.cache.api.CacheProvider
-import net.rsprox.cache.resolver.CacheResolver
 
 public class StatefulCacheProvider(
     private val cached: CachedCaches,
