@@ -847,7 +847,7 @@ public class TextNpcInfoTranscriber(
 
                     val recol = type.recolours
                     if (recol != null) {
-                        any("skincolour", recol)
+                        any("colour", recol)
                     }
 
                     int("bodytype", composition.bodyType)
