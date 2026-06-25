@@ -268,7 +268,7 @@ public class LiveCacheResolver(
             val id =
                 openrs2CacheIdentifier.identify(masterIndex)
                     ?: return null
-            val result = OpenRs2GroupStore(id).get(archive, group)
+            val result = OpenRs2GroupStore(id, masterIndex).get(archive, group)
             id to result
         } catch (e: Exception) {
             logger.warn(e) {

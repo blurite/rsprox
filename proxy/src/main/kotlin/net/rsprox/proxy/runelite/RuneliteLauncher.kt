@@ -65,6 +65,7 @@ public class RuneliteLauncher {
         javConfig: String,
         socket: String,
         target: ProxyTarget,
+        clientJvmArgs: List<String> = emptyList(),
     ): List<String> {
         clean()
         download()
@@ -103,7 +104,7 @@ public class RuneliteLauncher {
                 "--developer-mode",
                 "--disable-telemetry",
                 "--noupdate",
-            )
+            ) + clientLaunchModeArgs(clientJvmArgs)
         val conditionalArgs =
             if (target.config.id != 0) {
                 val bootstrapFullUrl = target.config.runeliteBootstrapUrl
@@ -145,6 +146,13 @@ public class RuneliteLauncher {
                 )
             }
         return primaryArgs + conditionalArgs + guiArgs
+    }
+
+    private fun clientLaunchModeArgs(clientJvmArgs: List<String>): List<String> {
+        if (clientJvmArgs.isEmpty()) {
+            return emptyList()
+        }
+        return listOf("--launch-mode=JVM") + clientJvmArgs.map { arg -> "--J=$arg" }
     }
 
     private fun download() {

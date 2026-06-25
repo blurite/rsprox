@@ -121,7 +121,12 @@ public class App {
         // Configure the app menu bar.
         setupMenuBar()
 
-        frame.transferHandler = FileDropHandler(service, transcriptionManager)
+        frame.transferHandler =
+            FileDropHandler(
+                service,
+                transcriptionManager,
+                openReplay = { openReplayDump(it) },
+            )
     }
 
     public fun start() {
