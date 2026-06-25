@@ -2,6 +2,7 @@ package net.rsprox.gui
 
 import com.formdev.flatlaf.extras.FlatSVGUtils
 import com.formdev.flatlaf.extras.components.FlatMenuBar
+import com.formdev.flatlaf.util.SystemFileChooser
 import com.formdev.flatlaf.util.UIScale
 import io.netty.buffer.ByteBufAllocator
 import net.miginfocom.swing.MigLayout
@@ -19,6 +20,7 @@ import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
+import java.util.prefs.Preferences
 import javax.swing.BorderFactory
 import javax.swing.JFrame
 import javax.swing.JMenu
@@ -37,6 +39,7 @@ public class App {
     public val statusBar: StatusBar = StatusBar(transcriptionManager)
 
     public fun init() {
+        installFileChooserStateStore()
         val width = service.getAppWidth()
         val height = service.getAppHeight()
         val defaultSize = UIScale.scale(Dimension(width, height))
@@ -254,6 +257,32 @@ public class App {
         return GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices.any { device ->
             device.defaultConfiguration.bounds.intersects(frame.bounds)
         }
+    }
+
+    private fun installFileChooserStateStore() {
+        if (SystemFileChooser.getStateStore() != null) {
+            return
+        }
+        val preferences = Preferences.userNodeForPackage(App::class.java).node("fileChooser")
+        SystemFileChooser.setStateStore(
+            object : SystemFileChooser.StateStore {
+                override fun get(
+                    key: String,
+                    def: String?,
+                ): String? = preferences.get(key, def)
+
+                override fun put(
+                    key: String,
+                    value: String?,
+                ) {
+                    if (value == null) {
+                        preferences.remove(key)
+                    } else {
+                        preferences.put(key, value)
+                    }
+                }
+            },
+        )
     }
 
     public companion object {

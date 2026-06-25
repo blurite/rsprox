@@ -2,6 +2,7 @@ package net.rsprox.gui.components
 
 import com.formdev.flatlaf.extras.components.FlatButton
 import com.formdev.flatlaf.extras.components.FlatComboBox
+import com.formdev.flatlaf.util.SystemFileChooser
 import net.miginfocom.swing.MigLayout
 import net.rsprox.gui.App
 import net.rsprox.gui.AppIcons
@@ -16,7 +17,6 @@ import java.net.MalformedURLException
 import java.net.URL
 import javax.swing.DefaultComboBoxModel
 import javax.swing.DefaultListCellRenderer
-import javax.swing.JFileChooser
 import javax.swing.JList
 import javax.swing.JMenuItem
 import javax.swing.JOptionPane
@@ -211,10 +211,10 @@ public class LaunchBar(
     }
 
     private fun importProxyTargetsFromFile() {
-        val chooser = JFileChooser()
-        chooser.fileSelectionMode = JFileChooser.FILES_ONLY
+        val chooser = SystemFileChooser()
+        chooser.fileSelectionMode = SystemFileChooser.FILES_ONLY
         val result = chooser.showOpenDialog(this)
-        if (result != JFileChooser.APPROVE_OPTION) {
+        if (result != SystemFileChooser.APPROVE_OPTION) {
             return
         }
 
