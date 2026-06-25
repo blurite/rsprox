@@ -13,6 +13,7 @@ import net.rsprox.gui.sidebar.SideBar
 import net.rsprox.proxy.ProxyService
 import net.rsprox.proxy.config.BINARY_PATH
 import net.rsprox.proxy.config.ERROR_LOGS_PATH
+import java.awt.CardLayout
 import java.awt.Desktop
 import java.awt.Dimension
 import java.awt.GraphicsEnvironment
@@ -20,6 +21,7 @@ import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
+import java.net.URI
 import java.util.prefs.Preferences
 import javax.swing.BorderFactory
 import javax.swing.JFrame
@@ -35,8 +37,13 @@ public class App {
     private val frame: JFrame = JFrame()
     private val sessionsPanel: SessionsPanel = SessionsPanel(this)
     private val launchBar: LaunchBar = LaunchBar(sessionsPanel)
+    private val sessionWorkspaceLayout: CardLayout = CardLayout()
+    private val sessionWorkspacePanel: JPanel = JPanel(sessionWorkspaceLayout)
+    private val replayPanel: ReplayPanel = ReplayPanel { path -> recordRecentReplayDump(path) }
     private val transcriptionManager: TranscriptionManager = TranscriptionManager()
     public val statusBar: StatusBar = StatusBar(transcriptionManager)
+    private lateinit var sideBar: SideBar
+    private lateinit var homePanel: HomePanel
 
     public fun init() {
         installFileChooserStateStore()
@@ -69,7 +76,7 @@ public class App {
             object : WindowAdapter() {
                 override fun windowClosing(e: WindowEvent) {
                     val confirmed =
-                        sessionsPanel.tabCount < 1 ||
+                        sessionsPanel.sessionCount == 0 ||
                             JOptionPane.showConfirmDialog(
                                 frame,
                                 "Are you sure you want to exit?",
@@ -149,34 +156,14 @@ public class App {
                 val openBinaryLogsFolder = JMenuItem("Open Binary Logs Folder")
                 openBinaryLogsFolder.mnemonic = 'O'.code
                 openBinaryLogsFolder.addActionListener {
-                    val path = BINARY_PATH.toFile()
-                    if (path.exists()) {
-                        Desktop.getDesktop().open(path)
-                    } else {
-                        JOptionPane.showMessageDialog(
-                            frame,
-                            "You have not created any logs yet.",
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE,
-                        )
-                    }
+                    this@App.openBinaryLogsFolder()
                 }
                 add(openBinaryLogsFolder)
 
                 val openErrorLogsFolder = JMenuItem("Open Error Logs Folder")
                 openErrorLogsFolder.mnemonic = '1'.code
                 openErrorLogsFolder.addActionListener {
-                    val path = ERROR_LOGS_PATH.toFile()
-                    if (path.exists()) {
-                        Desktop.getDesktop().open(path)
-                    } else {
-                        JOptionPane.showMessageDialog(
-                            frame,
-                            "You have not had any error logs yet.",
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE,
-                        )
-                    }
+                    this@App.openErrorLogsFolder()
                 }
                 add(openErrorLogsFolder)
 
@@ -239,19 +226,85 @@ public class App {
     }
 
     private fun createSideBar(): SideBar {
-        return SideBar().apply {
+        sideBar =
+            SideBar().apply {
             addButton(AppIcons.Settings, "Settings", SettingsSidePanel(service))
             addButton(AppIcons.Filter, "Filters", FiltersSidePanel(service))
             selectedIndex = service.getFiltersStatus()
         }
+        return sideBar
     }
 
     private fun createSessionsPanelContainer() =
         JPanel().apply {
-            layout = MigLayout("ins 0, gap 0", "[fill, grow]", "[fill][fill, grow]")
-            add(launchBar, "wrap")
-            add(sessionsPanel)
+            layout = MigLayout("ins 0, gap 0", "[fill, grow]", "[fill, grow]")
+            add(createSessionWorkspacePanel(), "grow, push")
         }
+
+    private fun createSessionWorkspacePanel(): JPanel {
+        homePanel =
+            HomePanel(
+                launchBar = launchBar,
+                onReplay = { openReplayPanel() },
+                onReplayDump = { openReplayDump(it) },
+                onOpenLogs = { openBinaryLogsFolder() },
+                onReportBug = { openUrl(BUG_REPORT_URI) },
+            )
+        sessionsPanel.installHomePanel(homePanel)
+        sessionsPanel.installReplayPanel(replayPanel)
+        sessionWorkspacePanel.add(sessionsPanel, SESSIONS_VIEW)
+        refreshSessionWorkspace()
+        return sessionWorkspacePanel
+    }
+
+    public fun refreshSessionWorkspace() {
+        sessionWorkspaceLayout.show(sessionWorkspacePanel, SESSIONS_VIEW)
+    }
+
+    private fun openReplayPanel() {
+        sessionsPanel.showReplayPanel()
+    }
+
+    private fun openReplayDump(path: java.nio.file.Path) {
+        openReplayPanel()
+        replayPanel.openReplayFile(path)
+    }
+
+    private fun recordRecentReplayDump(path: java.nio.file.Path) {
+        RecentReplayDumps.record(path)
+        homePanel.refreshRecentDumps()
+    }
+
+    private fun openBinaryLogsFolder() {
+        openFolder(BINARY_PATH, "You have not created any logs yet.")
+    }
+
+    private fun openErrorLogsFolder() {
+        openFolder(ERROR_LOGS_PATH, "You have not had any error logs yet.")
+    }
+
+    private fun openFolder(
+        path: java.nio.file.Path,
+        missingMessage: String,
+    ) {
+        val file = path.toFile()
+        if (file.exists()) {
+            Desktop.getDesktop().open(file)
+        } else {
+            JOptionPane.showMessageDialog(
+                frame,
+                missingMessage,
+                "Error",
+                JOptionPane.ERROR_MESSAGE,
+            )
+        }
+    }
+
+    private fun openUrl(uri: URI) {
+        if (Desktop.isDesktopSupported()) {
+            Desktop.getDesktop().browse(uri)
+        }
+    }
 
     /**
      * Checks if the frame intersects with any screen device. If the function returns false, the window
@@ -292,5 +345,7 @@ public class App {
 
     public companion object {
         public val service: ProxyService = ProxyService(ByteBufAllocator.DEFAULT)
+        private val BUG_REPORT_URI: URI = URI("https://github.com/blurite/rsprox/issues/new")
+        private const val SESSIONS_VIEW: String = "sessions"
     }
 }

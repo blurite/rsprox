@@ -53,7 +53,9 @@ import kotlin.io.path.exists
 import kotlin.io.path.name
 import kotlin.math.roundToInt
 
-public class ReplayPanel : JPanel() {
+public class ReplayPanel(
+    private val onReplayLoaded: (Path) -> Unit = {},
+) : JPanel() {
     private var replaySession: ReplaySession? = null
     private var selectedPath: Path? = null
     private val titleLabel = FlatLabel()
@@ -180,6 +182,7 @@ public class ReplayPanel : JPanel() {
                     loadingProgress.isVisible = false
                     replaySession = session
                     selectedPath = path
+                    onReplayLoaded(path)
                     updateLoadedMetadata(transcript)
                     refreshControls()
                 }
