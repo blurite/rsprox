@@ -6,10 +6,14 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.APP_WIDTH
 import net.rsprox.proxy.config.ProxyProperty.Companion.BINARY_WRITE_INTERVAL_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
+import net.rsprox.proxy.config.ProxyProperty.Companion.MACOS_AUTO_LOOPBACK
+import net.rsprox.proxy.config.ProxyProperty.Companion.MACOS_LOOPBACK_GRACE_SECONDS
+import net.rsprox.proxy.config.ProxyProperty.Companion.MACOS_LOOPBACK_MAX
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
 import net.rsprox.proxy.config.ProxyProperty.Companion.RUNELITE_RSPROX_CONNECTION
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_REFRESH_SECONDS
+import net.rsprox.proxy.loopback.MacLoopbackAliases
 import java.nio.charset.Charset
 import java.nio.file.Path
 import java.util.Properties
@@ -89,6 +93,11 @@ public value class ProxyProperties private constructor(
             properties.setValue(BIND_TIMEOUT_SECONDS, 30)
             properties.setValue(WORLDLIST_REFRESH_SECONDS, 5)
             properties.setValue(BINARY_WRITE_INTERVAL_SECONDS, 5 * 60)
+            // Automatically manage lo0 loopback aliases on macOS (no-op on other systems).
+            properties.setValue(MACOS_AUTO_LOOPBACK, true)
+            // Most worlds aliased at once, and how long an idle world stays aliased.
+            properties.setValue(MACOS_LOOPBACK_MAX, MacLoopbackAliases.DEFAULT_MAX_ALIASES)
+            properties.setValue(MACOS_LOOPBACK_GRACE_SECONDS, MacLoopbackAliases.DEFAULT_GRACE_SECONDS)
             // gui
             properties.setValue(APP_THEME, "RuneLite")
             properties.setValue(APP_WIDTH, 800)

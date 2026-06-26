@@ -86,21 +86,49 @@ filter preset.
 > your PC.
 
 #### MacOS Support
-MacOS does not whitelist any loopback address other than 127.0.0.1 by default,
-which means RSProx cannot establish a connection, as we use unique
+MacOS does not treat any loopback address other than 127.0.0.1 as local by
+default, which means RSProx cannot establish a connection, as we use unique
 loopback addresses per connection established, which describes the world to
 which we're connecting.
 
-As such, it is necessary for anyone connecting via MacOS to run some commands.
-In order to whitelist the necessary loopback addresses, this script must be run:
-(Note that for custom private server targets, the group id must be changed from
-2 to 3+, where 3 is the first custom target, 4 is the second and so on)
+RSProx now manages these loopback (`lo0`) aliases for you automatically - there
+is no longer any need to run the manual script below. Adding an alias requires
+root, so the first time one is needed RSProx shows a single macOS administrator
+prompt that starts a small helper **for that session only**. The helper just
+keeps `lo0` in sync with what RSProx asks for and removes every alias again the
+moment RSProx closes (or is killed). Nothing is installed, no `sudoers` entry is
+written, and no standing password-less root access is left behind - if you quit
+and relaunch RSProx you will be prompted once more.
 
-> [!WARNING]
-> Whitelisting a lot of worlds will result in DNS lookups significantly slowing
-> down. It is recommended you only select your preferred worlds and whitelist
-> those specific ones. Ensure that your default world is configured and
-> whitelisted, or the client will not be able to boot up.
+Because macOS scans every loopback alias on each outbound connection, keeping
+hundreds of them present at once slows down all networking (and DNS) system-wide.
+RSProx therefore aliases worlds strictly **on demand**: it watches for the client
+trying to reach the proxy (a `SYN_SENT` socket in `netstat`), aliases just that
+address, and the client's own connection retry then goes through. The first
+connect to a freshly-selected world (login or world hop) pauses for about a
+second while this happens; worlds you leave are un-aliased again, and a hard cap
+limits how many can ever be present at once, so the DNS slowdown cannot come back
+even if the world switcher pings many worlds. This works for any target,
+including private servers. You can check how many are aliased at any time with
+`ifconfig lo0 | grep -c "inet 127"` (subtract 1 for `127.0.0.1`).
+
+Two `~/.rsprox/proxy.properties` values tune this:
+
+- `macos.loopback.max` (default `8`) - the most worlds aliased at once. Lower is
+  gentler on DNS; raise it if you hop among many worlds and want them to stay
+  instant.
+- `macos.loopback.grace.seconds` (default `10`) - how long an idle world stays
+  aliased before being removed.
+
+This behaviour can be turned off by setting `macos.loopback.auto=false` in
+`~/.rsprox/proxy.properties`, in which case you must whitelist the addresses
+yourself with the manual fallback below.
+
+<details>
+<summary>Manual fallback (only needed if you disable the automatic behaviour)</summary>
+
+Note that for custom private server targets, the group id must be changed from
+2 to 3+, where 3 is the first custom target, 4 is the second and so on.
 
 ```bash
 #!/bin/bash
@@ -128,6 +156,8 @@ done
 
 echo "Alias IPs added for worlds $MIN_WORLD_ID..$MAX_WORLD_ID (group $GROUP_ID)."
 ```
+
+</details>
 
 ### Transcribing
 Besides live transcribing which happens on the UI directly, it is possible to
