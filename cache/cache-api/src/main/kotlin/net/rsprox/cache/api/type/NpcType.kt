@@ -51,7 +51,20 @@ public interface NpcType {
     public val stat: List<Int>
     public val params: Map<Int, Any>
     public val footprintSize: Int
+    public var readyanimduringanim: Boolean
     public val worldOverlapTint: Boolean
     public val worldOverlapTintColour: Int
     public val zbuffer: Boolean
+    public val bgsound: Int
+    public val bgsoundMindelay: Int
+    public val bgsoundMaxdelay: Int
+    public val bgsoundRange: Int
+    public val bgsoundSize: Int
+    public val randomsound: List<Int>
+    public val bgsounddropoffeasing: Int
+    public val bgsoundfadeEaseintype: Int
+    public val bgsoundfadeEaseinduration: Int
+    public val bgsoundfadeEaseouttype: Int
+    public val bgsoundfadeEaseoutduration: Int
+    public val crossworldsound: Int
 }

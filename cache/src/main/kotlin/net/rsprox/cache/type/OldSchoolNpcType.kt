@@ -54,9 +54,22 @@ public class OldSchoolNpcType(
     override var stat: MutableList<Int> = mutableListOf(1, 1, 1, 1, 1, 1)
     override var params: MutableMap<Int, Any> = mutableMapOf()
     override var footprintSize: Int = -1
+    override var readyanimduringanim: Boolean = false
     override var worldOverlapTint: Boolean = false
     override var worldOverlapTintColour: Int = 39188
     override var zbuffer: Boolean = true
+    override var bgsound: Int = -1
+    override var bgsoundMindelay: Int = 0
+    override var bgsoundMaxdelay: Int = 0
+    override var bgsoundRange: Int = 0
+    override var bgsoundSize: Int = 0
+    override var randomsound: List<Int> = emptyList()
+    override var bgsounddropoffeasing: Int = 0
+    override var bgsoundfadeEaseintype: Int = 0
+    override var bgsoundfadeEaseinduration: Int = 300
+    override var bgsoundfadeEaseouttype: Int = 0
+    override var bgsoundfadeEaseoutduration: Int = 300
+    override var crossworldsound: Int = 2
 
     public fun decode(
         revision: Int,
@@ -225,9 +238,34 @@ public class OldSchoolNpcType(
             123 -> this.lowpriorityops = true
             124 -> this.overlayheight = buffer.g2()
             126 -> this.footprintSize = buffer.g2()
+            130 -> this.readyanimduringanim = true
             145 -> this.worldOverlapTint = true
             146 -> this.worldOverlapTintColour = buffer.g2()
             147 -> this.zbuffer = false
+            148 -> {
+                this.bgsound = buffer.g2()
+                this.bgsoundRange = buffer.g1()
+                this.bgsoundSize = buffer.g1()
+            }
+            149 -> this.bgsounddropoffeasing = buffer.g1()
+            150 -> {
+                this.bgsoundfadeEaseintype = buffer.g1()
+                this.bgsoundfadeEaseinduration = buffer.g2()
+                this.bgsoundfadeEaseouttype = buffer.g1()
+                this.bgsoundfadeEaseoutduration = buffer.g2()
+            }
+            151 -> this.crossworldsound = buffer.g1()
+            152 -> {
+                this.bgsoundMindelay = buffer.g2()
+                this.bgsoundMaxdelay = buffer.g2()
+                this.bgsoundRange = buffer.g1()
+                this.bgsoundSize = buffer.g1()
+                val count = buffer.g1()
+                this.randomsound =
+                    List(count) {
+                        buffer.g2()
+                    }
+            }
             249 -> ParamTypeHelper.unpackClientParams(buffer, params)
             else -> error("Invalid opcode: $opcode")
         }
