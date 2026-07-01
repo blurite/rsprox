@@ -13,6 +13,9 @@ public class ProxyProperty<T>(
         val BIND_TIMEOUT_SECONDS = ProxyProperty("bind.timeout.seconds", IntProperty)
         val WORLDLIST_REFRESH_SECONDS = ProxyProperty("worldlist.refresh.seconds", IntProperty)
         val BINARY_WRITE_INTERVAL_SECONDS = ProxyProperty("binary.write.interval.seconds", IntProperty)
+        val MACOS_AUTO_LOOPBACK = ProxyProperty("macos.loopback.auto", BooleanProperty)
+        val MACOS_LOOPBACK_MAX = ProxyProperty("macos.loopback.max", IntProperty)
+        val MACOS_LOOPBACK_GRACE_SECONDS = ProxyProperty("macos.loopback.grace.seconds", IntProperty)
 
         // gui
         val APP_THEME = ProxyProperty("app.theme", StringProperty)

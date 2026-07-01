@@ -26,6 +26,9 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.BINARY_WRITE_INTERVAL_SEC
 import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.FILTERS_STATUS
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
+import net.rsprox.proxy.config.ProxyProperty.Companion.MACOS_AUTO_LOOPBACK
+import net.rsprox.proxy.config.ProxyProperty.Companion.MACOS_LOOPBACK_GRACE_SECONDS
+import net.rsprox.proxy.config.ProxyProperty.Companion.MACOS_LOOPBACK_MAX
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
 import net.rsprox.proxy.config.ProxyProperty.Companion.RUNELITE_RSPROX_CONNECTION
 import net.rsprox.proxy.config.ProxyProperty.Companion.SELECTED_CLIENT
@@ -40,6 +43,7 @@ import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.futures.asCompletableFuture
 import net.rsprox.proxy.http.GamePackProvider
 import net.rsprox.proxy.huffman.HuffmanProvider
+import net.rsprox.proxy.loopback.MacLoopbackAliases
 import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
@@ -600,7 +604,27 @@ public class ProxyService(
             }
         }
         killAliveProcesses()
+        releaseLoopbackAliases()
         SymbolDictionaryProvider.stop()
+    }
+
+    private fun ensureLoopbackAliases(port: Int) {
+        if (!isLoopbackAliasingEnabled()) return
+        MacLoopbackAliases.registerProxyPort(
+            port,
+            properties.getPropertyOrNull(MACOS_LOOPBACK_MAX) ?: MacLoopbackAliases.DEFAULT_MAX_ALIASES,
+            properties.getPropertyOrNull(MACOS_LOOPBACK_GRACE_SECONDS) ?: MacLoopbackAliases.DEFAULT_GRACE_SECONDS,
+        )
+    }
+
+    private fun releaseLoopbackAliases() {
+        if (!isLoopbackAliasingEnabled()) return
+        MacLoopbackAliases.shutdown()
+    }
+
+    private fun isLoopbackAliasingEnabled(): Boolean {
+        if (!MacLoopbackAliases.isSupported(operatingSystem)) return false
+        return properties.getPropertyOrNull(MACOS_AUTO_LOOPBACK) ?: true
     }
 
     private fun closeActiveChannel(channel: Channel) {
@@ -666,6 +690,7 @@ public class ProxyService(
         }
         this.connections.addSessionMonitor(port, sessionMonitor)
         ClientTypeDictionary[port] = "RuneLite (${operatingSystem.shortName})"
+        ensureLoopbackAliases(port)
         launchJavaProcess(
             port,
             operatingSystem,
@@ -735,6 +760,7 @@ public class ProxyService(
             logger.error(t) { "Unable to bind network port $port for native client." }
             return
         }
+        ensureLoopbackAliases(port)
         val javConfigEndpoint = properties.getProperty(JAV_CONFIG_ENDPOINT)
         val worldlistEndpoint = properties.getProperty(WORLDLIST_ENDPOINT)
         val nativeClientType =
