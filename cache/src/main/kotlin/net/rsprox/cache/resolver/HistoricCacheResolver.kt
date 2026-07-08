@@ -5,15 +5,14 @@ import io.netty.buffer.ByteBuf
 import net.rsprox.cache.CACHES_DIRECTORY
 import net.rsprox.cache.DISK_CACHE_DICTIONARY_PATH
 import net.rsprox.cache.Js5MasterIndex
+import net.rsprox.cache.OPENRS2_DISK_CACHES_DIRECTORY
 import net.rsprox.cache.dictionary.DiskCacheDictionary
 import net.rsprox.cache.dictionary.OpenRs2CacheDictionary
 import net.rsprox.cache.identifier.DiskCacheIdentifier
 import net.rsprox.cache.identifier.OpenRs2CacheIdentifier
 import net.rsprox.cache.store.DiskGroupStore
-import net.rsprox.cache.store.OpenRs2GroupStore
+import net.rsprox.cache.store.OpenRs2DiskCacheStore
 import net.rsprox.cache.util.CacheGroupRequest
-import java.util.concurrent.Callable
-import java.util.concurrent.ForkJoinPool
 
 public class HistoricCacheResolver : CacheResolver {
     private val diskCacheDictionary: DiskCacheDictionary =
@@ -58,16 +57,8 @@ public class HistoricCacheResolver : CacheResolver {
                 group,
             )
         if (archiveResult != null) {
-            val (id, buffer) = archiveResult
-            val directory = diskCacheDictionary.getOrPut(masterIndex, id)
-            val copy = buffer.copy()
-            try {
-                DiskGroupStore(directory).put(archive, group, copy)
-            } finally {
-                copy.release()
-            }
             logger.debug { "OpenRS2 variant found for $archive:$group" }
-            return buffer
+            return archiveResult
         }
         logger.debug {
             "OpenRS2 variant of $archive:$group not found."
@@ -126,31 +117,16 @@ public class HistoricCacheResolver : CacheResolver {
         masterIndex: Js5MasterIndex,
         archive: Int,
         group: Int,
-    ): Pair<Int, ByteBuf>? {
+    ): ByteBuf? {
         return try {
             val id =
                 openrs2CacheIdentifier.identify(masterIndex)
                     ?: return null
-            resolveOpenRs2(id, archive, group)
+            val directory = OPENRS2_DISK_CACHES_DIRECTORY.resolve(id.toString())
+            OpenRs2DiskCacheStore(id, directory, masterIndex).get(archive, group)
         } catch (e: Exception) {
             logger.warn(e) {
                 "Unable to resolve openrs2 cache: $archive, $group, $masterIndex"
-            }
-            null
-        }
-    }
-
-    private fun resolveOpenRs2(
-        cacheId: Int,
-        archive: Int,
-        group: Int,
-    ): Pair<Int, ByteBuf>? {
-        return try {
-            val result = OpenRs2GroupStore(cacheId).get(archive, group)
-            cacheId to result
-        } catch (e: Exception) {
-            logger.warn(e) {
-                "Unable to resolve openrs2 cache: $archive, $group, $cacheId"
             }
             null
         }
@@ -160,34 +136,27 @@ public class HistoricCacheResolver : CacheResolver {
         masterIndex: Js5MasterIndex,
         requests: List<CacheGroupRequest>,
     ): Map<CacheGroupRequest, ByteBuf> {
-        val cacheId =
-            openrs2CacheIdentifier.identify(masterIndex)
-                ?: return emptyMap<CacheGroupRequest, ByteBuf>()
-        val jobs =
-            requests.map {
-                Callable {
-                    val result = resolveOpenRs2(cacheId, it.archive, it.group)
-                    it to result
+        return try {
+            val cacheId =
+                openrs2CacheIdentifier.identify(masterIndex)
+                    ?: return emptyMap<CacheGroupRequest, ByteBuf>()
+            val directory = OPENRS2_DISK_CACHES_DIRECTORY.resolve(cacheId.toString())
+            logger.debug { "Searching for OpenRS2 variant of requests: $requests" }
+            val store = OpenRs2DiskCacheStore(cacheId, directory, masterIndex)
+            val responses = store.getBulk(requests.map { it.archive to it.group })
+            buildMap {
+                for (request in requests) {
+                    val buffer = responses[request.archive to request.group] ?: continue
+                    logger.debug { "OpenRS2 variant found for ${request.archive}:${request.group}" }
+                    put(request, buffer)
                 }
             }
-        logger.debug { "Searching for OpenRS2 variant of requests: $requests" }
-        val successfulResponses = mutableMapOf<CacheGroupRequest, ByteBuf>()
-        val results = ForkJoinPool.commonPool().invokeAll(jobs)
-        for (future in results) {
-            val (request, response) = future.get() ?: continue
-            if (response == null) continue
-            val (id, buffer) = response
-            val directory = diskCacheDictionary.getOrPut(masterIndex, id)
-            val copy = buffer.copy()
-            try {
-                DiskGroupStore(directory).put(request.archive, request.group, copy)
-            } finally {
-                copy.release()
+        } catch (e: Exception) {
+            logger.warn(e) {
+                "Unable to resolve openrs2 cache in bulk: $requests, $masterIndex"
             }
-            logger.debug { "OpenRS2 variant found for ${request.archive}:${request.group}" }
-            successfulResponses[request] = buffer
+            emptyMap()
         }
-        return successfulResponses
     }
 
     private companion object {

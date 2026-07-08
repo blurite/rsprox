@@ -1,7 +1,9 @@
 package net.rsprox.gui.components
 
+import com.formdev.flatlaf.FlatClientProperties
 import com.formdev.flatlaf.extras.components.FlatButton
 import com.formdev.flatlaf.extras.components.FlatComboBox
+import com.formdev.flatlaf.util.SystemFileChooser
 import net.miginfocom.swing.MigLayout
 import net.rsprox.gui.App
 import net.rsprox.gui.AppIcons
@@ -12,15 +14,17 @@ import net.rsprox.proxy.target.ProxyTargetConfig
 import net.rsprox.proxy.target.ProxyTargetImportResult
 import net.rsprox.proxy.util.OperatingSystem
 import net.rsprox.shared.account.JagexCharacter
+import java.awt.Dimension
 import java.net.MalformedURLException
 import java.net.URL
 import javax.swing.DefaultComboBoxModel
 import javax.swing.DefaultListCellRenderer
-import javax.swing.JFileChooser
+import javax.swing.JLabel
 import javax.swing.JList
 import javax.swing.JMenuItem
 import javax.swing.JOptionPane
 import javax.swing.JPanel
+import javax.swing.SwingConstants
 import javax.swing.event.PopupMenuEvent
 import javax.swing.event.PopupMenuListener
 import javax.swing.plaf.basic.BasicComboPopup
@@ -51,7 +55,13 @@ public class LaunchBar(
     private val charactersModel = DefaultComboBoxModel<JagexCharacter>()
 
     init {
-        layout = MigLayout("gap 10", "push[][][][][]", "[]")
+        layout =
+            MigLayout(
+                "ins 0, gapx 12, gapy 8, fillx",
+                "[fill, grow 50][fill, grow 50]",
+                "[][][][]",
+            )
+        isOpaque = false
         val targetConfigs = App.service.proxyTargets
         val targetConfigsModel = DefaultComboBoxModel(targetConfigs.toTypedArray())
         val proxyTargetDropdown =
@@ -59,27 +69,24 @@ public class LaunchBar(
                 model = targetConfigsModel
                 renderer = ProxyTargetCellRenderer()
                 selectedIndex = App.service.getSelectedProxyTarget()
+                configureComboBox()
             }
         proxyTargetDropdown.addActionListener {
             App.service.setSelectedProxyTarget(proxyTargetDropdown.selectedIndex)
         }
 
-        proxyTargetDropdown.minimumWidth = 160
-        add(proxyTargetDropdown, "growx")
-
         val importTargetsButton =
-            FlatButton().apply {
+            ImportTargetButton().apply {
                 toolTipText = "Import Proxy Targets"
-                icon = AppIcons.Add
-                buttonType = FlatButton.ButtonType.toolBarButton
                 addActionListener { importProxyTargets() }
             }
-        add(importTargetsButton)
 
-        val characterDropdown = FlatComboBox<JagexCharacter>()
-        characterDropdown.model = charactersModel
-        characterDropdown.renderer = JagexCharacterCellRenderer()
-        characterDropdown.minimumWidth = 160
+        val characterDropdown =
+            FlatComboBox<JagexCharacter>().apply {
+                model = charactersModel
+                renderer = JagexCharacterCellRenderer()
+                configureComboBox()
+            }
 
         characterDropdown.addPopupMenuListener(
             object : PopupMenuListener {
@@ -120,6 +127,7 @@ public class LaunchBar(
                                 addActionListener { showManageLinkedAccounts() }
                             },
                         )
+                        sizeAccountPopup(characterDropdown, child)
                     }
                 }
 
@@ -137,22 +145,27 @@ public class LaunchBar(
                 model = sessionTypesModel
                 renderer = SessionTypeCellRenderer()
                 selectedIndex = App.service.getSelectedClient()
+                configureComboBox()
             }
         launchModeDropdown.addActionListener {
             App.service.setSelectedClient(launchModeDropdown.selectedIndex)
         }
 
-        launchModeDropdown.minimumWidth = 120
-        add(launchModeDropdown, "growx")
-
         val launchButton =
-            FlatButton().apply {
-                toolTipText = "Launch"
-                icon = AppIcons.Run
-                buttonType = FlatButton.ButtonType.toolBarButton
+            LaunchSessionButton().apply {
+                text = "Launch Session"
+                toolTipText = "Launch Session"
                 addActionListener { launchConfiguration() }
             }
-        add(launchButton)
+
+        add(createFieldLabel("Account"))
+        add(createFieldLabel("Client Type"), "wrap")
+        add(characterDropdown, "growx, h $CONTROL_HEIGHT!")
+        add(launchModeDropdown, "growx, h $CONTROL_HEIGHT!, wrap")
+        add(createFieldLabel("Proxy Target"), "spanx 2, growx, gaptop 4, wrap")
+        add(proxyTargetDropdown, "growx, h $CONTROL_HEIGHT!, spanx 2, split 2")
+        add(importTargetsButton, "w $CONTROL_HEIGHT!, h $CONTROL_HEIGHT!, wrap")
+        add(launchButton, "spanx 2, growx, h 34!, gaptop 8")
 
         refreshCharacters()
     }
@@ -177,7 +190,7 @@ public class LaunchBar(
         }
     }
 
-    private fun launchConfiguration() {
+    public fun launchConfiguration() {
         if (charactersModel.size == 0) {
             return
         }
@@ -191,7 +204,7 @@ public class LaunchBar(
     }
 
     private fun importProxyTargets() {
-        val options = arrayOf("From File…", "From URL…")
+        val options = arrayOf("From File...", "From URL...")
         val choice =
             JOptionPane.showOptionDialog(
                 this,
@@ -211,10 +224,10 @@ public class LaunchBar(
     }
 
     private fun importProxyTargetsFromFile() {
-        val chooser = JFileChooser()
-        chooser.fileSelectionMode = JFileChooser.FILES_ONLY
+        val chooser = SystemFileChooser()
+        chooser.fileSelectionMode = SystemFileChooser.FILES_ONLY
         val result = chooser.showOpenDialog(this)
-        if (result != JFileChooser.APPROVE_OPTION) {
+        if (result != SystemFileChooser.APPROVE_OPTION) {
             return
         }
 
@@ -366,7 +379,69 @@ public class LaunchBar(
         }
     }
 
+    private class LaunchSessionButton : FlatButton() {
+        override fun updateUI() {
+            super.updateUI()
+            applyLaunchButtonStyle(this)
+        }
+    }
+
+    private class ImportTargetButton : FlatButton() {
+        override fun updateUI() {
+            super.updateUI()
+            applyImportButtonStyle(this)
+        }
+    }
+
     private companion object {
+        private const val CONTROL_HEIGHT = 30
         private val DEFAULT_CHARACTER = JagexCharacter(-1, "Default", -1L)
+
+        private fun createFieldLabel(text: String): JLabel {
+            return JLabel(text)
+        }
+
+        private fun <T> FlatComboBox<T>.configureComboBox() {
+            minimumWidth = 120
+            maximumRowCount = 12
+            putClientProperty(FlatClientProperties.STYLE_CLASS, STYLE_LAUNCH_COMBO)
+        }
+
+        private fun sizeAccountPopup(
+            comboBox: FlatComboBox<JagexCharacter>,
+            popup: BasicComboPopup,
+        ) {
+            val preferred = popup.preferredSize
+            val width = maxOf(comboBox.width, preferred.width)
+            popup.preferredSize = Dimension(width, preferred.height)
+            popup.minimumSize = Dimension(comboBox.width, preferred.height)
+            popup.setPopupSize(width, preferred.height)
+        }
+
+        private fun applyLaunchButtonStyle(button: FlatButton) {
+            button.icon = null
+            button.buttonType = FlatButton.ButtonType.square
+            button.isContentAreaFilled = true
+            button.putClientProperty(FlatClientProperties.STYLE_CLASS, STYLE_LAUNCH_BUTTON)
+        }
+
+        private fun applyImportButtonStyle(button: FlatButton) {
+            button.text = null
+            button.icon = AppIcons.Add
+            button.horizontalAlignment = SwingConstants.CENTER
+            button.verticalAlignment = SwingConstants.CENTER
+            button.horizontalTextPosition = SwingConstants.CENTER
+            button.verticalTextPosition = SwingConstants.CENTER
+            button.iconTextGap = 0
+            button.buttonType = FlatButton.ButtonType.square
+            button.isContentAreaFilled = true
+            button.preferredSize = Dimension(CONTROL_HEIGHT, CONTROL_HEIGHT)
+            button.minimumSize = Dimension(CONTROL_HEIGHT, CONTROL_HEIGHT)
+            button.putClientProperty(FlatClientProperties.STYLE_CLASS, STYLE_IMPORT_BUTTON)
+        }
+
+        private const val STYLE_LAUNCH_BUTTON = "rsproxLaunch"
+        private const val STYLE_IMPORT_BUTTON = "rsproxTargetImport"
+        private const val STYLE_LAUNCH_COMBO = "rsproxLaunch"
     }
 }

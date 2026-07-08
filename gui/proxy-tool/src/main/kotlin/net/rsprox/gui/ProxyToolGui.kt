@@ -38,11 +38,12 @@ public fun main(args: Array<String>) {
         UIManager.put("Component.focusWidth", 0)
         UIManager.put("Component.innerOutlineWidth", 0)
 
-        val app = App()
-        app.init()
         // Apply the theme here, as applying it too early causes some artefacting
         // This ensures that the theme you see is the same on initial boot as well as swapping back and forth
         AppThemes.applyThemeEdt(App.service.getAppTheme())
+
+        val app = App()
+        app.init()
         app.start()
     }
 }

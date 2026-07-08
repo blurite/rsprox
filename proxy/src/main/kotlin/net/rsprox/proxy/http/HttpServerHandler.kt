@@ -105,18 +105,12 @@ public class HttpServerHandler(
     }
 
     private fun buildResponse(request: HttpRequest): StringBuilder {
-        return when (val uri = request.uri()) {
-            "/${properties.getProperty(ProxyProperty.WORLDLIST_ENDPOINT)}" -> {
-                val response = StringBuilder()
-                val worldListBuffer = worldListProvider.get().encodeLocalized(ByteBufAllocator.DEFAULT)
-                val bytes = ByteArray(worldListBuffer.readableBytes())
-                try {
-                    worldListBuffer.gdata(bytes)
-                } finally {
-                    worldListBuffer.buffer.release()
-                }
-                response.append(String(bytes, Charsets.ISO_8859_1))
-            }
+        val uri = request.uri()
+        val path = uri.substringBefore('?')
+        return when (path) {
+            "/${properties.getProperty(ProxyProperty.WORLDLIST_ENDPOINT)}",
+            "/$REPLAY_WORLDLIST_ENDPOINT",
+            -> buildWorldListResponse()
 
             "/${properties.getProperty(ProxyProperty.JAV_CONFIG_ENDPOINT)}" -> {
                 StringBuilder(javConfig.toString().encodeToByteArray().toString(Charsets.ISO_8859_1))
@@ -130,8 +124,26 @@ public class HttpServerHandler(
                 StringBuilder().append(asString)
             }
 
+            "/shield/oauth/token" -> {
+                StringBuilder("""{"access_token":"REPLAY_ACCESS_TOKEN","refresh_token":"REPLAY_REFRESH_TOKEN"}""")
+            }
+
+            "/public/v1/games/YCfdbvr2pM1zUYMxJRexZY/play",
+            "/game-session/v1/tokens",
+            -> {
+                StringBuilder(REPLAY_LOGIN_TOKEN)
+            }
+
+            "/game-session/v1/sessions" -> {
+                StringBuilder("""{"sessionId":"REPLAY_SESSION"}""")
+            }
+
+            "/game-session/v1/accounts" -> {
+                StringBuilder("""[{"accountId":0,"displayName":"Replay Session","userHash":0}]""")
+            }
+
             else -> {
-                if (uri.startsWith("/gamepack_")) {
+                if (path.startsWith("/gamepack_")) {
                     val builder = StringBuilder()
                     builder.append(gamePackProvider.get().toString(Charsets.ISO_8859_1))
                     return builder
@@ -141,7 +153,20 @@ public class HttpServerHandler(
         }
     }
 
+    private fun buildWorldListResponse(): StringBuilder {
+        val response = StringBuilder()
+        val worldListBuffer = worldListProvider.get().encodeLocalized(ByteBufAllocator.DEFAULT)
+        val bytes = ByteArray(worldListBuffer.readableBytes())
+        try {
+            worldListBuffer.gdata(bytes)
+        } finally {
+            worldListBuffer.buffer.release()
+        }
+        return response.append(String(bytes, Charsets.ISO_8859_1))
+    }
+
     private companion object {
         private val logger = InlineLogger()
+        private const val REPLAY_LOGIN_TOKEN = "REPLAY_LOGIN_TOKEN"
     }
 }

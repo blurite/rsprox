@@ -9,6 +9,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.http.HttpRequestDecoder
 import io.netty.handler.codec.http.HttpResponseEncoder
+import io.netty.handler.ssl.SslContext
 import net.rsprox.proxy.client.ClientLoginInitializer
 import net.rsprox.proxy.config.JavConfig
 import net.rsprox.proxy.config.ProxyProperties
@@ -16,6 +17,8 @@ import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.http.GamePackProvider
 import net.rsprox.proxy.http.HttpServerHandler
 import net.rsprox.proxy.plugin.DecoderLoader
+import net.rsprox.proxy.replay.ReplayClientLoginInitializer
+import net.rsprox.proxy.replay.ReplaySession
 import net.rsprox.proxy.server.ServerConnectionInitializer
 import net.rsprox.proxy.target.ProxyTarget
 import net.rsprox.proxy.worlds.WorldListProvider
@@ -77,6 +80,28 @@ public class BootstrapFactory(
             .handler(ServerConnectionInitializer())
     }
 
+    public fun createReplayServerBootstrap(
+        rsa: RSAPrivateCrtKeyParameters,
+        replaySession: ReplaySession,
+    ): ServerBootstrap {
+        return ServerBootstrap()
+            .group(group(PARENT_GROUP_THREADS), group(CHILD_GROUP_THREADS))
+            .channel(NioServerSocketChannel::class.java)
+            .option(ChannelOption.ALLOCATOR, allocator)
+            .childOption(ChannelOption.ALLOCATOR, allocator)
+            .childOption(ChannelOption.AUTO_READ, false)
+            .childOption(ChannelOption.TCP_NODELAY, true)
+            .childOption(ChannelOption.SO_RCVBUF, SOCKET_BUFFER_CAPACITY)
+            .childOption(ChannelOption.SO_SNDBUF, SOCKET_BUFFER_CAPACITY)
+            .childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, CONNECT_TIMEOUT_MILLIS)
+            .childHandler(
+                ReplayClientLoginInitializer(
+                    rsa,
+                    replaySession,
+                ),
+            )
+    }
+
     public fun createWorldListHttpServer(
         worldListProvider: WorldListProvider,
         javConfig: JavConfig,
@@ -91,6 +116,30 @@ public class BootstrapFactory(
                 object : ChannelInitializer<Channel>() {
                     override fun initChannel(ch: Channel) {
                         val pipeline = ch.pipeline()
+                        pipeline.addLast(HttpRequestDecoder())
+                        pipeline.addLast(HttpResponseEncoder())
+                        pipeline.addLast(HttpServerHandler(worldListProvider, javConfig, properties, gamePackProvider))
+                    }
+                },
+            )
+    }
+
+    public fun createReplayAuthHttpsServer(
+        sslContext: SslContext,
+        worldListProvider: WorldListProvider,
+        javConfig: JavConfig,
+        gamePackProvider: GamePackProvider,
+    ): ServerBootstrap {
+        return ServerBootstrap()
+            .group(group(PARENT_GROUP_THREADS), group(CHILD_GROUP_THREADS))
+            .channel(NioServerSocketChannel::class.java)
+            .option(ChannelOption.ALLOCATOR, allocator)
+            .childOption(ChannelOption.ALLOCATOR, allocator)
+            .childHandler(
+                object : ChannelInitializer<Channel>() {
+                    override fun initChannel(ch: Channel) {
+                        val pipeline = ch.pipeline()
+                        pipeline.addLast(sslContext.newHandler(ch.alloc()))
                         pipeline.addLast(HttpRequestDecoder())
                         pipeline.addLast(HttpResponseEncoder())
                         pipeline.addLast(HttpServerHandler(worldListProvider, javConfig, properties, gamePackProvider))
