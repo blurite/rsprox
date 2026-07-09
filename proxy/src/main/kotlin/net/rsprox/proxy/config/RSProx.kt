@@ -34,6 +34,10 @@ internal fun registerConnection(info: ConnectionInfo) {
     connections += info
 }
 
+internal fun removeConnection(port: Int) {
+    connections.removeAll { it.port == port }
+}
+
 public fun getConnection(port: Int): ConnectionInfo {
     return connections.first {
         it.port == port

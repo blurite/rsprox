@@ -57,6 +57,12 @@ public value class JavConfig(
             .build()
     }
 
+    public fun replaceModeWhat(value: Int): JavConfig {
+        return toBuilder()
+            .replaceParam(MODEWHAT_PARAM, value)
+            .build()
+    }
+
     private fun toBuilder(): JavConfigBuilder {
         return JavConfigBuilder(this)
     }
@@ -77,6 +83,7 @@ public value class JavConfig(
         private const val WORLD_LIST_PARAM: Int = 17
         private const val JAGEX_AUTH_PARAM: Int = 11
         private const val RUNESCAPE_AUTH_PARAM: Int = 22
+        private const val MODEWHAT_PARAM: Int = 15
         private const val CODEBASE = "codebase"
 
         private fun parseText(url: URL): String {

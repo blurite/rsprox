@@ -13,16 +13,17 @@ import net.miginfocom.swing.MigLayout
 import net.rsprox.gui.sessions.SessionType
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.config.BINARY_PATH
-import net.rsprox.proxy.replay.ReplayPlaybackState
 import net.rsprox.proxy.replay.ReplayPlaybackSnapshot
+import net.rsprox.proxy.replay.ReplayPlaybackState
 import net.rsprox.proxy.replay.ReplaySession
 import net.rsprox.proxy.replay.ReplayTranscript
 import net.rsprox.proxy.replay.ReplayTranscriptEntry
 import net.rsprox.proxy.replay.ReplayTranscriptNode
+import net.rsprox.proxy.target.ProxyTarget
 import net.rsprox.proxy.util.OperatingSystem
 import org.jdesktop.swingx.JXTreeTable
-import org.jdesktop.swingx.decorator.ComponentAdapter
 import org.jdesktop.swingx.decorator.ColorHighlighter
+import org.jdesktop.swingx.decorator.ComponentAdapter
 import org.jdesktop.swingx.decorator.HighlightPredicate
 import org.jdesktop.swingx.search.TableSearchable
 import org.jdesktop.swingx.treetable.AbstractMutableTreeTableNode
@@ -117,7 +118,12 @@ public class ReplayPanel(
         add(createTimelineBar(), BorderLayout.SOUTH)
 
         timelineSlider.addChangeListener {
-            if (updatingSlider || userAdjustingTimelineSlider || timelineSlider.valueIsAdjusting) return@addChangeListener
+            if (updatingSlider ||
+                userAdjustingTimelineSlider ||
+                timelineSlider.valueIsAdjusting
+            ) {
+                return@addChangeListener
+            }
             seekToTick(timelineSlider.value)
         }
         timelineSlider.addMouseListener(
@@ -651,7 +657,7 @@ public class ReplayPanel(
         refreshControls()
         ForkJoinPool.commonPool().submit {
             try {
-                val port = App.service.allocatePort()
+                val port = 40000 + ProxyTarget.REPLAY_WORLD_ID
                 when (type) {
                     SessionType.Native -> App.service.launchReplayNativeClient(session, port)
                     SessionType.RuneLite -> App.service.launchReplayRuneLiteClient(session, null, port)
@@ -754,7 +760,7 @@ public class ReplayPanel(
         titleLabel.text = path?.name ?: "Replay loaded"
         detailsLabel.text =
             "Rev ${metadata.revision}.${metadata.subRevision} | World ${metadata.worldId} | " +
-                "Player ${metadata.localPlayerIndex} | $date"
+            "Player ${metadata.localPlayerIndex} | $date"
         replayStatusText = ""
         statusLabel.text = replayStatusText
         statusLabel.toolTipText = path?.toString() ?: metadata.clientName
@@ -780,7 +786,10 @@ public class ReplayPanel(
     ) {
         if (!followTranscriptButton.isSelected) {
             val centerTick = retainedTranscriptWindowTick(currentTick)
-            if (force || transcriptDisplayMode != TranscriptDisplayMode.WINDOW || liveTranscriptCenterTick != centerTick) {
+            if (force ||
+                transcriptDisplayMode != TranscriptDisplayMode.WINDOW ||
+                liveTranscriptCenterTick != centerTick
+            ) {
                 renderTranscriptWindow(transcript, centerTick)
             }
             syncReplayTreeToTick(currentTick)
@@ -812,7 +821,8 @@ public class ReplayPanel(
         replayTree.expandAll()
         val messageCount = transcript.entries.size
         val visibleTickCount = endTick - startTick + 1
-        frameLabel.text = "$visibleMessageCount of $messageCount messages | ticks $startTick-$endTick ($visibleTickCount ticks)"
+        frameLabel.text =
+            "$visibleMessageCount of $messageCount messages | ticks $startTick-$endTick ($visibleTickCount ticks)"
         if (transcript.failures > 0) {
             frameLabel.text += " | ${transcript.failures} decode failures"
         }
@@ -884,7 +894,8 @@ public class ReplayPanel(
         val previousCenterTick = liveTranscriptCenterTick
         if (transcriptDisplayMode == TranscriptDisplayMode.WINDOW &&
             previousCenterTick != null &&
-            currentTick in (previousCenterTick - TRANSCRIPT_WINDOW_RADIUS_TICKS)..(previousCenterTick + TRANSCRIPT_WINDOW_RADIUS_TICKS)
+            currentTick in
+            (previousCenterTick - TRANSCRIPT_WINDOW_RADIUS_TICKS)..(previousCenterTick + TRANSCRIPT_WINDOW_RADIUS_TICKS)
         ) {
             return previousCenterTick
         }
@@ -1024,7 +1035,12 @@ public class ReplayPanel(
                 session?.hasClientLaunchStarted() != true
         val controlsEnabled = loaded && activeClient && !launchingReplayClient && !rebuilding
         val seekControlsEnabled = controlsEnabled && !waitingForMap
-        loadingProgress.isVisible = loadingReplay || launchingReplayClient || rebuilding || waitingForMap || transcriptBusy
+        loadingProgress.isVisible =
+            loadingReplay ||
+            launchingReplayClient ||
+            rebuilding ||
+            waitingForMap ||
+            transcriptBusy
         openButton.isEnabled = !loadingReplay && !launchingReplayClient && !transcriptBusy
         launchButton.isEnabled = clientLaunchAvailable
         replayLaunchTypeDropdown.isEnabled = clientLaunchAvailable
@@ -1076,8 +1092,9 @@ public class ReplayPanel(
         }
         selectedSpeed = currentSnapshot.speed
         speedButtons.forEach { (speed, button) -> button.isSelected = speed == selectedSpeed }
-        val active = currentSnapshot.state == ReplayPlaybackState.PLAYING ||
-            currentSnapshot.state == ReplayPlaybackState.WAITING_FOR_MAP_BUILD_COMPLETE
+        val active =
+            currentSnapshot.state == ReplayPlaybackState.PLAYING ||
+                currentSnapshot.state == ReplayPlaybackState.WAITING_FOR_MAP_BUILD_COMPLETE
         playButton.icon = if (active) AppIcons.Pause else AppIcons.Run
         playButton.toolTipText = if (active) "Pause" else "Play"
         statusLabel.text =
@@ -1123,7 +1140,9 @@ public class ReplayPanel(
             override fun getValueAt(column: Int): Any? =
                 when (column) {
                     0 -> "Stream"
-                    1 -> "World ${header.worldId} (${header.worldActivity}) at ${DateFormat.getTimeInstance().format(Date(header.timestamp))}"
+                    1 -> "World ${header.worldId} (${header.worldActivity}) at ${DateFormat.getTimeInstance().format(
+                        Date(header.timestamp),
+                    )}"
                     else -> error("Invalid column index: $column")
                 }
         }

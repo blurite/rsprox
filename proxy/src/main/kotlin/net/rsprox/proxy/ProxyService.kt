@@ -99,6 +99,7 @@ public class ProxyService(
     public val decoderLoader: DecoderLoader = DecoderLoader()
     private lateinit var bootstrapFactory: BootstrapFactory
     private lateinit var serverBootstrap: ServerBootstrap
+    private lateinit var replayServerChannel: Channel
     public lateinit var operatingSystem: OperatingSystem
         private set
     private lateinit var rsa: RSAPrivateCrtKeyParameters
@@ -723,6 +724,10 @@ public class ProxyService(
             (replaySession.cacheStore as? OpenRs2DiskCacheStore)?.open()
             val target = initializeReplayHttpServer(port, replaySession)
             launchReplayServer(replaySession, port)
+            // Clear out existing trackers
+            ClientTypeDictionary.remove(port)
+            this.connections.removeSessionMonitor(port)
+            removeConnection(port)
             ClientTypeDictionary[port] = "Replay RuneLite (${operatingSystem.shortName})"
             launchJavaProcess(
                 port,
@@ -943,6 +948,10 @@ public class ProxyService(
                     BigInteger(targetModulus, 16),
                 ),
             )
+        }
+        if (worldListEndpoint == REPLAY_WORLDLIST_ENDPOINT) {
+            ClientTypeDictionary.remove(port)
+            this.connections.removeSessionMonitor(port)
         }
         ClientTypeDictionary[port] = clientTypeLabel
         if (sessionMonitor != null) {
@@ -1293,13 +1302,23 @@ public class ProxyService(
         replaySession: ReplaySession,
         port: Int,
     ) {
+        if (this::replayServerChannel.isInitialized) {
+            this.replayServerChannel
+                .close()
+                .asCompletableFuture()
+                .join()
+        }
         val serverBootstrap = bootstrapFactory.createReplayServerBootstrap(rsa, replaySession)
         val timeoutSeconds = properties.getProperty(BIND_TIMEOUT_SECONDS).toLong()
-        serverBootstrap
-            .bind(port)
-            .asCompletableFuture()
-            .orTimeout(timeoutSeconds, TimeUnit.SECONDS)
-            .join()
+        this.replayServerChannel =
+            serverBootstrap
+                .bind(port)
+                .also { future ->
+                    future
+                        .asCompletableFuture()
+                        .orTimeout(timeoutSeconds, TimeUnit.SECONDS)
+                        .join()
+                }.channel()
         this.serverBootstrap = serverBootstrap
     }
 

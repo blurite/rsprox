@@ -17,4 +17,8 @@ public data object ClientTypeDictionary {
             throw IllegalArgumentException("Port $port registered more than once ($name/$old)")
         }
     }
+
+    public fun remove(port: Int) {
+        dictionary.remove(port)
+    }
 }

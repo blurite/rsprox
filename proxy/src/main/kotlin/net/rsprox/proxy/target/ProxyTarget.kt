@@ -1,3 +1,5 @@
+@file:Suppress("DuplicatedCode")
+
 package net.rsprox.proxy.target
 
 import com.github.michaelbull.logging.InlineLogger
@@ -186,6 +188,7 @@ public class ProxyTarget(
                     .replaceInitialWorld(REPLAY_WORLD_ID)
                     .replaceJagexAuthUrl(changedAuth)
                     .replaceRuneScapeAuthUrl(changedAuth)
+                    .replaceModeWhat(MODEWHAT_LOCAL)
             logger.debug { "Auth endpoints changed to '$changedAuth' for replay target '$name'" }
         }
         logger.debug { "Rebuilt jav_config.ws for target '$name':" }
@@ -208,11 +211,21 @@ public class ProxyTarget(
                 gamePackProvider,
             )
         val timeoutSeconds = properties.getProperty(ProxyProperty.BIND_TIMEOUT_SECONDS).toLong()
-        httpServerBootstrap
-            .bind(httpPort)
-            .asCompletableFuture()
-            .orTimeout(timeoutSeconds, TimeUnit.SECONDS)
-            .join()
+        if (rewriteJagexAuth) {
+            closeReplayHttpChannel()
+        }
+        val channel =
+            httpServerBootstrap
+                .bind(httpPort)
+                .also { future ->
+                    future
+                        .asCompletableFuture()
+                        .orTimeout(timeoutSeconds, TimeUnit.SECONDS)
+                        .join()
+                }.channel()
+        if (rewriteJagexAuth) {
+            replayHttpServerChannel = channel
+        }
         this.httpServerBootstrap = httpServerBootstrap
         logger.debug { "HTTP server bound to port $httpPort for target '$name'" }
     }
@@ -240,11 +253,17 @@ public class ProxyTarget(
                 gamePackProvider,
             )
         val timeoutSeconds = properties.getProperty(ProxyProperty.BIND_TIMEOUT_SECONDS).toLong()
-        authServerBootstrap
-            .bind(replayAuthPort)
-            .asCompletableFuture()
-            .orTimeout(timeoutSeconds, TimeUnit.SECONDS)
-            .join()
+        closeReplayAuthChannel()
+        replayAuthServerChannel =
+            authServerBootstrap
+                .bind(replayAuthPort)
+                .also { future ->
+                    future
+                        .asCompletableFuture()
+                        .orTimeout(timeoutSeconds, TimeUnit.SECONDS)
+                        .join()
+                }.channel()
+
         this.replayAuthServerBootstrap = authServerBootstrap
         logger.debug { "Replay auth HTTPS server bound to port $replayAuthPort for target '$name'" }
     }
@@ -275,16 +294,38 @@ public class ProxyTarget(
         return path
     }
 
-    private companion object {
+    public companion object {
         private val logger = InlineLogger()
         private const val REPLAY_AUTH_HOST = "localhost"
         private const val REPLAY_AUTH_PORT_OFFSET = 1_000
-        private const val REPLAY_WORLD_ID = 1_000
+        public const val REPLAY_WORLD_ID: Int = 1_000
+        private const val MODEWHAT_LOCAL: Int = 4
         private const val REPLAY_WORLD_HOST = "replay.rsprox.local"
         private const val REPLAY_WORLD_ACTIVITY = "Replay"
         private const val REPLAY_AUTH_TRUSTSTORE_FILE = "replay-auth-truststore.jks"
         private const val REPLAY_AUTH_TRUSTSTORE_ALIAS = "rsprox-replay-auth"
         private const val REPLAY_AUTH_TRUSTSTORE_PASSWORD = "changeit"
         private const val DEFAULT_TRUSTSTORE_PASSWORD = "changeit"
+
+        private lateinit var replayHttpServerChannel: Channel
+        private lateinit var replayAuthServerChannel: Channel
+
+        private fun closeReplayHttpChannel() {
+            if (::replayHttpServerChannel.isInitialized) {
+                replayHttpServerChannel
+                    .close()
+                    .asCompletableFuture()
+                    .join()
+            }
+        }
+
+        private fun closeReplayAuthChannel() {
+            if (::replayAuthServerChannel.isInitialized) {
+                replayAuthServerChannel
+                    .close()
+                    .asCompletableFuture()
+                    .join()
+            }
+        }
     }
 }
