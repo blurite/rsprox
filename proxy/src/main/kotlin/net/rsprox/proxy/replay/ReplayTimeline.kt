@@ -1,6 +1,7 @@
 package net.rsprox.proxy.replay
 
 import io.netty.buffer.ByteBuf
+import net.rsprot.buffer.extensions.g1
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.Prot
 import net.rsprox.protocol.ProtProvider
@@ -38,6 +39,7 @@ public data class ReplayMetadata(
 )
 
 public data class ReplayTimeline(
+    public val windowMode: Int,
     public val header: BinaryHeader,
     public val frames: List<ReplayFrame>,
 ) : List<ReplayFrame> by frames {
@@ -85,8 +87,12 @@ public data class ReplayTimeline(
             var previousServerEpoch: Long? = null
             var index = 0
             val frames = mutableListOf<ReplayFrame>()
+            var windowMode = -1
             for (packet in packets) {
                 if (packet.direction != StreamDirection.SERVER_TO_CLIENT) {
+                    if (windowMode == -1 && packet.prot.toString() == "WINDOW_STATUS") {
+                        windowMode = packet.payload.g1()
+                    }
                     continue
                 }
                 val payload = packet.payload.copyBytes(packet.size)
@@ -108,7 +114,7 @@ public data class ReplayTimeline(
                     currentTick++
                 }
             }
-            return ReplayTimeline(header, frames)
+            return ReplayTimeline(windowMode, header, frames)
         }
 
         private fun ByteBuf.copyBytes(size: Int): ByteArray {
@@ -116,7 +122,6 @@ public data class ReplayTimeline(
             getBytes(readerIndex(), bytes)
             return bytes
         }
-
     }
 }
 
@@ -145,7 +150,11 @@ private fun reconnectPlayerInfoInitBytes(localPlayerIndex: Int): Int {
         (1 until PLAYER_COUNT).count {
             it != localPlayerIndex
         }
-    return (LOCAL_PLAYER_ABSOLUTE_POSITION_BITS + EXTERNAL_PLAYER_POSITION_BITS * externalPlayerCount + MAX_BITS_BELOW_BYTE) ushr 3
+    return (
+        LOCAL_PLAYER_ABSOLUTE_POSITION_BITS + EXTERNAL_PLAYER_POSITION_BITS * externalPlayerCount +
+            MAX_BITS_BELOW_BYTE
+    ) ushr
+        3
 }
 
 private const val PLAYER_COUNT: Int = 2048

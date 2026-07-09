@@ -13,6 +13,7 @@ import net.miginfocom.swing.MigLayout
 import net.rsprox.gui.sessions.SessionType
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.config.BINARY_PATH
+import net.rsprox.proxy.preferences.ClientPreferencesFile
 import net.rsprox.proxy.replay.ReplayPlaybackSnapshot
 import net.rsprox.proxy.replay.ReplayPlaybackState
 import net.rsprox.proxy.replay.ReplaySession
@@ -189,6 +190,10 @@ public class ReplayPanel(
                     replaySession = session
                     selectedPath = path
                     onReplayLoaded(path)
+                    val windowMode = session.timeline.windowMode
+                    if (windowMode != -1) {
+                        updateInitialWindowMode(windowMode)
+                    }
                     updateLoadedMetadata(transcript)
                     refreshControls()
                 }
@@ -213,6 +218,15 @@ public class ReplayPanel(
                 }
             }
         }
+    }
+
+    private fun updateInitialWindowMode(windowMode: Int) {
+        val preferences =
+            ClientPreferencesFile
+                .loadOrDefaultCustom()
+                .copy(windowMode = windowMode)
+
+        ClientPreferencesFile.write(preferences)
     }
 
     public fun closeReplay() {
