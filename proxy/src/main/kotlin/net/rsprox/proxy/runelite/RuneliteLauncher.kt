@@ -90,21 +90,25 @@ public class RuneliteLauncher {
         val bootstrapUrl = "https://static.runelite.net/bootstrap.json"
         val bootstrapSigUrl = "https://static.runelite.net/bootstrap.json.sha256"
         val localClasspath: String? = System.getProperty("rsprox.runelite.localClasspath")
-        val primaryArgs =
-            listOf(
-                getJava(),
-                "-cp",
-                localClasspath ?: classpath.toString(),
-                bootstrap.launcher.mainClass,
-                "--port=$port",
-                "--world_client_port=${target.httpPort}",
-                "--rsa=$rsa",
-                "--jav_config=$javConfig",
-                "--socket_id=$socket",
-                "--developer-mode",
-                "--disable-telemetry",
-                "--noupdate",
-            ) + clientLaunchModeArgs(clientJvmArgs)
+        val defaultArgs =
+            buildList {
+                add(getJava())
+                add("-cp")
+                add(localClasspath ?: classpath.toString())
+                add(bootstrap.launcher.mainClass)
+                add("--port=$port")
+                add("--world_client_port=${target.httpPort}")
+                add("--rsa=$rsa")
+                add("--jav_config=$javConfig")
+                add("--socket_id=$socket")
+                add("--developer-mode")
+                add("--disable-telemetry")
+                add("--noupdate")
+                if (clientJvmArgs.isNotEmpty()) {
+                    add("--profile=rsprox")
+                }
+            }
+        val primaryArgs = defaultArgs + clientLaunchModeArgs(clientJvmArgs)
         val conditionalArgs =
             if (target.config.id != 0) {
                 val bootstrapFullUrl = target.config.runeliteBootstrapUrl

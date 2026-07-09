@@ -7,8 +7,8 @@ import io.netty.buffer.Unpooled
 import io.netty.channel.Channel
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprox.cache.Js5MasterIndex
-import net.rsprox.cache.store.OpenRs2DiskCacheStore
 import net.rsprox.cache.store.OpenRs2DiskCacheProvider
+import net.rsprox.cache.store.OpenRs2DiskCacheStore
 import net.rsprox.patch.NativeClientType
 import net.rsprox.patch.PatchResult
 import net.rsprox.patch.native.NativePatchCriteria
@@ -46,13 +46,13 @@ import net.rsprox.proxy.http.GamePackProvider
 import net.rsprox.proxy.http.REPLAY_WORLDLIST_ENDPOINT
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.plugin.DecoderLoader
-import net.rsprox.proxy.rsa.publicKey
-import net.rsprox.proxy.rsa.readOrGenerateRsaKey
+import net.rsprox.proxy.replay.ReplayCacheProvider
 import net.rsprox.proxy.replay.ReplaySession
 import net.rsprox.proxy.replay.ReplayTimeline
-import net.rsprox.proxy.replay.ReplayCacheProvider
-import net.rsprox.proxy.replay.ReplayTranscript
 import net.rsprox.proxy.replay.ReplayTranscriber
+import net.rsprox.proxy.replay.ReplayTranscript
+import net.rsprox.proxy.rsa.publicKey
+import net.rsprox.proxy.rsa.readOrGenerateRsaKey
 import net.rsprox.proxy.runelite.RuneliteLauncher
 import net.rsprox.proxy.settings.DefaultSettingSetStore
 import net.rsprox.proxy.target.ALT_PROXY_TARGETS_FILE
@@ -996,12 +996,14 @@ public class ProxyService(
             val launcher = RuneliteLauncher()
             val clientJvmArgs =
                 if (useFakeJagexAccount) {
-                    val replayAuthTrustStore = checkNotNull(target.replayAuthTrustStore) {
-                        "Replay auth truststore has not been initialized."
-                    }
-                    val replayAuthTrustStorePassword = checkNotNull(target.replayAuthTrustStorePassword) {
-                        "Replay auth truststore password has not been initialized."
-                    }
+                    val replayAuthTrustStore =
+                        checkNotNull(target.replayAuthTrustStore) {
+                            "Replay auth truststore has not been initialized."
+                        }
+                    val replayAuthTrustStorePassword =
+                        checkNotNull(target.replayAuthTrustStorePassword) {
+                            "Replay auth truststore password has not been initialized."
+                        }
                     listOf(
                         "-Djavax.net.ssl.trustStore=$replayAuthTrustStore",
                         "-Djavax.net.ssl.trustStorePassword=$replayAuthTrustStorePassword",
