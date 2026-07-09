@@ -105,7 +105,6 @@ public class HomePanel(
         }
     }
 
-
     private fun createQuickLaunchPanel(): JPanel {
         return createActionPanel(
             title = "Quick Launch",
@@ -487,7 +486,8 @@ public class HomePanel(
     }
 
     private fun recentDumps(): List<RecentDump> {
-        return RecentReplayDumps.list(3)
+        return RecentReplayDumps
+            .list(3)
             .map { path ->
                 RecentDump(
                     path = path,
@@ -503,7 +503,10 @@ public class HomePanel(
         val modifiedText: String =
             DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(modified))
         val parentText: String =
-            path.parent?.fileName?.toString()?.takeLast(28)
+            path.parent
+                ?.fileName
+                ?.toString()
+                ?.takeLast(28)
                 ?: path.parent?.toString().orEmpty()
     }
 

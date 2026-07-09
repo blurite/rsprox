@@ -85,7 +85,7 @@ public class ReplayTranscriber(
                 settings,
                 NopBinaryIndex,
                 sessionState,
-        )
+            )
         val tracker = SessionTracker(sessionState, cacheProvider.get(), monitor)
         val protocolSession = Session(session.timeline.header.localPlayerIndex, AttributeMap())
         var failures = 0

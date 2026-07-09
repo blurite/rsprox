@@ -12,10 +12,11 @@ public object RecentReplayDumps {
         val normalized =
             runCatching { path.toRealPath() }
                 .getOrElse { path.toAbsolutePath().normalize() }
-        val paths = buildList {
-            add(normalized)
-            addAll(loadPaths().filterNot { it == normalized })
-        }
+        val paths =
+            buildList {
+                add(normalized)
+                addAll(loadPaths().filterNot { it == normalized })
+            }
         savePaths(paths.take(MAX_RECENTS).toList())
     }
 
@@ -24,8 +25,7 @@ public object RecentReplayDumps {
             .filter { path ->
                 Files.isRegularFile(path) &&
                     path.fileName?.toString()?.endsWith(".bin", ignoreCase = true) == true
-            }
-            .take(limit)
+            }.take(limit)
     }
 
     private fun loadPaths(): List<Path> {

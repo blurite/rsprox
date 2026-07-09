@@ -5,11 +5,11 @@ import com.formdev.flatlaf.extras.components.FlatButton
 import com.formdev.flatlaf.extras.components.FlatTabbedPane
 import net.rsprox.gui.App
 import net.rsprox.gui.AppIcons
+import net.rsprox.shared.account.JagexCharacter
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.Insets
-import net.rsprox.shared.account.JagexCharacter
 import javax.swing.BorderFactory
 import javax.swing.JOptionPane
 import javax.swing.JPanel

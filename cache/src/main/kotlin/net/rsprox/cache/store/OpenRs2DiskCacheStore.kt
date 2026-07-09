@@ -23,7 +23,8 @@ public class OpenRs2DiskCacheStore(
     private val path: Path,
     @Suppress("UNUSED_PARAMETER")
     masterIndex: Js5MasterIndex,
-) : GroupStore, AutoCloseable {
+) : GroupStore,
+    AutoCloseable {
     private val storePath: Path = path.resolve(ZIP_CACHE_DIRECTORY)
     private val marker: Path = path.resolve(MARKER_FILE)
     private val lock: Any = locks.computeIfAbsent(path.toAbsolutePath().normalize()) { Any() }

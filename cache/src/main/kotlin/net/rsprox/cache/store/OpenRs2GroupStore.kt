@@ -9,8 +9,8 @@ import org.openrs2.buffer.use
 import org.openrs2.cache.Js5Compression
 import org.openrs2.cache.Js5Index
 import org.openrs2.cache.MasterIndexFormat
-import org.openrs2.cache.Js5MasterIndex as OpenRs2Js5MasterIndex
 import java.util.zip.CRC32
+import org.openrs2.cache.Js5MasterIndex as OpenRs2Js5MasterIndex
 
 public class OpenRs2GroupStore(
     private val id: Int,
@@ -55,9 +55,10 @@ public class OpenRs2GroupStore(
             entry.version to entry.checksum
         } else {
             val index = indexes.getOrPut(archive) { loadIndex(archive) }
-            val entry = checkNotNull(index?.get(group)) {
-                "OpenRS2 group metadata unavailable for $archive:$group"
-            }
+            val entry =
+                checkNotNull(index?.get(group)) {
+                    "OpenRS2 group metadata unavailable for $archive:$group"
+                }
             entry.version to entry.checksum
         }
     }

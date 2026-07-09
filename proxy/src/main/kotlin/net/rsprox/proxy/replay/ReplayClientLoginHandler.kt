@@ -127,7 +127,11 @@ public class ReplayClientLoginHandler(
             }
             val encodeSeed = IntArray(4) { decryptedRsaBuffer.g4() }
             val decodeSeed = IntArray(encodeSeed.size) { encodeSeed[it] + 50 }
-            ctx.channel().attr(STREAM_CIPHER_PAIR).set(StreamCipherPair(IsaacRandom(encodeSeed), IsaacRandom(decodeSeed)))
+            ctx
+                .channel()
+                .attr(
+                    STREAM_CIPHER_PAIR,
+                ).set(StreamCipherPair(IsaacRandom(encodeSeed), IsaacRandom(decodeSeed)))
         } finally {
             decryptedRsaBuffer.buffer.release()
         }
@@ -167,7 +171,11 @@ public class ReplayClientLoginHandler(
         pipeline.remove<ReplayClientLoginHandler>()
         pipeline.addLast(
             ClientGenericDecoder(
-                ctx.channel().attr(STREAM_CIPHER_PAIR).get().encoderCipher,
+                ctx
+                    .channel()
+                    .attr(STREAM_CIPHER_PAIR)
+                    .get()
+                    .encoderCipher,
                 replaySession.revisionDecoder.gameClientProtProvider,
             ),
         )

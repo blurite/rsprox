@@ -37,11 +37,12 @@ public fun interface ReplayScheduledTask {
 }
 
 public class ExecutorReplayScheduler(
-    private val executor: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor { runnable ->
-        Thread(runnable, "rsprox-replay").apply {
-            isDaemon = true
-        }
-    },
+    private val executor: ScheduledExecutorService =
+        Executors.newSingleThreadScheduledExecutor { runnable ->
+            Thread(runnable, "rsprox-replay").apply {
+                isDaemon = true
+            }
+        },
 ) : ReplayScheduler,
     AutoCloseable {
     override fun schedule(
@@ -183,7 +184,12 @@ public class ReplayPlaybackController(
                 return currentTick()
             }
             val frame = timeline.frames[nextFrameIndex]
-            if (shouldSkipRedundantFastForwardFrameLocked(nextFrameIndex, latestMapRebuildIndex, fastForward.targetTick)) {
+            if (shouldSkipRedundantFastForwardFrameLocked(
+                    nextFrameIndex,
+                    latestMapRebuildIndex,
+                    fastForward.targetTick,
+                )
+            ) {
                 nextFrameIndex++
                 continue
             }
@@ -225,9 +231,7 @@ public class ReplayPlaybackController(
     }
 
     @Synchronized
-    public fun prepareReconnectBootstrapFromCurrent(
-        extract: (ReplayFrame) -> ReplayReconnectBootstrap?,
-    ): ByteArray? {
+    public fun prepareReconnectBootstrapFromCurrent(extract: (ReplayFrame) -> ReplayReconnectBootstrap?): ByteArray? {
         val frame = timeline.frames.getOrNull(nextFrameIndex) ?: return null
         val bootstrap = extract(frame) ?: return null
         cancelScheduledLocked()

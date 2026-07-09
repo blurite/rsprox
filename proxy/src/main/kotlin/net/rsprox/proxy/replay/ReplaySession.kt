@@ -493,6 +493,5 @@ public class ReplaySession(
         private val logger = InlineLogger()
         private const val PAUSED_KEEPALIVE_INTERVAL_MILLIS: Long = 5_000
         private const val MAX_PACKET_GROUP_BYTES: Int = 30_000
-
     }
 }

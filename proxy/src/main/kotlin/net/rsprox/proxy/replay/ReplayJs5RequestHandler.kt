@@ -46,7 +46,7 @@ public class ReplayJs5RequestHandler(
                     replaySession.timeline.header.js5MasterIndex
                 } else {
                     resolveGroup(archive, group)
-            }
+                }
             if (response == null) {
                 if (missingGroups.add(archive to group)) {
                     logger.warn { "Replay JS5 group unavailable: $archive:$group" }
