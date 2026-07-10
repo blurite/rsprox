@@ -7,8 +7,8 @@ import io.netty.buffer.Unpooled
 import io.netty.channel.Channel
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprox.cache.Js5MasterIndex
-import net.rsprox.cache.store.OpenRs2DiskCacheProvider
-import net.rsprox.cache.store.OpenRs2DiskCacheStore
+import net.rsprox.cache.store.ReplayDiskCacheProvider
+import net.rsprox.cache.store.ReplayDiskCacheStore
 import net.rsprox.patch.NativeClientType
 import net.rsprox.patch.PatchResult
 import net.rsprox.patch.native.NativePatchCriteria
@@ -693,8 +693,9 @@ public class ProxyService(
                 binary.header.js5MasterIndex,
             )
         val cacheStore =
-            checkNotNull(OpenRs2DiskCacheProvider().get(masterIndex)) {
-                "Unable to locate OpenRS2 disk cache for replay revision ${binary.header.revision}"
+            checkNotNull(ReplayDiskCacheProvider().get(masterIndex)) {
+                "Unable to locate RSProx Archive or OpenRS2 disk cache for replay revision " +
+                    "${binary.header.revision}"
             }
         decoderLoader.load(ReplayCacheProvider, binary.header.revision)
         val decoder = decoderLoader.getDecoder(binary.header.revision, ReplayCacheProvider)
@@ -721,7 +722,7 @@ public class ProxyService(
             "A replay client has already been launched for this dump."
         }
         try {
-            (replaySession.cacheStore as? OpenRs2DiskCacheStore)?.open()
+            (replaySession.cacheStore as? ReplayDiskCacheStore)?.open()
             val target = initializeReplayHttpServer(port, replaySession)
             launchReplayServer(replaySession, port)
             // Clear out existing trackers
@@ -751,7 +752,7 @@ public class ProxyService(
             "A replay client has already been launched for this dump."
         }
         try {
-            (replaySession.cacheStore as? OpenRs2DiskCacheStore)?.open()
+            (replaySession.cacheStore as? ReplayDiskCacheStore)?.open()
             val target = initializeReplayHttpServer(port, replaySession)
             launchReplayServer(replaySession, port)
             launchNativeClientProcess(
