@@ -53,6 +53,8 @@ import net.rsprox.proxy.replay.ReplayTranscriber
 import net.rsprox.proxy.replay.ReplayTranscript
 import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
+import net.rsprox.proxy.runelite.RSProxArchiveBootstrap
+import net.rsprox.proxy.runelite.RSProxArchiveBootstrapDictionary
 import net.rsprox.proxy.runelite.RuneliteLauncher
 import net.rsprox.proxy.settings.DefaultSettingSetStore
 import net.rsprox.proxy.target.ALT_PROXY_TARGETS_FILE
@@ -81,6 +83,7 @@ import java.net.URL
 import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
+import java.time.Instant
 import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.ForkJoinPool
@@ -336,6 +339,33 @@ public class ProxyService(
             237 -> "34b84f8f8a37f1c615d5d99db2fce7df3a269c45"
             238 -> "350ac50d2be83c72b3e35169bc52cb2a1fc53ce3"
             else -> null
+        }
+    }
+
+    private fun getBootstrap(
+        timestamp: Long,
+        revision: Int,
+    ): RSProxArchiveBootstrap? {
+        val timestampInstant = Instant.ofEpochMilli(timestamp)
+        return try {
+            val bootstrap = RSProxArchiveBootstrapDictionary.find(timestamp, revision)
+            if (bootstrap == null) {
+                logger.warn {
+                    "No revision $revision RuneLite bootstrap found in RSProx Archive for replay timestamp $timestampInstant"
+                }
+            } else {
+                logger.info {
+                    "Resolved revision ${bootstrap.gameRevision} RuneLite ${bootstrap.runeliteVersion} " +
+                        "bootstrap commit ${bootstrap.commitSha} dated ${bootstrap.committedAt} " +
+                        "for replay timestamp $timestampInstant"
+                }
+            }
+            bootstrap
+        } catch (e: Exception) {
+            logger.error(e) {
+                "Unable to resolve revision $revision RuneLite bootstrap from RSProx Archive for replay timestamp $timestampInstant"
+            }
+            null
         }
     }
 
@@ -807,12 +837,15 @@ public class ProxyService(
         val sessionId = portOffset(port)
         val header = replaySession.timeline.header
         val revision = header.revision
+        val timestamp = header.timestamp
         val replayConfig =
             currentProxyTarget.copy(
                 id = REPLAY_PROXY_TARGET_ID,
                 name = "Replay ${header.revision}.${header.subRevision}",
                 revision = "${header.revision}.${header.subRevision}",
-                runeliteBootstrapCommitHash = getBootstrapCommitHash(revision),
+                runeliteBootstrapCommitHash =
+                    getBootstrap(timestamp, revision)?.commitSha
+                        ?: getBootstrapCommitHash(revision),
                 runeliteGamepackUrl = getGamepackUrl(revision),
                 binaryFolder = null,
             )
