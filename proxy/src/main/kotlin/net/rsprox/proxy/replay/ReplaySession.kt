@@ -6,6 +6,7 @@ import net.rsprot.protocol.Prot
 import net.rsprox.cache.store.GroupStore
 import net.rsprox.proxy.channel.getServerToClientStreamCipher
 import net.rsprox.proxy.plugin.RevisionDecoder
+import net.rsprox.shared.StreamDirection
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
@@ -26,7 +27,9 @@ public class ReplaySession(
     private var pausedKeepaliveTask: ReplayScheduledTask? = null
     private val initialRebuildNormalFrameIndex: Int? by lazy {
         timeline.frames
-            .indexOfFirst { it.prot.isReplayRebuildNormal() }
+            .indexOfFirst {
+                it.direction == StreamDirection.SERVER_TO_CLIENT && it.prot.isReplayRebuildNormal()
+            }
             .takeIf { it >= 0 }
     }
     private val sendPingProt by lazy {
@@ -260,6 +263,9 @@ public class ReplaySession(
     }
 
     private fun sendReplayFrame(frame: ReplayFrame) {
+        if (frame.direction != StreamDirection.SERVER_TO_CLIENT) {
+            return
+        }
         val channel =
             clientChannel.get()
                 ?: return
@@ -336,6 +342,9 @@ public class ReplaySession(
         for (frame in frames) {
             if (!channel.isActive) {
                 break
+            }
+            if (frame.direction != StreamDirection.SERVER_TO_CLIENT) {
+                continue
             }
             if (frame.prot.isReplayPacketGroupMarker()) {
                 continue

@@ -1,6 +1,7 @@
 package net.rsprox.proxy.replay
 
 import net.rsprot.protocol.Prot
+import net.rsprox.shared.StreamDirection
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
@@ -232,6 +233,9 @@ public class ReplayPlaybackController(
 
     @Synchronized
     public fun prepareReconnectBootstrapFromCurrent(extract: (ReplayFrame) -> ReplayReconnectBootstrap?): ByteArray? {
+        while (timeline.frames.getOrNull(nextFrameIndex)?.direction == StreamDirection.CLIENT_TO_SERVER) {
+            nextFrameIndex++
+        }
         val frame = timeline.frames.getOrNull(nextFrameIndex) ?: return null
         val bootstrap = extract(frame) ?: return null
         cancelScheduledLocked()
@@ -370,7 +374,7 @@ public class ReplayPlaybackController(
     }
 
     private fun markMapBuildBarrierIfNeededLocked(frame: ReplayFrame) {
-        if (!frame.prot.isReplayMapRebuild()) {
+        if (frame.direction != StreamDirection.SERVER_TO_CLIENT || !frame.prot.isReplayMapRebuild()) {
             return
         }
         pendingMapBuildCompleteTick = maxOf(pendingMapBuildCompleteTick ?: frame.tick, frame.tick)
@@ -388,7 +392,8 @@ public class ReplayPlaybackController(
 
     private fun latestMapRebuildIndexBeforeLocked(targetFrameIndex: Int): Int? {
         for (index in targetFrameIndex - 1 downTo nextFrameIndex) {
-            if (timeline.frames[index].prot.isReplayMapRebuild()) {
+            val frame = timeline.frames[index]
+            if (frame.direction == StreamDirection.SERVER_TO_CLIENT && frame.prot.isReplayMapRebuild()) {
                 return index
             }
         }
@@ -401,6 +406,9 @@ public class ReplayPlaybackController(
         targetTick: Int,
     ): Boolean {
         val frame = timeline.frames[frameIndex]
+        if (frame.direction != StreamDirection.SERVER_TO_CLIENT) {
+            return false
+        }
         if (frame.tick < targetTick && frame.prot.isReplaySynthSound()) {
             return true
         }
@@ -421,6 +429,7 @@ public class ReplayPlaybackController(
         return timeline.frames
             .asSequence()
             .take(frameIndex)
+            .filter { it.direction == StreamDirection.SERVER_TO_CLIENT }
             .none { it.prot.isReplayRebuildNormal() }
     }
 }

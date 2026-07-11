@@ -1,7 +1,6 @@
 package net.rsprox.proxy.replay
 
 import io.netty.buffer.ByteBuf
-import net.rsprot.buffer.extensions.g1
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.Prot
 import net.rsprox.protocol.ProtProvider
@@ -16,6 +15,7 @@ public data class ReplayFrame(
     public val tick: Int,
     public val delayMillis: Long,
     public val epochTimeMillis: Long,
+    public val direction: StreamDirection,
     public val prot: Prot,
     public val payload: ByteArray,
 )
@@ -57,7 +57,13 @@ public data class ReplayTimeline(
             clientName = header.clientName,
         )
 
-    public val totalTicks: Int = frames.maxOfOrNull { it.tick }?.plus(1) ?: 0
+    public val totalTicks: Int =
+        frames
+            .asSequence()
+            .filter { it.direction == StreamDirection.SERVER_TO_CLIENT }
+            .maxOfOrNull { it.tick }
+            ?.plus(1)
+            ?: 0
 
     public fun firstFrameIndexAtOrAfterTick(tick: Int): Int {
         if (frames.isEmpty()) return 0
@@ -84,20 +90,21 @@ public data class ReplayTimeline(
             packets: Sequence<BinaryPacket>,
         ): ReplayTimeline {
             var currentTick = 0
-            var previousServerEpoch: Long? = null
+            var previousEpoch: Long? = null
             var index = 0
             val frames = mutableListOf<ReplayFrame>()
             var windowMode = -1
             for (packet in packets) {
-                if (packet.direction != StreamDirection.SERVER_TO_CLIENT) {
-                    if (windowMode == -1 && packet.prot.toString() == "WINDOW_STATUS") {
-                        windowMode = packet.payload.g1()
-                    }
-                    continue
+                if (windowMode == -1 &&
+                    packet.direction == StreamDirection.CLIENT_TO_SERVER &&
+                    packet.prot.toString() == "WINDOW_STATUS" &&
+                    packet.payload.isReadable
+                ) {
+                    windowMode = packet.payload.getUnsignedByte(packet.payload.readerIndex()).toInt()
                 }
                 val payload = packet.payload.copyBytes(packet.size)
                 val delayMillis =
-                    previousServerEpoch
+                    previousEpoch
                         ?.let { max(0, packet.epochTimeMillis - it) }
                         ?: 0
                 frames +=
@@ -106,11 +113,12 @@ public data class ReplayTimeline(
                         tick = currentTick,
                         delayMillis = delayMillis,
                         epochTimeMillis = packet.epochTimeMillis,
+                        direction = packet.direction,
                         prot = packet.prot,
                         payload = payload,
                     )
-                previousServerEpoch = packet.epochTimeMillis
-                if (packet.prot.isReplayServerTickEnd()) {
+                previousEpoch = packet.epochTimeMillis
+                if (packet.direction == StreamDirection.SERVER_TO_CLIENT && packet.prot.isReplayServerTickEnd()) {
                     currentTick++
                 }
             }
@@ -126,6 +134,9 @@ public data class ReplayTimeline(
 }
 
 internal fun ReplayFrame.reconnectBootstrap(localPlayerIndex: Int): ReplayReconnectBootstrap? {
+    if (direction != StreamDirection.SERVER_TO_CLIENT) {
+        return null
+    }
     val playerInfoInitBytes = reconnectPlayerInfoInitBytes(localPlayerIndex)
     if (payload.size < playerInfoInitBytes) {
         return null

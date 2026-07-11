@@ -94,7 +94,7 @@ public class ReplayTranscriber(
             try {
                 val packets =
                     decodeReplayFrame(frame, revisionDecoder, protocolSession)
-                        .map { Packet(StreamDirection.SERVER_TO_CLIENT, it.prot, it.message) }
+                        .map { Packet(it.direction, it.prot, it.message) }
                 packetList += packets
                 if (packets.any { it.prot.toString() == "SERVER_TICK_END" }) {
                     executeRunner(runner, tracker, packetList, session.timeline.header.revision)
@@ -119,10 +119,20 @@ public class ReplayTranscriber(
         revision: Int,
     ) {
         for (packet in runner.preprocess(packets)) {
-            tracker.onServerPacket(packet.message, packet.prot)
-            tracker.beforeTranscribe(packet.message)
-            runner.onServerPacket(packet.prot, packet.message, revision)
-            tracker.afterTranscribe(packet.message)
+            when (packet.direction) {
+                StreamDirection.CLIENT_TO_SERVER -> {
+                    tracker.onClientPacket(packet.message, packet.prot)
+                    tracker.beforeTranscribe(packet.message)
+                    runner.onClientProt(packet.prot, packet.message, revision)
+                    tracker.afterTranscribe(packet.message)
+                }
+                StreamDirection.SERVER_TO_CLIENT -> {
+                    tracker.onServerPacket(packet.message, packet.prot)
+                    tracker.beforeTranscribe(packet.message)
+                    runner.onServerPacket(packet.prot, packet.message, revision)
+                    tracker.afterTranscribe(packet.message)
+                }
+            }
         }
     }
 
@@ -132,6 +142,16 @@ public class ReplayTranscriber(
         protocolSession: Session,
     ): List<DirectionalPacket> {
         val prot = frame.prot
+        val payload = Unpooled.wrappedBuffer(frame.payload).toJagByteBuf()
+        if (frame.direction == StreamDirection.CLIENT_TO_SERVER) {
+            return listOf(
+                DirectionalPacket(
+                    frame.direction,
+                    prot,
+                    revisionDecoder.decodeClientPacket(prot.opcode, payload, protocolSession),
+                ),
+            )
+        }
         var read = frame.payload.size
         read += if (prot.opcode < 128) 1 else 2
         if (prot.size == Prot.VAR_BYTE) {
@@ -139,7 +159,6 @@ public class ReplayTranscriber(
         } else if (prot.size == Prot.VAR_SHORT) {
             read += 2
         }
-        val payload = Unpooled.wrappedBuffer(frame.payload).toJagByteBuf()
         val remainingBytesInPacketGroup = protocolSession.getRemainingBytesInPacketGroup()
         val packet = revisionDecoder.decodeServerPacket(prot.opcode, payload, protocolSession)
         if (remainingBytesInPacketGroup != null && remainingBytesInPacketGroup > 0) {
@@ -150,9 +169,9 @@ public class ReplayTranscriber(
                 outBuf.p2(protocolSession.getBytesConsumed() ?: 0)
                 protocolSession.setBytesConsumed(null)
                 return listOf(
-                    DirectionalPacket(StreamDirection.SERVER_TO_CLIENT, prot, packet),
+                    DirectionalPacket(frame.direction, prot, packet),
                     DirectionalPacket(
-                        StreamDirection.SERVER_TO_CLIENT,
+                        frame.direction,
                         revisionDecoder.gameServerProtProvider[0xFE],
                         revisionDecoder.decodeServerPacket(0xFE, outBuf, protocolSession),
                     ),
@@ -160,7 +179,7 @@ public class ReplayTranscriber(
             }
             protocolSession.setRemainingBytesInPacketGroup(remainingBytesInPacketGroup - read)
         }
-        return listOf(DirectionalPacket(StreamDirection.SERVER_TO_CLIENT, prot, packet))
+        return listOf(DirectionalPacket(frame.direction, prot, packet))
     }
 
     private fun createReplayCacheProvider(session: ReplaySession): CacheProvider {
