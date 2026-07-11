@@ -27,7 +27,8 @@ public data class ClientPreferences(
     public val drawDistance: Int = 0,
     public val isSfx8Bit: Boolean = false,
 ) {
-    public fun encode(): ByteArray {
+    public fun encode(gameRevision: Int): ByteArray {
+        val version = versionForGameRevision(gameRevision)
         require(totpPassCodes.size <= UBYTE_MAX) {
             "TOTP pass code count cannot exceed $UBYTE_MAX: ${totpPassCodes.size}"
         }
@@ -40,7 +41,7 @@ public data class ClientPreferences(
         requireUByte("drawDistance", drawDistance)
 
         val buffer = Unpooled.buffer(PREFERENCES_BUFFER_CAPACITY).toJagByteBuf()
-        buffer.p1(VERSION)
+        buffer.p1(version)
         buffer.p1(if (removeRoof) 1 else 0)
         buffer.p1(if (muteTitleScreen) 1 else 0)
         buffer.p1(windowMode)
@@ -58,8 +59,12 @@ public data class ClientPreferences(
         buffer.p1(acceptedTOSVersion)
         buffer.p1(if (displayFps) 1 else 0)
         buffer.p4(fpsLimit)
-        buffer.p1(drawDistance)
-        buffer.p1(if (isSfx8Bit) 1 else 0)
+        if (version >= VERSION_11) {
+            buffer.p1(drawDistance)
+        }
+        if (version >= VERSION) {
+            buffer.p1(if (isSfx8Bit) 1 else 0)
+        }
 
         val bytes = ByteArray(buffer.writerIndex())
         buffer.buffer.getBytes(0, bytes)
@@ -80,8 +85,20 @@ public data class ClientPreferences(
 
     public companion object {
         public const val VERSION: Int = 12
+        private const val VERSION_10: Int = 10
+        private const val VERSION_11: Int = 11
+        private const val VERSION_11_REVISION: Int = 222
+        private const val VERSION_12_REVISION: Int = 230
         private const val UBYTE_MAX: Int = 0xFF
         private const val PREFERENCES_BUFFER_CAPACITY: Int = 419
+
+        // Revisions 222 and 230 added drawDistance and isSfx8Bit respectively.
+        private fun versionForGameRevision(gameRevision: Int): Int =
+            when {
+                gameRevision >= VERSION_12_REVISION -> VERSION
+                gameRevision >= VERSION_11_REVISION -> VERSION_11
+                else -> VERSION_10
+            }
 
         public fun decode(bytes: ByteArray): ClientPreferences {
             if (bytes.isEmpty()) {
@@ -232,6 +249,7 @@ public data object ClientPreferencesFile {
 
     public fun write(
         preferences: ClientPreferences,
+        gameRevision: Int,
         path: Path = DEFAULT_PATH,
     ) {
         val parent = path.parent
@@ -240,7 +258,7 @@ public data object ClientPreferencesFile {
         }
         Files.write(
             path,
-            preferences.encode(),
+            preferences.encode(gameRevision),
             StandardOpenOption.CREATE,
             StandardOpenOption.TRUNCATE_EXISTING,
             StandardOpenOption.WRITE,

@@ -192,7 +192,7 @@ public class ReplayPanel(
                     onReplayLoaded(path)
                     val windowMode = session.timeline.windowMode
                     if (windowMode != -1) {
-                        updateInitialWindowMode(windowMode)
+                        updateInitialWindowMode(windowMode, session.timeline.header.revision)
                     }
                     updateLoadedMetadata(transcript)
                     refreshControls()
@@ -220,13 +220,16 @@ public class ReplayPanel(
         }
     }
 
-    private fun updateInitialWindowMode(windowMode: Int) {
+    private fun updateInitialWindowMode(
+        windowMode: Int,
+        gameRevision: Int,
+    ) {
         val preferences =
             ClientPreferencesFile
                 .loadOrDefaultCustom()
                 .copy(windowMode = windowMode)
 
-        ClientPreferencesFile.write(preferences)
+        ClientPreferencesFile.write(preferences, gameRevision)
     }
 
     public fun closeReplay() {
