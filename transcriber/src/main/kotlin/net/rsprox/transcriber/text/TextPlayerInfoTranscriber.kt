@@ -479,6 +479,7 @@ public class TextPlayerInfoTranscriber(
             }
             FaceExtendedInfo.WalkType.TurnOnWalk -> any("walktype", "turnonwalk")
         }
+        filteredBoolean("instant", info.instant)
     }
 
     private enum class MoveSpeed(

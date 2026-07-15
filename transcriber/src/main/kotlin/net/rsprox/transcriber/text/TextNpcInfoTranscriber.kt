@@ -539,6 +539,7 @@ public class TextNpcInfoTranscriber(
             }
             FaceExtendedInfo.WalkType.TurnOnWalk -> any("walktype", "turnonwalk")
         }
+        filteredBoolean("instant", info.instant)
     }
 
     private fun Property.facePathingEntity(
