@@ -49,8 +49,8 @@ import net.rsprox.protocol.game.outgoing.model.social.MessagePrivate
 import net.rsprox.protocol.game.outgoing.model.social.MessagePrivateEcho
 import net.rsprox.protocol.game.outgoing.model.social.UpdateFriendList
 import net.rsprox.protocol.game.outgoing.model.social.UpdateIgnoreList
-import net.rsprox.protocol.game.outgoing.model.sound.AmbienceStart
-import net.rsprox.protocol.game.outgoing.model.sound.AmbienceStop
+import net.rsprox.protocol.game.outgoing.model.sound.AmbientSoundStart
+import net.rsprox.protocol.game.outgoing.model.sound.AmbientSoundStop
 import net.rsprox.protocol.game.outgoing.model.sound.MidiJingle
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongStop
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV1
@@ -361,9 +361,9 @@ public interface ServerPacketTranscriber {
 
     public fun synthSound(message: SynthSound)
 
-    public fun ambienceStart(message: AmbienceStart)
+    public fun ambientSoundStart(message: AmbientSoundStart)
 
-    public fun ambienceStop(message: AmbienceStop)
+    public fun ambientSoundStop(message: AmbientSoundStop)
 
     public fun locAnimSpecific(message: LocAnimSpecific)
 

@@ -3,12 +3,12 @@ package net.rsprox.protocol.game.outgoing.model.sound
 import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
- * Ambience start is used to set a looping background ambience sound effect.
+ * Ambient sound start is used to set a looping background ambience sound effect.
  * This will continue looping until stopped or overwritten.
  * @property id the id of the sound effect to use for the ambience.
  * @property fade whether to fade the existing ambience out, if one is currently playing.
  */
-public class AmbienceStart private constructor(
+public class AmbientSoundStart private constructor(
     private val _id: UShort,
     public val fade: Boolean,
 ) : IncomingServerGameMessage {
@@ -27,7 +27,7 @@ public class AmbienceStart private constructor(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as AmbienceStart
+        other as AmbientSoundStart
 
         if (_id != other._id) return false
         if (fade != other.fade) return false
@@ -42,7 +42,7 @@ public class AmbienceStart private constructor(
     }
 
     override fun toString(): String =
-        "AmbienceStart(" +
+        "AmbientSoundStart(" +
             "id=$id, " +
             "fade=$fade" +
             ")"

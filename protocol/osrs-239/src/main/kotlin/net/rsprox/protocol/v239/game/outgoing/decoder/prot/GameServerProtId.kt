@@ -139,14 +139,14 @@ internal object GameServerProtId {
     const val CAM_SKYBOX = 135
     const val GROUP_VAR = 136
     const val CAM_LOOKAT_CYCLES = 137
-    const val AMBIENCE_STOP = 138
+    const val AMBIENTSOUND_STOP = 138
     const val CAM_LOOKAT_V2 = 139
     const val GROUP_VAR_INT = 140
     const val CAM_ROTATETO_COORDINATE_V2 = 141
     const val IF_SETMODEL_V2 = 142
     const val SET_MAP_FLAG_V2 = 143
     const val CAM_LOOKAT_V3 = 144
-    const val AMBIENCE_START = 145
+    const val AMBIENTSOUND_START = 145
     const val CAM_MOVETO_V2 = 146
     const val CAM_MOVETO_V3 = 147
     const val CAM_ROTATETO_COORDINATE_V3 = 148

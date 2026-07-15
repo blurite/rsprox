@@ -137,8 +137,8 @@ import net.rsprox.protocol.game.outgoing.model.social.FriendListLoaded
 import net.rsprox.protocol.game.outgoing.model.social.MessagePrivateEcho
 import net.rsprox.protocol.game.outgoing.model.social.UpdateFriendList
 import net.rsprox.protocol.game.outgoing.model.social.UpdateIgnoreList
-import net.rsprox.protocol.game.outgoing.model.sound.AmbienceStart
-import net.rsprox.protocol.game.outgoing.model.sound.AmbienceStop
+import net.rsprox.protocol.game.outgoing.model.sound.AmbientSoundStart
+import net.rsprox.protocol.game.outgoing.model.sound.AmbientSoundStop
 import net.rsprox.protocol.game.outgoing.model.sound.MidiJingle
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongStop
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV1
@@ -1138,11 +1138,11 @@ public class IndexerTranscriber(
         binaryIndex.increment(IndexedType.SYNTH, message.id)
     }
 
-    override fun ambienceStart(message: AmbienceStart) {
+    override fun ambientSoundStart(message: AmbientSoundStart) {
         binaryIndex.increment(IndexedType.AMBIENCE, message.id)
     }
 
-    override fun ambienceStop(message: AmbienceStop) {
+    override fun ambientSoundStop(message: AmbientSoundStop) {
     }
 
     override fun locAnimSpecific(message: LocAnimSpecific) {

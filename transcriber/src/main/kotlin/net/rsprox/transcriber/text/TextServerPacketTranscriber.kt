@@ -81,8 +81,8 @@ import net.rsprox.protocol.game.outgoing.model.social.MessagePrivate
 import net.rsprox.protocol.game.outgoing.model.social.MessagePrivateEcho
 import net.rsprox.protocol.game.outgoing.model.social.UpdateFriendList
 import net.rsprox.protocol.game.outgoing.model.social.UpdateIgnoreList
-import net.rsprox.protocol.game.outgoing.model.sound.AmbienceStart
-import net.rsprox.protocol.game.outgoing.model.sound.AmbienceStop
+import net.rsprox.protocol.game.outgoing.model.sound.AmbientSoundStart
+import net.rsprox.protocol.game.outgoing.model.sound.AmbientSoundStop
 import net.rsprox.protocol.game.outgoing.model.sound.MidiJingle
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongStop
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSongV1
@@ -2863,13 +2863,13 @@ public class TextServerPacketTranscriber(
         root.filteredInt("delay", message.delay, 0)
     }
 
-    override fun ambienceStart(message: AmbienceStart) {
+    override fun ambientSoundStart(message: AmbientSoundStart) {
         if (!filters[PropertyFilter.AMBIENCE]) return omit()
         root.scriptVarType("id", ScriptVarType.AMBIENCE, message.id.maxUShortToMinusOne())
         root.boolean("fade", message.fade)
     }
 
-    override fun ambienceStop(message: AmbienceStop) {
+    override fun ambientSoundStop(message: AmbientSoundStop) {
         if (!filters[PropertyFilter.AMBIENCE]) return omit()
         root.boolean("fade", message.fade)
     }

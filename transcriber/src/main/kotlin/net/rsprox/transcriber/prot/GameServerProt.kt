@@ -62,8 +62,8 @@ public enum class GameServerProt : Prot {
     SCRIPTEDPROJ_ADD,
     SCRIPTEDPROJ_CHANGE,
     SOUND_AREA,
-    AMBIENCE_START,
-    AMBIENCE_STOP,
+    AMBIENTSOUND_START,
+    AMBIENTSOUND_STOP,
 
     // Specific packets
     PROJANIM_SPECIFIC_V4,

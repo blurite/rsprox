@@ -674,7 +674,7 @@ public enum class PropertyFilter(
         MIDI,
         "Ambience",
         true,
-        searchTerms = "ambience,ambiance,background,midi,synth,sound,soundeffects",
+        searchTerms = "ambience,ambiance,ambientsound,background,midi,synth,sound,soundeffects",
     ),
 
     ZONE_HEADER(

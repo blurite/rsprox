@@ -3,17 +3,17 @@ package net.rsprox.protocol.game.outgoing.model.sound
 import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /**
- * Ambience stop is used to stop any looping background ambience sound effect.
+ * Ambient sound stop is used to stop any looping background ambience sound effect.
  * @property fade whether to fade the existing ambience out, if one is currently playing.
  */
-public class AmbienceStop(
+public class AmbientSoundStop(
     public val fade: Boolean,
 ) : IncomingServerGameMessage {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as AmbienceStop
+        other as AmbientSoundStop
 
         if (fade != other.fade) return false
 
@@ -25,7 +25,7 @@ public class AmbienceStop(
     }
 
     override fun toString(): String =
-        "AmbienceStop(" +
+        "AmbientSoundStop(" +
             "fade=$fade" +
             ")"
 }

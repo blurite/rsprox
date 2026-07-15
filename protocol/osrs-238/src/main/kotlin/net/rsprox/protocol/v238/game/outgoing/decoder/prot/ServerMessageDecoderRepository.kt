@@ -108,8 +108,8 @@ import net.rsprox.protocol.v238.game.outgoing.decoder.codec.social.MessagePrivat
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.social.MessagePrivateEchoDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.social.UpdateFriendListDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.social.UpdateIgnoreListDecoder
-import net.rsprox.protocol.v238.game.outgoing.decoder.codec.sound.AmbienceStartDecoder
-import net.rsprox.protocol.v238.game.outgoing.decoder.codec.sound.AmbienceStopDecoder
+import net.rsprox.protocol.v238.game.outgoing.decoder.codec.sound.AmbientSoundStartDecoder
+import net.rsprox.protocol.v238.game.outgoing.decoder.codec.sound.AmbientSoundStopDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.sound.MidiJingleDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.sound.MidiSongStopDecoder
 import net.rsprox.protocol.v238.game.outgoing.decoder.codec.sound.MidiSongV2Decoder
@@ -274,8 +274,8 @@ internal object ServerMessageDecoderRepository {
                 bind(MidiSongWithSecondaryDecoder())
                 bind(MidiSwapDecoder())
                 bind(SynthSoundDecoder())
-                bind(AmbienceStartDecoder())
-                bind(AmbienceStopDecoder())
+                bind(AmbientSoundStartDecoder())
+                bind(AmbientSoundStopDecoder())
 
                 bind(LocAnimSpecificDecoder())
                 bind(MapAnimSpecificDecoder())
