@@ -230,7 +230,15 @@ public class App {
             SideBar().apply {
                 addButton(AppIcons.Settings, "Settings", SettingsSidePanel(service))
                 addButton(AppIcons.Filter, "Filters", FiltersSidePanel(service))
-                selectedIndex = service.getFiltersStatus()
+                @Suppress("LiftReturnOrAssignment")
+                try {
+                    selectedIndex = service.getFiltersStatus()
+                } catch (_: IndexOutOfBoundsException) {
+                    // Fall back to the first tab; this can only happen in development of a new tab
+                    // on another branch (and switching to an older branch). Avoids crashing the app
+                    // entirely and allows normal usage without needing to edit the config files.
+                    selectedIndex = 0
+                }
             }
         return sideBar
     }
