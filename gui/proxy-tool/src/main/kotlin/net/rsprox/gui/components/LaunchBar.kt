@@ -14,9 +14,13 @@ import net.rsprox.proxy.target.ProxyTargetConfig
 import net.rsprox.proxy.target.ProxyTargetImportResult
 import net.rsprox.proxy.util.OperatingSystem
 import net.rsprox.shared.account.JagexCharacter
+import java.awt.Component
 import java.awt.Dimension
+import java.awt.event.KeyEvent
+import java.awt.event.MouseEvent
 import java.net.MalformedURLException
 import java.net.URL
+import javax.swing.BoxLayout
 import javax.swing.DefaultComboBoxModel
 import javax.swing.DefaultListCellRenderer
 import javax.swing.JLabel
@@ -24,10 +28,16 @@ import javax.swing.JList
 import javax.swing.JMenuItem
 import javax.swing.JOptionPane
 import javax.swing.JPanel
+import javax.swing.JScrollPane
+import javax.swing.MenuElement
+import javax.swing.MenuSelectionManager
+import javax.swing.ScrollPaneConstants
 import javax.swing.SwingConstants
+import javax.swing.SwingUtilities
 import javax.swing.event.PopupMenuEvent
 import javax.swing.event.PopupMenuListener
 import javax.swing.plaf.basic.BasicComboPopup
+import javax.swing.plaf.basic.DefaultMenuLayout
 
 public data class Character(
     val name: String,
@@ -393,6 +403,53 @@ public class LaunchBar(
         }
     }
 
+    private interface PassiveMenuElement : MenuElement {
+        override fun processMouseEvent(
+            event: MouseEvent,
+            path: Array<out MenuElement>,
+            manager: MenuSelectionManager,
+        ) = Unit
+
+        override fun processKeyEvent(
+            event: KeyEvent,
+            path: Array<out MenuElement>,
+            manager: MenuSelectionManager,
+        ) = Unit
+
+        override fun menuSelectionChanged(isIncluded: Boolean) = Unit
+    }
+
+    private class ScrollableMenuPanel :
+        JPanel(),
+        PassiveMenuElement {
+        init {
+            layout = DefaultMenuLayout(this, BoxLayout.Y_AXIS)
+            isOpaque = false
+        }
+
+        override fun getSubElements(): Array<MenuElement> = components.filterIsInstance<MenuElement>().toTypedArray()
+
+        override fun getComponent(): Component = this
+    }
+
+    private class MenuScrollPane(
+        private val menuPanel: ScrollableMenuPanel,
+    ) : JScrollPane(menuPanel),
+        PassiveMenuElement {
+        init {
+            border = null
+            viewportBorder = null
+            isOpaque = false
+            viewport.isOpaque = false
+            horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+            verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
+        }
+
+        override fun getSubElements(): Array<MenuElement> = arrayOf(menuPanel)
+
+        override fun getComponent(): Component = this
+    }
+
     private companion object {
         private const val CONTROL_HEIGHT = 30
         private val DEFAULT_CHARACTER = JagexCharacter(-1, "Default", -1L)
@@ -411,6 +468,45 @@ public class LaunchBar(
             comboBox: FlatComboBox<JagexCharacter>,
             popup: BasicComboPopup,
         ) {
+            val components = popup.components
+            if (components.count { it is JMenuItem } > comboBox.maximumRowCount) {
+                val lastVisibleIndex =
+                    components
+                        .withIndex()
+                        .filter { it.value is JMenuItem }
+                        .elementAt(comboBox.maximumRowCount - 1)
+                        .index
+                val visibleHeight = components.take(lastVisibleIndex + 1).sumOf { it.preferredSize.height }
+                popup.removeAll()
+
+                val menuPanel =
+                    ScrollableMenuPanel().apply {
+                        components.forEach { add(it) }
+                    }
+                val scrollPane =
+                    MenuScrollPane(menuPanel).apply {
+                        val menuSize = menuPanel.preferredSize
+                        preferredSize =
+                            Dimension(
+                                menuSize.width + verticalScrollBar.preferredSize.width,
+                                visibleHeight,
+                            )
+                        verticalScrollBar.unitIncrement =
+                            components
+                                .filterIsInstance<JMenuItem>()
+                                .first()
+                                .preferredSize.height
+                    }
+                popup.add(scrollPane)
+                SwingUtilities.invokeLater {
+                    if (popup.isVisible) {
+                        MenuSelectionManager.defaultManager().setSelectedPath(
+                            arrayOf<MenuElement>(popup, scrollPane, menuPanel),
+                        )
+                    }
+                }
+            }
+
             val preferred = popup.preferredSize
             val width = maxOf(comboBox.width, preferred.width)
             popup.preferredSize = Dimension(width, preferred.height)
