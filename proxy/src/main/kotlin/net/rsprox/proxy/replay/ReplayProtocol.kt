@@ -25,6 +25,14 @@ internal fun Prot.isReplayMapRebuild(): Boolean {
     )
 }
 
+internal fun Prot.isActiveWorldV1(): Boolean {
+    return hasReplayName("SET_ACTIVE_WORLD_V1")
+}
+
+internal fun Prot.isActiveWorldV2(): Boolean {
+    return hasReplayName("SET_ACTIVE_WORLD_V2")
+}
+
 internal fun Prot.isReplayPacketGroupMarker(): Boolean {
     return hasAnyReplayName("PACKET_GROUP_START", "PACKET_GROUP_END")
 }

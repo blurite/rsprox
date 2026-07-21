@@ -1,5 +1,7 @@
 package net.rsprox.proxy.replay
 
+import io.netty.buffer.Unpooled
+import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.protocol.Prot
 import net.rsprox.shared.StreamDirection
 import java.util.concurrent.Executors
@@ -73,6 +75,7 @@ public class ReplayPlaybackController(
 ) {
     private var state: ReplayPlaybackState = ReplayPlaybackState.STOPPED
     private var nextFrameIndex: Int = 0
+    private var activeWorld: Int = -1
     private var speed: Double = 1.0
     private var scheduledTask: ReplayScheduledTask? = null
     private var pendingMapBuildCompleteTick: Int? = null
@@ -185,6 +188,16 @@ public class ReplayPlaybackController(
                 return currentTick()
             }
             val frame = timeline.frames[nextFrameIndex]
+            if (frame.prot.isActiveWorldV1()) {
+                val buf = Unpooled.wrappedBuffer(frame.payload).toJagByteBuf()
+                val type = buf.g1()
+                val index = buf.g2()
+                this.activeWorld = if (type == 0) -1 else index
+            } else if (frame.prot.isActiveWorldV2()) {
+                val buf = Unpooled.wrappedBuffer(frame.payload).toJagByteBuf()
+                val index = buf.g2s()
+                this.activeWorld = if (index <= 0) -1 else index
+            }
             if (shouldSkipRedundantFastForwardFrameLocked(
                     nextFrameIndex,
                     latestMapRebuildIndex,
@@ -419,7 +432,11 @@ public class ReplayPlaybackController(
         if (frame.prot.isInitialRebuildNormal(frameIndex)) {
             return false
         }
-        return frame.prot.isReplayMapRebuild() || frame.prot.isReplayIncomingZoneUpdate()
+        // The client has a tendency to glitch out when on worldentities, so avoid skipping during it.
+        if (frame.prot.isReplayIncomingZoneUpdate()) {
+            return activeWorld == -1
+        }
+        return frame.prot.isReplayMapRebuild()
     }
 
     private fun Prot.isInitialRebuildNormal(frameIndex: Int): Boolean {
