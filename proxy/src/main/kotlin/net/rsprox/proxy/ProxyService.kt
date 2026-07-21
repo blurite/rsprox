@@ -848,6 +848,7 @@ public class ProxyService(
                         ?: getBootstrapCommitHash(revision),
                 runeliteGamepackUrl = getGamepackUrl(revision),
                 binaryFolder = null,
+                javConfigUrl = "https://cdn.rsprox.net/jav_config.ws",
             )
         val target =
             ProxyTarget(
