@@ -468,6 +468,8 @@ public class LaunchBar(
             comboBox: FlatComboBox<JagexCharacter>,
             popup: BasicComboPopup,
         ) {
+            popup.preferredSize = null
+            popup.minimumSize = null
             val components = popup.components
             if (components.count { it is JMenuItem } > comboBox.maximumRowCount) {
                 val lastVisibleIndex =
