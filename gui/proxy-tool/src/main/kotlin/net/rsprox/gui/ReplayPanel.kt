@@ -9,6 +9,7 @@ import com.formdev.flatlaf.extras.components.FlatScrollPane
 import com.formdev.flatlaf.extras.components.FlatToggleButton
 import com.formdev.flatlaf.util.ColorFunctions
 import com.formdev.flatlaf.util.SystemFileChooser
+import com.github.michaelbull.logging.InlineLogger
 import net.miginfocom.swing.MigLayout
 import net.rsprox.gui.sessions.SessionType
 import net.rsprox.proxy.binary.BinaryHeader
@@ -691,6 +692,9 @@ public class ReplayPanel(
                     refreshControls()
                 }
             } catch (t: Throwable) {
+                logger.error(t) {
+                    "Exception launching replay client"
+                }
                 SwingUtilities.invokeLater {
                     if (generation != loadGeneration || replaySession !== session) {
                         return@invokeLater
@@ -1146,6 +1150,8 @@ public class ReplayPanel(
     }
 
     private companion object {
+        private val logger = InlineLogger()
+
         private enum class TranscriptDisplayMode {
             WINDOW,
             LIVE,
