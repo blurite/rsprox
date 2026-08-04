@@ -23,9 +23,9 @@ internal class UpdateInvFullDecoder : ProxyMessageDecoder<UpdateInvFull> {
                 for (i in 0..<capacity) {
                     var count = buffer.g1Alt3()
                     if (count >= 0xFF) {
-                        count = buffer.g4Alt3()
+                        count = buffer.g4()
                     }
-                    val id = buffer.g2Alt1()
+                    val id = buffer.g2()
                     add(UpdateInvFull.Obj(id - 1, count))
                 }
             }

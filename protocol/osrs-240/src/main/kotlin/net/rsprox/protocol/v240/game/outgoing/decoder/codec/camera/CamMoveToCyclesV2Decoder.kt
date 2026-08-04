@@ -14,12 +14,12 @@ internal class CamMoveToCyclesV2Decoder : ProxyMessageDecoder<CamMoveToCyclesV2>
         buffer: JagByteBuf,
         session: Session,
     ): CamMoveToCyclesV2 {
-        val cycles = buffer.g2Alt3()
-        val x = buffer.g2()
-        val easing = buffer.g1Alt1()
-        val height = buffer.g2Alt2()
+        val ignoreTerrain = buffer.g1() == 1
         val z = buffer.g2Alt3()
-        val ignoreTerrain = buffer.g1Alt3() == 1
+        val cycles = buffer.g2Alt2()
+        val height = buffer.g2Alt1()
+        val easing = buffer.g1()
+        val x = buffer.g2()
         return CamMoveToCyclesV2(
             x,
             z,

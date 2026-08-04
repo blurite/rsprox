@@ -16,23 +16,23 @@ internal class ScriptedProjAddDecoder : ProxyMessageDecoder<ScriptedProjAdd> {
         buffer: JagByteBuf,
         session: Session,
     ): ScriptedProjAdd {
-        val sourceOffsetX = buffer.g2sAlt1()
-        val id = buffer.g2()
-        val targetOffsetZ = buffer.g2s()
-        val targetCoord = CoordGrid(buffer.g4Alt3())
-        val startTime = buffer.g2Alt2()
-        val sourceHeight = buffer.g2s()
-        val curveScriptA = buffer.g2Alt1()
         val targetIndex = buffer.g3sAlt3()
-        val slot = buffer.g2()
-        val endTime = buffer.g2Alt1()
-        val coordInZone = CoordInZone(buffer.g1())
+        val targetHeight = buffer.g2s()
+        val endTime = buffer.g2Alt3()
+        val slot = buffer.g2Alt3()
+        val sourceOffsetZ = buffer.g2s()
+        val sourceIndex = buffer.g3sAlt1()
+        val curveScriptH = buffer.g2Alt2()
+        val id = buffer.g2Alt1()
+        val sourceOffsetX = buffer.g2sAlt3()
+        val sourceHeight = buffer.g2s()
+        val coordInZone = CoordInZone(buffer.g1Alt1())
+        val targetCoord = CoordGrid(buffer.g4Alt1())
+        val startTime = buffer.g2()
+        val targetOffsetZ = buffer.g2sAlt2()
         val targetOffsetX = buffer.g2s()
-        val curveScriptH = buffer.g2Alt1()
-        val sourceOffsetZ = buffer.g2sAlt3()
-        val targetHeight = buffer.g2sAlt1()
-        val sourceIndex = buffer.g3sAlt2()
         val curveScriptT = buffer.g2Alt1()
+        val curveScriptA = buffer.g2Alt3()
         return ScriptedProjAdd(
             slot,
             id,

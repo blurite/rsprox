@@ -30,9 +30,9 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
         buffer: JagByteBuf,
         session: Session,
     ): UpdateZonePartialEnclosed {
-        val level = buffer.g1Alt2()
+        val zoneX = buffer.g1Alt3()
         val zoneZ = buffer.g1Alt1()
-        val zoneX = buffer.g1Alt1()
+        val level = buffer.g1Alt2()
         val packets =
             buildList {
                 while (buffer.isReadable) {
@@ -52,20 +52,20 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
     private enum class IndexedZoneProtDecoder(
         val decoder: ProxyMessageDecoder<*>,
     ) {
-        LOC_DEL(LocDelDecoder()),
+        LOC_ADD_CHANGE_V2(LocAddChangeV2Decoder()),
         SCRIPTEDPROJ_CHANGE(ScriptedProjChangeDecoder()),
+        SCRIPTEDPROJ_ADD(ScriptedProjAddDecoder()),
+        LOC_ANIM(LocAnimDecoder()),
+        MAP_PROJANIM_V2(MapProjAnimV2Decoder()),
         LOC_MERGE(LocMergeDecoder()),
+        OBJ_ADD(ObjAddDecoder()),
         OBJ_CUSTOMISE(ObjCustomiseDecoder()),
         OBJ_COUNT(ObjCountDecoder()),
-        MAP_ANIM(MapAnimDecoder()),
-        OBJ_UNCUSTOMISE(ObjUncustomiseDecoder()),
-        LOC_ADD_CHANGE_V2(LocAddChangeV2Decoder()),
-        OBJ_ADD(ObjAddDecoder()),
-        LOC_ANIM(LocAnimDecoder()),
-        OBJ_DEL(ObjDelDecoder()),
+        LOC_DEL(LocDelDecoder()),
         OBJ_ENABLED_OPS(ObjEnabledOpsDecoder()),
-        SCRIPTEDPROJ_ADD(ScriptedProjAddDecoder()),
-        MAP_PROJANIM_V2(MapProjAnimV2Decoder()),
         SOUND_AREA(SoundAreaDecoder()),
+        OBJ_DEL(ObjDelDecoder()),
+        OBJ_UNCUSTOMISE(ObjUncustomiseDecoder()),
+        MAP_ANIM(MapAnimDecoder()),
     }
 }

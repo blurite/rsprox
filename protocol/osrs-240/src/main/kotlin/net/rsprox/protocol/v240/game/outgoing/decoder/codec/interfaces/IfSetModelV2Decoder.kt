@@ -15,7 +15,7 @@ internal class IfSetModelV2Decoder : ProxyMessageDecoder<IfSetModelV2> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetModelV2 {
-        val model = buffer.g4Alt2()
+        val model = buffer.g4Alt1()
         val combinedId = buffer.gCombinedIdAlt1()
         return IfSetModelV2(
             combinedId.interfaceId,

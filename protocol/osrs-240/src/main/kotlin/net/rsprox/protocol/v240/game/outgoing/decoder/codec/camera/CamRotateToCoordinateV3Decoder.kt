@@ -14,13 +14,13 @@ internal class CamRotateToCoordinateV3Decoder : ProxyMessageDecoder<CamRotateToC
         buffer: JagByteBuf,
         session: Session,
     ): CamRotateToCoordinateV3 {
-        val trackTarget = buffer.g1Alt1() == 1
-        val z = buffer.g2Alt1()
-        val heightRelative = buffer.g1() == 1
-        val x = buffer.g2Alt3()
-        val cycles = buffer.g2Alt1()
-        val height = buffer.g2sAlt3()
+        val height = buffer.g2sAlt2()
+        val x = buffer.g2Alt2()
         val easing = buffer.g1()
+        val cycles = buffer.g2()
+        val heightRelative = buffer.g1() == 1
+        val z = buffer.g2Alt3()
+        val trackTarget = buffer.g1() == 1
         return CamRotateToCoordinateV3(
             x,
             z,

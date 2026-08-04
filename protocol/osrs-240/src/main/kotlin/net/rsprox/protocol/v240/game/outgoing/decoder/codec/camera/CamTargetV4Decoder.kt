@@ -15,8 +15,8 @@ internal class CamTargetV4Decoder : ProxyMessageDecoder<CamTargetV4> {
         buffer: JagByteBuf,
         session: Session,
     ): CamTargetV4 {
-        val value = buffer.g4()
-        val type = buffer.g1Alt2()
+        val type = buffer.g1Alt3()
+        val value = buffer.g4Alt3()
         return CamTargetV4(
             when (type) {
                 0 -> CamTargetV4.PlayerCamTarget(if (value == 65535) -1 else value)

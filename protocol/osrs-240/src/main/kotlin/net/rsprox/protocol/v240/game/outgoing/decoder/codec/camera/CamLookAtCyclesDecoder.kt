@@ -14,12 +14,12 @@ internal class CamLookAtCyclesDecoder : ProxyMessageDecoder<CamLookAtCycles> {
         buffer: JagByteBuf,
         session: Session,
     ): CamLookAtCycles {
-        val cycles = buffer.g2()
-        val heightRelative = buffer.g1Alt3() == 1
-        val x = buffer.g2()
-        val easing = buffer.g1Alt2()
+        val x = buffer.g2Alt2()
+        val cycles = buffer.g2Alt2()
+        val easing = buffer.g1Alt3()
         val z = buffer.g2()
-        val height = buffer.g2sAlt2()
+        val heightRelative = buffer.g1Alt3() == 1
+        val height = buffer.g2sAlt1()
         return CamLookAtCycles(
             x,
             z,

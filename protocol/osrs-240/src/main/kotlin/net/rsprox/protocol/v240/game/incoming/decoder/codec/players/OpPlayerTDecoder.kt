@@ -15,11 +15,11 @@ public class OpPlayerTDecoder : ProxyMessageDecoder<OpPlayerT> {
         buffer: JagByteBuf,
         session: Session,
     ): OpPlayerT {
-        val selectedSub = buffer.g2Alt2()
-        val controlKey = buffer.g1Alt1() == 1
-        val selectedObj = buffer.g2Alt3()
+        val controlKey = buffer.g1Alt2() == 1
+        val selectedSub = buffer.g2Alt1()
         val selectedCombinedId = buffer.gCombinedIdAlt2()
-        val index = buffer.g2()
+        val selectedObj = buffer.g2Alt1()
+        val index = buffer.g2Alt3()
         return OpPlayerT(
             index,
             controlKey,

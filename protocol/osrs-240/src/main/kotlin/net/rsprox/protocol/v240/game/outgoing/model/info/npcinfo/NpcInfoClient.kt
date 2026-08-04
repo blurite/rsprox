@@ -148,11 +148,14 @@ internal class NpcInfoClient(
                 throw IllegalStateException("Unused flag used: $flag!")
             }
 
-            if (flag and BODY_CUSTOMISATION_V2 != 0) {
-                decodeBodyCustomisationV2(npc.id, buffer, blocks)
+            if (flag and TINTING != 0) {
+                decodeTinting(buffer, blocks)
             }
-            if (flag and LEVEL_CHANGE != 0) {
-                decodeCombatLevelChange(buffer, blocks)
+            if (flag and BAS_CHANGE != 0) {
+                decodeBaseAnimationSet(buffer, blocks)
+            }
+            if (flag and HEAD_CUSTOMISATION != 0) {
+                decodeHeadCustomisationV2(npc.id, buffer, blocks)
             }
             if (flag and HEADICON_CUSTOMISATION != 0) {
                 decodeHeadiconCustomisation(buffer, blocks)
@@ -160,41 +163,35 @@ internal class NpcInfoClient(
             if (flag and OPS != 0) {
                 decodeEnabledOps(buffer, blocks)
             }
-            if (flag and HITMARKS != 0) {
-                decodeHitmarks(buffer, blocks)
-            }
-            if (flag and EXACT_MOVE != 0) {
-                decodeExactMove(buffer, blocks)
-            }
             if (flag and BODY_CUSTOMISATION_V3 != 0) {
                 decodeBodyCustomisationV3(buffer, blocks)
-            }
-            if (flag and HEADBARS != 0) {
-                decodeHeadbars(buffer, blocks)
-            }
-            if (flag and SEQUENCE != 0) {
-                decodeSequence(buffer, blocks)
             }
             if (flag and SAY != 0) {
                 decodeSay(buffer, blocks)
             }
-            if (flag and TINTING != 0) {
-                decodeTinting(buffer, blocks)
+            if (flag and NPC_FREEZE != 0) {
+                decodeFreeze(buffer, blocks)
+            }
+            if (flag and LEVEL_CHANGE != 0) {
+                decodeCombatLevelChange(buffer, blocks)
+            }
+            if (flag and EXACT_MOVE != 0) {
+                decodeExactMove(buffer, blocks)
+            }
+            if (flag and SEQUENCE != 0) {
+                decodeSequence(buffer, blocks)
+            }
+            if (flag and HITMARKS != 0) {
+                decodeHitmarks(buffer, blocks)
+            }
+            if (flag and SPOTANIM != 0) {
+                decodeSpotanim(buffer, blocks)
             }
             if (flag and NPC_TRANSPARENCY != 0) {
                 decodeTransparency(buffer, blocks)
             }
-            if (flag and BAS_CHANGE != 0) {
-                decodeBaseAnimationSet(buffer, blocks)
-            }
-            if (flag and NPC_FREEZE != 0) {
-                decodeFreeze(buffer, blocks)
-            }
-            if (flag and HEAD_CUSTOMISATION != 0) {
-                decodeHeadCustomisationV2(npc.id, buffer, blocks)
-            }
-            if (flag and SPOTANIM != 0) {
-                decodeSpotanim(buffer, blocks)
+            if (flag and BODY_CUSTOMISATION_V2 != 0) {
+                decodeBodyCustomisationV2(npc.id, buffer, blocks)
             }
             if (flag and NAME_CHANGE != 0) {
                 decodeNameChange(buffer, blocks)
@@ -205,6 +202,9 @@ internal class NpcInfoClient(
             if (flag and FACING != 0) {
                 decodeFacing(buffer, blocks)
             }
+            if (flag and HEADBARS != 0) {
+                decodeHeadbars(buffer, blocks)
+            }
         }
     }
 
@@ -212,21 +212,21 @@ internal class NpcInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val flag = buffer.g4Alt1()
-        val turnLeftAnim = if (flag and 0x1 != 0) buffer.g2() else null
-        val turnRightAnim = if (flag and 0x2 != 0) buffer.g2Alt3() else null
-        val walkAnim = if (flag and 0x4 != 0) buffer.g2Alt3() else null
+        val flag = buffer.g4Alt3()
+        val turnLeftAnim = if (flag and 0x1 != 0) buffer.g2Alt3() else null
+        val turnRightAnim = if (flag and 0x2 != 0) buffer.g2Alt1() else null
+        val walkAnim = if (flag and 0x4 != 0) buffer.g2() else null
         val walkAnimBack = if (flag and 0x8 != 0) buffer.g2Alt1() else null
-        val walkAnimLeft = if (flag and 0x10 != 0) buffer.g2() else null
+        val walkAnimLeft = if (flag and 0x10 != 0) buffer.g2Alt1() else null
         val walkAnimRight = if (flag and 0x20 != 0) buffer.g2Alt3() else null
-        val runAnim = if (flag and 0x40 != 0) buffer.g2Alt3() else null
-        val runAnimBack = if (flag and 0x80 != 0) buffer.g2Alt3() else null
-        val runAnimLeft = if (flag and 0x100 != 0) buffer.g2Alt2() else null
+        val runAnim = if (flag and 0x40 != 0) buffer.g2() else null
+        val runAnimBack = if (flag and 0x80 != 0) buffer.g2Alt2() else null
+        val runAnimLeft = if (flag and 0x100 != 0) buffer.g2Alt1() else null
         val runAnimRight = if (flag and 0x200 != 0) buffer.g2Alt2() else null
-        val crawlAnim = if (flag and 0x400 != 0) buffer.g2() else null
-        val crawlAnimBack = if (flag and 0x800 != 0) buffer.g2Alt1() else null
-        val crawlAnimLeft = if (flag and 0x1000 != 0) buffer.g2Alt2() else null
-        val crawlAnimRight = if (flag and 0x2000 != 0) buffer.g2Alt1() else null
+        val crawlAnim = if (flag and 0x400 != 0) buffer.g2Alt1() else null
+        val crawlAnimBack = if (flag and 0x800 != 0) buffer.g2Alt2() else null
+        val crawlAnimLeft = if (flag and 0x1000 != 0) buffer.g2Alt3() else null
+        val crawlAnimRight = if (flag and 0x2000 != 0) buffer.g2() else null
         val readyAnim = if (flag and 0x4000 != 0) buffer.g2() else null
         blocks +=
             BaseAnimationSetExtendedInfo(
@@ -276,7 +276,7 @@ internal class NpcInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val headbarCount = buffer.g1Alt2()
+        val headbarCount = buffer.g1Alt1()
         val headbars = ArrayList<Headbar>(headbarCount)
         for (i in 0..<headbarCount) {
             val type = buffer.gSmart1or2()
@@ -293,10 +293,10 @@ internal class NpcInfoClient(
                 continue
             }
             val startTime = buffer.gSmart1or2()
-            val startFill = buffer.g1Alt1()
+            val startFill = buffer.g1Alt3()
             val endFill =
                 if (endTime > 0) {
-                    buffer.g1Alt3()
+                    buffer.g1Alt2()
                 } else {
                     startFill
                 }
@@ -317,11 +317,11 @@ internal class NpcInfoClient(
         blocks: MutableList<ExtendedInfo>,
     ) {
         val spotanims = mutableMapOf<Int, Spotanim>()
-        val count = buffer.g1Alt2()
+        val count = buffer.g1Alt1()
         for (i in 0..<count) {
             val slot = buffer.g1()
-            val id = buffer.g2()
-            val heightAndDelay = buffer.g4Alt2()
+            val id = buffer.g2Alt3()
+            val heightAndDelay = buffer.g4Alt3()
             val height = heightAndDelay ushr 16
             val delay = heightAndDelay and 0xFFFF
             spotanims[slot] = Spotanim(id, delay, height)
@@ -333,8 +333,8 @@ internal class NpcInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val id = buffer.g2()
-        val delay = buffer.g1Alt2()
+        val id = buffer.g2Alt1()
+        val delay = buffer.g1Alt1()
         blocks += SequenceExtendedInfo(id, delay)
     }
 
@@ -350,9 +350,9 @@ internal class NpcInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val delay = buffer.g2()
-        val duration = buffer.g2()
-        val cancelSequence = buffer.g1Alt2() == 1
+        val delay = buffer.g2Alt3()
+        val duration = buffer.g2Alt2()
+        val cancelSequence = buffer.g1() == 1
         blocks += FreezeExtendedInfo(delay, duration, cancelSequence)
     }
 
@@ -360,11 +360,11 @@ internal class NpcInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val start = buffer.g2sAlt3()
+        val start = buffer.g2sAlt1()
         val end = buffer.g2s()
         val startTransparency = buffer.g1sAlt1()
-        val endTransparency = buffer.g1sAlt2()
-        val useStartTransparency = buffer.g1Alt2() == 1
+        val endTransparency = buffer.g1s()
+        val useStartTransparency = buffer.g1() == 1
         blocks +=
             TransparencyExtendedInfo(
                 start,
@@ -379,12 +379,12 @@ internal class NpcInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val start = buffer.g2Alt1()
+        val start = buffer.g2()
         val end = buffer.g2Alt2()
-        val hue = buffer.g1()
-        val saturation = buffer.g1Alt1()
-        val lightness = buffer.g1Alt1()
-        val weight = buffer.g1Alt1()
+        val hue = buffer.g1Alt2()
+        val saturation = buffer.g1Alt3()
+        val lightness = buffer.g1Alt3()
+        val weight = buffer.g1Alt2()
         blocks +=
             TintingExtendedInfo(
                 start,
@@ -401,7 +401,7 @@ internal class NpcInfoClient(
         blocks: MutableList<ExtendedInfo>,
         npc: Npc,
     ) {
-        val id = buffer.g2Alt3()
+        val id = buffer.g2Alt2()
         blocks += TransformationExtendedInfo(id)
         npc.id = id
     }
@@ -410,7 +410,7 @@ internal class NpcInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val flag = buffer.g1Alt2()
+        val flag = buffer.g1Alt3()
         blocks += EnabledOpsExtendedInfo(flag)
     }
 
@@ -418,14 +418,14 @@ internal class NpcInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val flag = buffer.g1Alt2()
+        val flag = buffer.g1Alt3()
         if (flag and 0x1 != 0) {
             blocks += BodyCustomisationExtendedInfo(ResetCustomisation)
             return
         }
         val models =
             if (flag and 0x2 != 0) {
-                val count = buffer.g1Alt1()
+                val count = buffer.g1()
                 val models = ArrayList<Int>(count)
                 for (i in 0..<count) {
                     val modelId = buffer.g4()
@@ -437,10 +437,10 @@ internal class NpcInfoClient(
             }
         val recolours =
             if (flag and 0x4 != 0) {
-                val count = buffer.g1Alt2()
+                val count = buffer.g1()
                 val recolours = ArrayList<Int>(count)
                 for (i in 0..<count) {
-                    recolours += buffer.g2Alt1()
+                    recolours += buffer.g2()
                 }
                 recolours
             } else {
@@ -451,7 +451,7 @@ internal class NpcInfoClient(
                 val count = buffer.g1Alt2()
                 val retextures = ArrayList<Int>(count)
                 for (i in 0..<count) {
-                    retextures += buffer.g2Alt3()
+                    retextures += buffer.g2Alt1()
                 }
                 retextures
             } else {
@@ -464,7 +464,7 @@ internal class NpcInfoClient(
                 val identKitCount = buffer.g1Alt1()
                 val identKit =
                     List(identKitCount) {
-                        buffer.g2()
+                        buffer.g2Alt3()
                     }
                 BodyCustomisationExtendedInfo.PlayerComposition(
                     bodyType,
@@ -490,75 +490,6 @@ internal class NpcInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val flag = buffer.g1()
-        if (flag and 0x1 != 0) {
-            blocks += BodyCustomisationExtendedInfo(ResetCustomisation)
-            return
-        }
-        val models =
-            if (flag and 0x2 != 0) {
-                val count = buffer.g1()
-                val models = ArrayList<Int>(count)
-                for (i in 0..<count) {
-                    val modelId = buffer.g4Alt1()
-                    models += modelId
-                }
-                models
-            } else {
-                null
-            }
-        val recolours =
-            if (flag and 0x4 != 0) {
-                val cache = cache.get()
-                val npc =
-                    cache.getNpcType(id)
-                        ?: throw DecodeError("Npc $id not found in cache $cache! Npc info decoding cannot continue.")
-                val length = npc.recoldest.size
-                val recolours = ArrayList<Int>(length)
-                for (i in 0..<length) {
-                    recolours += buffer.g2()
-                }
-                recolours
-            } else {
-                null
-            }
-        val retextures =
-            if (flag and 0x8 != 0) {
-                val cache = cache.get()
-                val npc =
-                    cache.getNpcType(id)
-                        ?: throw DecodeError("Npc $id not found in cache $cache! Npc info decoding cannot continue.")
-                val length = npc.retexdest.size
-                val retextures = ArrayList<Int>(length)
-                for (i in 0..<length) {
-                    retextures += buffer.g2Alt1()
-                }
-                retextures
-            } else {
-                null
-            }
-        val mirror =
-            if (flag and 0x10 != 0) {
-                buffer.g1() == 1
-            } else {
-                null
-            }
-        blocks +=
-            BodyCustomisationExtendedInfo(
-                ModelCustomisation(
-                    models,
-                    recolours,
-                    retextures,
-                    mirror,
-                ),
-            )
-    }
-
-    private fun decodeHeadCustomisationV2(
-        id: Int,
-        buffer: JagByteBuf,
-        blocks: MutableList<ExtendedInfo>,
-    ) {
         val flag = buffer.g1Alt1()
         if (flag and 0x1 != 0) {
             blocks += BodyCustomisationExtendedInfo(ResetCustomisation)
@@ -566,10 +497,10 @@ internal class NpcInfoClient(
         }
         val models =
             if (flag and 0x2 != 0) {
-                val count = buffer.g1Alt3()
+                val count = buffer.g1Alt2()
                 val models = ArrayList<Int>(count)
                 for (i in 0..<count) {
-                    val modelId = buffer.g4Alt2()
+                    val modelId = buffer.g4()
                     models += modelId
                 }
                 models
@@ -608,7 +539,76 @@ internal class NpcInfoClient(
             }
         val mirror =
             if (flag and 0x10 != 0) {
-                buffer.g1Alt2() == 1
+                buffer.g1Alt3() == 1
+            } else {
+                null
+            }
+        blocks +=
+            BodyCustomisationExtendedInfo(
+                ModelCustomisation(
+                    models,
+                    recolours,
+                    retextures,
+                    mirror,
+                ),
+            )
+    }
+
+    private fun decodeHeadCustomisationV2(
+        id: Int,
+        buffer: JagByteBuf,
+        blocks: MutableList<ExtendedInfo>,
+    ) {
+        val flag = buffer.g1Alt1()
+        if (flag and 0x1 != 0) {
+            blocks += BodyCustomisationExtendedInfo(ResetCustomisation)
+            return
+        }
+        val models =
+            if (flag and 0x2 != 0) {
+                val count = buffer.g1Alt1()
+                val models = ArrayList<Int>(count)
+                for (i in 0..<count) {
+                    val modelId = buffer.g4Alt3()
+                    models += modelId
+                }
+                models
+            } else {
+                null
+            }
+        val recolours =
+            if (flag and 0x4 != 0) {
+                val cache = cache.get()
+                val npc =
+                    cache.getNpcType(id)
+                        ?: throw DecodeError("Npc $id not found in cache $cache! Npc info decoding cannot continue.")
+                val length = npc.recoldest.size
+                val recolours = ArrayList<Int>(length)
+                for (i in 0..<length) {
+                    recolours += buffer.g2Alt2()
+                }
+                recolours
+            } else {
+                null
+            }
+        val retextures =
+            if (flag and 0x8 != 0) {
+                val cache = cache.get()
+                val npc =
+                    cache.getNpcType(id)
+                        ?: throw DecodeError("Npc $id not found in cache $cache! Npc info decoding cannot continue.")
+                val length = npc.retexdest.size
+                val retextures = ArrayList<Int>(length)
+                for (i in 0..<length) {
+                    retextures += buffer.g2Alt3()
+                }
+                retextures
+            } else {
+                null
+            }
+        val mirror =
+            if (flag and 0x10 != 0) {
+                buffer.g1Alt3() == 1
             } else {
                 null
             }
@@ -635,13 +635,13 @@ internal class NpcInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val deltaX1 = buffer.g1sAlt3()
-        val deltaZ1 = buffer.g1s()
-        val deltaX2 = buffer.g1sAlt1()
-        val deltaZ2 = buffer.g1s()
-        val delay1 = buffer.g2Alt3()
+        val deltaX1 = buffer.g1sAlt1()
+        val deltaZ1 = buffer.g1sAlt3()
+        val deltaX2 = buffer.g1s()
+        val deltaZ2 = buffer.g1sAlt1()
+        val delay1 = buffer.g2Alt1()
         val delay2 = buffer.g2Alt2()
-        val direction = buffer.g2Alt2()
+        val direction = buffer.g2Alt1()
         blocks +=
             ExactMoveExtendedInfo(
                 deltaX1,
@@ -666,7 +666,7 @@ internal class NpcInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val flag = buffer.g1Alt3()
+        val flag = buffer.g1Alt1()
         val groups = IntArray(8)
         val indices = IntArray(8)
         for (i in 0..<8) {
@@ -872,12 +872,12 @@ internal class NpcInfoClient(
                     if (hasSpawnCycle) {
                         npc.spawnCycle = buffer.gBits(32)
                     }
+                    npc.id = buffer.gBits(14)
                     val extendedInfo = buffer.gBits(1)
                     val deltaX = decodeDelta(large, buffer)
                     val angle = NPC_TURN_ANGLES[buffer.gBits(3)]
-                    val deltaZ = decodeDelta(large, buffer)
                     val jump = buffer.gBits(1)
-                    npc.id = buffer.gBits(14)
+                    val deltaZ = decodeDelta(large, buffer)
                     if (isNew) {
                         npc.turnAngle = angle
                         npc.angle = angle
@@ -999,29 +999,29 @@ internal class NpcInfoClient(
 
     private companion object {
         private val NPC_TURN_ANGLES = intArrayOf(768, 1024, 1280, 512, 1536, 256, 0, 1792)
-        private const val EXTENDED_SHORT: Int = 0x40
-        private const val EXTENDED_MEDIUM: Int = 0x800
-        private const val EXTENDED_INT: Int = 0x200_000
+        private const val EXTENDED_SHORT: Int = 0x20
+        private const val EXTENDED_MEDIUM: Int = 0x1000
+        private const val EXTENDED_INT: Int = 0x40_000
 
-        private const val LEVEL_CHANGE: Int = 0x8_000
-        private const val SEQUENCE: Int = 0x80
-        private const val NAME_CHANGE: Int = 0x4000
-        private const val OPS: Int = 0x1_000
-        private const val SPOTANIM: Int = 0x40_000
+        private const val LEVEL_CHANGE: Int = 0x800
+        private const val SEQUENCE: Int = 0x4
+        private const val NAME_CHANGE: Int = 0x100
+        private const val OPS: Int = 0x400
+        private const val SPOTANIM: Int = 0x400_000
         private const val HEADBARS: Int = 0x1_000_000
-        private const val BAS_CHANGE: Int = 0x100_000
-        private const val SAY: Int = 0x2
-        private const val EXACT_MOVE: Int = 0x200
-        private const val HITMARKS: Int = 0x80_000
-        private const val TRANSFORMATION: Int = 0x1
-        private const val FACING: Int = 0x8
-        private const val HEADICON_CUSTOMISATION: Int = 0x400_000
-        private const val BODY_CUSTOMISATION_V2: Int = 0x800_000
+        private const val BAS_CHANGE: Int = 0x200_000
+        private const val SAY: Int = 0x10
+        private const val EXACT_MOVE: Int = 0x2000
+        private const val HITMARKS: Int = 0x20_000
+        private const val TRANSFORMATION: Int = 0x8
+        private const val FACING: Int = 0x80
+        private const val HEADICON_CUSTOMISATION: Int = 0x10_000
+        private const val BODY_CUSTOMISATION_V2: Int = 0x100_000
         private const val BODY_CUSTOMISATION_V3: Int = 0x2_000_000
-        private const val HEAD_CUSTOMISATION: Int = 0x20_000
-        private const val TINTING: Int = 0x100
-        private const val NPC_TRANSPARENCY: Int = 0x400
-        private const val NPC_FREEZE: Int = 0x20
+        private const val HEAD_CUSTOMISATION: Int = 0x80_000
+        private const val TINTING: Int = 0x200
+        private const val NPC_TRANSPARENCY: Int = 0x8000
+        private const val NPC_FREEZE: Int = 0x1
 
         private const val UNUSED_FLAGS = 0x10000 or 0x2000 or 0x10 or 0x4
 
