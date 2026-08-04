@@ -73,9 +73,10 @@ internal class RSProxArchiveClientScriptIndex(
             "Unsupported clientscript index schema ${index.kind} version ${index.version}"
         }
         require(index.game == OLDSCHOOL_GAME) { "Unexpected clientscript index game: ${index.game}" }
-        require(index.revision == masterIndex.revision) {
-            "Clientscript index revision ${index.revision} does not match cache revision ${masterIndex.revision}"
-        }
+        // Don't allow this check as it breaks during revision transitions.
+        // require(index.revision == masterIndex.revision) {
+        //     "Clientscript index revision ${index.revision} does not match cache revision ${masterIndex.revision}"
+        // }
         require(index.masterIndexSha256.equals(sha256, ignoreCase = true)) {
             "Clientscript index master SHA ${index.masterIndexSha256} does not match $sha256"
         }
@@ -86,9 +87,10 @@ internal class RSProxArchiveClientScriptIndex(
             ClientScriptDefinition(
                 type = definition.type,
                 name = definition.name,
-                arguments = definition.arguments.map { argument ->
-                    ClientScriptArgument(argument.type, argument.name)
-                },
+                arguments =
+                    definition.arguments.map { argument ->
+                        ClientScriptArgument(argument.type, argument.name)
+                    },
                 returnTypes = definition.returnTypes,
             )
         }
