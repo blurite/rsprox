@@ -154,6 +154,9 @@ internal class NpcInfoClient(
             if (flag and BAS_CHANGE != 0) {
                 decodeBaseAnimationSet(buffer, blocks)
             }
+            if (flag and SPOTANIM != 0) {
+                decodeSpotanim(buffer, blocks)
+            }
             if (flag and HEAD_CUSTOMISATION != 0) {
                 decodeHeadCustomisationV2(npc.id, buffer, blocks)
             }
@@ -184,8 +187,8 @@ internal class NpcInfoClient(
             if (flag and HITMARKS != 0) {
                 decodeHitmarks(buffer, blocks)
             }
-            if (flag and SPOTANIM != 0) {
-                decodeSpotanim(buffer, blocks)
+            if (flag and SPOTANIM_OLD != 0) {
+                decodeSpotanimOld(buffer, blocks)
             }
             if (flag and NPC_TRANSPARENCY != 0) {
                 decodeTransparency(buffer, blocks)
@@ -312,7 +315,7 @@ internal class NpcInfoClient(
         blocks += HeadbarExtendedInfo(headbars)
     }
 
-    private fun decodeSpotanim(
+    private fun decodeSpotanimOld(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
@@ -325,6 +328,24 @@ internal class NpcInfoClient(
             val height = heightAndDelay ushr 16
             val delay = heightAndDelay and 0xFFFF
             spotanims[slot] = Spotanim(id, delay, height)
+        }
+        blocks += SpotanimExtendedInfo(spotanims)
+    }
+
+    private fun decodeSpotanim(
+        buffer: JagByteBuf,
+        blocks: MutableList<ExtendedInfo>,
+    ) {
+        val spotanims = mutableMapOf<Int, Spotanim>()
+        val count = buffer.g1Alt3()
+        for (i in 0..<count) {
+            val slot = buffer.g1()
+            val id = buffer.g2()
+            val heightAndDelay = buffer.g4Alt1()
+            val loops = buffer.g1Alt1() == 1
+            val height = heightAndDelay ushr 16
+            val delay = heightAndDelay and 0xFFFF
+            spotanims[slot] = Spotanim(id, delay, height, loops)
         }
         blocks += SpotanimExtendedInfo(spotanims)
     }
@@ -870,9 +891,13 @@ internal class NpcInfoClient(
 
                     val hasSpawnCycle = buffer.gBits(1) == 1
                     if (hasSpawnCycle) {
-                        npc.spawnCycle = buffer.gBits(32)
+                        val index = buffer.gBits(2)
+                        npc.spawnCycle = buffer.gBits(spawnClockBitcodes[index])
                     }
-                    npc.id = buffer.gBits(14)
+
+                    val idBitCount = buffer.gBits(2)
+                    npc.id = buffer.gBits(typeBitcodes[idBitCount])
+
                     val extendedInfo = buffer.gBits(1)
                     val deltaX = decodeDelta(large, buffer)
                     val angle = NPC_TURN_ANGLES[buffer.gBits(3)]
@@ -999,6 +1024,8 @@ internal class NpcInfoClient(
 
     private companion object {
         private val NPC_TURN_ANGLES = intArrayOf(768, 1024, 1280, 512, 1536, 256, 0, 1792)
+        private val spawnClockBitcodes = intArrayOf(18, 19, 20, 32)
+        private val typeBitcodes = intArrayOf(12, 14, 17, 24)
         private const val EXTENDED_SHORT: Int = 0x20
         private const val EXTENDED_MEDIUM: Int = 0x1000
         private const val EXTENDED_INT: Int = 0x40_000
@@ -1007,7 +1034,8 @@ internal class NpcInfoClient(
         private const val SEQUENCE: Int = 0x4
         private const val NAME_CHANGE: Int = 0x100
         private const val OPS: Int = 0x400
-        private const val SPOTANIM: Int = 0x400_000
+        private const val SPOTANIM: Int = 0x2
+        private const val SPOTANIM_OLD: Int = 0x400_000
         private const val HEADBARS: Int = 0x1_000_000
         private const val BAS_CHANGE: Int = 0x200_000
         private const val SAY: Int = 0x10
@@ -1023,7 +1051,7 @@ internal class NpcInfoClient(
         private const val NPC_TRANSPARENCY: Int = 0x8000
         private const val NPC_FREEZE: Int = 0x1
 
-        private const val UNUSED_FLAGS = 0x10000 or 0x2000 or 0x10 or 0x4
+        private const val UNUSED_FLAGS = 0x800000 or 0x4000 or 0x40 // 0x10000 or 0x2000 or 0x10 or 0x4
 
         private enum class UpdateType {
             IDLE,

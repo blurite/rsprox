@@ -302,6 +302,9 @@ internal class PlayerInfoClient(
             throw IllegalStateException("Unused flags used!")
         }
 
+        if (flags and SPOTANIM != 0) {
+            decodeSpotanims(buffer, blocks)
+        }
         if (flags and CHAT != 0) {
             decodeChat(buffer, blocks)
         }
@@ -329,8 +332,8 @@ internal class PlayerInfoClient(
         if (flags and TEMP_MOVE_SPEED != 0) {
             decodeTemporaryMoveSpeed(buffer, blocks)
         }
-        if (flags and SPOTANIM != 0) {
-            decodeSpotanims(buffer, blocks)
+        if (flags and SPOTANIM_OLD != 0) {
+            decodeSpotanimsOld(buffer, blocks)
         }
         if (flags and PLAYER_TRANSPARENCY != 0) {
             decodeTransparency(buffer, blocks)
@@ -539,7 +542,7 @@ internal class PlayerInfoClient(
             )
     }
 
-    private fun decodeSpotanims(
+    private fun decodeSpotanimsOld(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
@@ -552,6 +555,24 @@ internal class PlayerInfoClient(
             val height = heightAndDelay ushr 16
             val delay = heightAndDelay and 0xFFFF
             spotanims[slot] = Spotanim(id, delay, height)
+        }
+        blocks += SpotanimExtendedInfo(spotanims)
+    }
+
+    private fun decodeSpotanims(
+        buffer: JagByteBuf,
+        blocks: MutableList<ExtendedInfo>,
+    ) {
+        val spotanims = mutableMapOf<Int, Spotanim>()
+        val count = buffer.g1Alt1()
+        for (i in 0..<count) {
+            val slot = buffer.g1Alt2()
+            val id = buffer.g2Alt1()
+            val heightAndDelay = buffer.g4()
+            val loop = buffer.g1Alt3()
+            val height = heightAndDelay ushr 16
+            val delay = heightAndDelay and 0xFFFF
+            spotanims[slot] = Spotanim(id, delay, height, loop == 1)
         }
         blocks += SpotanimExtendedInfo(spotanims)
     }
@@ -1150,13 +1171,14 @@ internal class PlayerInfoClient(
         private const val EXACT_MOVE = 0x8000
         private const val PLAYER_TRANSPARENCY = 0x10000
         private const val TEMP_MOVE_SPEED = 0x800
-        private const val SPOTANIM = 0x80000
+        private const val SPOTANIM_OLD = 0x80000
+        private const val SPOTANIM = 0x20
         private const val HEADBARS = 0x20000
         private const val HITMARKS = 0x100000
 
         private const val PLAYER_FREEZE = 0x40_000
         private const val PLAYER_RESET = 0x8
-        private const val UNUSED_FLAGS = 0x2 or 0x20
+        private const val UNUSED_FLAGS = 0x2
 
         private class Player {
             var queuedMove: Boolean = false
