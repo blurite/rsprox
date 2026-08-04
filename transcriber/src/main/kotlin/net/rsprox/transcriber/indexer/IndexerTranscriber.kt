@@ -1484,7 +1484,7 @@ public class IndexerTranscriber(
         binaryIndex.increment(IndexedType.SPOTANIM, id)
     }
 
-    override fun npcInfoV5(message: NpcInfo) {
+    override fun npcInfoV6(message: NpcInfo) {
         val world = sessionState.getActiveWorld()
         for ((index, update) in message.updates) {
             when (update) {

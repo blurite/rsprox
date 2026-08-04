@@ -114,8 +114,10 @@ public class TranscriberPlugin(
             GameServerProt.OBJ_COUNT_SPECIFIC -> pass(message, Transcriber::objCountSpecific)
             GameServerProt.OBJ_CUSTOMISE_SPECIFIC -> pass(message, Transcriber::objUncustomiseSpecific)
             GameServerProt.PLAYER_INFO -> pass(message, Transcriber::playerInfo)
-            GameServerProt.NPC_INFO_SMALL_V5 -> pass(message, Transcriber::npcInfoV5)
-            GameServerProt.NPC_INFO_LARGE_V5 -> pass(message, Transcriber::npcInfoV5)
+            GameServerProt.NPC_INFO_SMALL_V6 -> pass(message, Transcriber::npcInfoV6)
+            GameServerProt.NPC_INFO_LARGE_V6 -> pass(message, Transcriber::npcInfoV6)
+            GameServerProt.NPC_INFO_SMALL_V5 -> pass(message, Transcriber::npcInfoV6)
+            GameServerProt.NPC_INFO_LARGE_V5 -> pass(message, Transcriber::npcInfoV6)
             GameServerProt.SET_NPC_UPDATE_ORIGIN -> pass(message, Transcriber::setNpcUpdateOrigin)
             GameServerProt.CLEAR_ENTITIES -> pass(message, Transcriber::clearEntities)
             GameServerProt.SET_ACTIVE_WORLD_V1 -> pass(message, Transcriber::setActiveWorldV1)
@@ -234,8 +236,8 @@ public class TranscriberPlugin(
             GameServerProt.RECONNECT -> pass(message, Transcriber::reconnect)
             GameServerProt.HIDEOBJOPS -> pass(message, Transcriber::hideObjOps)
             GameServerProt.UNKNOWN_STRING -> pass(message, Transcriber::unknownString)
-            GameServerProt.NPC_INFO_SMALL_V4 -> pass(message, Transcriber::npcInfoV5)
-            GameServerProt.NPC_INFO_LARGE_V4 -> pass(message, Transcriber::npcInfoV5)
+            GameServerProt.NPC_INFO_SMALL_V4 -> pass(message, Transcriber::npcInfoV6)
+            GameServerProt.NPC_INFO_LARGE_V4 -> pass(message, Transcriber::npcInfoV6)
             GameServerProt.OBJ_CUSTOMISE -> pass(message, Transcriber::objCustomise)
             GameServerProt.OBJ_UNCUSTOMISE -> pass(message, Transcriber::objUncustomise)
             GameServerProt.SET_INTERACTION_MODE -> pass(message, Transcriber::setInteractionMode)
@@ -244,6 +246,7 @@ public class TranscriberPlugin(
             GameServerProt.WORLDENTITY_INFO_V7 -> pass(message, Transcriber::worldEntityInfoV7)
             GameServerProt.ACCOUNT_FLAGS -> pass(message, Transcriber::accountFlags)
             GameServerProt.ZBUF -> pass(message, Transcriber::zbuf)
+            GameServerProt.UNHANDLED -> error("Unhandled message in use")
         }
     }
 

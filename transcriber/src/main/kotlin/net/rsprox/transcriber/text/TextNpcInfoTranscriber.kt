@@ -177,7 +177,7 @@ public class TextNpcInfoTranscriber(
         return coordGridProperty(coord.level, coord.x, coord.z, name)
     }
 
-    override fun npcInfoV5(message: NpcInfo) {
+    override fun npcInfoV6(message: NpcInfo) {
         npcInfoUpdate(message)
     }
 

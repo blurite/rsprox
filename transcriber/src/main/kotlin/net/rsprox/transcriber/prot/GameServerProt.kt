@@ -86,6 +86,8 @@ public enum class GameServerProt : Prot {
 
     // Info packets
     PLAYER_INFO,
+    NPC_INFO_SMALL_V6,
+    NPC_INFO_LARGE_V6,
     NPC_INFO_SMALL_V5,
     NPC_INFO_LARGE_V5,
     NPC_INFO_SMALL_V4,
@@ -237,6 +239,7 @@ public enum class GameServerProt : Prot {
 
     // Unknown packets
     UNKNOWN_STRING,
+    UNHANDLED,
 
     RECONNECT,
 }

@@ -214,6 +214,7 @@ public enum class GameServerProt(
 
     // Unknown packets
     UNKNOWN_STRING(GameServerProtId.UNKNOWN_STRING, Prot.VAR_BYTE),
+    UNHANDLED(GameServerProtId.UNHANDLED, Prot.VAR_SHORT),
 
     PACKET_GROUP_END(0xFE, 0),
     RECONNECT(0xFF, Prot.VAR_SHORT),
