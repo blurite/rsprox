@@ -23,6 +23,7 @@ internal class NpcInfoLargeDecoder : ProxyMessageDecoder<NpcInfo> {
             buffer.buffer,
             true,
             session.getNpcInfoBaseCoord(),
+            4,
         )
     }
 }

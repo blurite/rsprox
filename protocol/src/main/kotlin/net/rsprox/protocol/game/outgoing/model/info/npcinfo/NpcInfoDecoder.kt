@@ -8,5 +8,6 @@ public interface NpcInfoDecoder {
         buffer: ByteBuf,
         large: Boolean,
         baseCoord: CoordGrid,
+        version: Int,
     ): NpcInfo
 }

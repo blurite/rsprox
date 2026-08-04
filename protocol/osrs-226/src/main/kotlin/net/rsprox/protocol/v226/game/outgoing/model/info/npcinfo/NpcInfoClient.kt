@@ -55,6 +55,7 @@ internal class NpcInfoClient(
         buffer: ByteBuf,
         large: Boolean,
         baseCoord: CoordGrid,
+        version: Int,
     ): NpcInfo {
         deletedNPCCount = 0
         extraUpdateNPCCount = 0

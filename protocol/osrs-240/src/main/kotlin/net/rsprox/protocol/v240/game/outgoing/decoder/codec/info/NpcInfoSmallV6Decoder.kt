@@ -1,4 +1,4 @@
-package net.rsprox.protocol.v233.game.outgoing.decoder.codec.info
+package net.rsprox.protocol.v240.game.outgoing.decoder.codec.info
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
@@ -8,10 +8,10 @@ import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.session.getActiveWorld
 import net.rsprox.protocol.session.getNpcInfoBaseCoord
 import net.rsprox.protocol.session.getWorld
-import net.rsprox.protocol.v233.game.outgoing.decoder.prot.GameServerProt
+import net.rsprox.protocol.v240.game.outgoing.decoder.prot.GameServerProt
 
-internal class NpcInfoSmallV5Decoder : ProxyMessageDecoder<NpcInfo> {
-    override val prot: ClientProt = GameServerProt.NPC_INFO_SMALL_V5
+internal class NpcInfoSmallV6Decoder : ProxyMessageDecoder<NpcInfo> {
+    override val prot: ClientProt = GameServerProt.NPC_INFO_SMALL_V6
 
     override fun decode(
         buffer: JagByteBuf,
@@ -23,7 +23,7 @@ internal class NpcInfoSmallV5Decoder : ProxyMessageDecoder<NpcInfo> {
             buffer.buffer,
             false,
             session.getNpcInfoBaseCoord(),
-            5,
+            6,
         )
     }
 }

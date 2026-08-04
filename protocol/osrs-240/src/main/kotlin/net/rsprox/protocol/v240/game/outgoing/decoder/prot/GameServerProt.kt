@@ -90,6 +90,8 @@ public enum class GameServerProt(
     PLAYER_INFO(GameServerProtId.PLAYER_INFO, Prot.VAR_SHORT),
     NPC_INFO_SMALL_V5(GameServerProtId.NPC_INFO_SMALL_V5, Prot.VAR_SHORT),
     NPC_INFO_LARGE_V5(GameServerProtId.NPC_INFO_LARGE_V5, Prot.VAR_SHORT),
+    NPC_INFO_SMALL_V6(GameServerProtId.NPC_INFO_SMALL_V6, Prot.VAR_SHORT),
+    NPC_INFO_LARGE_V6(GameServerProtId.NPC_INFO_LARGE_V6, Prot.VAR_SHORT),
 
     SET_NPC_UPDATE_ORIGIN(GameServerProtId.SET_NPC_UPDATE_ORIGIN, 2),
 

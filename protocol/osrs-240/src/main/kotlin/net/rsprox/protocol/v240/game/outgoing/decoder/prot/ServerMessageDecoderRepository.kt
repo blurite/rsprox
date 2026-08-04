@@ -44,7 +44,9 @@ import net.rsprox.protocol.v240.game.outgoing.decoder.codec.group.GroupVarDecode
 import net.rsprox.protocol.v240.game.outgoing.decoder.codec.group.GroupVarIntDecoder
 import net.rsprox.protocol.v240.game.outgoing.decoder.codec.group.GroupVarLongDecoder
 import net.rsprox.protocol.v240.game.outgoing.decoder.codec.info.NpcInfoLargeV5Decoder
+import net.rsprox.protocol.v240.game.outgoing.decoder.codec.info.NpcInfoLargeV6Decoder
 import net.rsprox.protocol.v240.game.outgoing.decoder.codec.info.NpcInfoSmallV5Decoder
+import net.rsprox.protocol.v240.game.outgoing.decoder.codec.info.NpcInfoSmallV6Decoder
 import net.rsprox.protocol.v240.game.outgoing.decoder.codec.info.PlayerInfoDecoder
 import net.rsprox.protocol.v240.game.outgoing.decoder.codec.info.SetNpcUpdateOriginDecoder
 import net.rsprox.protocol.v240.game.outgoing.decoder.codec.info.WorldEntityInfoV7Decoder
@@ -207,6 +209,8 @@ internal object ServerMessageDecoderRepository {
                 bind(PlayerInfoDecoder())
                 bind(NpcInfoSmallV5Decoder())
                 bind(NpcInfoLargeV5Decoder())
+                bind(NpcInfoSmallV6Decoder())
+                bind(NpcInfoLargeV6Decoder())
                 bind(SetNpcUpdateOriginDecoder())
                 bind(WorldEntityInfoV7Decoder(huffmanCodec, cache))
 
