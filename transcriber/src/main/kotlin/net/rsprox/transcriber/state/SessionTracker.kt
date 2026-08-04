@@ -14,8 +14,13 @@ import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.Move
 import net.rsprox.protocol.game.outgoing.model.info.playerinfo.extendedinfo.TemporaryMoveSpeedExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.shared.extendedinfo.ExtendedInfo
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfo
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV1
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV2
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV3
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV4
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV5
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV6
+import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityInfoV7
 import net.rsprox.protocol.game.outgoing.model.info.worldentityinfo.WorldEntityUpdateType
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfMoveSub
@@ -217,9 +222,14 @@ public class SessionTracker(
             is WorldEntityInfo -> {
                 val earlyRemovals =
                     when (message) {
+                        is WorldEntityInfoV1 -> emptyList()
+                        is WorldEntityInfoV2 -> emptyList()
+                        is WorldEntityInfoV3 -> emptyList()
+                        is WorldEntityInfoV4 -> emptyList()
                         is WorldEntityInfoV5 -> message.earlyRemovals
                         is WorldEntityInfoV6 -> message.earlyRemovals
-                        else -> emptySet()
+                        is WorldEntityInfoV7 -> message.earlyRemovals
+                        else -> error("Missing handler for $message")
                     }
                 if (earlyRemovals.isNotEmpty()) {
                     for (index in earlyRemovals) {

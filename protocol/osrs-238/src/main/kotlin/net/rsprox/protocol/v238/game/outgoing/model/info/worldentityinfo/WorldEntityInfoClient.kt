@@ -281,7 +281,8 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
             }
             this.transmittedWorldEntity[this.transmittedWorldEntityCount++] = index
             if (opcode == 1) {
-                val extendedInfo = decodeWorldEntityInfoExtendedInfoUnobfuscated(buffer)
+                val flags = buffer.g1()
+                val extendedInfo = decodeWorldEntityInfoExtendedInfoObfuscated(buffer, flags)
                 if (extendedInfo.isEmpty()) {
                     updates[index] = WorldEntityUpdateType.Idle
                 } else {

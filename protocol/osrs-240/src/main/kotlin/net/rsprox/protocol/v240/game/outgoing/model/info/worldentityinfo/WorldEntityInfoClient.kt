@@ -281,7 +281,8 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
             }
             this.transmittedWorldEntity[this.transmittedWorldEntityCount++] = index
             if (opcode == 1) {
-                val extendedInfo = decodeWorldEntityInfoExtendedInfoUnobfuscated(buffer)
+                val flags = buffer.g1()
+                val extendedInfo = decodeWorldEntityInfoExtendedInfoObfuscated(buffer, flags)
                 if (extendedInfo.isEmpty()) {
                     updates[index] = WorldEntityUpdateType.Idle
                 } else {
@@ -339,13 +340,13 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
             return emptyList()
         }
         val blocks = mutableListOf<ExtendedInfo>()
-        if (flags and 0x2 != 0) {
-            blocks += EnabledOpsExtendedInfo(buffer.g1Alt3())
-        }
         if (flags and 0x1 != 0) {
             val id = buffer.g2()
-            val delay = buffer.g1()
+            val delay = buffer.g1Alt1()
             blocks += SequenceExtendedInfo(id, delay)
+        }
+        if (flags and 0x2 != 0) {
+            blocks += EnabledOpsExtendedInfo(buffer.g1Alt1())
         }
         return blocks
     }
@@ -564,8 +565,8 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
             val index = buffer.g2()
             // Note: If serverVersion < 237, add +1 to index
             this.transmittedWorldEntity[this.transmittedWorldEntityCount++] = index
-            val extendedInfoFlags = buffer.g1()
-            val packedSize = buffer.g1Alt2()
+            val extendedInfoFlags = buffer.g1Alt3()
+            val packedSize = buffer.g1Alt3()
             val priority = buffer.g1Alt1()
             val id = buffer.g2sAlt1()
 
