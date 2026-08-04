@@ -728,6 +728,10 @@ public class TextNpcInfoTranscriber(
                 scriptVarType("id", ScriptVarType.SPOTANIM, spotanim.id.maxUShortToMinusOne())
                 filteredInt("delay", spotanim.delay, 0)
                 filteredInt("height", spotanim.height, 0)
+                val loop = spotanim.loop
+                if (loop != null) {
+                    filteredBoolean("loop", loop)
+                }
             }
         }
     }

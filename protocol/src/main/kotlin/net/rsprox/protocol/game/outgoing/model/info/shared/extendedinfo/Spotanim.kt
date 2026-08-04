@@ -4,6 +4,7 @@ public class Spotanim(
     public val id: Int,
     public val delay: Int,
     public val height: Int,
+    public val loop: Boolean? = null,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -14,6 +15,7 @@ public class Spotanim(
         if (id != other.id) return false
         if (delay != other.delay) return false
         if (height != other.height) return false
+        if (loop != other.loop) return false
 
         return true
     }
@@ -22,6 +24,7 @@ public class Spotanim(
         var result = id
         result = 31 * result + delay
         result = 31 * result + height
+        result = 31 * result + loop.hashCode()
         return result
     }
 
@@ -29,7 +32,8 @@ public class Spotanim(
         return "Spotanim(" +
             "id=$id, " +
             "delay=$delay, " +
-            "height=$height" +
+            "height=$height, " +
+            "loop=$loop" +
             ")"
     }
 }
