@@ -17,6 +17,15 @@ public class ClientCheatDecoder : ProxyMessageDecoder<ClientCheat> {
         session: Session,
     ): ClientCheat {
         val command = buffer.gjstr()
-        return ClientCheat(command)
+        val unknown =
+            if (!buffer.isReadable) {
+                null
+            } else {
+                buffer.g1()
+            }
+        return ClientCheat(
+            command,
+            unknown,
+        )
     }
 }

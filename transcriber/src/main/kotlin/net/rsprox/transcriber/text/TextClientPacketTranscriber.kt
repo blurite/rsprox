@@ -648,6 +648,10 @@ public open class TextClientPacketTranscriber(
     override fun clientCheat(message: ClientCheat) {
         if (!filters[PropertyFilter.CLIENT_CHEAT]) return omit()
         root.string("cheat", message.command)
+        val unknown = message.unknown
+        if (unknown != null) {
+            root.int("unknown", unknown)
+        }
     }
 
     override fun closeModal(message: CloseModal) {

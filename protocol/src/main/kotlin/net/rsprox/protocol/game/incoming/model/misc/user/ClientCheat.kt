@@ -10,6 +10,7 @@ import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
  */
 public class ClientCheat(
     public val command: String,
+    public val unknown: Int? = null,
 ) : IncomingGameMessage {
     override val category: ClientProtCategory
         get() = GameClientProtCategory.USER_EVENT
@@ -20,10 +21,22 @@ public class ClientCheat(
 
         other as ClientCheat
 
-        return command == other.command
+        if (unknown != other.unknown) return false
+        if (command != other.command) return false
+
+        return true
     }
 
-    override fun hashCode(): Int = command.hashCode()
+    override fun hashCode(): Int {
+        var result = unknown.hashCode()
+        result = 31 * result + command.hashCode()
+        return result
+    }
 
-    override fun toString(): String = "ClientCheat(command='$command')"
+    override fun toString(): String {
+        return "ClientCheat(" +
+            "command='$command', " +
+            "unknown=$unknown" +
+            ")"
+    }
 }
