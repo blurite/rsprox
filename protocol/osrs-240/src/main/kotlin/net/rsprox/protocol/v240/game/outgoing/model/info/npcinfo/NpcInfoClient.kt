@@ -63,7 +63,7 @@ internal class NpcInfoClient(
         extraUpdateNPCCount = 0
         buffer.toBitBuf().use { bitBuffer ->
             processHighResolution(bitBuffer)
-            processLowResolution(large, bitBuffer, baseCoord)
+            processLowResolution(large, bitBuffer, baseCoord, version)
         }
         processExtendedInfo(buffer.toJagByteBuf())
         for (i in 0..<deletedNPCCount) {
@@ -867,6 +867,7 @@ internal class NpcInfoClient(
         large: Boolean,
         buffer: BitBuf,
         baseCoord: CoordGrid,
+        version: Int,
     ) {
         while (true) {
             val indexBitCount = 16
@@ -890,30 +891,58 @@ internal class NpcInfoClient(
                     transmittedNPC[transmittedNPCCount++] = index
                     npc.lastTransmitCycle = cycle
 
-                    val hasSpawnCycle = buffer.gBits(1) == 1
-                    if (hasSpawnCycle) {
-                        val index = buffer.gBits(2)
-                        npc.spawnCycle = buffer.gBits(spawnClockBitcodes[index])
-                    }
+                    val deltaX: Int
+                    val deltaZ: Int
+                    val jump: Int
+                    if (version == 6) {
+                        val hasSpawnCycle = buffer.gBits(1) == 1
+                        if (hasSpawnCycle) {
+                            val index = buffer.gBits(2)
+                            npc.spawnCycle = buffer.gBits(spawnClockBitcodes[index])
+                        }
 
-                    val idBitCount = buffer.gBits(2)
-                    npc.id = buffer.gBits(typeBitcodes[idBitCount])
+                        val idBitCount = buffer.gBits(2)
+                        npc.id = buffer.gBits(typeBitcodes[idBitCount])
 
-                    val extendedInfo = buffer.gBits(1)
-                    val deltaX = decodeDelta(large, buffer)
-                    val angle = NPC_TURN_ANGLES[buffer.gBits(3)]
-                    val jump = buffer.gBits(1)
-                    val deltaZ = decodeDelta(large, buffer)
-                    if (isNew) {
-                        npc.turnAngle = angle
-                        npc.angle = angle
-                    }
-                    // reset bas
-                    if (npc.turnSpeed == 0) {
-                        npc.angle = 0
-                    }
-                    if (extendedInfo == 1) {
-                        this.extraUpdateNPC[extraUpdateNPCCount++] = index
+                        val extendedInfo = buffer.gBits(1)
+                        deltaX = decodeDelta(large, buffer)
+                        val angle = NPC_TURN_ANGLES[buffer.gBits(3)]
+                        jump = buffer.gBits(1)
+                        deltaZ = decodeDelta(large, buffer)
+                        if (isNew) {
+                            npc.turnAngle = angle
+                            npc.angle = angle
+                        }
+                        // reset bas
+                        if (npc.turnSpeed == 0) {
+                            npc.angle = 0
+                        }
+                        if (extendedInfo == 1) {
+                            this.extraUpdateNPC[extraUpdateNPCCount++] = index
+                        }
+                    } else {
+                        val hasSpawnCycle = buffer.gBits(1) == 1
+                        if (hasSpawnCycle) {
+                            npc.spawnCycle = buffer.gBits(32)
+                        }
+
+                        npc.id = buffer.gBits(14)
+                        val angle = NPC_TURN_ANGLES[buffer.gBits(3)]
+                        deltaX = decodeDelta(large, buffer)
+                        jump = buffer.gBits(1)
+                        deltaZ = decodeDelta(large, buffer)
+                        val extendedInfo = buffer.gBits(1)
+                        if (isNew) {
+                            npc.turnAngle = angle
+                            npc.angle = angle
+                        }
+                        // reset bas
+                        if (npc.turnSpeed == 0) {
+                            npc.angle = 0
+                        }
+                        if (extendedInfo == 1) {
+                            this.extraUpdateNPC[extraUpdateNPCCount++] = index
+                        }
                     }
                     npc.addRouteWaypoint(
                         baseCoord,
