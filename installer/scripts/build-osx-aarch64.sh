@@ -42,30 +42,10 @@ build() {
 }
 
 dmg() {
-    SIGNING_IDENTITY="Developer ID Application"
-    codesign -f -s "${SIGNING_IDENTITY}" --entitlements installer/osx/signing.entitlements --options runtime $APPBASE || true
-
-    # create-dmg exits with an error code due to no code signing, but is still okay
-    create-dmg $APPBASE . || true
-    mv rsprox\ *.dmg RSProx-aarch64.dmg
-
-    # dump for CI
-    hdiutil imageinfo RSProx-aarch64.dmg
-
-    if ! hdiutil imageinfo RSProx-aarch64.dmg | grep -q "Format: ULFO" ; then
-        echo Format of dmg is not ULFO
-        exit 1
-    fi
-
-    if ! hdiutil imageinfo RSProx-aarch64.dmg | grep -q "Apple_HFS" ; then
-        echo Filesystem of dmg is not Apple_HFS
-        exit 1
-    fi
-
-    # Notarize app
-    if xcrun notarytool submit RSProx-aarch64.dmg --wait --keychain-profile "AC_PASSWORD" ; then
-        xcrun stapler staple RSProx-aarch64.dmg
-    fi
+    codesign --force --deep --sign - "$APPBASE"
+    codesign --verify --deep --strict --verbose=2 "$APPBASE"
+    hdiutil create -volname RSProx -srcfolder "$APPBASE" -ov -format UDZO RSProx-aarch64.dmg
+    hdiutil verify RSProx-aarch64.dmg
 }
 
 while test $# -gt 0; do

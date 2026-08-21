@@ -87,6 +87,19 @@ filter preset.
 
 #### macOS Support
 
+The downloadable macOS builds are ad-hoc signed and are not notarized by
+Apple. After dragging `RSProx.app` into Applications, approve each downloaded
+build once:
+
+1. Try to open RSProx, then dismiss the security warning.
+2. On macOS 13 or newer, open **System Settings > Privacy & Security**.
+   On macOS 11 or 12, open **System Preferences > Security & Privacy > General**.
+3. Click **Open Anyway** and authenticate.
+4. Confirm **Open** when macOS asks again.
+
+Apple documents this process in
+[Safely open apps on your Mac](https://support.apple.com/102445).
+
 No network setup is required. When the first RuneLite client is launched,
 macOS asks once for administrator access for that RSProx run. RSProx then adds
 only the loopback addresses needed by active clients, keeps at most eight at a
