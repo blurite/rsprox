@@ -36,14 +36,23 @@ jobs:
         with:
           validate-wrappers: true
 
-      - name: Build launcher
-        run: ./gradlew launcher:shadowJar
+      - name: Build launcher and macOS app
+        run: |
+          ./gradlew launcher:shadowJar :gui:proxy-tool:shadowJar
+          mkdir mac-artifact
+          cp gui/proxy-tool/build/libs/rsprox.jar mac-artifact/rsprox-launcher.jar
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: jar
           path: launcher/build/libs/rsprox-launcher.jar
+
+      - name: Upload macOS app
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-jar
+          path: mac-artifact/rsprox-launcher.jar
 
       - name: Upload for release
         uses: softprops/action-gh-release@v1
@@ -219,7 +228,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: jar
+          name: mac-jar
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4

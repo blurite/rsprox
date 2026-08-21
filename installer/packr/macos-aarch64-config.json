@@ -2,7 +2,7 @@
   "classPath": [
     "rsprox-launcher.jar"
   ],
-  "mainClass": "net.rsprox.launcher.LauncherKt",
+  "mainClass": "net.rsprox.gui.ProxyToolGuiKt",
   "vmArgs": [
     "-Xmx768m",
     "-Xss2m",
