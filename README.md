@@ -85,49 +85,16 @@ filter preset.
 > You can have an unlimited amount of filter presets, and they are saved on
 > your PC.
 
-#### MacOS Support
-MacOS does not whitelist any loopback address other than 127.0.0.1 by default,
-which means RSProx cannot establish a connection, as we use unique
-loopback addresses per connection established, which describes the world to
-which we're connecting.
+#### macOS Support
 
-As such, it is necessary for anyone connecting via MacOS to run some commands.
-In order to whitelist the necessary loopback addresses, this script must be run:
-(Note that for custom private server targets, the group id must be changed from
-2 to 3+, where 3 is the first custom target, 4 is the second and so on)
+No network setup is required. When the first RuneLite client is launched,
+macOS asks once for administrator access for that RSProx run. RSProx then adds
+only the loopback addresses needed by active clients, keeps at most eight at a
+time, and removes them when they become idle or RSProx exits. This avoids the
+DNS slowdown caused by permanently adding every world address.
 
-> [!WARNING]
-> Whitelisting a lot of worlds will result in DNS lookups significantly slowing
-> down. It is recommended you only select your preferred worlds and whitelist
-> those specific ones. Ensure that your default world is configured and
-> whitelisted, or the client will not be able to boot up.
-
-```bash
-#!/bin/bash
-set -euo pipefail
-
-# === Config ====================================================
-MIN_WORLD_ID=300      # Minimum world id to whitelist, inclusive.
-MAX_WORLD_ID=650      # Maximum world id to whitelist, inclusive.
-GROUP_ID=2            # Proxy target (2 is Oldschool, 3 is first custom, etc).
-MODE=+                # "+" to whitelist, "-" to un-whitelist
-# ===============================================================
-
-for ((w=MIN_WORLD_ID; w<=MAX_WORLD_ID; w++)); do
-  a=$(( w / 256 ))
-  b=$(( w % 256 ))
-  c=$GROUP_ID
-  ip="127.$a.$b.$c"
-
-  if [[ "$MODE" == "+" ]]; then
-    sudo ifconfig lo0 alias "$ip"
-  else
-    sudo ifconfig lo0 -alias "$ip"
-  fi
-done
-
-echo "Alias IPs added for worlds $MIN_WORLD_ID..$MAX_WORLD_ID (group $GROUP_ID)."
-```
+If the authorization prompt is declined, quit and reopen RSProx before
+launching RuneLite again.
 
 ### Transcribing
 Besides live transcribing which happens on the UI directly, it is possible to

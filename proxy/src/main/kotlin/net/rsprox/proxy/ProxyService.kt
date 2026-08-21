@@ -45,6 +45,7 @@ import net.rsprox.proxy.futures.asCompletableFuture
 import net.rsprox.proxy.http.GamePackProvider
 import net.rsprox.proxy.http.REPLAY_WORLDLIST_ENDPOINT
 import net.rsprox.proxy.huffman.HuffmanProvider
+import net.rsprox.proxy.loopback.MacLoopbackAliases
 import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.replay.ReplayCacheProvider
 import net.rsprox.proxy.replay.ReplaySession
@@ -557,6 +558,7 @@ public class ProxyService(
     private fun setShutdownHook() {
         Runtime.getRuntime().addShutdownHook(
             Thread {
+                MacLoopbackAliases.shutdown()
                 if (hasAliveProcesses()) {
                     logger.debug {
                         "Unsafe shutdown detected - attempting to shut down gracefully"
@@ -629,6 +631,7 @@ public class ProxyService(
     }
 
     public fun safeShutdown() {
+        MacLoopbackAliases.shutdown()
         for (connection in connections.listConnections()) {
             closeActiveChannel(connection.clientChannel)
             closeActiveChannel(connection.serverChannel)
@@ -1334,6 +1337,7 @@ public class ProxyService(
             .orTimeout(timeoutSeconds, TimeUnit.SECONDS)
             .join()
         this.serverBootstrap = serverBootstrap
+        if (operatingSystem == OperatingSystem.MAC) MacLoopbackAliases.registerProxyPort(port)
         logger.debug { "Proxy server bound to port $port" }
     }
 
@@ -1359,6 +1363,7 @@ public class ProxyService(
                         .join()
                 }.channel()
         this.serverBootstrap = serverBootstrap
+        if (operatingSystem == OperatingSystem.MAC) MacLoopbackAliases.registerProxyPort(port)
     }
 
     public companion object {

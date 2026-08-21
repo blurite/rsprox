@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
   <key>CFBundleExecutable</key>
-  <string>rsprox</string>
+  <string>RSProx</string>
   <key>CFBundleIdentifier</key>
   <string>net.rsprox.launcher</string>
   <key>CFBundleName</key>
