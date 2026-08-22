@@ -24,7 +24,7 @@ public data class NativePatchCriteria(
             val originalPort = intToHexStringLE(DEFAULT_PORT)
             val replacementPort = intToHexStringLE(port)
             when (type) {
-                NativeClientType.WIN -> {
+                NativeClientType.WIN, NativeClientType.RS3_WIN -> {
                     wildcardByteSequence(
                         hexPattern(originalPort),
                         hexPattern(replacementPort),
@@ -47,7 +47,7 @@ public data class NativePatchCriteria(
 
         public fun acceptAllLoopbackAddresses(): Builder {
             when (type) {
-                NativeClientType.WIN -> {
+                NativeClientType.WIN, NativeClientType.RS3_WIN -> {
                     constString(
                         "127.0.0.1",
                         "127.",
@@ -67,7 +67,7 @@ public data class NativePatchCriteria(
 
         public fun acceptAllHosts(): Builder {
             when (type) {
-                NativeClientType.WIN -> {
+                NativeClientType.WIN, NativeClientType.RS3_WIN -> {
                     constString(
                         "127.0.0.1",
                         "",
@@ -87,11 +87,17 @@ public data class NativePatchCriteria(
         }
 
         public fun javConfig(url: String): Builder {
+            val defaults =
+                when (type) {
+                    NativeClientType.RS3_WIN -> listOf(DEFAULT_RS3_JAVCONFIG_URL)
+                    else ->
+                        listOf(
+                            DEFAULT_JAVCONFIG_URL_PRE_231,
+                            DEFAULT_JAVCONFIG_URL,
+                        )
+                }
             constString(
-                listOf(
-                    DEFAULT_JAVCONFIG_URL_PRE_231,
-                    DEFAULT_JAVCONFIG_URL,
-                ),
+                defaults,
                 url,
                 FailureBehaviour.ERROR,
                 DuplicateReplacementBehaviour.ERROR_ON_DUPLICATES,
@@ -185,8 +191,8 @@ public data class NativePatchCriteria(
         }
 
         public fun rsaModulus(hexString: String): Builder {
-            require(hexString.length <= OSRS_MODULUS_LEN) {
-                "RSA Modulus length cannot be greater than the existing one: ${hexString.length}, $OSRS_MODULUS_LEN"
+            require(hexString.length <= MAX_MODULUS_LEN) {
+                "RSA Modulus length cannot be greater than $MAX_MODULUS_LEN: ${hexString.length}"
             }
             this.rsaModulus = hexString
             return this
@@ -288,7 +294,9 @@ public data class NativePatchCriteria(
         public const val DEFAULT_PRIORITY: Int = 50
         public const val LOW_PRIORITY: Int = 0
         private const val DEFAULT_PORT: Int = 43594
-        private const val OSRS_MODULUS_LEN: Int = 256
+        public const val OSRS_MODULUS_LEN: Int = 256
+        public const val MAX_MODULUS_LEN: Int = 1024
+        public const val DEFAULT_RS3_JAVCONFIG_URL: String = "https://world5.runescape.com/jav_config.ws?binaryType=2"
         private const val DEFAULT_JAVCONFIG_URL_PRE_231: String = "http://oldschool.runescape.com/jav_config.ws?m=0"
         private const val DEFAULT_JAVCONFIG_URL: String = "https://oldschool.config.runescape.com/jav_config.ws?m=0"
         private const val DEFAULT_WORLDLIST_URL_PRE_231: String = "https://oldschool.runescape.com/slr.ws?order=LPWM"

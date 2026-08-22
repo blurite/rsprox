@@ -64,6 +64,9 @@ public class LaunchBar(
     private val sessionTypesModel = DefaultComboBoxModel(sessionTypes)
     private val charactersModel = DefaultComboBoxModel<JagexCharacter>()
 
+    public lateinit var clientTypeDropdown: FlatComboBox<SessionType>
+        private set
+
     init {
         layout =
             MigLayout(
@@ -150,15 +153,25 @@ public class LaunchBar(
         )
         add(characterDropdown, "growx")
 
-        val launchModeDropdown =
+        clientTypeDropdown =
             FlatComboBox<SessionType>().apply {
                 model = sessionTypesModel
                 renderer = SessionTypeCellRenderer()
                 selectedIndex = App.service.getSelectedClient()
                 configureComboBox()
             }
-        launchModeDropdown.addActionListener {
-            App.service.setSelectedClient(launchModeDropdown.selectedIndex)
+
+        val proxyTargetLabel = createFieldLabel("Proxy Target")
+        fun updateProxyTargetRowVisibility() {
+            val isRs3 = clientTypeDropdown.selectedItem == SessionType.RS3
+            proxyTargetLabel.isVisible = !isRs3
+            proxyTargetDropdown.isVisible = !isRs3
+            importTargetsButton.isVisible = !isRs3
+        }
+
+        clientTypeDropdown.addActionListener {
+            App.service.setSelectedClient(clientTypeDropdown.selectedIndex)
+            updateProxyTargetRowVisibility()
         }
 
         val launchButton =
@@ -171,12 +184,13 @@ public class LaunchBar(
         add(createFieldLabel("Account"))
         add(createFieldLabel("Client Type"), "wrap")
         add(characterDropdown, "growx, h $CONTROL_HEIGHT!")
-        add(launchModeDropdown, "growx, h $CONTROL_HEIGHT!, wrap")
-        add(createFieldLabel("Proxy Target"), "spanx 2, growx, gaptop 4, wrap")
+        add(clientTypeDropdown, "growx, h $CONTROL_HEIGHT!, wrap")
+        add(proxyTargetLabel, "spanx 2, growx, gaptop 4, wrap")
         add(proxyTargetDropdown, "growx, h $CONTROL_HEIGHT!, spanx 2, split 2")
         add(importTargetsButton, "w $CONTROL_HEIGHT!, h $CONTROL_HEIGHT!, wrap")
         add(launchButton, "spanx 2, growx, h 34!, gaptop 8")
 
+        updateProxyTargetRowVisibility()
         refreshCharacters()
     }
 

@@ -1,0 +1,127 @@
+package net.rsprox.proxy.rs3.transcriber.state
+
+import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
+import net.rsprox.shared.property.ChildProperty
+import net.rsprox.shared.property.RootProperty
+
+public class Rs3SessionState {
+    public var cycle: Int = 0
+        private set
+
+    public var localPlayerIndex: Int = -1
+    public var toplevelInterface: Int = -1
+    private val openInterfaces: MutableMap<Long, Int> = mutableMapOf()
+
+    private var activeWorldId: Int = ROOT_WORLD_ID
+
+    private val worlds: MutableMap<Int, Rs3World> = mutableMapOf()
+    private val players: MutableMap<Int, Rs3Player> = mutableMapOf()
+
+    private val experience = LongArray(MAX_SKILLS) { -1L }
+
+    public var currentProt: String = "UNKNOWN"
+
+    public var root: MutableList<RootProperty> = mutableListOf()
+
+    public fun incrementCycle() {
+        this.cycle++
+    }
+
+    public fun setRoot() {
+        this.root +=
+            object : RootProperty {
+                override val prot: String = currentProt
+                override val children: MutableList<ChildProperty<*>> = mutableListOf()
+            }
+    }
+
+    public fun deleteRoot() {
+        this.root.clear()
+    }
+
+    public fun openInterface(
+        id: Int,
+        com: Long,
+    ) {
+        this.openInterfaces[com] = id
+    }
+
+    public fun closeInterface(com: Long) {
+        this.openInterfaces.remove(com)
+    }
+
+    public fun moveInterface(
+        sourceCom: Long,
+        destCom: Long,
+    ) {
+        val opened = this.openInterfaces.remove(sourceCom) ?: return
+        this.openInterfaces[destCom] = opened
+    }
+
+    public fun getOpenInterface(com: Long): Int? {
+        return this.openInterfaces[com]
+    }
+
+    public fun getActiveWorld(): Rs3World {
+        return worlds.getOrPut(activeWorldId) { Rs3World() }
+    }
+
+    public fun setActiveWorld(id: Int) {
+        this.activeWorldId = id
+    }
+
+    public fun npcLabel(index: Int): String {
+        val npc = getActiveWorld().getNpcOrNull(index)
+        return if (npc != null) {
+            "$index(${Rs3GamevalLookup.npc(npc.id)})"
+        } else {
+            "$index(unidentified)"
+        }
+    }
+
+    public fun overridePlayer(player: Rs3Player) {
+        this.players[player.index] = player
+    }
+
+    public fun removePlayer(index: Int) {
+        this.players.remove(index)
+    }
+
+    public fun getPlayer(index: Int): Rs3Player {
+        return checkNotNull(this.players[index]) { "No player tracked at index $index" }
+    }
+
+    public fun getPlayerOrNull(index: Int): Rs3Player? {
+        return this.players[index]
+    }
+
+    public fun playerLabel(index: Int): String {
+        val player = getPlayerOrNull(index)
+        val name = player?.name
+        return if (name != null) "$index($name)" else "$index(unidentified)"
+    }
+
+    public fun localPlayerOrNull(): Rs3Player? {
+        if (localPlayerIndex == -1) return null
+        return getPlayerOrNull(localPlayerIndex)
+    }
+
+    public fun getExperience(skillId: Int): Long? {
+        if (skillId !in 0 until MAX_SKILLS) return null
+        val xp = experience[skillId]
+        return if (xp == -1L) null else xp
+    }
+
+    public fun setExperience(
+        skillId: Int,
+        xp: Long,
+    ) {
+        if (skillId !in 0 until MAX_SKILLS) return
+        experience[skillId] = xp
+    }
+
+    private companion object {
+        const val ROOT_WORLD_ID = 0
+        const val MAX_SKILLS = 29
+    }
+}

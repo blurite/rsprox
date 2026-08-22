@@ -1,0 +1,146 @@
+package net.rsprox.proxy.rs3.login
+
+import io.netty.buffer.ByteBuf
+import io.netty.buffer.Unpooled
+import io.netty.channel.ChannelHandlerContext
+import io.netty.handler.codec.ByteToMessageDecoder
+import net.rsprot.crypto.cipher.StreamCipherPair
+import net.rsprox.proxy.rsa.rsa
+import org.bouncycastle.crypto.params.RSAKeyParameters
+import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
+
+public class Rs3ClientLoginRsaSwapHandler(
+    private val proxyPrivateKey: RSAPrivateCrtKeyParameters,
+    private val realServerPublicKey: RSAKeyParameters,
+    private val onCiphersEstablished: (real: StreamCipherPair, diagnosticCopy: StreamCipherPair) -> Unit,
+) : ByteToMessageDecoder() {
+    private enum class State {
+        AWAITING_HANDSHAKE_BYTE,
+        AWAITING_LOGIN_HEADER,
+        AWAITING_LOGIN_PAYLOAD,
+    }
+
+    private var state: State = State.AWAITING_HANDSHAKE_BYTE
+    private var loginType: Int = -1
+    private var loginPayloadLength: Int = 0
+
+    override fun decode(
+        ctx: ChannelHandlerContext,
+        input: ByteBuf,
+        out: MutableList<Any>,
+    ) {
+        when (state) {
+            State.AWAITING_HANDSHAKE_BYTE -> {
+                if (!input.isReadable) return
+                val handshakeByte = input.readByte()
+                out += Unpooled.buffer(1).writeByte(handshakeByte.toInt())
+
+                if (handshakeByte.toInt() != LOGIN_HANDSHAKE_TYPE) {
+                    ctx.pipeline().remove(this)
+                    return
+                }
+                state = State.AWAITING_LOGIN_HEADER
+            }
+
+            State.AWAITING_LOGIN_HEADER -> {
+                if (!input.isReadable(3)) return
+                input.markReaderIndex()
+                loginType = input.readUnsignedByte().toInt()
+                loginPayloadLength = input.readUnsignedShort()
+                state = State.AWAITING_LOGIN_PAYLOAD
+            }
+
+            State.AWAITING_LOGIN_PAYLOAD -> {
+                if (!input.isReadable(loginPayloadLength)) return
+                val payload = input.readSlice(loginPayloadLength).retain()
+                try {
+                    out += handleLoginPacket(loginType, payload)
+                } finally {
+                    payload.release()
+                }
+                ctx.pipeline().remove(this)
+            }
+        }
+    }
+
+    private fun handleLoginPacket(
+        type: Int,
+        payload: ByteBuf,
+    ): ByteBuf {
+        if (type != LOBBY_LOGIN_TYPE && type != GAME_LOGIN_TYPE) {
+            return rebuild(type, payload)
+        }
+
+        return try {
+            swapRsaBlock(type, payload)
+        } catch (e: Exception) {
+            payload.readerIndex(0)
+            rebuild(type, payload)
+        }
+    }
+
+    private fun swapRsaBlock(
+        type: Int,
+        payload: ByteBuf,
+    ): ByteBuf {
+        val buildMajor = payload.readInt()
+        val buildMinor = payload.readInt()
+
+        val isReconnecting = type == GAME_LOGIN_TYPE && payload.readUnsignedByte().toInt() == 1
+        check(!isReconnecting) { "Reconnect login blocks aren't handled yet" }
+
+        val rsaSize = payload.readUnsignedShort()
+        val rsaBlock = payload.readSlice(rsaSize)
+
+        val plaintext = rsaBlock.rsa(proxyPrivateKey)
+        val block =
+            try {
+                Rs3LoginBlock.decode(plaintext)
+            } finally {
+                plaintext.release()
+            }
+
+        onCiphersEstablished(block.buildStreamCipherPair(), block.buildStreamCipherPair())
+
+        val reEncryptedBlock = Rs3LoginBlock.encode(block)
+        val reEncrypted =
+            try {
+                reEncryptedBlock.rsa(realServerPublicKey)
+            } finally {
+                reEncryptedBlock.release()
+            }
+
+        val remainingBody = payload.retainedSlice()
+
+        val newPayload = Unpooled.buffer()
+        newPayload.writeInt(buildMajor)
+        newPayload.writeInt(buildMinor)
+        if (type == GAME_LOGIN_TYPE) {
+            newPayload.writeByte(0)
+        }
+        newPayload.writeShort(reEncrypted.readableBytes())
+        newPayload.writeBytes(reEncrypted)
+        newPayload.writeBytes(remainingBody)
+        reEncrypted.release()
+        remainingBody.release()
+
+        return rebuild(type, newPayload)
+    }
+
+    private fun rebuild(
+        type: Int,
+        payload: ByteBuf,
+    ): ByteBuf {
+        val out = Unpooled.buffer(3 + payload.readableBytes())
+        out.writeByte(type)
+        out.writeShort(payload.readableBytes())
+        out.writeBytes(payload)
+        return out
+    }
+
+    private companion object {
+        private const val LOGIN_HANDSHAKE_TYPE = 14
+        private const val LOBBY_LOGIN_TYPE = 19
+        private const val GAME_LOGIN_TYPE = 16
+    }
+}

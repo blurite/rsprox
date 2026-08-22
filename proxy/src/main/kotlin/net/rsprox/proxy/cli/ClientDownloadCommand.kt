@@ -14,6 +14,7 @@ public class ClientDownloadCommand : CliktCommand(name = "download") {
             CompletionCandidates.Fixed(
                 "native-win",
                 "native-mac",
+                "native-rs3-win",
             ),
     )
 
@@ -24,6 +25,9 @@ public class ClientDownloadCommand : CliktCommand(name = "download") {
             }
             "native-mac" -> {
                 JagexNativeClientDownloader.download(NativeClientType.MAC)
+            }
+            "native-rs3-win" -> {
+                JagexNativeClientDownloader.download(NativeClientType.RS3_WIN)
             }
             else -> {
                 echo("Invalid type provided: $type")

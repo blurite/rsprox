@@ -10,6 +10,7 @@ import net.rsprox.cache.api.CacheProvider
 import net.rsprox.gui.App
 import net.rsprox.gui.AppIcons
 import net.rsprox.proxy.binary.BinaryHeader
+import net.rsprox.proxy.rs3.transcriber.Rs3SessionMonitor
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.account.JagexCharacter
 import net.rsprox.shared.property.*
@@ -28,16 +29,20 @@ import java.awt.Color
 import java.awt.FlowLayout
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
+import com.formdev.flatlaf.util.SystemFileChooser
+import java.nio.file.Files
+import java.nio.file.Path
 import java.text.SimpleDateFormat
 import java.util.concurrent.ForkJoinPool
 import javax.swing.BorderFactory
+import javax.swing.JOptionPane
 import javax.swing.JPanel
 import javax.swing.JScrollBar
 import javax.swing.SwingUtilities
 import kotlin.time.measureTime
 
 public class SessionPanel(
-    private val type: SessionType,
+    public val type: SessionType,
     private val sessionsPanel: SessionsPanel,
     character: JagexCharacter?,
 ) : JPanel() {
@@ -49,11 +54,17 @@ public class SessionPanel(
     private var paused = false
     private var streamNode: StreamTreeTableNode? = null
     private var tickNode: TickTreeTableNode? = null
+    private var lastCycle = -1
     public val isActive: Boolean
         get() = streamNode != null
     private var portNumber: Int = -1
     private var jumpToBottom: Boolean = true
     private var scrollbarMax: Int = -1
+
+    private val rs3Formatter =
+        OmitFilteredPropertyTreeFormatter(
+            PropertyFormatterCollection.Builder().build(),
+        )
 
     init {
         layout = BorderLayout()
@@ -162,8 +173,8 @@ public class SessionPanel(
             if (streamNode != null) {
 
                 // Replace the stream node directly instead of purging it one by one
-                // This avoids expensive UI rebuilding and event-firing per node deleted
-                val streamNode = StreamTreeTableNode(streamNode.header)
+                val oldHeader = streamNode.header
+                val streamNode = if (oldHeader != null) StreamTreeTableNode(oldHeader) else StreamTreeTableNode(streamNode.label ?: "")
                 addNodeAndExpand(streamNode, root, root.childCount)
                 this@SessionPanel.streamNode = streamNode
             }
@@ -177,17 +188,56 @@ public class SessionPanel(
         launchClient(character)
     }
 
+    private fun resolveRs3LauncherPath(): Path? {
+        if (Files.exists(RS3_LAUNCHER_PATH)) {
+            return RS3_LAUNCHER_PATH
+        }
+        var chosen: Path? = null
+        SwingUtilities.invokeAndWait {
+            JOptionPane.showMessageDialog(
+                this,
+                "RSProx couldn't find the Jagex Launcher at its usual location:\n" +
+                    "$RS3_LAUNCHER_PATH\n\n" +
+                    "In the next window, please locate RuneScape.exe - the Jagex Launcher's own " +
+                    "program file. It's normally installed inside a folder named \"Jagex Launcher\", " +
+                    "under \"Games\\RuneScape\", for example:\n" +
+                    "C:\\Program Files (x86)\\Jagex Launcher\\Games\\RuneScape\\RuneScape.exe\n\n" +
+                    "If the Jagex Launcher isn't installed at all, install it first from " +
+                    "runescape.com before trying again.",
+                "Jagex Launcher Not Found",
+                JOptionPane.INFORMATION_MESSAGE,
+            )
+            val chooser = SystemFileChooser()
+            chooser.dialogTitle = "Select RuneScape.exe (the Jagex Launcher's program file)"
+            chooser.fileSelectionMode = SystemFileChooser.FILES_ONLY
+            if (chooser.showOpenDialog(this) == SystemFileChooser.APPROVE_OPTION) {
+                chosen = chooser.selectedFile?.toPath()
+            }
+        }
+        if (chosen == null) {
+            SwingUtilities.invokeAndWait {
+                JOptionPane.showMessageDialog(
+                    this,
+                    "RS3 session cancelled - no Jagex Launcher (RuneScape.exe) was selected.",
+                    "Launch Cancelled",
+                    JOptionPane.WARNING_MESSAGE,
+                )
+            }
+        }
+        return chosen
+    }
+
     private fun launchClient(character: JagexCharacter?) {
         ForkJoinPool.commonPool().submit {
             logger.info { "$type client thread: ${Thread.currentThread().name}" }
             val time =
                 measureTime {
                     try {
-                        portNumber = App.service.allocatePort()
-                        val target = App.service.initializeHttpServer(portNumber)
                         when (type) {
                             SessionType.Java -> TODO()
                             SessionType.Native -> {
+                                portNumber = App.service.allocatePort()
+                                val target = App.service.initializeHttpServer(portNumber)
                                 App.service.launchNativeClient(
                                     UiSessionMonitor(),
                                     character,
@@ -197,12 +247,45 @@ public class SessionPanel(
                             }
 
                             SessionType.RuneLite -> {
+                                portNumber = App.service.allocatePort()
+                                val target = App.service.initializeHttpServer(portNumber)
                                 App.service.launchRuneLiteClient(
                                     UiSessionMonitor(),
                                     character,
                                     portNumber,
                                     target,
                                 )
+                            }
+
+                            SessionType.RS3 -> {
+                                val launcherPath =
+                                    resolveRs3LauncherPath()
+                                        ?: throw IllegalStateException(
+                                            "RS3 launcher not found and none was selected - cannot launch.",
+                                        )
+                                val rs3SessionMonitor = Rs3SessionMonitor()
+                                rs3SessionMonitor.listener = { cycle, property ->
+                                    if (!paused) {
+                                        SwingUtilities.invokeLater {
+                                            if (this@SessionPanel.streamNode == null) {
+                                                val newStreamNode = StreamTreeTableNode("RS3 Session")
+                                                addNodeAndExpand(newStreamNode, root, root.childCount)
+                                                this@SessionPanel.streamNode = newStreamNode
+                                            }
+                                            val tickNode = findOrCreateTickNode(cycle)
+                                            createMessageNode(tickNode, cycle, property, rs3Formatter)
+                                        }
+                                    }
+                                }
+                                val handle =
+                                    App.service.launchRs3Client(
+                                        rs3SessionMonitor,
+                                        character,
+                                        launcherPath,
+                                        RS3_PATCHED_GAME_BINARY_PATH,
+                                        RS3_PATCHED_LAUNCHER_DIRECTORY,
+                                    )
+                                portNumber = handle.port
                             }
                         }
                     } catch (e: Exception) {
@@ -231,8 +314,78 @@ public class SessionPanel(
         return alternateRowColor
     }
 
+    private fun createMessageNode(
+        tickNode: AbstractMutableTreeTableNode,
+        cycle: Int,
+        property: RootProperty,
+        formatter: OmitFilteredPropertyTreeFormatter,
+    ) {
+        val previewText = getPreviewText(property, formatter)
+        val rootNode = MessageTreeTableNode(previewText, property.prot)
+        addNodeAndExpand(rootNode, tickNode, tickNode.childCount)
+        createMessageChildNodes(cycle, rootNode, property, formatter)
+    }
+
+    private fun getPreviewText(
+        property: Property,
+        formatter: OmitFilteredPropertyTreeFormatter,
+        indent: Int = 0,
+    ): String {
+        val children = property.children
+        val previewProps = children.filter { it.children.isEmpty() }
+        val previewText =
+            if (previewProps.isNotEmpty()) {
+                val lines = mutableListOf<String>()
+                val builder = StringBuilder()
+                var count = 0
+                for (child in previewProps) {
+                    if (child.isExcluded()) {
+                        continue
+                    }
+                    val linePrefix = if (count++ == 0) null else ", "
+                    formatter.writeChild(child, builder, lines, indent, linePrefix)
+                }
+                lines.add(builder.toString())
+                lines.joinToString(separator = System.lineSeparator())
+            } else {
+                ""
+            }
+        return previewText
+    }
+
+    private fun createMessageChildNodes(
+        cycle: Int,
+        parentNode: AbstractMutableTreeTableNode,
+        rootProperty: RootProperty,
+        formatter: OmitFilteredPropertyTreeFormatter,
+        property: Property = rootProperty,
+        indent: Int = 0,
+    ) {
+        for (child in property.children) {
+            if (child.isExcluded()) continue
+            if (child.children.isEmpty()) continue
+            when (child) {
+                is GroupProperty -> {
+                    val previewText = getPreviewText(child, formatter, indent)
+                    val groupNode = MessageTreeTableNode(previewText, child.propertyName)
+                    addNodeAndExpand(groupNode, parentNode, parentNode.childCount)
+                    createMessageChildNodes(cycle, groupNode, rootProperty, formatter, child, indent + 1)
+                }
+
+                is ListProperty -> {
+                    val previewText = getPreviewText(child, formatter, indent)
+                    val groupNode = MessageTreeTableNode(previewText, child.propertyName)
+                    addNodeAndExpand(groupNode, parentNode, parentNode.childCount)
+                }
+
+                else -> {
+                    error("Unsupported property with children. Property type: ${child::class.simpleName}")
+                }
+            }
+        }
+    }
+
     private inner class UiSessionMonitor : SessionMonitor<BinaryHeader> {
-        private var lastCycle = -1
         private var lastCacheProvider: CacheProvider? = null
         private val formatter =
             OmitFilteredPropertyTreeFormatter(
@@ -304,89 +457,21 @@ public class SessionPanel(
             if (paused) return
             SwingUtilities.invokeLater {
                 val tickNode = findOrCreateTickNode(cycle)
-                createMessageNode(tickNode, cycle, property)
+                createMessageNode(tickNode, cycle, property, formatter)
             }
         }
+    }
 
-        private fun createMessageNode(
-            tickNode: AbstractMutableTreeTableNode,
-            cycle: Int,
-            property: RootProperty,
-        ) {
-            val previewText = getPreviewText(property)
-            val rootNode = MessageTreeTableNode(previewText, property.prot)
-            addNodeAndExpand(rootNode, tickNode, tickNode.childCount)
-            createMessageChildNodes(cycle, rootNode, property)
+    private fun findOrCreateTickNode(tickNumber: Int): AbstractMutableTreeTableNode {
+        val streamNode = streamNode!!
+        var tickNode = tickNode
+        if (tickNode == null || lastCycle != tickNumber) {
+            lastCycle = tickNumber
+            tickNode = TickTreeTableNode(tickNumber)
+            this.tickNode = tickNode
+            addNodeAndExpand(tickNode, streamNode, streamNode.childCount)
         }
-
-        private fun getPreviewText(
-            property: Property,
-            indent: Int = 0,
-        ): String {
-            val children = property.children
-            val previewProps = children.filter { it.children.isEmpty() }
-            val previewText =
-                if (previewProps.isNotEmpty()) {
-                    val lines = mutableListOf<String>()
-                    val builder = StringBuilder()
-                    var count = 0
-                    for (child in previewProps) {
-                        if (child.isExcluded()) {
-                            continue
-                        }
-                        val linePrefix = if (count++ == 0) null else ", "
-                        formatter.writeChild(child, builder, lines, indent, linePrefix)
-                    }
-                    lines.add(builder.toString())
-                    lines.joinToString(separator = System.lineSeparator())
-                } else {
-                    ""
-                }
-            return previewText
-        }
-
-        private fun createMessageChildNodes(
-            cycle: Int,
-            parentNode: AbstractMutableTreeTableNode,
-            rootProperty: RootProperty,
-            property: Property = rootProperty,
-            indent: Int = 0,
-        ) {
-            for (child in property.children) {
-                if (child.isExcluded()) continue
-                if (child.children.isEmpty()) continue // they get consumed in preview
-                when (child) {
-                    is GroupProperty -> {
-                        val previewText = getPreviewText(child, indent)
-                        val groupNode = MessageTreeTableNode(previewText, child.propertyName)
-                        addNodeAndExpand(groupNode, parentNode, parentNode.childCount)
-                        createMessageChildNodes(cycle, groupNode, rootProperty, child, indent + 1)
-                    }
-
-                    is ListProperty -> {
-                        val previewText = getPreviewText(child, indent)
-                        val groupNode = MessageTreeTableNode(previewText, child.propertyName)
-                        addNodeAndExpand(groupNode, parentNode, parentNode.childCount)
-                    }
-
-                    else -> {
-                        error("Unsupported property with children. Property type: ${child::class.simpleName}")
-                    }
-                }
-            }
-        }
-
-        private fun findOrCreateTickNode(tickNumber: Int): AbstractMutableTreeTableNode {
-            val streamNode = streamNode!!
-            var tickNode = tickNode
-            if (tickNode == null || lastCycle != tickNumber) {
-                lastCycle = tickNumber
-                tickNode = TickTreeTableNode(tickNumber)
-                this@SessionPanel.tickNode = tickNode
-                addNodeAndExpand(tickNode, streamNode, streamNode.childCount)
-            }
-            return tickNode
-        }
+        return tickNode
     }
 
     private fun addNodeAndExpand(
@@ -404,16 +489,27 @@ public class SessionPanel(
     }
 
     private companion object {
-        private class StreamTreeTableNode(
-            val header: BinaryHeader,
+        private class StreamTreeTableNode private constructor(
+            val header: BinaryHeader?,
+            val label: String?,
         ) : SessionBaseTreeTableNode() {
+            constructor(header: BinaryHeader) : this(header, null)
+
+            constructor(label: String) : this(null, label)
+
             override fun getValueAt(column: Int) =
                 when (column) {
                     0 -> "Stream"
-                    1 ->
-                        "${header.worldId} (${header.worldActivity}) at ${
-                            SimpleDateFormat.getTimeInstance().format(header.timestamp)
-                        }"
+                    1 -> {
+                        val h = header
+                        if (h != null) {
+                            "${h.worldId} (${h.worldActivity}) at ${
+                                SimpleDateFormat.getTimeInstance().format(h.timestamp)
+                            }"
+                        } else {
+                            label ?: ""
+                        }
+                    }
 
                     else -> error("Invalid column index: $column")
                 }
@@ -449,6 +545,26 @@ public class SessionPanel(
         }
 
         private abstract class SessionBaseTreeTableNode : AbstractMutableTreeTableNode(null, true)
+
+        private val RS3_LAUNCHER_PATH: Path =
+            Path.of(
+                System.getenv("ProgramFiles(x86)") ?: "C:\\Program Files (x86)",
+                "Jagex Launcher",
+                "Games",
+                "RuneScape",
+                "RuneScape.exe",
+            )
+
+        private val RS3_PATCHED_GAME_BINARY_PATH: Path =
+            Path.of(
+                System.getenv("ProgramData") ?: "C:\\ProgramData",
+                "Jagex",
+                "launcher",
+                "rs2client.exe",
+            )
+
+        private val RS3_PATCHED_LAUNCHER_DIRECTORY =
+            Path.of(System.getProperty("user.home"), ".rsprox", "rs3-patched-launcher")
 
         private val logger = InlineLogger()
     }

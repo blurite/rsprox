@@ -31,6 +31,8 @@ dependencies {
     implementation(libs.okhttp3)
     implementation(libs.gson)
     implementation(libs.kryo)
+    implementation(rootProject.libs.netty.resolver.dns)
+    implementation(libs.tukaani.xz)
     findSubprojects(projects.protocol.name).forEach {
         implementation(it)
     }

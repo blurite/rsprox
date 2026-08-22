@@ -15,12 +15,26 @@ internal class RsaModulusProcessor(
         if (index == -1) {
             throw IllegalStateException("Unable to locate exponent 10001")
         }
-        // Begin searching for the modulus before the exponent.
-        // In some clients, it comes just before; in most, it comes just after it.
-        val sliceIndices =
-            client.bytes.firstSliceIndices(index - 500, 256) { byte ->
+        val expectedLength = if (replacement.length > 256) replacement.length else 256
+
+        // 1. Look before exponent (OSRS native client & RS3 rs2client.exe)
+        val searchBeforeStart = maxOf(0, index - expectedLength - 64)
+        var sliceIndices = client.bytes.firstSliceIndices(searchBeforeStart, expectedLength) { byte ->
+            isHex(byte.toInt().toChar())
+        }
+
+        // 2. If not found before exponent, search after exponent (RS3 launcher)
+        if (sliceIndices == null || sliceIndices.first >= index) {
+            val searchAfterStart = index + exponent.size
+            sliceIndices = client.bytes.firstSliceIndices(searchAfterStart, expectedLength) { byte ->
                 isHex(byte.toInt().toChar())
             }
+        }
+
+        if (sliceIndices == null) {
+            throw IllegalStateException("Unable to locate RSA modulus of length $expectedLength near exponent 10001")
+        }
+
         val slice = client.bytes.sliceArray(sliceIndices)
         val oldModulus = slice.toString(Charsets.UTF_8)
         val newModulus = replacement.toByteArray(Charsets.UTF_8)
@@ -29,7 +43,6 @@ internal class RsaModulusProcessor(
         }
         for (i in sliceIndices) {
             val newModulusIndex = i - sliceIndices.first
-            // If the new modulus is shorter, terminate it with a null character. The C++ client can handle it.
             if (newModulusIndex >= newModulus.size) {
                 client.bytes[i] = 0
                 continue
@@ -46,25 +59,16 @@ internal class RsaModulusProcessor(
         startIndex: Int,
         length: Int = -1,
         condition: (Byte) -> Boolean,
-    ): IntRange {
+    ): IntRange? {
         var start = startIndex
         val size = this.size
-        while (true) {
-            // First locate the starting index where a byte is being accepted
-            while (start < size) {
-                val byte = this[start]
-                if (condition(byte)) {
-                    break
-                }
+        while (start < size) {
+            while (start < size && !condition(this[start])) {
                 start++
             }
+            if (start >= size) break
             var end = start + 1
-            // Now find the end index where a byte is not being accepted
-            while (end < size) {
-                val byte = this[end]
-                if (!condition(byte)) {
-                    break
-                }
+            while (end < size && condition(this[end])) {
                 end++
             }
             if (length != -1 && (end - start) != length) {
@@ -73,6 +77,7 @@ internal class RsaModulusProcessor(
             }
             return start..<end
         }
+        return null
     }
 
     private fun isHex(char: Char): Boolean {

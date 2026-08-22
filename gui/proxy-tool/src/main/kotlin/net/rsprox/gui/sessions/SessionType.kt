@@ -8,6 +8,7 @@ public enum class SessionType {
     Java,
     Native,
     RuneLite,
+    RS3,
     ;
 
     public val icon: Icon by lazy {
@@ -15,6 +16,7 @@ public enum class SessionType {
             Java -> AppIcons.Java.resizeTo(16, 16)
             Native -> AppIcons.Native.resizeTo(16, 16)
             RuneLite -> AppIcons.RuneLite.resizeTo(16, 16)
+            RS3 -> AppIcons.Native.resizeTo(16, 16)
         }
     }
 }

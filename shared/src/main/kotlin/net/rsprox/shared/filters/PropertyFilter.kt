@@ -949,6 +949,13 @@ public enum class PropertyFilter(
         true,
         searchTerms = "varp,varps,var,player,varbit,variables,32bit,integer",
     ),
+    VARC(
+        SERVER_TO_CLIENT,
+        ProtCategory.VARP,
+        "Varcs",
+        true,
+        searchTerms = "varc,varcbit,client,variables",
+    ),
     VARBITS(
         SERVER_TO_CLIENT,
         ProtCategory.VARP,
@@ -1591,5 +1598,20 @@ public enum class PropertyFilter(
         "Deprecated",
         true,
         searchTerms = "deprecated,server",
+    ),
+
+    UNKNOWN_CLIENT_OPCODE_HEX(
+        CLIENT_TO_SERVER,
+        OTHER,
+        "Unknown",
+        true,
+        searchTerms = "unknown,client,hex",
+    ),
+    UNKNOWN_SERVER_OPCODE_HEX(
+        SERVER_TO_CLIENT,
+        OTHER,
+        "Unknown",
+        true,
+        searchTerms = "unknown,server,hex",
     ),
 }
