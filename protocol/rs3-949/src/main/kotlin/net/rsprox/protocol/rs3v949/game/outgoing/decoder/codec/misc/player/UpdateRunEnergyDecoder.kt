@@ -8,7 +8,7 @@ import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.UpdateRunEner
 import net.rsprox.protocol.session.Session
 
 internal class UpdateRunEnergyDecoder : ProxyMessageDecoder<UpdateRunEnergy> {
-    override val prot: ClientProt = GameServerProt.UPDATE_RUNENERGY
+    override val prot: ClientProt = GameServerProt.UPDATE_RUN_ENERGY
 
     override fun decode(
         buffer: JagByteBuf,

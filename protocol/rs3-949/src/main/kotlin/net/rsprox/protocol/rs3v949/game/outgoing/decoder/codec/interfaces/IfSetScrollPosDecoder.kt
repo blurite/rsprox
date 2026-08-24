@@ -8,7 +8,7 @@ import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetScrollPos
 import net.rsprox.protocol.session.Session
 
 internal class IfSetScrollPosDecoder : ProxyMessageDecoder<IfSetScrollPos> {
-    override val prot: ClientProt = GameServerProt.IF_SETSCROLLPOS
+    override val prot: ClientProt = GameServerProt.IF_SET_SCROLL_POS
 
     override fun decode(
         buffer: JagByteBuf,

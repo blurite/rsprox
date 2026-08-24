@@ -5,7 +5,7 @@ import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
-import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.payload.LocAddChangeDecoder
+import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.payload.LocAnimDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.payload.LocDelDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.payload.MapAnimDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.payload.MapAnimV2Decoder
@@ -37,7 +37,7 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
     private val objAddDecoders = ObjAddDecoder.Companion.all()
     private val mapAnimV2Decoder = MapAnimV2Decoder()
     private val objCountDecoders = ObjCountDecoder.Companion.all()
-    private val locAddChangeDecoder = LocAddChangeDecoder()
+    private val locAnimDecoder = LocAnimDecoder()
     private val mapProjAnimHalfsqV2Decoder = MapProjAnimHalfsqV2Decoder()
 
     override fun decode(
@@ -76,7 +76,7 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
                     9 -> objAddDecoders[0].decode(slice, session)
                     10 -> mapAnimV2Decoder.decode(slice, session)
                     11 -> objCountDecoders[1].decode(slice, session)
-                    12 -> locAddChangeDecoder.decode(slice, session)
+                    12 -> locAnimDecoder.decode(slice, session)
                     13 -> objAddDecoders[1].decode(slice, session)
                     14 -> objCountDecoders[0].decode(slice, session)
                     16 -> mapProjAnimHalfsqV2Decoder.decode(slice, session)
@@ -109,13 +109,13 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
             8 -> 2 // LOC_DEL
             9 -> 5 // OBJ_ADD
             10 -> 14 // MAP_ANIM_V2
-            11 -> 8 // OBJ_COUNT_BIG
-            12 -> 7 // LOC_ADD_CHANGE
-            13 -> 6 // OBJ_ADD_BIG
+            11 -> 8 // OBJ_COUNT_V2
+            12 -> 7 // LOC_ANIM
+            13 -> 6 // OBJ_ADD_V2
             14 -> 7 // OBJ_COUNT
             15 -> 11 // MAP_ANIM
             16 -> 29 // MAP_PROJANIM_HALFSQ_V2
-            17 -> 4 // OBJ_DEL_BIG
+            17 -> 4 // OBJ_DEL_V2
             else -> 0
         }
 

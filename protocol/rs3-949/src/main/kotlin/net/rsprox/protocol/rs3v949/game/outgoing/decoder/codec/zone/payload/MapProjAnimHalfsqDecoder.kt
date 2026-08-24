@@ -8,7 +8,7 @@ import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapProjAnimH
 import net.rsprox.protocol.session.Session
 
 internal class MapProjAnimHalfsqDecoder : ProxyMessageDecoder<MapProjAnimHalfsq> {
-    override val prot: ClientProt = GameServerProt.MAP_PROJANIM_HALFSQ
+    override val prot: ClientProt = GameServerProt.MAP_PROJ_ANIM_HALFSQ
 
     override fun decode(
         buffer: JagByteBuf,

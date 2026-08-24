@@ -8,7 +8,7 @@ import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.UpdateRunWeig
 import net.rsprox.protocol.session.Session
 
 internal class UpdateRunWeightDecoder : ProxyMessageDecoder<UpdateRunWeight> {
-    override val prot: ClientProt = GameServerProt.UPDATE_RUNWEIGHT
+    override val prot: ClientProt = GameServerProt.UPDATE_RUN_WEIGHT
 
     override fun decode(
         buffer: JagByteBuf,

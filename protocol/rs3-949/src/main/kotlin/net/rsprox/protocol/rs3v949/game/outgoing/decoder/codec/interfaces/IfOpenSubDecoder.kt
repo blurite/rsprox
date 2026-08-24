@@ -8,7 +8,7 @@ import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfOpenSub
 import net.rsprox.protocol.session.Session
 
 internal class IfOpenSubDecoder : ProxyMessageDecoder<IfOpenSub> {
-    override val prot: ClientProt = GameServerProt.IF_OPENSUB
+    override val prot: ClientProt = GameServerProt.IF_OPEN_SUB
 
     override fun decode(
         buffer: JagByteBuf,

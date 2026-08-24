@@ -36,7 +36,7 @@ internal class ObjAddDecoder(
         internal fun all(): List<ObjAddDecoder> =
             listOf(
                 ObjAddDecoder(GameServerProt.OBJ_ADD, big = false),
-                ObjAddDecoder(GameServerProt.OBJ_ADD_BIG, big = true),
+                ObjAddDecoder(GameServerProt.OBJ_ADD_V2, big = true),
             )
     }
 }

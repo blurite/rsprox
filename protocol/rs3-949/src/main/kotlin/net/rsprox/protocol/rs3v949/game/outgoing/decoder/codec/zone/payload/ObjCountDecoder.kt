@@ -32,7 +32,7 @@ internal class ObjCountDecoder(
         internal fun all(): List<ObjCountDecoder> =
             listOf(
                 ObjCountDecoder(GameServerProt.OBJ_COUNT, big = false),
-                ObjCountDecoder(GameServerProt.OBJ_COUNT_BIG, big = true),
+                ObjCountDecoder(GameServerProt.OBJ_COUNT_V2, big = true),
             )
     }
 }

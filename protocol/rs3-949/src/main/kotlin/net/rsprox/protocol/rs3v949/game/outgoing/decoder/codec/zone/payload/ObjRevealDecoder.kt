@@ -43,7 +43,7 @@ internal class ObjRevealDecoder(
         internal fun all(): List<ObjRevealDecoder> =
             listOf(
                 ObjRevealDecoder(GameServerProt.OBJ_REVEAL, big = false),
-                ObjRevealDecoder(GameServerProt.OBJ_REVEAL_BIG, big = true),
+                ObjRevealDecoder(GameServerProt.OBJ_REVEAL_V2, big = true),
             )
     }
 }

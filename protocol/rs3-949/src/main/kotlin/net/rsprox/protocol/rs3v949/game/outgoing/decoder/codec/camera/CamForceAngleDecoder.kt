@@ -8,7 +8,7 @@ import net.rsprox.protocol.rs3v949.game.outgoing.model.camera.CamForceAngle
 import net.rsprox.protocol.session.Session
 
 internal class CamForceAngleDecoder : ProxyMessageDecoder<CamForceAngle> {
-    override val prot: ClientProt = GameServerProt.CAM_FORCEANGLE
+    override val prot: ClientProt = GameServerProt.CAM_FORCE_ANGLE
 
     override fun decode(
         buffer: JagByteBuf,

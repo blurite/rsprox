@@ -2,7 +2,7 @@ package net.rsprox.protocol.rs3v949.game.outgoing.model.sound
 
 import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
-public class SoundSynth(
+public class VorbisSound(
     public val soundId: Int,
     public val loops: Int,
     public val delay: Int,
@@ -13,7 +13,7 @@ public class SoundSynth(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as SoundSynth
+        other as VorbisSound
 
         if (soundId != other.soundId) return false
         if (loops != other.loops) return false
@@ -34,6 +34,6 @@ public class SoundSynth(
     }
 
     override fun toString(): String {
-        return "SoundSynth(soundId=$soundId, loops=$loops, delay=$delay, volume=$volume, pitch=$pitch)"
+        return "VorbisSound(soundId=$soundId, loops=$loops, delay=$delay, volume=$volume, pitch=$pitch)"
     }
 }

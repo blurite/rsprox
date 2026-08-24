@@ -13,7 +13,7 @@ import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfCloseSub
 import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfOpenSub
 import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfOpenTop
 import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetHide
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.LocAddChange
+import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.LocAnim
 import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.LocDel
 import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapAnim
 import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapAnimV2
@@ -80,8 +80,8 @@ import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.SetPlayerOp
 import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.UpdateRunEnergy
 import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.UpdateRunWeight
 import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.UpdateStat
-import net.rsprox.protocol.rs3v949.game.outgoing.model.sound.MidiSong
-import net.rsprox.protocol.rs3v949.game.outgoing.model.sound.SoundSynth
+import net.rsprox.protocol.rs3v949.game.outgoing.model.sound.SoundMixbussSetLevel
+import net.rsprox.protocol.rs3v949.game.outgoing.model.sound.VorbisSound
 import net.rsprox.protocol.rs3v949.game.outgoing.model.specific.ProjAnimSpecificV2
 import net.rsprox.protocol.rs3v949.game.outgoing.model.unknown.RawUnknownServerPacket
 
@@ -230,21 +230,13 @@ public class TextRs3ServerPacketTranscriber(
         root.children += AnyProperty("zoneBase", formatCoord(base), String::class.java)
     }
 
-    private fun Property.buildLocAddChange(event: LocAddChange) {
-        val c = sessionState.getActiveWorld().relativizeZoneCoord(event.xInZone, event.zInZone)
-        children += AnyProperty("loc", Rs3GamevalLookup.loc(event.id), String::class.java)
-        children += AnyProperty("coord", formatCoord(c), String::class.java)
-        children += AnyProperty("shape", event.shape, Int::class.java)
-        children += AnyProperty("rotation", event.rotation, Int::class.java)
-        if (event.locFlags != 0) {
-            children += AnyProperty("locFlags", event.locFlags, Int::class.java)
-        }
+    private fun Property.buildLocAnim(event: LocAnim) {
         children += AnyProperty("rawBytes", hex(event.rawBytes), String::class.java)
     }
 
-    override fun locAddChange(message: LocAddChange) {
-        if (!filters[PropertyFilter.LOC_ADD_CHANGE]) return omit()
-        root.buildLocAddChange(message)
+    override fun locAnim(message: LocAnim) {
+        if (!filters[PropertyFilter.LOC_ANIM]) return omit()
+        root.buildLocAnim(message)
     }
 
     private fun Property.buildLocDel(event: LocDel) {
@@ -431,9 +423,9 @@ public class TextRs3ServerPacketTranscriber(
         root.children += AnyProperty("packetCount", message.packets.size, Int::class.java)
         for (event in message.packets) {
             when (event) {
-                is LocAddChange -> {
-                    if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
-                    root.group("LOC_ADD_CHANGE?") { buildLocAddChange(event) }
+                is LocAnim -> {
+                    if (!filters[PropertyFilter.LOC_ANIM]) continue
+                    root.group("LOC_ANIM?") { buildLocAnim(event) }
                 }
                 is LocDel -> {
                     if (!filters[PropertyFilter.LOC_DEL]) continue
@@ -776,7 +768,7 @@ public class TextRs3ServerPacketTranscriber(
         root.children += AnyProperty("snapshotSlot", message.snapshotSlot, Int::class.java)
     }
 
-    override fun soundSynth(message: SoundSynth) {
+    override fun vorbisSound(message: VorbisSound) {
         if (!filters[PropertyFilter.SYNTH_SOUND]) return omit()
         root.children += AnyProperty("sound", Rs3GamevalLookup.sound(message.soundId), String::class.java)
         root.children += AnyProperty("volume", message.volume, Int::class.java)
@@ -813,14 +805,8 @@ public class TextRs3ServerPacketTranscriber(
         root.children += AnyProperty("field17", message.field17, Int::class.java)
     }
 
-    override fun midiSong(message: MidiSong) {
-        if (!filters[PropertyFilter.MIDI_SONG]) return omit()
-        val bigEndianId = (message.idByte0 shl 8) or message.idByte1
-        val littleEndianId = (message.idByte1 shl 8) or message.idByte0
-        root.children += AnyProperty("song(bigEndian)?", Rs3GamevalLookup.midi(bigEndianId), String::class.java)
-        root.children += AnyProperty("song(littleEndian)?", Rs3GamevalLookup.midi(littleEndianId), String::class.java)
-        root.children += AnyProperty("tail", "%02x".format(message.tailByte), String::class.java)
-        root.children += AnyProperty("extra", "%02x".format(message.extraByte), String::class.java)
+    override fun soundMixbussSetLevel(message: SoundMixbussSetLevel) {
+        root.children += AnyProperty("rawBytes", hex(message.rawBytes), String::class.java)
     }
 
     override fun locPrefetch(message: LocPrefetch) {

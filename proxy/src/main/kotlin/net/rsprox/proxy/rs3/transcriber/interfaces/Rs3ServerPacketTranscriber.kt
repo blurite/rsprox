@@ -32,7 +32,7 @@ import net.rsprox.protocol.rs3v949.game.outgoing.model.inv.UpdateInvFull
 import net.rsprox.protocol.rs3v949.game.outgoing.model.inv.UpdateInvPartial
 import net.rsprox.protocol.rs3v949.game.outgoing.model.inv.UpdateInvStopTransmit
 import net.rsprox.protocol.rs3v949.game.outgoing.model.map.LocPrefetch
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.LocAddChange
+import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.LocAnim
 import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.LocDel
 import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapAnim
 import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapAnimV2
@@ -61,8 +61,8 @@ import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.SetPlayerOp
 import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.UpdateRunEnergy
 import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.UpdateRunWeight
 import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.UpdateStat
-import net.rsprox.protocol.rs3v949.game.outgoing.model.sound.MidiSong
-import net.rsprox.protocol.rs3v949.game.outgoing.model.sound.SoundSynth
+import net.rsprox.protocol.rs3v949.game.outgoing.model.sound.SoundMixbussSetLevel
+import net.rsprox.protocol.rs3v949.game.outgoing.model.sound.VorbisSound
 import net.rsprox.protocol.rs3v949.game.outgoing.model.specific.ProjAnimSpecificV2
 import net.rsprox.protocol.rs3v949.game.outgoing.model.unknown.RawUnknownServerPacket
 import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.header.UpdateZoneFollows
@@ -98,7 +98,7 @@ public interface Rs3ServerPacketTranscriber {
 
     public fun updateZoneFollows(message: UpdateZoneFollows)
 
-    public fun locAddChange(message: LocAddChange)
+    public fun locAnim(message: LocAnim)
 
     public fun locDel(message: LocDel)
 
@@ -202,13 +202,13 @@ public interface Rs3ServerPacketTranscriber {
 
     public fun ifSetPlayerHeadSnapshot(message: IfSetPlayerHeadSnapshot)
 
-    public fun soundSynth(message: SoundSynth)
+    public fun vorbisSound(message: VorbisSound)
 
     public fun runClientScript(message: RunClientScript)
 
     public fun projAnimSpecificV2(message: ProjAnimSpecificV2)
 
-    public fun midiSong(message: MidiSong)
+    public fun soundMixbussSetLevel(message: SoundMixbussSetLevel)
 
     public fun locPrefetch(message: LocPrefetch)
 

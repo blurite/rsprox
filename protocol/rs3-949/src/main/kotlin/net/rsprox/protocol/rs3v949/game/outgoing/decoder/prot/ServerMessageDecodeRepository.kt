@@ -40,7 +40,7 @@ import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.misc.client.Minim
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.misc.client.TickEndDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.misc.player.ChatFilterSettingsPrivateChatDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.misc.player.JcoinsUpdateDecoder
-import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.payload.LocAddChangeDecoder
+import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.payload.LocAnimDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.payload.LocDelDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.payload.MapAnimDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.payload.MapAnimV2Decoder
@@ -56,8 +56,8 @@ import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.misc.player.SetPl
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.misc.player.UpdateRunEnergyDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.misc.player.UpdateRunWeightDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.misc.player.UpdateStatDecoder
-import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.sound.MidiSongDecoder
-import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.sound.SoundSynthDecoder
+import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.sound.SoundMixbussSetLevelDecoder
+import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.sound.VorbisSoundDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.specific.ProjAnimSpecificV2Decoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.payload.ObjAddDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.payload.ObjCountDecoder
@@ -94,7 +94,7 @@ internal object ServerMessageDecoderRepository {
                 bind(IfCloseSubDecoder())
                 bind(IfSetHideDecoder())
                 bind(MessageGameDecoder())
-                bind(LocAddChangeDecoder())
+                bind(LocAnimDecoder())
                 bind(LocDelDecoder())
                 for (decoder in UpdateZoneFollowsDecoder.all()) bind(decoder)
                 for (decoder in ObjAddDecoder.all()) bind(decoder)
@@ -147,15 +147,15 @@ internal object ServerMessageDecoderRepository {
                 bind(SetPlayerOpDecoder())
                 bind(IfSetPlayerModelSnapshotDecoder())
                 bind(IfSetPlayerHeadSnapshotDecoder())
-                bind(SoundSynthDecoder())
+                bind(VorbisSoundDecoder())
                 bind(RunClientScriptDecoder())
                 bind(ProjAnimSpecificV2Decoder())
-                bind(MidiSongDecoder())
+                bind(SoundMixbussSetLevelDecoder())
                 bind(LocPrefetchDecoder())
                 bind(Cutscene2dPlayDecoder())
                 bind(JcoinsUpdateDecoder())
                 bind(RebuildNormalDecoder())
-                bind(TickEndDecoder(GameServerProt.LOBBY_TICK_END))
+                bind(TickEndDecoder(GameServerProt.NO_TIMEOUT))
                 bind(TickEndDecoder(GameServerProt.SERVER_TICK_END))
             }
         return builder.build()

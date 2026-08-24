@@ -8,7 +8,7 @@ import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetPlayerMod
 import net.rsprox.protocol.session.Session
 
 internal class IfSetPlayerModelSelfDecoder : ProxyMessageDecoder<IfSetPlayerModelSelf> {
-    override val prot: ClientProt = GameServerProt.IF_SETPLAYERMODEL_SELF
+    override val prot: ClientProt = GameServerProt.IF_SET_PLAYER_MODEL_SELF
 
     override fun decode(
         buffer: JagByteBuf,

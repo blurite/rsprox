@@ -33,7 +33,7 @@ internal class ObjDelDecoder(
         internal fun all(): List<ObjDelDecoder> =
             listOf(
                 ObjDelDecoder(GameServerProt.OBJ_DEL, big = false),
-                ObjDelDecoder(GameServerProt.OBJ_DEL_BIG, big = true),
+                ObjDelDecoder(GameServerProt.OBJ_DEL_V2, big = true),
             )
     }
 }

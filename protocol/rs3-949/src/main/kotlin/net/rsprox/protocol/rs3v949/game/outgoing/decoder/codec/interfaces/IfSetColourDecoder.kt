@@ -8,7 +8,7 @@ import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetColour
 import net.rsprox.protocol.session.Session
 
 internal class IfSetColourDecoder : ProxyMessageDecoder<IfSetColour> {
-    override val prot: ClientProt = GameServerProt.IF_SETCOLOUR
+    override val prot: ClientProt = GameServerProt.IF_SET_COLOUR
 
     override fun decode(
         buffer: JagByteBuf,

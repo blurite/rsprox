@@ -8,7 +8,7 @@ import net.rsprox.protocol.rs3v949.game.outgoing.model.varc.VarcLarge
 import net.rsprox.protocol.session.Session
 
 internal class VarcLargeDecoder : ProxyMessageDecoder<VarcLarge> {
-    override val prot: ClientProt = GameServerProt.CLIENT_SETVARC_LARGE
+    override val prot: ClientProt = GameServerProt.CLIENT_SET_VARC_LARGE
 
     override fun decode(
         buffer: JagByteBuf,
