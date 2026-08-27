@@ -15,10 +15,7 @@ internal class IfOpenTopDecoder : ProxyMessageDecoder<IfOpenTop> {
         session: Session,
     ): IfOpenTop {
         buffer.skipRead(8)
-        val loRaw = buffer.g1()
-        val lo = (loRaw - 128) and 0xFF
-        val hi = buffer.g1()
-        val interfaceId = (hi shl 8) or lo
+        val interfaceId = buffer.g2Alt3()
         buffer.skipRead(9)
         return IfOpenTop(interfaceId)
     }

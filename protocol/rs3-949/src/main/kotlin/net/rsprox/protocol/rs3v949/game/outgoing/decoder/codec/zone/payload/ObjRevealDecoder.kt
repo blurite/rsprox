@@ -26,8 +26,8 @@ internal class ObjRevealDecoder(
             packedCoord = buffer.g1Alt1()
             ownerIndex = buffer.g2Alt2()
         } else {
-            objId = buffer.g2()
             count = buffer.g2Alt2()
+            objId = buffer.g2()
             packedCoord = buffer.g1Alt2()
             ownerIndex = buffer.g2Alt1()
         }

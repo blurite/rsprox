@@ -14,15 +14,8 @@ internal class VarbitLargeDecoder : ProxyMessageDecoder<VarbitLarge> {
         buffer: JagByteBuf,
         session: Session,
     ): VarbitLarge {
-        val hi = buffer.g1()
-        val loRaw = buffer.g1()
-        val lo = (loRaw - 128) and 0xFF
-        val id = ((hi shl 8) or lo) and 0xFFFF
-        val b1 = buffer.g1()
-        val b0 = buffer.g1()
-        val b3 = buffer.g1()
-        val b2 = buffer.g1()
-        val value = (b0 shl 24) or (b1 shl 16) or (b2 shl 8) or b3
+        val id = buffer.g2Alt2()
+        val value = buffer.g4Alt3()
         return VarbitLarge(
             id,
             value,

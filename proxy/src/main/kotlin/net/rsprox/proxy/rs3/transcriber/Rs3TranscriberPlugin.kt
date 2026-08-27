@@ -123,10 +123,10 @@ public class Rs3TranscriberPlugin(
             GameServerProt.NPC_INFO -> pass(message, Rs3Transcriber::npcInfo)
             GameServerProt.PLAYER_INFO -> pass(message, Rs3Transcriber::playerInfo)
             GameServerProt.REBUILD_NORMAL -> pass(message, Rs3Transcriber::rebuildNormal)
-            GameServerProt.UPDATE_ZONE_FULL_FOLLOWS,
-            GameServerProt.UPDATE_ZONE_PARTIAL_FOLLOWS,
-                -> pass(message, Rs3Transcriber::updateZoneFollows)
+            GameServerProt.UPDATE_ZONE_FULL_FOLLOWS -> pass(message, Rs3Transcriber::updateZoneFullFollows)
+            GameServerProt.UPDATE_ZONE_PARTIAL_FOLLOWS -> pass(message, Rs3Transcriber::updateZonePartialFollows)
             GameServerProt.LOC_ANIM -> pass(message, Rs3Transcriber::locAnim)
+            GameServerProt.LOC_ADD_CHANGE -> pass(message, Rs3Transcriber::locAddChange)
             GameServerProt.LOC_DEL -> pass(message, Rs3Transcriber::locDel)
             GameServerProt.OBJ_ADD, GameServerProt.OBJ_ADD_V2 -> pass(message, Rs3Transcriber::objAdd)
             GameServerProt.OBJ_DEL, GameServerProt.OBJ_DEL_V2 -> pass(message, Rs3Transcriber::objDel)
@@ -134,6 +134,7 @@ public class Rs3TranscriberPlugin(
             GameServerProt.OBJ_REVEAL, GameServerProt.OBJ_REVEAL_V2 -> pass(message, Rs3Transcriber::objReveal)
             GameServerProt.MAP_ANIM -> pass(message, Rs3Transcriber::mapAnim)
             GameServerProt.MAP_ANIM_V2 -> pass(message, Rs3Transcriber::mapAnimV2)
+            GameServerProt.MIDI_SONG_LOCATION -> pass(message, Rs3Transcriber::midiSongLocation)
             GameServerProt.SOUND_AREA -> pass(message, Rs3Transcriber::soundArea)
             GameServerProt.TEXT_COORD -> pass(message, Rs3Transcriber::textCoord)
             GameServerProt.MAP_PROJ_ANIM -> pass(message, Rs3Transcriber::mapProjAnim)

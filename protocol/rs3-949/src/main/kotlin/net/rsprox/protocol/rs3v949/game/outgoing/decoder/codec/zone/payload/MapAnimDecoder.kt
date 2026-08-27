@@ -14,20 +14,24 @@ internal class MapAnimDecoder : ProxyMessageDecoder<MapAnim> {
         buffer: JagByteBuf,
         session: Session,
     ): MapAnim {
-        val startIndex = buffer.buffer.readerIndex()
         val packedCoord = buffer.g1()
-        val id = buffer.g4()
-        val byte5 = buffer.g1()
-        val rotation = byte5 and 0x7
-        val delay = buffer.g1()
-        val height = buffer.g1()
-        val scale = buffer.g2()
-        val priority = buffer.g1()
         val xInZone = (packedCoord ushr 4) and 0x7
         val zInZone = packedCoord and 0x7
-        val endIndex = buffer.buffer.readerIndex()
-        val rawBytes = ByteArray(endIndex - startIndex)
-        buffer.buffer.getBytes(startIndex, rawBytes)
-        return MapAnim(id, xInZone, zInZone, rotation, delay, height, scale, priority, rawBytes)
+        val id = buffer.g4()
+        val unk1 = buffer.g1()
+        val unk2 = buffer.g1()
+        val unk3 = buffer.g1()
+        val unk4 = buffer.g2()
+        val unk5 = buffer.g1()
+        return MapAnim(
+            id = id,
+            xInZone = xInZone,
+            zInZone = zInZone,
+            unk1 = unk1,
+            unk2 = unk2,
+            unk3 = unk3,
+            unk4 = unk4,
+            unk5 = unk5,
+        )
     }
 }

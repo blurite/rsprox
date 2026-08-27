@@ -14,9 +14,10 @@ import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.info.playerinfo.P
 import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfOpenTop
 import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.client.TickEnd
 import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.UpdateStat
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.header.UpdateZoneFollows
 import net.rsprox.protocol.rs3v949.game.outgoing.model.map.RebuildNormal
+import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.header.UpdateZoneFullFollows
 import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
+import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.header.UpdateZonePartialFollows
 
 public class Rs3SessionTracker(
     private val sessionState: Rs3SessionState,
@@ -86,7 +87,10 @@ public class Rs3SessionTracker(
                     sessionState.getActiveWorld().rebuild(CoordGrid(0, message.baseTileX, message.baseTileZ))
                 }
             }
-            is UpdateZoneFollows -> {
+            is UpdateZoneFullFollows -> {
+                sessionState.getActiveWorld().setActiveZone(message.zoneX, message.zoneZ, message.level)
+            }
+            is UpdateZonePartialFollows -> {
                 sessionState.getActiveWorld().setActiveZone(message.zoneX, message.zoneZ, message.level)
             }
             is UpdateZonePartialEnclosed -> {

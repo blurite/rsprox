@@ -14,8 +14,19 @@ internal class LocAnimDecoder : ProxyMessageDecoder<LocAnim> {
         buffer: JagByteBuf,
         session: Session,
     ): LocAnim {
-        val rawBytes = ByteArray(GameServerProt.LOC_ANIM.size)
-        buffer.buffer.readBytes(rawBytes)
-        return LocAnim(rawBytes)
+        val delay = buffer.g1()
+
+        val packedCoord = buffer.g1Alt1()
+        val zInZone = packedCoord and 0x7
+        val xInZone = (packedCoord ushr 4) and 0x7
+
+        val id = buffer.g4Alt2()
+
+        val rawShapeRot = buffer.g1()
+        val shapeRot = rawShapeRot xor 0x80
+        val shape = (shapeRot ushr 2) and 0x1F
+        val rotation = shapeRot and 0x3
+
+        return LocAnim(id, xInZone, zInZone, shape, rotation, delay)
     }
 }

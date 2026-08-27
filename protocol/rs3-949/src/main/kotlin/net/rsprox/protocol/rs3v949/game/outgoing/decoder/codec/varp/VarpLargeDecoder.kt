@@ -14,11 +14,7 @@ internal class VarpLargeDecoder : ProxyMessageDecoder<VarpLarge> {
         buffer: JagByteBuf,
         session: Session,
     ): VarpLarge {
-        val b1 = buffer.g1()
-        val b0 = buffer.g1()
-        val b3 = buffer.g1()
-        val b2 = buffer.g1()
-        val value = (b0 shl 24) or (b1 shl 16) or (b2 shl 8) or b3
+        val value = buffer.g4Alt3()
         val id = buffer.g2()
         return VarpLarge(
             id,

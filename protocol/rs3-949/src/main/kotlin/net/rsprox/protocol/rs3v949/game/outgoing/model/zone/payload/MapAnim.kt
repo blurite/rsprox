@@ -6,14 +6,22 @@ public class MapAnim(
     public val id: Int,
     public val xInZone: Int,
     public val zInZone: Int,
-    public val rotation: Int,
-    public val delay: Int,
-    public val height: Int,
-    public val scale: Int,
-    public val priority: Int,
-    public val rawBytes: ByteArray,
+    public val unk1: Int,
+    public val unk2: Int,
+    public val unk3: Int,
+    public val unk4: Int,
+    public val unk5: Int,
 ) : IncomingServerGameMessage {
     override fun toString(): String {
-        return "MapAnim(id=$id, xInZone=$xInZone, zInZone=$zInZone, rotation=$rotation, delay=$delay, height=$height, scale=$scale, priority=$priority)"
+        return "MapAnim(" +
+            "id=$id, " +
+            "xInZone=$xInZone, " +
+            "zInZone=$zInZone, " +
+            "unk1=$unk1, " +
+            "unk2=$unk2, " +
+            "unk3=$unk3, " +
+            "unk4=$unk4, " +
+            "unk5=$unk5" +
+            ")"
     }
 }

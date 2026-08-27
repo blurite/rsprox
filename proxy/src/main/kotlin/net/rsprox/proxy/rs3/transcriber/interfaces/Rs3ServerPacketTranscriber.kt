@@ -31,7 +31,6 @@ import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetText
 import net.rsprox.protocol.rs3v949.game.outgoing.model.inv.UpdateInvFull
 import net.rsprox.protocol.rs3v949.game.outgoing.model.inv.UpdateInvPartial
 import net.rsprox.protocol.rs3v949.game.outgoing.model.inv.UpdateInvStopTransmit
-import net.rsprox.protocol.rs3v949.game.outgoing.model.map.LocPrefetch
 import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.LocAnim
 import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.LocDel
 import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapAnim
@@ -65,13 +64,17 @@ import net.rsprox.protocol.rs3v949.game.outgoing.model.sound.SoundMixbussSetLeve
 import net.rsprox.protocol.rs3v949.game.outgoing.model.sound.VorbisSound
 import net.rsprox.protocol.rs3v949.game.outgoing.model.specific.ProjAnimSpecificV2
 import net.rsprox.protocol.rs3v949.game.outgoing.model.unknown.RawUnknownServerPacket
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.header.UpdateZoneFollows
 import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
 import net.rsprox.protocol.rs3v949.game.outgoing.model.varc.VarcSmall
 import net.rsprox.protocol.rs3v949.game.outgoing.model.varc.VarcLarge
 import net.rsprox.protocol.rs3v949.game.outgoing.model.varc.VarcBitSmall
 import net.rsprox.protocol.rs3v949.game.outgoing.model.varc.VarcBitLarge
 import net.rsprox.protocol.rs3v949.game.outgoing.model.varc.VarcStrSmall
+import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.header.UpdateZoneFullFollows
+import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.header.UpdateZonePartialFollows
+import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.LocAddChange
+import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.LocPrefetch
+import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MidiSongLocation
 
 public interface Rs3ServerPacketTranscriber {
     public fun varpSmall(message: VarpSmall)
@@ -96,9 +99,13 @@ public interface Rs3ServerPacketTranscriber {
 
     public fun rebuildNormal(message: RebuildNormal)
 
-    public fun updateZoneFollows(message: UpdateZoneFollows)
+    public fun updateZoneFullFollows(message: UpdateZoneFullFollows)
+
+    public fun updateZonePartialFollows(message: UpdateZonePartialFollows)
 
     public fun locAnim(message: LocAnim)
+
+    public fun locAddChange(message: LocAddChange)
 
     public fun locDel(message: LocDel)
 
@@ -113,6 +120,8 @@ public interface Rs3ServerPacketTranscriber {
     public fun mapAnim(message: MapAnim)
 
     public fun mapAnimV2(message: MapAnimV2)
+
+    public fun midiSongLocation(message: MidiSongLocation)
 
     public fun soundArea(message: SoundArea)
 

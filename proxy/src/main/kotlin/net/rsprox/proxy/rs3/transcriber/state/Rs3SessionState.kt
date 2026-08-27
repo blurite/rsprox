@@ -39,6 +39,16 @@ public class Rs3SessionState {
         this.root.clear()
     }
 
+    public fun createFakeServerRoot(name: String): RootProperty {
+        val property =
+            object : RootProperty {
+                override val prot: String = name
+                override val children: MutableList<ChildProperty<*>> = mutableListOf()
+            }
+        this.root += property
+        return property
+    }
+
     public fun openInterface(
         id: Int,
         com: Long,

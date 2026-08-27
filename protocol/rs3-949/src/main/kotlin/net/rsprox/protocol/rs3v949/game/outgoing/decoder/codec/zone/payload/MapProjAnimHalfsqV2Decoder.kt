@@ -22,7 +22,7 @@ internal class MapProjAnimHalfsqV2Decoder : ProxyMessageDecoder<MapProjAnimHalfs
         val idB = buffer.g3()
         val heightByte = buffer.g1()
         val spotAnimId = buffer.g2()
-        val trailing = ByteArray(buffer.readableBytes())
+        val trailing = ByteArray(TRAILING_LENGTH)
         buffer.buffer.readBytes(trailing)
         val xInZone = (srcCoordHalf ushr 3) and 0x7
         val zInZone = srcCoordHalf and 0x7
@@ -33,5 +33,9 @@ internal class MapProjAnimHalfsqV2Decoder : ProxyMessageDecoder<MapProjAnimHalfs
             srcCoordHalf, xInZone, zInZone, destXdeltaHalf, destYdeltaHalf,
             srcModel, idB, spotAnimId, heightByte, trailing, rawBytes,
         )
+    }
+
+    private companion object {
+        const val TRAILING_LENGTH = 17
     }
 }

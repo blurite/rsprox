@@ -31,7 +31,6 @@ import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.interfaces.IfSetT
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.inv.UpdateInvFullDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.inv.UpdateInvPartialDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.inv.UpdateInvStopTransmitDecoder
-import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.map.LocPrefetchDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.map.RebuildNormalDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.misc.client.Cutscene2dPlayDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.misc.client.HintArrowDecoder
@@ -63,18 +62,20 @@ import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.payload.ObjA
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.payload.ObjCountDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.payload.ObjDelDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.payload.ObjRevealDecoder
+import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.payload.LocPrefetchDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.varbit.VarbitLargeDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.varbit.VarbitSmallDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.varp.VarpLargeDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.varp.VarpLongDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.varp.VarpSmallDecoder
-import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.header.UpdateZoneFollowsDecoder
-import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.header.UpdateZonePartialEnclosedDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.varc.VarcSmallDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.varc.VarcLargeDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.varc.VarcBitSmallDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.varc.VarcBitLargeDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.varc.VarcStrSmallDecoder
+import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.header.UpdateZoneFullFollowsDecoder
+import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.header.UpdateZonePartialEnclosedDecoder
+import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.header.UpdateZonePartialFollowsDecoder
 
 internal object ServerMessageDecoderRepository {
     @ExperimentalStdlibApi
@@ -96,7 +97,8 @@ internal object ServerMessageDecoderRepository {
                 bind(MessageGameDecoder())
                 bind(LocAnimDecoder())
                 bind(LocDelDecoder())
-                for (decoder in UpdateZoneFollowsDecoder.all()) bind(decoder)
+                bind(UpdateZoneFullFollowsDecoder())
+                bind(UpdateZonePartialFollowsDecoder())
                 for (decoder in ObjAddDecoder.all()) bind(decoder)
                 for (decoder in ObjDelDecoder.all()) bind(decoder)
                 for (decoder in ObjCountDecoder.all()) bind(decoder)

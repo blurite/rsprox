@@ -1,6 +1,7 @@
 package net.rsprox.proxy.rs3.transcriber.text
 
 import net.rsprox.protocol.common.CoordGrid
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 import net.rsprox.protocol.game.outgoing.model.misc.client.MinimapToggle
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettingsPrivateChat
 import net.rsprox.protocol.game.outgoing.model.misc.player.RunClientScript
@@ -34,8 +35,6 @@ import net.rsprox.protocol.rs3v949.game.outgoing.model.varp.VarpLarge
 import net.rsprox.protocol.rs3v949.game.outgoing.model.varp.VarpLong
 import net.rsprox.protocol.rs3v949.game.outgoing.model.varp.VarpSmall
 import net.rsprox.protocol.rs3v949.game.outgoing.model.map.RebuildNormal
-import net.rsprox.protocol.rs3v949.game.outgoing.model.map.UnknownZoneSubOp
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.header.UpdateZoneFollows
 import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
 import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
 import net.rsprox.proxy.rs3.transcriber.interfaces.Rs3ServerPacketTranscriber
@@ -71,7 +70,6 @@ import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetText
 import net.rsprox.protocol.rs3v949.game.outgoing.model.inv.UpdateInvFull
 import net.rsprox.protocol.rs3v949.game.outgoing.model.inv.UpdateInvPartial
 import net.rsprox.protocol.rs3v949.game.outgoing.model.inv.UpdateInvStopTransmit
-import net.rsprox.protocol.rs3v949.game.outgoing.model.map.LocPrefetch
 import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.client.Cutscene2dPlay
 import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.client.HintArrow
 import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.client.HintTrail
@@ -84,6 +82,12 @@ import net.rsprox.protocol.rs3v949.game.outgoing.model.sound.SoundMixbussSetLeve
 import net.rsprox.protocol.rs3v949.game.outgoing.model.sound.VorbisSound
 import net.rsprox.protocol.rs3v949.game.outgoing.model.specific.ProjAnimSpecificV2
 import net.rsprox.protocol.rs3v949.game.outgoing.model.unknown.RawUnknownServerPacket
+import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.header.UpdateZoneFullFollows
+import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.header.UpdateZonePartialFollows
+import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.LocAddChange
+import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.LocCustomise
+import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.LocPrefetch
+import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MidiSongLocation
 
 public class TextRs3ServerPacketTranscriber(
     private val sessionState: Rs3SessionState,
@@ -220,18 +224,68 @@ public class TextRs3ServerPacketTranscriber(
         root.children += AnyProperty("baseTile", "(0,${message.baseTileX},${message.baseTileZ})", String::class.java)
     }
 
-    override fun updateZoneFollows(message: UpdateZoneFollows) {
-        if (!filters[PropertyFilter.ZONE_HEADER]) return omit()
-        root.children += AnyProperty("full", message.full, Boolean::class.java)
-        root.children += AnyProperty("level", message.level, Int::class.java)
-        root.children += AnyProperty("zoneX", message.zoneX, Int::class.java)
-        root.children += AnyProperty("zoneZ", message.zoneZ, Int::class.java)
+    private fun Property.buildZoneFollowsCommon(level: Int, zoneX: Int, zoneZ: Int) {
+        children += AnyProperty("level", level, Int::class.java)
+        children += AnyProperty("zoneX", zoneX, Int::class.java)
+        children += AnyProperty("zoneZ", zoneZ, Int::class.java)
         val base = sessionState.getActiveWorld().relativizeZoneCoord(0, 0)
-        root.children += AnyProperty("zoneBase", formatCoord(base), String::class.java)
+        children += AnyProperty("zoneBase", formatCoord(base), String::class.java)
+    }
+
+    override fun updateZoneFullFollows(message: UpdateZoneFullFollows) {
+        if (!filters[PropertyFilter.ZONE_HEADER]) return omit()
+        root.buildZoneFollowsCommon(message.level, message.zoneX, message.zoneZ)
+    }
+
+    override fun updateZonePartialFollows(message: UpdateZonePartialFollows) {
+        if (!filters[PropertyFilter.ZONE_HEADER]) return omit()
+        root.buildZoneFollowsCommon(message.level, message.zoneX, message.zoneZ)
+    }
+
+    private fun Property.buildLocPrefetch(event: LocPrefetch) {
+        children += AnyProperty("loc", Rs3GamevalLookup.loc(event.id), String::class.java)
+        children += AnyProperty("shape", event.shape, Int::class.java)
+        children += AnyProperty("rotation", event.rotation, Int::class.java)
+        children += AnyProperty("rawBytes", hex(event.rawBytes), String::class.java)
+    }
+
+    private fun Property.buildLocCustomise(event: LocCustomise) {
+        val c = sessionState.getActiveWorld().relativizeZoneCoord(event.xInZone, event.zInZone)
+        children += AnyProperty("loc", Rs3GamevalLookup.loc(event.locId), String::class.java)
+        children += AnyProperty("coord", formatCoord(c), String::class.java)
+        children += AnyProperty("shape", event.shape, Int::class.java)
+        children += AnyProperty("rotation", event.rotation, Int::class.java)
+        if (event.hasExtendedTransform) {
+            children += AnyProperty("rotationX", event.rotationX, Float::class.java)
+            children += AnyProperty("rotationY", event.rotationY, Float::class.java)
+            children += AnyProperty("rotationZ", event.rotationZ, Float::class.java)
+            children += AnyProperty("rotationW", event.rotationW, Float::class.java)
+            children += AnyProperty("translateA", event.translateA, Float::class.java)
+            children += AnyProperty("translateB", event.translateB, Float::class.java)
+            children += AnyProperty("translateC", event.translateC, Float::class.java)
+            children += AnyProperty("scaleX", event.scaleX, Float::class.java)
+            children += AnyProperty("scaleY", event.scaleY, Float::class.java)
+            children += AnyProperty("scaleZ", event.scaleZ, Float::class.java)
+        }
+        event.uintArray?.let {
+            children += AnyProperty("uintArray", it.joinToString(","), String::class.java)
+        }
+        event.opcodeArrayA?.let {
+            children += AnyProperty("opcodeArrayA", it.joinToString(","), String::class.java)
+        }
+        event.opcodeArrayB?.let {
+            children += AnyProperty("opcodeArrayB", it.joinToString(","), String::class.java)
+        }
+        children += AnyProperty("rawBytes", hex(event.rawBytes), String::class.java)
     }
 
     private fun Property.buildLocAnim(event: LocAnim) {
-        children += AnyProperty("rawBytes", hex(event.rawBytes), String::class.java)
+        val c = sessionState.getActiveWorld().relativizeZoneCoord(event.xInZone, event.zInZone)
+        children += AnyProperty("anim", Rs3GamevalLookup.seq(event.id), String::class.java)
+        children += AnyProperty("coord", formatCoord(c), String::class.java)
+        children += AnyProperty("shape", event.shape, Int::class.java)
+        children += AnyProperty("rotation", event.rotation, Int::class.java)
+        children += AnyProperty("delay?", event.delay, Int::class.java)
     }
 
     override fun locAnim(message: LocAnim) {
@@ -239,8 +293,39 @@ public class TextRs3ServerPacketTranscriber(
         root.buildLocAnim(message)
     }
 
-    private fun Property.buildLocDel(event: LocDel) {
+    private fun Property.buildLocAddChange(event: LocAddChange) {
+        val c = sessionState.getActiveWorld().relativizeZoneCoord(event.xInZone, event.zInZone)
+        children += AnyProperty("loc", Rs3GamevalLookup.loc(event.locId), String::class.java)
+        children += AnyProperty("coord", formatCoord(c), String::class.java)
+        children += AnyProperty("shape", event.shape, Int::class.java)
+        children += AnyProperty("rotation", event.rotation, Int::class.java)
+    }
+
+    override fun locAddChange(message: LocAddChange) {
+        if (!filters[PropertyFilter.LOC_ADD_CHANGE]) return omit()
+        root.buildLocAddChange(message)
+    }
+
+    private fun Property.buildMidiSongLocation(event: MidiSongLocation) {
+        val c = sessionState.getActiveWorld().relativizeZoneCoord(event.xInZone, event.zInZone)
+        children += AnyProperty("song", Rs3GamevalLookup.midi(event.id), String::class.java)
+        children += AnyProperty("coord", formatCoord(c), String::class.java)
+        children += AnyProperty("heightAdjust", event.heightAdjust, Int::class.java)
+        children += AnyProperty("flagsValue", event.flagsValue, Int::class.java)
+        children += AnyProperty("rotationByte", event.rotationByte, Int::class.java)
         children += AnyProperty("rawBytes", hex(event.rawBytes), String::class.java)
+    }
+
+    override fun midiSongLocation(message: MidiSongLocation) {
+        if (!filters[PropertyFilter.MIDI_SONG]) return omit()
+        root.buildMidiSongLocation(message)
+    }
+
+    private fun Property.buildLocDel(event: LocDel) {
+        val c = sessionState.getActiveWorld().relativizeZoneCoord(event.xInZone, event.zInZone)
+        children += AnyProperty("coord", formatCoord(c), String::class.java)
+        children += AnyProperty("shape", event.shape, Int::class.java)
+        children += AnyProperty("rotation", event.rotation, Int::class.java)
     }
 
     override fun locDel(message: LocDel) {
@@ -272,7 +357,11 @@ public class TextRs3ServerPacketTranscriber(
     }
 
     private fun Property.buildObjCount(event: ObjCount) {
-        children += AnyProperty("rawBytes", hex(event.rawBytes), String::class.java)
+        val c = sessionState.getActiveWorld().relativizeZoneCoord(event.xInZone, event.zInZone)
+        children += AnyProperty("obj", Rs3GamevalLookup.obj(event.objId), String::class.java)
+        children += AnyProperty("oldQuantity", event.oldQuantity, Int::class.java)
+        children += AnyProperty("newQuantity", event.newQuantity, Int::class.java)
+        children += AnyProperty("coord", formatCoord(c), String::class.java)
     }
 
     override fun objCount(message: ObjCount) {
@@ -281,7 +370,13 @@ public class TextRs3ServerPacketTranscriber(
     }
 
     private fun Property.buildObjReveal(event: ObjReveal) {
-        children += AnyProperty("big", event.big, Boolean::class.java)
+        val c = sessionState.getActiveWorld().relativizeZoneCoord(event.xInZone, event.zInZone)
+        children += AnyProperty("obj", Rs3GamevalLookup.obj(event.objId), String::class.java)
+        children += AnyProperty("count", event.count, Int::class.java)
+        children += AnyProperty("coord", formatCoord(c), String::class.java)
+        val ownerName = sessionState.getPlayerOrNull(event.ownerIndex)?.name
+        val ownerLabel = if (ownerName != null) "$ownerName(${event.ownerIndex})" else "${event.ownerIndex}"
+        children += AnyProperty("owner", ownerLabel, String::class.java)
         children += AnyProperty("rawBytes", hex(event.rawBytes), String::class.java)
     }
 
@@ -291,7 +386,14 @@ public class TextRs3ServerPacketTranscriber(
     }
 
     private fun Property.buildMapAnim(event: MapAnim) {
-        children += AnyProperty("rawBytes", hex(event.rawBytes), String::class.java)
+        val c = sessionState.getActiveWorld().relativizeZoneCoord(event.xInZone, event.zInZone)
+        children += AnyProperty("sound", Rs3GamevalLookup.sound(event.id), String::class.java)
+        children += AnyProperty("coord", formatCoord(c), String::class.java)
+        children += AnyProperty("unk1", event.unk1, Int::class.java)
+        children += AnyProperty("unk2", event.unk2, Int::class.java)
+        children += AnyProperty("unk3", event.unk3, Int::class.java)
+        children += AnyProperty("unk4", event.unk4, Int::class.java)
+        children += AnyProperty("unk5", event.unk5, Int::class.java)
     }
 
     override fun mapAnim(message: MapAnim) {
@@ -410,26 +512,56 @@ public class TextRs3ServerPacketTranscriber(
         root.children += AnyProperty("rawBytes", hex(message.rawBytes), String::class.java)
     }
 
-    private fun Property.buildUnknownZoneSubOp(event: UnknownZoneSubOp) {
-        children += AnyProperty("subOp", event.subOp, Int::class.java)
-        children += AnyProperty("bytes", hex(event.bytes), String::class.java)
-    }
 
     override fun updateZonePartialEnclosed(message: UpdateZonePartialEnclosed) {
-        if (!filters[PropertyFilter.ZONE_HEADER]) return omit()
-        root.children += AnyProperty("level", message.level, Int::class.java)
-        root.children += AnyProperty("zoneX", message.zoneX, Int::class.java)
-        root.children += AnyProperty("zoneZ", message.zoneZ, Int::class.java)
-        root.children += AnyProperty("packetCount", message.packets.size, Int::class.java)
-        for (event in message.packets) {
+        val includeZoneHeader = filters[PropertyFilter.ZONE_HEADER]
+        if (includeZoneHeader) {
+            root.children += AnyProperty("level", message.level, Int::class.java)
+            root.children += AnyProperty("zoneX", message.zoneX, Int::class.java)
+            root.children += AnyProperty("zoneZ", message.zoneZ, Int::class.java)
+            root.children += AnyProperty("packetCount", message.packets.size, Int::class.java)
+        } else {
+            omit()
+        }
+        if (message.packets.isEmpty()) {
+            return
+        }
+        if (includeZoneHeader) {
+            createChildZoneProts(root, message.packets)
+        } else {
+            createFakeZoneProts(message.packets)
+        }
+    }
+
+    private fun createChildZoneProts(
+        root: Property,
+        packets: List<IncomingServerGameMessage>,
+    ) {
+        for (event in packets) {
             when (event) {
                 is LocAnim -> {
                     if (!filters[PropertyFilter.LOC_ANIM]) continue
-                    root.group("LOC_ANIM?") { buildLocAnim(event) }
+                    root.group("LOC_ANIM") { buildLocAnim(event) }
+                }
+                is LocAddChange -> {
+                    if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
+                    root.group("LOC_ADD_CHANGE") { buildLocAddChange(event) }
+                }
+                is LocCustomise -> {
+                    if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
+                    root.group("LOC_CUSTOMISE?") { buildLocCustomise(event) }
+                }
+                is LocPrefetch -> {
+                    if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
+                    root.group("LOC_PREFETCH?") { buildLocPrefetch(event) }
+                }
+                is MidiSongLocation -> {
+                    if (!filters[PropertyFilter.MIDI_SONG]) continue
+                    root.group("MIDI_SONG_LOCATION?") { buildMidiSongLocation(event) }
                 }
                 is LocDel -> {
                     if (!filters[PropertyFilter.LOC_DEL]) continue
-                    root.group("LOC_DEL?") { buildLocDel(event) }
+                    root.group("LOC_DEL") { buildLocDel(event) }
                 }
                 is ObjAdd -> {
                     if (!filters[PropertyFilter.OBJ_ADD]) continue
@@ -445,11 +577,11 @@ public class TextRs3ServerPacketTranscriber(
                 }
                 is ObjReveal -> {
                     if (!filters[PropertyFilter.OBJ_ADD]) continue
-                    root.group("OBJ_REVEAL?") { buildObjReveal(event) }
+                    root.group("OBJ_REVEAL") { buildObjReveal(event) }
                 }
                 is MapAnim -> {
                     if (!filters[PropertyFilter.MAP_ANIM]) continue
-                    root.group("MAP_ANIM?") { buildMapAnim(event) }
+                    root.group("MAP_ANIM(sound?)") { buildMapAnim(event) }
                 }
                 is MapAnimV2 -> {
                     if (!filters[PropertyFilter.MAP_ANIM]) continue
@@ -475,12 +607,104 @@ public class TextRs3ServerPacketTranscriber(
                     if (!filters[PropertyFilter.MAP_PROJANIM]) continue
                     root.group("MAP_PROJANIM_HALFSQ_V2?") { buildMapProjAnimHalfsqV2(event) }
                 }
-                is UnknownZoneSubOp -> {
-                    root.group("UNKNOWN_SUB_OP") { buildUnknownZoneSubOp(event) }
+                is MapProjAnimV2 -> {
+                    if (!filters[PropertyFilter.MAP_PROJANIM]) continue
+                    root.group("MAP_PROJANIM_V2?") { buildMapProjAnimV2(event) }
                 }
                 else -> Unit
             }
         }
+    }
+
+    private fun createFakeZoneProts(packets: List<IncomingServerGameMessage>) {
+        for (event in packets) {
+            when (event) {
+                is LocAnim -> {
+                    if (!filters[PropertyFilter.LOC_ANIM]) continue
+                    sessionState.createFakeServerRoot("LOC_ANIM").buildLocAnim(event)
+                }
+                is LocAddChange -> {
+                    if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
+                    sessionState.createFakeServerRoot("LOC_ADD_CHANGE").buildLocAddChange(event)
+                }
+                is LocCustomise -> {
+                    if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
+                    sessionState.createFakeServerRoot("LOC_CUSTOMISE?").buildLocCustomise(event)
+                }
+                is LocPrefetch -> {
+                    if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
+                    sessionState.createFakeServerRoot("LOC_PREFETCH?").buildLocPrefetch(event)
+                }
+                is MidiSongLocation -> {
+                    if (!filters[PropertyFilter.MIDI_SONG]) continue
+                    sessionState.createFakeServerRoot("MIDI_SONG_LOCATION?").buildMidiSongLocation(event)
+                }
+                is LocDel -> {
+                    if (!filters[PropertyFilter.LOC_DEL]) continue
+                    sessionState.createFakeServerRoot("LOC_DEL").buildLocDel(event)
+                }
+                is ObjAdd -> {
+                    if (!filters[PropertyFilter.OBJ_ADD]) continue
+                    sessionState.createFakeServerRoot("OBJ_ADD").buildObjAdd(event)
+                }
+                is ObjDel -> {
+                    if (!filters[PropertyFilter.OBJ_DEL]) continue
+                    sessionState.createFakeServerRoot("OBJ_DEL").buildObjDel(event)
+                }
+                is ObjCount -> {
+                    if (!filters[PropertyFilter.OBJ_COUNT]) continue
+                    sessionState.createFakeServerRoot("OBJ_COUNT?").buildObjCount(event)
+                }
+                is ObjReveal -> {
+                    if (!filters[PropertyFilter.OBJ_ADD]) continue
+                    sessionState.createFakeServerRoot("OBJ_REVEAL").buildObjReveal(event)
+                }
+                is MapAnim -> {
+                    if (!filters[PropertyFilter.MAP_ANIM]) continue
+                    sessionState.createFakeServerRoot("MAP_ANIM(sound?)").buildMapAnim(event)
+                }
+                is MapAnimV2 -> {
+                    if (!filters[PropertyFilter.MAP_ANIM]) continue
+                    sessionState.createFakeServerRoot("MAP_ANIM_V2?").buildMapAnimV2(event)
+                }
+                is SoundArea -> {
+                    if (!filters[PropertyFilter.SOUND_AREA]) continue
+                    sessionState.createFakeServerRoot("SOUND_AREA").buildSoundArea(event)
+                }
+                is TextCoord -> {
+                    if (!filters[PropertyFilter.MAP_ANIM]) continue
+                    sessionState.createFakeServerRoot("TEXT_COORD?").buildTextCoord(event)
+                }
+                is MapProjAnim -> {
+                    if (!filters[PropertyFilter.MAP_PROJANIM]) continue
+                    sessionState.createFakeServerRoot("MAP_PROJANIM?").buildMapProjAnim(event)
+                }
+                is MapProjAnimHalfsq -> {
+                    if (!filters[PropertyFilter.MAP_PROJANIM]) continue
+                    sessionState.createFakeServerRoot("MAP_PROJANIM_HALFSQ?").buildMapProjAnimHalfsq(event)
+                }
+                is MapProjAnimHalfsqV2 -> {
+                    if (!filters[PropertyFilter.MAP_PROJANIM]) continue
+                    sessionState.createFakeServerRoot("MAP_PROJANIM_HALFSQ_V2?").buildMapProjAnimHalfsqV2(event)
+                }
+                is MapProjAnimV2 -> {
+                    if (!filters[PropertyFilter.MAP_PROJANIM]) continue
+                    sessionState.createFakeServerRoot("MAP_PROJANIM_V2?").buildMapProjAnimV2(event)
+                }
+                else -> Unit
+            }
+        }
+    }
+
+    private fun Property.buildMapProjAnimV2(event: MapProjAnimV2) {
+        val c = sessionState.getActiveWorld().relativizeZoneCoord(event.xInZone, event.zInZone)
+        children += AnyProperty("coord", formatCoord(c), String::class.java)
+        children += AnyProperty("targetDeltaX", event.targetDeltaX, Int::class.java)
+        children += AnyProperty("targetDeltaY", event.targetDeltaY, Int::class.java)
+        children += AnyProperty("idMedium", event.idMedium, Int::class.java)
+        children += AnyProperty("id", event.id, Int::class.java)
+        children += AnyProperty("trailingBytes", hex(event.trailingBytes), String::class.java)
+        children += AnyProperty("rawBytes", hex(event.rawBytes), String::class.java)
     }
 
     override fun varcSmall(message: VarcSmall) {
@@ -811,8 +1035,9 @@ public class TextRs3ServerPacketTranscriber(
 
     override fun locPrefetch(message: LocPrefetch) {
         if (!filters[PropertyFilter.LOC_ADD_CHANGE]) return omit()
-        root.children += AnyProperty("loc", Rs3GamevalLookup.loc(message.locId), String::class.java)
-        root.children += AnyProperty("shapeRot", message.shapeRot, Int::class.java)
+        root.children += AnyProperty("loc", Rs3GamevalLookup.loc(message.id), String::class.java)
+        root.children += AnyProperty("shape", message.shape, Int::class.java)
+        root.children += AnyProperty("rotation", message.rotation, Int::class.java)
     }
 
     override fun cutscene2dPlay(message: Cutscene2dPlay) {

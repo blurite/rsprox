@@ -15,7 +15,7 @@ internal class VarbitSmallDecoder : ProxyMessageDecoder<VarbitSmall> {
         session: Session,
     ): VarbitSmall {
         val id = buffer.g2()
-        val value = (128 - buffer.g1()) and 0xFF
+        val value = buffer.g1Alt3()
         return VarbitSmall(
             id,
             value,
