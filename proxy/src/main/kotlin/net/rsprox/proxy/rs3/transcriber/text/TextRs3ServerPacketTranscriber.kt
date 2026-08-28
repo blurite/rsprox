@@ -446,18 +446,18 @@ public class TextRs3ServerPacketTranscriber(
     }
 
     private fun Property.buildMapProjAnim(event: MapProjAnim) {
-        val c = sessionState.getActiveWorld().relativizeZoneCoord(event.xInZone, event.zInZone)
+        val world = sessionState.getActiveWorld()
+        val c = world.relativizeZoneCoord(event.xInZone, event.zInZone)
+        val dest = world.relativizeZoneCoord(event.xInZone + event.targetDeltaX, event.zInZone + event.targetDeltaY)
         children += AnyProperty("id", event.id, Int::class.java)
         children += AnyProperty("coord", formatCoord(c), String::class.java)
-        children += AnyProperty("targetDeltaX", event.targetDeltaX, Int::class.java)
-        children += AnyProperty("targetDeltaY", event.targetDeltaY, Int::class.java)
+        children += AnyProperty("destCoord", formatCoord(dest), String::class.java)
         children += AnyProperty("startHeight", event.startHeight, Int::class.java)
         children += AnyProperty("endHeight", event.endHeight, Int::class.java)
         children += AnyProperty("startTime", event.startTime, Int::class.java)
         children += AnyProperty("endTime", event.endTime, Int::class.java)
         if (event.alpha != 0) children += AnyProperty("alpha", event.alpha, Int::class.java)
         if (event.lockonSlot != 0) children += AnyProperty("lockonSlot", event.lockonSlot, Int::class.java)
-        children += AnyProperty("rawBytes", hex(event.rawBytes), String::class.java)
     }
 
     override fun mapProjAnim(message: MapProjAnim) {
@@ -483,16 +483,53 @@ public class TextRs3ServerPacketTranscriber(
     }
 
     private fun Property.buildMapProjAnimHalfsqV2(event: MapProjAnimHalfsqV2) {
-        val c = sessionState.getActiveWorld().relativizeZoneCoord(event.xInZone, event.zInZone)
-        children += AnyProperty("id", event.id, Int::class.java)
-        children += AnyProperty("coord", formatCoord(c), String::class.java)
-        children += AnyProperty("destXdeltaHalf", event.destXdeltaHalf, Int::class.java)
-        children += AnyProperty("destYdeltaHalf", event.destYdeltaHalf, Int::class.java)
-        if (event.trailingBytes.isNotEmpty()) {
-            children += AnyProperty("trailingBytes", hex(event.trailingBytes), String::class.java)
-        }
-        children += AnyProperty("rawBytes", hex(event.rawBytes), String::class.java)
+        val origin = sessionState.getActiveWorld().relativizeZoneCoord(0, 0)
+        val startHalfX = origin.x * 2 + event.xInZoneHalf
+        val startHalfZ = origin.z * 2 + event.zInZoneHalf
+        val destHalfX = startHalfX + event.destXdeltaHalf
+        val destHalfZ = startHalfZ + event.destYdeltaHalf
+
+        children += AnyProperty("spotAnimId", event.spotAnimId, Int::class.java)
+        children += AnyProperty("startCoord", formatHalfCoord(origin.level, startHalfX, startHalfZ), String::class.java)
+        children += AnyProperty("destCoord", formatHalfCoord(origin.level, destHalfX, destHalfZ), String::class.java)
+        children += AnyProperty("source", formatEntityRef(event.sourceType, event.sourceIndex), String::class.java)
+        children += AnyProperty("target", formatEntityRef(event.targetType, event.targetIndex), String::class.java)
+        children += AnyProperty("startHeight", event.startHeight, Int::class.java)
+        children += AnyProperty("endHeight", event.endHeight, Int::class.java)
+        children += AnyProperty("startTime", event.startTime, Int::class.java)
+        children += AnyProperty("endTime", event.endTime, Int::class.java)
+        if (event.alpha != 0) children += AnyProperty("alpha?", event.alpha, Int::class.java)
+        children += AnyProperty("angle?", event.angle, Int::class.java)
+        children += AnyProperty("flags?", event.flags, Int::class.java)
+        children += AnyProperty("startOffset?", "0x%06x".format(event.startOffset), String::class.java)
+        children += AnyProperty("endOffset?", "0x%06x".format(event.endOffset), String::class.java)
     }
+
+    private fun formatEntityRef(
+        kind: Int,
+        index: Int,
+    ): String {
+        return when (kind) {
+            1 -> sessionState.npcLabel(index)
+            2 -> sessionState.playerLabel(index)
+            10 -> "Follow Source"
+            255 -> "NONE"
+            else -> "UNK_$kind($index)"
+        }
+    }
+
+    private fun formatHalfCoord(
+        level: Int,
+        halfX: Int,
+        halfZ: Int,
+    ): String {
+        val x = halfX shr 1
+        val z = halfZ shr 1
+        val xFrac = if (halfX and 1 != 0) ".5" else ""
+        val zFrac = if (halfZ and 1 != 0) ".5" else ""
+        return "($level,$x$xFrac,$z$zFrac)"
+    }
+
 
     override fun mapProjAnimHalfsqV2(message: MapProjAnimHalfsqV2) {
         if (!filters[PropertyFilter.MAP_PROJANIM]) return omit()
@@ -573,7 +610,7 @@ public class TextRs3ServerPacketTranscriber(
                 }
                 is ObjCount -> {
                     if (!filters[PropertyFilter.OBJ_COUNT]) continue
-                    root.group("OBJ_COUNT?") { buildObjCount(event) }
+                    root.group("OBJ_COUNT") { buildObjCount(event) }
                 }
                 is ObjReveal -> {
                     if (!filters[PropertyFilter.OBJ_ADD]) continue
@@ -597,7 +634,7 @@ public class TextRs3ServerPacketTranscriber(
                 }
                 is MapProjAnim -> {
                     if (!filters[PropertyFilter.MAP_PROJANIM]) continue
-                    root.group("MAP_PROJANIM?") { buildMapProjAnim(event) }
+                    root.group("MAP_PROJANIM") { buildMapProjAnim(event) }
                 }
                 is MapProjAnimHalfsq -> {
                     if (!filters[PropertyFilter.MAP_PROJANIM]) continue
@@ -605,7 +642,7 @@ public class TextRs3ServerPacketTranscriber(
                 }
                 is MapProjAnimHalfsqV2 -> {
                     if (!filters[PropertyFilter.MAP_PROJANIM]) continue
-                    root.group("MAP_PROJANIM_HALFSQ_V2?") { buildMapProjAnimHalfsqV2(event) }
+                    root.group("MAP_PROJANIM_HALFSQ_V2") { buildMapProjAnimHalfsqV2(event) }
                 }
                 is MapProjAnimV2 -> {
                     if (!filters[PropertyFilter.MAP_PROJANIM]) continue

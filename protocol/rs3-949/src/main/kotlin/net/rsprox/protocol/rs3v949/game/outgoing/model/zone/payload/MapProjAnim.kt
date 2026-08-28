@@ -14,8 +14,7 @@ public class MapProjAnim(
     public val startTime: Int,
     public val endTime: Int,
     public val alpha: Int,
-    public val lockonSlot: Int,
-    public val rawBytes: ByteArray,
+    public val lockonSlot: Int
 ) : IncomingServerGameMessage {
     override fun toString(): String {
         return "MapProjAnim(mediumId=$mediumId, id=$id, xInZone=$xInZone, zInZone=$zInZone, targetDeltaX=$targetDeltaX, " +
