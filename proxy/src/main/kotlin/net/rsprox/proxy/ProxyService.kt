@@ -1022,19 +1022,22 @@ public class ProxyService(
         ClientTypeDictionary[targets.gamePort] = "RS3 (${operatingSystem.shortName})"
 
         try {
+            val launcherArgs = listOf("--configURI", "http://$localHost:$localHttpPort/jav_config.ws")
+            val rs3LauncherCommand =
+                if (operatingSystem == OperatingSystem.UNIX) {
+                    wrapForOperatingSystem(operatingSystem, patchedLauncherPath.absolutePathString(), launcherArgs)
+                } else {
+                    listOf(patchedLauncherPath.absolutePathString()) + launcherArgs
+                }
             createProcess(
-                command =
-                    listOf(
-                        patchedLauncherPath.absolutePathString(),
-                        "--configURI",
-                        "http://$localHost:$localHttpPort/jav_config.ws",
-                    ),
+                command = rs3LauncherCommand,
                 directory = patchedLauncherPath.parent.toFile(),
                 path = patchedLauncherPath,
                 port = targets.gamePort,
                 character = character,
                 operatingSystem = operatingSystem,
                 clientType = ClientType.Native,
+                proton = operatingSystem == OperatingSystem.UNIX && usingProton(),
                 useStoredCredentials = true,
             )
         } catch (t: Throwable) {
@@ -1267,6 +1270,32 @@ public class ProxyService(
         }
     }
 
+    private fun wrapForOperatingSystem(
+        operatingSystem: OperatingSystem,
+        executablePath: String,
+        extraArgs: List<String> = emptyList(),
+    ): List<String> {
+        return when (operatingSystem) {
+            OperatingSystem.WINDOWS -> listOf(executablePath) + extraArgs
+            OperatingSystem.UNIX -> {
+                val protonFilePath = CONFIGURATION_PATH.absolutePathString() + "/protonpath"
+                val protonFile = Path(protonFilePath)
+                if (protonFile.exists()) {
+                    listOf(protonFile.readText().trim(), "run", executablePath) + extraArgs
+                } else {
+                    listOf("wine", executablePath) + extraArgs
+                }
+            }
+            OperatingSystem.MAC, OperatingSystem.SOLARIS ->
+                throw IllegalStateException("$operatingSystem is not applicable here - handle it at the call site.")
+        }
+    }
+
+    private fun usingProton(): Boolean {
+        val protonFilePath = CONFIGURATION_PATH.absolutePathString() + "/protonpath"
+        return Path(protonFilePath).exists()
+    }
+
     private fun launchExecutable(
         port: Int,
         path: Path,
@@ -1311,34 +1340,17 @@ public class ProxyService(
                 try {
                     val directory = path.parent.toFile()
                     val absolutePath = path.absolutePathString()
-
-                    val protonFilePath = CONFIGURATION_PATH.absolutePathString() + "/protonpath"
-                    val protonFile = Path(protonFilePath)
-
-                    if (protonFile.exists()) {
-                        createProcess(
-                            listOf(protonFile.readText().trim(), "run", absolutePath),
-                            directory,
-                            path,
-                            port,
-                            character,
-                            operatingSystem,
-                            ClientType.Native,
-                            true,
-                            onProcessExit = onProcessExit,
-                        )
-                    } else {
-                        createProcess(
-                            listOf("wine", absolutePath),
-                            directory,
-                            path,
-                            port,
-                            character,
-                            operatingSystem,
-                            ClientType.Native,
-                            onProcessExit = onProcessExit,
-                        )
-                    }
+                    createProcess(
+                        wrapForOperatingSystem(operatingSystem, absolutePath),
+                        directory,
+                        path,
+                        port,
+                        character,
+                        operatingSystem,
+                        ClientType.Native,
+                        usingProton(),
+                        onProcessExit = onProcessExit,
+                    )
                 } catch (e: IOException) {
                     throw RuntimeException("wine is required to run the enhanced client on unix", e)
                 }
