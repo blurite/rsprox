@@ -29,13 +29,9 @@ import java.awt.Color
 import java.awt.FlowLayout
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
-import com.formdev.flatlaf.util.SystemFileChooser
-import java.nio.file.Files
-import java.nio.file.Path
 import java.text.SimpleDateFormat
 import java.util.concurrent.ForkJoinPool
 import javax.swing.BorderFactory
-import javax.swing.JOptionPane
 import javax.swing.JPanel
 import javax.swing.JScrollBar
 import javax.swing.SwingUtilities
@@ -188,45 +184,6 @@ public class SessionPanel(
         launchClient(character)
     }
 
-    private fun resolveRs3LauncherPath(): Path? {
-        if (Files.exists(RS3_LAUNCHER_PATH)) {
-            return RS3_LAUNCHER_PATH
-        }
-        var chosen: Path? = null
-        SwingUtilities.invokeAndWait {
-            JOptionPane.showMessageDialog(
-                this,
-                "RSProx couldn't find the Jagex Launcher at its usual location:\n" +
-                    "$RS3_LAUNCHER_PATH\n\n" +
-                    "In the next window, please locate RuneScape.exe - the Jagex Launcher's own " +
-                    "program file. It's normally installed inside a folder named \"Jagex Launcher\", " +
-                    "under \"Games\\RuneScape\", for example:\n" +
-                    "C:\\Program Files (x86)\\Jagex Launcher\\Games\\RuneScape\\RuneScape.exe\n\n" +
-                    "If the Jagex Launcher isn't installed at all, install it first from " +
-                    "runescape.com before trying again.",
-                "Jagex Launcher Not Found",
-                JOptionPane.INFORMATION_MESSAGE,
-            )
-            val chooser = SystemFileChooser()
-            chooser.dialogTitle = "Select RuneScape.exe (the Jagex Launcher's program file)"
-            chooser.fileSelectionMode = SystemFileChooser.FILES_ONLY
-            if (chooser.showOpenDialog(this) == SystemFileChooser.APPROVE_OPTION) {
-                chosen = chooser.selectedFile?.toPath()
-            }
-        }
-        if (chosen == null) {
-            SwingUtilities.invokeAndWait {
-                JOptionPane.showMessageDialog(
-                    this,
-                    "RS3 session cancelled - no Jagex Launcher (RuneScape.exe) was selected.",
-                    "Launch Cancelled",
-                    JOptionPane.WARNING_MESSAGE,
-                )
-            }
-        }
-        return chosen
-    }
-
     private fun launchClient(character: JagexCharacter?) {
         ForkJoinPool.commonPool().submit {
             logger.info { "$type client thread: ${Thread.currentThread().name}" }
@@ -258,11 +215,6 @@ public class SessionPanel(
                             }
 
                             SessionType.RS3 -> {
-                                val launcherPath =
-                                    resolveRs3LauncherPath()
-                                        ?: throw IllegalStateException(
-                                            "RS3 launcher not found and none was selected - cannot launch.",
-                                        )
                                 val rs3SessionMonitor = Rs3SessionMonitor()
                                 rs3SessionMonitor.listener = { cycle, property ->
                                     if (!paused) {
@@ -280,10 +232,7 @@ public class SessionPanel(
                                 val handle =
                                     App.service.launchRs3Client(
                                         rs3SessionMonitor,
-                                        character,
-                                        launcherPath,
-                                        RS3_PATCHED_GAME_BINARY_PATH,
-                                        RS3_PATCHED_LAUNCHER_DIRECTORY,
+                                        character
                                     )
                                 portNumber = handle.port
                             }
@@ -545,26 +494,6 @@ public class SessionPanel(
         }
 
         private abstract class SessionBaseTreeTableNode : AbstractMutableTreeTableNode(null, true)
-
-        private val RS3_LAUNCHER_PATH: Path =
-            Path.of(
-                System.getenv("ProgramFiles(x86)") ?: "C:\\Program Files (x86)",
-                "Jagex Launcher",
-                "Games",
-                "RuneScape",
-                "RuneScape.exe",
-            )
-
-        private val RS3_PATCHED_GAME_BINARY_PATH: Path =
-            Path.of(
-                System.getenv("ProgramData") ?: "C:\\ProgramData",
-                "Jagex",
-                "launcher",
-                "rs2client.exe",
-            )
-
-        private val RS3_PATCHED_LAUNCHER_DIRECTORY =
-            Path.of(System.getProperty("user.home"), ".rsprox", "rs3-patched-launcher")
 
         private val logger = InlineLogger()
     }

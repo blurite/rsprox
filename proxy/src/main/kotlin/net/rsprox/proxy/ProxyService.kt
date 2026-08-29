@@ -55,9 +55,6 @@ import net.rsprox.proxy.replay.ReplayTranscript
 import net.rsprox.proxy.rs3.Rs3ClientHandle
 import net.rsprox.proxy.rs3.config.Rs3JavConfig
 import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
-import net.rsprox.proxy.rs3.http.Rs3JavConfigHttpServer
-import net.rsprox.proxy.rs3.login.Rs3FileSignature
-import net.rsprox.proxy.rsa.Rs3ProxyLauncherRsaKeyProvider
 import net.rsprox.proxy.rsa.Rs3ProxyRsaKeyProvider
 import net.rsprox.proxy.rs3.relay.Rs3RelayServer
 import net.rsprox.proxy.rs3.transcriber.Rs3SessionMonitor
@@ -93,7 +90,6 @@ import java.net.URL
 import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
-import java.nio.file.StandardCopyOption
 import java.time.Instant
 import java.util.*
 import java.util.concurrent.Callable
@@ -101,7 +97,6 @@ import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.Collectors
-import java.util.zip.CRC32
 import kotlin.concurrent.thread
 import kotlin.io.path.*
 import kotlin.properties.Delegates
@@ -945,65 +940,34 @@ public class ProxyService(
     public fun launchRs3Client(
         sessionMonitor: Rs3SessionMonitor,
         character: JagexCharacter?,
-        launcherPath: Path,
-        patchedGameBinaryPath: Path,
-        patchedLauncherDirectory: Path,
         upstreamJavConfigUrl: String = "https://world5.runescape.com/jav_config.ws?binaryType=2",
         localHost: String = "127.0.0.1",
-        localHttpPort: Int = 43500,
     ): Rs3ClientHandle {
         val proxyKey = Rs3ProxyRsaKeyProvider.readOrGenerate()
         val modulusHex = Rs3ProxyRsaKeyProvider.publicModulusHex(proxyKey)
-        val launcherKey = Rs3ProxyLauncherRsaKeyProvider.readOrGenerate()
-        val launcherModulusHex = Rs3ProxyLauncherRsaKeyProvider.publicModulusHex(launcherKey)
 
         val downloadedClient = JagexNativeClientDownloader.download(NativeClientType.RS3_WIN, upstreamJavConfigUrl)
-        val tempDownloadPath =
-            patchedGameBinaryPath.resolveSibling("${patchedGameBinaryPath.fileName}.rsprox-download-tmp")
-        downloadedClient.copyTo(tempDownloadPath, overwrite = true)
+        val extension = if (downloadedClient.extension.isNotEmpty()) ".${downloadedClient.extension}" else ""
+        val stamp = System.currentTimeMillis()
+        val patchedGameBinaryPath =
+            TEMP_CLIENTS_DIRECTORY.resolve("${downloadedClient.nameWithoutExtension}-rs3-$stamp$extension")
+        downloadedClient.copyTo(patchedGameBinaryPath, overwrite = true)
 
         val patcher = NativePatcher()
         val gameCriteria =
             NativePatchCriteria.Builder(NativeClientType.WIN)
                 .rsaModulus(modulusHex)
                 .build()
-        val gameClientPatchResult = patcher.patch(tempDownloadPath, gameCriteria)
+        val gameClientPatchResult = patcher.patch(patchedGameBinaryPath, gameCriteria)
         check(gameClientPatchResult is PatchResult.Success) {
             "Failed to patch RS3 game client"
         }
-        val originalModulusHex = checkNotNull(gameClientPatchResult.oldModulus) {
-            "Failed to capture original RS3 modulus from game client"
-        }
-
-        Files.createDirectories(patchedGameBinaryPath.parent)
-        Files.move(tempDownloadPath, patchedGameBinaryPath, StandardCopyOption.REPLACE_EXISTING)
-
-        copyDirectoryRecursively(launcherPath.parent, patchedLauncherDirectory)
-        val patchedLauncherPath = patchedLauncherDirectory.resolve(launcherPath.fileName)
-        val launcherCriteria =
-            NativePatchCriteria.Builder(NativeClientType.WIN)
-                .rsaModulus(launcherModulusHex)
-                .build()
-        val launcherPatchResult = patcher.patch(patchedLauncherPath, launcherCriteria)
-        check(launcherPatchResult is PatchResult.Success) {
-            "Failed to patch RS3 launcher"
-        }
+        val originalModulusHex =
+            checkNotNull(gameClientPatchResult.oldModulus) {
+                "Failed to capture original RS3 modulus from game client"
+            }
 
         val targets = Rs3JavConfig(URL(upstreamJavConfigUrl)).captureUpstreamTargets()
-        val patchedBytes = Files.readAllBytes(patchedGameBinaryPath)
-
-        fun freshRewrittenConfig(): Rs3JavConfig {
-            val fresh = Rs3JavConfig(URL(upstreamJavConfigUrl))
-            var result = fresh.rewriteLobbyHost(localHost)
-            val crc = CRC32().apply { update(patchedBytes) }.value
-            result = result.overrideDownloadCrc(0, crc)
-            val hash = Rs3FileSignature.generateFileHash(patchedBytes, launcherKey)
-            result = result.overrideDownloadHash(0, hash)
-            return result
-        }
-
-        val httpServer = Rs3JavConfigHttpServer(::freshRewrittenConfig)
-        httpServer.bind(localHttpPort)
 
         val relayServer =
             Rs3RelayServer(
@@ -1022,51 +986,38 @@ public class ProxyService(
         ClientTypeDictionary[targets.gamePort] = "RS3 (${operatingSystem.shortName})"
 
         try {
-            val launcherArgs = listOf("--configURI", "http://$localHost:$localHttpPort/jav_config.ws")
-            val rs3LauncherCommand =
-                if (operatingSystem == OperatingSystem.UNIX) {
-                    wrapForOperatingSystem(operatingSystem, patchedLauncherPath.absolutePathString(), launcherArgs)
-                } else {
-                    listOf(patchedLauncherPath.absolutePathString()) + launcherArgs
-                }
-            createProcess(
-                command = rs3LauncherCommand,
-                directory = patchedLauncherPath.parent.toFile(),
-                path = patchedLauncherPath,
+            val rewritten = Rs3JavConfig(URL(upstreamJavConfigUrl)).rewriteLobbyHost(localHost)
+            val clientArgs = rewritten.toClientArgs()
+
+            launchExecutable(
                 port = targets.gamePort,
-                character = character,
+                path = patchedGameBinaryPath,
                 operatingSystem = operatingSystem,
-                clientType = ClientType.Native,
-                proton = operatingSystem == OperatingSystem.UNIX && usingProton(),
-                useStoredCredentials = true,
+                character = character,
+                args = clientArgs,
             )
         } catch (t: Throwable) {
             ClientTypeDictionary.remove(targets.gamePort)
             relayServer.shutdown()
-            httpServer.shutdown()
             throw t
         }
 
-        return Rs3ClientHandle(httpServer, relayServer, modulusHex, targets.gamePort)
+        return Rs3ClientHandle(relayServer, modulusHex, targets.gamePort)
     }
 
-    private fun copyDirectoryRecursively(
-        source: Path,
-        destination: Path,
-    ) {
-        Files.createDirectories(destination)
-        Files.walk(source).use { stream ->
-            stream.forEach { sourcePath ->
-                val relative = source.relativize(sourcePath)
-                val targetPath = destination.resolve(relative.toString())
-                if (Files.isDirectory(sourcePath)) {
-                    Files.createDirectories(targetPath)
-                } else {
-                    Files.createDirectories(targetPath.parent)
-                    Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING)
-                }
+    private fun Rs3JavConfig.toClientArgs(): List<String> {
+        val prefix = "param="
+        val args = mutableListOf<String>()
+        text.lineSequence()
+            .filter { it.startsWith(prefix) }
+            .forEach { line ->
+                val rest = line.substring(prefix.length)
+                val eq = rest.indexOf('=')
+                if (eq == -1) return@forEach
+                args += rest.substring(0, eq)   // key
+                args += rest.substring(eq + 1)  // value
             }
-        }
+        return args
     }
 
     private fun launchNativeClientProcess(
@@ -1155,7 +1106,13 @@ public class ProxyService(
         if (sessionMonitor != null) {
             this.connections.addSessionMonitor(port, sessionMonitor)
         }
-        launchExecutable(port, result.outputPath, os, character, onProcessExit)
+        launchExecutable(
+            port = port,
+            path = result.outputPath,
+            operatingSystem = os,
+            character = character,
+            onProcessExit = onProcessExit,
+        )
     }
 
     private fun removeSessionMonitor(port: Int) {
@@ -1301,22 +1258,31 @@ public class ProxyService(
         path: Path,
         operatingSystem: OperatingSystem,
         character: JagexCharacter?,
+        args: List<String> = emptyList(),
         onProcessExit: (() -> Unit)? = null,
     ) {
         when (operatingSystem) {
-            OperatingSystem.WINDOWS -> {
+            OperatingSystem.WINDOWS, OperatingSystem.UNIX -> {
                 val directory = path.parent.toFile()
                 val absolutePath = path.absolutePathString()
-                createProcess(
-                    listOf(absolutePath),
-                    directory,
-                    path,
-                    port,
-                    character,
-                    operatingSystem,
-                    ClientType.Native,
-                    onProcessExit = onProcessExit,
-                )
+                try {
+                    createProcess(
+                        wrapForOperatingSystem(operatingSystem, absolutePath, args),
+                        directory,
+                        path,
+                        port,
+                        character,
+                        operatingSystem,
+                        ClientType.Native,
+                        proton = operatingSystem == OperatingSystem.UNIX && usingProton(),
+                        onProcessExit = onProcessExit,
+                    )
+                } catch (e: IOException) {
+                    if (operatingSystem == OperatingSystem.UNIX) {
+                        throw RuntimeException("wine is required to run the enhanced client on unix", e)
+                    }
+                    throw e
+                }
             }
 
             OperatingSystem.MAC -> {
@@ -1325,7 +1291,7 @@ public class ProxyService(
                 val rootDirection = path.parent.parent.parent
                 val absolutePath = "${File.separator}${rootDirection.absolutePathString()}"
                 createProcess(
-                    listOf("open", "-W", absolutePath),
+                    listOf("open", "-W", absolutePath) + args,
                     null,
                     path,
                     port,
@@ -1334,26 +1300,6 @@ public class ProxyService(
                     ClientType.Native,
                     onProcessExit = onProcessExit,
                 )
-            }
-
-            OperatingSystem.UNIX -> {
-                try {
-                    val directory = path.parent.toFile()
-                    val absolutePath = path.absolutePathString()
-                    createProcess(
-                        wrapForOperatingSystem(operatingSystem, absolutePath),
-                        directory,
-                        path,
-                        port,
-                        character,
-                        operatingSystem,
-                        ClientType.Native,
-                        usingProton(),
-                        onProcessExit = onProcessExit,
-                    )
-                } catch (e: IOException) {
-                    throw RuntimeException("wine is required to run the enhanced client on unix", e)
-                }
             }
 
             OperatingSystem.SOLARIS -> throw IllegalStateException("Solaris not supported yet.")

@@ -44,6 +44,3 @@ public class Rs3PersistedRsaKeyProvider(
 
 public val Rs3ProxyRsaKeyProvider: Rs3PersistedRsaKeyProvider =
     Rs3PersistedRsaKeyProvider("rs3-login-key.rsa", Rsa.RS3_LOGIN_KEY_LENGTH)
-
-public val Rs3ProxyLauncherRsaKeyProvider: Rs3PersistedRsaKeyProvider =
-    Rs3PersistedRsaKeyProvider("rs3-launcher-key.rsa", Rsa.RS3_LAUNCHER_KEY_LENGTH)
