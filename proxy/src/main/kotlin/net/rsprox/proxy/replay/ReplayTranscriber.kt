@@ -94,9 +94,10 @@ public class ReplayTranscriber(
             try {
                 val packets =
                     decodeReplayFrame(frame, revisionDecoder, protocolSession)
-                        .map { Packet(it.direction, it.prot, it.message) }
-                packetList += packets
-                if (packets.any { it.prot.toString() == "SERVER_TICK_END" }) {
+                session.cacheDecodedMessages(frame, packets.map { it.message })
+                val transcriberPackets = packets.map { Packet(it.direction, it.prot, it.message) }
+                packetList += transcriberPackets
+                if (transcriberPackets.any { it.prot.toString() == "SERVER_TICK_END" }) {
                     executeRunner(runner, tracker, packetList, session.timeline.header.revision)
                     packetList.clear()
                 }

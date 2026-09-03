@@ -15,6 +15,7 @@ import net.rsprox.cache.api.CacheProvider
 import net.rsprox.proxy.attributes.BINARY_BLOB
 import net.rsprox.proxy.attributes.BINARY_HEADER_BUILDER
 import net.rsprox.proxy.binary.BinaryBlob
+import net.rsprox.proxy.binary.isOldSchoolRuneScape
 import net.rsprox.proxy.binary.BinaryStream
 import net.rsprox.proxy.channel.getAndDropEncodeSeed
 import net.rsprox.proxy.channel.getBinaryHeaderBuilder
@@ -341,7 +342,7 @@ public class ServerGameLoginDecoder(
                     sessionMonitor,
                     filters,
                     settings,
-                    header.worldHost.endsWith(".runescape.com"),
+                    header.isOldSchoolRuneScape(),
                 )
             blob.setServerChannel(ctx.channel())
             if (LATEST_SUPPORTED_PLUGIN >= target.revisionNum(clientChannel)) {

@@ -3,9 +3,11 @@ package net.rsprox.proxy.replay
 import com.github.michaelbull.logging.InlineLogger
 import io.netty.channel.Channel
 import net.rsprot.protocol.Prot
+import net.rsprot.protocol.message.IncomingMessage
 import net.rsprox.cache.store.GroupStore
 import net.rsprox.proxy.channel.getServerToClientStreamCipher
 import net.rsprox.proxy.plugin.RevisionDecoder
+import net.rsprox.proxy.unix.UnixSocketConnection
 import net.rsprox.shared.StreamDirection
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -17,6 +19,8 @@ public class ReplaySession(
     private val scheduler: ReplayScheduler = ExecutorReplayScheduler(),
 ) : AutoCloseable {
     private val clientChannel: AtomicReference<Channel?> = AtomicReference(null)
+    private val unixSocketConnection: AtomicReference<UnixSocketConnection?> = AtomicReference(null)
+    private val decodedMessages: Array<List<IncomingMessage>?> = arrayOfNulls(timeline.frames.size)
     private val clientLaunchStarted: AtomicBoolean = AtomicBoolean(false)
     private val clientDisconnected: AtomicBoolean = AtomicBoolean(false)
     private val rebuildInProgress: AtomicBoolean = AtomicBoolean(false)
@@ -70,6 +74,18 @@ public class ReplaySession(
     public fun clearClientLaunchReservation() {
         clientLaunchStarted.set(false)
         clientDisconnected.set(false)
+    }
+
+    internal fun attachUnixSocketConnection(connection: UnixSocketConnection) {
+        connection.reset()
+        unixSocketConnection.set(connection)
+    }
+
+    internal fun cacheDecodedMessages(
+        frame: ReplayFrame,
+        messages: List<IncomingMessage>,
+    ) {
+        decodedMessages[frame.index] = messages
     }
 
     public fun handleLaunchedClientProcessExit() {
@@ -263,13 +279,14 @@ public class ReplaySession(
     }
 
     private fun sendReplayFrame(frame: ReplayFrame) {
-        if (frame.direction != StreamDirection.SERVER_TO_CLIENT) {
-            return
-        }
         val channel =
             clientChannel.get()
                 ?: return
         if (!channel.isActive) {
+            return
+        }
+        pushDecodedMessages(frame)
+        if (frame.direction != StreamDirection.SERVER_TO_CLIENT) {
             return
         }
         val encoded = ReplayPacketEncoder.encode(channel.alloc(), channel.getServerToClientStreamCipher(), frame)
@@ -289,6 +306,7 @@ public class ReplaySession(
         if (!channel.isActive) {
             return
         }
+        frames.forEach(::pushDecodedMessages)
         val cipher = channel.getServerToClientStreamCipher()
         val allocator = channel.alloc()
         var groupBytes = 0
@@ -367,6 +385,11 @@ public class ReplaySession(
             groupBytes += size
         }
         flushGroup()
+    }
+
+    private fun pushDecodedMessages(frame: ReplayFrame) {
+        val connection = unixSocketConnection.get() ?: return
+        decodedMessages[frame.index]?.forEach(connection::push)
     }
 
     private fun packetGroupStartPayload(length: Int): ByteArray {

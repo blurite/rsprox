@@ -16,6 +16,7 @@ import net.rsprox.patch.native.NativePatcher
 import net.rsprox.proxy.accounts.DefaultJagexAccountStore
 import net.rsprox.proxy.binary.BinaryBlob
 import net.rsprox.proxy.binary.BinaryHeader
+import net.rsprox.proxy.binary.isOldSchoolRuneScape
 import net.rsprox.proxy.binary.credentials.BinaryCredentials
 import net.rsprox.proxy.binary.credentials.BinaryCredentialsStore
 import net.rsprox.proxy.bootstrap.BootstrapFactory
@@ -716,7 +717,17 @@ public class ProxyService(
         )
     }
 
-    public fun loadReplaySession(path: Path): ReplaySession {
+    public fun loadReplaySession(path: Path): ReplaySession =
+        checkNotNull(
+            loadReplaySession(path) {
+                error("A local disk cache is required for this replay.")
+            },
+        )
+
+    public fun loadReplaySession(
+        path: Path,
+        manualCacheSelector: (Js5MasterIndex) -> ReplayDiskCacheStore?,
+    ): ReplaySession? {
         val binary = BinaryBlob.decode(path, filterSetStore, settingsStore)
         val masterIndex =
             Js5MasterIndex.trimmed(
@@ -724,9 +735,13 @@ public class ProxyService(
                 binary.header.js5MasterIndex,
             )
         val cacheStore =
-            checkNotNull(ReplayDiskCacheProvider().get(masterIndex)) {
-                "Unable to locate RSProx Archive or OpenRS2 disk cache for replay revision " +
-                    "${binary.header.revision}"
+            if (binary.header.isOldSchoolRuneScape()) {
+                checkNotNull(ReplayDiskCacheProvider().get(masterIndex)) {
+                    "Unable to locate RSProx Archive or OpenRS2 disk cache for replay revision " +
+                        "${binary.header.revision}"
+                }
+            } else {
+                manualCacheSelector(masterIndex) ?: return null
             }
         decoderLoader.load(ReplayCacheProvider, binary.header.revision)
         val decoder = decoderLoader.getDecoder(binary.header.revision, ReplayCacheProvider)
@@ -755,6 +770,7 @@ public class ProxyService(
         try {
             (replaySession.cacheStore as? ReplayDiskCacheStore)?.open()
             val target = initializeReplayHttpServer(port, replaySession)
+            initializeUnixSocketConnection(target.httpPort)?.let(replaySession::attachUnixSocketConnection)
             launchReplayServer(replaySession, port)
             // Clear out existing trackers
             ClientTypeDictionary.remove(port)
@@ -822,12 +838,7 @@ public class ProxyService(
                 sessionId,
             )
         target.load(properties, bootstrapFactory)
-        val establishConnection = properties.getPropertyOrNull(RUNELITE_RSPROX_CONNECTION) == true
-        if (establishConnection) {
-            val connection = initializeUnixSocketListener(target.httpPort)
-            connection.start()
-            connections.addUnixConnection(target.httpPort, connection)
-        }
+        initializeUnixSocketConnection(target.httpPort)
         return target
     }
 
@@ -864,6 +875,17 @@ public class ProxyService(
 
     private fun initializeUnixSocketListener(port: Int): UnixSocketConnection {
         return UnixSocketConnection(port)
+    }
+
+    private fun initializeUnixSocketConnection(port: Int): UnixSocketConnection? {
+        if (properties.getPropertyOrNull(RUNELITE_RSPROX_CONNECTION) != true) {
+            return null
+        }
+        return connections.getUnixConnectionOrNull(port)
+            ?: initializeUnixSocketListener(port).also { connection ->
+                connection.start()
+                connections.addUnixConnection(port, connection)
+            }
     }
 
     public fun launchNativeClient(

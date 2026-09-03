@@ -19,6 +19,7 @@ import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.nio.file.StandardWatchEventKinds
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.thread
@@ -114,6 +115,7 @@ public class UnixSocketConnection(
         conFile: Path,
         socketFile: Path,
     ) {
+        socketFile.deleteIfExists()
         val address = AFUNIXSocketAddress.of(socketFile)
         val server = AFUNIXServerSocket.newInstance()
 
@@ -122,35 +124,27 @@ public class UnixSocketConnection(
         logger.debug { "Waiting for RSProx-Connection to establish a connection to $socketFile." }
         thread(start = true, isDaemon = true) {
             server.use { srv ->
-                val socket = srv.accept()
-                logger.debug { "RSProx-Connection has successfully established a connection to $socketFile." }
-                val outputStream = DataOutputStream(socket.outputStream)
-                val msgOutput = Output(4096, -1)
-                val key = eventLog.consumerKey()
-                eventLog.addConsumer(
-                    key,
-                    syncBlock = {
-                        try {
-                            val snapshot = eventLog.snapshot(0)
-                            outputStream.writeIndicator(FLAG_BEGIN_SYNC)
-                            for (packet in snapshot) {
-                                outputStream.writeMessage(msgOutput, packet)
+                srv.accept().use { socket ->
+                    logger.debug { "RSProx-Connection has successfully established a connection to $socketFile." }
+                    val outputStream = DataOutputStream(socket.outputStream)
+                    val msgOutput = Output(4096, -1)
+                    val queue = LinkedBlockingQueue<Event>()
+                    val key = eventLog.consumerKey()
+                    try {
+                        eventLog.addConsumer(key, queue::offer)
+                        while (true) {
+                            when (val event = queue.take()) {
+                                is UnixPacket -> outputStream.writeMessage(msgOutput, event)
+                                is UnixIndicator -> outputStream.writeIndicator(event.value)
                             }
-                            outputStream.writeIndicator(FLAG_END_SYNC)
-                        } catch (_: SocketException) {
-                            eventLog.removeConsumer(key)
-                            uniqueConnections.remove(socketFile)
                         }
-                    },
-                    consumer = { event ->
-                        try {
-                            outputStream.writeMessage(msgOutput, event)
-                        } catch (_: SocketException) {
-                            eventLog.removeConsumer(key)
-                            uniqueConnections.remove(socketFile)
-                        }
-                    },
-                )
+                    } catch (_: SocketException) {
+                        // The RuneLite consumer disconnected.
+                    } finally {
+                        eventLog.removeConsumer(key)
+                        uniqueConnections.remove(socketFile)
+                    }
+                }
             }
         }
     }
@@ -160,6 +154,11 @@ public class UnixSocketConnection(
             eventLog.clearEvents()
         }
         eventLog.append(UnixPacket(payload))
+    }
+
+    internal fun reset() {
+        uniqueConnections.clear()
+        eventLog.reset()
     }
 
     private fun DataOutputStream.writeMessage(
@@ -189,10 +188,14 @@ public class UnixSocketConnection(
         val message: IncomingMessage,
     ) : Event
 
+    private class UnixIndicator(
+        val value: Int,
+    ) : Event
+
     private class EventLog {
         private val lock = ReentrantLock()
         private val events = mutableListOf<UnixPacket>()
-        private val consumers = ConcurrentHashMap<Int, (UnixPacket) -> Unit>()
+        private val consumers = ConcurrentHashMap<Int, (Event) -> Unit>()
         private val consumerKeyCount: AtomicInteger = AtomicInteger(0)
 
         fun consumerKey(): Int {
@@ -201,11 +204,12 @@ public class UnixSocketConnection(
 
         fun addConsumer(
             key: Int,
-            syncBlock: () -> Unit,
-            consumer: (event: UnixPacket) -> Unit,
+            consumer: (event: Event) -> Unit,
         ) {
             withLock {
-                syncBlock()
+                consumer(UnixIndicator(FLAG_BEGIN_SYNC))
+                events.forEach(consumer)
+                consumer(UnixIndicator(FLAG_END_SYNC))
                 consumers.put(key, consumer)
             }
         }
@@ -222,28 +226,19 @@ public class UnixSocketConnection(
             }
         }
 
+        fun reset() {
+            withLock {
+                events.clear()
+                consumers.clear()
+            }
+        }
+
         fun append(event: UnixPacket) {
             return withLock {
                 events.add(event)
                 for ((_, consumer) in consumers) {
                     consumer(event)
                 }
-            }
-        }
-
-        fun snapshot(fromIndex: Int = 0): List<UnixPacket> {
-            return withLock {
-                if (fromIndex >= events.size) {
-                    emptyList()
-                } else {
-                    events.subList(fromIndex, events.size)
-                }
-            }
-        }
-
-        fun size(): Int {
-            return withLock {
-                events.size
             }
         }
 

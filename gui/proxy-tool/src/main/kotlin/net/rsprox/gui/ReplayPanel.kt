@@ -11,6 +11,10 @@ import com.formdev.flatlaf.util.ColorFunctions
 import com.formdev.flatlaf.util.SystemFileChooser
 import com.github.michaelbull.logging.InlineLogger
 import net.miginfocom.swing.MigLayout
+import net.rsprox.cache.Js5MasterIndex
+import net.rsprox.cache.store.LocalReplayDiskCacheStore
+import net.rsprox.cache.store.ReplayCacheMatch
+import net.rsprox.cache.store.ReplayDiskCacheStore
 import net.rsprox.gui.sessions.SessionType
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.config.BINARY_PATH
@@ -41,6 +45,7 @@ import java.nio.file.Path
 import java.text.DateFormat
 import java.util.Date
 import java.util.concurrent.ForkJoinPool
+import java.util.concurrent.FutureTask
 import javax.swing.BorderFactory
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JOptionPane
@@ -61,6 +66,7 @@ public class ReplayPanel(
 ) : JPanel() {
     private var replaySession: ReplaySession? = null
     private var selectedPath: Path? = null
+    private val recentReplayCaches = RecentReplayCaches()
     private val titleLabel = FlatLabel()
     private val detailsLabel = FlatLabel()
     private val statusLabel = FlatLabel()
@@ -178,8 +184,14 @@ public class ReplayPanel(
         ForkJoinPool.commonPool().submit {
             var session: ReplaySession? = null
             try {
-                session = App.service.loadReplaySession(path)
-                val transcript = App.service.transcribeReplaySession(session)
+                val loadedSession =
+                    App.service.loadReplaySession(path, ::selectManualReplayCache)
+                        ?: run {
+                            finishCancelledReplayLoad(generation)
+                            return@submit
+                        }
+                session = loadedSession
+                val transcript = App.service.transcribeReplaySession(loadedSession)
                 SwingUtilities.invokeLater {
                     if (generation != loadGeneration) {
                         session.close()
@@ -219,6 +231,143 @@ public class ReplayPanel(
                 }
             }
         }
+    }
+
+    private fun selectManualReplayCache(masterIndex: Js5MasterIndex): ReplayDiskCacheStore? {
+        while (true) {
+            val recents = recentReplayCaches.list()
+            val path =
+                onEventDispatchThread {
+                    chooseManualReplayCache(masterIndex.revision, recents)
+                } ?: return null
+            val store = LocalReplayDiskCacheStore(path)
+            try {
+                store.open()
+            } catch (error: Exception) {
+                store.close()
+                recentReplayCaches.remove(path)
+                onEventDispatchThread {
+                    JOptionPane.showMessageDialog(
+                        this,
+                        error.message ?: "Unable to open the selected cache directory.",
+                        "Invalid Replay Cache",
+                        JOptionPane.ERROR_MESSAGE,
+                    )
+                }
+                continue
+            }
+
+            when (val match = store.match(masterIndex)) {
+                ReplayCacheMatch.MATCH -> {
+                    recentReplayCaches.record(path)
+                    return store
+                }
+                else -> {
+                    when (confirmManualReplayCache(match, path)) {
+                        true -> {
+                            recentReplayCaches.record(path)
+                            return store
+                        }
+                        false -> store.close()
+                        null -> {
+                            store.close()
+                            return null
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun confirmManualReplayCache(
+        match: ReplayCacheMatch,
+        path: Path,
+    ): Boolean? {
+        return onEventDispatchThread {
+            val detail =
+                if (match == ReplayCacheMatch.MISMATCH) "does not match"
+                else "could not be verified against"
+            val options = arrayOf("Use Anyway", "Choose Another", "Cancel")
+            when (
+                JOptionPane.showOptionDialog(
+                    this,
+                    "The cache at:\n$path\n\n$detail the master index embedded in this replay.",
+                    "Replay Cache Mismatch",
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.WARNING_MESSAGE,
+                    null,
+                    options,
+                    options[1],
+                )
+            ) {
+                0 -> true
+                1 -> false
+                else -> null
+            }
+        }
+    }
+
+    private fun chooseManualReplayCache(
+        revision: Int,
+        recents: List<Path>,
+    ): Path? {
+        if (recents.isEmpty()) {
+            return browseForManualReplayCache(revision)
+        }
+        val browse = "Browse..."
+        val choices = (recents + browse).toTypedArray()
+        val selected =
+            JOptionPane.showInputDialog(
+                this,
+                "Select the disk cache used to record this replay.",
+                "Select Replay Cache (Revision $revision)",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                choices,
+                choices.first(),
+            ) ?: return null
+        return if (selected == browse) {
+            browseForManualReplayCache(revision)
+        } else {
+            selected as Path
+        }
+    }
+
+    private fun browseForManualReplayCache(revision: Int): Path? {
+        val chooser =
+            SystemFileChooser().apply {
+                stateStoreID = REPLAY_CACHE_FILE_CHOOSER_STATE_ID
+                dialogTitle = "Select Replay Cache (Revision $revision)"
+                fileSelectionMode = SystemFileChooser.DIRECTORIES_ONLY
+                isAcceptAllFileFilterUsed = false
+            }
+        if (chooser.showOpenDialog(this) != SystemFileChooser.APPROVE_OPTION) {
+            return null
+        }
+        return chooser.selectedFile?.toPath()
+    }
+
+    private fun finishCancelledReplayLoad(generation: Int) {
+        SwingUtilities.invokeLater {
+            if (generation != loadGeneration) {
+                return@invokeLater
+            }
+            loadingReplay = false
+            launchingReplayClient = false
+            loadingProgress.isVisible = false
+            selectedPath = null
+            updateEmptyState()
+            refreshControls()
+        }
+    }
+
+    private fun <T> onEventDispatchThread(action: () -> T): T {
+        if (SwingUtilities.isEventDispatchThread()) {
+            return action()
+        }
+        val task = FutureTask<T> { action() }
+        SwingUtilities.invokeAndWait(task)
+        return task.get()
     }
 
     private fun updateInitialWindowMode(
@@ -1202,6 +1351,7 @@ public class ReplayPanel(
         private const val GAME_TICK_MILLIS = 600
         private const val DEFAULT_REPLAY_BINARY_FOLDER = "Old School RuneScape"
         private const val REPLAY_FILE_CHOOSER_STATE_ID = "replayFile"
+        private const val REPLAY_CACHE_FILE_CHOOSER_STATE_ID = "replayCacheDirectory"
         private const val SKIP_TICKS = 10
     }
 
