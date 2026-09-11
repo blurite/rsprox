@@ -55,3 +55,5 @@ fun searchSubproject(
     val subprojectName = relativePath.toString().replace(File.separator, ":")
     include("$projectName:$subprojectName")
 }
+
+include("protocol:rs3")

@@ -5,37 +5,29 @@ import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 import net.rsprox.protocol.game.outgoing.model.misc.client.MinimapToggle
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettingsPrivateChat
 import net.rsprox.protocol.game.outgoing.model.misc.player.RunClientScript
-import net.rsprox.protocol.rs3v949.game.outgoing.model.camera.CamForceAngle
-import net.rsprox.protocol.rs3v949.game.outgoing.model.camera.CamLookAt
-import net.rsprox.protocol.rs3v949.game.outgoing.model.camera.CamMoveTo
-import net.rsprox.protocol.rs3v949.game.outgoing.model.camera.CamShake
-import net.rsprox.protocol.rs3v949.game.outgoing.model.camera.CameraUpdate
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfCloseSub
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfOpenSub
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfOpenTop
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetHide
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.LocAnim
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.LocDel
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapAnim
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapAnimV2
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapProjAnim
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapProjAnimHalfsq
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapProjAnimHalfsqV2
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapProjAnimV2
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.SoundArea
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.TextCoord
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.MessageGame
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.ObjAdd
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.ObjCount
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.ObjDel
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.ObjReveal
-import net.rsprox.protocol.rs3v949.game.outgoing.model.varbit.VarbitLarge
-import net.rsprox.protocol.rs3v949.game.outgoing.model.varbit.VarbitSmall
-import net.rsprox.protocol.rs3v949.game.outgoing.model.varp.VarpLarge
-import net.rsprox.protocol.rs3v949.game.outgoing.model.varp.VarpLong
-import net.rsprox.protocol.rs3v949.game.outgoing.model.varp.VarpSmall
-import net.rsprox.protocol.rs3v949.game.outgoing.model.map.RebuildNormal
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
+import net.rsprox.protocol.game.outgoing.model.unknown.UnknownServerPacket
+import net.rsprox.protocol.rs3.game.outgoing.model.camera.*
+import net.rsprox.protocol.rs3.game.outgoing.model.interfaces.*
+import net.rsprox.protocol.rs3.game.outgoing.model.inv.UpdateInvFull
+import net.rsprox.protocol.rs3.game.outgoing.model.inv.UpdateInvPartial
+import net.rsprox.protocol.rs3.game.outgoing.model.inv.UpdateInvStopTransmit
+import net.rsprox.protocol.rs3.game.outgoing.model.map.RebuildNormal
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.Cutscene2dPlay
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.HintArrow
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.HintTrail
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.player.*
+import net.rsprox.protocol.rs3.game.outgoing.model.sound.VorbisSound
+import net.rsprox.protocol.rs3.game.outgoing.model.specific.ProjAnimSpecificV2
+import net.rsprox.protocol.rs3.game.outgoing.model.varbit.VarbitLarge
+import net.rsprox.protocol.rs3.game.outgoing.model.varbit.VarbitSmall
+import net.rsprox.protocol.rs3.game.outgoing.model.varc.*
+import net.rsprox.protocol.rs3.game.outgoing.model.varp.VarpLarge
+import net.rsprox.protocol.rs3.game.outgoing.model.varp.VarpLong
+import net.rsprox.protocol.rs3.game.outgoing.model.varp.VarpSmall
+import net.rsprox.protocol.rs3.game.outgoing.model.zone.header.UpdateZoneFullFollows
+import net.rsprox.protocol.rs3.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
+import net.rsprox.protocol.rs3.game.outgoing.model.zone.header.UpdateZonePartialFollows
+import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.*
 import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
 import net.rsprox.proxy.rs3.transcriber.interfaces.Rs3ServerPacketTranscriber
 import net.rsprox.proxy.rs3.transcriber.state.Rs3SessionState
@@ -46,48 +38,6 @@ import net.rsprox.shared.property.Property
 import net.rsprox.shared.property.RootProperty
 import net.rsprox.shared.property.group
 import net.rsprox.shared.property.regular.AnyProperty
-import net.rsprox.protocol.rs3v949.game.outgoing.model.varc.VarcSmall
-import net.rsprox.protocol.rs3v949.game.outgoing.model.varc.VarcLarge
-import net.rsprox.protocol.rs3v949.game.outgoing.model.varc.VarcBitSmall
-import net.rsprox.protocol.rs3v949.game.outgoing.model.varc.VarcBitLarge
-import net.rsprox.protocol.rs3v949.game.outgoing.model.varc.VarcStrSmall
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfOpenSubActiveLoc
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfOpenSubActiveObj
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetAnim
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetColour
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetEvents
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetModel
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetNpcHead
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetObject
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetPlayerHead
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetPlayerHeadSnapshot
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetPlayerModelSelf
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetPlayerModelSnapshot
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetPosition
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetScrollPos
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetTargetParam
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetText
-import net.rsprox.protocol.rs3v949.game.outgoing.model.inv.UpdateInvFull
-import net.rsprox.protocol.rs3v949.game.outgoing.model.inv.UpdateInvPartial
-import net.rsprox.protocol.rs3v949.game.outgoing.model.inv.UpdateInvStopTransmit
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.client.Cutscene2dPlay
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.client.HintArrow
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.client.HintTrail
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.JcoinsUpdate
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.SetPlayerOp
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.UpdateRunEnergy
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.UpdateRunWeight
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.UpdateStat
-import net.rsprox.protocol.rs3v949.game.outgoing.model.sound.SoundMixbussSetLevel
-import net.rsprox.protocol.rs3v949.game.outgoing.model.sound.VorbisSound
-import net.rsprox.protocol.rs3v949.game.outgoing.model.specific.ProjAnimSpecificV2
-import net.rsprox.protocol.rs3v949.game.outgoing.model.unknown.RawUnknownServerPacket
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.header.UpdateZoneFullFollows
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.header.UpdateZonePartialFollows
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.LocAddChange
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.LocCustomise
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.LocPrefetch
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MidiSongLocation
 
 public class TextRs3ServerPacketTranscriber(
     private val sessionState: Rs3SessionState,
@@ -310,10 +260,9 @@ public class TextRs3ServerPacketTranscriber(
         val c = sessionState.getActiveWorld().relativizeZoneCoord(event.xInZone, event.zInZone)
         children += AnyProperty("song", Rs3GamevalLookup.midi(event.id), String::class.java)
         children += AnyProperty("coord", formatCoord(c), String::class.java)
-        children += AnyProperty("heightAdjust", event.heightAdjust, Int::class.java)
-        children += AnyProperty("flagsValue", event.flagsValue, Int::class.java)
-        children += AnyProperty("rotationByte", event.rotationByte, Int::class.java)
-        children += AnyProperty("rawBytes", hex(event.rawBytes), String::class.java)
+        children += AnyProperty("maxDistance", event.maxDistance, Int::class.java)
+        children += AnyProperty("minDistance", event.minDistance, Int::class.java)
+        children += AnyProperty("volume", event.volume, Int::class.java)
     }
 
     override fun midiSongLocation(message: MidiSongLocation) {
@@ -389,11 +338,9 @@ public class TextRs3ServerPacketTranscriber(
         val c = sessionState.getActiveWorld().relativizeZoneCoord(event.xInZone, event.zInZone)
         children += AnyProperty("sound", Rs3GamevalLookup.sound(event.id), String::class.java)
         children += AnyProperty("coord", formatCoord(c), String::class.java)
-        children += AnyProperty("unk1", event.unk1, Int::class.java)
-        children += AnyProperty("unk2", event.unk2, Int::class.java)
-        children += AnyProperty("unk3", event.unk3, Int::class.java)
-        children += AnyProperty("unk4", event.unk4, Int::class.java)
-        children += AnyProperty("unk5", event.unk5, Int::class.java)
+        children += AnyProperty("height", event.height, Int::class.java)
+        children += AnyProperty("delay", event.delay, Int::class.java)
+        children += AnyProperty("rotation", event.rotation, Int::class.java)
     }
 
     override fun mapAnim(message: MapAnim) {
@@ -435,9 +382,10 @@ public class TextRs3ServerPacketTranscriber(
     private fun Property.buildTextCoord(event: TextCoord) {
         val c = sessionState.getActiveWorld().relativizeZoneCoord(event.xInZone, event.zInZone)
         children += AnyProperty("coord", formatCoord(c), String::class.java)
+        children += AnyProperty("height", event.height, Int::class.java)
+        children += AnyProperty("duration", event.duration, Int::class.java)
         children += AnyProperty("rgb", "#%06x".format(event.rgb), String::class.java)
         children += AnyProperty("text", event.text, String::class.java)
-        children += AnyProperty("rawBytes", hex(event.rawBytes), String::class.java)
     }
 
     override fun textCoord(message: TextCoord) {
@@ -586,15 +534,15 @@ public class TextRs3ServerPacketTranscriber(
                 }
                 is LocCustomise -> {
                     if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
-                    root.group("LOC_CUSTOMISE?") { buildLocCustomise(event) }
+                    root.group("LOC_CUSTOMISE") { buildLocCustomise(event) }
                 }
                 is LocPrefetch -> {
                     if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
-                    root.group("LOC_PREFETCH?") { buildLocPrefetch(event) }
+                    root.group("LOC_PREFETCH") { buildLocPrefetch(event) }
                 }
                 is MidiSongLocation -> {
                     if (!filters[PropertyFilter.MIDI_SONG]) continue
-                    root.group("MIDI_SONG_LOCATION?") { buildMidiSongLocation(event) }
+                    root.group("MIDI_SONG_LOCATION") { buildMidiSongLocation(event) }
                 }
                 is LocDel -> {
                     if (!filters[PropertyFilter.LOC_DEL]) continue
@@ -622,7 +570,7 @@ public class TextRs3ServerPacketTranscriber(
                 }
                 is MapAnimV2 -> {
                     if (!filters[PropertyFilter.MAP_ANIM]) continue
-                    root.group("MAP_ANIM_V2?") { buildMapAnimV2(event) }
+                    root.group("MAP_ANIM_V2") { buildMapAnimV2(event) }
                 }
                 is SoundArea -> {
                     if (!filters[PropertyFilter.SOUND_AREA]) continue
@@ -630,7 +578,7 @@ public class TextRs3ServerPacketTranscriber(
                 }
                 is TextCoord -> {
                     if (!filters[PropertyFilter.MAP_ANIM]) continue
-                    root.group("TEXT_COORD?") { buildTextCoord(event) }
+                    root.group("TEXT_COORD") { buildTextCoord(event) }
                 }
                 is MapProjAnim -> {
                     if (!filters[PropertyFilter.MAP_PROJANIM]) continue
@@ -638,7 +586,7 @@ public class TextRs3ServerPacketTranscriber(
                 }
                 is MapProjAnimHalfsq -> {
                     if (!filters[PropertyFilter.MAP_PROJANIM]) continue
-                    root.group("MAP_PROJANIM_HALFSQ?") { buildMapProjAnimHalfsq(event) }
+                    root.group("MAP_PROJANIM_HALFSQ") { buildMapProjAnimHalfsq(event) }
                 }
                 is MapProjAnimHalfsqV2 -> {
                     if (!filters[PropertyFilter.MAP_PROJANIM]) continue
@@ -646,7 +594,7 @@ public class TextRs3ServerPacketTranscriber(
                 }
                 is MapProjAnimV2 -> {
                     if (!filters[PropertyFilter.MAP_PROJANIM]) continue
-                    root.group("MAP_PROJANIM_V2?") { buildMapProjAnimV2(event) }
+                    root.group("MAP_PROJANIM_V2") { buildMapProjAnimV2(event) }
                 }
                 else -> Unit
             }
@@ -670,11 +618,11 @@ public class TextRs3ServerPacketTranscriber(
                 }
                 is LocPrefetch -> {
                     if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
-                    sessionState.createFakeServerRoot("LOC_PREFETCH?").buildLocPrefetch(event)
+                    sessionState.createFakeServerRoot("LOC_PREFETCH").buildLocPrefetch(event)
                 }
                 is MidiSongLocation -> {
                     if (!filters[PropertyFilter.MIDI_SONG]) continue
-                    sessionState.createFakeServerRoot("MIDI_SONG_LOCATION?").buildMidiSongLocation(event)
+                    sessionState.createFakeServerRoot("MIDI_SONG_LOCATION").buildMidiSongLocation(event)
                 }
                 is LocDel -> {
                     if (!filters[PropertyFilter.LOC_DEL]) continue
@@ -690,7 +638,7 @@ public class TextRs3ServerPacketTranscriber(
                 }
                 is ObjCount -> {
                     if (!filters[PropertyFilter.OBJ_COUNT]) continue
-                    sessionState.createFakeServerRoot("OBJ_COUNT?").buildObjCount(event)
+                    sessionState.createFakeServerRoot("OBJ_COUNT").buildObjCount(event)
                 }
                 is ObjReveal -> {
                     if (!filters[PropertyFilter.OBJ_ADD]) continue
@@ -702,7 +650,7 @@ public class TextRs3ServerPacketTranscriber(
                 }
                 is MapAnimV2 -> {
                     if (!filters[PropertyFilter.MAP_ANIM]) continue
-                    sessionState.createFakeServerRoot("MAP_ANIM_V2?").buildMapAnimV2(event)
+                    sessionState.createFakeServerRoot("MAP_ANIM_V2").buildMapAnimV2(event)
                 }
                 is SoundArea -> {
                     if (!filters[PropertyFilter.SOUND_AREA]) continue
@@ -710,23 +658,23 @@ public class TextRs3ServerPacketTranscriber(
                 }
                 is TextCoord -> {
                     if (!filters[PropertyFilter.MAP_ANIM]) continue
-                    sessionState.createFakeServerRoot("TEXT_COORD?").buildTextCoord(event)
+                    sessionState.createFakeServerRoot("TEXT_COORD").buildTextCoord(event)
                 }
                 is MapProjAnim -> {
                     if (!filters[PropertyFilter.MAP_PROJANIM]) continue
-                    sessionState.createFakeServerRoot("MAP_PROJANIM?").buildMapProjAnim(event)
+                    sessionState.createFakeServerRoot("MAP_PROJANIM").buildMapProjAnim(event)
                 }
                 is MapProjAnimHalfsq -> {
                     if (!filters[PropertyFilter.MAP_PROJANIM]) continue
-                    sessionState.createFakeServerRoot("MAP_PROJANIM_HALFSQ?").buildMapProjAnimHalfsq(event)
+                    sessionState.createFakeServerRoot("MAP_PROJANIM_HALFSQ").buildMapProjAnimHalfsq(event)
                 }
                 is MapProjAnimHalfsqV2 -> {
                     if (!filters[PropertyFilter.MAP_PROJANIM]) continue
-                    sessionState.createFakeServerRoot("MAP_PROJANIM_HALFSQ_V2?").buildMapProjAnimHalfsqV2(event)
+                    sessionState.createFakeServerRoot("MAP_PROJANIM_HALFSQ_V2").buildMapProjAnimHalfsqV2(event)
                 }
                 is MapProjAnimV2 -> {
                     if (!filters[PropertyFilter.MAP_PROJANIM]) continue
-                    sessionState.createFakeServerRoot("MAP_PROJANIM_V2?").buildMapProjAnimV2(event)
+                    sessionState.createFakeServerRoot("MAP_PROJANIM_V2").buildMapProjAnimV2(event)
                 }
                 else -> Unit
             }
@@ -811,6 +759,8 @@ public class TextRs3ServerPacketTranscriber(
         root.children += AnyProperty("component", Rs3GamevalLookup.component(message.componentHash), String::class.java)
         root.children += AnyProperty("child", Rs3GamevalLookup.interfaceName(message.childId), String::class.java)
         root.children += AnyProperty("loc", Rs3GamevalLookup.loc(message.locId), String::class.java)
+        root.children += AnyProperty("shape", message.shape, Int::class.java)
+        root.children += AnyProperty("rotation", message.rotation, Int::class.java)
         root.children += AnyProperty("layer", message.layer, Int::class.java)
     }
 
@@ -1066,10 +1016,6 @@ public class TextRs3ServerPacketTranscriber(
         root.children += AnyProperty("field17", message.field17, Int::class.java)
     }
 
-    override fun soundMixbussSetLevel(message: SoundMixbussSetLevel) {
-        root.children += AnyProperty("rawBytes", hex(message.rawBytes), String::class.java)
-    }
-
     override fun locPrefetch(message: LocPrefetch) {
         if (!filters[PropertyFilter.LOC_ADD_CHANGE]) return omit()
         root.children += AnyProperty("loc", Rs3GamevalLookup.loc(message.id), String::class.java)
@@ -1085,7 +1031,7 @@ public class TextRs3ServerPacketTranscriber(
         root.children += AnyProperty("jcoins", message.jcoins, Int::class.java)
     }
 
-    override fun unknownServerOpcode(message: RawUnknownServerPacket) {
+    override fun unknownServerOpcode(message: UnknownServerPacket) {
         if (!filters[PropertyFilter.UNKNOWN_SERVER_OPCODE_HEX]) return omit()
         root.children += AnyProperty("opcode", message.opcode, Int::class.java)
         root.children += AnyProperty("name", message.name, String::class.java)

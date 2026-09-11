@@ -41,6 +41,17 @@ public value class Rs3JavConfig(
             ?.toLongOrNull()
     }
 
+    public fun getServerVersion(): Int {
+        val prefix = SERVER_VERSION_PREFIX
+        return text
+            .lineSequence()
+            .firstOrNull { it.startsWith(prefix) }
+            ?.substring(prefix.length)
+            ?.trim()
+            ?.toIntOrNull()
+            ?: error("RS3 jav_config has no server_version")
+    }
+
     public fun overrideDownloadCrc(
         id: Int,
         crc32: Long,
@@ -89,7 +100,8 @@ public value class Rs3JavConfig(
             checkNotNull(getParamValue(GAME_PORT_PARAM_ID)?.toIntOrNull()) {
                 "param=$GAME_PORT_PARAM_ID (game port) not found in jav_config"
             }
-        return Rs3UpstreamTargets(lobbyHost, gamePort)
+        val revision = getServerVersion()
+        return Rs3UpstreamTargets(lobbyHost, gamePort, revision)
     }
 
     public fun rewriteLobbyHost(localHost: String): Rs3JavConfig {
@@ -108,6 +120,7 @@ public value class Rs3JavConfig(
     public companion object {
         public const val DEFAULT_URL: String = NativePatchCriteria.DEFAULT_RS3_JAVCONFIG_URL
         private const val CODEBASE_PREFIX = "codebase="
+        private const val SERVER_VERSION_PREFIX = "server_version="
         private const val LOBBY_HOST_PARAM_ID = 3
         private const val GAME_PORT_PARAM_ID = 41
     }

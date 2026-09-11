@@ -1,10 +1,10 @@
 package net.rsprox.proxy.rs3.transcriber.text
 
-import net.rsprox.protocol.rs3v949.game.outgoing.model.info.npcinfo.NpcInfo
-import net.rsprox.protocol.rs3v949.game.outgoing.model.info.npcinfo.NpcUpdateType
-import net.rsprox.protocol.rs3v949.game.outgoing.model.info.npcinfo.extendedinfo.NpcExtendedInfo
-import net.rsprox.protocol.rs3v949.game.outgoing.model.info.npcinfo.extendedinfo.AnimationExtendedInfo
-import net.rsprox.protocol.rs3v949.game.outgoing.model.info.npcinfo.extendedinfo.OpaqueExtendedInfo
+import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.NpcInfo
+import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.NpcUpdateType
+import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.extendedinfo.AnimationExtendedInfo
+import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.extendedinfo.NpcExtendedInfo
+import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.extendedinfo.OpaqueExtendedInfo
 import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
 import net.rsprox.proxy.rs3.transcriber.interfaces.Rs3NpcInfoTranscriber
 import net.rsprox.proxy.rs3.transcriber.state.Rs3SessionState

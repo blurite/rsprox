@@ -55,7 +55,6 @@ import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.misc.player.SetPl
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.misc.player.UpdateRunEnergyDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.misc.player.UpdateRunWeightDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.misc.player.UpdateStatDecoder
-import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.sound.SoundMixbussSetLevelDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.sound.VorbisSoundDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.specific.ProjAnimSpecificV2Decoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.payload.ObjAddDecoder
@@ -152,7 +151,6 @@ internal object ServerMessageDecoderRepository {
                 bind(VorbisSoundDecoder())
                 bind(RunClientScriptDecoder())
                 bind(ProjAnimSpecificV2Decoder())
-                bind(SoundMixbussSetLevelDecoder())
                 bind(LocPrefetchDecoder())
                 bind(Cutscene2dPlayDecoder())
                 bind(JcoinsUpdateDecoder())

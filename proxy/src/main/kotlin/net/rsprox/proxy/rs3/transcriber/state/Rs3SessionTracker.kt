@@ -1,27 +1,24 @@
 package net.rsprox.proxy.rs3.transcriber.state
 
+import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.message.IncomingMessage
-import net.rsprox.protocol.rs3v949.game.incoming.decoder.prot.GameClientProt
-import net.rsprox.protocol.rs3v949.game.outgoing.decoder.prot.GameServerProt
-import net.rsprox.protocol.rs3v949.game.outgoing.model.info.npcinfo.NpcInfo
-import net.rsprox.protocol.rs3v949.game.outgoing.model.info.npcinfo.NpcUpdateType
-import net.rsprox.protocol.rs3v949.game.outgoing.model.info.playerinfo.PlayerInfo
-import net.rsprox.protocol.rs3v949.game.outgoing.model.info.playerinfo.PlayerUpdateType
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfCloseSub
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfOpenSub
 import net.rsprox.protocol.common.CoordGrid
-import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.info.playerinfo.PlayerInfoDecoder
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfOpenTop
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.client.TickEnd
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.UpdateStat
-import net.rsprox.protocol.rs3v949.game.outgoing.model.map.RebuildNormal
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.header.UpdateZoneFullFollows
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.header.UpdateZonePartialFollows
+import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.NpcInfo
+import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.NpcUpdateType
+import net.rsprox.protocol.rs3.game.outgoing.model.info.playerinfo.PlayerInfo
+import net.rsprox.protocol.rs3.game.outgoing.model.info.playerinfo.PlayerUpdateType
+import net.rsprox.protocol.rs3.game.outgoing.model.interfaces.IfCloseSub
+import net.rsprox.protocol.rs3.game.outgoing.model.interfaces.IfOpenSub
+import net.rsprox.protocol.rs3.game.outgoing.model.interfaces.IfOpenTop
+import net.rsprox.protocol.rs3.game.outgoing.model.map.RebuildNormal
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.TickEnd
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.player.UpdateStat
+import net.rsprox.protocol.rs3.game.outgoing.model.zone.header.UpdateZoneFullFollows
+import net.rsprox.protocol.rs3.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
+import net.rsprox.protocol.rs3.game.outgoing.model.zone.header.UpdateZonePartialFollows
 
 public class Rs3SessionTracker(
     private val sessionState: Rs3SessionState,
-    private val playerInfoDecoder: PlayerInfoDecoder,
 ) {
     private fun setCurrentProt(name: String) {
         sessionState.currentProt = name
@@ -29,16 +26,16 @@ public class Rs3SessionTracker(
 
     public fun onClientPacket(
         @Suppress("UNUSED_PARAMETER") message: IncomingMessage,
-        prot: GameClientProt,
+        prot: ClientProt,
     ) {
-        setCurrentProt(prot.name)
+        setCurrentProt(prot.toString())
     }
 
     public fun onServerPacket(
         @Suppress("UNUSED_PARAMETER") message: IncomingMessage,
-        prot: GameServerProt,
+        prot: ClientProt,
     ) {
-        setCurrentProt(prot.name)
+        setCurrentProt(prot.toString())
     }
 
     public fun beforeTranscribe(message: IncomingMessage) {
@@ -78,11 +75,6 @@ public class Rs3SessionTracker(
                 }
             }
             is RebuildNormal -> {
-                val initBlock = message.playerInfoInitBlock
-                if (initBlock != null) {
-                    playerInfoDecoder.reset()
-                    playerInfoDecoder.gpiInit(initBlock)
-                }
                 if (message.trailerAligned) {
                     sessionState.getActiveWorld().rebuild(CoordGrid(0, message.baseTileX, message.baseTileZ))
                 }

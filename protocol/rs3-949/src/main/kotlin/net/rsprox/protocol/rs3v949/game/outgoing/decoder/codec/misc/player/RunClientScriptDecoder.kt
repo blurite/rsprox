@@ -8,7 +8,7 @@ import net.rsprox.protocol.rs3v949.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.session.Session
 
 internal class RunClientScriptDecoder : ProxyMessageDecoder<RunClientScript> {
-    override val prot: ClientProt = GameServerProt.RUN_CLIENT_SCRIPT
+    override val prot: ClientProt = GameServerProt.RUNCLIENTSCRIPT
 
     override fun decode(
         buffer: JagByteBuf,

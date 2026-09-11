@@ -21,9 +21,8 @@ import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.payload.ObjC
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.payload.ObjDelDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.payload.ObjRevealDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.payload.SoundAreaDecoder
-import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.zone.payload.TextCoordDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.prot.GameServerProt
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
+import net.rsprox.protocol.rs3.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
 import net.rsprox.protocol.session.Session
 
 internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZonePartialEnclosed> {
@@ -52,11 +51,11 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
     ) {
         SOUND_AREA(SoundAreaDecoder()), // 0
         LOC_ADD_CHANGE(LocAddChangeDecoder()), // 1
-        LOC_CUSTOMISE(LocCustomiseDecoder()), // 2 - guess - could be text_coord
+        LOC_CUSTOMISE(LocCustomiseDecoder()), // 2
         LOC_ANIM(LocAnimDecoder()), // 3
         MAP_PROJANIM(MapProjAnimDecoder()), // 4
         MAP_PROJANIM_HALFSQ(MapProjAnimHalfsqDecoder()), // 5
-        MIDI_SONG_LOCATION(MidiSongLocationDecoder()), // 6 - guess, 11 bytes
+        MIDI_SONG_LOCATION(MidiSongLocationDecoder()), // 6 - zone only
         OBJ_DEL(ObjDelDecoder(GameServerProt.OBJ_DEL, big = false)), // 7
         LOC_DEL(LocDelDecoder()), // 8
         OBJ_ADD(ObjAddDecoder(GameServerProt.OBJ_ADD, big = false)), // 9
@@ -71,6 +70,6 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
         LOC_PREFETCH(LocPrefetchDecoder()), // 18 - guess
         MAP_PROJANIM_V2(MapProjAnimV2Decoder()), // 19
         OBJ_COUNT_V2(ObjCountDecoder(GameServerProt.OBJ_COUNT_V2, big = true)), // 20
-        TEXT_COORD(TextCoordDecoder()), // 21 - guess - could be loc_customise
+        UNUSED_LOC_PREFETCH(LocPrefetchDecoder()), // 21 - repeat, should be unused
     }
 }

@@ -1,7 +1,7 @@
 package net.rsprox.proxy.rs3.transcriber
 
 import net.rsprot.protocol.message.IncomingMessage
-import net.rsprox.protocol.rs3v949.game.incoming.model.buttons.If3Button
+import net.rsprox.protocol.rs3.game.incoming.model.buttons.If3Button
 import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
 import net.rsprox.shared.property.ChildProperty
 import net.rsprox.shared.property.RootProperty

@@ -974,6 +974,7 @@ public class ProxyService(
                 proxyPrivateKey = proxyKey,
                 sessionMonitor = sessionMonitor,
                 realServerModulusHex = originalModulusHex,
+                revision = targets.revision,
                 resolveUpstream = {
                     val fresh = Rs3JavConfig(URL(upstreamJavConfigUrl)).captureUpstreamTargets()
                     fresh.lobbyHost to fresh.gamePort

@@ -5,8 +5,8 @@ import net.rsprot.buffer.bitbuffer.toBitBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.rs3v949.game.outgoing.decoder.prot.GameServerProt
-import net.rsprox.protocol.rs3v949.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
-import net.rsprox.protocol.rs3v949.game.outgoing.model.map.RebuildNormal
+import net.rsprox.protocol.rs3.game.outgoing.model.info.playerinfo.util.PlayerInfoInitBlock
+import net.rsprox.protocol.rs3.game.outgoing.model.map.RebuildNormal
 import net.rsprox.protocol.session.Session
 
 internal class RebuildNormalDecoder : ProxyMessageDecoder<RebuildNormal> {

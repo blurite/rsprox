@@ -1,14 +1,14 @@
 package net.rsprox.proxy.rs3.transcriber.text
 
-import net.rsprox.protocol.rs3v949.game.incoming.model.buttons.If3Button
-import net.rsprox.protocol.rs3v949.game.incoming.model.locs.OpLoc
-import net.rsprox.protocol.rs3v949.game.incoming.model.npcs.OpNpc
-import net.rsprox.protocol.rs3v949.game.incoming.model.objs.OpObj
-import net.rsprox.protocol.rs3v949.game.incoming.model.players.OpPlayer
-import net.rsprox.protocol.rs3v949.game.incoming.model.events.EventAppletFocus
-import net.rsprox.protocol.rs3v949.game.incoming.model.events.EventNativeMouseClick
-import net.rsprox.protocol.rs3v949.game.incoming.model.misc.user.MoveGameClick
-import net.rsprox.protocol.rs3v949.game.incoming.model.unknown.RawUnknownClientPacket
+import net.rsprox.protocol.game.incoming.model.unknown.UnknownClientPacket
+import net.rsprox.protocol.rs3.game.incoming.model.buttons.If3Button
+import net.rsprox.protocol.rs3.game.incoming.model.events.EventAppletFocus
+import net.rsprox.protocol.rs3.game.incoming.model.events.EventNativeMouseClick
+import net.rsprox.protocol.rs3.game.incoming.model.locs.OpLoc
+import net.rsprox.protocol.rs3.game.incoming.model.misc.user.MoveGameClick
+import net.rsprox.protocol.rs3.game.incoming.model.npcs.OpNpc
+import net.rsprox.protocol.rs3.game.incoming.model.objs.OpObj
+import net.rsprox.protocol.rs3.game.incoming.model.players.OpPlayer
 import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
 import net.rsprox.proxy.rs3.transcriber.interfaces.Rs3ClientPacketTranscriber
 import net.rsprox.proxy.rs3.transcriber.state.Rs3SessionState
@@ -105,7 +105,7 @@ public class TextRs3ClientPacketTranscriber(
         root.children += AnyProperty("run", message.run, Boolean::class.java)
     }
 
-    override fun unknownClientOpcode(message: RawUnknownClientPacket) {
+    override fun unknownClientOpcode(message: UnknownClientPacket) {
         if (!filters[PropertyFilter.UNKNOWN_CLIENT_OPCODE_HEX]) return omit()
         root.children += AnyProperty("opcode", message.opcode, Int::class.java)
         root.children += AnyProperty("name", message.name, String::class.java)

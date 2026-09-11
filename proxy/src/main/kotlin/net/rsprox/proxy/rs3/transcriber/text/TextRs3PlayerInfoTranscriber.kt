@@ -1,7 +1,7 @@
 package net.rsprox.proxy.rs3.transcriber.text
 
-import net.rsprox.protocol.rs3v949.game.outgoing.model.info.playerinfo.PlayerInfo
-import net.rsprox.protocol.rs3v949.game.outgoing.model.info.playerinfo.PlayerUpdateType
+import net.rsprox.protocol.rs3.game.outgoing.model.info.playerinfo.PlayerInfo
+import net.rsprox.protocol.rs3.game.outgoing.model.info.playerinfo.PlayerUpdateType
 import net.rsprox.proxy.rs3.transcriber.interfaces.Rs3PlayerInfoTranscriber
 import net.rsprox.proxy.rs3.transcriber.state.Rs3SessionState
 import net.rsprox.shared.filters.PropertyFilter

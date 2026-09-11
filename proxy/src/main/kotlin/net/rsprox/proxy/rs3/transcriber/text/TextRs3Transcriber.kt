@@ -1,11 +1,11 @@
 package net.rsprox.proxy.rs3.transcriber.text
 
+import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.NpcInfo
+import net.rsprox.protocol.rs3.game.outgoing.model.info.playerinfo.PlayerInfo
 import net.rsprox.proxy.rs3.transcriber.Rs3Transcriber
 import net.rsprox.proxy.rs3.transcriber.interfaces.Rs3ClientPacketTranscriber
 import net.rsprox.proxy.rs3.transcriber.interfaces.Rs3ServerPacketTranscriber
 import net.rsprox.proxy.rs3.transcriber.state.Rs3SessionState
-import net.rsprox.protocol.rs3v949.game.outgoing.model.info.npcinfo.NpcInfo
-import net.rsprox.protocol.rs3v949.game.outgoing.model.info.playerinfo.PlayerInfo
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.property.PropertyTreeFormatter
 import net.rsprox.shared.property.RootProperty

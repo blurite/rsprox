@@ -117,7 +117,8 @@ public class Rs3ProtDecoder(
 
                     try {
                         onPacket(currentOpcode, payload)
-                    } catch (_: Exception) {
+                    } catch (e: Exception) {
+                        e.printStackTrace()
                     }
 
                     val extraDraws = extraCipherDraws[currentOpcode] ?: 0

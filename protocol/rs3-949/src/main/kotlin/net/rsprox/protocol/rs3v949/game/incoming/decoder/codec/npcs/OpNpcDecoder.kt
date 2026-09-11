@@ -4,7 +4,7 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.rs3v949.game.incoming.decoder.prot.GameClientProt
-import net.rsprox.protocol.rs3v949.game.incoming.model.npcs.OpNpc
+import net.rsprox.protocol.rs3.game.incoming.model.npcs.OpNpc
 import net.rsprox.protocol.session.Session
 
 internal class OpNpcDecoder(

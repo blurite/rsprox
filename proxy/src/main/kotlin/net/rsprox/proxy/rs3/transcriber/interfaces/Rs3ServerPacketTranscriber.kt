@@ -3,78 +3,29 @@ package net.rsprox.proxy.rs3.transcriber.interfaces
 import net.rsprox.protocol.game.outgoing.model.misc.client.MinimapToggle
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettingsPrivateChat
 import net.rsprox.protocol.game.outgoing.model.misc.player.RunClientScript
-import net.rsprox.protocol.rs3v949.game.outgoing.model.camera.CamForceAngle
-import net.rsprox.protocol.rs3v949.game.outgoing.model.camera.CamLookAt
-import net.rsprox.protocol.rs3v949.game.outgoing.model.camera.CamMoveTo
-import net.rsprox.protocol.rs3v949.game.outgoing.model.camera.CamShake
-import net.rsprox.protocol.rs3v949.game.outgoing.model.camera.CameraUpdate
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfCloseSub
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfOpenSub
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfOpenSubActiveLoc
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfOpenSubActiveObj
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfOpenTop
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetAnim
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetColour
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetEvents
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetHide
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetModel
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetNpcHead
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetObject
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetPlayerHead
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetPlayerHeadSnapshot
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetPlayerModelSelf
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetPlayerModelSnapshot
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetPosition
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetScrollPos
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetTargetParam
-import net.rsprox.protocol.rs3v949.game.outgoing.model.interfaces.IfSetText
-import net.rsprox.protocol.rs3v949.game.outgoing.model.inv.UpdateInvFull
-import net.rsprox.protocol.rs3v949.game.outgoing.model.inv.UpdateInvPartial
-import net.rsprox.protocol.rs3v949.game.outgoing.model.inv.UpdateInvStopTransmit
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.LocAnim
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.LocDel
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapAnim
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapAnimV2
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapProjAnim
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapProjAnimHalfsq
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapProjAnimHalfsqV2
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapProjAnimV2
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.SoundArea
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.TextCoord
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.MessageGame
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.ObjAdd
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.ObjCount
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.ObjDel
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.ObjReveal
-import net.rsprox.protocol.rs3v949.game.outgoing.model.varbit.VarbitLarge
-import net.rsprox.protocol.rs3v949.game.outgoing.model.varbit.VarbitSmall
-import net.rsprox.protocol.rs3v949.game.outgoing.model.varp.VarpLarge
-import net.rsprox.protocol.rs3v949.game.outgoing.model.varp.VarpLong
-import net.rsprox.protocol.rs3v949.game.outgoing.model.varp.VarpSmall
-import net.rsprox.protocol.rs3v949.game.outgoing.model.map.RebuildNormal
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.client.Cutscene2dPlay
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.client.HintArrow
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.client.HintTrail
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.JcoinsUpdate
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.SetPlayerOp
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.UpdateRunEnergy
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.UpdateRunWeight
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.UpdateStat
-import net.rsprox.protocol.rs3v949.game.outgoing.model.sound.SoundMixbussSetLevel
-import net.rsprox.protocol.rs3v949.game.outgoing.model.sound.VorbisSound
-import net.rsprox.protocol.rs3v949.game.outgoing.model.specific.ProjAnimSpecificV2
-import net.rsprox.protocol.rs3v949.game.outgoing.model.unknown.RawUnknownServerPacket
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
-import net.rsprox.protocol.rs3v949.game.outgoing.model.varc.VarcSmall
-import net.rsprox.protocol.rs3v949.game.outgoing.model.varc.VarcLarge
-import net.rsprox.protocol.rs3v949.game.outgoing.model.varc.VarcBitSmall
-import net.rsprox.protocol.rs3v949.game.outgoing.model.varc.VarcBitLarge
-import net.rsprox.protocol.rs3v949.game.outgoing.model.varc.VarcStrSmall
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.header.UpdateZoneFullFollows
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.header.UpdateZonePartialFollows
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.LocAddChange
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.LocPrefetch
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MidiSongLocation
+import net.rsprox.protocol.game.outgoing.model.unknown.UnknownServerPacket
+import net.rsprox.protocol.rs3.game.outgoing.model.camera.*
+import net.rsprox.protocol.rs3.game.outgoing.model.interfaces.*
+import net.rsprox.protocol.rs3.game.outgoing.model.inv.UpdateInvFull
+import net.rsprox.protocol.rs3.game.outgoing.model.inv.UpdateInvPartial
+import net.rsprox.protocol.rs3.game.outgoing.model.inv.UpdateInvStopTransmit
+import net.rsprox.protocol.rs3.game.outgoing.model.map.RebuildNormal
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.Cutscene2dPlay
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.HintArrow
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.HintTrail
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.player.*
+import net.rsprox.protocol.rs3.game.outgoing.model.sound.VorbisSound
+import net.rsprox.protocol.rs3.game.outgoing.model.specific.ProjAnimSpecificV2
+import net.rsprox.protocol.rs3.game.outgoing.model.varbit.VarbitLarge
+import net.rsprox.protocol.rs3.game.outgoing.model.varbit.VarbitSmall
+import net.rsprox.protocol.rs3.game.outgoing.model.varc.*
+import net.rsprox.protocol.rs3.game.outgoing.model.varp.VarpLarge
+import net.rsprox.protocol.rs3.game.outgoing.model.varp.VarpLong
+import net.rsprox.protocol.rs3.game.outgoing.model.varp.VarpSmall
+import net.rsprox.protocol.rs3.game.outgoing.model.zone.header.UpdateZoneFullFollows
+import net.rsprox.protocol.rs3.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
+import net.rsprox.protocol.rs3.game.outgoing.model.zone.header.UpdateZonePartialFollows
+import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.*
 
 public interface Rs3ServerPacketTranscriber {
     public fun varpSmall(message: VarpSmall)
@@ -217,13 +168,11 @@ public interface Rs3ServerPacketTranscriber {
 
     public fun projAnimSpecificV2(message: ProjAnimSpecificV2)
 
-    public fun soundMixbussSetLevel(message: SoundMixbussSetLevel)
-
     public fun locPrefetch(message: LocPrefetch)
 
     public fun cutscene2dPlay(message: Cutscene2dPlay)
 
     public fun jcoinsUpdate(message: JcoinsUpdate)
 
-    public fun unknownServerOpcode(message: RawUnknownServerPacket)
+    public fun unknownServerOpcode(message: UnknownServerPacket)
 }

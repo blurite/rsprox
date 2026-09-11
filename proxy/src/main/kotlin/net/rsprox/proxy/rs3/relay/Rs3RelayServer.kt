@@ -4,12 +4,7 @@ import io.netty.bootstrap.Bootstrap
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
-import io.netty.channel.Channel
-import io.netty.channel.ChannelFutureListener
-import io.netty.channel.ChannelHandlerContext
-import io.netty.channel.ChannelInboundHandlerAdapter
-import io.netty.channel.ChannelInitializer
-import io.netty.channel.ChannelOption
+import io.netty.channel.*
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
@@ -17,28 +12,16 @@ import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.resolver.dns.DnsNameResolverBuilder
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.crypto.cipher.StreamCipherPair
-import net.rsprox.protocol.common.CoordGrid
-import net.rsprox.protocol.rs3v949.ClientPacketDecoderServiceRs3V949
-import net.rsprox.protocol.rs3v949.ServerPacketDecoderServiceRs3V949
-import net.rsprox.protocol.rs3v949.game.incoming.decoder.prot.GameClientProt
-import net.rsprox.protocol.rs3v949.game.incoming.model.unknown.RawUnknownClientPacket
-import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.info.npcinfo.NpcInfoDecoder
-import net.rsprox.protocol.rs3v949.game.outgoing.decoder.codec.info.playerinfo.PlayerInfoDecoder
-import net.rsprox.protocol.rs3v949.game.outgoing.decoder.prot.GameServerProt
-import net.rsprox.protocol.rs3v949.game.outgoing.model.info.npcinfo.NpcInfoClient
-import net.rsprox.protocol.rs3v949.game.outgoing.model.info.playerinfo.PlayerInfoClient
-import net.rsprox.protocol.rs3v949.game.outgoing.model.map.RebuildNormal
-import net.rsprox.protocol.rs3v949.game.outgoing.model.unknown.RawUnknownServerPacket
+import net.rsprot.protocol.message.IncomingMessage
+import net.rsprox.protocol.rs3.game.incoming.model.unknown.RawUnknownClientPacket
+import net.rsprox.protocol.rs3.game.outgoing.model.unknown.RawUnknownServerPacket
 import net.rsprox.protocol.session.AttributeMap
 import net.rsprox.protocol.session.Session
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.filters.UnmodifiablePropertyFilterSet
 import net.rsprox.proxy.huffman.HuffmanProvider
-import net.rsprox.proxy.rs3.login.Rs3ClientLoginRsaSwapHandler
-import net.rsprox.proxy.rs3.login.Rs3LoginResponseFramer
-import net.rsprox.proxy.rs3.login.Rs3ServerLoginResponseFramer
-import net.rsprox.proxy.rs3.login.Rs3WorldContinueAckSkipper
-import net.rsprox.proxy.rs3.login.Rs3WorldLoginResponseFramer
+import net.rsprox.proxy.rs3.Rs3DecoderLoader
+import net.rsprox.proxy.rs3.login.*
 import net.rsprox.proxy.rs3.protocol.Rs3ProtDecoder
 import net.rsprox.proxy.rs3.transcriber.Rs3SessionMonitor
 import net.rsprox.proxy.rs3.transcriber.Rs3TranscriberSession
@@ -66,6 +49,7 @@ public class Rs3RelayServer(
     private val proxyPrivateKey: RSAPrivateCrtKeyParameters,
     private val sessionMonitor: Rs3SessionMonitor = Rs3SessionMonitor(),
     realServerModulusHex: String,
+    private val revision: Int,
     private val resolveUpstream: () -> Pair<String, Int>,
     private val filterSetStore: PropertyFilterSetStore =
         DefaultPropertyFilterSetStore(Path.of("."), mutableListOf(UnmodifiablePropertyFilterSet())),
@@ -78,9 +62,6 @@ public class Rs3RelayServer(
     private val bossGroup = NioEventLoopGroup(1)
     private val workerGroup = NioEventLoopGroup()
     private val discoveredWorldHost = AtomicReference<String?>(null)
-
-    private val serverProtByOpcode = GameServerProt.entries.associateBy { it.opcode }
-    private val clientProtByOpcode = GameClientProt.entries.associateBy { it.opcode }
 
     private val dnsResolver =
         DnsNameResolverBuilder(workerGroup.next())
@@ -135,13 +116,10 @@ public class Rs3RelayServer(
 
         val cipherHolder = CipherHolder()
         var localPlayerIndex = -1
-        var npcInfoBaseCoord: CoordGrid = CoordGrid.INVALID
 
-        val npcInfoDecoder: NpcInfoDecoder = NpcInfoClient()
-        val playerInfoDecoder: PlayerInfoDecoder = PlayerInfoClient()
-
-        val clientDecoderService = ClientPacketDecoderServiceRs3V949(HuffmanProvider.get())
-        val serverDecoderService = ServerPacketDecoderServiceRs3V949()
+        val rs3Decoder = Rs3DecoderLoader.load(revision, HuffmanProvider.get())
+        val clientDecoderService = rs3Decoder.clientPacketDecoder
+        val serverDecoderService = rs3Decoder.serverPacketDecoder
 
         val monitoredContainer: MessageConsumerContainer =
             MonitoredMessageConsumerContainer(
@@ -153,63 +131,43 @@ public class Rs3RelayServer(
                 container = monitoredContainer,
                 filters = filterSetStore,
                 settings = settingSetStore,
-                playerInfoDecoder = playerInfoDecoder,
             )
 
         val serverToClientDecoder =
             Rs3ProtDecoder(
-                table = GameServerProt.entries.associate { it.opcode to Rs3ProtDecoder.ProtEntry(it.size, it.name) },
+                table = rs3Decoder.serverProtTable,
                 cipher = { cipherHolder.pair?.decodeCipher },
             ) { opcode, bytes ->
-                val prot = serverProtByOpcode[opcode]
+                val prot = rs3Decoder.gameServerProtProvider[opcode]
                 val buffer = Unpooled.wrappedBuffer(bytes).toJagByteBuf()
                 val session = Session(localPlayerIndex, AttributeMap())
-                val message =
-                    when (prot) {
-                        GameServerProt.NPC_INFO -> npcInfoDecoder.decode(buffer, npcInfoBaseCoord)
-                        GameServerProt.PLAYER_INFO -> playerInfoDecoder.decode(buffer)
-                        GameServerProt.REBUILD_NORMAL -> {
-                            val decoded =
-                                try {
-                                    serverDecoderService.decode(opcode, buffer, session)
-                                } catch (_: Exception) {
-                                    RawUnknownServerPacket(opcode, prot?.name ?: "UNKNOWN_$opcode", bytes)
-                                }
-                            if (decoded is RebuildNormal && decoded.trailerAligned) {
-                                npcInfoBaseCoord = CoordGrid(0, decoded.baseTileX, decoded.baseTileZ)
-                            }
-                            decoded
-                        }
-                        else ->
-                            try {
-                                serverDecoderService.decode(opcode, buffer, session)
-                            } catch (_: Exception) {
-                                RawUnknownServerPacket(opcode, prot?.name ?: "UNKNOWN_$opcode", bytes)
-                            }
+
+                val message: IncomingMessage =
+                    try {
+                        serverDecoderService.decode(opcode, buffer, session)
+                    } catch (_: Exception) {
+                        RawUnknownServerPacket(opcode, prot.toString(), bytes)
                     }
-                if (prot != null) {
-                    transcriberSession.onServerPacket(prot, message)
-                }
+
+                transcriberSession.onServerPacket(prot, message)
             }
 
         val clientToServerDecoder =
             Rs3ProtDecoder(
-                table = GameClientProt.entries.associate { it.opcode to Rs3ProtDecoder.ProtEntry(it.size, it.name) },
+                table = rs3Decoder.clientProtTable,
                 supportsExtendedOpcodes = false,
                 cipher = { cipherHolder.pair?.encoderCipher },
             ) { opcode, bytes ->
-                val prot = clientProtByOpcode[opcode]
+                val prot = rs3Decoder.gameClientProtProvider[opcode]
                 val buffer = Unpooled.wrappedBuffer(bytes).toJagByteBuf()
                 val session = Session(localPlayerIndex, AttributeMap())
-                val message =
+                val message: IncomingMessage =
                     try {
                         clientDecoderService.decode(opcode, buffer, session)
                     } catch (_: Exception) {
-                        RawUnknownClientPacket(opcode, prot?.name ?: "UNKNOWN_$opcode", bytes)
+                        RawUnknownClientPacket(opcode, prot.toString(), bytes)
                     }
-                if (prot != null) {
-                    transcriberSession.onClientProt(prot, message)
-                }
+                transcriberSession.onClientProt(prot, message)
             }
 
         var skipNextClientToServerChunk = false
@@ -234,7 +192,6 @@ public class Rs3RelayServer(
                                         if (framer.isDone && framer is Rs3WorldLoginResponseFramer) {
                                             val ownIndex = framer.ownIndex
                                             if (ownIndex != null) {
-                                                playerInfoDecoder.applyOwnIndex(ownIndex)
                                                 localPlayerIndex = ownIndex
                                                 transcriberSession.sessionState.localPlayerIndex = ownIndex
                                             }

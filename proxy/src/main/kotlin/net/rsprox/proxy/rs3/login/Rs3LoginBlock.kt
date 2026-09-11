@@ -2,12 +2,7 @@ package net.rsprox.proxy.rs3.login
 
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
-import net.rsprot.buffer.extensions.g1
-import net.rsprot.buffer.extensions.g4
-import net.rsprot.buffer.extensions.g8
-import net.rsprot.buffer.extensions.p1
-import net.rsprot.buffer.extensions.p4
-import net.rsprot.buffer.extensions.p8
+import net.rsprot.buffer.extensions.*
 import net.rsprot.crypto.cipher.IsaacRandom
 import net.rsprot.crypto.cipher.StreamCipherPair
 
