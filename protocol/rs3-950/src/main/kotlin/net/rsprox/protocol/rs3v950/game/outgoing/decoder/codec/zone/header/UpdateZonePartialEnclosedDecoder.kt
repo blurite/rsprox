@@ -17,13 +17,15 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
         session: Session,
     ): UpdateZonePartialEnclosed {
         val level = buffer.g1Alt3()
-        val zoneX = buffer.g1sAlt2()
+        val zoneX = buffer.g1Alt2().toByte().toInt()
         val zoneZ = buffer.g1s()
         val packets =
             buildList {
                 while (buffer.isReadable) {
                     val index = buffer.g1()
-                    val decoder = IndexedZoneProtDecoder.byIndexOrNull(index) ?: break
+                    val decoder = requireNotNull(IndexedZoneProtDecoder.byIndexOrNull(index)) {
+                        "Unknown revision 950 zone selector $index at byte ${buffer.buffer.readerIndex() - 1}"
+                    }
                     add(decoder.decoder.decode(buffer, session) as IncomingServerGameMessage)
                 }
             }
@@ -35,7 +37,7 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
         val decoder: ProxyMessageDecoder<*>,
     ) {
         OBJ_ADD_V2(0, ObjAddDecoder()),
-        UNKNOWN(1, MapAnimDecoder()), // todo: zone only FUN_001f24f0
+        SOUND_AREA_V2(1, SoundAreaV2Decoder()),
         MAP_ANIM_V2(2, MapAnimV2Decoder()),
         LOC_PREFETCH(3, LocPrefetchDecoder()),
         SOUND_AREA(4, SoundAreaDecoder()),
@@ -48,7 +50,7 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
         MAP_ANIM(11, MapAnimDecoder()),
         LOC_DEL(12, LocDelDecoder()),
         LOC_ANIM(13, LocAnimDecoder()),
-        UNUSED_LOC_PREFETCH(14, LocPrefetchDecoder()), // 2nd instance should be unused
+        LOC_PREFETCH_VARIABLE(14, LocPrefetchDecoder()),
         MAP_PROJANIM(15, MapProjAnimDecoder()),
         MAP_PROJANIM_V2(16, MapProjAnimV2Decoder()),
         MAP_PROJANIM_HALFSQ_V2(17, MapProjAnimHalfsqV2Decoder()),

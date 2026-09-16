@@ -2,23 +2,23 @@ package net.rsprox.protocol.rs3.game.outgoing.model.zone.payload
 
 import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
-public class MapProjAnim(
-    public val mediumId: Int,
+/** Decoded wire fields; client scaling is not applied to the stored values. */
+public data class MapProjAnim(
+    public val coordinate: Int,
+    public val deltaX: Int,
+    public val deltaZ: Int,
+    public val target: Int,
     public val id: Int,
-    public val xInZone: Int,
-    public val zInZone: Int,
-    public val targetDeltaX: Int,
-    public val targetDeltaY: Int,
     public val startHeight: Int,
     public val endHeight: Int,
     public val startTime: Int,
     public val endTime: Int,
-    public val alpha: Int,
-    public val lockonSlot: Int
+    public val slope: Int,
+    public val distance: Int,
+    public val unused0: Int,
+    public val unused1: Int,
+    public val unused2: Int,
 ) : IncomingServerGameMessage {
-    override fun toString(): String {
-        return "MapProjAnim(mediumId=$mediumId, id=$id, xInZone=$xInZone, zInZone=$zInZone, targetDeltaX=$targetDeltaX, " +
-            "targetDeltaY=$targetDeltaY, startHeight=$startHeight, endHeight=$endHeight, " +
-            "startTime=$startTime, endTime=$endTime, alpha=$alpha, lockonSlot=$lockonSlot)"
-    }
+    public val xInZone: Int get() = (coordinate ushr 3) and 7
+    public val zInZone: Int get() = coordinate and 7
 }

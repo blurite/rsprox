@@ -15,22 +15,17 @@ internal class MidiSongLocationDecoder : ProxyMessageDecoder<MidiSongLocation> {
         session: Session,
     ): MidiSongLocation {
         val id = buffer.g4Alt1()
-        val maxDistance = buffer.g1Alt2()
-
-        val coord = buffer.g4Alt2()
-        val xInZone = (coord ushr 14) and 0x7
-        val zInZone = coord and 0x7
-
+        val radius = buffer.g1Alt2()
+        val coordinate = buffer.g4Alt2()
         val volume = buffer.g1Alt3()
-        val minDistance = buffer.g1Alt2()
+        val range = buffer.g1Alt2()
 
         return MidiSongLocation(
             id = id,
-            xInZone = xInZone,
-            zInZone = zInZone,
-            maxDistance = maxDistance,
-            minDistance = minDistance,
+            radius = radius,
+            coordinate = coordinate,
             volume = volume,
+            range = range,
         )
     }
 }

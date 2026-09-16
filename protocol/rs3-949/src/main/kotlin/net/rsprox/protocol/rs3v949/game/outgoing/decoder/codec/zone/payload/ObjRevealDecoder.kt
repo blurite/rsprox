@@ -15,7 +15,6 @@ internal class ObjRevealDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): ObjReveal {
-        val startIndex = buffer.buffer.readerIndex()
         val objId: Int
         val count: Int
         val packedCoord: Int
@@ -33,10 +32,7 @@ internal class ObjRevealDecoder(
         }
         val xInZone = (packedCoord ushr 4) and 0x7
         val zInZone = packedCoord and 0x7
-        val endIndex = buffer.buffer.readerIndex()
-        val rawBytes = ByteArray(endIndex - startIndex)
-        buffer.buffer.getBytes(startIndex, rawBytes)
-        return ObjReveal(big, objId, count, ownerIndex, xInZone, zInZone, rawBytes)
+        return ObjReveal(big, objId, count, ownerIndex, xInZone, zInZone)
     }
 
     internal companion object {

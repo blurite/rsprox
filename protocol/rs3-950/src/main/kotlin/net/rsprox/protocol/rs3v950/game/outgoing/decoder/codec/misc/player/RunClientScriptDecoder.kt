@@ -18,9 +18,9 @@ internal class RunClientScriptDecoder : ProxyMessageDecoder<RunClientScript> {
         val values = ArrayDeque<Any>(types.length)
         for (char in types.reversed()) {
             when (char) {
-                'i' -> values.addFirst(buffer.g4())
                 's' -> values.addFirst(buffer.gjstr())
                 'l' -> values.addFirst(buffer.g8())
+                else -> values.addFirst(buffer.g4())
             }
         }
         val id = buffer.g4()

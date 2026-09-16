@@ -14,7 +14,6 @@ internal class LocCustomiseDecoder : ProxyMessageDecoder<LocCustomise> {
         buffer: JagByteBuf,
         session: Session,
     ): LocCustomise {
-        val startIndex = buffer.buffer.readerIndex()
         val locId = buffer.g4Alt1()
 
         val coordByte = buffer.g1()
@@ -96,10 +95,6 @@ internal class LocCustomiseDecoder : ProxyMessageDecoder<LocCustomise> {
             }
         }
 
-        val endIndex = buffer.buffer.readerIndex()
-        val rawBytes = ByteArray(endIndex - startIndex)
-        buffer.buffer.getBytes(startIndex, rawBytes)
-
         return LocCustomise(
             locId,
             xInZone,
@@ -120,7 +115,6 @@ internal class LocCustomiseDecoder : ProxyMessageDecoder<LocCustomise> {
             uintArray,
             opcodeArrayA,
             opcodeArrayB,
-            rawBytes,
         )
     }
 

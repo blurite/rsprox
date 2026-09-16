@@ -15,7 +15,7 @@ internal class IfSetHideDecoder : ProxyMessageDecoder<IfSetHide> {
         session: Session,
     ): IfSetHide {
         val componentHash = buffer.g4Alt2().toLong() and 0xFFFFFFFFL
-        val hidden = buffer.g1() == 0x81
+        val hidden = buffer.g1() == 1
         return IfSetHide(
             componentHash,
             hidden,

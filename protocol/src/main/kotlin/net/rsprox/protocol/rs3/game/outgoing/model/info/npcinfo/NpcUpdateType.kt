@@ -2,14 +2,13 @@ package net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo
 
 import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.extendedinfo.NpcExtendedInfo
 
-
 public sealed interface NpcUpdateType {
     public data object Idle : NpcUpdateType
 
     public enum class MovementType {
         WALK,
         RUN,
-        STEP_ALT,
+        CRAWL,
         EXT_ONLY,
     }
 
@@ -32,6 +31,7 @@ public sealed interface NpcUpdateType {
         public val z: Int,
         public val direction: Int,
         public val extendedInfo: List<NpcExtendedInfo>,
+        public val teleport: Boolean = false,
     ) : NpcUpdateType
 
     public data object Remove : NpcUpdateType

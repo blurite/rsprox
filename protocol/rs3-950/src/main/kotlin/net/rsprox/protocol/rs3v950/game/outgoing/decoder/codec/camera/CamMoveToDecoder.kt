@@ -14,11 +14,11 @@ internal class CamMoveToDecoder : ProxyMessageDecoder<CamMoveTo> {
         buffer: JagByteBuf,
         session: Session,
     ): CamMoveTo {
-        val localZ = buffer.g1Alt2()
-        val height = buffer.g2()
-        val speed = buffer.g1Alt2()
-        val localX = buffer.g1Alt1()
+        val height = buffer.g2Alt2()
+        val localZ = buffer.g1()
+        val localX = buffer.g1()
         val accel = buffer.g1Alt1()
+        val speed = buffer.g1Alt3()
         return CamMoveTo(
             localX,
             localZ,

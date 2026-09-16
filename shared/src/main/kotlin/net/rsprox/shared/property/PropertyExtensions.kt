@@ -160,6 +160,13 @@ public fun Property.varp(
     )
 }
 
+public fun Property.varc(
+    name: String,
+    value: Int,
+): VarcProperty {
+    return child(VarcProperty(name, value))
+}
+
 public fun Property.varbit(
     name: String,
     value: Int,

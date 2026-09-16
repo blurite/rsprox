@@ -1,6 +1,7 @@
 package net.rsprox.proxy.rs3
 
 import net.rsprot.compression.HuffmanCodec
+import net.rsprot.crypto.cipher.StreamCipher
 import net.rsprox.protocol.rs3v949.ClientPacketDecoderServiceRs3V949
 import net.rsprox.protocol.rs3v949.GameClientProtProviderRs3V949
 import net.rsprox.protocol.rs3v949.GameServerProtProviderRs3V949
@@ -19,6 +20,7 @@ public object Rs3DecoderLoader {
     public fun load(
         revision: Int,
         huffmanCodec: HuffmanCodec,
+        serverCipher: () -> StreamCipher? = { null },
     ): Rs3RevisionDecoder {
         return when (revision) {
             949 ->
@@ -41,7 +43,7 @@ public object Rs3DecoderLoader {
                 Rs3RevisionDecoder(
                     revision = 950,
                     clientPacketDecoder = ClientPacketDecoderServiceRs3V950(huffmanCodec),
-                    serverPacketDecoder = ServerPacketDecoderServiceRs3V950(),
+                    serverPacketDecoder = ServerPacketDecoderServiceRs3V950(huffmanCodec, serverCipher),
                     gameClientProtProvider = GameClientProtProviderRs3V950,
                     gameServerProtProvider = GameServerProtProviderRs3V950,
                     clientProtTable =

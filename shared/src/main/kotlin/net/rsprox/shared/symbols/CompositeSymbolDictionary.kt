@@ -29,6 +29,12 @@ public class CompositeSymbolDictionary(
         }
     }
 
+    override fun getVarcName(id: Int): String? {
+        return dictionaries.firstNotNullOfOrNull { dictionary ->
+            dictionary.getVarcName(id)
+        }
+    }
+
     override fun getScriptName(id: Int): String? {
         return dictionaries.firstNotNullOfOrNull { dictionary ->
             dictionary.getScriptName(id)

@@ -9,6 +9,7 @@ import net.rsprox.shared.property.formatted.FormattedIntProperty
 import net.rsprox.shared.property.formatted.FormattedLongProperty
 import net.rsprox.shared.property.regular.*
 import net.rsprox.shared.settings.Setting
+import net.rsprox.shared.settings.SettingSet
 import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.shared.symbols.CacheSymbolDictionary
 import net.rsprox.shared.symbols.CompositeSymbolDictionary
@@ -71,6 +72,14 @@ public class PropertyFormatterCollection private constructor(
                     systemDictionary
                 }
 
+            return withDictionary(settings, ::dictionary)
+        }
+
+        /** Shared formatting rules; the caller supplies the game's symbol dictionary. */
+        public fun withDictionary(
+            settings: SettingSet,
+            dictionary: () -> SymbolDictionary,
+        ): PropertyFormatterCollection {
             val builder = Builder()
             val enumPropertyFormatter =
                 PropertyFormatter<NamedEnumProperty<*>> {
@@ -115,6 +124,14 @@ public class PropertyFormatterCollection private constructor(
             }
             builder.add<VarpProperty> {
                 val symbol = dictionary().getVarpName(it.value) ?: return@add "${it.value}"
+                if (settings[Setting.SHOW_IDS_AFTER_SYMBOLS]) {
+                    "$symbol (${it.value})"
+                } else {
+                    symbol
+                }
+            }
+            builder.add<VarcProperty> {
+                val symbol = dictionary().getVarcName(it.value) ?: return@add "${it.value}"
                 if (settings[Setting.SHOW_IDS_AFTER_SYMBOLS]) {
                     "$symbol (${it.value})"
                 } else {

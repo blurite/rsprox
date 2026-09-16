@@ -15,7 +15,18 @@ internal class IfOpenTopDecoder : ProxyMessageDecoder<IfOpenTop> {
         session: Session,
     ): IfOpenTop {
         val interfaceId = buffer.g2Alt1()
-        buffer.skipRead(17)
-        return IfOpenTop(interfaceId)
+        val legacyWord0 = buffer.g4()
+        val legacyWord1 = buffer.g4Alt3()
+        val legacyWord2 = buffer.g4()
+        val unused = buffer.g1()
+        val legacyWord3 = buffer.g4Alt3()
+        return IfOpenTop(
+            interfaceId = interfaceId,
+            legacyWord0 = legacyWord0,
+            legacyWord1 = legacyWord1,
+            legacyWord2 = legacyWord2,
+            unused = unused,
+            legacyWord3 = legacyWord3,
+        )
     }
 }

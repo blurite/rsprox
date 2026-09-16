@@ -14,17 +14,17 @@ internal class CamShakeDecoder : ProxyMessageDecoder<CamShake> {
         buffer: JagByteBuf,
         session: Session,
     ): CamShake {
-        val shakeMode = buffer.g1Alt2()
-        val param0 = buffer.g2Alt2()
-        val param1 = buffer.g1()
-        val param2 = buffer.g1()
-        val param3 = buffer.g1()
+        val axis = buffer.g1Alt2()
+        val frequency = buffer.g1Alt1()
+        val sineAmplitude = buffer.g1Alt3()
+        val randomAmplitude = buffer.g1Alt2()
+        val duration = buffer.g2()
         return CamShake(
-            shakeMode,
-            param0,
-            param1,
-            param2,
-            param3,
+            axis,
+            randomAmplitude,
+            sineAmplitude,
+            duration,
+            frequency,
         )
     }
 }

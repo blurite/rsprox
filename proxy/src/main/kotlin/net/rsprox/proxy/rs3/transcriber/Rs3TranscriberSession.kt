@@ -13,14 +13,20 @@ public class Rs3TranscriberSession(
     public fun onClientProt(prot: ClientProt, message: IncomingMessage) {
         sessionTracker.onClientPacket(message, prot)
         sessionTracker.beforeTranscribe(message)
-        runner.onClientProt(prot, message)
-        sessionTracker.afterTranscribe(message)
+        try {
+            runner.onClientProt(prot, message)
+        } finally {
+            sessionTracker.afterTranscribe(message)
+        }
     }
 
     public fun onServerPacket(prot: ClientProt, message: IncomingMessage) {
         sessionTracker.onServerPacket(message, prot)
         sessionTracker.beforeTranscribe(message)
-        runner.onServerPacket(prot, message)
-        sessionTracker.afterTranscribe(message)
+        try {
+            runner.onServerPacket(prot, message)
+        } finally {
+            sessionTracker.afterTranscribe(message)
+        }
     }
 }

@@ -10,45 +10,42 @@ import net.rsprox.protocol.session.Session
 internal class ProjAnimSpecificV2Decoder : ProxyMessageDecoder<ProjAnimSpecificV2> {
     override val prot: ClientProt = GameServerProt.PROJANIM_SPECIFIC_V2
 
-    override fun decode(
-        buffer: JagByteBuf,
-        session: Session,
-    ): ProjAnimSpecificV2 {
-        val field1 = buffer.g2()
-        val field2 = buffer.g3()
-        val spotAnimId = buffer.g2Alt1()
-        val field4 = buffer.g2()
-        val field5 = buffer.g3()
-        val field6 = buffer.g3()
-        val field7 = buffer.g1()
-        val field8 = buffer.g1()
-        val field9 = buffer.g1()
-        val field10 = buffer.g2()
-        val field11 = buffer.g1()
-        val field12 = buffer.g2()
-        val field13 = buffer.g3()
-        val field14 = buffer.g2()
-        val field15 = buffer.g2()
-        val field16 = buffer.g2()
-        val field17 = buffer.g1()
+    override fun decode(buffer: JagByteBuf, session: Session): ProjAnimSpecificV2 {
+        val startX = buffer.g2()
+        val source = buffer.g3Alt1()
+        val endHeight = buffer.g2sAlt2()
+        val startHeight = buffer.g2sAlt2()
+        val deltaZ = buffer.g1Alt2().toByte().toInt()
+        val slope = buffer.g1()
+        val flags = buffer.g1()
+        val startZ = buffer.g2Alt3()
+        val distance = buffer.g2Alt3()
+        val endAttachment = buffer.g3Alt3()
+        val id = buffer.g2Alt2()
+        val startTime = buffer.g2Alt2()
+        val startAttachment = buffer.g3Alt2()
+        val endTime = buffer.g2Alt2()
+        val level = buffer.g1Alt2()
+        val target = buffer.g3()
+        val deltaX = buffer.g1Alt2().toByte().toInt()
         return ProjAnimSpecificV2(
-            spotAnimId,
-            field1,
-            field2,
-            field4,
-            field5,
-            field6,
-            field7,
-            field8,
-            field9,
-            field10,
-            field11,
-            field12,
-            field13,
-            field14,
-            field15,
-            field16,
-            field17,
+            startX,
+            source,
+            endHeight,
+            startHeight,
+            deltaZ,
+            slope,
+            flags,
+            startZ,
+            distance,
+            endAttachment,
+            id,
+            startTime,
+            startAttachment,
+            endTime,
+            level,
+            target,
+            deltaX,
         )
     }
 }

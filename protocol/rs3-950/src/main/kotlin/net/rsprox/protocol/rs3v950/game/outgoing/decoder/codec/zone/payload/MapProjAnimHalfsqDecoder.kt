@@ -14,25 +14,33 @@ internal class MapProjAnimHalfsqDecoder : ProxyMessageDecoder<MapProjAnimHalfsq>
         buffer: JagByteBuf,
         session: Session,
     ): MapProjAnimHalfsq {
-        val startIndex = buffer.buffer.readerIndex()
-        val srcCoordHalf = buffer.g1()
-        val destYdeltaHalf = buffer.g1s()
-        val destXdeltaHalf = buffer.g1s()
-        val srcModel = buffer.g3()
-        val idB = buffer.g3()
-        val heightByte = buffer.g1()
-        val spotAnimId = buffer.g2()
-        val heightByte2 = buffer.g1()
-        val trailing = ByteArray(buffer.readableBytes())
-        buffer.buffer.readBytes(trailing)
-        val xInZone = (srcCoordHalf ushr 3) and 0x7
-        val zInZone = srcCoordHalf and 0x7
-        val endIndex = buffer.buffer.readerIndex()
-        val rawBytes = ByteArray(endIndex - startIndex)
-        buffer.buffer.getBytes(startIndex, rawBytes)
+        val coordinate = buffer.g1()
+        val flags = buffer.g1()
+        val deltaX = buffer.g1s()
+        val deltaZ = buffer.g1s()
+        val source = buffer.g3()
+        val target = buffer.g3()
+        val id = buffer.g2()
+        val startHeight = buffer.g1()
+        val endHeight = buffer.g1()
+        val startTime = buffer.g2()
+        val endTime = buffer.g2()
+        val slope = buffer.g1()
+        val distance = buffer.g2()
         return MapProjAnimHalfsq(
-            srcCoordHalf, xInZone, zInZone, destXdeltaHalf, destYdeltaHalf,
-            srcModel, idB, spotAnimId, heightByte, heightByte2, trailing, rawBytes,
+            coordinate = coordinate,
+            flags = flags,
+            deltaX = deltaX,
+            deltaZ = deltaZ,
+            source = source,
+            target = target,
+            id = id,
+            startHeight = startHeight,
+            endHeight = endHeight,
+            startTime = startTime,
+            endTime = endTime,
+            slope = slope,
+            distance = distance,
         )
     }
 }

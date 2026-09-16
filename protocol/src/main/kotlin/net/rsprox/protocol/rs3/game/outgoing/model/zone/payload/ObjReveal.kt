@@ -9,7 +9,6 @@ public class ObjReveal(
     public val ownerIndex: Int,
     public val xInZone: Int,
     public val zInZone: Int,
-    public val rawBytes: ByteArray,
 ) : IncomingServerGameMessage {
     override fun toString(): String {
         return "ObjReveal(big=$big, objId=$objId, count=$count, ownerIndex=$ownerIndex, xInZone=$xInZone, zInZone=$zInZone)"

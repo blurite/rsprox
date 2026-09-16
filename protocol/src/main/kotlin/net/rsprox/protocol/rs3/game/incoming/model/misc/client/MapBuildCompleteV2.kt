@@ -1,0 +1,12 @@
+package net.rsprox.protocol.rs3.game.incoming.model.misc.client
+
+import net.rsprot.protocol.ClientProtCategory
+import net.rsprot.protocol.message.IncomingGameMessage
+import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
+
+public data class MapBuildCompleteV2(
+    public val buildDurationMillis: Int,
+) : IncomingGameMessage {
+    override val category: ClientProtCategory
+        get() = GameClientProtCategory.CLIENT_EVENT
+}

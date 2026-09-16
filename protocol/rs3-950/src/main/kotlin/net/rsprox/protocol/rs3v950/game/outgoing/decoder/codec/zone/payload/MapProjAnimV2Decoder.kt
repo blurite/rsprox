@@ -14,23 +14,39 @@ internal class MapProjAnimV2Decoder : ProxyMessageDecoder<MapProjAnimV2> {
         buffer: JagByteBuf,
         session: Session,
     ): MapProjAnimV2 {
-        val startIndex = buffer.buffer.readerIndex()
-        val srcCoord = buffer.g1()
-        val targetDeltaY = buffer.g1s()
-        val targetDeltaX = buffer.g1s()
-        val idMedium = buffer.g3()
-        val spotAnimId = buffer.g2()
-        val trailing = ByteArray(TRAILING_LENGTH)
-        buffer.buffer.readBytes(trailing)
-        val xInZone = (srcCoord ushr 3) and 0x7
-        val zInZone = srcCoord and 0x7
-        val endIndex = buffer.buffer.readerIndex()
-        val rawBytes = ByteArray(endIndex - startIndex)
-        buffer.buffer.getBytes(startIndex, rawBytes)
-        return MapProjAnimV2(xInZone, zInZone, targetDeltaX, targetDeltaY, idMedium, spotAnimId, trailing, rawBytes)
-    }
-
-    private companion object {
-        const val TRAILING_LENGTH = 20
+        val coordinate = buffer.g1()
+        val deltaX = buffer.g1s()
+        val deltaZ = buffer.g1s()
+        val target = buffer.g3()
+        val id = buffer.g2()
+        val startHeight = buffer.g2s()
+        val endHeight = buffer.g2s()
+        val startTime = buffer.g2()
+        val endTime = buffer.g2()
+        val slope = buffer.g1()
+        val distance = buffer.g2()
+        val unused0 = buffer.g1()
+        val unused1 = buffer.g1()
+        val unused2 = buffer.g1()
+        val startAttachment = buffer.g3()
+        val endAttachment = buffer.g3()
+        return MapProjAnimV2(
+            coordinate = coordinate,
+            deltaX = deltaX,
+            deltaZ = deltaZ,
+            target = target,
+            id = id,
+            startHeight = startHeight,
+            endHeight = endHeight,
+            startTime = startTime,
+            endTime = endTime,
+            slope = slope,
+            distance = distance,
+            unused0 = unused0,
+            unused1 = unused1,
+            unused2 = unused2,
+            startAttachment = startAttachment,
+            endAttachment = endAttachment,
+        )
     }
 }

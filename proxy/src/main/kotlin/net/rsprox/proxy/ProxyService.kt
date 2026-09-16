@@ -54,6 +54,7 @@ import net.rsprox.proxy.replay.ReplayTranscriber
 import net.rsprox.proxy.replay.ReplayTranscript
 import net.rsprox.proxy.rs3.Rs3ClientHandle
 import net.rsprox.proxy.rs3.config.Rs3JavConfig
+import net.rsprox.cache.rs3.Rs3LiveCacheResolver
 import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
 import net.rsprox.proxy.rsa.Rs3ProxyRsaKeyProvider
 import net.rsprox.proxy.rs3.relay.Rs3RelayServer
@@ -173,7 +174,7 @@ public class ProxyService(
         this.proxyTargets = loadProxyTargetConfigs(rspsJavConfigUrl)
         val jobs = mutableListOf<Callable<Boolean>>()
         jobs += createJob(progressCallback) { HuffmanProvider.load() }
-        jobs += createJob(progressCallback) { Rs3GamevalLookup.loadAll() }
+        jobs += createJob(progressCallback) { Rs3GamevalLookup.start() }
         jobs += createJob(progressCallback) { this.rsa = loadRsa() }
         jobs +=
             createJob(progressCallback) { this.jagexAccountStore = DefaultJagexAccountStore.load(JAGEX_ACCOUNTS_FILE) }
@@ -967,7 +968,10 @@ public class ProxyService(
                 "Failed to capture original RS3 modulus from game client"
             }
 
-        val targets = Rs3JavConfig(URL(upstreamJavConfigUrl)).captureUpstreamTargets()
+        val upstreamConfig = Rs3JavConfig(URL(upstreamJavConfigUrl))
+        val targets = upstreamConfig.captureUpstreamTargets()
+        // Bootstrap on the launch worker, before relay event loops see any game packets.
+        val packetDefinitions = Rs3LiveCacheResolver(upstreamConfig.captureJs5ConnectionInfo()).loadPacketDefinitions()
 
         val relayServer =
             Rs3RelayServer(
@@ -975,6 +979,7 @@ public class ProxyService(
                 sessionMonitor = sessionMonitor,
                 realServerModulusHex = originalModulusHex,
                 revision = targets.revision,
+                packetDefinitions = packetDefinitions,
                 resolveUpstream = {
                     val fresh = Rs3JavConfig(URL(upstreamJavConfigUrl)).captureUpstreamTargets()
                     fresh.lobbyHost to fresh.gamePort
@@ -987,7 +992,7 @@ public class ProxyService(
         ClientTypeDictionary[targets.gamePort] = "RS3 (${operatingSystem.shortName})"
 
         try {
-            val rewritten = Rs3JavConfig(URL(upstreamJavConfigUrl)).rewriteLobbyHost(localHost)
+            val rewritten = upstreamConfig.rewriteLobbyHost(localHost)
             val clientArgs = rewritten.toClientArgs()
 
             launchExecutable(

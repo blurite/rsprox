@@ -19,7 +19,6 @@ public class LocAddChange(
     public val scaleX: Float,
     public val scaleY: Float,
     public val scaleZ: Float,
-    public val rawBytes: ByteArray,
 ) : IncomingServerGameMessage {
     override fun toString(): String {
         return "LocAddChange(locId=$locId, shape=$shape, rotation=$rotation, xInZone=$xInZone, " +

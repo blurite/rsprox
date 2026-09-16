@@ -134,6 +134,6 @@ public class Rs3ProtDecoder(
     }
 
     private companion object {
-        private const val MAX_PLAUSIBLE_PAYLOAD = 20_000
+        private const val MAX_PLAUSIBLE_PAYLOAD = 65_535
     }
 }

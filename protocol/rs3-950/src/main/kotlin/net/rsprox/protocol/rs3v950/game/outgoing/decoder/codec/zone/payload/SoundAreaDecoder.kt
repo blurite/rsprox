@@ -14,19 +14,19 @@ internal class SoundAreaDecoder : ProxyMessageDecoder<SoundArea> {
         buffer: JagByteBuf,
         session: Session,
     ): SoundArea {
-        val startIndex = buffer.buffer.readerIndex()
-        val packedCoord = buffer.g1()
-        val xInZone = (packedCoord ushr 4) and 0x7
-        val zInZone = packedCoord and 0x7
-        val soundId = buffer.g4()
-        val byte5 = buffer.g1()
-        val rotation = byte5 and 0x7
-        val loopCount = buffer.g1()
-        val heightOffset = buffer.g1()
-        val range = buffer.g2()
-        val endIndex = buffer.buffer.readerIndex()
-        val rawBytes = ByteArray(endIndex - startIndex)
-        buffer.buffer.getBytes(startIndex, rawBytes)
-        return SoundArea(soundId, xInZone, zInZone, rotation, loopCount, heightOffset, range, rawBytes)
+        val coordinate = buffer.g1()
+        val id = buffer.g4()
+        val loopsAndRange = buffer.g1()
+        val delay = buffer.g1()
+        val volume = buffer.g1()
+        val rate = buffer.g2()
+        return SoundArea(
+            coordinate = coordinate,
+            id = id,
+            loopsAndRange = loopsAndRange,
+            delay = delay,
+            volume = volume,
+            rate = rate,
+        )
     }
 }

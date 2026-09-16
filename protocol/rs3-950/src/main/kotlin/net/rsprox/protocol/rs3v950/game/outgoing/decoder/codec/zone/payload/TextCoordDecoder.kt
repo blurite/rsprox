@@ -14,7 +14,7 @@ internal class TextCoordDecoder : ProxyMessageDecoder<TextCoord> {
         buffer: JagByteBuf,
         session: Session,
     ): TextCoord {
-        buffer.skipRead(1)
+        val ignored = buffer.g1()
         val packedCoord = buffer.g1()
         val xInZone = (packedCoord ushr 4) and 0x7
         val zInZone = packedCoord and 0x7
@@ -31,6 +31,7 @@ internal class TextCoordDecoder : ProxyMessageDecoder<TextCoord> {
             height = height,
             rgb = rgb,
             text = text,
+            ignored = ignored,
         )
     }
 }

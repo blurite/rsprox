@@ -22,7 +22,7 @@ public class LocCustomise(
     public val uintArray: IntArray?,
     public val opcodeArrayA: IntArray?,
     public val opcodeArrayB: IntArray?,
-    public val rawBytes: ByteArray,
+    public val customisationFlags: Int? = null,
 ) : IncomingServerGameMessage {
     override fun toString(): String {
         return "LocCustomise(locId=$locId, xInZone=$xInZone, zInZone=$zInZone, shape=$shape, " +

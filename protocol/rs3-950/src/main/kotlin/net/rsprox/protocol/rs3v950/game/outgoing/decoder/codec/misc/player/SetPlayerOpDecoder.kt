@@ -17,13 +17,13 @@ internal class SetPlayerOpDecoder : ProxyMessageDecoder<SetPlayerOp> {
         val priority = buffer.g1() == 0x80
         val text = buffer.gjstr()
         val slot = buffer.g1Alt2() - 1
-        val rawWorld = buffer.g2Alt2()
-        val worldId = if (rawWorld == 0xFFFF) -1 else rawWorld
+        val rawCursor = buffer.g2Alt2()
+        val cursor = if (rawCursor == 0xFFFF) -1 else rawCursor
         return SetPlayerOp(
             slot,
             priority,
             text,
-            worldId,
+            cursor,
         )
     }
 }

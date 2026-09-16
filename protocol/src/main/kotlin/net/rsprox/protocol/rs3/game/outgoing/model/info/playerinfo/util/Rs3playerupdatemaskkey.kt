@@ -5,7 +5,7 @@ public enum class Rs3PlayerUpdateMaskKey(public val bit: Int, public val order: 
     ENABLED_OPS(8, 2),
     SECONDARY_FREEZE(20, 3),
     SEQUENCE(3, 4),
-    MOVE_SPEED(23, 5),
+    PRIORITY_FLAG(23, 5),
     FACE_ENTITY(7, 6),
     PLAYER_FREEZE(12, 7),
     TIMED_EFFECT_1(24, 8),

@@ -14,14 +14,10 @@ internal class LocPrefetchDecoder : ProxyMessageDecoder<LocPrefetch> {
         buffer: JagByteBuf,
         session: Session,
     ): LocPrefetch {
-        val startIndex = buffer.buffer.readerIndex()
         val id = buffer.g4()
         val shapeRot = buffer.g1()
         val shape = (shapeRot ushr 2) and 0x1F
         val rotation = shapeRot and 0x3
-        val endIndex = buffer.buffer.readerIndex()
-        val rawBytes = ByteArray(endIndex - startIndex)
-        buffer.buffer.getBytes(startIndex, rawBytes)
-        return LocPrefetch(id, shape, rotation, rawBytes)
+        return LocPrefetch(id, shape, rotation)
     }
 }

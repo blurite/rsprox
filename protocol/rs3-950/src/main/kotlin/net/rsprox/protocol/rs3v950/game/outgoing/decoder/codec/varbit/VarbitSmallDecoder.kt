@@ -4,6 +4,7 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.rs3.game.outgoing.model.varbit.VarbitSmall
+import net.rsprox.protocol.rs3v950.game.outgoing.decoder.codec.info.npcinfo.updateNpcMorphVarbit
 import net.rsprox.protocol.rs3v950.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.session.Session
 
@@ -16,6 +17,7 @@ internal class VarbitSmallDecoder : ProxyMessageDecoder<VarbitSmall> {
     ): VarbitSmall {
         val value = buffer.g1Alt1()
         val id = buffer.g2Alt1()
+        session.updateNpcMorphVarbit(id, value)
         return VarbitSmall(
             id,
             value,

@@ -257,7 +257,7 @@ public class ReplayTranscriber(
             return buildList {
                 for (child in property.children) {
                     if (child.isExcluded()) continue
-                    if (child.children.isEmpty()) continue
+                    if (child !is GroupProperty && child.children.isEmpty()) continue
                     when (child) {
                         is GroupProperty -> add(createNode(child, child.propertyName, indent))
                         is ListProperty -> add(createListNode(child, indent))
@@ -278,7 +278,8 @@ public class ReplayTranscriber(
             property: Property,
             indent: Int,
         ): String {
-            val previewProps = property.children.filter { it.children.isEmpty() }
+            // Match the live table: empty groups retain their own row, not an inline label.
+            val previewProps = property.children.filter { it !is GroupProperty && it.children.isEmpty() }
             if (previewProps.isEmpty()) {
                 return ""
             }

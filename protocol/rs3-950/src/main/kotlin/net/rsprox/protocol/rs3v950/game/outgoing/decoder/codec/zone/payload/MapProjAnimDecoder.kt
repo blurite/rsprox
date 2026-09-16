@@ -14,23 +14,35 @@ internal class MapProjAnimDecoder : ProxyMessageDecoder<MapProjAnim> {
         buffer: JagByteBuf,
         session: Session,
     ): MapProjAnim {
-        val srcCoord = buffer.g1()
-        val targetDeltaY = buffer.g1s()
-        val targetDeltaX = buffer.g1s()
-        val mediumId = buffer.g3()
-        val spotAnimId = buffer.g2()
+        val coordinate = buffer.g1()
+        val deltaX = buffer.g1s()
+        val deltaZ = buffer.g1s()
+        val target = buffer.g3()
+        val id = buffer.g2()
         val startHeight = buffer.g1s()
         val endHeight = buffer.g1s()
         val startTime = buffer.g2()
         val endTime = buffer.g2()
-        val alpha = buffer.g1()
-        val lockonSlot = buffer.g2()
-        buffer.skipRead(3)
-        val xInZone = (srcCoord ushr 3) and 0x7
-        val zInZone = srcCoord and 0x7
+        val slope = buffer.g1()
+        val distance = buffer.g2()
+        val unused0 = buffer.g1()
+        val unused1 = buffer.g1()
+        val unused2 = buffer.g1()
         return MapProjAnim(
-            mediumId, spotAnimId, xInZone, zInZone, targetDeltaX, targetDeltaY,
-            startHeight, endHeight, startTime, endTime, alpha, lockonSlot
+            coordinate = coordinate,
+            deltaX = deltaX,
+            deltaZ = deltaZ,
+            target = target,
+            id = id,
+            startHeight = startHeight,
+            endHeight = endHeight,
+            startTime = startTime,
+            endTime = endTime,
+            slope = slope,
+            distance = distance,
+            unused0 = unused0,
+            unused1 = unused1,
+            unused2 = unused2,
         )
     }
 }

@@ -11,6 +11,7 @@ import net.rsprox.gui.App
 import net.rsprox.gui.AppIcons
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.rs3.transcriber.Rs3SessionMonitor
+import net.rsprox.proxy.rs3.transcriber.text.Rs3PropertyFormatter
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.account.JagexCharacter
 import net.rsprox.shared.property.*
@@ -57,10 +58,7 @@ public class SessionPanel(
     private var jumpToBottom: Boolean = true
     private var scrollbarMax: Int = -1
 
-    private val rs3Formatter =
-        OmitFilteredPropertyTreeFormatter(
-            PropertyFormatterCollection.Builder().build(),
-        )
+    private val rs3Formatter = Rs3PropertyFormatter.create(App.service.settingsStore)
 
     init {
         layout = BorderLayout()
@@ -281,7 +279,8 @@ public class SessionPanel(
         indent: Int = 0,
     ): String {
         val children = property.children
-        val previewProps = children.filter { it.children.isEmpty() }
+        // Groups are rows even when empty; formatting them inline appends their label to the parent.
+        val previewProps = children.filter { it !is GroupProperty && it.children.isEmpty() }
         val previewText =
             if (previewProps.isNotEmpty()) {
                 val lines = mutableListOf<String>()
@@ -312,7 +311,7 @@ public class SessionPanel(
     ) {
         for (child in property.children) {
             if (child.isExcluded()) continue
-            if (child.children.isEmpty()) continue
+            if (child !is GroupProperty && child.children.isEmpty()) continue
             when (child) {
                 is GroupProperty -> {
                     val previewText = getPreviewText(child, formatter, indent)

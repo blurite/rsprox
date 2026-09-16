@@ -4,17 +4,16 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.ObjReveal
-import net.rsprox.protocol.rs3v950.game.outgoing.decoder.prot.GameServerProt
+import net.rsprox.protocol.rs3v950.game.outgoing.decoder.prot.GameZoneProt
 import net.rsprox.protocol.session.Session
 
 internal class ObjRevealDecoder : ProxyMessageDecoder<ObjReveal> {
-    override val prot: ClientProt = GameServerProt.OBJ_REVEAL_V2
+    override val prot: ClientProt = GameZoneProt.OBJ_REVEAL_V2
 
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
     ): ObjReveal {
-        val startIndex = buffer.buffer.readerIndex()
         val objId = buffer.g3Alt3()
         val ownerIndex = buffer.g2Alt1()
         val count = buffer.g2()
@@ -22,9 +21,6 @@ internal class ObjRevealDecoder : ProxyMessageDecoder<ObjReveal> {
 
         val xInZone = (packedCoord ushr 4) and 0x7
         val zInZone = packedCoord and 0x7
-        val endIndex = buffer.buffer.readerIndex()
-        val rawBytes = ByteArray(endIndex - startIndex)
-        buffer.buffer.getBytes(startIndex, rawBytes)
-        return ObjReveal(true, objId, count, ownerIndex, xInZone, zInZone, rawBytes)
+        return ObjReveal(true, objId, count, ownerIndex, xInZone, zInZone)
     }
 }

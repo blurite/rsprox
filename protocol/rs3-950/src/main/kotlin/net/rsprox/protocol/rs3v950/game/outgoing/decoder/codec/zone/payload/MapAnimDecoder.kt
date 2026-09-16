@@ -18,11 +18,13 @@ internal class MapAnimDecoder : ProxyMessageDecoder<MapAnim> {
         val xInZone = (packedCoord ushr 4) and 0x7
         val zInZone = packedCoord and 0x7
 
-        val delay = buffer.g2s()
         val id = buffer.g2()
-        val height = buffer.g2Alt1()
+        val height = buffer.g2s()
+        val delay = buffer.g2()
         val rotation = buffer.g1()
-        buffer.skipRead(3)
+        val unused0 = buffer.g1()
+        val unused1 = buffer.g1()
+        val unused2 = buffer.g1()
 
         return MapAnim(
             id = id,
@@ -31,6 +33,9 @@ internal class MapAnimDecoder : ProxyMessageDecoder<MapAnim> {
             height = height,
             delay = delay,
             rotation = rotation,
+            unused0 = unused0,
+            unused1 = unused1,
+            unused2 = unused2,
         )
     }
 }

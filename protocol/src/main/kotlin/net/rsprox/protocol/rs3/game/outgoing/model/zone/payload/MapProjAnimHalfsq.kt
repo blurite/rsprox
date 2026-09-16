@@ -2,24 +2,22 @@ package net.rsprox.protocol.rs3.game.outgoing.model.zone.payload
 
 import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
-public class MapProjAnimHalfsq(
-    public val srcCoordHalf: Int,
-    public val xInZone: Int,
-    public val zInZone: Int,
-    public val destXdeltaHalf: Int,
-    public val destYdeltaHalf: Int,
-    public val srcModel: Int,
-    public val idB: Int,
+/** Decoded wire fields; client scaling is not applied to the stored values. */
+public data class MapProjAnimHalfsq(
+    public val coordinate: Int,
+    public val flags: Int,
+    public val deltaX: Int,
+    public val deltaZ: Int,
+    public val source: Int,
+    public val target: Int,
     public val id: Int,
-    public val heightByte: Int,
-    public val heightByte2: Int,
-    public val trailingBytes: ByteArray,
-    public val rawBytes: ByteArray,
+    public val startHeight: Int,
+    public val endHeight: Int,
+    public val startTime: Int,
+    public val endTime: Int,
+    public val slope: Int,
+    public val distance: Int,
 ) : IncomingServerGameMessage {
-    override fun toString(): String {
-        return "MapProjAnimHalfsq(srcCoordHalf=$srcCoordHalf, xInZone=$xInZone, zInZone=$zInZone, " +
-            "destXdeltaHalf=$destXdeltaHalf, destYdeltaHalf=$destYdeltaHalf, srcModel=$srcModel, idB=$idB, " +
-            "id=$id, heightByte=$heightByte, heightByte2=$heightByte2, " +
-            "trailingBytes=[${trailingBytes.joinToString(" ") { "%02x".format(it) }}])"
-    }
+    public val xInZone: Int get() = (coordinate ushr 4) and 15
+    public val zInZone: Int get() = coordinate and 15
 }

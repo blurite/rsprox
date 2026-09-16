@@ -22,7 +22,6 @@ internal class UpdateInvPartialDecoder : ProxyMessageDecoder<UpdateInvPartial> {
             buildList {
                 while (buffer.isReadable) {
                     val slot = buffer.gSmart1or2()
-                    if (buffer.readableBytes() < 3) break
                     val rawObjId = buffer.g3()
                     if (rawObjId == 0) {
                         add(UpdateInvPartial.IndexedObj(slot, -1, 0, emptyList()))
@@ -33,7 +32,7 @@ internal class UpdateInvPartialDecoder : ProxyMessageDecoder<UpdateInvPartial> {
                         amount = buffer.g4()
                     }
                     val vars =
-                        if (hasVars && buffer.isReadable) {
+                        if (hasVars) {
                             val varCount = buffer.g1()
                             buildList {
                                 for (v in 0 until varCount) {

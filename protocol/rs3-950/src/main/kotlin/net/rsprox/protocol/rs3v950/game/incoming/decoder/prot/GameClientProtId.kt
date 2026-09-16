@@ -1,7 +1,7 @@
 package net.rsprox.protocol.rs3v950.game.incoming.decoder.prot
 
 internal object GameClientProtId {
-    const val IF_PLAYER: Int = 0
+    const val IF_CRM_BUTTON: Int = 0
     const val IGNORELIST_DEL: Int = 1
     const val EVENT_CAMERA_POSITION: Int = 2
     const val MESSAGE_QUICKCHAT_PUBLIC: Int = 3
@@ -39,7 +39,7 @@ internal object GameClientProtId {
     const val PING_STATISTICS: Int = 35
     const val OPNPC6: Int = 36
     const val OPPLAYER5: Int = 37
-    const val CLIENT_DETAILOPTIONS_STATUS: Int = 38
+    const val CLIENT_PREFERENCES: Int = 38
     const val OPPLAYER4: Int = 39
     const val RESUME_P_CLANFORUMQFCDIALOG: Int = 40
     const val OPLOC4: Int = 41
@@ -56,7 +56,7 @@ internal object GameClientProtId {
     const val OPOBJ5_V2: Int = 52
     const val RESUME_P_NAMEDIALOG: Int = 53
     const val EVENT_NATIVE_MOUSE_CLICK: Int = 54
-    const val CLAN_KICKUSER: Int = 55
+    const val FRIENDCHAT_KICK: Int = 55
     const val OPOBJ4_V2: Int = 56
     const val AFFINEDCLANSETTINGS_SETMUTED_FROMCHANNEL: Int = 57
     const val OPPLAYER10: Int = 58
@@ -75,7 +75,7 @@ internal object GameClientProtId {
     const val OPPLAYER3: Int = 71
     const val MESSAGE_PRIVATE: Int = 72
     const val OPLOC5: Int = 73
-    const val CLAN_JOINCHAT_LEAVECHAT: Int = 74
+    const val FRIENDCHAT_JOIN_LEAVE: Int = 74
     const val CREATE_LOG_PROGRESS: Int = 75
     const val IGNORE_SETNOTES: Int = 76
     const val SEND_SNAPSHOT: Int = 77
@@ -94,7 +94,7 @@ internal object GameClientProtId {
     const val OPLOCT_V2: Int = 90
     const val ABORT_P_DIALOG: Int = 91
     const val OPNPC2: Int = 92
-    const val UID_PASSPORT_RESEND_REQUEST: Int = 93
+    const val UNNAMED_LOBBY_REQUEST: Int = 93
     const val OPPLAYER6: Int = 94
     const val FRIEND_SETNOTES: Int = 95
     const val CREATE_CHECK_NAME: Int = 96
@@ -106,7 +106,7 @@ internal object GameClientProtId {
     const val OPPLAYERT_V2: Int = 102
     const val OPOBJ2_V2: Int = 103
     const val NO_TIMEOUT: Int = 104
-    const val FRIEND_SETRANK: Int = 105
+    const val FRIENDCHAT_SETRANK: Int = 105
     const val MOVE_SCRIPTED: Int = 106
     const val OPNPC4: Int = 107
     const val WORLDLIST_FETCH: Int = 108
@@ -121,7 +121,7 @@ internal object GameClientProtId {
     const val OPPLAYER9: Int = 117
     const val IF_TEXT_CHANGE: Int = 118
     const val UNNAMED_10: Int = 119
-    const val RESUME_P_LONGDIALOG: Int = 120
+    const val RESUME_P_COUNTDIALOG_LONG: Int = 120
     const val CREATE_ACCOUNT: Int = 121
     const val IF_BUTTON2_V2: Int = 122
     const val CHANGE_EMAIL_ADDRESS: Int = 123

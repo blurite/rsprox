@@ -230,7 +230,6 @@ public enum class GameServerProt(
     DBFILTER_DEBUG(GameServerProtId.DBFILTER_DEBUG, Prot.VAR_SHORT),
     SETDRAWORDER(GameServerProtId.SETDRAWORDER, 1),
     PLAYER_GROUP_DELTA(GameServerProtId.PLAYER_GROUP_DELTA, Prot.VAR_SHORT),
-    OBJ_REVEAL_V2(223, 8) // zone only
     ;
 
     public companion object {

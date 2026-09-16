@@ -93,6 +93,10 @@ public class Rs3SessionState {
         this.players[player.index] = player
     }
 
+    public fun clearPlayers() {
+        this.players.clear()
+    }
+
     public fun removePlayer(index: Int) {
         this.players.remove(index)
     }
@@ -111,9 +115,10 @@ public class Rs3SessionState {
         return if (name != null) "$index($name)" else "$index(unidentified)"
     }
 
-    public fun localPlayerOrNull(): Rs3Player? {
-        if (localPlayerIndex == -1) return null
-        return getPlayerOrNull(localPlayerIndex)
+    public fun level(): Int {
+        return checkNotNull(getPlayer(localPlayerIndex).level) {
+            "No level tracked for local player at index $localPlayerIndex"
+        }
     }
 
     public fun getExperience(skillId: Int): Long? {

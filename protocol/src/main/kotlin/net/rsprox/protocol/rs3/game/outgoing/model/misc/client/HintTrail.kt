@@ -2,32 +2,17 @@ package net.rsprox.protocol.rs3.game.outgoing.model.misc.client
 
 import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
-public class HintTrail(
+public data class HintTrail(
     public val slot: Int,
     public val modelId: Int,
-    public val trailingBytes: ByteArray,
+    public val trail: Trail?,
 ) : IncomingServerGameMessage {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
+    public data class Trail(
+        public val count: Int,
+        public val baseX: Int,
+        public val baseZ: Int,
+        public val points: List<Point>,
+    )
 
-        other as HintTrail
-
-        if (slot != other.slot) return false
-        if (modelId != other.modelId) return false
-        if (!trailingBytes.contentEquals(other.trailingBytes)) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = slot
-        result = 31 * result + modelId
-        result = 31 * result + trailingBytes.contentHashCode()
-        return result
-    }
-
-    override fun toString(): String {
-        return "HintTrail(slot=$slot, modelId=$modelId, trailingBytes=${trailingBytes.size}b)"
-    }
+    public data class Point(public val deltaX: Int, public val deltaZ: Int)
 }

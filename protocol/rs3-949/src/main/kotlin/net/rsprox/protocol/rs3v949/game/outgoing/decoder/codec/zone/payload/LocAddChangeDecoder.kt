@@ -14,7 +14,6 @@ internal class LocAddChangeDecoder : ProxyMessageDecoder<LocAddChange> {
         buffer: JagByteBuf,
         session: Session,
     ): LocAddChange {
-        val startIndex = buffer.buffer.readerIndex()
         val rawByte = buffer.g1()
         val shapeRotationByte = rawByte xor 0x80
         val shape = (shapeRotationByte ushr 2) and 0x1F
@@ -73,10 +72,6 @@ internal class LocAddChangeDecoder : ProxyMessageDecoder<LocAddChange> {
             }
         }
 
-        val endIndex = buffer.buffer.readerIndex()
-        val rawBytes = ByteArray(endIndex - startIndex)
-        buffer.buffer.getBytes(startIndex, rawBytes)
-
         return LocAddChange(
             locId,
             shape,
@@ -94,7 +89,6 @@ internal class LocAddChangeDecoder : ProxyMessageDecoder<LocAddChange> {
             scaleX,
             scaleY,
             scaleZ,
-            rawBytes,
         )
     }
 

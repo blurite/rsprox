@@ -22,14 +22,13 @@ internal class UpdateInvFullDecoder : ProxyMessageDecoder<UpdateInvFull> {
         val objs =
             buildList {
                 for (slot in 0 until slotCount) {
-                    if (buffer.readableBytes() < 3) break
                     val rawObjId = buffer.g3()
                     var amount = buffer.g1()
                     if (amount == 0xFF) {
                         amount = buffer.g4()
                     }
                     val vars =
-                        if (hasVars && buffer.isReadable) {
+                        if (hasVars) {
                             val varCount = buffer.g1()
                             buildList {
                                 for (v in 0 until varCount) {

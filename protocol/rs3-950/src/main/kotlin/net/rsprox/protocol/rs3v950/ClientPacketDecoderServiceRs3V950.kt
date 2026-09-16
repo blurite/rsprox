@@ -18,8 +18,11 @@ public class ClientPacketDecoderServiceRs3V950(
         payload: JagByteBuf,
         session: Session,
     ): IncomingMessage {
-        return repository
-            .getDecoder(opcode)
-            .decode(payload, session)
+        val decoder = repository.getDecoder(opcode)
+        val message = decoder.decode(payload, session)
+        require(payload.readableBytes() == 0) {
+            "${decoder.prot} (opcode $opcode) left ${payload.readableBytes()} payload bytes unread"
+        }
+        return message
     }
 }

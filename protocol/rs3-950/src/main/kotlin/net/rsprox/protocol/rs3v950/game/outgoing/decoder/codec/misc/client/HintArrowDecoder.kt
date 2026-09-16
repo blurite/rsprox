@@ -14,33 +14,19 @@ internal class HintArrowDecoder : ProxyMessageDecoder<HintArrow> {
         buffer: JagByteBuf,
         session: Session,
     ): HintArrow {
-        val packed = buffer.g1()
-        val slot = packed ushr 5
-        val type = packed and 0x1F
-
-        var targetIndex: Int? = null
-        var x: Int? = null
-        var y: Int? = null
-        var z: Int? = null
-        var distance: Int? = null
-        if (type != 0) {
-            targetIndex = buffer.g1()
-            x = buffer.g2()
-            y = buffer.g2()
-            z = buffer.g1()
-            distance = buffer.g2()
-        }
-
-        val trailingBytes = ByteArray(buffer.readableBytes()) { buffer.g1().toByte() }
-        return HintArrow(
-            slot,
-            type,
-            targetIndex,
-            x,
-            y,
-            z,
-            distance,
-            trailingBytes,
-        )
+        val header = buffer.g1()
+        val kind = header and 31
+        val payload =
+            when (kind) {
+                0 -> HintArrow.Clear(List(13) { buffer.g1() })
+                1, 10 -> HintArrow.Actor(
+                    buffer.g1(), buffer.g2(), buffer.g2(), List(4) { buffer.g1() }, buffer.g4(),
+                )
+                in 2..6 -> HintArrow.Location(
+                    buffer.g1(), buffer.g1(), buffer.g2(), buffer.g2(), buffer.g1(), buffer.g2(), buffer.g4(),
+                )
+                else -> HintArrow.Other(buffer.g1(), buffer.g4(), List(8) { buffer.g1() })
+            }
+        return HintArrow(header ushr 5, kind, payload)
     }
 }

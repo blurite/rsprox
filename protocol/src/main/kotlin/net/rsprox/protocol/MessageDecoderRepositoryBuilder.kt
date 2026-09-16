@@ -20,7 +20,7 @@ public class MessageDecoderRepositoryBuilder<P : ClientProt>(
         decoder: ProxyMessageDecoder<T>,
     ) {
         val clientProt = decoder.prot
-        requireNotNull(decoders[clientProt.opcode] == null) {
+        require(decoders[clientProt.opcode] == null) {
             "Decoder for $messageClass is already bound."
         }
         decoders[clientProt.opcode] = decoder

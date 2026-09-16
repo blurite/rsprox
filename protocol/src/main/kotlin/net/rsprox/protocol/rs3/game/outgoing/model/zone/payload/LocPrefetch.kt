@@ -6,7 +6,6 @@ public class LocPrefetch(
     public val id: Int,
     public val shape: Int,
     public val rotation: Int,
-    public val rawBytes: ByteArray,
 ) : IncomingServerGameMessage {
     override fun toString(): String {
         return "LocPrefetch(id=$id, shape=$shape, rotation=$rotation)"

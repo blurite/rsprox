@@ -1,6 +1,7 @@
 package net.rsprox.proxy.rs3.config
 
 import net.rsprox.patch.native.NativePatchCriteria
+import net.rsprox.cache.rs3.Rs3Js5ConnectionInfo
 import java.net.URL
 
 @JvmInline
@@ -103,6 +104,13 @@ public value class Rs3JavConfig(
         val revision = getServerVersion()
         return Rs3UpstreamTargets(lobbyHost, gamePort, revision)
     }
+
+    public fun captureJs5ConnectionInfo(): Rs3Js5ConnectionInfo = Rs3Js5ConnectionInfo(
+        host = checkNotNull(getParamValue(37)) { "RS3 jav_config has no JS5 host" },
+        port = checkNotNull(getParamValue(41)?.toIntOrNull()) { "RS3 jav_config has no JS5 port" },
+        revision = getServerVersion(),
+        token = checkNotNull(getParamValue(29)) { "RS3 jav_config has no JS5 token" },
+    )
 
     public fun rewriteLobbyHost(localHost: String): Rs3JavConfig {
         val prefix = "param=$LOBBY_HOST_PARAM_ID="

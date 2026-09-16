@@ -6,23 +6,30 @@ import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
 import io.netty.channel.*
 import io.netty.channel.nio.NioEventLoopGroup
-import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
+import io.netty.channel.socket.SocketChannel
 import io.netty.resolver.dns.DnsNameResolverBuilder
+import java.math.BigInteger
+import java.nio.file.Path
+import java.util.concurrent.atomic.AtomicReference
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.crypto.cipher.StreamCipherPair
 import net.rsprot.protocol.message.IncomingMessage
 import net.rsprox.protocol.rs3.game.incoming.model.unknown.RawUnknownClientPacket
+import net.rsprox.protocol.rs3.game.outgoing.model.info.playerinfo.rs3PlayerInfoInitPending
+import net.rsprox.protocol.rs3.game.outgoing.model.info.playerinfo.rs3AppearanceDefinitions
+import net.rsprox.protocol.rs3.cache.rs3PacketDefinitions
+import net.rsprox.cache.api.rs3.Rs3PacketDefinitions
 import net.rsprox.protocol.rs3.game.outgoing.model.unknown.RawUnknownServerPacket
 import net.rsprox.protocol.session.AttributeMap
 import net.rsprox.protocol.session.Session
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.filters.UnmodifiablePropertyFilterSet
 import net.rsprox.proxy.huffman.HuffmanProvider
-import net.rsprox.proxy.rs3.Rs3DecoderLoader
 import net.rsprox.proxy.rs3.login.*
 import net.rsprox.proxy.rs3.protocol.Rs3ProtDecoder
+import net.rsprox.proxy.rs3.Rs3DecoderLoader
 import net.rsprox.proxy.rs3.transcriber.Rs3SessionMonitor
 import net.rsprox.proxy.rs3.transcriber.Rs3TranscriberSession
 import net.rsprox.proxy.rs3.transcriber.text.TextRs3TranscriberProvider
@@ -36,9 +43,6 @@ import net.rsprox.transcriber.text.MonitoredMessageConsumerContainer
 import net.rsprox.transcriber.text.TextMessageConsumerContainer
 import org.bouncycastle.crypto.params.RSAKeyParameters
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
-import java.math.BigInteger
-import java.nio.file.Path
-import java.util.concurrent.atomic.AtomicReference
 
 private class CipherHolder {
     @Volatile
@@ -51,6 +55,7 @@ public class Rs3RelayServer(
     realServerModulusHex: String,
     private val revision: Int,
     private val resolveUpstream: () -> Pair<String, Int>,
+    private val packetDefinitions: Rs3PacketDefinitions? = null,
     private val filterSetStore: PropertyFilterSetStore =
         DefaultPropertyFilterSetStore(Path.of("."), mutableListOf(UnmodifiablePropertyFilterSet())),
     private val settingSetStore: SettingSetStore =
@@ -115,9 +120,15 @@ public class Rs3RelayServer(
             }
 
         val cipherHolder = CipherHolder()
+        val serverAttributes = AttributeMap()
+        val clientAttributes = AttributeMap()
+        Session(-1, serverAttributes).rs3AppearanceDefinitions = packetDefinitions
+        Session(-1, serverAttributes).rs3PacketDefinitions = packetDefinitions
+        Session(-1, clientAttributes).rs3PacketDefinitions = packetDefinitions
         var localPlayerIndex = -1
 
-        val rs3Decoder = Rs3DecoderLoader.load(revision, HuffmanProvider.get())
+        val rs3Decoder =
+            Rs3DecoderLoader.load(revision, HuffmanProvider.get()) { cipherHolder.pair?.decodeCipher }
         val clientDecoderService = rs3Decoder.clientPacketDecoder
         val serverDecoderService = rs3Decoder.serverPacketDecoder
 
@@ -140,13 +151,18 @@ public class Rs3RelayServer(
             ) { opcode, bytes ->
                 val prot = rs3Decoder.gameServerProtProvider[opcode]
                 val buffer = Unpooled.wrappedBuffer(bytes).toJagByteBuf()
-                val session = Session(localPlayerIndex, AttributeMap())
+                val session = Session(localPlayerIndex, serverAttributes)
 
                 val message: IncomingMessage =
                     try {
                         serverDecoderService.decode(opcode, buffer, session)
-                    } catch (_: Exception) {
-                        RawUnknownServerPacket(opcode, prot.toString(), bytes)
+                    } catch (exception: Exception) {
+                        RawUnknownServerPacket(
+                            opcode,
+                            prot.toString(),
+                            bytes,
+                            "${exception.javaClass.simpleName}: ${exception.message.orEmpty()}",
+                        )
                     }
 
                 transcriberSession.onServerPacket(prot, message)
@@ -160,12 +176,17 @@ public class Rs3RelayServer(
             ) { opcode, bytes ->
                 val prot = rs3Decoder.gameClientProtProvider[opcode]
                 val buffer = Unpooled.wrappedBuffer(bytes).toJagByteBuf()
-                val session = Session(localPlayerIndex, AttributeMap())
+                val session = Session(localPlayerIndex, clientAttributes)
                 val message: IncomingMessage =
                     try {
                         clientDecoderService.decode(opcode, buffer, session)
-                    } catch (_: Exception) {
-                        RawUnknownClientPacket(opcode, prot.toString(), bytes)
+                    } catch (exception: Exception) {
+                        RawUnknownClientPacket(
+                            opcode,
+                            prot.toString(),
+                            bytes,
+                            "${exception.javaClass.simpleName}: ${exception.message.orEmpty()}",
+                        )
                     }
                 transcriberSession.onClientProt(prot, message)
             }
@@ -176,7 +197,8 @@ public class Rs3RelayServer(
 
         val outboundBootstrap =
             Bootstrap()
-                .group(workerGroup)
+                // Both directions share session/decoder state and must run on the same event loop.
+                .group(clientChannel.eventLoop())
                 .channel(NioSocketChannel::class.java)
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10_000)
                 .handler(
@@ -194,6 +216,7 @@ public class Rs3RelayServer(
                                             if (ownIndex != null) {
                                                 localPlayerIndex = ownIndex
                                                 transcriberSession.sessionState.localPlayerIndex = ownIndex
+                                                Session(localPlayerIndex, serverAttributes).rs3PlayerInfoInitPending = true
                                             }
                                         }
                                         if (leftover != null && leftover.isNotEmpty()) {

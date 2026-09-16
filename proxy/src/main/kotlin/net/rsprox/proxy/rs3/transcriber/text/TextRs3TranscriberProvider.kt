@@ -5,8 +5,6 @@ import net.rsprox.proxy.rs3.transcriber.Rs3TranscriberSession
 import net.rsprox.proxy.rs3.transcriber.state.Rs3SessionState
 import net.rsprox.proxy.rs3.transcriber.state.Rs3SessionTracker
 import net.rsprox.shared.filters.PropertyFilterSetStore
-import net.rsprox.shared.property.OmitFilteredPropertyTreeFormatter
-import net.rsprox.shared.property.PropertyFormatterCollection
 import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.MessageConsumerContainer
 
@@ -16,10 +14,7 @@ public class TextRs3TranscriberProvider {
         filters: PropertyFilterSetStore,
         settings: SettingSetStore,
     ): Rs3TranscriberSession {
-        val formatter =
-            OmitFilteredPropertyTreeFormatter(
-                PropertyFormatterCollection.Builder().build(),
-            )
+        val formatter = Rs3PropertyFormatter.create(settings)
         val sessionState = Rs3SessionState()
         val sessionTracker = Rs3SessionTracker(sessionState)
         val plugin =

@@ -14,7 +14,7 @@ internal class UpdateRunWeightDecoder : ProxyMessageDecoder<UpdateRunWeight> {
         buffer: JagByteBuf,
         session: Session,
     ): UpdateRunWeight {
-        val weight = buffer.g2()
+        val weight = buffer.g2s()
         return UpdateRunWeight(weight)
     }
 }

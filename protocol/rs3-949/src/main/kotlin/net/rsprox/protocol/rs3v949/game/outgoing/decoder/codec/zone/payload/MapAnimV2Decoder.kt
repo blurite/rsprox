@@ -14,7 +14,6 @@ internal class MapAnimV2Decoder : ProxyMessageDecoder<MapAnimV2> {
         buffer: JagByteBuf,
         session: Session,
     ): MapAnimV2 {
-        val startIndex = buffer.buffer.readerIndex()
         val packedCoord = buffer.g1()
         val id = buffer.g2()
         val height = buffer.g2s()
@@ -24,9 +23,6 @@ internal class MapAnimV2Decoder : ProxyMessageDecoder<MapAnimV2> {
         val fineOffsetPacked = buffer.g3()
         val xInZone = (packedCoord ushr 4) and 0x7
         val zInZone = packedCoord and 0x7
-        val endIndex = buffer.buffer.readerIndex()
-        val rawBytes = ByteArray(endIndex - startIndex)
-        buffer.buffer.getBytes(startIndex, rawBytes)
-        return MapAnimV2(xInZone, zInZone, id, height, delay, rotation, fineOffsetPacked, rawBytes)
+        return MapAnimV2(xInZone, zInZone, id, height, delay, rotation, fineOffsetPacked)
     }
 }

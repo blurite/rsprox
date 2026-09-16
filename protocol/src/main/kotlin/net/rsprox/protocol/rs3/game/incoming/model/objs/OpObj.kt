@@ -10,6 +10,8 @@ public class OpObj private constructor(
     private val _y: UShort,
     private val _op: UByte,
     public val run: Boolean,
+    /** Full revision-specific flags when decoded; null for older decoders that only supplied run. */
+    public val flags: Int?,
 ) : IncomingGameMessage {
     public constructor(
         id: Int,
@@ -17,12 +19,14 @@ public class OpObj private constructor(
         y: Int,
         op: Int,
         run: Boolean,
+        flags: Int? = null,
     ) : this(
         id.toUInt(),
         x.toUShort(),
         y.toUShort(),
         op.toUByte(),
         run,
+        flags,
     )
 
     public val id: Int
@@ -47,6 +51,7 @@ public class OpObj private constructor(
         if (_y != other._y) return false
         if (_op != other._op) return false
         if (run != other.run) return false
+        if (flags != other.flags) return false
 
         return true
     }
@@ -57,9 +62,10 @@ public class OpObj private constructor(
         result = 31 * result + _y.hashCode()
         result = 31 * result + _op.hashCode()
         result = 31 * result + run.hashCode()
+        result = 31 * result + (flags?.hashCode() ?: 0)
         return result
     }
 
     override fun toString(): String =
-        "OpObj(id=$id, x=$x, y=$y, op=$op, run=$run)"
+        "OpObj(id=$id, x=$x, y=$y, op=$op, run=$run, flags=$flags)"
 }

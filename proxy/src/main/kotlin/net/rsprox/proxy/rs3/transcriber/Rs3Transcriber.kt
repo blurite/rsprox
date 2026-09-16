@@ -13,4 +13,6 @@ public interface Rs3Transcriber :
     public fun onTranscribeStart(): Boolean
 
     public fun onTranscribeEnd()
+
+    public fun onTranscribeFailure(exception: Exception)
 }

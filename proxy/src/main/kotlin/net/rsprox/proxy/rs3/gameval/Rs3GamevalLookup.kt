@@ -1,132 +1,168 @@
 package net.rsprox.proxy.rs3.gameval
 
 import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
+import net.rsprox.shared.ScriptVarType
+import net.rsprox.shared.property.SymbolDictionary
 
-private data class GamevalFile(
-    val revision: Int = 0,
-    val url: String? = null,
-    val date: String? = null,
-    @SerializedName("entries") val entries: Map<String, String> = emptyMap(),
-)
+/** Bundled RS3 symbols, kept separate from OSRS's cache and custom dictionaries. */
+public object Rs3GamevalLookup : SymbolDictionary {
+    private val npcStatNames = listOf("attack", "defence", "strength", "hitpoints", "ranged", "magic", "necromancy")
 
-public object Rs3GamevalLookup {
-    private val gson = Gson()
+    // Publish one complete snapshot. Concurrent startup/formatter lookups share the same load.
+    private val dictionary: Dictionary by lazy { loadDictionary() }
 
-    @Volatile private var varpNames: Map<Int, String> = emptyMap()
-    @Volatile private var varcNames: Map<Int, String> = emptyMap()
-    @Volatile private var varbitNames: Map<Int, String> = emptyMap()
-    @Volatile private var midiNames: Map<Int, String> = emptyMap()
-    @Volatile private var interfaceNames: Map<Int, String> = emptyMap()
-    @Volatile private var componentNames: Map<String, String> = emptyMap()
-    @Volatile private var locNames: Map<Int, String> = emptyMap()
-    @Volatile private var npcNames: Map<Int, String> = emptyMap()
-    @Volatile private var cs2Names: Map<Int, String> = emptyMap()
-    @Volatile private var seqNames: Map<Int, String> = emptyMap()
-    @Volatile private var soundNames: Map<Int, String> = emptyMap()
-    @Volatile private var objNames: Map<Int, String> = emptyMap()
-    @Volatile private var invNames: Map<Int, String> = emptyMap()
-    @Volatile private var modelNames: Map<Int, String> = emptyMap()
+    public val revision: Int
+        get() = dictionary.revision
 
-    public var revision: Int = 0
-        private set
-
-    public fun loadVarp(): Unit = load("/gameval/var_player.json") { varpNames = it }
-    public fun loadVarc(): Unit = load("/gameval/var_client.json") { varcNames = it }
-    public fun loadVarbit(): Unit = load("/gameval/varbit.json") { varbitNames = it }
-    public fun loadMidi(): Unit = load("/gameval/midi.json") { midiNames = it }
-    public fun loadInterface(): Unit = load("/gameval/interface.json") { interfaceNames = it }
-    public fun loadComponent(): Unit = loadRaw("/gameval/component.json") { componentNames = it }
-    public fun loadLoc(): Unit = load("/gameval/loc.json") { locNames = it }
-    public fun loadNpc(): Unit = load("/gameval/npc.json") { npcNames = it }
-    public fun loadCs2(): Unit = load("/gameval/cs2.json") { cs2Names = it }
-    public fun loadSeq(): Unit = load("/gameval/seq.json") { seqNames = it }
-    public fun loadSound(): Unit = load("/gameval/sound.json") { soundNames = it }
-    public fun loadObj(): Unit = load("/gameval/obj.json") { objNames = it }
-    public fun loadinv(): Unit = load("/gameval/inv.json") { invNames = it }
-    public fun loadModel(): Unit = load("/gameval/model.json") { modelNames = it }
-
-    public fun loadAll() {
-        loadVarp()
-        loadVarc()
-        loadVarbit()
-        loadMidi()
-        loadInterface()
-        loadComponent()
-        loadLoc()
-        loadNpc()
-        loadCs2()
-        loadSeq()
-        loadSound()
-        loadObj()
-        loadinv()
-        loadModel()
+    override fun start() {
+        dictionary
     }
 
-    private fun load(
-        resourcePath: String,
-        assign: (Map<Int, String>) -> Unit,
-    ) {
-        val file = readJsonFile(resourcePath) ?: return
-        val parsed = file.entries.mapNotNull { (key, name) ->
-            val id = key.toIntOrNull()
-            if (id == null) null else id to name
-        }.toMap()
-        revision = file.revision
-        assign(parsed)
-    }
+    // Classpath resources are read once and closed immediately; no watcher needs stopping.
+    override fun stop(): Unit = Unit
 
-    private fun loadRaw(
-        resourcePath: String,
-        assign: (Map<String, String>) -> Unit,
-    ) {
-        val file = readJsonFile(resourcePath) ?: return
-        revision = file.revision
-        assign(file.entries)
-    }
-
-    private fun readJsonFile(resourcePath: String): GamevalFile? {
-        val stream = Rs3GamevalLookup::class.java.getResourceAsStream(resourcePath)
-        if (stream == null) {
-            return null
+    override fun getScriptVarTypeName(
+        id: Int,
+        type: ScriptVarType,
+    ): String? =
+        when (type) {
+            ScriptVarType.NPC_STAT -> npcStatNames.getOrNull(id)
+            ScriptVarType.OBJ, ScriptVarType.NAMEDOBJ -> name(Gameval.OBJ, id)
+            ScriptVarType.LOC -> name(Gameval.LOC, id)
+            ScriptVarType.NPC -> name(Gameval.NPC, id)
+            ScriptVarType.SEQ -> name(Gameval.SEQ, id)
+            ScriptVarType.BAS -> name(Gameval.BAS, id)
+            ScriptVarType.MODEL -> name(Gameval.MODEL, id)
+            ScriptVarType.INV -> name(Gameval.INV, id)
+            ScriptVarType.MIDI -> name(Gameval.MIDI, id)
+            ScriptVarType.SYNTH -> name(Gameval.SOUND, id)
+            ScriptVarType.INTERFACE -> name(Gameval.INTERFACE, id)
+            ScriptVarType.COMPONENT -> name(Gameval.COMPONENT, id)
+            else -> null
         }
-        return try {
-            stream.bufferedReader(Charsets.UTF_8).use { reader ->
-                gson.fromJson(reader, GamevalFile::class.java)
+
+    override fun getVarpName(id: Int): String? = name(Gameval.VARP, id)
+
+    override fun getVarcName(id: Int): String? = name(Gameval.VARC, id)
+
+    override fun getVarbitName(id: Int): String? = name(Gameval.VARBIT, id)
+
+    override fun getScriptName(id: Int): String? = name(Gameval.SCRIPT, id)
+
+    public fun varp(id: Int): String = display(Gameval.VARP, id)
+
+    public fun varc(id: Int): String = display(Gameval.VARC, id)
+
+    public fun varbit(id: Int): String = display(Gameval.VARBIT, id)
+
+    public fun midi(id: Int): String = display(Gameval.MIDI, id)
+
+    public fun interfaceName(id: Int): String = display(Gameval.INTERFACE, id)
+
+    public fun loc(id: Int): String = display(Gameval.LOC, id)
+
+    public fun npc(id: Int): String = display(Gameval.NPC, id)
+
+    public fun cs2(id: Int): String = display(Gameval.SCRIPT, id)
+
+    public fun seq(id: Int): String = display(Gameval.SEQ, id)
+
+    public fun sound(id: Int): String = display(Gameval.SOUND, id)
+
+    public fun obj(id: Int): String = display(Gameval.OBJ, id)
+
+    public fun inv(id: Int): String = display(Gameval.INV, id)
+
+    public fun model(id: Int): String = display(Gameval.MODEL, id)
+
+    public fun component(hash: Long): String = component(hash.toInt())
+
+    public fun component(hash: Int): String {
+        val interfaceId = hash ushr 16
+        val componentId = hash and 0xFFFF
+        val componentName = name(Gameval.COMPONENT, hash)
+        if (componentName != null) {
+            return "$componentName($interfaceId:$componentId)"
+        }
+        return "${interfaceName(interfaceId)}:$componentId"
+    }
+
+    private fun name(gameval: Gameval, id: Int): String? = dictionary.names.getValue(gameval)[id]
+
+    private fun display(gameval: Gameval, id: Int): String = "${name(gameval, id) ?: "?"}($id)"
+
+    private fun loadDictionary(): Dictionary {
+        val gson = Gson()
+        var revision: Int? = null
+        val names =
+            Gameval.entries.associateWith { gameval ->
+                val path = "/gameval/${gameval.resource}.json"
+                try {
+                    val stream = checkNotNull(javaClass.getResourceAsStream(path)) { "Missing resource" }
+                    val file =
+                        stream.bufferedReader(Charsets.UTF_8).use { reader ->
+                            checkNotNull(gson.fromJson(reader, GamevalFile::class.java)) { "Empty resource" }
+                        }
+                    val fileRevision = checkNotNull(file.revision) { "Missing revision" }
+                    check(revision == null || revision == fileRevision) {
+                        "Mixed gameval revisions: $revision and $fileRevision"
+                    }
+                    revision = fileRevision
+                    val entries = checkNotNull(file.entries) { "Missing entries" }
+                    val parsed = HashMap<Int, String>(entries.size)
+                    for ((key, value) in entries) {
+                        val name = checkNotNull(value) { "Missing name for $key" }
+                        check(name.isNotBlank()) { "Blank name for $key" }
+                        val id = parseId(gameval, key)
+                        check(parsed.put(id, name) == null) { "Duplicate ID: $key" }
+                    }
+                    parsed
+                } catch (exception: Exception) {
+                    throw IllegalStateException("Unable to load RS3 gamevals from $path", exception)
+                }
             }
-        } catch (e: Exception) {
-            println("[gameval] failed to parse $resourcePath: $e")
-            null
-        }
+        return Dictionary(checkNotNull(revision), names)
     }
 
-    public fun varp(id: Int): String = "${varpNames[id] ?: "?"}($id)"
-    public fun varc(id: Int): String = "${varcNames[id] ?: "?"}($id)"
-    public fun varbit(id: Int): String = "${varbitNames[id] ?: "?"}($id)"
-    public fun midi(id: Int): String = "${midiNames[id] ?: "?"}($id)"
-    public fun interfaceName(id: Int): String = "${interfaceNames[id] ?: "?"}($id)"
-    public fun loc(id: Int): String = "${locNames[id] ?: "?"}($id)"
-    public fun npc(id: Int): String = "${npcNames[id] ?: "?"}($id)"
-    public fun cs2(id: Int): String = "${cs2Names[id] ?: "?"}($id)"
-    public fun seq(id: Int): String = "${seqNames[id] ?: "?"}($id)"
-    public fun sound(id: Int): String = "${soundNames[id] ?: "?"}($id)"
-    public fun obj(id: Int): String = "${objNames[id] ?: "?"}($id)"
-    public fun inv(id: Int): String = "${invNames[id] ?: "?"}($id)"
-    public fun model(id: Int): String = "${modelNames[id] ?: "?"}($id)"
-
-    public fun component(hash: Long): String {
-        val interfaceId = ((hash ushr 16) and 0xFFFF).toInt()
-        val componentId = (hash and 0xFFFF).toInt()
-        val key = "$interfaceId:$componentId"
-
-        val directComponent = componentNames[key]
-        if (directComponent != null) {
-            return "$directComponent($key)"
+    private fun parseId(gameval: Gameval, key: String): Int {
+        if (gameval != Gameval.COMPONENT) {
+            return key.toInt().also { require(it >= 0) { "Invalid ID: $key" } }
         }
-
-        val interfaceName = interfaceNames[interfaceId] ?: "?"
-        return "$interfaceName($interfaceId):$componentId"
+        val parts = key.split(':')
+        require(parts.size == 2) { "Invalid component ID: $key" }
+        val interfaceId = parts[0].toInt()
+        val componentId = parts[1].toInt()
+        require(interfaceId in 0..0xFFFF && componentId in 0..0xFFFF) { "Invalid component ID: $key" }
+        return (interfaceId shl 16) or componentId
     }
 
-    public fun component(hash: Int): String = component(hash.toLong() and 0xFFFFFFFFL)
+    private data class Dictionary(
+        val revision: Int,
+        val names: Map<Gameval, Map<Int, String>>,
+    )
+
+    private data class GamevalFile(
+        val revision: Int? = null,
+        val entries: Map<String, String?>? = null,
+    )
+
+    private enum class Gameval(
+        val resource: String,
+    ) {
+        VARP("var_player"),
+        VARC("var_client"),
+        VARBIT("varbit"),
+        MIDI("midi"),
+        INTERFACE("interface"),
+        COMPONENT("component"),
+        LOC("loc"),
+        NPC("npc"),
+        SCRIPT("cs2"),
+        SEQ("seq"),
+        BAS("bas"),
+        SOUND("sound"),
+        OBJ("obj"),
+        INV("inv"),
+        MODEL("model"),
+    }
 }
