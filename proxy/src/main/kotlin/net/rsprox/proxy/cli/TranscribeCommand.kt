@@ -7,6 +7,7 @@ import net.rsprox.cache.Js5MasterIndex
 import net.rsprox.cache.resolver.HistoricCacheResolver
 import net.rsprox.proxy.ProxyService
 import net.rsprox.proxy.binary.BinaryBlob
+import net.rsprox.proxy.binary.isRuneScape3
 import net.rsprox.proxy.cache.CachedCaches
 import net.rsprox.proxy.cache.StatefulCacheProvider
 import net.rsprox.proxy.config.BINARY_PATH
@@ -16,6 +17,7 @@ import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.plugin.DecodingSession
+import net.rsprox.proxy.rs3.binary.Rs3BinaryTranscriber
 import net.rsprox.proxy.settings.DefaultSettingSetStore
 import net.rsprox.proxy.util.NopSessionMonitor
 import net.rsprox.proxy.util.TranscribeCallback
@@ -124,6 +126,7 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
                 logger.error(e) {
                     "Unable to transcribe $file"
                 }
+                throw e
             }
         }
 
@@ -137,6 +140,10 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
             callback: TranscribeCallback? = null,
         ) {
             if (callback?.isCancelled() == true) return
+            if (binary.header.isRuneScape3()) {
+                Rs3BinaryTranscriber.transcribe(binaryPath, binary, filters, settings, callback)
+                return
+            }
             val oldTextPath = binaryPath.parent.resolve(binaryPath.nameWithoutExtension + ".txt")
             val oldTextTime = if (oldTextPath.exists()) Files.getLastModifiedTime(oldTextPath) else null
             statefulCacheProvider.update(
@@ -213,7 +220,7 @@ public class TranscribeCommand : CliktCommand(name = "transcribe") {
             Files.setLastModifiedTime(textPath, baseTime)
         }
 
-        private fun createBufferedWriterConsumer(writer: BufferedWriter): MessageConsumer {
+        internal fun createBufferedWriterConsumer(writer: BufferedWriter): MessageConsumer {
             return object : MessageConsumer {
                 var lastCycle = -1
 

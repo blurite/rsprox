@@ -1,6 +1,8 @@
 package net.rsprox.proxy.rs3.relay
 
+import net.rsprox.proxy.rs3.binary.Rs3BinaryRecorder.WorldMetadata
 import java.io.ByteArrayOutputStream
+import java.nio.charset.Charset
 import java.util.concurrent.CompletableFuture
 
 /** Revision-950 endpoint payloads. All bytes outside hostname spans are retained verbatim. */
@@ -8,6 +10,7 @@ internal class Rs3EndpointRewriter(
     private val addresses: Rs3LocalAddressSpace,
     private val register: (List<Rs3RelayRoute>) -> CompletableFuture<Unit>,
     private val worldPorts: List<Int>,
+    private val onWorldDefinitions: (Map<Int, WorldMetadata>) -> Unit = {},
 ) {
     private data class Host(
         val start: Int,
@@ -70,26 +73,34 @@ internal class Rs3EndpointRewriter(
         val reader = Reader(payload)
         require(reader.u1() == 2) { "Unsupported world-list format" }
         val replacements = ArrayList<Replacement>()
+        var definitions: Map<Int, WorldMetadata>? = null
         var worldCount: Int? = null
         if (reader.u1() == 1) {
-            repeat(reader.smart()) {
-                reader.smart()
-                reader.string(marked = true)
-            }
+            val countries =
+                List(reader.smart()) {
+                    val id = reader.smart()
+                    reader.string(marked = true)
+                    id
+                }
             val minimum = reader.smart()
             val maximum = reader.smart()
             require(minimum <= maximum) { "Invalid world-list range" }
             worldCount = reader.smart()
             val ids = HashSet<Int>()
+            val worlds = HashMap<Int, WorldMetadata>()
             repeat(worldCount) {
                 val id = minimum + reader.smart()
                 require(id in minimum..maximum && ids.add(id)) { "Invalid or duplicate world id" }
-                reader.u1()
-                reader.skip(4)
+                val countryIndex = reader.u1()
+                val location = countries.getOrNull(countryIndex)
+                require(location != null) { "Invalid world country index" }
+                val flags = reader.u4()
                 if (reader.smart() != 0) reader.string(marked = true)
-                reader.string(marked = true) // Activity.
+                val activity = reader.string(marked = true).value
+                worlds[id] = WorldMetadata(flags, location, activity)
                 replacements += Replacement(reader.string(marked = true), Rs3Endpoint.World(id), worldPorts)
             }
+            definitions = worlds
             reader.skip(4) // Opaque definitions token: native retains it, it does not recalculate it.
         } else {
             require(definitionsKnown) { "Population-only reply before mapped world definitions" }
@@ -101,7 +112,12 @@ internal class Rs3EndpointRewriter(
             populations++
         }
         require(worldCount == null || populations == worldCount) { "Incomplete world populations" }
-        return replace(payload, replacements, 20_000)
+        return replace(payload, replacements, 20_000).thenApply { rewritten ->
+            // Publish only complete, validated definitions, before forwarding them to the client.
+            // The recorder queues this before a subsequent game login on any relay connection.
+            definitions?.let(onWorldDefinitions)
+            rewritten
+        }
     }
 
     private fun replace(
@@ -149,6 +165,8 @@ internal class Rs3EndpointRewriter(
 
         fun u2(): Int = (u1() shl 8) or u1()
 
+        fun u4(): Int = (u2() shl 16) or u2()
+
         fun smart(): Int {
             val first = u1()
             return if (first < 128) first else ((first - 128) shl 8) or u1()
@@ -159,11 +177,17 @@ internal class Rs3EndpointRewriter(
             if (marked && u1() != 0) return Host(start, position, "", true)
             val textStart = position
             while (u1() != 0) { /* Bounds checked by u1. */ }
-            return Host(start, position, String(data, textStart, position - textStart - 1, Charsets.ISO_8859_1), marked)
+            // Native strings are CP1252; undefined extension bytes are dropped.
+            val value = String(data, textStart, position - textStart - 1, CP1252).replace("\uFFFD", "")
+            return Host(start, position, value, marked)
         }
 
         fun end() {
             require(remaining == 0) { "Unexpected trailing endpoint fields" }
         }
+    }
+
+    private companion object {
+        val CP1252: Charset = Charset.forName("windows-1252")
     }
 }

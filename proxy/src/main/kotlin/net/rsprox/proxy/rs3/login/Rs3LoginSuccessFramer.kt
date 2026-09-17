@@ -8,6 +8,7 @@ package net.rsprox.proxy.rs3.login
 public open class Rs3LoginSuccessFramer protected constructor(
     private val world: Boolean,
     private val onVariablesComplete: () -> Unit = {},
+    private val retainVariables: Boolean = false,
 ) : Rs3LoginResponseFramer {
     private enum class State {
         RESULT,
@@ -27,6 +28,11 @@ public open class Rs3LoginSuccessFramer protected constructor(
 
     public var loginData: ByteArray? = null
         private set
+
+    public val variableBlocks: MutableList<ByteArray> = ArrayList()
+    public var initializationTruncated: Boolean = false
+        private set
+    private var variableBytes = 0
 
     private var state = State.RESULT
     private var frame = ByteArray(1)
@@ -71,6 +77,15 @@ public open class Rs3LoginSuccessFramer protected constructor(
                 next(State.VARIABLES, length)
             }
             State.VARIABLES -> {
+                if (retainVariables && !initializationTruncated) {
+                    variableBytes += frame.size
+                    if (variableBytes > 16 * 1024 * 1024 || variableBlocks.size >= 65534) {
+                        initializationTruncated = true
+                        variableBlocks.clear()
+                    } else {
+                        variableBlocks += frame.copyOf()
+                    }
+                }
                 // The block's first byte, not the TCP chunk boundary, determines completion.
                 if (unsigned(0) == 1) {
                     onVariablesComplete()
@@ -97,7 +112,10 @@ public open class Rs3LoginSuccessFramer protected constructor(
         }
     }
 
-    private fun next(state: State, length: Int) {
+    private fun next(
+        state: State,
+        length: Int,
+    ) {
         this.state = state
         frame = ByteArray(length)
         received = 0

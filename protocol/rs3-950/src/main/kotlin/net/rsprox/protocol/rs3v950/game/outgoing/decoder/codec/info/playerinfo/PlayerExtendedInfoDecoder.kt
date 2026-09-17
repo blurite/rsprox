@@ -96,6 +96,8 @@ internal object PlayerExtendedInfoDecoder {
     private fun decodeMotionSlots(buffer: JagByteBuf): PlayerExtendedInfo.MotionSlots {
         val length = buffer.g1Alt2()
         require(length <= buffer.readableBytes()) { "Truncated player motion-slot blob" }
+        // The native mask skips the embedded decoder entirely for a zero-length envelope.
+        if (length == 0) return PlayerExtendedInfo.MotionSlots(emptyList())
         val bytes = ByteArray(length)
         for (index in bytes.indices.reversed()) bytes[index] = (buffer.g1() - 128).toByte()
         val storage = Unpooled.wrappedBuffer(bytes)
@@ -113,7 +115,9 @@ internal object PlayerExtendedInfoDecoder {
                     )
                 }
             }
-            require(inner.readableBytes() == 0) { "Trailing bytes in player motion-slot blob" }
+            // Native 0x002216c0 reads only the presence-selected records, not the entire blob.
+            // Unused tail bytes are legal inside this already-consumed, length-bounded envelope.
+            // Keep slot-read bounds and the enclosing PLAYER_INFO consumption check strict.
             return PlayerExtendedInfo.MotionSlots(slots)
         } finally {
             storage.release()

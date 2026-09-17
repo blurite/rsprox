@@ -1,8 +1,25 @@
 package net.rsprox.proxy.rs3.transcriber
 
 import net.rsprox.shared.SessionMonitor
+import net.rsprox.shared.property.ChildProperty
+import net.rsprox.shared.property.RootProperty
+import net.rsprox.shared.property.int
 
 public class Rs3SessionMonitor : SessionMonitor<Unit> {
+    public fun onGameLogin(
+        world: Int,
+        localPlayerIndex: Int,
+    ) {
+        val marker =
+            object : RootProperty {
+                override val prot: String = "LOBBY_TRANSFER"
+                override val children: MutableList<ChildProperty<*>> = mutableListOf()
+            }
+        marker.int("world", world)
+        marker.int("playerindex", localPlayerIndex)
+        onTranscribe(0, marker)
+    }
+
     override fun onLogin(header: Unit) {}
 
     override fun onLogout(header: Unit) {}

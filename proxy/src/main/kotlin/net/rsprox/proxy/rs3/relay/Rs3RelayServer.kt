@@ -36,9 +36,11 @@ import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.filters.UnmodifiablePropertyFilterSet
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.rs3.Rs3DecoderLoader
+import net.rsprox.proxy.rs3.binary.Rs3BinaryRecorder
 import net.rsprox.proxy.rs3.login.Rs3ClientLoginRsaSwapHandler
 import net.rsprox.proxy.rs3.login.Rs3LoginFrame
 import net.rsprox.proxy.rs3.login.Rs3LoginResponseFramer
+import net.rsprox.proxy.rs3.login.Rs3LoginSuccessFramer
 import net.rsprox.proxy.rs3.login.Rs3ServerLoginResponseFramer
 import net.rsprox.proxy.rs3.login.Rs3WorldContinueAckSkipper
 import net.rsprox.proxy.rs3.login.Rs3WorldLoginResponseFramer
@@ -76,6 +78,7 @@ public class Rs3RelayServer(
     realServerModulusHex: String,
     private val revision: Int,
     private val resolveUpstream: () -> Pair<String, Int>,
+    masterIndex: ByteArray = ByteArray(0),
     private val packetDefinitions: Rs3PacketDefinitions? = null,
     private val filterSetStore: PropertyFilterSetStore =
         DefaultPropertyFilterSetStore(Path.of("."), mutableListOf(UnmodifiablePropertyFilterSet())),
@@ -96,6 +99,7 @@ public class Rs3RelayServer(
     }
     private var shuttingDown = false
     private val terminated = CompletableFuture<Unit>()
+    private val recordings = Rs3BinaryRecorder(revision, masterIndex.copyOf())
 
     private val dnsResolver =
         DnsNameResolverBuilder(workerGroup.next())
@@ -203,6 +207,7 @@ public class Rs3RelayServer(
                                 route.endpoint is Rs3Endpoint.World,
                                 mapped = true,
                                 addresses = route.addressSpace,
+                                endpoint = route.endpoint,
                             )
                         }
                     },
@@ -244,6 +249,7 @@ public class Rs3RelayServer(
         isWorldConnection: Boolean,
         mapped: Boolean,
         addresses: Rs3LocalAddressSpace? = null,
+        endpoint: Rs3Endpoint? = null,
     ) {
         val cipherHolder = CipherHolder()
         val serverAttributes = AttributeMap()
@@ -255,6 +261,20 @@ public class Rs3RelayServer(
 
         val rs3Decoder =
             Rs3DecoderLoader.load(revision, huffman) { cipherHolder.pair?.decodeCipher }
+        val recording =
+            Rs3ConnectionRecording(
+                recordings,
+                recordings.connection(
+                    isWorldConnection,
+                    endpoint?.id ?: -1,
+                    upstreamHost,
+                    upstreamPort,
+                ),
+                revision,
+                rs3Decoder.serverProtTable,
+                rs3Decoder.clientProtTable,
+            )
+        clientChannel.closeFuture().addListener { recording.close() }
         val clientDecoderService = rs3Decoder.clientPacketDecoder
         val serverDecoderService = rs3Decoder.serverPacketDecoder
 
@@ -334,7 +354,13 @@ public class Rs3RelayServer(
             serverChannel: Channel,
             relay: RelayHandler,
         ): Rs3MappedServerHandler {
-            val rewriter = Rs3EndpointRewriter(checkNotNull(addresses), ::registerRoutes, listOf(43594, 443))
+            val rewriter =
+                Rs3EndpointRewriter(
+                    checkNotNull(addresses),
+                    ::registerRoutes,
+                    listOf(43594, 443),
+                    recordings::worldDefinitions,
+                )
             val stream =
                 Rs3PacketStream(rs3Decoder.serverProtTable, { checkNotNull(transportCiphers).decodeCipher }, true) {
                     entry, payload ->
@@ -388,6 +414,7 @@ public class Rs3RelayServer(
                                     if (framer != null && !framer.isDone) {
                                         val leftover = framer.consume(bytes)
                                         if (framer.isDone && framer.isSuccessful) {
+                                            recording.login(framer as Rs3LoginSuccessFramer)
                                             repeat(framer.initialCipherDraws) {
                                                 checkNotNull(cipherHolder.pair).decodeCipher.nextInt()
                                             }
@@ -396,15 +423,18 @@ public class Rs3RelayServer(
                                             val ownIndex = framer.ownIndex
                                             if (ownIndex != null) {
                                                 localPlayerIndex = ownIndex
+                                                sessionMonitor.onGameLogin(endpoint?.id ?: -1, ownIndex)
                                                 transcriberSession.sessionState.localPlayerIndex = ownIndex
                                                 Session(localPlayerIndex, serverAttributes).rs3PlayerInfoInitPending =
                                                     true
                                             }
                                         }
                                         if (leftover != null && leftover.isNotEmpty()) {
+                                            recording.accept(true, leftover)
                                             serverToClientDecoder.accept(leftover)
                                         }
                                     } else if (framer?.isSuccessful == true) {
+                                        recording.accept(true, bytes)
                                         serverToClientDecoder.accept(bytes)
                                     }
                                 }
@@ -430,7 +460,11 @@ public class Rs3RelayServer(
                     return@ChannelFutureListener
                 }
                 clientChannel.pipeline().addLast(
-                    Rs3ClientLoginRsaSwapHandler(proxyPrivateKey, realServerPublicKey) { ciphers, diagnostic ->
+                    Rs3ClientLoginRsaSwapHandler(
+                        proxyPrivateKey,
+                        realServerPublicKey,
+                        recording::begin,
+                    ) { ciphers, diagnostic ->
                         transportCiphers = ciphers
                         cipherHolder.pair = diagnostic
                         mappedServer?.beginLogin()
@@ -438,7 +472,9 @@ public class Rs3RelayServer(
                         worldContinueAckSkipper = acknowledgement
                         loginResponseFramer =
                             if (isWorldConnection) {
-                                Rs3WorldLoginResponseFramer { checkNotNull(acknowledgement).expect() }
+                                Rs3WorldLoginResponseFramer(retainVariables = true) {
+                                    checkNotNull(acknowledgement).expect()
+                                }
                             } else {
                                 Rs3ServerLoginResponseFramer()
                             }
@@ -459,9 +495,11 @@ public class Rs3RelayServer(
                         if (ackSkipper != null && !ackSkipper.isDone) {
                             val leftover = ackSkipper.consume(bytes)
                             if (leftover != null && leftover.isNotEmpty()) {
+                                recording.accept(false, leftover)
                                 clientToServerDecoder.accept(leftover)
                             }
                         } else {
+                            recording.accept(false, bytes)
                             clientToServerDecoder.accept(bytes)
                         }
                     },
@@ -514,7 +552,11 @@ public class Rs3RelayServer(
         val workers = workerGroup.shutdownGracefully()
         val bosses = bossGroup.shutdownGracefully()
         workers.addListener {
-            bosses.addListener { terminated.complete(Unit) }
+            bosses.addListener {
+                recordings.shutdown().whenComplete { _, error ->
+                    if (error == null) terminated.complete(Unit) else terminated.completeExceptionally(error)
+                }
+            }
         }
         return terminated
     }

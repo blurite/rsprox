@@ -26,11 +26,78 @@ public class Rs3LiveCacheResolver(
     private val info: Rs3Js5ConnectionInfo,
     private val directory: Path = CACHES_DIRECTORY.resolve("rs3-live"),
 ) {
+    /** Exact uncompressed master index for the successfully loaded definition snapshot. */
+    public var masterIndexSnapshot: ByteArray = ByteArray(0)
+        private set
+
     public fun loadPacketDefinitions(): Rs3PacketDefinitions {
         require(info.revision == 950) { "RS3 definition decoding is currently verified for revision 950 only" }
-        val started = System.nanoTime()
         Rs3Js5Connection(info).use { connection ->
             val master = unpack(connection.get(255, 255))
+            val snapshot =
+                loadSnapshot(master) { archive, group, version, crc ->
+                    readGroup(connection, archive, group, version, crc)
+                }
+            require(master.contentEquals(unpack(connection.get(255, 255)))) {
+                "RS3 cache changed during bootstrap; please launch again"
+            }
+            masterIndexSnapshot = master.copyOf()
+            return snapshot
+        }
+    }
+
+    private fun readGroup(
+        connection: Rs3Js5Connection,
+        archive: Int,
+        group: Int,
+        version: Int,
+        crc: Int,
+    ): ByteArray {
+        val path = directory.resolve("$archive/${group}_${version}_${crc.toUInt().toString(16)}.dat")
+        if (Files.isRegularFile(path)) {
+            val cached = Files.readAllBytes(path)
+            if (checksum(cached) == crc) return cached
+            logger.warn { "Ignoring corrupt RS3 cached group $archive:$group" }
+        }
+        val bytes = connection.get(archive, group)
+        require(checksum(bytes) == crc) { "RS3 JS5 checksum mismatch for $archive:$group; cache may have updated" }
+        Files.createDirectories(path.parent)
+        val temporary = Files.createTempFile(path.parent, "js5-", ".tmp")
+        try {
+            Files.write(temporary, bytes)
+            Files.move(temporary, path, StandardCopyOption.REPLACE_EXISTING)
+        } finally {
+            Files.deleteIfExists(temporary)
+        }
+        return bytes
+    }
+
+    public companion object {
+        private val logger = InlineLogger()
+
+        /** Uses only the exact checksum/version-addressed groups saved during live capture. */
+        public fun loadRecordedPacketDefinitions(
+            revision: Int,
+            masterIndex: ByteArray,
+            directory: Path = CACHES_DIRECTORY.resolve("rs3-live"),
+        ): Rs3PacketDefinitions {
+            require(revision == 950) { "Unsupported recorded RS3 revision: $revision" }
+            return loadSnapshot(masterIndex) { archive, group, version, crc ->
+                val path = directory.resolve("$archive/${group}_${version}_${crc.toUInt().toString(16)}.dat")
+                require(Files.isRegularFile(path)) {
+                    "Missing recorded RS3 cache group $archive:$group (version $version): $path"
+                }
+                Files.readAllBytes(path).also {
+                    require(checksum(it) == crc) { "Corrupt recorded RS3 cache group: $path" }
+                }
+            }
+        }
+
+        private fun loadSnapshot(
+            master: ByteArray,
+            readGroup: (Int, Int, Int, Int) -> ByteArray,
+        ): Rs3PacketDefinitions {
+            val started = System.nanoTime()
             val metadata = ByteBuffer.wrap(master)
             val archiveCount = metadata.get().toInt() and 255
             require(archiveCount > 28 && metadata.remaining() >= archiveCount * 80) { "Truncated RS3 master index" }
@@ -44,7 +111,7 @@ public class Rs3LiveCacheResolver(
 
             fun index(archive: Int): Js5Index {
                 val (crc, version) = archives[archive]
-                val bytes = readGroup(connection, 255, archive, version, crc)
+                val bytes = readGroup(255, archive, version, crc)
                 return Unpooled.wrappedBuffer(unpack(bytes)).use { buffer ->
                     Js5Index.read(buffer).also {
                         require(it.version == version && !buffer.isReadable) { "Invalid RS3 archive index $archive" }
@@ -56,7 +123,7 @@ public class Rs3LiveCacheResolver(
                 archive: Int,
                 group: Js5Index.MutableGroup,
             ): Map<Int, ByteArray> {
-                val bytes = readGroup(connection, archive, group.id, group.version, group.checksum)
+                val bytes = readGroup(archive, group.id, group.version, group.checksum)
                 return Unpooled.wrappedBuffer(unpack(bytes)).use { data ->
                     val decoded = Group.unpack(data, group)
                     try {
@@ -98,9 +165,6 @@ public class Rs3LiveCacheResolver(
                     npcs[(group.id shl 7) or file] = bytes
                 }
             }
-            require(master.contentEquals(unpack(connection.get(255, 255)))) {
-                "RS3 cache changed during bootstrap; please launch again"
-            }
             logger.info {
                 "RS3 packet cache ready: ${slots.size} slots, ${items.size} items, " +
                     "${npcs.size} NPCs, ${phrases.size} phrases, " +
@@ -108,119 +172,91 @@ public class Rs3LiveCacheResolver(
             }
             return Snapshot(slots, items, phrases, variables, npcs, varbits)
         }
-    }
 
-    private class Snapshot(
-        override val equipmentSlotKinds: List<Int>,
-        private val items: Map<Int, ByteArray>,
-        private val phrases: Map<Int, Rs3QuickChatPhrase>,
-        private val variables: Map<Rs3VariableDomain, Map<Int, Rs3VariableDefinition>>,
-        private val npcs: Map<Int, ByteArray>,
-        private val varbits: Map<Int, Rs3VarbitDefinition>,
-    ) : Rs3PacketDefinitions {
-        private val decodedNpcs = ConcurrentHashMap<Int, Rs3NpcDefinition>()
+        private class Snapshot(
+            override val equipmentSlotKinds: List<Int>,
+            private val items: Map<Int, ByteArray>,
+            private val phrases: Map<Int, Rs3QuickChatPhrase>,
+            private val variables: Map<Rs3VariableDomain, Map<Int, Rs3VariableDefinition>>,
+            private val npcs: Map<Int, ByteArray>,
+            private val varbits: Map<Int, Rs3VarbitDefinition>,
+        ) : Rs3PacketDefinitions {
+            private val decodedNpcs = ConcurrentHashMap<Int, Rs3NpcDefinition>()
 
-        override fun getVarbit(id: Int): Rs3VarbitDefinition =
-            checkNotNull(varbits[id]) { "Missing RS3 varbit definition $id" }
+            override fun getVarbit(id: Int): Rs3VarbitDefinition =
+                checkNotNull(varbits[id]) { "Missing RS3 varbit definition $id" }
 
-        override fun getNpc(id: Int): Rs3NpcDefinition =
-            decodedNpcs.computeIfAbsent(id) {
-                Rs3NpcDefinitionDecoder.decode(id, checkNotNull(npcs[id]) { "Missing RS3 NPC definition $id" })
-            }
-
-        override fun getQuickChatPhrase(id: Int): Rs3QuickChatPhrase =
-            checkNotNull(phrases[id]) { "Missing RS3 quickchat phrase $id" }
-
-        override fun getVariable(
-            domain: Rs3VariableDomain,
-            id: Int,
-        ): Rs3VariableDefinition = checkNotNull(variables[domain]?.get(id)) { "Missing RS3 $domain variable $id" }
-
-        private val decoded = ConcurrentHashMap<Int, Rs3AppearanceItem>()
-
-        override fun getItem(id: Int): Rs3AppearanceItem = resolveItem(id, HashSet())
-
-        private fun resolveItem(
-            id: Int,
-            resolving: MutableSet<Int>,
-        ): Rs3AppearanceItem {
-            decoded[id]?.let { return it }
-            check(resolving.size < 64 && resolving.add(id)) { "Cyclic/deep RS3 item template at $id" }
-            try {
-                val result =
-                    Rs3AppearanceItemDecoder.decode(
-                        id,
-                        checkNotNull(items[id]) { "Missing RS3 item definition $id" },
-                    ) { link -> resolveItem(link, resolving) }
-                return decoded.putIfAbsent(id, result) ?: result
-            } finally {
-                resolving.remove(id)
-            }
-        }
-    }
-
-    private fun readGroup(
-        connection: Rs3Js5Connection,
-        archive: Int,
-        group: Int,
-        version: Int,
-        crc: Int,
-    ): ByteArray {
-        val path = directory.resolve("$archive/${group}_${version}_${crc.toUInt().toString(16)}.dat")
-        if (Files.isRegularFile(path)) {
-            val cached = Files.readAllBytes(path)
-            if (checksum(cached) == crc) return cached
-            logger.warn { "Ignoring corrupt RS3 cached group $archive:$group" }
-        }
-        val bytes = connection.get(archive, group)
-        require(checksum(bytes) == crc) { "RS3 JS5 checksum mismatch for $archive:$group; cache may have updated" }
-        Files.createDirectories(path.parent)
-        val temporary = Files.createTempFile(path.parent, "js5-", ".tmp")
-        try {
-            Files.write(temporary, bytes)
-            Files.move(temporary, path, StandardCopyOption.REPLACE_EXISTING)
-        } finally {
-            Files.deleteIfExists(temporary)
-        }
-        return bytes
-    }
-
-    private fun decodeWearPositions(bytes: ByteArray): List<Int> {
-        val buffer = ByteBuffer.wrap(bytes)
-
-        fun byte(): Int = buffer.get().toInt() and 255
-        var slots: List<Int>? = null
-        while (true) {
-            when (val opcode = byte()) {
-                0 -> {
-                    require(!buffer.hasRemaining()) { "Trailing wear-position defaults bytes" }
-                    return checkNotNull(slots) { "Missing equipment-slot kinds in wear-position defaults" }
+            override fun getNpc(id: Int): Rs3NpcDefinition =
+                decodedNpcs.computeIfAbsent(id) {
+                    Rs3NpcDefinitionDecoder.decode(id, checkNotNull(npcs[id]) { "Missing RS3 NPC definition $id" })
                 }
-                1 -> slots = List(byte()) { byte().also { require(it in 0..2) { "Unknown equipment-slot kind $it" } } }
-                3, 4 -> byte()
-                5, 6 -> repeat(byte()) { byte() }
-                else -> error("Unknown wear-position defaults opcode $opcode")
+
+            override fun getQuickChatPhrase(id: Int): Rs3QuickChatPhrase =
+                checkNotNull(phrases[id]) { "Missing RS3 quickchat phrase $id" }
+
+            override fun getVariable(
+                domain: Rs3VariableDomain,
+                id: Int,
+            ): Rs3VariableDefinition = checkNotNull(variables[domain]?.get(id)) { "Missing RS3 $domain variable $id" }
+
+            private val decoded = ConcurrentHashMap<Int, Rs3AppearanceItem>()
+
+            override fun getItem(id: Int): Rs3AppearanceItem = resolveItem(id, HashSet())
+
+            private fun resolveItem(
+                id: Int,
+                resolving: MutableSet<Int>,
+            ): Rs3AppearanceItem {
+                decoded[id]?.let { return it }
+                check(resolving.size < 64 && resolving.add(id)) { "Cyclic/deep RS3 item template at $id" }
+                try {
+                    val result =
+                        Rs3AppearanceItemDecoder.decode(
+                            id,
+                            checkNotNull(items[id]) { "Missing RS3 item definition $id" },
+                        ) { link -> resolveItem(link, resolving) }
+                    return decoded.putIfAbsent(id, result) ?: result
+                } finally {
+                    resolving.remove(id)
+                }
             }
         }
-    }
 
-    private fun checksum(bytes: ByteArray): Int = CRC32().apply { update(bytes) }.value.toInt()
+        private fun decodeWearPositions(bytes: ByteArray): List<Int> {
+            val buffer = ByteBuffer.wrap(bytes)
 
-    private fun unpack(bytes: ByteArray): ByteArray {
-        require(bytes.size >= 5)
-        if (bytes[0].toInt() != 0) {
-            require(bytes.size >= 9 && ByteBuffer.wrap(bytes).getInt(5) in 0..64 * 1024 * 1024) {
-                "Excessive RS3 decompressed group size"
+            fun byte(): Int = buffer.get().toInt() and 255
+            var slots: List<Int>? = null
+            while (true) {
+                when (val opcode = byte()) {
+                    0 -> {
+                        require(!buffer.hasRemaining()) { "Trailing wear-position defaults bytes" }
+                        return checkNotNull(slots) { "Missing equipment-slot kinds in wear-position defaults" }
+                    }
+                    1 ->
+                        slots =
+                            List(byte()) { byte().also { require(it in 0..2) { "Unknown equipment-slot kind $it" } } }
+                    3, 4 -> byte()
+                    5, 6 -> repeat(byte()) { byte() }
+                    else -> error("Unknown wear-position defaults opcode $opcode")
+                }
             }
         }
-        return Unpooled.wrappedBuffer(bytes).use { compressed ->
-            Js5Compression.uncompress(compressed).use { data ->
-                ByteArray(data.readableBytes()).also { data.readBytes(it) }
+
+        private fun checksum(bytes: ByteArray): Int = CRC32().apply { update(bytes) }.value.toInt()
+
+        private fun unpack(bytes: ByteArray): ByteArray {
+            require(bytes.size >= 5)
+            if (bytes[0].toInt() != 0) {
+                require(bytes.size >= 9 && ByteBuffer.wrap(bytes).getInt(5) in 0..64 * 1024 * 1024) {
+                    "Excessive RS3 decompressed group size"
+                }
+            }
+            return Unpooled.wrappedBuffer(bytes).use { compressed ->
+                Js5Compression.uncompress(compressed).use { data ->
+                    ByteArray(data.readableBytes()).also { data.readBytes(it) }
+                }
             }
         }
-    }
-
-    private companion object {
-        val logger = InlineLogger()
     }
 }

@@ -12,6 +12,7 @@ import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
 public class Rs3ClientLoginRsaSwapHandler(
     private val proxyPrivateKey: RSAPrivateCrtKeyParameters,
     private val realServerPublicKey: RSAKeyParameters,
+    private val onRecordingCiphers: (StreamCipherPair, Int, Int) -> Unit = { _, _, _ -> },
     private val onCiphersEstablished: (real: StreamCipherPair, diagnosticCopy: StreamCipherPair) -> Unit,
 ) : ByteToMessageDecoder() {
     private enum class State {
@@ -116,6 +117,7 @@ public class Rs3ClientLoginRsaSwapHandler(
             newPayload.writeBytes(payload)
             require(newPayload.readableBytes() <= 65535) { "Re-encrypted login exceeds its length field" }
             onCiphersEstablished(block.buildStreamCipherPair(), block.buildStreamCipherPair())
+            onRecordingCiphers(block.buildStreamCipherPair(), buildMajor, buildMinor)
             return rebuild(type, newPayload)
         } finally {
             reEncrypted.release()

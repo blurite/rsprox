@@ -7,6 +7,7 @@ import io.netty.buffer.Unpooled
 import io.netty.channel.Channel
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprox.cache.Js5MasterIndex
+import net.rsprox.cache.rs3.Rs3LiveCacheResolver
 import net.rsprox.cache.store.ReplayDiskCacheProvider
 import net.rsprox.cache.store.ReplayDiskCacheStore
 import net.rsprox.patch.NativeClientType
@@ -16,9 +17,10 @@ import net.rsprox.patch.native.NativePatcher
 import net.rsprox.proxy.accounts.DefaultJagexAccountStore
 import net.rsprox.proxy.binary.BinaryBlob
 import net.rsprox.proxy.binary.BinaryHeader
-import net.rsprox.proxy.binary.isOldSchoolRuneScape
 import net.rsprox.proxy.binary.credentials.BinaryCredentials
 import net.rsprox.proxy.binary.credentials.BinaryCredentialsStore
+import net.rsprox.proxy.binary.isOldSchoolRuneScape
+import net.rsprox.proxy.binary.isRuneScape3
 import net.rsprox.proxy.bootstrap.BootstrapFactory
 import net.rsprox.proxy.config.*
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_HEIGHT
@@ -54,15 +56,13 @@ import net.rsprox.proxy.replay.ReplayTranscriber
 import net.rsprox.proxy.replay.ReplayTranscript
 import net.rsprox.proxy.rs3.Rs3ClientHandle
 import net.rsprox.proxy.rs3.config.Rs3JavConfig
-import net.rsprox.cache.rs3.Rs3LiveCacheResolver
 import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
-import net.rsprox.proxy.rsa.Rs3ProxyRsaKeyProvider
-import net.rsprox.proxy.rs3.relay.Rs3RelayServer
-import net.rsprox.proxy.rs3.relay.Rs3RelayRoute
-import net.rsprox.proxy.rs3.relay.Rs3RoutingNamespace
 import net.rsprox.proxy.rs3.relay.Rs3Endpoint
-import net.rsprox.proxy.worlds.LocalAddressRanges
+import net.rsprox.proxy.rs3.relay.Rs3RelayRoute
+import net.rsprox.proxy.rs3.relay.Rs3RelayServer
+import net.rsprox.proxy.rs3.relay.Rs3RoutingNamespace
 import net.rsprox.proxy.rs3.transcriber.Rs3SessionMonitor
+import net.rsprox.proxy.rsa.Rs3ProxyRsaKeyProvider
 import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
 import net.rsprox.proxy.runelite.RSProxArchiveBootstrap
@@ -79,6 +79,7 @@ import net.rsprox.proxy.target.ProxyTargetSourceRegistry
 import net.rsprox.proxy.target.YamlProxyTargetConfig
 import net.rsprox.proxy.unix.UnixSocketConnection
 import net.rsprox.proxy.util.*
+import net.rsprox.proxy.worlds.LocalAddressRanges
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.account.JagexAccountStore
 import net.rsprox.shared.account.JagexCharacter
@@ -741,6 +742,7 @@ public class ProxyService(
         manualCacheSelector: (Js5MasterIndex) -> ReplayDiskCacheStore?,
     ): ReplaySession? {
         val binary = BinaryBlob.decode(path, filterSetStore, settingsStore)
+        require(!binary.header.isRuneScape3()) { "RS3 binary recording is supported; RS3 replay is not implemented yet." }
         val masterIndex =
             Js5MasterIndex.trimmed(
                 binary.header.revision,
@@ -959,7 +961,8 @@ public class ProxyService(
 
         val patcher = NativePatcher()
         val gameCriteria =
-            NativePatchCriteria.Builder(NativeClientType.WIN)
+            NativePatchCriteria
+                .Builder(NativeClientType.WIN)
                 .rsaModulus(modulusHex)
                 .build()
         val gameClientPatchResult = patcher.patch(patchedGameBinaryPath, gameCriteria)
@@ -977,7 +980,8 @@ public class ProxyService(
             "Mapped RS3 routing is currently verified only for the live revision-950 profile"
         }
         // Bootstrap on the launch worker, before relay event loops see any game packets.
-        val packetDefinitions = Rs3LiveCacheResolver(upstreamConfig.captureJs5ConnectionInfo()).loadPacketDefinitions()
+        val cacheResolver = Rs3LiveCacheResolver(upstreamConfig.captureJs5ConnectionInfo())
+        val packetDefinitions = cacheResolver.loadPacketDefinitions()
 
         val relayServer =
             Rs3RelayServer(
@@ -986,6 +990,7 @@ public class ProxyService(
                 realServerModulusHex = originalModulusHex,
                 revision = targets.revision,
                 packetDefinitions = packetDefinitions,
+                masterIndex = cacheResolver.masterIndexSnapshot,
                 resolveUpstream = {
                     val fresh = Rs3JavConfig(URL(upstreamJavConfigUrl)).captureUpstreamTargets()
                     fresh.lobbyHost to fresh.gamePort
@@ -1041,14 +1046,15 @@ public class ProxyService(
     private fun Rs3JavConfig.toClientArgs(): List<String> {
         val prefix = "param="
         val args = mutableListOf<String>()
-        text.lineSequence()
+        text
+            .lineSequence()
             .filter { it.startsWith(prefix) }
             .forEach { line ->
                 val rest = line.substring(prefix.length)
                 val eq = rest.indexOf('=')
                 if (eq == -1) return@forEach
-                args += rest.substring(0, eq)   // key
-                args += rest.substring(eq + 1)  // value
+                args += rest.substring(0, eq) // key
+                args += rest.substring(eq + 1) // value
             }
         return args
     }

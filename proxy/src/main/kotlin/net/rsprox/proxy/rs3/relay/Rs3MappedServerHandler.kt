@@ -26,7 +26,7 @@ internal class Rs3MappedServerHandler(
 ) : ChannelInboundHandlerAdapter() {
     private val login: Rs3LoginSuccessFramer =
         if (world) {
-            Rs3WorldLoginResponseFramer(onVariablesComplete)
+            Rs3WorldLoginResponseFramer(onVariablesComplete = onVariablesComplete)
         } else {
             Rs3ServerLoginResponseFramer()
         }

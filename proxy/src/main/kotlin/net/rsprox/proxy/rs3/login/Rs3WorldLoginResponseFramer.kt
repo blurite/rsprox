@@ -1,8 +1,9 @@
 package net.rsprox.proxy.rs3.login
 
 public class Rs3WorldLoginResponseFramer(
+    retainVariables: Boolean = false,
     onVariablesComplete: () -> Unit = {},
-) : Rs3LoginSuccessFramer(world = true, onVariablesComplete) {
+) : Rs3LoginSuccessFramer(world = true, onVariablesComplete, retainVariables) {
     public val ownIndex: Int?
         get() {
             val data = loginData ?: return null
