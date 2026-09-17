@@ -93,6 +93,11 @@ public value class Rs3JavConfig(
     }
 
     public fun captureUpstreamTargets(): Rs3UpstreamTargets {
+        val lobbyId =
+            checkNotNull(getParamValue(LOBBY_ID_PARAM_ID)?.toIntOrNull()) {
+                "param=$LOBBY_ID_PARAM_ID (lobby id) not found in jav_config"
+            }
+        require(lobbyId in 0..65535) { "Lobby id out of bounds: $lobbyId" }
         val lobbyHost =
             checkNotNull(getParamValue(LOBBY_HOST_PARAM_ID)) {
                 "param=$LOBBY_HOST_PARAM_ID (lobby host) not found in jav_config"
@@ -102,7 +107,7 @@ public value class Rs3JavConfig(
                 "param=$GAME_PORT_PARAM_ID (game port) not found in jav_config"
             }
         val revision = getServerVersion()
-        return Rs3UpstreamTargets(lobbyHost, gamePort, revision)
+        return Rs3UpstreamTargets(lobbyId, lobbyHost, gamePort, revision)
     }
 
     public fun captureJs5ConnectionInfo(): Rs3Js5ConnectionInfo = Rs3Js5ConnectionInfo(
@@ -129,6 +134,7 @@ public value class Rs3JavConfig(
         public const val DEFAULT_URL: String = NativePatchCriteria.DEFAULT_RS3_JAVCONFIG_URL
         private const val CODEBASE_PREFIX = "codebase="
         private const val SERVER_VERSION_PREFIX = "server_version="
+        private const val LOBBY_ID_PARAM_ID = 2
         private const val LOBBY_HOST_PARAM_ID = 3
         private const val GAME_PORT_PARAM_ID = 41
     }

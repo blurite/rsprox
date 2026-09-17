@@ -1,35 +1,48 @@
 package net.rsprox.proxy.rs3.relay
 
+import com.github.michaelbull.logging.InlineLogger
 import io.netty.bootstrap.Bootstrap
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
-import io.netty.channel.*
+import io.netty.channel.Channel
+import io.netty.channel.ChannelFuture
+import io.netty.channel.ChannelFutureListener
+import io.netty.channel.ChannelHandlerContext
+import io.netty.channel.ChannelInboundHandlerAdapter
+import io.netty.channel.ChannelInitializer
+import io.netty.channel.ChannelOption
 import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.channel.socket.SocketChannel
+import io.netty.channel.socket.nio.NioDatagramChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
-import io.netty.channel.socket.SocketChannel
+import io.netty.resolver.HostsFileEntriesResolver
+import io.netty.resolver.ResolvedAddressTypes
 import io.netty.resolver.dns.DnsNameResolverBuilder
-import java.math.BigInteger
-import java.nio.file.Path
-import java.util.concurrent.atomic.AtomicReference
+import io.netty.util.concurrent.Future
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.crypto.cipher.StreamCipherPair
 import net.rsprot.protocol.message.IncomingMessage
-import net.rsprox.protocol.rs3.game.incoming.model.unknown.RawUnknownClientPacket
-import net.rsprox.protocol.rs3.game.outgoing.model.info.playerinfo.rs3PlayerInfoInitPending
-import net.rsprox.protocol.rs3.game.outgoing.model.info.playerinfo.rs3AppearanceDefinitions
-import net.rsprox.protocol.rs3.cache.rs3PacketDefinitions
 import net.rsprox.cache.api.rs3.Rs3PacketDefinitions
+import net.rsprox.protocol.rs3.cache.rs3PacketDefinitions
+import net.rsprox.protocol.rs3.game.incoming.model.unknown.RawUnknownClientPacket
+import net.rsprox.protocol.rs3.game.outgoing.model.info.playerinfo.rs3AppearanceDefinitions
+import net.rsprox.protocol.rs3.game.outgoing.model.info.playerinfo.rs3PlayerInfoInitPending
 import net.rsprox.protocol.rs3.game.outgoing.model.unknown.RawUnknownServerPacket
 import net.rsprox.protocol.session.AttributeMap
 import net.rsprox.protocol.session.Session
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.filters.UnmodifiablePropertyFilterSet
 import net.rsprox.proxy.huffman.HuffmanProvider
-import net.rsprox.proxy.rs3.login.*
-import net.rsprox.proxy.rs3.protocol.Rs3ProtDecoder
 import net.rsprox.proxy.rs3.Rs3DecoderLoader
+import net.rsprox.proxy.rs3.login.Rs3ClientLoginRsaSwapHandler
+import net.rsprox.proxy.rs3.login.Rs3LoginFrame
+import net.rsprox.proxy.rs3.login.Rs3LoginResponseFramer
+import net.rsprox.proxy.rs3.login.Rs3ServerLoginResponseFramer
+import net.rsprox.proxy.rs3.login.Rs3WorldContinueAckSkipper
+import net.rsprox.proxy.rs3.login.Rs3WorldLoginResponseFramer
+import net.rsprox.proxy.rs3.protocol.Rs3ProtDecoder
 import net.rsprox.proxy.rs3.transcriber.Rs3SessionMonitor
 import net.rsprox.proxy.rs3.transcriber.Rs3TranscriberSession
 import net.rsprox.proxy.rs3.transcriber.text.TextRs3TranscriberProvider
@@ -43,6 +56,14 @@ import net.rsprox.transcriber.text.MonitoredMessageConsumerContainer
 import net.rsprox.transcriber.text.TextMessageConsumerContainer
 import org.bouncycastle.crypto.params.RSAKeyParameters
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
+import java.math.BigInteger
+import java.net.InetAddress
+import java.net.InetSocketAddress
+import java.nio.file.Path
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 
 private class CipherHolder {
     @Volatile
@@ -67,20 +88,27 @@ public class Rs3RelayServer(
     private val bossGroup = NioEventLoopGroup(1)
     private val workerGroup = NioEventLoopGroup()
     private val discoveredWorldHost = AtomicReference<String?>(null)
+    private val mappedListeners = ConcurrentHashMap<InetSocketAddress, ChannelFuture>()
+    private val mappedRoutes = AtomicReference<Map<InetSocketAddress, Rs3RelayRoute>>(emptyMap())
+    private val huffman by lazy {
+        HuffmanProvider.load()
+        HuffmanProvider.get()
+    }
+    private var shuttingDown = false
+    private val terminated = CompletableFuture<Unit>()
 
     private val dnsResolver =
         DnsNameResolverBuilder(workerGroup.next())
-            .channelType(io.netty.channel.socket.nio.NioDatagramChannel::class.java)
+            .channelType(NioDatagramChannel::class.java)
             .queryTimeoutMillis(5_000)
             .hostsFileEntriesResolver(
-                object : io.netty.resolver.HostsFileEntriesResolver {
+                object : HostsFileEntriesResolver {
                     override fun address(
                         inetHost: String,
-                        resolvedAddressTypes: io.netty.resolver.ResolvedAddressTypes,
-                    ): java.net.InetAddress? = null
+                        resolvedAddressTypes: ResolvedAddressTypes,
+                    ): InetAddress? = null
                 },
-            )
-            .build()
+            ).build()
 
     public fun bind(port: Int): Channel {
         HuffmanProvider.load()
@@ -101,6 +129,93 @@ public class Rs3RelayServer(
         return bootstrap.bind(port).sync().channel()
     }
 
+    /**
+     * Binds only this endpoint. No wildcard listener, hostname scan or next-world slot is
+     * involved. A caller rewriting an endpoint must wait for the returned future to succeed.
+     * This is separate from the legacy launcher until all handoff sources are rewritten.
+     */
+    @Synchronized
+    public fun bind(route: Rs3RelayRoute): ChannelFuture {
+        check(!shuttingDown) { "RS3 relay is shutting down" }
+        check(!mappedListeners.containsKey(route.localAddress)) { "Route already bound: ${route.localAddress}" }
+        val binding = bindMappedListener(route.localAddress)
+        val published = binding.channel().newPromise()
+        registerRoutes(listOf(route)).whenComplete { _, error ->
+            if (error == null) published.setSuccess() else published.setFailure(error)
+        }
+        return published
+    }
+
+    /** Publish one immutable snapshot only once every required socket has bound successfully. */
+    @Synchronized
+    internal fun registerRoutes(routes: List<Rs3RelayRoute>): CompletableFuture<Unit> {
+        check(!shuttingDown) { "RS3 relay is shutting down" }
+        val unique = routes.associateBy { it.localAddress }
+        require(
+            routes.groupBy { it.localAddress }.values.all { entries ->
+                val first = entries.first()
+                entries.all { it.upstreamHost == first.upstreamHost && it.endpoint == first.endpoint }
+            },
+        ) { "Conflicting routes in endpoint update" }
+        val bindings =
+            unique.keys.map { address ->
+                val binding = mappedListeners[address] ?: bindMappedListener(address)
+                val complete = CompletableFuture<Unit>()
+                binding.addListener { result ->
+                    if (result.isSuccess) complete.complete(Unit) else complete.completeExceptionally(result.cause())
+                }
+                complete
+            }
+        return CompletableFuture.allOf(*bindings.toTypedArray()).thenApply {
+            synchronized(this) {
+                check(!shuttingDown && unique.keys.all { mappedListeners[it]?.channel()?.isActive == true }) {
+                    "Listener closed before endpoint publication"
+                }
+                mappedRoutes.set(mappedRoutes.get() + unique)
+            }
+            Unit
+        }
+    }
+
+    private fun bindMappedListener(address: InetSocketAddress): ChannelFuture {
+        val future =
+            ServerBootstrap()
+                .group(bossGroup, workerGroup)
+                .channel(NioServerSocketChannel::class.java)
+                .childOption(ChannelOption.TCP_NODELAY, true)
+                .childOption(ChannelOption.AUTO_READ, false)
+                .childHandler(
+                    object : ChannelInitializer<SocketChannel>() {
+                        override fun initChannel(clientChannel: SocketChannel) {
+                            val route = mappedRoutes.get()[address]
+                            if (route == null) {
+                                clientChannel.close()
+                                return
+                            }
+                            logger.debug {
+                                "Mapped RS3 ${route.endpoint}: ${route.localAddress} -> " +
+                                    "${route.upstreamHost}:${route.upstreamPort}"
+                            }
+                            connectUpstream(
+                                clientChannel,
+                                route.upstreamHost,
+                                route.upstreamPort,
+                                route.endpoint is Rs3Endpoint.World,
+                                mapped = true,
+                                addresses = route.addressSpace,
+                            )
+                        }
+                    },
+                ).bind(address)
+        mappedListeners[address] = future
+        future.channel().closeFuture().addListener {
+            synchronized(this) {
+                if (mappedListeners.remove(address, future)) mappedRoutes.set(mappedRoutes.get() - address)
+            }
+        }
+        return future
+    }
+
     private fun connectUpstream(
         clientChannel: SocketChannel,
         gamePort: Int,
@@ -119,6 +234,17 @@ public class Rs3RelayServer(
                 }
             }
 
+        connectUpstream(clientChannel, upstreamHost, upstreamPort, isWorldConnection, mapped = false)
+    }
+
+    private fun connectUpstream(
+        clientChannel: SocketChannel,
+        upstreamHost: String,
+        upstreamPort: Int,
+        isWorldConnection: Boolean,
+        mapped: Boolean,
+        addresses: Rs3LocalAddressSpace? = null,
+    ) {
         val cipherHolder = CipherHolder()
         val serverAttributes = AttributeMap()
         val clientAttributes = AttributeMap()
@@ -128,7 +254,7 @@ public class Rs3RelayServer(
         var localPlayerIndex = -1
 
         val rs3Decoder =
-            Rs3DecoderLoader.load(revision, HuffmanProvider.get()) { cipherHolder.pair?.decodeCipher }
+            Rs3DecoderLoader.load(revision, huffman) { cipherHolder.pair?.decodeCipher }
         val clientDecoderService = rs3Decoder.clientPacketDecoder
         val serverDecoderService = rs3Decoder.serverPacketDecoder
 
@@ -191,10 +317,60 @@ public class Rs3RelayServer(
                 transcriberSession.onClientProt(prot, message)
             }
 
-        var skipNextClientToServerChunk = false
         var loginResponseFramer: Rs3LoginResponseFramer? = null
         var worldContinueAckSkipper: Rs3WorldContinueAckSkipper? = null
+        var transportCiphers: StreamCipherPair? = null
+        val transportAcknowledgement = if (mapped && isWorldConnection) Rs3WorldContinueAckSkipper() else null
+        val transportDecoder =
+            if (mapped) {
+                check(revision == 950) { "Mapped routing is currently verified only for revision 950" }
+                Rs3DecoderLoader.load(revision, huffman) { transportCiphers?.decodeCipher }
+            } else {
+                null
+            }
+        var mappedServer: Rs3MappedServerHandler? = null
 
+        fun createMappedServer(
+            serverChannel: Channel,
+            relay: RelayHandler,
+        ): Rs3MappedServerHandler {
+            val rewriter = Rs3EndpointRewriter(checkNotNull(addresses), ::registerRoutes, listOf(43594, 443))
+            val stream =
+                Rs3PacketStream(rs3Decoder.serverProtTable, { checkNotNull(transportCiphers).decodeCipher }, true) {
+                    entry, payload ->
+                    // These payloads draw from the opcode ISAAC too. Decode on a private transport copy.
+                    if (entry.name == "URL_OPEN" || entry.name == "SOCIAL_NETWORK_LOGOUT") {
+                        val opcode =
+                            rs3Decoder.serverProtTable.entries
+                                .single { it.value.name == entry.name }
+                                .key
+                        val buffer = Unpooled.wrappedBuffer(payload)
+                        try {
+                            checkNotNull(transportDecoder).serverPacketDecoder.decode(
+                                opcode,
+                                buffer.toJagByteBuf(),
+                                Session(-1, AttributeMap()),
+                            )
+                            check(!buffer.isReadable) { "Unconsumed cipher-bearing payload" }
+                        } finally {
+                            buffer.release()
+                        }
+                    }
+                }
+            return Rs3MappedServerHandler(
+                isWorldConnection,
+                rewriter,
+                stream,
+                { checkNotNull(transportCiphers).decodeCipher },
+                { relay.forward(serverChannel, it) },
+                relay::closeAfterFlush,
+            ) {
+                checkNotNull(transportAcknowledgement).expect()
+            }
+        }
+
+        // The server pipeline may never be created if upstream DNS/connect fails.
+        clientChannel.closeFuture().addListener { mappedServer?.dispose() }
         val outboundBootstrap =
             Bootstrap()
                 // Both directions share session/decoder state and must run on the same event loop.
@@ -204,76 +380,113 @@ public class Rs3RelayServer(
                 .handler(
                     object : ChannelInitializer<SocketChannel>() {
                         override fun initChannel(serverChannel: SocketChannel) {
-                            serverChannel.pipeline().addLast(
+                            val relay =
                                 RelayHandler(clientChannel) { bytes ->
                                     // todo: Just grabbing first world found for now
-                                    scanForWorldHost(bytes)
+                                    if (!mapped) scanForWorldHost(bytes)
                                     val framer = loginResponseFramer
                                     if (framer != null && !framer.isDone) {
                                         val leftover = framer.consume(bytes)
-                                        if (framer.isDone && framer is Rs3WorldLoginResponseFramer) {
+                                        if (framer.isDone && framer.isSuccessful) {
+                                            repeat(framer.initialCipherDraws) {
+                                                checkNotNull(cipherHolder.pair).decodeCipher.nextInt()
+                                            }
+                                        }
+                                        if (framer.isSuccessful && framer is Rs3WorldLoginResponseFramer) {
                                             val ownIndex = framer.ownIndex
                                             if (ownIndex != null) {
                                                 localPlayerIndex = ownIndex
                                                 transcriberSession.sessionState.localPlayerIndex = ownIndex
-                                                Session(localPlayerIndex, serverAttributes).rs3PlayerInfoInitPending = true
+                                                Session(localPlayerIndex, serverAttributes).rs3PlayerInfoInitPending =
+                                                    true
                                             }
                                         }
                                         if (leftover != null && leftover.isNotEmpty()) {
                                             serverToClientDecoder.accept(leftover)
                                         }
-                                    } else {
+                                    } else if (framer?.isSuccessful == true) {
                                         serverToClientDecoder.accept(bytes)
                                     }
-                                },
-                            )
+                                }
+                            if (mapped) {
+                                val handler = createMappedServer(serverChannel, relay)
+                                mappedServer = handler
+                                serverChannel.pipeline().addLast(handler)
+                            }
+                            serverChannel.pipeline().addLast(relay)
                         }
                     },
                 )
 
-        outboundBootstrap
-            .connect(upstreamHost, upstreamPort)
-            .addListener(
-                ChannelFutureListener { future ->
-                    if (!future.isSuccess) {
-                        clientChannel.close()
-                        return@ChannelFutureListener
-                    }
-                    val serverChannel = future.channel()
-                    clientChannel.pipeline().addLast(
-                        Rs3ClientLoginRsaSwapHandler(proxyPrivateKey, realServerPublicKey) { ciphers, _ ->
-                            cipherHolder.pair = ciphers
-                            skipNextClientToServerChunk = true
-                            loginResponseFramer =
-                                if (isWorldConnection) {
-                                    Rs3WorldLoginResponseFramer()
-                                } else {
-                                    Rs3ServerLoginResponseFramer()
-                                }
-                            worldContinueAckSkipper = if (isWorldConnection) Rs3WorldContinueAckSkipper() else null
-                        },
-                    )
-                    clientChannel.pipeline().addLast(
-                        RelayHandler(serverChannel) { bytes ->
-                            if (skipNextClientToServerChunk) {
-                                skipNextClientToServerChunk = false
+        val onConnected =
+            ChannelFutureListener { future ->
+                if (!future.isSuccess) {
+                    clientChannel.close()
+                    return@ChannelFutureListener
+                }
+                val serverChannel = future.channel()
+                if (!clientChannel.isActive) {
+                    serverChannel.close()
+                    return@ChannelFutureListener
+                }
+                clientChannel.pipeline().addLast(
+                    Rs3ClientLoginRsaSwapHandler(proxyPrivateKey, realServerPublicKey) { ciphers, diagnostic ->
+                        transportCiphers = ciphers
+                        cipherHolder.pair = diagnostic
+                        mappedServer?.beginLogin()
+                        val acknowledgement = if (isWorldConnection) Rs3WorldContinueAckSkipper() else null
+                        worldContinueAckSkipper = acknowledgement
+                        loginResponseFramer =
+                            if (isWorldConnection) {
+                                Rs3WorldLoginResponseFramer { checkNotNull(acknowledgement).expect() }
                             } else {
-                                val ackSkipper = worldContinueAckSkipper
-                                if (ackSkipper != null && !ackSkipper.isDone) {
-                                    val leftover = ackSkipper.consume(bytes)
-                                    if (leftover != null && leftover.isNotEmpty()) {
-                                        clientToServerDecoder.accept(leftover)
-                                    }
-                                } else {
-                                    clientToServerDecoder.accept(bytes)
-                                }
+                                Rs3ServerLoginResponseFramer()
                             }
-                        },
-                    )
-                    clientChannel.config().isAutoRead = true
-                    serverChannel.config().isAutoRead = true
-                },
-            )
+                    },
+                )
+                if (mapped) {
+                    val stream =
+                        Rs3PacketStream(
+                            rs3Decoder.clientProtTable,
+                            { checkNotNull(transportCiphers).encoderCipher },
+                            false,
+                        )
+                    clientChannel.pipeline().addLast(Rs3MappedClientHandler(stream, transportAcknowledgement))
+                }
+                clientChannel.pipeline().addLast(
+                    RelayHandler(serverChannel) { bytes ->
+                        val ackSkipper = worldContinueAckSkipper
+                        if (ackSkipper != null && !ackSkipper.isDone) {
+                            val leftover = ackSkipper.consume(bytes)
+                            if (leftover != null && leftover.isNotEmpty()) {
+                                clientToServerDecoder.accept(leftover)
+                            }
+                        } else {
+                            clientToServerDecoder.accept(bytes)
+                        }
+                    },
+                )
+                clientChannel.config().isAutoRead = true
+                serverChannel.config().isAutoRead = true
+            }
+        if (mapped) {
+            // Resolve the real host without consulting per-world hosts-file overrides.
+            val resolution = dnsResolver.resolve(upstreamHost)
+            resolution.addListener { result ->
+                if (!result.isSuccess) {
+                    clientChannel.close()
+                    return@addListener
+                }
+                val address = resolution.now
+                if (address.isLoopbackAddress || address.isAnyLocalAddress) {
+                    clientChannel.close()
+                } else if (clientChannel.isActive) {
+                    outboundBootstrap.connect(address, upstreamPort).addListener(onConnected)
+                }
+            }
+        } else {
+            outboundBootstrap.connect(upstreamHost, upstreamPort).addListener(onConnected)
+        }
     }
 
     private fun scanForWorldHost(bytes: ByteArray) {
@@ -283,46 +496,87 @@ public class Rs3RelayServer(
         val match = WORLD_HOST_REGEX.find(text) ?: return
         val host = match.value
 
-        val resolveFuture: io.netty.util.concurrent.Future<java.net.InetAddress> = dnsResolver.resolve(host)
+        val resolveFuture: Future<InetAddress> = dnsResolver.resolve(host)
         resolveFuture.addListener { future ->
             if (!future.isSuccess) return@addListener
             discoveredWorldHost.set(resolveFuture.now.hostAddress)
         }
     }
 
-    public fun shutdown() {
-        workerGroup.shutdownGracefully()
-        bossGroup.shutdownGracefully()
+    @Synchronized
+    public fun shutdown(): CompletableFuture<Unit> {
+        if (shuttingDown) return terminated
+        shuttingDown = true
+        mappedListeners.values.forEach { it.channel().close() }
+        mappedListeners.clear()
+        mappedRoutes.set(emptyMap())
+        dnsResolver.close()
+        val workers = workerGroup.shutdownGracefully()
+        val bosses = bossGroup.shutdownGracefully()
+        workers.addListener {
+            bosses.addListener { terminated.complete(Unit) }
+        }
+        return terminated
     }
 
     private companion object {
+        private val logger = InlineLogger()
         private val WORLD_HOST_REGEX = Regex("""[a-zA-Z0-9-]+\.runescape\.com""")
     }
 }
 
-private class RelayHandler(
+internal class RelayHandler(
     private val destination: Channel,
     private val onChunk: ((ByteArray) -> Unit)?,
 ) : ChannelInboundHandlerAdapter() {
+    private var finishing = false
+
     override fun channelRead(
         ctx: ChannelHandlerContext,
         msg: Any,
     ) {
+        forward(ctx.channel(), msg)
+    }
+
+    fun forward(
+        source: Channel,
+        msg: Any,
+    ) {
+        // Login framing is explicit, independent of TCP fragmentation/coalescing.
+        if (msg is Rs3LoginFrame) {
+            val content = msg.content().retain()
+            msg.release()
+            write(source, content)
+            return
+        }
         if (msg is ByteBuf) {
-            val fullBytes = ByteArray(msg.readableBytes())
-            msg.getBytes(msg.readerIndex(), fullBytes)
-            onChunk?.invoke(fullBytes)
+            try {
+                val fullBytes = ByteArray(msg.readableBytes())
+                msg.getBytes(msg.readerIndex(), fullBytes)
+                onChunk?.invoke(fullBytes)
+            } catch (exception: Exception) {
+                msg.release()
+                throw exception
+            }
         }
 
-        if (destination.isActive) {
+        write(source, msg)
+    }
+
+    private fun write(
+        source: Channel,
+        msg: Any,
+    ) {
+        if (destination.isActive && !finishing) {
             destination.writeAndFlush(msg).addListener { future ->
                 if (!future.isSuccess) {
-                    ctx.channel().close()
+                    source.close()
+                    destination.close()
                 }
             }
         } else {
             (msg as? ByteBuf)?.release()
-            ctx.channel().close()
+            source.close()
         }
     }
 
@@ -331,13 +585,31 @@ private class RelayHandler(
     }
 
     override fun channelInactive(ctx: ChannelHandlerContext) {
-        destination.close()
+        closeAfterFlush()
+    }
+
+    fun closeAfterFlush() {
+        if (finishing) return
+        finishing = true
+        if (!destination.isActive) return
+        // This barrier completes only after prior writes have reached the socket.
+        // A stalled peer must not hold the paired connection open indefinitely.
+        val timeout = destination.eventLoop().schedule({ destination.close() }, 5, TimeUnit.SECONDS)
+        destination.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener {
+            timeout.cancel(false)
+            destination.close()
+        }
     }
 
     override fun exceptionCaught(
         ctx: ChannelHandlerContext,
         cause: Throwable,
     ) {
+        logger.warn(cause) { "RS3 relay failed on ${ctx.channel().localAddress()}" }
         ctx.close()
+    }
+
+    private companion object {
+        private val logger = InlineLogger()
     }
 }

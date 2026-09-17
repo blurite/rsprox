@@ -58,6 +58,10 @@ import net.rsprox.cache.rs3.Rs3LiveCacheResolver
 import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
 import net.rsprox.proxy.rsa.Rs3ProxyRsaKeyProvider
 import net.rsprox.proxy.rs3.relay.Rs3RelayServer
+import net.rsprox.proxy.rs3.relay.Rs3RelayRoute
+import net.rsprox.proxy.rs3.relay.Rs3RoutingNamespace
+import net.rsprox.proxy.rs3.relay.Rs3Endpoint
+import net.rsprox.proxy.worlds.LocalAddressRanges
 import net.rsprox.proxy.rs3.transcriber.Rs3SessionMonitor
 import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
@@ -942,7 +946,6 @@ public class ProxyService(
         sessionMonitor: Rs3SessionMonitor,
         character: JagexCharacter?,
         upstreamJavConfigUrl: String = "https://world5.runescape.com/jav_config.ws?binaryType=2",
-        localHost: String = "127.0.0.1",
     ): Rs3ClientHandle {
         val proxyKey = Rs3ProxyRsaKeyProvider.readOrGenerate()
         val modulusHex = Rs3ProxyRsaKeyProvider.publicModulusHex(proxyKey)
@@ -970,6 +973,9 @@ public class ProxyService(
 
         val upstreamConfig = Rs3JavConfig(URL(upstreamJavConfigUrl))
         val targets = upstreamConfig.captureUpstreamTargets()
+        require(targets.revision == 950 && targets.gamePort == 43594) {
+            "Mapped RS3 routing is currently verified only for the live revision-950 profile"
+        }
         // Bootstrap on the launch worker, before relay event loops see any game packets.
         val packetDefinitions = Rs3LiveCacheResolver(upstreamConfig.captureJs5ConnectionInfo()).loadPacketDefinitions()
 
@@ -987,12 +993,27 @@ public class ProxyService(
                 filterSetStore = this.filterSetStore,
                 settingSetStore = this.settingsStore,
             )
-        relayServer.bind(targets.gamePort)
-
-        ClientTypeDictionary[targets.gamePort] = "RS3 (${operatingSystem.shortName})"
-
+        var namespace: Rs3RoutingNamespace? = null
+        var handle: Rs3ClientHandle? = null
         try {
-            val rewritten = upstreamConfig.rewriteLobbyHost(localHost)
+            val lease =
+                Rs3RoutingNamespace.acquire(CONFIGURATION_PATH.resolve("rs3-routing-target"))
+            namespace = lease
+            val lobby = Rs3Endpoint.Lobby(targets.lobbyId)
+            val routes =
+                listOf(43594, 443).map { port ->
+                    Rs3RelayRoute(lease.addresses, lobby, targets.lobbyHost, port)
+                }
+            relayServer.registerRoutes(routes).get(20, TimeUnit.SECONDS)
+            val host = lease.addresses.address(lobby).hostAddress
+            ClientTypeDictionary[targets.gamePort] = "RS3 (${operatingSystem.shortName})"
+            val running =
+                Rs3ClientHandle(relayServer, modulusHex, targets.gamePort) {
+                    ClientTypeDictionary.remove(targets.gamePort)
+                    lease.close()
+                }
+            handle = running
+            val rewritten = upstreamConfig.rewriteLobbyHost(host)
             val clientArgs = rewritten.toClientArgs()
 
             launchExecutable(
@@ -1001,14 +1022,20 @@ public class ProxyService(
                 operatingSystem = operatingSystem,
                 character = character,
                 args = clientArgs,
+                onProcessExit = running::shutdown,
             )
         } catch (t: Throwable) {
-            ClientTypeDictionary.remove(targets.gamePort)
-            relayServer.shutdown()
+            val running = handle
+            if (running != null) {
+                running.shutdown()
+            } else {
+                val lease = namespace
+                relayServer.shutdown().whenComplete { _, _ -> lease?.close() }
+            }
             throw t
         }
 
-        return Rs3ClientHandle(relayServer, modulusHex, targets.gamePort)
+        return checkNotNull(handle)
     }
 
     private fun Rs3JavConfig.toClientArgs(): List<String> {
@@ -1485,7 +1512,7 @@ public class ProxyService(
 
     public companion object {
         private val logger = InlineLogger()
-        private const val REPLAY_PROXY_TARGET_ID = 98
+        private const val REPLAY_PROXY_TARGET_ID = LocalAddressRanges.REPLAY_TARGET_ID
         private val PROPERTIES_FILE = CONFIGURATION_PATH.resolve("proxy.properties")
         private const val FAKE_REPLAY_CHARACTER_ID = "0"
         private const val FAKE_REPLAY_SESSION_ID = "JX_REPLAY_SESSION"

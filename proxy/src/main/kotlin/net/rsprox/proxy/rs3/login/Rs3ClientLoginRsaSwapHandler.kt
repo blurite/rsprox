@@ -33,7 +33,7 @@ public class Rs3ClientLoginRsaSwapHandler(
             State.AWAITING_HANDSHAKE_BYTE -> {
                 if (!input.isReadable) return
                 val handshakeByte = input.readByte()
-                out += Unpooled.buffer(1).writeByte(handshakeByte.toInt())
+                out += Rs3LoginFrame(Unpooled.buffer(1).writeByte(handshakeByte.toInt()))
 
                 if (handshakeByte.toInt() != LOGIN_HANDSHAKE_TYPE) {
                     ctx.pipeline().remove(this)
@@ -44,7 +44,6 @@ public class Rs3ClientLoginRsaSwapHandler(
 
             State.AWAITING_LOGIN_HEADER -> {
                 if (!input.isReadable(3)) return
-                input.markReaderIndex()
                 loginType = input.readUnsignedByte().toInt()
                 loginPayloadLength = input.readUnsignedShort()
                 state = State.AWAITING_LOGIN_PAYLOAD
@@ -54,7 +53,7 @@ public class Rs3ClientLoginRsaSwapHandler(
                 if (!input.isReadable(loginPayloadLength)) return
                 val payload = input.readSlice(loginPayloadLength).retain()
                 try {
-                    out += handleLoginPacket(loginType, payload)
+                    out += Rs3LoginFrame(handleLoginPacket(loginType, payload))
                 } finally {
                     payload.release()
                 }
@@ -67,16 +66,11 @@ public class Rs3ClientLoginRsaSwapHandler(
         type: Int,
         payload: ByteBuf,
     ): ByteBuf {
-        if (type != LOBBY_LOGIN_TYPE && type != GAME_LOGIN_TYPE) {
-            return rebuild(type, payload)
+        require(type == LOBBY_LOGIN_TYPE || type == GAME_LOGIN_TYPE) {
+            "Unsupported RS3 login type: $type"
         }
-
-        return try {
-            swapRsaBlock(type, payload)
-        } catch (e: Exception) {
-            payload.readerIndex(0)
-            rebuild(type, payload)
-        }
+        // A block encrypted to the proxy cannot safely be forwarded to the real server.
+        return swapRsaBlock(type, payload)
     }
 
     private fun swapRsaBlock(
@@ -86,8 +80,10 @@ public class Rs3ClientLoginRsaSwapHandler(
         val buildMajor = payload.readInt()
         val buildMinor = payload.readInt()
 
-        val isReconnecting = type == GAME_LOGIN_TYPE && payload.readUnsignedByte().toInt() == 1
-        check(!isReconnecting) { "Reconnect login blocks aren't handled yet" }
+        if (type == GAME_LOGIN_TYPE) {
+            val reconnectFlag = payload.readUnsignedByte().toInt()
+            check(reconnectFlag == 0) { "Only normal game-login blocks are handled; reconnect flag: $reconnectFlag" }
+        }
 
         val rsaSize = payload.readUnsignedShort()
         val rsaBlock = payload.readSlice(rsaSize)
@@ -100,8 +96,6 @@ public class Rs3ClientLoginRsaSwapHandler(
                 plaintext.release()
             }
 
-        onCiphersEstablished(block.buildStreamCipherPair(), block.buildStreamCipherPair())
-
         val reEncryptedBlock = Rs3LoginBlock.encode(block)
         val reEncrypted =
             try {
@@ -110,21 +104,23 @@ public class Rs3ClientLoginRsaSwapHandler(
                 reEncryptedBlock.release()
             }
 
-        val remainingBody = payload.retainedSlice()
-
         val newPayload = Unpooled.buffer()
-        newPayload.writeInt(buildMajor)
-        newPayload.writeInt(buildMinor)
-        if (type == GAME_LOGIN_TYPE) {
-            newPayload.writeByte(0)
+        try {
+            newPayload.writeInt(buildMajor)
+            newPayload.writeInt(buildMinor)
+            if (type == GAME_LOGIN_TYPE) {
+                newPayload.writeByte(0)
+            }
+            newPayload.writeShort(reEncrypted.readableBytes())
+            newPayload.writeBytes(reEncrypted)
+            newPayload.writeBytes(payload)
+            require(newPayload.readableBytes() <= 65535) { "Re-encrypted login exceeds its length field" }
+            onCiphersEstablished(block.buildStreamCipherPair(), block.buildStreamCipherPair())
+            return rebuild(type, newPayload)
+        } finally {
+            reEncrypted.release()
+            newPayload.release()
         }
-        newPayload.writeShort(reEncrypted.readableBytes())
-        newPayload.writeBytes(reEncrypted)
-        newPayload.writeBytes(remainingBody)
-        reEncrypted.release()
-        remainingBody.release()
-
-        return rebuild(type, newPayload)
     }
 
     private fun rebuild(
