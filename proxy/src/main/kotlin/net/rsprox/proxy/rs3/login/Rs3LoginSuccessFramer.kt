@@ -29,6 +29,19 @@ public open class Rs3LoginSuccessFramer protected constructor(
     public var loginData: ByteArray? = null
         private set
 
+    /** Final two g8 values, shared by lobby/game success and the OSRS account identity contract. */
+    public val userId: Long?
+        get() = identityLong(16)
+
+    public val userHash: Long?
+        get() = identityLong(8)
+
+    private fun identityLong(distanceFromEnd: Int): Long? {
+        val data = loginData ?: return null
+        if (data.size < 25 + initialCipherDraws) return null
+        return java.nio.ByteBuffer.wrap(data, data.size - distanceFromEnd, Long.SIZE_BYTES).long
+    }
+
     public val variableBlocks: MutableList<ByteArray> = ArrayList()
     public var initializationTruncated: Boolean = false
         private set

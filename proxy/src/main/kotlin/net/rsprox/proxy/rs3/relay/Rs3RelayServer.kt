@@ -101,6 +101,12 @@ public class Rs3RelayServer(
     private var shuttingDown = false
     private val terminated = CompletableFuture<Unit>()
     private val recordings = Rs3BinaryRecorder(revision, masterIndex.copyOf())
+    private val bandwidthUpdates =
+        workerGroup.next().scheduleAtFixedRate(sessionMonitor::updateBandwidth, 1, 1, TimeUnit.SECONDS)
+
+    init {
+        packetDefinitions?.let(sessionMonitor::onPacketDefinitionsUpdate)
+    }
 
     private val dnsResolver =
         DnsNameResolverBuilder(workerGroup.next())
@@ -288,7 +294,14 @@ public class Rs3RelayServer(
                 rs3Decoder.serverProtTable,
                 rs3Decoder.clientProtTable,
             )
-        clientChannel.closeFuture().addListener { recording.close() }
+        clientChannel.closeFuture().addListener {
+            recording.close()
+            sessionMonitor.onConnectionClosed(clientChannel.id())
+        }
+        fun acceptPacketBytes(server: Boolean, bytes: ByteArray) {
+            sessionMonitor.onBytes(clientChannel.id(), server, bytes.size)
+            recording.accept(server, bytes)
+        }
         val clientDecoderService = rs3Decoder.clientPacketDecoder
         val serverDecoderService = rs3Decoder.serverPacketDecoder
 
@@ -326,6 +339,10 @@ public class Rs3RelayServer(
                     }
 
                 transcriberSession.onServerPacket(prot, message)
+                val state = transcriberSession.sessionState
+                state.getPlayerOrNull(state.localPlayerIndex)?.name?.let {
+                    sessionMonitor.onConnectionNameUpdate(clientChannel.id(), it)
+                }
             }
 
         val clientToServerDecoder =
@@ -429,6 +446,14 @@ public class Rs3RelayServer(
                                         val leftover = framer.consume(bytes)
                                         if (framer.isDone && framer.isSuccessful) {
                                             recording.login(framer as Rs3LoginSuccessFramer)
+                                            sessionMonitor.onConnectionLogin(
+                                                clientChannel.id(),
+                                                isWorldConnection,
+                                                endpoint?.id ?: -1,
+                                                (framer as? Rs3ServerLoginResponseFramer)?.displayName,
+                                                framer.userId ?: -1,
+                                                framer.userHash ?: -1,
+                                            )
                                             repeat(framer.initialCipherDraws) {
                                                 checkNotNull(cipherHolder.pair).decodeCipher.nextInt()
                                             }
@@ -444,11 +469,11 @@ public class Rs3RelayServer(
                                             }
                                         }
                                         if (leftover != null && leftover.isNotEmpty()) {
-                                            recording.accept(true, leftover)
+                                            acceptPacketBytes(true, leftover)
                                             serverToClientDecoder.accept(leftover)
                                         }
                                     } else if (framer?.isSuccessful == true) {
-                                        recording.accept(true, bytes)
+                                        acceptPacketBytes(true, bytes)
                                         serverToClientDecoder.accept(bytes)
                                     }
                                 }
@@ -509,11 +534,11 @@ public class Rs3RelayServer(
                         if (ackSkipper != null && !ackSkipper.isDone) {
                             val leftover = ackSkipper.consume(bytes)
                             if (leftover != null && leftover.isNotEmpty()) {
-                                recording.accept(false, leftover)
+                                acceptPacketBytes(false, leftover)
                                 clientToServerDecoder.accept(leftover)
                             }
                         } else {
-                            recording.accept(false, bytes)
+                            acceptPacketBytes(false, bytes)
                             clientToServerDecoder.accept(bytes)
                         }
                     },
@@ -559,6 +584,8 @@ public class Rs3RelayServer(
     public fun shutdown(): CompletableFuture<Unit> {
         if (shuttingDown) return terminated
         shuttingDown = true
+        bandwidthUpdates.cancel(false)
+        sessionMonitor.onLogout(Unit)
         mappedListeners.values.forEach { it.channel().close() }
         mappedListeners.clear()
         mappedRoutes.set(emptyMap())
@@ -567,6 +594,7 @@ public class Rs3RelayServer(
         val bosses = bossGroup.shutdownGracefully()
         workers.addListener {
             bosses.addListener {
+                sessionMonitor.onLogout(Unit)
                 recordings.shutdown().whenComplete { _, error ->
                     if (error == null) terminated.complete(Unit) else terminated.completeExceptionally(error)
                 }

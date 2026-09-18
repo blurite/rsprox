@@ -52,8 +52,9 @@ public class SessionPanel(
     private var streamNode: StreamTreeTableNode? = null
     private var tickNode: TickTreeTableNode? = null
     private var lastCycle = -1
+    private var rs3Connected = false
     public val isActive: Boolean
-        get() = streamNode != null
+        get() = if (type == SessionType.RS3) rs3Connected else streamNode != null
     private var portNumber: Int = -1
     private var jumpToBottom: Boolean = true
     private var scrollbarMax: Int = -1
@@ -214,6 +215,39 @@ public class SessionPanel(
 
                             SessionType.RS3 -> {
                                 val rs3SessionMonitor = Rs3SessionMonitor()
+                                rs3SessionMonitor.stateListener = { state ->
+                                    SwingUtilities.invokeLater {
+                                        val status = state.status
+                                        val name = status?.name.orEmpty()
+                                        val identityChanged =
+                                            metrics.username != name ||
+                                                metrics.userId != state.userId || metrics.userHash != state.userHash
+                                        rs3Connected = status != null
+                                        metrics.username = status?.name?.ifBlank { "Connected" }.orEmpty()
+                                        metrics.userId = state.userId
+                                        metrics.userHash = state.userHash
+                                        metrics.worldName =
+                                            when {
+                                                status == null -> ""
+                                                status.world -> "World ${status.endpoint}"
+                                                else -> "Lobby ${status.endpoint}"
+                                            }
+                                        metrics.bandInPerSec =
+                                            state.incomingBytesPerSecond.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+                                        metrics.bandOutPerSec =
+                                            state.outgoingBytesPerSecond.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+                                        if (identityChanged && name.isNotBlank() &&
+                                            state.userId != -1L && state.userHash != -1L
+                                        ) {
+                                            App.service.updateCredentials(name, state.userId, state.userHash)
+                                        }
+                                        sessionsPanel.updateTabTitle(
+                                            this@SessionPanel,
+                                            status?.name?.ifBlank { "RuneScape 3" } ?: "RuneScape 3",
+                                        )
+                                        notifyMetricsChanged()
+                                    }
+                                }
                                 rs3SessionMonitor.listener = { cycle, property ->
                                     if (!paused) {
                                         SwingUtilities.invokeLater {
