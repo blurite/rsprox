@@ -33,6 +33,7 @@ public class Rs3PersistedRsaKeyProvider(
     private val keyFile: Path =
         Path.of(System.getProperty("user.home"), ".rsprox", keyFileName)
 
+    @Synchronized
     public fun readOrGenerate(): RSAPrivateCrtKeyParameters {
         return readOrGenerateRsaKey(keyFile, keyLengthBits)
     }

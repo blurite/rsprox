@@ -1,7 +1,9 @@
 package net.rsprox.proxy.connection
 
+import java.util.concurrent.ConcurrentHashMap
+
 public data object ClientTypeDictionary {
-    private val dictionary: MutableMap<Int, String> = mutableMapOf()
+    private val dictionary = ConcurrentHashMap<Int, String>()
 
     public operator fun get(port: Int): String {
         return dictionary[port]
@@ -12,7 +14,7 @@ public data object ClientTypeDictionary {
         port: Int,
         name: String,
     ) {
-        val old = this.dictionary.put(port, name)
+        val old = this.dictionary.putIfAbsent(port, name)
         if (old != null) {
             throw IllegalArgumentException("Port $port registered more than once ($name/$old)")
         }

@@ -102,6 +102,7 @@ public data object JagexNativeClientDownloader {
         return CLIENTS_DIRECTORY.resolve(osclient.name)
     }
 
+    @Synchronized
     private fun downloadRs3(upstreamJavConfigUrl: String): Path {
         require("binaryType=2" in upstreamJavConfigUrl) {
             "upstreamJavConfigUrl must include binaryType=2 (Windows 64-bit)"

@@ -45,6 +45,38 @@ public data class NativePatchCriteria(
             return this
         }
 
+        /** Revision-950 Windows live lobby/world endpoint construction; never patch arbitrary HTTPS constants. */
+        public fun rs3LoginPorts(
+            primary: Int,
+            alternate: Int,
+        ): Builder {
+            require(type == NativeClientType.RS3_WIN)
+            require(primary in 1024..65535 && alternate in 1024..65535 && primary != alternate)
+            require(primary != DEFAULT_PORT && alternate != DEFAULT_PORT)
+            val first = intToHexStringLE(primary)
+            val second = intToHexStringLE(alternate)
+            // Each guarded instruction window must occur exactly once. Only the two mov immediates change.
+            // Later lobby selection, world selection, and the second world selection entry point respectively.
+            val sites =
+                listOf(
+                    "483986709A0100750E41BE4AAA000041BCBB010000EB1AB8C0630000" to
+                        "483986709A0100750E41BE${first}41BC${second}EB1AB8C0630000",
+                    "493980709A0100750CBF4AAA0000BEBB010000EB18B8C0630000" to
+                        "493980709A0100750CBF${first}BE${second}EB18B8C0630000",
+                    "483982709A0100750E41BE4AAA000041BFBB010000EB1BB8C0630000" to
+                        "483982709A0100750E41BE${first}41BF${second}EB1BB8C0630000",
+                )
+            for ((old, new) in sites) {
+                wildcardByteSequence(
+                    hexPattern(old),
+                    hexPattern(new),
+                    FailureBehaviour.ERROR,
+                    DuplicateReplacementBehaviour.ERROR_ON_DUPLICATES,
+                )
+            }
+            return this
+        }
+
         public fun acceptAllLoopbackAddresses(): Builder {
             when (type) {
                 NativeClientType.WIN, NativeClientType.RS3_WIN -> {

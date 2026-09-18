@@ -5,11 +5,11 @@ import java.io.ByteArrayOutputStream
 import java.nio.charset.Charset
 import java.util.concurrent.CompletableFuture
 
-/** Revision-950 endpoint payloads. All bytes outside hostname spans are retained verbatim. */
+/** Revision-950 endpoint payloads. Only hostname spans and explicitly framed port pairs change. */
 internal class Rs3EndpointRewriter(
     private val addresses: Rs3LocalAddressSpace,
+    private val localPorts: Rs3RelayPorts,
     private val register: (List<Rs3RelayRoute>) -> CompletableFuture<Unit>,
-    private val worldPorts: List<Int>,
     private val onWorldDefinitions: (Map<Int, WorldMetadata>) -> Unit = {},
 ) {
     private data class Host(
@@ -23,6 +23,7 @@ internal class Rs3EndpointRewriter(
         val host: Host,
         val endpoint: Rs3Endpoint,
         val ports: List<Int>,
+        val portStart: Int? = null,
     )
 
     fun lobbySuccess(payload: ByteArray): CompletableFuture<ByteArray> {
@@ -34,11 +35,12 @@ internal class Rs3EndpointRewriter(
         reader.skip(5)
         val world = reader.u2()
         val host = reader.string(marked = true)
+        val portStart = reader.position
         val ports = listOf(reader.u2(), reader.u2())
         reader.skip(16) // Two session values, preserved without interpretation.
         reader.end()
         if (world == 65535) return CompletableFuture.completedFuture(payload)
-        return replace(payload, listOf(Replacement(host, Rs3Endpoint.World(world), ports)), 255)
+        return replace(payload, listOf(Replacement(host, Rs3Endpoint.World(world), ports, portStart)), 255)
     }
 
     fun redirect(
@@ -59,10 +61,11 @@ internal class Rs3EndpointRewriter(
             }
             else -> error("Not an endpoint redirect: $name")
         }
+        val portStart = reader.position
         val ports = listOf(reader.u2(), reader.u2())
         if (name == "LOGOUT_TRANSFER") reader.u1()
         reader.end()
-        return replace(payload, listOf(Replacement(host, endpoint, ports)), 255)
+        return replace(payload, listOf(Replacement(host, endpoint, ports, portStart)), 255)
     }
 
     fun worldList(
@@ -98,7 +101,12 @@ internal class Rs3EndpointRewriter(
                 if (reader.smart() != 0) reader.string(marked = true)
                 val activity = reader.string(marked = true).value
                 worlds[id] = WorldMetadata(flags, location, activity)
-                replacements += Replacement(reader.string(marked = true), Rs3Endpoint.World(id), worldPorts)
+                replacements +=
+                    Replacement(
+                        reader.string(marked = true),
+                        Rs3Endpoint.World(id),
+                        listOf(Rs3RelayPorts.UPSTREAM_PRIMARY, Rs3RelayPorts.UPSTREAM_ALTERNATE),
+                    )
             }
             definitions = worlds
             reader.skip(4) // Opaque definitions token: native retains it, it does not recalculate it.
@@ -127,21 +135,35 @@ internal class Rs3EndpointRewriter(
     ): CompletableFuture<ByteArray> {
         // Validate the entire payload/result before binding anything.
         val routes = ArrayList<Rs3RelayRoute>()
+        val rewrittenPorts = payload.copyOf()
+        for (replacement in replacements) {
+            replacement.portStart?.let { offset ->
+                rewrittenPorts[offset] = (localPorts.primary ushr 8).toByte()
+                rewrittenPorts[offset + 1] = localPorts.primary.toByte()
+                rewrittenPorts[offset + 2] = (localPorts.alternate ushr 8).toByte()
+                rewrittenPorts[offset + 3] = localPorts.alternate.toByte()
+            }
+        }
         val output = ByteArrayOutputStream()
         var position = 0
         for (replacement in replacements) {
             val host = replacement.host
             require(host.value.isNotEmpty()) { "Missing destination hostname" }
-            output.write(payload, position, host.start - position)
+            output.write(rewrittenPorts, position, host.start - position)
             if (host.marked) output.write(0)
             output.write(addresses.address(replacement.endpoint).hostAddress.toByteArray(Charsets.US_ASCII))
             output.write(0)
             position = host.end
-            for (port in replacement.ports.distinct()) {
-                routes += Rs3RelayRoute(addresses, replacement.endpoint, host.value, port)
-            }
+            routes +=
+                localPorts.routes(
+                    addresses,
+                    replacement.endpoint,
+                    host.value,
+                    replacement.ports[0],
+                    replacement.ports[1],
+                )
         }
-        output.write(payload, position, payload.size - position)
+        output.write(rewrittenPorts, position, rewrittenPorts.size - position)
         val result = output.toByteArray()
         require(result.size <= limit) { "Rewritten endpoint payload exceeds native length limit" }
         return register(routes).thenApply { result }
@@ -150,7 +172,8 @@ internal class Rs3EndpointRewriter(
     private class Reader(
         private val data: ByteArray,
     ) {
-        private var position = 0
+        var position = 0
+            private set
         val remaining: Int get() = data.size - position
 
         fun skip(count: Int) {

@@ -1,7 +1,7 @@
 package net.rsprox.proxy.rs3.config
 
-import net.rsprox.patch.native.NativePatchCriteria
 import net.rsprox.cache.rs3.Rs3Js5ConnectionInfo
+import net.rsprox.patch.native.NativePatchCriteria
 import java.net.URL
 
 @JvmInline
@@ -102,28 +102,54 @@ public value class Rs3JavConfig(
             checkNotNull(getParamValue(LOBBY_HOST_PARAM_ID)) {
                 "param=$LOBBY_HOST_PARAM_ID (lobby host) not found in jav_config"
             }
-        val gamePort =
-            checkNotNull(getParamValue(GAME_PORT_PARAM_ID)?.toIntOrNull()) {
-                "param=$GAME_PORT_PARAM_ID (game port) not found in jav_config"
-            }
         val revision = getServerVersion()
-        return Rs3UpstreamTargets(lobbyId, lobbyHost, gamePort, revision)
+
+        fun port(id: Int): Int {
+            val value = getParamValue(id)?.toIntOrNull()
+            require(value != null && value in 1..65535) { "Missing or invalid RS3 lobby port parameter $id" }
+            return value
+        }
+        return Rs3UpstreamTargets(
+            lobbyId,
+            lobbyHost,
+            port(LOBBY_PORT_PARAM_ID),
+            port(LOBBY_ALTERNATE_PORT_PARAM_ID),
+            revision,
+        )
     }
 
-    public fun captureJs5ConnectionInfo(): Rs3Js5ConnectionInfo = Rs3Js5ConnectionInfo(
-        host = checkNotNull(getParamValue(37)) { "RS3 jav_config has no JS5 host" },
-        port = checkNotNull(getParamValue(41)?.toIntOrNull()) { "RS3 jav_config has no JS5 port" },
-        revision = getServerVersion(),
-        token = checkNotNull(getParamValue(29)) { "RS3 jav_config has no JS5 token" },
-    )
+    public fun captureJs5ConnectionInfo(): Rs3Js5ConnectionInfo =
+        Rs3Js5ConnectionInfo(
+            host = checkNotNull(getParamValue(37)) { "RS3 jav_config has no JS5 host" },
+            port = checkNotNull(getParamValue(41)?.toIntOrNull()) { "RS3 jav_config has no JS5 port" },
+            revision = getServerVersion(),
+            token = checkNotNull(getParamValue(29)) { "RS3 jav_config has no JS5 token" },
+        )
 
-    public fun rewriteLobbyHost(localHost: String): Rs3JavConfig {
-        val prefix = "param=$LOBBY_HOST_PARAM_ID="
+    public fun rewriteLobbyEndpoint(
+        localHost: String,
+        primaryPort: Int,
+        alternatePort: Int,
+    ): Rs3JavConfig {
+        require(localHost.isNotBlank() && localHost.none { it.isWhitespace() || it == '\u0000' })
+        require(primaryPort in 1..65535 && alternatePort in 1..65535)
+        val replacements =
+            mapOf(
+                "param=$LOBBY_HOST_PARAM_ID=" to localHost,
+                "param=$LOBBY_PORT_PARAM_ID=" to primaryPort.toString(),
+                "param=$LOBBY_ALTERNATE_PORT_PARAM_ID=" to alternatePort.toString(),
+            )
+        for (prefix in replacements.keys) {
+            require(text.lineSequence().count { it.startsWith(prefix) } == 1) {
+                "Expected exactly one RS3 lobby parameter $prefix"
+            }
+        }
         val rewritten =
             text
                 .lineSequence()
                 .joinToString("\n") { line ->
-                    if (line.startsWith(prefix)) "$prefix$localHost" else line
+                    val replacement = replacements.entries.firstOrNull { line.startsWith(it.key) }
+                    if (replacement != null) replacement.key + replacement.value else line
                 }
         return Rs3JavConfig(rewritten)
     }
@@ -136,6 +162,7 @@ public value class Rs3JavConfig(
         private const val SERVER_VERSION_PREFIX = "server_version="
         private const val LOBBY_ID_PARAM_ID = 2
         private const val LOBBY_HOST_PARAM_ID = 3
-        private const val GAME_PORT_PARAM_ID = 41
+        private const val LOBBY_PORT_PARAM_ID = 47
+        private const val LOBBY_ALTERNATE_PORT_PARAM_ID = 48
     }
 }

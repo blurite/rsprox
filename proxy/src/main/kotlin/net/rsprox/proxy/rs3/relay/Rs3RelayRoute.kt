@@ -12,11 +12,13 @@ public class Rs3RelayRoute(
     public val addressSpace: Rs3LocalAddressSpace,
     public val endpoint: Rs3Endpoint,
     public val upstreamHost: String,
+    public val localPort: Int,
     public val upstreamPort: Int,
 ) {
-    public val localAddress: InetSocketAddress = InetSocketAddress(addressSpace.address(endpoint), upstreamPort)
+    public val localAddress: InetSocketAddress = InetSocketAddress(addressSpace.address(endpoint), localPort)
 
     init {
+        require(localPort in 1024..65535 && localPort != 43594) { "Invalid RS3 local relay port: $localPort" }
         require(upstreamPort in 1..65535) { "Invalid upstream port: $upstreamPort" }
         require(upstreamHost.isNotBlank() && upstreamHost.none { it.isWhitespace() || it == '\u0000' }) {
             "Invalid upstream hostname"

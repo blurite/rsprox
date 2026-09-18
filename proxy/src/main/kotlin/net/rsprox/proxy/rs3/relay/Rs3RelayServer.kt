@@ -73,6 +73,7 @@ private class CipherHolder {
 }
 
 public class Rs3RelayServer(
+    private val localPorts: Rs3RelayPorts,
     private val proxyPrivateKey: RSAPrivateCrtKeyParameters,
     private val sessionMonitor: Rs3SessionMonitor = Rs3SessionMonitor(),
     realServerModulusHex: String,
@@ -154,11 +155,18 @@ public class Rs3RelayServer(
     @Synchronized
     internal fun registerRoutes(routes: List<Rs3RelayRoute>): CompletableFuture<Unit> {
         check(!shuttingDown) { "RS3 relay is shutting down" }
+        require(routes.all { it.localPort == localPorts.primary || it.localPort == localPorts.alternate }) {
+            "Route does not belong to this RS3 client's port pair"
+        }
         val unique = routes.associateBy { it.localAddress }
         require(
             routes.groupBy { it.localAddress }.values.all { entries ->
                 val first = entries.first()
-                entries.all { it.upstreamHost == first.upstreamHost && it.endpoint == first.endpoint }
+                entries.all {
+                    it.upstreamHost == first.upstreamHost &&
+                        it.upstreamPort == first.upstreamPort &&
+                        it.endpoint == first.endpoint
+                }
             },
         ) { "Conflicting routes in endpoint update" }
         val bindings =
@@ -166,7 +174,13 @@ public class Rs3RelayServer(
                 val binding = mappedListeners[address] ?: bindMappedListener(address)
                 val complete = CompletableFuture<Unit>()
                 binding.addListener { result ->
-                    if (result.isSuccess) complete.complete(Unit) else complete.completeExceptionally(result.cause())
+                    if (result.isSuccess) {
+                        complete.complete(Unit)
+                    } else {
+                        complete.completeExceptionally(
+                            IllegalStateException("Unable to bind RS3 local relay at $address", result.cause()),
+                        )
+                    }
                 }
                 complete
             }
@@ -357,8 +371,8 @@ public class Rs3RelayServer(
             val rewriter =
                 Rs3EndpointRewriter(
                     checkNotNull(addresses),
+                    localPorts,
                     ::registerRoutes,
-                    listOf(43594, 443),
                     recordings::worldDefinitions,
                 )
             val stream =

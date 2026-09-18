@@ -58,7 +58,7 @@ import net.rsprox.proxy.rs3.Rs3ClientHandle
 import net.rsprox.proxy.rs3.config.Rs3JavConfig
 import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
 import net.rsprox.proxy.rs3.relay.Rs3Endpoint
-import net.rsprox.proxy.rs3.relay.Rs3RelayRoute
+import net.rsprox.proxy.rs3.relay.Rs3RelayPorts
 import net.rsprox.proxy.rs3.relay.Rs3RelayServer
 import net.rsprox.proxy.rs3.relay.Rs3RoutingNamespace
 import net.rsprox.proxy.rs3.transcriber.Rs3SessionMonitor
@@ -99,6 +99,7 @@ import java.nio.file.Path
 import java.time.Instant
 import java.util.*
 import java.util.concurrent.Callable
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
@@ -128,7 +129,7 @@ public class ProxyService(
     private var properties: ProxyProperties by Delegates.notNull()
     private var availablePort: Int = -1
     private var initialPort: Int = -1
-    private val processes: MutableMap<Int, List<ProcessHandle>> = mutableMapOf()
+    private val processes = ConcurrentHashMap<Int, List<ProcessHandle>>()
     private val connections: ProxyConnectionContainer = ProxyConnectionContainer()
     private lateinit var credentials: BinaryCredentialsStore
     private var rspsModulus: String? = null
@@ -835,7 +836,16 @@ public class ProxyService(
     }
 
     public fun allocatePort(): Int {
-        return this.availablePort++
+        return allocatePorts(1)
+    }
+
+    @Synchronized
+    private fun allocatePorts(count: Int): Int {
+        require(count > 0)
+        check(availablePort in 1024..65535 && count <= 65536 - availablePort) { "Proxy port range exhausted" }
+        val first = availablePort
+        availablePort += count
+        return first
     }
 
     private fun portOffset(port: Int): Int {
@@ -949,21 +959,28 @@ public class ProxyService(
         character: JagexCharacter?,
         upstreamJavConfigUrl: String = "https://world5.runescape.com/jav_config.ws?binaryType=2",
     ): Rs3ClientHandle {
+        val primaryPort = allocatePorts(2)
+        val localPorts = Rs3RelayPorts(primaryPort, primaryPort + 1)
         val proxyKey = Rs3ProxyRsaKeyProvider.readOrGenerate()
         val modulusHex = Rs3ProxyRsaKeyProvider.publicModulusHex(proxyKey)
 
-        val downloadedClient = JagexNativeClientDownloader.download(NativeClientType.RS3_WIN, upstreamJavConfigUrl)
-        val extension = if (downloadedClient.extension.isNotEmpty()) ".${downloadedClient.extension}" else ""
-        val stamp = System.currentTimeMillis()
         val patchedGameBinaryPath =
-            TEMP_CLIENTS_DIRECTORY.resolve("${downloadedClient.nameWithoutExtension}-rs3-$stamp$extension")
-        downloadedClient.copyTo(patchedGameBinaryPath, overwrite = true)
+            synchronized(JagexNativeClientDownloader) {
+                val downloaded = JagexNativeClientDownloader.download(NativeClientType.RS3_WIN, upstreamJavConfigUrl)
+                val extension = if (downloaded.extension.isNotEmpty()) ".${downloaded.extension}" else ""
+                val stamp = System.currentTimeMillis()
+                val path =
+                    TEMP_CLIENTS_DIRECTORY.resolve("${downloaded.nameWithoutExtension}-rs3-$primaryPort-$stamp$extension")
+                downloaded.copyTo(path, overwrite = false)
+                path
+            }
 
         val patcher = NativePatcher()
         val gameCriteria =
             NativePatchCriteria
-                .Builder(NativeClientType.WIN)
+                .Builder(NativeClientType.RS3_WIN)
                 .rsaModulus(modulusHex)
+                .rs3LoginPorts(localPorts.primary, localPorts.alternate)
                 .build()
         val gameClientPatchResult = patcher.patch(patchedGameBinaryPath, gameCriteria)
         check(gameClientPatchResult is PatchResult.Success) {
@@ -976,7 +993,7 @@ public class ProxyService(
 
         val upstreamConfig = Rs3JavConfig(URL(upstreamJavConfigUrl))
         val targets = upstreamConfig.captureUpstreamTargets()
-        require(targets.revision == 950 && targets.gamePort == 43594) {
+        require(targets.revision == 950) {
             "Mapped RS3 routing is currently verified only for the live revision-950 profile"
         }
         // Bootstrap on the launch worker, before relay event loops see any game packets.
@@ -985,6 +1002,7 @@ public class ProxyService(
 
         val relayServer =
             Rs3RelayServer(
+                localPorts = localPorts,
                 proxyPrivateKey = proxyKey,
                 sessionMonitor = sessionMonitor,
                 realServerModulusHex = originalModulusHex,
@@ -993,7 +1011,7 @@ public class ProxyService(
                 masterIndex = cacheResolver.masterIndexSnapshot,
                 resolveUpstream = {
                     val fresh = Rs3JavConfig(URL(upstreamJavConfigUrl)).captureUpstreamTargets()
-                    fresh.lobbyHost to fresh.gamePort
+                    fresh.lobbyHost to fresh.lobbyPort
                 },
                 filterSetStore = this.filterSetStore,
                 settingSetStore = this.settingsStore,
@@ -1002,27 +1020,30 @@ public class ProxyService(
         var handle: Rs3ClientHandle? = null
         try {
             val lease =
-                Rs3RoutingNamespace.acquire(CONFIGURATION_PATH.resolve("rs3-routing-target"))
+                Rs3RoutingNamespace.acquire(CONFIGURATION_PATH.resolve("rs3-routing-target"), localPorts)
             namespace = lease
             val lobby = Rs3Endpoint.Lobby(targets.lobbyId)
             val routes =
-                listOf(43594, 443).map { port ->
-                    Rs3RelayRoute(lease.addresses, lobby, targets.lobbyHost, port)
-                }
+                localPorts.routes(
+                    lease.addresses, lobby, targets.lobbyHost, targets.lobbyPort, targets.lobbyAlternatePort,
+                )
             relayServer.registerRoutes(routes).get(20, TimeUnit.SECONDS)
             val host = lease.addresses.address(lobby).hostAddress
-            ClientTypeDictionary[targets.gamePort] = "RS3 (${operatingSystem.shortName})"
+            ClientTypeDictionary[localPorts.primary] = "RS3 (${operatingSystem.shortName})"
+            ClientTypeDictionary[localPorts.alternate] = "RS3 (${operatingSystem.shortName})"
             val running =
-                Rs3ClientHandle(relayServer, modulusHex, targets.gamePort) {
-                    ClientTypeDictionary.remove(targets.gamePort)
+                Rs3ClientHandle(relayServer, modulusHex, localPorts.primary) {
+                    ClientTypeDictionary.remove(localPorts.primary)
+                    ClientTypeDictionary.remove(localPorts.alternate)
                     lease.close()
                 }
             handle = running
-            val rewritten = upstreamConfig.rewriteLobbyHost(host)
+            val rewritten =
+                upstreamConfig.rewriteLobbyEndpoint(host, localPorts.primary, localPorts.alternate)
             val clientArgs = rewritten.toClientArgs()
 
             launchExecutable(
-                port = targets.gamePort,
+                port = localPorts.primary,
                 path = patchedGameBinaryPath,
                 operatingSystem = operatingSystem,
                 character = character,
