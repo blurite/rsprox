@@ -981,6 +981,7 @@ public class ProxyService(
                 .Builder(NativeClientType.RS3_WIN)
                 .rsaModulus(modulusHex)
                 .rs3LoginPorts(localPorts.primary, localPorts.alternate)
+                .rs3WindowTitle()
                 .build()
         val gameClientPatchResult = patcher.patch(patchedGameBinaryPath, gameCriteria)
         check(gameClientPatchResult is PatchResult.Success) {

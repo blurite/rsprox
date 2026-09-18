@@ -77,6 +77,17 @@ public data class NativePatchCriteria(
             return this
         }
 
+        /** Direct launches do not receive the window title through the official launcher's pipe. */
+        public fun rs3WindowTitle(): Builder {
+            require(type == NativeClientType.RS3_WIN)
+            return constString(
+                "RuneTekApp",
+                "RuneScape",
+                FailureBehaviour.ERROR,
+                DuplicateReplacementBehaviour.ERROR_ON_DUPLICATES,
+            )
+        }
+
         public fun acceptAllLoopbackAddresses(): Builder {
             when (type) {
                 NativeClientType.WIN, NativeClientType.RS3_WIN -> {

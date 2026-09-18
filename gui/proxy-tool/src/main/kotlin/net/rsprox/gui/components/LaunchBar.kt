@@ -365,7 +365,7 @@ public class LaunchBar(
         ) = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus).apply {
             if (value is SessionType) {
                 icon = value.icon
-                text = value.name
+                text = value.displayName
             }
         }
     }
