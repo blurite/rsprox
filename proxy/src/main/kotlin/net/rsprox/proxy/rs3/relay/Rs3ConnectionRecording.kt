@@ -1,19 +1,23 @@
 package net.rsprox.proxy.rs3.relay
 
+import net.rsprot.compression.HuffmanCodec
 import net.rsprot.crypto.cipher.StreamCipherPair
 import net.rsprox.proxy.rs3.binary.Rs3BinaryRecorder
 import net.rsprox.proxy.rs3.login.Rs3LoginSuccessFramer
 import net.rsprox.proxy.rs3.login.Rs3WorldLoginResponseFramer
+import net.rsprox.proxy.rs3.privacy.Rs3PacketSanitizer
 import net.rsprox.proxy.rs3.protocol.Rs3ProtDecoder.ProtEntry
 
-/** Independent strict framing/ciphers: decoder errors and UI filters cannot remove recorded packets. */
+/** Independent framing/ciphers: UI filters cannot alter recording; privacy rules apply before storage. */
 internal class Rs3ConnectionRecording(
     private val recorder: Rs3BinaryRecorder,
     private val connection: Rs3BinaryRecorder.Connection,
     private val revision: Int,
     private val servers: Map<Int, ProtEntry>,
     private val clients: Map<Int, ProtEntry>,
+    huffman: HuffmanCodec,
 ) {
+    private val sanitizer = Rs3PacketSanitizer(huffman)
     private var ciphers: StreamCipherPair? = null
     private var serverStream: Rs3PacketStream? = null
     private var clientStream: Rs3PacketStream? = null
@@ -27,6 +31,7 @@ internal class Rs3ConnectionRecording(
         major: Int,
         minor: Int,
     ) = safely {
+        // Note(revision): Verify/update Rs3PacketSanitizer and the live GUI policy before enabling another revision.
         require(major == revision && major == 950) { "Unsupported RS3 recording revision" }
         require(servers.keys.none { it in 0xFC..0xFF }) { "Recording opcode collision" }
         this.minor = minor
@@ -35,16 +40,8 @@ internal class Rs3ConnectionRecording(
         ciphers = pair
         serverStream =
             Rs3PacketStream(servers, { pair.decodeCipher }, true) { entry, payload ->
-                // Preserve original byte values, not re-encoded strings. No cipher seeds enter the file.
-                val start =
-                    when (entry.name) {
-                        "URL_OPEN" -> 1
-                        "SOCIAL_NETWORK_LOGOUT" -> 0
-                        else -> payload.size
-                    }
-                for (index in start until payload.size) {
-                    payload[index] = (payload[index].toInt() - pair.decodeCipher.nextInt()).toByte()
-                }
+                // Normalize payload ISAAC before redaction, advancing the original cipher exactly once.
+                sanitizer.normalizeServerPayload(entry.name, payload) { pair.decodeCipher }
             }
         clientStream = Rs3PacketStream(clients, { pair.encoderCipher }, false)
     }
@@ -72,7 +69,10 @@ internal class Rs3ConnectionRecording(
         check(successful) { "Game packets arrived before successful login" }
         val stream = checkNotNull(if (server) serverStream else clientStream)
         stream.accept(bytes) {
-            recorder.packet(connection, server, it.opcode, it.entry.length, it.payload)
+            val payload = sanitizer.sanitize(server, it.entry.name, it.payload)
+            if (payload != null) {
+                recorder.packet(connection, server, it.opcode, it.entry.length, payload)
+            }
         }
     }
 

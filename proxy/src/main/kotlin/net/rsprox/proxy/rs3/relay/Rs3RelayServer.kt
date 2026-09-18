@@ -22,14 +22,12 @@ import io.netty.resolver.ResolvedAddressTypes
 import io.netty.resolver.dns.DnsNameResolverBuilder
 import io.netty.util.concurrent.Future
 import net.rsprot.buffer.extensions.toJagByteBuf
+import net.rsprot.crypto.cipher.NopStreamCipher
 import net.rsprot.crypto.cipher.StreamCipherPair
-import net.rsprot.protocol.message.IncomingMessage
 import net.rsprox.cache.api.rs3.Rs3PacketDefinitions
 import net.rsprox.protocol.rs3.cache.rs3PacketDefinitions
-import net.rsprox.protocol.rs3.game.incoming.model.unknown.RawUnknownClientPacket
 import net.rsprox.protocol.rs3.game.outgoing.model.info.playerinfo.rs3AppearanceDefinitions
 import net.rsprox.protocol.rs3.game.outgoing.model.info.playerinfo.rs3PlayerInfoInitPending
-import net.rsprox.protocol.rs3.game.outgoing.model.unknown.RawUnknownServerPacket
 import net.rsprox.protocol.session.AttributeMap
 import net.rsprox.protocol.session.Session
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
@@ -43,6 +41,8 @@ import net.rsprox.proxy.rs3.login.Rs3LoginSuccessFramer
 import net.rsprox.proxy.rs3.login.Rs3ServerLoginResponseFramer
 import net.rsprox.proxy.rs3.login.Rs3WorldContinueAckSkipper
 import net.rsprox.proxy.rs3.login.Rs3WorldLoginResponseFramer
+import net.rsprox.proxy.rs3.privacy.Rs3LivePacketDecoder
+import net.rsprox.proxy.rs3.privacy.Rs3PacketSanitizer
 import net.rsprox.proxy.rs3.protocol.Rs3ProtDecoder
 import net.rsprox.proxy.rs3.transcriber.Rs3SessionMonitor
 import net.rsprox.proxy.rs3.transcriber.Rs3TranscriberSession
@@ -301,7 +301,11 @@ public class Rs3RelayServer(
         Session(-1, clientAttributes).rs3PacketDefinitions = packetDefinitions
 
         val rs3Decoder =
-            Rs3DecoderLoader.load(revision, huffman) { cipherHolder.pair?.decodeCipher }
+            Rs3DecoderLoader.load(revision, huffman) {
+                if (revision == 950) NopStreamCipher else cipherHolder.pair?.decodeCipher
+            }
+        val liveDecoder =
+            Rs3LivePacketDecoder(rs3Decoder, Rs3PacketSanitizer(huffman)) { cipherHolder.pair?.decodeCipher }
         val initialRecording =
             Rs3ConnectionRecording(
                 recordings,
@@ -314,8 +318,8 @@ public class Rs3RelayServer(
                 revision,
                 rs3Decoder.serverProtTable,
                 rs3Decoder.clientProtTable,
+                huffman,
             )
-        val clientDecoderService = rs3Decoder.clientPacketDecoder
         val serverDecoderService = rs3Decoder.serverPacketDecoder
 
         val monitoredContainer: MessageConsumerContainer =
@@ -361,22 +365,10 @@ public class Rs3RelayServer(
             Rs3ProtDecoder(
                 table = rs3Decoder.serverProtTable,
                 cipher = { cipherHolder.pair?.decodeCipher },
-            ) { opcode, bytes ->
+            ) packet@{ opcode, bytes ->
                 val prot = rs3Decoder.gameServerProtProvider[opcode]
-                val buffer = Unpooled.wrappedBuffer(bytes).toJagByteBuf()
                 val session = Session(state.localPlayerIndex, state.serverAttributes)
-
-                val message: IncomingMessage =
-                    try {
-                        serverDecoderService.decode(opcode, buffer, session)
-                    } catch (exception: Exception) {
-                        RawUnknownServerPacket(
-                            opcode,
-                            prot.toString(),
-                            bytes,
-                            "${exception.javaClass.simpleName}: ${exception.message.orEmpty()}",
-                        )
-                    }
+                val message = liveDecoder.decode(true, opcode, bytes, session) ?: return@packet
 
                 state.transcriber.onServerPacket(prot, message)
                 val transcript = state.transcriber.sessionState
@@ -394,21 +386,10 @@ public class Rs3RelayServer(
                 table = rs3Decoder.clientProtTable,
                 supportsExtendedOpcodes = false,
                 cipher = { cipherHolder.pair?.encoderCipher },
-            ) { opcode, bytes ->
+            ) packet@{ opcode, bytes ->
                 val prot = rs3Decoder.gameClientProtProvider[opcode]
-                val buffer = Unpooled.wrappedBuffer(bytes).toJagByteBuf()
                 val session = Session(state.localPlayerIndex, state.clientAttributes)
-                val message: IncomingMessage =
-                    try {
-                        clientDecoderService.decode(opcode, buffer, session)
-                    } catch (exception: Exception) {
-                        RawUnknownClientPacket(
-                            opcode,
-                            prot.toString(),
-                            bytes,
-                            "${exception.javaClass.simpleName}: ${exception.message.orEmpty()}",
-                        )
-                    }
+                val message = liveDecoder.decode(false, opcode, bytes, session) ?: return@packet
                 state.transcriber.onClientProt(prot, message)
             }
 
