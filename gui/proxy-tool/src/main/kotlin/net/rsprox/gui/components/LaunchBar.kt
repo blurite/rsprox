@@ -162,16 +162,22 @@ public class LaunchBar(
             }
 
         val proxyTargetLabel = createFieldLabel("Proxy Target")
-        fun updateProxyTargetRowVisibility() {
+        fun updateProxyTargetRowState() {
             val isRs3 = clientTypeDropdown.selectedItem == SessionType.RS3
-            proxyTargetLabel.isVisible = !isRs3
-            proxyTargetDropdown.isVisible = !isRs3
-            importTargetsButton.isVisible = !isRs3
+            val disabledReason =
+                if (isRs3) "Proxy target selection is currently only supported for Old School RuneScape." else null
+            proxyTargetLabel.isEnabled = !isRs3
+            proxyTargetDropdown.isEnabled = !isRs3
+            proxyTargetDropdown.renderer = ProxyTargetCellRenderer(if (isRs3) SessionType.RS3.displayName else null)
+            importTargetsButton.isEnabled = !isRs3
+            proxyTargetLabel.toolTipText = disabledReason
+            proxyTargetDropdown.toolTipText = disabledReason
+            importTargetsButton.toolTipText = disabledReason ?: "Import Proxy Targets"
         }
 
         clientTypeDropdown.addActionListener {
             App.service.setSelectedClient(clientTypeDropdown.selectedIndex)
-            updateProxyTargetRowVisibility()
+            updateProxyTargetRowState()
         }
 
         val launchButton =
@@ -190,7 +196,7 @@ public class LaunchBar(
         add(importTargetsButton, "w $CONTROL_HEIGHT!, h $CONTROL_HEIGHT!, wrap")
         add(launchButton, "spanx 2, growx, h 34!, gaptop 8")
 
-        updateProxyTargetRowVisibility()
+        updateProxyTargetRowState()
         refreshCharacters()
     }
 
@@ -370,7 +376,9 @@ public class LaunchBar(
         }
     }
 
-    private class ProxyTargetCellRenderer : DefaultListCellRenderer() {
+    private class ProxyTargetCellRenderer(
+        private val displayNameOverride: String? = null,
+    ) : DefaultListCellRenderer() {
         override fun getListCellRendererComponent(
             list: JList<*>?,
             value: Any?,
@@ -378,7 +386,9 @@ public class LaunchBar(
             isSelected: Boolean,
             cellHasFocus: Boolean,
         ) = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus).apply {
-            if (value is ProxyTargetConfig) {
+            if (displayNameOverride != null) {
+                text = displayNameOverride
+            } else if (value is ProxyTargetConfig) {
                 text =
                     if (value.revision != null && value.revision != "latest_supported") {
                         "${value.name} (${value.revision})"
