@@ -18,6 +18,7 @@ import net.rsprox.protocol.rs3.game.outgoing.model.interfaces.IfOpenSubActiveObj
 import net.rsprox.protocol.rs3.game.outgoing.model.interfaces.IfOpenSubActivePlayer
 import net.rsprox.protocol.rs3.game.outgoing.model.interfaces.IfOpenTop
 import net.rsprox.protocol.rs3.game.outgoing.model.map.RebuildNormal
+import net.rsprox.protocol.rs3.game.outgoing.model.map.Reconnect
 import net.rsprox.protocol.rs3.game.outgoing.model.map.RebuildRegion
 import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.TickEnd
 import net.rsprox.protocol.rs3.game.outgoing.model.misc.player.UpdateStat
@@ -85,10 +86,11 @@ public class Rs3SessionTracker(
                     }
                 }
             }
-            is RebuildNormal, is RebuildRegion -> {
+            is RebuildNormal, is RebuildRegion, is Reconnect -> {
                 val init = when (message) {
                     is RebuildNormal -> message.playerInfoInit
                     is RebuildRegion -> message.playerInfoInit
+                    is Reconnect -> message.playerInfoInit
                     else -> null
                 }
                 if (init != null) {

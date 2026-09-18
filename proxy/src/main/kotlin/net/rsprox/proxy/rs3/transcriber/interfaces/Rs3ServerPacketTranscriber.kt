@@ -97,6 +97,7 @@ import net.rsprox.protocol.rs3.game.outgoing.model.inv.UpdateInvFull
 import net.rsprox.protocol.rs3.game.outgoing.model.inv.UpdateInvPartial
 import net.rsprox.protocol.rs3.game.outgoing.model.inv.UpdateInvStopTransmit
 import net.rsprox.protocol.rs3.game.outgoing.model.map.RebuildNormal
+import net.rsprox.protocol.rs3.game.outgoing.model.map.Reconnect
 import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.SyncClock
 import net.rsprox.protocol.rs3.game.outgoing.model.map.lighting.PointLightExtendAbove
 import net.rsprox.protocol.rs3.game.outgoing.model.map.lighting.PointLightExtendBelow
@@ -273,6 +274,8 @@ public interface Rs3ServerPacketTranscriber {
     public fun legacyMessageGame(message: LegacyMessageGame)
 
     public fun rebuildNormal(message: RebuildNormal)
+
+    public fun reconnect(message: Reconnect)
 
     public fun legacyRebuildNormal(message: LegacyRebuildNormal)
 

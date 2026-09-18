@@ -56,6 +56,7 @@ import net.rsprox.protocol.rs3v950.game.outgoing.decoder.codec.inv.UpdateInvFull
 import net.rsprox.protocol.rs3v950.game.outgoing.decoder.codec.inv.UpdateInvPartialDecoder
 import net.rsprox.protocol.rs3v950.game.outgoing.decoder.codec.inv.UpdateInvStopTransmitDecoder
 import net.rsprox.protocol.rs3v950.game.outgoing.decoder.codec.map.RebuildNormalDecoder
+import net.rsprox.protocol.rs3v950.game.outgoing.decoder.codec.map.ReconnectDecoder
 import net.rsprox.protocol.rs3v950.game.outgoing.decoder.codec.map.lighting.PointLightExtendAboveDecoder
 import net.rsprox.protocol.rs3v950.game.outgoing.decoder.codec.map.lighting.PointLightExtendBelowDecoder
 import net.rsprox.protocol.rs3v950.game.outgoing.decoder.codec.map.lighting.PointLightAttenuationFalloffDecoder
@@ -284,6 +285,7 @@ internal object ServerMessageDecoderRepository {
                 bind(UpdateInvPartialDecoder())
                 bind(UpdateInvStopTransmitDecoder())
                 bind(RebuildNormalDecoder())
+                bind(ReconnectDecoder())
                 bind(Cutscene2dPlayDecoder())
                 bind(HintArrowDecoder())
                 bind(HintTrailDecoder())

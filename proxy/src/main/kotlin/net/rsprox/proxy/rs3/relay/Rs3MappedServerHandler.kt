@@ -24,7 +24,7 @@ internal class Rs3MappedServerHandler(
     private val finish: () -> Unit,
     onVariablesComplete: () -> Unit,
 ) : ChannelInboundHandlerAdapter() {
-    private val login: Rs3LoginSuccessFramer =
+    private var login: Rs3LoginSuccessFramer =
         if (world) {
             Rs3WorldLoginResponseFramer(onVariablesComplete = onVariablesComplete)
         } else {
@@ -40,8 +40,12 @@ internal class Rs3MappedServerHandler(
     private var queuedBytes = 0
     private var worldListTimeout: ScheduledFuture<*>? = null
 
-    fun beginLogin() {
+    fun beginLogin(reconnect: Boolean = false) {
         check(!started) { "Duplicate login on mapped connection" }
+        if (reconnect) {
+            check(world) { "Lobby reconnect is not a game reconnect" }
+            login = Rs3WorldLoginResponseFramer(reconnect = true)
+        }
         started = true
     }
 

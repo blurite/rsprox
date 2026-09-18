@@ -13,6 +13,7 @@ public class Rs3ClientLoginRsaSwapHandler(
     private val proxyPrivateKey: RSAPrivateCrtKeyParameters,
     private val realServerPublicKey: RSAKeyParameters,
     private val onRecordingCiphers: (StreamCipherPair, Int, Int) -> Unit = { _, _, _ -> },
+    private val onLoginMode: (Boolean) -> Unit = {},
     private val onCiphersEstablished: (real: StreamCipherPair, diagnosticCopy: StreamCipherPair) -> Unit,
 ) : ByteToMessageDecoder() {
     private enum class State {
@@ -81,10 +82,8 @@ public class Rs3ClientLoginRsaSwapHandler(
         val buildMajor = payload.readInt()
         val buildMinor = payload.readInt()
 
-        if (type == GAME_LOGIN_TYPE) {
-            val reconnectFlag = payload.readUnsignedByte().toInt()
-            check(reconnectFlag == 0) { "Only normal game-login blocks are handled; reconnect flag: $reconnectFlag" }
-        }
+        val reconnectFlag = if (type == GAME_LOGIN_TYPE) payload.readUnsignedByte().toInt() else 0
+        require(reconnectFlag in 0..1) { "Invalid reconnect flag: $reconnectFlag" }
 
         val rsaSize = payload.readUnsignedShort()
         val rsaBlock = payload.readSlice(rsaSize)
@@ -110,12 +109,13 @@ public class Rs3ClientLoginRsaSwapHandler(
             newPayload.writeInt(buildMajor)
             newPayload.writeInt(buildMinor)
             if (type == GAME_LOGIN_TYPE) {
-                newPayload.writeByte(0)
+                newPayload.writeByte(reconnectFlag)
             }
             newPayload.writeShort(reEncrypted.readableBytes())
             newPayload.writeBytes(reEncrypted)
             newPayload.writeBytes(payload)
             require(newPayload.readableBytes() <= 65535) { "Re-encrypted login exceeds its length field" }
+            onLoginMode(reconnectFlag == 1)
             onCiphersEstablished(block.buildStreamCipherPair(), block.buildStreamCipherPair())
             onRecordingCiphers(block.buildStreamCipherPair(), buildMajor, buildMinor)
             return rebuild(type, newPayload)

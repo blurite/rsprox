@@ -21,6 +21,7 @@ import net.rsprox.protocol.rs3.game.outgoing.model.camera.CameraUpdate
 import net.rsprox.protocol.rs3.game.outgoing.model.camera.CamForceAngle
 import net.rsprox.protocol.rs3.game.outgoing.model.camera.CamShake
 import net.rsprox.protocol.rs3.game.outgoing.model.map.RebuildNormal
+import net.rsprox.protocol.rs3.game.outgoing.model.map.Reconnect
 import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.HintArrow
 import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.HintTrail
 import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.NoTimeout
@@ -198,6 +199,10 @@ public class Rs3TranscriberPlugin(
     }
 
     override fun onServerPacket(prot: ClientProt, message: IncomingMessage) {
+        if (message is Reconnect) {
+            pass(message, Rs3Transcriber::reconnect)
+            return
+        }
         if (message is NoTimeout) {
             pass<NoTimeout>(message, Rs3Transcriber::noTimeout)
             return

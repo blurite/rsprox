@@ -230,6 +230,8 @@ public enum class GameServerProt(
     DBFILTER_DEBUG(GameServerProtId.DBFILTER_DEBUG, Prot.VAR_SHORT),
     SETDRAWORDER(GameServerProtId.SETDRAWORDER, 1),
     PLAYER_GROUP_DELTA(GameServerProtId.PLAYER_GROUP_DELTA, Prot.VAR_SHORT),
+    // Synthetic recording marker; never accepted as a live ISAAC packet.
+    RECONNECT(0xFF, Prot.VAR_SHORT),
     ;
 
     public companion object {

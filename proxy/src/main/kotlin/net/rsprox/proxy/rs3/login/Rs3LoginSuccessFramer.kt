@@ -3,12 +3,14 @@ package net.rsprox.proxy.rs3.login
 /**
  * Revision 950 login-success framing, not a game-packet decoder.
  * Native states: 90/96 result, 250/260/270 variable blocks, 130/136 second result,
- * 140 length and 150 success body. See RS3_950_LOGIN_ROUTING.md for evidence.
+ * 140 length and 150 success body; reconnect response 15 enters state 200 (g2 length and player table).
+ * See RS3_950_LOGIN_ROUTING.md for evidence.
  */
 public open class Rs3LoginSuccessFramer protected constructor(
     private val world: Boolean,
     private val onVariablesComplete: () -> Unit = {},
     private val retainVariables: Boolean = false,
+    private val reconnect: Boolean = false,
 ) : Rs3LoginResponseFramer {
     private enum class State {
         RESULT,
@@ -17,6 +19,8 @@ public open class Rs3LoginSuccessFramer protected constructor(
         FINAL_RESULT,
         DATA_LENGTH,
         DATA,
+        RECONNECT_LENGTH,
+        RECONNECT_DATA,
     }
 
     final override var isDone: Boolean = false
@@ -27,6 +31,9 @@ public open class Rs3LoginSuccessFramer protected constructor(
         private set
 
     public var loginData: ByteArray? = null
+        private set
+
+    public var reconnectData: ByteArray? = null
         private set
 
     /** Final two g8 values, shared by lobby/game success and the OSRS account identity contract. */
@@ -71,6 +78,15 @@ public open class Rs3LoginSuccessFramer protected constructor(
     private fun completeFrame() {
         when (state) {
             State.RESULT, State.FINAL_RESULT -> {
+                if (world && reconnect && state == State.RESULT && unsigned(0) == 15) {
+                    next(State.RECONNECT_LENGTH, 2)
+                    return
+                }
+                if (reconnect) {
+                    isDone = true
+                    frame = ByteArray(0)
+                    return
+                }
                 if (unsigned(0) != 2) {
                     // Never start a game decoder on an unsuccessful/unsupported login response.
                     // The relay still forwards these bytes unchanged to the client.
@@ -118,6 +134,17 @@ public open class Rs3LoginSuccessFramer protected constructor(
                 val minimum = if (world) 9 else 1
                 require(frame.size >= minimum + initialCipherDraws) { "Truncated login-success prefix" }
                 loginData = frame
+                frame = ByteArray(0)
+                isSuccessful = true
+                isDone = true
+            }
+            State.RECONNECT_LENGTH -> {
+                val length = (unsigned(0) shl 8) or unsigned(1)
+                require(length > 0) { "Empty reconnect initialization" }
+                next(State.RECONNECT_DATA, length)
+            }
+            State.RECONNECT_DATA -> {
+                reconnectData = frame
                 frame = ByteArray(0)
                 isSuccessful = true
                 isDone = true

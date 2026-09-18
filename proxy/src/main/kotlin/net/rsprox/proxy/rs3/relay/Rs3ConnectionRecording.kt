@@ -30,6 +30,8 @@ internal class Rs3ConnectionRecording(
         require(major == revision && major == 950) { "Unsupported RS3 recording revision" }
         require(servers.keys.none { it in 0xFC..0xFF }) { "Recording opcode collision" }
         this.minor = minor
+        serverStream?.close()
+        clientStream?.close()
         ciphers = pair
         serverStream =
             Rs3PacketStream(servers, { pair.decodeCipher }, true) { entry, payload ->
@@ -72,6 +74,20 @@ internal class Rs3ConnectionRecording(
         stream.accept(bytes) {
             recorder.packet(connection, server, it.opcode, it.entry.length, it.payload)
         }
+    }
+
+    fun reconnect(payload: ByteArray) = safely {
+        check(successful) { "Reconnect has no previous recording" }
+        recorder.packet(connection, true, 0xFF, -2, payload)
+    }
+
+    /** A broken socket may end halfway through a packet. Only complete packets were recorded. */
+    fun suspend() {
+        serverStream?.close()
+        clientStream?.close()
+        serverStream = null
+        clientStream = null
+        ciphers = null
     }
 
     fun close() {

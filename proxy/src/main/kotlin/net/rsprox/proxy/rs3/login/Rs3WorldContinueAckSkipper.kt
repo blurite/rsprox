@@ -6,6 +6,11 @@ public class Rs3WorldContinueAckSkipper {
 
     private var expected = false
 
+    public fun skipForReconnect() {
+        check(!expected && !isDone) { "Continue acknowledgement already started" }
+        isDone = true
+    }
+
     public fun expect() {
         check(!expected && !isDone) { "Duplicate world-login continue acknowledgement" }
         expected = true

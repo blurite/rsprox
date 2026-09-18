@@ -39,7 +39,6 @@ import net.rsprox.proxy.rs3.Rs3DecoderLoader
 import net.rsprox.proxy.rs3.binary.Rs3BinaryRecorder
 import net.rsprox.proxy.rs3.login.Rs3ClientLoginRsaSwapHandler
 import net.rsprox.proxy.rs3.login.Rs3LoginFrame
-import net.rsprox.proxy.rs3.login.Rs3LoginResponseFramer
 import net.rsprox.proxy.rs3.login.Rs3LoginSuccessFramer
 import net.rsprox.proxy.rs3.login.Rs3ServerLoginResponseFramer
 import net.rsprox.proxy.rs3.login.Rs3WorldContinueAckSkipper
@@ -64,12 +63,33 @@ import java.net.InetSocketAddress
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 
 private class CipherHolder {
     @Volatile
     var pair: StreamCipherPair? = null
+}
+
+/** One logical login, surviving replacement sockets. Confined to this client's relay event loop. */
+private class Rs3RelaySession(
+    val world: Boolean,
+    val endpoint: Int,
+    val serverAttributes: AttributeMap,
+    val clientAttributes: AttributeMap,
+    val transcriber: Rs3TranscriberSession,
+    val recording: Rs3ConnectionRecording,
+    var channel: Channel,
+) {
+    var localPlayerIndex = -1
+    var userId = -1L
+    var userHash = -1L
+    var name: String? = null
+    var successful = false
+    var ended = false
+    var expiry: ScheduledFuture<*>? = null
+    var previousChannel: Channel? = null
 }
 
 public class Rs3RelayServer(
@@ -90,7 +110,9 @@ public class Rs3RelayServer(
         RSAKeyParameters(false, BigInteger(realServerModulusHex, 16), Rsa.PUBLIC_EXPONENT)
 
     private val bossGroup = NioEventLoopGroup(1)
-    private val workerGroup = NioEventLoopGroup()
+    // All sockets for one launched client share mutable protocol state across reconnects.
+    private val workerGroup = NioEventLoopGroup(1)
+    private var gameSession: Rs3RelaySession? = null
     private val discoveredWorldHost = AtomicReference<String?>(null)
     private val mappedListeners = ConcurrentHashMap<InetSocketAddress, ChannelFuture>()
     private val mappedRoutes = AtomicReference<Map<InetSocketAddress, Rs3RelayRoute>>(emptyMap())
@@ -277,11 +299,10 @@ public class Rs3RelayServer(
         Session(-1, serverAttributes).rs3AppearanceDefinitions = packetDefinitions
         Session(-1, serverAttributes).rs3PacketDefinitions = packetDefinitions
         Session(-1, clientAttributes).rs3PacketDefinitions = packetDefinitions
-        var localPlayerIndex = -1
 
         val rs3Decoder =
             Rs3DecoderLoader.load(revision, huffman) { cipherHolder.pair?.decodeCipher }
-        val recording =
+        val initialRecording =
             Rs3ConnectionRecording(
                 recordings,
                 recordings.connection(
@@ -294,14 +315,6 @@ public class Rs3RelayServer(
                 rs3Decoder.serverProtTable,
                 rs3Decoder.clientProtTable,
             )
-        clientChannel.closeFuture().addListener {
-            recording.close()
-            sessionMonitor.onConnectionClosed(clientChannel.id())
-        }
-        fun acceptPacketBytes(server: Boolean, bytes: ByteArray) {
-            sessionMonitor.onBytes(clientChannel.id(), server, bytes.size)
-            recording.accept(server, bytes)
-        }
         val clientDecoderService = rs3Decoder.clientPacketDecoder
         val serverDecoderService = rs3Decoder.serverPacketDecoder
 
@@ -317,6 +330,33 @@ public class Rs3RelayServer(
                 settings = settingSetStore,
             )
 
+        var state =
+            Rs3RelaySession(
+                isWorldConnection,
+                endpoint?.id ?: -1,
+                serverAttributes,
+                clientAttributes,
+                transcriberSession,
+                initialRecording,
+                clientChannel,
+            )
+        var reconnect = false
+        var loginResponseFramer: Rs3LoginSuccessFramer? = null
+        clientChannel.closeFuture().addListener {
+            if (state.channel === clientChannel && !state.ended) {
+                if (state.world && state.successful && !shuttingDown) {
+                    suspendSession(state)
+                } else {
+                    finishSession(state)
+                }
+            }
+            sessionMonitor.onConnectionClosed(clientChannel.id())
+        }
+        fun acceptPacketBytes(server: Boolean, bytes: ByteArray) {
+            sessionMonitor.onBytes(clientChannel.id(), server, bytes.size)
+            state.recording.accept(server, bytes)
+        }
+
         val serverToClientDecoder =
             Rs3ProtDecoder(
                 table = rs3Decoder.serverProtTable,
@@ -324,7 +364,7 @@ public class Rs3RelayServer(
             ) { opcode, bytes ->
                 val prot = rs3Decoder.gameServerProtProvider[opcode]
                 val buffer = Unpooled.wrappedBuffer(bytes).toJagByteBuf()
-                val session = Session(localPlayerIndex, serverAttributes)
+                val session = Session(state.localPlayerIndex, state.serverAttributes)
 
                 val message: IncomingMessage =
                     try {
@@ -338,10 +378,14 @@ public class Rs3RelayServer(
                         )
                     }
 
-                transcriberSession.onServerPacket(prot, message)
-                val state = transcriberSession.sessionState
-                state.getPlayerOrNull(state.localPlayerIndex)?.name?.let {
+                state.transcriber.onServerPacket(prot, message)
+                val transcript = state.transcriber.sessionState
+                transcript.getPlayerOrNull(transcript.localPlayerIndex)?.name?.let {
+                    state.name = it
                     sessionMonitor.onConnectionNameUpdate(clientChannel.id(), it)
+                }
+                if (prot.toString() in SESSION_END_PACKETS) {
+                    finishSession(state)
                 }
             }
 
@@ -353,7 +397,7 @@ public class Rs3RelayServer(
             ) { opcode, bytes ->
                 val prot = rs3Decoder.gameClientProtProvider[opcode]
                 val buffer = Unpooled.wrappedBuffer(bytes).toJagByteBuf()
-                val session = Session(localPlayerIndex, clientAttributes)
+                val session = Session(state.localPlayerIndex, state.clientAttributes)
                 val message: IncomingMessage =
                     try {
                         clientDecoderService.decode(opcode, buffer, session)
@@ -365,10 +409,9 @@ public class Rs3RelayServer(
                             "${exception.javaClass.simpleName}: ${exception.message.orEmpty()}",
                         )
                     }
-                transcriberSession.onClientProt(prot, message)
+                state.transcriber.onClientProt(prot, message)
             }
 
-        var loginResponseFramer: Rs3LoginResponseFramer? = null
         var worldContinueAckSkipper: Rs3WorldContinueAckSkipper? = null
         var transportCiphers: StreamCipherPair? = null
         val transportAcknowledgement = if (mapped && isWorldConnection) Rs3WorldContinueAckSkipper() else null
@@ -438,21 +481,54 @@ public class Rs3RelayServer(
                     object : ChannelInitializer<SocketChannel>() {
                         override fun initChannel(serverChannel: SocketChannel) {
                             val relay =
-                                RelayHandler(clientChannel) { bytes ->
+                                RelayHandler(clientChannel) response@{ bytes ->
+                                    if (state.channel !== clientChannel || state.ended) return@response
                                     // todo: Just grabbing first world found for now
                                     if (!mapped) scanForWorldHost(bytes)
                                     val framer = loginResponseFramer
                                     if (framer != null && !framer.isDone) {
                                         val leftover = framer.consume(bytes)
                                         if (framer.isDone && framer.isSuccessful) {
-                                            recording.login(framer as Rs3LoginSuccessFramer)
+                                            if (reconnect) {
+                                                val payload = checkNotNull(framer.reconnectData)
+                                                val buffer = Unpooled.wrappedBuffer(payload)
+                                                try {
+                                                    val message = serverDecoderService.decode(
+                                                        0xFF,
+                                                        buffer.toJagByteBuf(),
+                                                        Session(state.localPlayerIndex, state.serverAttributes),
+                                                    )
+                                                    state.recording.reconnect(payload)
+                                                    state.transcriber.onServerPacket(
+                                                        rs3Decoder.gameServerProtProvider[0xFF],
+                                                        message,
+                                                    )
+                                                } finally {
+                                                    buffer.release()
+                                                }
+                                                state.expiry?.cancel(false)
+                                                state.expiry = null
+                                                state.previousChannel?.close()
+                                                state.previousChannel = null
+                                                logger.info { "RS3 reconnected to world ${state.endpoint}" }
+                                            } else {
+                                                gameSession
+                                                    ?.takeIf { it !== state && (isWorldConnection || !it.channel.isActive) }
+                                                    ?.let(::finishSession)
+                                                state.recording.login(framer)
+                                                state.userId = framer.userId ?: -1
+                                                state.userHash = framer.userHash ?: -1
+                                                state.name = (framer as? Rs3ServerLoginResponseFramer)?.displayName
+                                                state.successful = true
+                                                if (isWorldConnection) gameSession = state
+                                            }
                                             sessionMonitor.onConnectionLogin(
                                                 clientChannel.id(),
                                                 isWorldConnection,
                                                 endpoint?.id ?: -1,
-                                                (framer as? Rs3ServerLoginResponseFramer)?.displayName,
-                                                framer.userId ?: -1,
-                                                framer.userHash ?: -1,
+                                                state.name,
+                                                state.userId,
+                                                state.userHash,
                                             )
                                             repeat(framer.initialCipherDraws) {
                                                 checkNotNull(cipherHolder.pair).decodeCipher.nextInt()
@@ -461,10 +537,10 @@ public class Rs3RelayServer(
                                         if (framer.isSuccessful && framer is Rs3WorldLoginResponseFramer) {
                                             val ownIndex = framer.ownIndex
                                             if (ownIndex != null) {
-                                                localPlayerIndex = ownIndex
+                                                state.localPlayerIndex = ownIndex
                                                 sessionMonitor.onGameLogin(endpoint?.id ?: -1, ownIndex)
-                                                transcriberSession.sessionState.localPlayerIndex = ownIndex
-                                                Session(localPlayerIndex, serverAttributes).rs3PlayerInfoInitPending =
+                                                state.transcriber.sessionState.localPlayerIndex = ownIndex
+                                                Session(ownIndex, state.serverAttributes).rs3PlayerInfoInitPending =
                                                     true
                                             }
                                         }
@@ -490,6 +566,7 @@ public class Rs3RelayServer(
         val onConnected =
             ChannelFutureListener { future ->
                 if (!future.isSuccess) {
+                    logger.warn(future.cause()) { "RS3 upstream connection failed: $upstreamHost:$upstreamPort" }
                     clientChannel.close()
                     return@ChannelFutureListener
                 }
@@ -502,16 +579,42 @@ public class Rs3RelayServer(
                     Rs3ClientLoginRsaSwapHandler(
                         proxyPrivateKey,
                         realServerPublicKey,
-                        recording::begin,
+                        { pair, major, minor -> state.recording.begin(pair, major, minor) },
+                        { resuming ->
+                            reconnect = resuming
+                            if (resuming) {
+                                check(isWorldConnection && revision == 950) { "Unsupported reconnect target" }
+                                val previous = checkNotNull(gameSession) { "Reconnect has no previous game session" }
+                                check(
+                                    !previous.ended && previous.endpoint == state.endpoint &&
+                                        previous.localPlayerIndex in 1..2047,
+                                ) {
+                                    "Reconnect does not match the previous world session"
+                                }
+                                initialRecording.close()
+                                val oldChannel = previous.channel
+                                state = previous
+                                state.channel = clientChannel
+                                suspendSession(state)
+                                // Native clientdrop keeps the old socket until the new login is accepted.
+                                if (oldChannel.isActive && state.previousChannel?.isActive != true) {
+                                    state.previousChannel = oldChannel
+                                } else {
+                                    oldChannel.close()
+                                }
+                                transportAcknowledgement?.skipForReconnect()
+                            }
+                        },
                     ) { ciphers, diagnostic ->
                         transportCiphers = ciphers
                         cipherHolder.pair = diagnostic
-                        mappedServer?.beginLogin()
-                        val acknowledgement = if (isWorldConnection) Rs3WorldContinueAckSkipper() else null
+                        mappedServer?.beginLogin(reconnect)
+                        val acknowledgement =
+                            if (isWorldConnection && !reconnect) Rs3WorldContinueAckSkipper() else null
                         worldContinueAckSkipper = acknowledgement
                         loginResponseFramer =
                             if (isWorldConnection) {
-                                Rs3WorldLoginResponseFramer(retainVariables = true) {
+                                Rs3WorldLoginResponseFramer(retainVariables = true, reconnect = reconnect) {
                                     checkNotNull(acknowledgement).expect()
                                 }
                             } else {
@@ -528,8 +631,9 @@ public class Rs3RelayServer(
                         )
                     clientChannel.pipeline().addLast(Rs3MappedClientHandler(stream, transportAcknowledgement))
                 }
-                clientChannel.pipeline().addLast(
-                    RelayHandler(serverChannel) { bytes ->
+                val requestRelay =
+                    RelayHandler(serverChannel) request@{ bytes ->
+                        if (state.channel !== clientChannel || state.ended) return@request
                         val ackSkipper = worldContinueAckSkipper
                         if (ackSkipper != null && !ackSkipper.isDone) {
                             val leftover = ackSkipper.consume(bytes)
@@ -541,8 +645,8 @@ public class Rs3RelayServer(
                             acceptPacketBytes(false, bytes)
                             clientToServerDecoder.accept(bytes)
                         }
-                    },
-                )
+                    }
+                clientChannel.pipeline().addLast(requestRelay)
                 clientChannel.config().isAutoRead = true
                 serverChannel.config().isAutoRead = true
             }
@@ -551,6 +655,7 @@ public class Rs3RelayServer(
             val resolution = dnsResolver.resolve(upstreamHost)
             resolution.addListener { result ->
                 if (!result.isSuccess) {
+                    logger.warn(result.cause()) { "RS3 upstream DNS failed: $upstreamHost" }
                     clientChannel.close()
                     return@addListener
                 }
@@ -580,6 +685,24 @@ public class Rs3RelayServer(
         }
     }
 
+    private fun suspendSession(session: Rs3RelaySession) {
+        session.recording.suspend()
+        if (session.expiry == null) {
+            session.expiry = session.channel.eventLoop().schedule({ finishSession(session) }, 90, TimeUnit.SECONDS)
+        }
+    }
+
+    private fun finishSession(session: Rs3RelaySession) {
+        if (session.ended) return
+        session.ended = true
+        session.previousChannel?.close()
+        session.previousChannel = null
+        session.expiry?.cancel(false)
+        session.expiry = null
+        session.recording.close()
+        if (gameSession === session) gameSession = null
+    }
+
     @Synchronized
     public fun shutdown(): CompletableFuture<Unit> {
         if (shuttingDown) return terminated
@@ -605,6 +728,7 @@ public class Rs3RelayServer(
 
     private companion object {
         private val logger = InlineLogger()
+        private val SESSION_END_PACKETS = setOf("LOGOUT", "LOGOUT_FULL", "LOGOUT_TRANSFER")
         private val WORLD_HOST_REGEX = Regex("""[a-zA-Z0-9-]+\.runescape\.com""")
     }
 }

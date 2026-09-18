@@ -51,7 +51,7 @@ public object Rs3DecoderLoader {
                             it.opcode to Rs3ProtDecoder.ProtEntry(it.size, it.name)
                         },
                     serverProtTable =
-                        GameServerProt950.entries.associate {
+                        GameServerProt950.entries.filter { it != GameServerProt950.RECONNECT }.associate {
                             it.opcode to Rs3ProtDecoder.ProtEntry(it.size, it.name)
                         },
                 )

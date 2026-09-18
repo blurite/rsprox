@@ -43,6 +43,7 @@ import net.rsprox.protocol.rs3.game.outgoing.model.inv.UpdateInvPartial
 import net.rsprox.protocol.rs3.game.outgoing.model.inv.UpdateInvStopTransmit
 import net.rsprox.protocol.rs3.game.outgoing.model.map.EnvironmentOverride
 import net.rsprox.protocol.rs3.game.outgoing.model.map.RebuildNormal
+import net.rsprox.protocol.rs3.game.outgoing.model.map.Reconnect
 import net.rsprox.protocol.rs3.game.outgoing.model.map.RebuildRegion
 import net.rsprox.protocol.rs3.game.outgoing.model.map.lighting.PointLightAttenuationFalloff
 import net.rsprox.protocol.rs3.game.outgoing.model.map.lighting.PointLightColour
@@ -737,6 +738,11 @@ public class TextRs3ServerPacketTranscriber(
         root.int("templateid", message.templateId)
         root.int("minimumcoordinate", message.minimumCoordinate)
         root.int("maximumcoordinate", message.maximumCoordinate)
+    }
+
+    override fun reconnect(message: Reconnect) {
+        val init = message.playerInfoInit
+        root.coordGrid(init.localPlayerLevel, init.localPlayerX, init.localPlayerZ, "localplayercoord")
     }
 
     override fun legacyRebuildNormal(message: LegacyRebuildNormal) {
