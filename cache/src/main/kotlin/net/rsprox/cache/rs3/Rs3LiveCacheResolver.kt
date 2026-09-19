@@ -33,24 +33,45 @@ public class Rs3LiveCacheResolver(
     public var masterIndexSnapshot: ByteArray = ByteArray(0)
         private set
 
-    public fun loadPacketDefinitions(): Rs3PacketDefinitions {
+    public fun loadPacketDefinitions(
+        onProgress: (String, Int, Int) -> Unit = { _, _, _ -> },
+    ): Rs3PacketDefinitions {
         require(info.revision == 950) { "RS3 definition decoding is currently verified for revision 950 only" }
         Rs3Js5Connection(info).use { connection ->
+            onProgress("Loading cache indexes", 0, 0)
             val master = unpack(connection.get(255, 255))
-            val snapshot =
-                loadSnapshot(master) { archive, group, version, crc ->
-                    readGroup(directory, archive, group, version, crc) { connection.get(archive, group) }
+            var groups = 0
+            var downloads = 0
+            val prefetch: (Int, List<Js5Index.MutableGroup>) -> Unit = { archive, entries ->
+                val missing = entries.filter { readCachedGroup(directory, archive, it.id, it.version, it.checksum) == null }
+                val byId = missing.associateBy { it.id }
+                connection.getAll(missing.map { Rs3Js5Connection.Request(archive, it.id) }) { request, bytes ->
+                    val group = byId.getValue(request.group)
+                    readGroup(directory, archive, group.id, group.version, group.checksum) { bytes }
+                    downloads++
                 }
+            }
+            val snapshot =
+                loadSnapshot(master, onProgress, prefetch) { archive, group, version, crc ->
+                    groups++
+                    readGroup(directory, archive, group, version, crc) {
+                        downloads++
+                        connection.get(archive, group)
+                    }
+                }
+            onProgress("Checking cache consistency", 0, 0)
             require(master.contentEquals(unpack(connection.get(255, 255)))) {
                 "RS3 cache changed during bootstrap; please launch again"
             }
             masterIndexSnapshot = master.copyOf()
+            logger.info { "RS3 definition bootstrap: $downloads downloaded groups, ${groups - downloads} cached groups" }
             return snapshot
         }
     }
 
     public companion object {
         private val logger = InlineLogger()
+        private const val PREFETCH_BATCH_SIZE = 16
 
         /** Resolves exact recorded groups locally, then through OpenRS2, never from the current live cache. */
         public fun loadRecordedPacketDefinitions(
@@ -76,6 +97,22 @@ public class Rs3LiveCacheResolver(
             }
         }
 
+        private fun readCachedGroup(
+            directory: Path,
+            archive: Int,
+            group: Int,
+            version: Int,
+            crc: Int,
+        ): ByteArray? {
+            val path = directory.resolve("$archive/${group}_${version}_${crc.toUInt().toString(16)}.dat")
+            if (Files.isRegularFile(path)) {
+                val cached = Files.readAllBytes(path)
+                if (checksum(cached) == crc) return cached
+                logger.warn { "Ignoring corrupt RS3 cached group $archive:$group" }
+            }
+            return null
+        }
+
         private fun readGroup(
             directory: Path,
             archive: Int,
@@ -84,17 +121,13 @@ public class Rs3LiveCacheResolver(
             crc: Int,
             download: () -> ByteArray,
         ): ByteArray {
-            val path = directory.resolve("$archive/${group}_${version}_${crc.toUInt().toString(16)}.dat")
-            if (Files.isRegularFile(path)) {
-                val cached = Files.readAllBytes(path)
-                if (checksum(cached) == crc) return cached
-                logger.warn { "Ignoring corrupt RS3 cached group $archive:$group" }
-            }
+            readCachedGroup(directory, archive, group, version, crc)?.let { return it }
             val bytes = download()
             require(checksum(bytes) == crc) {
                 "RS3 cache checksum mismatch for $archive:$group (version $version): " +
                     "expected ${crc.toUInt().toString(16)}, got ${checksum(bytes).toUInt().toString(16)}"
             }
+            val path = directory.resolve("$archive/${group}_${version}_${crc.toUInt().toString(16)}.dat")
             Files.createDirectories(path.parent)
             val temporary = Files.createTempFile(path.parent, "js5-", ".tmp")
             try {
@@ -112,6 +145,8 @@ public class Rs3LiveCacheResolver(
 
         private fun loadSnapshot(
             master: ByteArray,
+            onProgress: (String, Int, Int) -> Unit = { _, _, _ -> },
+            prefetch: (Int, List<Js5Index.MutableGroup>) -> Unit = { _, _ -> },
             readGroup: (Int, Int, Int, Int) -> ByteArray,
         ): Rs3PacketDefinitions {
             val started = System.nanoTime()
@@ -152,20 +187,29 @@ public class Rs3LiveCacheResolver(
                     }
                 }
             }
+            onProgress("Loading equipment defaults", 0, 0)
             val defaults = files(28, checkNotNull(index(28)[6]) { "Missing wear-position defaults group" })
             val slots = decodeWearPositions(checkNotNull(defaults[0]) { "Missing wear-position defaults file" })
             val items = HashMap<Int, ByteArray>()
             val itemIndex = index(19)
+            onProgress("Loading item definitions", 0, itemIndex.size)
             logger.info { "Loading RS3 packet definitions: ${itemIndex.size} item groups (no model assets)" }
-            for (group in itemIndex) {
-                for ((file, bytes) in files(19, group)) {
-                    require(file in 0..255) { "Invalid RS3 item file ID: $file" }
-                    items[(group.id shl 8) or file] = bytes
+            var itemPosition = 0
+            for (batch in itemIndex.toList().chunked(PREFETCH_BATCH_SIZE)) {
+                prefetch(19, batch)
+                for (group in batch) {
+                    for ((file, bytes) in files(19, group)) {
+                        require(file in 0..255) { "Invalid RS3 item file ID: $file" }
+                        items[(group.id shl 8) or file] = bytes
+                    }
+                    onProgress("Loading item definitions", ++itemPosition, itemIndex.size)
                 }
             }
+            onProgress("Loading quickchat definitions", 0, 0)
             val phrases =
                 files(24, checkNotNull(index(24)[1]) { "Missing quickchat phrases" })
                     .mapValues { (_, bytes) -> Rs3PacketDefinitionDecoder.phrase(bytes) }
+            onProgress("Loading variable definitions", 0, 0)
             val configIndex = index(2)
             val varbits =
                 files(2, checkNotNull(configIndex[69]) { "Missing varbit definitions" })
@@ -176,10 +220,18 @@ public class Rs3LiveCacheResolver(
                         .mapValues { (_, bytes) -> Rs3PacketDefinitionDecoder.variable(bytes) }
                 }
             val npcs = HashMap<Int, ByteArray>()
-            for (group in index(18)) {
-                for ((file, bytes) in files(18, group)) {
-                    require(file in 0..127) { "Invalid RS3 NPC file ID: $file" }
-                    npcs[(group.id shl 7) or file] = bytes
+            onProgress("Loading NPC definitions", 0, 0)
+            val npcIndex = index(18)
+            onProgress("Loading NPC definitions", 0, npcIndex.size)
+            var npcPosition = 0
+            for (batch in npcIndex.toList().chunked(PREFETCH_BATCH_SIZE)) {
+                prefetch(18, batch)
+                for (group in batch) {
+                    for ((file, bytes) in files(18, group)) {
+                        require(file in 0..127) { "Invalid RS3 NPC file ID: $file" }
+                        npcs[(group.id shl 7) or file] = bytes
+                    }
+                    onProgress("Loading NPC definitions", ++npcPosition, npcIndex.size)
                 }
             }
             logger.info {

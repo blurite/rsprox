@@ -5,8 +5,10 @@ import net.rsprox.patch.NativeClientType
 import net.rsprox.proxy.config.CLIENTS_DIRECTORY
 import net.rsprox.proxy.downloader.cpp.Repository
 import net.rsprox.proxy.downloader.cpp.RepositoryDownloader
+import net.rsprox.proxy.rs3.Rs3LaunchProgress
 import net.rsprox.proxy.rs3.config.Rs3JavConfig
 import org.tukaani.xz.LZMAInputStream
+import java.io.ByteArrayOutputStream
 import java.net.URI
 import java.net.URL
 import java.nio.ByteBuffer
@@ -27,9 +29,10 @@ public data object JagexNativeClientDownloader {
     public fun download(
         type: NativeClientType,
         rs3JavConfigUrl: String = DEFAULT_RS3_JAV_CONFIG_URL,
+        onProgress: (Rs3LaunchProgress) -> Unit = {},
     ): Path {
         if (type == NativeClientType.RS3_WIN) {
-            return downloadRs3(rs3JavConfigUrl)
+            return downloadRs3(rs3JavConfigUrl, onProgress)
         }
 
         val repository = buildRepositoryInfo(type.systemShortName)
@@ -103,7 +106,10 @@ public data object JagexNativeClientDownloader {
     }
 
     @Synchronized
-    private fun downloadRs3(upstreamJavConfigUrl: String): Path {
+    private fun downloadRs3(
+        upstreamJavConfigUrl: String,
+        onProgress: (Rs3LaunchProgress) -> Unit,
+    ): Path {
         require("binaryType=2" in upstreamJavConfigUrl) {
             "upstreamJavConfigUrl must include binaryType=2 (Windows 64-bit)"
         }
@@ -136,7 +142,24 @@ public data object JagexNativeClientDownloader {
                 append("client?binaryType=2&fileName=$downloadName&crc=$expectedCrc")
             }
 
-        val compressedBytes = URI(downloadUrl).toURL().readBytes()
+        onProgress(Rs3LaunchProgress("Downloading client"))
+        val download = URI(downloadUrl).toURL().openConnection()
+        download.connectTimeout = 10_000
+        download.readTimeout = 30_000
+        val compressedBytes =
+            download.getInputStream().use { input ->
+                val total = download.contentLengthLong.coerceAtLeast(0)
+                val output = ByteArrayOutputStream()
+                val chunk = ByteArray(64 * 1024)
+                while (true) {
+                    val count = input.read(chunk)
+                    if (count == -1) break
+                    output.write(chunk, 0, count)
+                    onProgress(Rs3LaunchProgress("Downloading client", output.size().toLong(), total))
+                }
+                output.toByteArray()
+            }
+        onProgress(Rs3LaunchProgress("Unpacking and verifying client"))
         val decompressedBytes =
             try {
                 LZMAInputStream(compressedBytes.inputStream()).use { it.readAllBytes() }

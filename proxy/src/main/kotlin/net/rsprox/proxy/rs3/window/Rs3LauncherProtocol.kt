@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
+import kotlin.math.roundToInt
 
 /**
  * Note: revision 950 ClientPipe / RS2LauncherConnection protocol, verified against the native launcher.
@@ -16,6 +17,7 @@ internal class Rs3LauncherProtocol(
     private val send: (ByteArray) -> Unit,
     private val windowChanged: () -> Unit,
     private val openLegalPage: (Boolean) -> Unit,
+    private val onLoadingProgress: (Int) -> Unit = {},
 ) {
     var initialized: Boolean = false
         private set
@@ -58,7 +60,11 @@ internal class Rs3LauncherProtocol(
             }
             4, 5, 12, 19, 27 -> Unit // Focus, startup/cache completion and launcher-UI notifications.
             9, 22, 24 -> input.readUnsignedByte()
-            13 -> input.readFloat() // Loading progress belongs to the official launcher's splash screen.
+            13 -> {
+                // The official launcher multiplies this percentage by 1,000 against a 100,000 maximum.
+                val percent = input.readFloat()
+                if (!ready && percent.isFinite() && percent in 0f..100f) onLoadingProgress(percent.roundToInt())
+            }
             21 -> {
                 input.readLong()
                 input.readLong()

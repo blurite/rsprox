@@ -9,6 +9,7 @@ import com.sun.jna.platform.win32.WinBase
 import com.sun.jna.platform.win32.WinNT.HANDLE
 import com.sun.jna.ptr.IntByReference
 import com.sun.jna.win32.W32APIOptions
+import net.rsprox.proxy.rs3.Rs3LaunchProgress
 import java.awt.Desktop
 import java.io.IOException
 import java.net.URI
@@ -26,6 +27,7 @@ internal class Rs3LauncherConnection private constructor(
     private val inbound: HANDLE,
     private val outbound: HANDLE,
     private val config: Map<String, String>,
+    private val onProgress: (Rs3LaunchProgress) -> Unit,
 ) : AutoCloseable {
     private val stopped = AtomicBoolean()
     private val finished = CompletableFuture<Unit>()
@@ -39,10 +41,12 @@ internal class Rs3LauncherConnection private constructor(
     }
 
     fun attach(process: ProcessHandle) {
+        onProgress(Rs3LaunchProgress("Connecting to client launcher"))
         start(process)
         process.onExit().thenRun { close() }
         try {
-            ready.get(30, TimeUnit.SECONDS)
+            // First-run native initialization may be much slower than the pipe handshake.
+            ready.get(STARTUP_TIMEOUT_SECONDS + 30, TimeUnit.SECONDS)
         } catch (e: Exception) {
             // Do not strand an invisible client if startup IPC fails.
             try {
@@ -85,16 +89,24 @@ internal class Rs3LauncherConnection private constructor(
                             }
                         },
                         ::openLegalPage,
+                        { percent -> onProgress(Rs3LaunchProgress("Initializing client", percent.toLong(), 100)) },
                     )
                 val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(25)
                 connect(inbound, process, deadline)
                 connect(outbound, process, deadline)
+                onProgress(Rs3LaunchProgress("Waiting for client handshake"))
+                var initializationDeadline = deadline
+                var initialized = false
                 var pending = ByteArray(0)
                 val available = IntByReference()
                 val received = IntByReference()
                 val chunk = ByteArray(4096)
                 while (!stopped.get() && process.isAlive) {
-                    if (!protocol.ready) check(System.nanoTime() < deadline) { "RS3 launcher startup timed out" }
+                    if (!protocol.ready) {
+                        check(System.nanoTime() < initializationDeadline) {
+                            if (initialized) "RS3 client initialization timed out" else "RS3 launcher handshake timed out"
+                        }
+                    }
                     if (!kernel.PeekNamedPipe(inbound, null, 0, null, available, null)) {
                         throw pipeError("read")
                     }
@@ -111,6 +123,12 @@ internal class Rs3LauncherConnection private constructor(
                             require(length >= 4) { "Invalid RS3 launcher frame length" }
                             if (pending.size - offset < length + 2) break
                             protocol.accept(pending.copyOfRange(offset + 2, offset + 2 + length))
+                            if (!initialized && protocol.initialized) {
+                                initialized = true
+                                initializationDeadline =
+                                    System.nanoTime() + TimeUnit.SECONDS.toNanos(STARTUP_TIMEOUT_SECONDS)
+                                onProgress(Rs3LaunchProgress("Initializing client"))
+                            }
                             closing = protocol.closing
                             if (protocol.ready) ready.complete(Unit)
                             offset += length + 2
@@ -211,12 +229,14 @@ internal class Rs3LauncherConnection private constructor(
 
     companion object {
         private val logger = InlineLogger()
+        private const val STARTUP_TIMEOUT_SECONDS = 300L
         private val random = SecureRandom()
         private val kernel = Native.load("kernel32", PipeKernel32::class.java, W32APIOptions.DEFAULT_OPTIONS)
 
         fun open(
             directory: Path,
             javConfig: String,
+            onProgress: (Rs3LaunchProgress) -> Unit = {},
         ): Rs3LauncherConnection {
             val config =
                 javConfig
@@ -235,7 +255,7 @@ internal class Rs3LauncherConnection private constructor(
                 try {
                     val outbound = createPipe("${name}_o", 2)
                     try {
-                        return Rs3LauncherConnection(id, store, inbound, outbound, config)
+                        return Rs3LauncherConnection(id, store, inbound, outbound, config, onProgress)
                     } catch (e: Throwable) {
                         kernel.CloseHandle(outbound)
                         throw e

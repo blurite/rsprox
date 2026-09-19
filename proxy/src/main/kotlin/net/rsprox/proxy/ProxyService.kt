@@ -56,6 +56,8 @@ import net.rsprox.proxy.replay.ReplayTimeline
 import net.rsprox.proxy.replay.ReplayTranscriber
 import net.rsprox.proxy.replay.ReplayTranscript
 import net.rsprox.proxy.rs3.Rs3ClientHandle
+import net.rsprox.proxy.rs3.Rs3LaunchProgress
+import net.rsprox.proxy.rs3.Rs3LaunchTracker
 import net.rsprox.proxy.rs3.Rs3SessionMonitor
 import net.rsprox.proxy.rs3.config.Rs3JavConfig
 import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
@@ -962,15 +964,20 @@ public class ProxyService(
         sessionMonitor: Rs3SessionMonitor,
         character: JagexCharacter?,
         upstreamJavConfigUrl: String = "https://world5.runescape.com/jav_config.ws?binaryType=2",
+        onProgress: (Rs3LaunchProgress) -> Unit = {},
     ): Rs3ClientHandle {
         val primaryPort = allocatePorts(2)
+        val progress = Rs3LaunchTracker(primaryPort, onProgress)
+        progress.update(Rs3LaunchProgress("Preparing RuneScape 3"))
         val localPorts = Rs3RelayPorts(primaryPort, primaryPort + 1)
         val proxyKey = Rs3ProxyRsaKeyProvider.readOrGenerate()
         val modulusHex = Rs3ProxyRsaKeyProvider.publicModulusHex(proxyKey)
 
         val patchedGameBinaryPath =
             synchronized(JagexNativeClientDownloader) {
-                val downloaded = JagexNativeClientDownloader.download(NativeClientType.RS3_WIN, upstreamJavConfigUrl)
+                progress.update(Rs3LaunchProgress("Checking client download"))
+                val downloaded =
+                    JagexNativeClientDownloader.download(NativeClientType.RS3_WIN, upstreamJavConfigUrl, progress::update)
                 val extension = if (downloaded.extension.isNotEmpty()) ".${downloaded.extension}" else ""
                 val stamp = System.currentTimeMillis()
                 val path =
@@ -982,6 +989,7 @@ public class ProxyService(
             }
 
         val patcher = NativePatcher()
+        progress.update(Rs3LaunchProgress("Patching client"))
         val gameCriteria =
             NativePatchCriteria
                 .Builder(NativeClientType.RS3_WIN)
@@ -998,6 +1006,7 @@ public class ProxyService(
                 "Failed to capture original RS3 modulus from game client"
             }
 
+        progress.update(Rs3LaunchProgress("Loading server configuration"))
         val upstreamConfig = Rs3JavConfig(URL(upstreamJavConfigUrl))
         val targets = upstreamConfig.captureUpstreamTargets()
         require(targets.revision == 950) {
@@ -1005,12 +1014,18 @@ public class ProxyService(
         }
         // Bootstrap on the launch worker, before relay event loops see any game packets.
         val cacheResolver = Rs3LiveCacheResolver(upstreamConfig.captureJs5ConnectionInfo())
-        val packetDefinitions = cacheResolver.loadPacketDefinitions()
+        progress.update(Rs3LaunchProgress("Connecting to the JS5 definition service"))
+        val packetDefinitions =
+            cacheResolver.loadPacketDefinitions { stage, completed, total ->
+                progress.update(Rs3LaunchProgress(stage, completed.toLong(), total.toLong()))
+            }
+        progress.update(Rs3LaunchProgress("Loading script signatures"))
         val clientScripts =
             RSProxArchiveClientScriptIndex
                 .forRuneScape(targets.revision, cacheResolver.masterIndexSnapshot)
                 .also { it.preload() }
 
+        progress.update(Rs3LaunchProgress("Starting proxy listeners"))
         val relayServer =
             Rs3RelayServer(
                 localPorts = localPorts,
@@ -1059,7 +1074,11 @@ public class ProxyService(
                 upstreamConfig.rewriteLobbyEndpoint(host, localPorts.primary, localPorts.alternate)
             val windowLauncher =
                 if (operatingSystem == OperatingSystem.WINDOWS) {
-                    Rs3LauncherConnection.open(CONFIGURATION_PATH.resolve("rs3-windows"), rewritten.text)
+                    Rs3LauncherConnection.open(
+                        CONFIGURATION_PATH.resolve("rs3-windows"),
+                        rewritten.text,
+                        progress::update,
+                    )
                 } else {
                     null
                 }
@@ -1068,6 +1087,7 @@ public class ProxyService(
                 rewritten.toClientArgs() +
                     (windowLauncher?.let { listOf("launcher", it.id) } ?: emptyList())
 
+            progress.update(Rs3LaunchProgress("Starting client process"))
             launchExecutable(
                 port = localPorts.primary,
                 path = patchedGameBinaryPath,
@@ -1099,6 +1119,7 @@ public class ProxyService(
             throw t
         }
 
+        progress.complete()
         return checkNotNull(handle)
     }
 

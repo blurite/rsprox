@@ -60,6 +60,7 @@ public class SessionPanel(
     private var portNumber: Int = -1
     private var jumpToBottom: Boolean = true
     private var scrollbarMax: Int = -1
+    private val launchProgress = if (type == SessionType.RS3) Rs3LaunchProgressPanel() else null
 
     private var rs3ClientScripts = ClientScriptDefinitionProvider.EMPTY
     private val rs3Formatter =
@@ -134,6 +135,7 @@ public class SessionPanel(
             jumpToBottom = extent + event.value == maximum
         }
         add(scrollPane, BorderLayout.CENTER)
+        launchProgress?.let { add(it, BorderLayout.NORTH) }
 
         val toolbar = FlatToolBar()
         toolbar.layout = FlowLayout(FlowLayout.CENTER)
@@ -282,6 +284,7 @@ public class SessionPanel(
                                     App.service.launchRs3Client(
                                         rs3SessionMonitor,
                                         character,
+                                        onProgress = { launchProgress?.update(it) },
                                     )
                                 portNumber = handle.port
                             }
@@ -290,10 +293,12 @@ public class SessionPanel(
                         logger.error(e) {
                             "Unable to launch $type client"
                         }
+                        launchProgress?.finish(success = false)
                         return@submit
                     }
                 }
             logger.info { "$type client started in $time" }
+            launchProgress?.finish(success = true)
         }
     }
 

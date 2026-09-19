@@ -1,5 +1,6 @@
 package net.rsprox.cache.rs3
 
+import java.io.BufferedInputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
@@ -19,11 +20,21 @@ public data class Rs3Js5ConnectionInfo(
     override fun toString(): String = "Rs3Js5ConnectionInfo($host:$port, revision=$revision.$subrevision)"
 }
 
-/** Sequential, bounded JS5 transport for bootstrap downloads, never called on the game event loop. */
+/** Bounded, single-connection JS5 pipeline, never called on the game event loop. */
 internal class Rs3Js5Connection(
     private val info: Rs3Js5ConnectionInfo,
 ) : AutoCloseable {
     private var socket: Socket? = null
+    private var input: DataInputStream? = null
+
+    data class Request(
+        val archive: Int,
+        val group: Int,
+    ) {
+        init {
+            require(archive in 0..255 && group >= 0)
+        }
+    }
 
     private fun connect(): Socket {
         val connection = Socket()
@@ -58,6 +69,7 @@ internal class Rs3Js5Connection(
             output.write(ByteBuffer.allocate(10).put(3).array())
             output.flush()
             socket = connection
+            input = DataInputStream(BufferedInputStream(connection.getInputStream()))
             return connection
         } catch (failure: Exception) {
             connection.close()
@@ -69,13 +81,28 @@ internal class Rs3Js5Connection(
         archive: Int,
         group: Int,
     ): ByteArray {
-        require(archive in 0..255 && group >= 0)
+        var result: ByteArray? = null
+        getAll(listOf(Request(archive, group))) { _, bytes -> result = bytes }
+        return checkNotNull(result)
+    }
+
+    /** Responses may arrive out of order and large groups may interleave at block boundaries. */
+    fun getAll(
+        requests: List<Request>,
+        accept: (Request, ByteArray) -> Unit,
+    ) {
+        val remaining = requests.toMutableSet()
+        if (remaining.isEmpty()) return
         repeat(2) { attempt ->
             try {
-                return request(socket ?: connect(), archive, group)
+                request(socket ?: connect(), remaining) { request, bytes ->
+                    accept(request, bytes)
+                    remaining.remove(request)
+                }
+                return
             } catch (failure: IOException) {
                 close()
-                if (attempt == 1) throw IOException("RS3 JS5 fetch failed for $archive:$group", failure)
+                if (attempt == 1) throw IOException("RS3 JS5 fetch failed: ${remaining.size} groups remaining", failure)
             }
         }
         error("Unreachable")
@@ -83,55 +110,72 @@ internal class Rs3Js5Connection(
 
     private fun request(
         connection: Socket,
-        archive: Int,
-        group: Int,
-    ): ByteArray {
+        requests: Set<Request>,
+        accept: (Request, ByteArray) -> Unit,
+    ) {
         val output = connection.getOutputStream()
-        output.write(
-            ByteBuffer
-                .allocate(10)
-                .put(1)
-                .put(archive.toByte())
-                .putInt(group)
-                .array(),
-        )
-        output.flush()
-        val input = DataInputStream(connection.getInputStream())
-
-        fun header() {
-            val receivedArchive = input.readUnsignedByte()
-            val receivedGroup = input.readInt() and Int.MAX_VALUE
-            if (receivedArchive != archive || receivedGroup != group) {
-                throw IOException("Unexpected RS3 JS5 response $receivedArchive:$receivedGroup")
+        val input = checkNotNull(input)
+        // Copy before callbacks remove completed requests from the retry set.
+        val queued = requests.toList().iterator()
+        val pending = LinkedHashMap<Request, Response>()
+        var allocated = 0L
+        while (queued.hasNext() || pending.isNotEmpty()) {
+            val batch = ByteBuffer.allocate(MAX_IN_FLIGHT * 10)
+            while (queued.hasNext() && pending.size < MAX_IN_FLIGHT) {
+                val request = queued.next()
+                batch.put(1).put(request.archive.toByte()).putInt(request.group).putInt(0)
+                pending[request] = Response()
+            }
+            if (batch.position() != 0) {
+                output.write(batch.array(), 0, batch.position())
+                output.flush()
+            }
+            if (pending.values.any { System.nanoTime() > it.deadline }) {
+                throw IOException("RS3 JS5 group deadline exceeded")
+            }
+            val request = Request(input.readUnsignedByte(), input.readInt() and Int.MAX_VALUE)
+            val response = pending[request] ?: throw IOException("Unexpected RS3 JS5 response $request")
+            if (response.bytes == null) {
+                val compression = input.readUnsignedByte()
+                val length = input.readInt()
+                if (compression !in 0..3 || length !in 0..MAX_GROUP_SIZE) {
+                    throw IOException("Invalid RS3 JS5 container type/length: $compression/$length")
+                }
+                val size = length + if (compression == 0) 5 else 9
+                if (allocated + size > MAX_BUFFERED_SIZE) throw IOException("Excessive RS3 JS5 buffered data")
+                response.bytes = ByteArray(size)
+                allocated += size
+                ByteBuffer.wrap(response.bytes).put(compression.toByte()).putInt(length)
+                response.position = 5
+            }
+            val bytes = checkNotNull(response.bytes)
+            val count = minOf(bytes.size - response.position, BLOCK_SIZE - response.position % BLOCK_SIZE)
+            input.readFully(bytes, response.position, count)
+            response.position += count
+            if (response.position == bytes.size) {
+                accept(request, bytes)
+                pending.remove(request)
+                allocated -= bytes.size
             }
         }
-        header()
-        val compression = input.readUnsignedByte()
-        val length = input.readInt()
-        if (compression !in 0..3 || length !in 0..MAX_GROUP_SIZE) {
-            throw IOException("Invalid RS3 JS5 container type/length: $compression/$length")
-        }
-        val bytes = ByteArray(length + if (compression == 0) 5 else 9)
-        ByteBuffer.wrap(bytes).put(compression.toByte()).putInt(length)
-        var position = 5
-        val deadline = System.nanoTime() + 60_000_000_000L
-        while (position < bytes.size) {
-            if (System.nanoTime() > deadline) throw IOException("RS3 JS5 group deadline exceeded")
-            if (position % BLOCK_SIZE == 0) header()
-            val count = minOf(bytes.size - position, BLOCK_SIZE - position % BLOCK_SIZE)
-            input.readFully(bytes, position, count)
-            position += count
-        }
-        return bytes
     }
 
     override fun close() {
         socket?.close()
         socket = null
+        input = null
+    }
+
+    private class Response {
+        val deadline: Long = System.nanoTime() + 60_000_000_000L
+        var bytes: ByteArray? = null
+        var position: Int = 0
     }
 
     private companion object {
         const val BLOCK_SIZE = 100 * 1024 - 5
         const val MAX_GROUP_SIZE = 32 * 1024 * 1024
+        const val MAX_BUFFERED_SIZE = 64 * 1024 * 1024
+        const val MAX_IN_FLIGHT = 16
     }
 }
