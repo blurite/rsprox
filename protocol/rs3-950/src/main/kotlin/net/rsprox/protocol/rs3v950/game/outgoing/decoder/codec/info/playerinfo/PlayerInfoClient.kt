@@ -146,12 +146,12 @@ internal class PlayerInfoClient(
                     }
                     // Both native waypoints are relative to the original position, not to each other.
                     steps += PlayerUpdateType.Step(player.x + WALK_X[direction], player.z + WALK_Z[direction])
-                    move(index, false, player.level, steps, if (extra) 3 else 2)
+                    move(index, false, player.level, steps, if (extra) 3 else player.movementMode)
                 }
                 2 -> {
                     val direction = bits.read(4)
                     val step = PlayerUpdateType.Step(player.x + RUN_X[direction], player.z + RUN_Z[direction])
-                    move(index, false, player.level, listOf(step), 2)
+                    move(index, false, player.level, listOf(step), player.movementMode)
                 }
                 3 -> {
                     val large = bits.read(1) != 0
@@ -172,8 +172,10 @@ internal class PlayerInfoClient(
                         x = player.x + ((packed ushr 5 and 31) shl 27 shr 27)
                         z = player.z + ((packed and 31) shl 27 shr 27)
                     }
+                    val previousMode = player.movementMode
                     move(index, mode == 4, level, listOf(PlayerUpdateType.Step(x, z)), mode)
-                    if (mode == 4) player.movementMode = if (large) 2 else 0
+                    // Large instant teleports retain the cached mode; small ones reset it.
+                    if (mode == 4) player.movementMode = if (large) previousMode else 0
                 }
             }
         }
@@ -233,8 +235,9 @@ internal class PlayerInfoClient(
                 2 -> {
                     val packed = bits.read(5)
                     player.level = (player.level + (packed ushr 3)) and 3
-                    player.x += WALK_X[packed and 7]
-                    player.z += WALK_Z[packed and 7]
+                    // Native reads the previous regions as unsigned bytes, then stores full integer deltas.
+                    player.x = (player.x and 255) + WALK_X[packed and 7]
+                    player.z = (player.z and 255) + WALK_Z[packed and 7]
                 }
                 3 -> {
                     val packed = bits.read(20)

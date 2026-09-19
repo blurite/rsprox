@@ -13,24 +13,24 @@ public class LocCustomise(
     public val rotationY: Float,
     public val rotationZ: Float,
     public val rotationW: Float,
-    public val translateA: Float,
-    public val translateB: Float,
-    public val translateC: Float,
+    public val translationX: Float,
+    public val translationY: Float,
+    public val translationZ: Float,
     public val scaleX: Float,
     public val scaleY: Float,
     public val scaleZ: Float,
-    public val uintArray: IntArray?,
-    public val opcodeArrayA: IntArray?,
-    public val opcodeArrayB: IntArray?,
+    public val models: IntArray?,
+    public val recolours: IntArray?,
+    public val retextures: IntArray?,
     public val customisationFlags: Int? = null,
 ) : IncomingServerGameMessage {
     override fun toString(): String {
         return "LocCustomise(locId=$locId, xInZone=$xInZone, zInZone=$zInZone, shape=$shape, " +
             "rotation=$rotation, hasExtendedTransform=$hasExtendedTransform, " +
             "rotation=($rotationX, $rotationY, $rotationZ, $rotationW), " +
-            "translate=($translateA, $translateB, $translateC), " +
+            "translate=($translationX, $translationY, $translationZ), " +
             "scale=($scaleX, $scaleY, $scaleZ), " +
-            "uintArraySize=${uintArray?.size}, opcodeArrayASize=${opcodeArrayA?.size}, " +
-            "opcodeArrayBSize=${opcodeArrayB?.size})"
+            "modelsSize=${models?.size}, recoloursSize=${recolours?.size}, " +
+            "retexturesSize=${retextures?.size})"
     }
 }

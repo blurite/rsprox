@@ -6,11 +6,12 @@ public class ObjReveal(
     public val big: Boolean,
     public val objId: Int,
     public val count: Int,
-    public val ownerIndex: Int,
+    public val excludedPlayerIndex: Int,
     public val xInZone: Int,
     public val zInZone: Int,
 ) : IncomingServerGameMessage {
     override fun toString(): String {
-        return "ObjReveal(big=$big, objId=$objId, count=$count, ownerIndex=$ownerIndex, xInZone=$xInZone, zInZone=$zInZone)"
+        return "ObjReveal(big=$big, objId=$objId, count=$count, excludedPlayerIndex=$excludedPlayerIndex, " +
+            "xInZone=$xInZone, zInZone=$zInZone)"
     }
 }

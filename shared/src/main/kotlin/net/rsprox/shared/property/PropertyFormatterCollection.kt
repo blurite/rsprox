@@ -138,6 +138,22 @@ public class PropertyFormatterCollection private constructor(
                     symbol
                 }
             }
+            builder.add<VarNpcProperty> {
+                val symbol = dictionary().getVarNpcName(it.value) ?: return@add "${it.value}"
+                if (settings[Setting.SHOW_IDS_AFTER_SYMBOLS]) {
+                    "$symbol (${it.value})"
+                } else {
+                    symbol
+                }
+            }
+            builder.add<VarObjProperty> {
+                val symbol = dictionary().getVarObjName(it.value) ?: return@add "${it.value}"
+                if (settings[Setting.SHOW_IDS_AFTER_SYMBOLS]) {
+                    "$symbol (${it.value})"
+                } else {
+                    symbol
+                }
+            }
             builder.add<ZoneCoordProperty> {
                 if (settings[Setting.CONVERT_COORD_TO_JAGCOORD]) {
                     val formatted = toJagCoordsText(it.level, it.zoneX, it.zoneZ)

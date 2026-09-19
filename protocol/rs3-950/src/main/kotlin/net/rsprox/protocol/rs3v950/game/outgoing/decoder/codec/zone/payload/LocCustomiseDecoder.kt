@@ -31,9 +31,9 @@ internal class LocCustomiseDecoder : ProxyMessageDecoder<LocCustomise> {
         var rotationY = 0f
         var rotationZ = 0f
         var rotationW = 1f
-        var translateA = 0f
-        var translateB = 0f
-        var translateC = 0f
+        var translationX = 0f
+        var translationY = 0f
+        var translationZ = 0f
         var scaleX = 1f
         var scaleY = 1f
         var scaleZ = 1f
@@ -50,13 +50,13 @@ internal class LocCustomiseDecoder : ProxyMessageDecoder<LocCustomise> {
                 rotationW = d * ROTATION_SCALE
             }
             if ((innerFlags and 0x2) != 0) {
-                translateA = buffer.g2s().toFloat()
+                translationX = buffer.g2s().toFloat()
             }
             if ((innerFlags and 0x4) != 0) {
-                translateB = -(buffer.g2s().toFloat())
+                translationY = -(buffer.g2s().toFloat())
             }
             if ((innerFlags and 0x8) != 0) {
-                translateC = buffer.g2s().toFloat()
+                translationZ = buffer.g2s().toFloat()
             }
             if ((innerFlags and 0x10) != 0) {
                 val uniform = buffer.g2s() * SCALE_SCALE
@@ -76,22 +76,22 @@ internal class LocCustomiseDecoder : ProxyMessageDecoder<LocCustomise> {
             }
         }
 
-        var uintArray: IntArray? = null
-        var opcodeArrayA: IntArray? = null
-        var opcodeArrayB: IntArray? = null
+        var models: IntArray? = null
+        var recolours: IntArray? = null
+        var retextures: IntArray? = null
 
         if ((flagsByte and 0x1) == 0) {
             if ((flagsByte and 0x2) != 0) {
                 val count = buffer.g1()
-                uintArray = IntArray(count) { buffer.g4() }
+                models = IntArray(count) { buffer.g4() }
             }
             if ((flagsByte and 0x4) != 0) {
                 val count = buffer.g1()
-                opcodeArrayA = IntArray(count) { buffer.g2() }
+                recolours = IntArray(count) { buffer.g2() }
             }
             if ((flagsByte and 0x8) != 0) {
                 val count = buffer.g1()
-                opcodeArrayB = IntArray(count) { buffer.g2() }
+                retextures = IntArray(count) { buffer.g2() }
             }
         }
 
@@ -106,15 +106,15 @@ internal class LocCustomiseDecoder : ProxyMessageDecoder<LocCustomise> {
             rotationY,
             rotationZ,
             rotationW,
-            translateA,
-            translateB,
-            translateC,
+            translationX,
+            translationY,
+            translationZ,
             scaleX,
             scaleY,
             scaleZ,
-            uintArray,
-            opcodeArrayA,
-            opcodeArrayB,
+            models,
+            recolours,
+            retextures,
             flagsByte,
         )
     }

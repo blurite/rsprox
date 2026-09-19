@@ -13,9 +13,9 @@ public class LocAddChange(
     public val rotationY: Float,
     public val rotationZ: Float,
     public val rotationW: Float,
-    public val translateA: Float,
-    public val translateB: Float,
-    public val translateC: Float,
+    public val translationX: Float,
+    public val translationY: Float,
+    public val translationZ: Float,
     public val scaleX: Float,
     public val scaleY: Float,
     public val scaleZ: Float,
@@ -24,7 +24,7 @@ public class LocAddChange(
         return "LocAddChange(locId=$locId, shape=$shape, rotation=$rotation, xInZone=$xInZone, " +
             "zInZone=$zInZone, hasExtendedTransform=$hasExtendedTransform, " +
             "rotation=($rotationX, $rotationY, $rotationZ, $rotationW), " +
-            "translate=($translateA, $translateB, $translateC), " +
+            "translation=($translationX, $translationY, $translationZ), " +
             "scale=($scaleX, $scaleY, $scaleZ))"
     }
 }

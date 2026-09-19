@@ -20,7 +20,8 @@ internal class SoundAreaV2Decoder : ProxyMessageDecoder<SoundAreaV2> {
         val delay = buffer.g1()
         val volume = buffer.g1()
         val rate = buffer.g2()
-        val extendedAudioMode = buffer.g1()
+        // Exactly 1 selects the speech mixer bus; every other value selects sound effects.
+        val speech = buffer.g1() == 1
         return SoundAreaV2(
             coordinate = coordinate,
             id = id,
@@ -28,7 +29,7 @@ internal class SoundAreaV2Decoder : ProxyMessageDecoder<SoundAreaV2> {
             delay = delay,
             volume = volume,
             rate = rate,
-            extendedAudioMode = extendedAudioMode,
+            speech = speech,
         )
     }
 }

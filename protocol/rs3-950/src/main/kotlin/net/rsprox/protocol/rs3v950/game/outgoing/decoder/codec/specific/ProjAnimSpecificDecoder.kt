@@ -22,17 +22,17 @@ internal class ProjAnimSpecificDecoder : ProxyMessageDecoder<ProjAnimSpecific> {
         val startHeight = buffer.g1Alt2().toByte().toInt()
         // Only the low flag bits have native consumer evidence; retain the transmitted byte.
         val flags = buffer.g1()
-        val distance = buffer.g2Alt1()
+        val progress = buffer.g2Alt1()
         val startX = buffer.g2Alt1()
         val endTime = buffer.g2Alt3()
-        val slope = buffer.g1()
+        val angle = buffer.g1().let { if (it == 255) -1 else it }
         val source = buffer.g3()
         val deltaX = buffer.g1Alt1().toByte().toInt()
         val id = buffer.g2()
         val level = buffer.g1()
         return ProjAnimSpecific(
-            target, endHeight, startZ, deltaZ, startTime, startHeight, flags, distance,
-            startX, endTime, slope, source, deltaX, id, level,
+            target, endHeight, startZ, deltaZ, startTime, startHeight, flags, progress,
+            startX, endTime, angle, source, deltaX, id, level,
         )
     }
 }

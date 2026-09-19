@@ -25,8 +25,9 @@ internal class MapProjAnimHalfsqDecoder : ProxyMessageDecoder<MapProjAnimHalfsq>
         val endHeight = buffer.g1()
         val startTime = buffer.g2()
         val endTime = buffer.g2()
-        val slope = buffer.g1()
-        val distance = buffer.g2()
+        // The native handler maps 255 to -1; this does not establish a straight-line flight mode.
+        val angle = buffer.g1().let { if (it == 255) -1 else it }
+        val progress = buffer.g2()
         return MapProjAnimHalfsq(
             coordinate = coordinate,
             flags = flags,
@@ -39,8 +40,8 @@ internal class MapProjAnimHalfsqDecoder : ProxyMessageDecoder<MapProjAnimHalfsq>
             endHeight = endHeight,
             startTime = startTime,
             endTime = endTime,
-            slope = slope,
-            distance = distance,
+            angle = angle,
+            progress = progress,
         )
     }
 }

@@ -23,8 +23,8 @@ internal class MapProjAnimDecoder : ProxyMessageDecoder<MapProjAnim> {
         val endHeight = buffer.g1s()
         val startTime = buffer.g2()
         val endTime = buffer.g2()
-        val slope = buffer.g1()
-        val distance = buffer.g2()
+        val angle = buffer.g1().let { if (it == 255) -1 else it }
+        val progress = buffer.g2()
         val unused0 = buffer.g1()
         val unused1 = buffer.g1()
         val unused2 = buffer.g1()
@@ -38,8 +38,8 @@ internal class MapProjAnimDecoder : ProxyMessageDecoder<MapProjAnim> {
             endHeight = endHeight,
             startTime = startTime,
             endTime = endTime,
-            slope = slope,
-            distance = distance,
+            angle = angle,
+            progress = progress,
             unused0 = unused0,
             unused1 = unused1,
             unused2 = unused2,

@@ -30,17 +30,21 @@ internal object Rs3NpcDefinitionDecoder {
         }
         var recolours = 0
         var retextures = 0
-        var recolourMapping = 0
-        var retextureMapping = 0
+        var recolourMapping = emptyList<Int>()
+        var retextureMapping = emptyList<Int>()
         var morph: Rs3NpcMorph? = null
         while (true) {
             when (val opcode = byte()) {
                 0 -> {
                     require(!input.hasRemaining()) { "Trailing NPC definition $id bytes" }
+                    val recolourSlots = recolourMapping.ifEmpty { List(recolours) { it } }
+                    val retextureSlots = retextureMapping.ifEmpty { List(retextures) { it } }
                     return Rs3NpcDefinition(
-                        if (recolourMapping != 0) recolourMapping else recolours,
-                        if (retextureMapping != 0) retextureMapping else retextures,
+                        recolourSlots.size,
+                        retextureSlots.size,
                         morph,
+                        recolourSlots,
+                        retextureSlots,
                     )
                 }
                 1, 60 -> repeat(byte()) { smart() }
@@ -61,12 +65,12 @@ internal object Rs3NpcDefinitionDecoder {
                 42 -> skip(byte())
                 44 -> {
                     val mask = word()
-                    recolourMapping = Integer.bitCount(mask)
+                    recolourMapping = (0..15).filter { mask and (1 shl it) != 0 }
                     recolours = 32 - Integer.numberOfLeadingZeros(mask)
                 }
                 45 -> {
                     val mask = word()
-                    retextureMapping = Integer.bitCount(mask)
+                    retextureMapping = (0..15).filter { mask and (1 shl it) != 0 }
                     retextures = 32 - Integer.numberOfLeadingZeros(mask)
                 }
                 93, 99, 107, 109, 111, 141, 143, 158, 159, 162, 169, 178, 182, 185 -> Unit

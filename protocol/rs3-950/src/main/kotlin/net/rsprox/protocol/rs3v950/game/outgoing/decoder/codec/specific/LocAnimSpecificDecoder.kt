@@ -17,12 +17,12 @@ internal class LocAnimSpecificDecoder : ProxyMessageDecoder<LocAnimSpecific> {
         val shapeRotation = buffer.g1()
         // This fixed-size packet only carries the base location-shape encoding.
         require(shapeRotation and 0x80 == 0) { "Extended location shape in fixed-size LOC_ANIM_SPECIFIC" }
-        val speed = buffer.g1()
+        val delay = buffer.g1()
         val animation = buffer.g4Alt2()
         val coordinate = buffer.g4Alt3()
         return LocAnimSpecific(
             shapeRotation,
-            speed,
+            delay,
             animation,
             coordinate,
         )

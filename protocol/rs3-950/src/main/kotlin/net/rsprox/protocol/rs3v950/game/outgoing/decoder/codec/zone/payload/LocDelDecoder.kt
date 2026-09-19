@@ -15,11 +15,85 @@ internal class LocDelDecoder : ProxyMessageDecoder<LocDel> {
         session: Session,
     ): LocDel {
         val packedCoord = buffer.g1Alt3()
-        val rotData = buffer.g1Alt1()
+        val shapeRotationByte = buffer.g1Alt1()
         val xInZone = (packedCoord ushr 4) and 0x7
         val zInZone = packedCoord and 0x7
-        val shape = (rotData ushr 2) and 0x1F
-        val rotation = rotData and 0x3
-        return LocDel(xInZone, zInZone, shape, rotation)
+        val shape = (shapeRotationByte ushr 2) and 0x1F
+        val rotation = shapeRotationByte and 0x3
+        // The shared native shape reader also accepts an extension in enclosed updates.
+        // Standalone framing stays two bytes; an incomplete extension must fail normally.
+        val hasExtendedTransform = shapeRotationByte and 0x80 != 0
+        var rotationX = 0f
+        var rotationY = 0f
+        var rotationZ = 0f
+        var rotationW = 1f
+        var translationX = 0f
+        var translationY = 0f
+        var translationZ = 0f
+        var scaleX = 1f
+        var scaleY = 1f
+        var scaleZ = 1f
+
+        if (hasExtendedTransform) {
+            val innerFlags = buffer.g1()
+            if ((innerFlags and 0x1) != 0) {
+                val a = buffer.g2s()
+                val b = buffer.g2s()
+                val c = buffer.g2s()
+                val d = buffer.g2s()
+                rotationX = -(a * ROTATION_SCALE)
+                rotationY = b * ROTATION_SCALE
+                rotationZ = -(c * ROTATION_SCALE)
+                rotationW = d * ROTATION_SCALE
+            }
+            if ((innerFlags and 0x2) != 0) {
+                translationX = buffer.g2s().toFloat()
+            }
+            if ((innerFlags and 0x4) != 0) {
+                translationY = -(buffer.g2s().toFloat())
+            }
+            if ((innerFlags and 0x8) != 0) {
+                translationZ = buffer.g2s().toFloat()
+            }
+            if ((innerFlags and 0x10) != 0) {
+                val uniform = buffer.g2s() * SCALE_SCALE
+                scaleX = uniform
+                scaleY = uniform
+                scaleZ = uniform
+            } else {
+                if ((innerFlags and 0x20) != 0) {
+                    scaleX = buffer.g2s() * SCALE_SCALE
+                }
+                if ((innerFlags and 0x40) != 0) {
+                    scaleY = buffer.g2s() * SCALE_SCALE
+                }
+                if ((innerFlags and 0x80) != 0) {
+                    scaleZ = buffer.g2s() * SCALE_SCALE
+                }
+            }
+        }
+
+        return LocDel(
+            xInZone,
+            zInZone,
+            shape,
+            rotation,
+            hasExtendedTransform,
+            rotationX,
+            rotationY,
+            rotationZ,
+            rotationW,
+            translationX,
+            translationY,
+            translationZ,
+            scaleX,
+            scaleY,
+            scaleZ,
+        )
+    }
+
+    private companion object {
+        const val ROTATION_SCALE = 3.0517578e-05f
+        const val SCALE_SCALE = 0.0078125f
     }
 }

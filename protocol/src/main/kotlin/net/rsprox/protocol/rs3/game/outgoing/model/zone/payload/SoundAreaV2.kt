@@ -10,11 +10,10 @@ public data class SoundAreaV2(
     public val delay: Int,
     public val volume: Int,
     public val rate: Int,
-    public val extendedAudioMode: Int,
+    public val speech: Boolean,
 ) : IncomingServerGameMessage {
     public val xInZone: Int get() = (coordinate ushr 4) and 7
     public val zInZone: Int get() = coordinate and 7
     public val loops: Int get() = loopsAndRange and 7
     public val range: Int get() = loopsAndRange ushr 4
-    public val consumerMode: Int get() = if (extendedAudioMode == 1) 8 else 6
 }

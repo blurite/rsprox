@@ -13,14 +13,17 @@ public data class MapProjAnimV2(
     public val endHeight: Int,
     public val startTime: Int,
     public val endTime: Int,
-    public val slope: Int,
-    public val distance: Int,
+    /** The native handler normalizes the wire value 255 to -1. */
+    public val angle: Int,
+    public val progress: Int,
     public val unused0: Int,
     public val unused1: Int,
     public val unused2: Int,
-    public val startAttachment: Int,
-    public val endAttachment: Int,
+    public val startOffset: ProjectileOffset,
+    public val endOffset: ProjectileOffset,
 ) : IncomingServerGameMessage {
     public val xInZone: Int get() = (coordinate ushr 3) and 7
     public val zInZone: Int get() = coordinate and 7
+    public val followTerrain: Boolean get() = coordinate and 0x80 != 0
+    public val unusedCoordinateBit: Boolean get() = coordinate and 0x40 != 0
 }

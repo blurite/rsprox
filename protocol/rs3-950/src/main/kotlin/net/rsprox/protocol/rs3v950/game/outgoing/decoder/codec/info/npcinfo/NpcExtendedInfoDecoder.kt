@@ -6,6 +6,7 @@ import net.rsprox.protocol.rs3.common.TypedVariable
 import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.extendedinfo.NpcMask
 import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.util.Rs3NpcUpdateMaskKey
 import net.rsprox.protocol.rs3v950.buffer.readNativeString
+import net.rsprox.protocol.rs3v950.game.outgoing.decoder.codec.info.readSpotanimRemovals
 
 /** Selectors/order verified against the native revision-950 mask dispatcher. */
 internal object NpcExtendedInfoDecoder {
@@ -34,11 +35,17 @@ internal object NpcExtendedInfoDecoder {
                 val value =
                     when (key.bit) {
                         6, 18 -> NpcMask.Text(key, buffer.readNativeString())
+                        // Native 950 consumes these fields without using them; retain them for logging.
                         0 -> scalars(buffer.g2Alt3(), buffer.g4Alt2(), buffer.g1Alt3())
-                        34 -> scalars(buffer.g1Alt2())
-                        12 -> scalars(buffer.g2Alt1())
+                        34 -> {
+                            // Native -128 clears the override; zero is an explicit priority offset.
+                            val offset = buffer.g1Alt2().toByte().toInt()
+                            NpcMask.PriorityOffset(offset.takeUnless { it == -128 })
+                        }
+                        12 -> NpcMask.BasOverride(buffer.g2Alt1().takeUnless { it == 65535 })
                         20 -> customisation(buffer, key, type, definitions, morphVariables, false)
-                        26 -> scalars(buffer.g1Alt1())
+                        26 -> NpcMask.OverlapCulling(buffer.g1Alt1() == 1)
+                        // Native 950 consumes these fields without using them; retain them for logging.
                         29 -> scalars(buffer.g2Alt2(), buffer.g4(), buffer.g1Alt1())
                         28 ->
                             scalars(
@@ -54,18 +61,19 @@ internal object NpcExtendedInfoDecoder {
                             NpcMask.Transformation(type)
                         }
                         14 ->
-                            scalars(
-                                buffer.g1Alt2().toByte().toInt(),
-                                buffer.g1Alt2().toByte().toInt(),
-                                buffer.g1().toByte().toInt(),
-                                buffer.g1().toByte().toInt(),
-                                buffer.g1Alt2().toByte().toInt(),
-                                buffer.g1().toByte().toInt(),
-                                buffer.g2Alt1(),
-                                buffer.g2Alt1(),
-                                buffer.g2Alt1(),
+                            NpcMask.ExactMove(
+                                deltaX1 = buffer.g1Alt2().toByte().toInt(),
+                                deltaZ1 = buffer.g1Alt2().toByte().toInt(),
+                                deltaX2 = buffer.g1().toByte().toInt(),
+                                deltaZ2 = buffer.g1().toByte().toInt(),
+                                deltaLevel1 = buffer.g1Alt2().toByte().toInt(),
+                                deltaLevel2 = buffer.g1().toByte().toInt(),
+                                delay1 = buffer.g2Alt1(),
+                                delay2 = buffer.g2Alt1(),
+                                angle = buffer.g2Alt1(),
                             )
                         21, 16 -> variables(buffer, key)
+                        // Native 950 consumes these fields without using them; retain them for logging.
                         8 -> scalars(buffer.g2Alt1(), buffer.g4(), buffer.g1Alt2())
                         19 ->
                             NpcMask.Stats(
@@ -73,15 +81,18 @@ internal object NpcExtendedInfoDecoder {
                                     NpcMask.Stat(buffer.g1Alt1(), buffer.g4Alt1(), buffer.g3Alt2())
                                 },
                             )
+                        // Native 950 consumes these fields without using them; retain them for logging.
                         15 -> scalars(buffer.g1Alt3(), buffer.g1(), buffer.g2())
                         1 -> NpcMask.FaceEntity(buffer.g3Alt3())
                         7 -> scalars(buffer.g2(), buffer.g2Alt1())
+                        // Native 950 consumes these fields without using them; retain them for logging.
                         31 -> scalars(buffer.g2Alt3(), buffer.g4Alt3(), buffer.g1())
+                        // Native 950 consumes these fields without using them; retain them for logging.
                         11 -> scalars(buffer.g1Alt1(), buffer.g2Alt1(), buffer.g2(), buffer.g2Alt2())
-                        32 -> transforms(buffer)
+                        32 -> attachments(buffer)
                         10 -> customisation(buffer, key, type, definitions, morphVariables, true)
                         24 -> {
-                            val removals = List(buffer.g1()) { buffer.g2().let { if (it == 65535) -1 else it } }
+                            val removals = buffer.readSpotanimRemovals()
                             val additions =
                                 List(buffer.g1Alt1()) {
                                     NpcMask.Spotanim(
@@ -99,17 +110,20 @@ internal object NpcExtendedInfoDecoder {
                         3 -> NpcMask.Sequence(List(4) { buffer.model() }, buffer.g1())
                         22 -> {
                             val presence = buffer.g1Alt2()
-                            NpcMask.SlotPairs(
-                                buildList {
-                                    repeat(8) { slot ->
-                                        if (presence and (1 shl slot) != 0) {
-                                            add(NpcMask.SlotPair(slot, buffer.model(), buffer.gSmart1or2() - 1))
-                                        }
+                            // Native expands omitted head-icon slots to -1/-1, not an unchanged-slot delta.
+                            NpcMask.HeadIconCustomisation(
+                                List(8) { slot ->
+                                    if (presence and (1 shl slot) != 0) {
+                                        NpcMask.HeadIcon(slot, buffer.gSmart2or4null(), buffer.gSmart1or2() - 1)
+                                    } else {
+                                        NpcMask.HeadIcon(slot, -1, -1)
                                     }
                                 },
                             )
                         }
+                        // One replacement bitmask: set bits suppress NPC interaction options.
                         25 -> scalars(buffer.g1())
+                        // Native 950 consumes these fields without using them; retain them for logging.
                         30 -> scalars(buffer.g2Alt2(), buffer.g4Alt3(), buffer.g1Alt2())
                         else -> error("Unimplemented NPC mask $key")
                     }
@@ -149,9 +163,7 @@ internal object NpcExtendedInfoDecoder {
         body: Boolean,
     ): NpcMask.Customisation {
         val flags = if (body) buffer.g1Alt1() else buffer.g1()
-        if (flags and 1 !=
-            0
-        ) {
+        if (flags and 1 != 0) {
             return NpcMask.Customisation(key, flags, emptyList(), emptyList(), emptyList(), emptyList())
         }
         val models =
@@ -162,21 +174,21 @@ internal object NpcExtendedInfoDecoder {
                     val id = buffer.model()
                     val transformed = body && id != -1 && flags and 16 != 0
                     val scale = if (transformed) Float.fromBits(buffer.g4()) else null
-                    val translation = if (transformed) List(3) { buffer.g2Alt1().toShort().toInt() } else emptyList()
-                    val rotation = if (transformed) List(3) { buffer.g2().toShort().toInt() } else emptyList()
-                    val values32 =
+                    val rotation = if (transformed) List(3) { buffer.g2Alt1().toShort().toInt() } else emptyList()
+                    val translation = if (transformed) List(3) { buffer.g2().toShort().toInt() } else emptyList()
+                    val recolours =
                         if (body && id != -1 && flags and 32 != 0) {
                             List(buffer.g1Alt1()) { buffer.g2Alt2().toShort().toInt() }
                         } else {
                             emptyList()
                         }
-                    val values64 =
+                    val retextures =
                         if (body && id != -1 && flags and 64 != 0) {
                             List(buffer.g1Alt3()) { buffer.g2Alt1().toShort().toInt() }
                         } else {
                             emptyList()
                         }
-                    NpcMask.Model(id, scale, translation, rotation, values32, values64)
+                    NpcMask.Model(id, scale, rotation, translation, recolours, retextures)
                 }
             }
         val definition =
@@ -197,15 +209,22 @@ internal object NpcExtendedInfoDecoder {
                 }
             }
         val retextures =
-            if (flags and 8 ==
-                0
-            ) {
+            if (flags and 8 == 0) {
                 emptyList()
             } else {
                 List(checkNotNull(definition).retextureCount) { buffer.g2Alt2() }
             }
-        val colours = if (body && flags and 128 != 0) List(10) { buffer.g1Alt2() } else emptyList()
-        return NpcMask.Customisation(key, flags, models, recolours, retextures, colours)
+        val paletteIndices = if (body && flags and 128 != 0) List(10) { buffer.g1Alt2() } else emptyList()
+        return NpcMask.Customisation(
+            key,
+            flags,
+            models,
+            recolours,
+            retextures,
+            paletteIndices,
+            if (flags and 4 != 0) checkNotNull(definition).recolourSlots else emptyList(),
+            if (flags and 8 != 0) checkNotNull(definition).retextureSlots else emptyList(),
+        )
     }
 
     private fun hits(
@@ -242,15 +261,15 @@ internal object NpcExtendedInfoDecoder {
                     NpcMask.Headbar(id, duration, null, null, null, null, null, null)
                 } else {
                     val delay = buffer.gSmart1or2()
-                    val first = if (wide) buffer.g1() else buffer.g1Alt1()
-                    val second = if (duration == 0) first else buffer.g1Alt2()
-                    val extraId = buffer.gSmart1or2() - 1
-                    val extraFirst = if (extraId == -1) null else buffer.g1()
-                    val extraSecond =
-                        if (extraId == -1) {
+                    val startFill = if (wide) buffer.g1() else buffer.g1Alt1()
+                    val endFill = if (duration == 0) startFill else buffer.g1Alt2()
+                    val secondaryId = buffer.gSmart1or2() - 1
+                    val secondaryStartFill = if (secondaryId == -1) null else buffer.g1()
+                    val secondaryEndFill =
+                        if (secondaryId == -1) {
                             null
                         } else if (duration == 0) {
-                            extraFirst
+                            secondaryStartFill
                         } else {
                             buffer.g1Alt3()
                         }
@@ -258,20 +277,20 @@ internal object NpcExtendedInfoDecoder {
                         id,
                         duration,
                         delay,
-                        first,
-                        second,
-                        extraId.takeIf { it != -1 },
-                        extraFirst,
-                        extraSecond,
+                        startFill,
+                        endFill,
+                        secondaryId.takeIf { it != -1 },
+                        secondaryStartFill,
+                        secondaryEndFill,
                     )
                 }
             }
         return NpcMask.Hits(wide, hits, bars)
     }
 
-    private fun transforms(buffer: JagByteBuf): NpcMask.BoneTransforms {
+    private fun attachments(buffer: JagByteBuf): NpcMask.Attachments {
         val count = buffer.g1Alt2().toByte().toInt()
-        val transforms =
+        val attachments =
             List(count.coerceAtLeast(0)) {
                 val flags = buffer.g2Alt3().toShort().toInt()
                 val slot = buffer.g2().toShort().toInt()
@@ -294,9 +313,9 @@ internal object NpcExtendedInfoDecoder {
                         if (flags and 256 != 0) buffer.g4Alt1() else null,
                         if (flags and 512 != 0) buffer.g4Alt2() else null,
                     )
-                NpcMask.BoneTransform(flags, slot, id, translation, rotation, scale)
+                NpcMask.Attachment(flags, slot, id, translation, rotation, scale)
             }
-        return NpcMask.BoneTransforms(count, transforms)
+        return NpcMask.Attachments(count, attachments)
     }
 
     private fun JagByteBuf.model(): Int =

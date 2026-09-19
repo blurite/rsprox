@@ -16,6 +16,6 @@ internal class LocPrefetchDecoder : ProxyMessageDecoder<LocPrefetch> {
     ): LocPrefetch {
         val id = buffer.g4()
         val shape = buffer.g1()
-        return LocPrefetch(id, shape, 0)
+        return LocPrefetch(id, shape)
     }
 }

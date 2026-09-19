@@ -22,40 +22,52 @@ internal object PlayerAppearanceDecoder {
             val title = if (flags and 0x40 != 0) buffer.gSmart1or2() else null
             val icons =
                 if (flags and 2 != 0) {
-                    List(buffer.g1()) { PlayerExtendedInfo.AppearanceIcon(buffer.g2(), buffer.g1()) }
+                    List(buffer.g1()) { PlayerExtendedInfo.NameIcon(buffer.g2(), buffer.g1()) }
                 } else {
                     emptyList()
                 }
-            val bodyType = buffer.g1().toByte().toInt()
+            val visibility = buffer.g1().toByte().toInt()
             val appearance = decodeBody(buffer, definitions)
             val name = buffer.readNativeString()
             val combat = buffer.g1()
-            val total = if (flags and 4 != 0) buffer.g2().let { if (it == 65535) -1 else it } else null
-            val visibleCombat = if (flags and 4 == 0) buffer.g1() else null
-            val difference = if (flags and 4 == 0) buffer.g1().let { if (it == 255) -1 else it } else null
-            val extraFlag = buffer.g1()
-            val extra = if (extraFlag != 0) List(4) { buffer.g2() } + buffer.g1() else emptyList()
+            val skillLevel = if (flags and 4 != 0) buffer.g2().let { if (it == 65535) -1 else it } else null
+            val effectiveCombat = if (flags and 4 == 0) buffer.g1() else null
+            val colourParameter = if (flags and 4 == 0) buffer.g1().let { if (it == 255) -1 else it } else null
+            val soundRange = buffer.g1().toByte().toInt()
+            val backgroundSound =
+                if (soundRange != 0) {
+                    // Native applies these four IDs as signed shorts; 65535 is the absent sound -1.
+                    PlayerExtendedInfo.BackgroundSound(
+                        range = soundRange,
+                        stationary = buffer.g2().toShort().toInt(),
+                        crawl = buffer.g2().toShort().toInt(),
+                        walk = buffer.g2().toShort().toInt(),
+                        run = buffer.g2().toShort().toInt(),
+                        volume = buffer.g1(),
+                    )
+                } else {
+                    null
+                }
             require(!storage.isReadable) { "Player appearance has ${storage.readableBytes()} trailing bytes" }
             return PlayerExtendedInfo.Appearance(
-                flags,
-                (flags ushr 3 and 7) + 1,
-                title,
-                icons,
-                bodyType,
-                appearance.npc,
-                appearance.npcTeam,
-                appearance.equipment,
-                appearance.customisations,
-                appearance.primaryColours,
-                appearance.secondaryColours,
-                appearance.renderAnimationSet,
-                name,
-                combat,
-                total,
-                visibleCombat,
-                difference,
-                extraFlag,
-                extra,
+                flags = flags,
+                size = (flags ushr 3 and 7) + 1,
+                title = title,
+                icons = icons,
+                visibility = visibility,
+                npc = appearance.npc,
+                npcTeam = appearance.npcTeam,
+                equipment = appearance.equipment,
+                customisations = appearance.customisations,
+                primaryColours = appearance.primaryColours,
+                secondaryColours = appearance.secondaryColours,
+                renderAnimationSet = appearance.renderAnimationSet,
+                name = name,
+                combatLevel = combat,
+                skillLevel = skillLevel,
+                effectiveCombatLevel = effectiveCombat,
+                combatColourParameter = colourParameter,
+                backgroundSound = backgroundSound,
             )
         } finally {
             storage.release()

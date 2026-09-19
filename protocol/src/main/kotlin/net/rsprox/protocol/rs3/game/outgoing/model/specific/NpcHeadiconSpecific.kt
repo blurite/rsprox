@@ -4,7 +4,7 @@ import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 public data class NpcHeadiconSpecific(
     public val slot: Int,
-    public val archive: Int,
-    public val npc: Int,
-    public val sprite: Int,
+    public val id: Int,
+    public val npcIndex: Int,
+    public val spriteIndex: Int,
 ) : IncomingServerGameMessage

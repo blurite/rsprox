@@ -41,6 +41,18 @@ public class CompositeSymbolDictionary(
         }
     }
 
+    override fun getVarNpcName(id: Int): String? {
+        return dictionaries.firstNotNullOfOrNull { dictionary ->
+            dictionary.getVarNpcName(id)
+        }
+    }
+
+    override fun getVarObjName(id: Int): String? {
+        return dictionaries.firstNotNullOfOrNull { dictionary ->
+            dictionary.getVarObjName(id)
+        }
+    }
+
     override fun start() {
         for (dictionary in dictionaries) {
             dictionary.start()

@@ -2,11 +2,13 @@ package net.rsprox.proxy.rs3.transcriber.text
 
 import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.property.Property
+import net.rsprox.shared.property.any
 import net.rsprox.shared.property.boolean
 import net.rsprox.shared.property.filteredBoolean
 import net.rsprox.shared.property.filteredInt
 import net.rsprox.shared.property.group
 import net.rsprox.shared.property.int
+import net.rsprox.shared.property.namedEnum
 import net.rsprox.shared.property.scriptVarType
 
 internal fun Property.appendTint(
@@ -26,10 +28,20 @@ internal fun Property.appendTint(
 }
 
 internal fun Property.appendSequences(ids: List<Int>, delay: Int) {
-    ids.forEachIndexed { slot, id ->
-        group {
-            int("slot", slot)
-            scriptVarType("id", ScriptVarType.SEQ, id)
+    if (ids.size == 4 && ids.all { it == ids[0] }) {
+        any("slot", "all")
+        scriptVarType("id", ScriptVarType.SEQ, ids[0])
+    } else {
+        ids.forEachIndexed { slot, id ->
+            group {
+                // Native selects one of four alternatives using movement kind + 1.
+                if (slot in 0..3) {
+                    namedEnum("slot", Rs3MovementMode.entries[slot])
+                } else {
+                    int("slot", slot)
+                }
+                scriptVarType("id", ScriptVarType.SEQ, id)
+            }
         }
     }
     filteredInt("delay", delay, 0)
@@ -55,7 +67,7 @@ internal fun Property.appendSpotanim(
     packedOffsets: Int,
 ) {
     group("SPOTANIM") {
-        filteredInt("slot", slot, 0)
+        int("slot", slot)
         scriptVarType("id", ScriptVarType.SPOTANIM, if (id == 65535) -1 else id)
         filteredInt("delay", packedHeightDelay and 0x7FFF, 0)
         // Signed wire height; the renderer multiplies it by four.
@@ -71,8 +83,15 @@ internal fun Property.appendSpotanim(
     }
 }
 
-internal fun Property.appendHit(id: Int, value: Int, secondaryId: Int, secondaryValue: Int, delay: Int) {
-    group("HIT") {
+internal fun Property.appendHit(
+    id: Int,
+    value: Int,
+    secondaryId: Int,
+    secondaryValue: Int,
+    delay: Int,
+    wide: Boolean,
+) {
+    group(if (wide) "HIT_V2" else "HIT_V1") {
         scriptVarType("id", ScriptVarType.HITMARK, id)
         int("value", value)
         if (secondaryId != -1) {

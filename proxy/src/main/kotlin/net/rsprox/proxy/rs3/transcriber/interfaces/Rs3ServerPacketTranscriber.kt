@@ -219,7 +219,7 @@ public interface Rs3ServerPacketTranscriber {
 
     public fun soundAreaV2(message: SoundAreaV2)
 
-    public fun soundArea(message: SoundArea)
+    public fun soundAreaV1(message: SoundAreaV1)
 
     public fun varpSmall(message: VarpSmall)
 
@@ -287,6 +287,8 @@ public interface Rs3ServerPacketTranscriber {
 
     public fun locAddChange(message: LocAddChange)
 
+    public fun locCustomise(message: LocCustomise)
+
     public fun locDel(message: LocDel)
 
     public fun objAdd(message: ObjAdd)
@@ -298,6 +300,8 @@ public interface Rs3ServerPacketTranscriber {
     public fun objReveal(message: ObjReveal)
 
     public fun mapAnim(message: MapAnim)
+
+    public fun mapAnimV1(message: MapAnimV1)
 
     public fun mapAnimV2(message: MapAnimV2)
 

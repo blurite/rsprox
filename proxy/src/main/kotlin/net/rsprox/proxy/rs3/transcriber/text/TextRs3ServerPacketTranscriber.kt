@@ -182,6 +182,7 @@ import net.rsprox.shared.property.scriptVarType
 import net.rsprox.shared.property.string
 import net.rsprox.shared.property.varbit
 import net.rsprox.shared.property.varc
+import net.rsprox.shared.property.varobj
 import net.rsprox.shared.property.varp
 import net.rsprox.shared.settings.Setting
 import net.rsprox.shared.settings.SettingSetStore
@@ -807,47 +808,93 @@ public class TextRs3ServerPacketTranscriber(
     private fun Property.buildLocPrefetch(event: LocPrefetch) {
         scriptVarType("id", ScriptVarType.LOC, event.id)
         scriptVarType("shape", ScriptVarType.LOC_SHAPE, event.shape)
-        int("rotation", event.rotation)
+        event.rotation?.let { int("rotation", it) }
     }
 
     private fun Property.buildLocCustomise(event: LocCustomise) {
-        event.customisationFlags?.let {
-            int("customisationflags", it)
-            boolean("reset", it and 1 != 0)
-        }
         scriptVarType("id", ScriptVarType.LOC, event.locId)
         zoneCoord(event.xInZone, event.zInZone)
         scriptVarType("shape", ScriptVarType.LOC_SHAPE, event.shape)
         int("rotation", event.rotation)
+        event.customisationFlags?.let {
+            filteredBoolean("reset", it and 1 != 0)
+            filteredInt("unknownflags", it and 0xF0, 0)
+        }
         if (event.hasExtendedTransform) {
-            children += AnyProperty("rotationx", event.rotationX, Float::class.java)
-            children += AnyProperty("rotationy", event.rotationY, Float::class.java)
-            children += AnyProperty("rotationz", event.rotationZ, Float::class.java)
-            children += AnyProperty("rotationw", event.rotationW, Float::class.java)
-            children += AnyProperty("translatea", event.translateA, Float::class.java)
-            children += AnyProperty("translateb", event.translateB, Float::class.java)
-            children += AnyProperty("translatec", event.translateC, Float::class.java)
-            children += AnyProperty("scalex", event.scaleX, Float::class.java)
-            children += AnyProperty("scaley", event.scaleY, Float::class.java)
-            children += AnyProperty("scalez", event.scaleZ, Float::class.java)
+            // An absent transform retains existing state; do not emit a synthetic identity transform.
+            locationTransform(
+                event.rotationX,
+                event.rotationY,
+                event.rotationZ,
+                event.rotationW,
+                event.translationX,
+                event.translationY,
+                event.translationZ,
+                event.scaleX,
+                event.scaleY,
+                event.scaleZ,
+            )
         }
-        event.uintArray?.let {
-            any("models", it.joinToString(","))
+        event.models?.let { models ->
+            group("MODELS") {
+                int("count", models.size)
+                models.forEachIndexed { slot, id ->
+                    group {
+                        int("slot", slot)
+                        scriptVarType("id", ScriptVarType.MODEL, id)
+                    }
+                }
+            }
         }
-        event.opcodeArrayA?.let {
-            any("recolours", it.joinToString(","))
+        event.recolours?.let { recolours ->
+            group("RECOLOURS") {
+                int("count", recolours.size)
+                recolours.forEachIndexed { slot, colour ->
+                    group {
+                        int("slot", slot)
+                        int("colour", colour)
+                    }
+                }
+            }
         }
-        event.opcodeArrayB?.let {
-            any("retextures", it.joinToString(","))
+        event.retextures?.let { retextures ->
+            group("RETEXTURES") {
+                int("count", retextures.size)
+                retextures.forEachIndexed { slot, texture ->
+                    group {
+                        int("slot", slot)
+                        scriptVarType("texture", ScriptVarType.TEXTURE, texture)
+                    }
+                }
+            }
         }
     }
 
+    override fun locCustomise(message: LocCustomise) {
+        if (!filters[PropertyFilter.LOC_ADD_CHANGE]) return omit()
+        root.buildLocCustomise(message)
+    }
+
     private fun Property.buildLocAnim(event: LocAnim) {
-        scriptVarType("anim", ScriptVarType.SEQ, event.id)
         zoneCoord(event.xInZone, event.zInZone)
         scriptVarType("shape", ScriptVarType.LOC_SHAPE, event.shape)
         int("rotation", event.rotation)
-        int("delay?", event.delay)
+        scriptVarType("anim", ScriptVarType.SEQ, event.id)
+        filteredInt("delay", event.delay, 0)
+        if (event.hasExtendedTransform) {
+            locationTransform(
+                event.rotationX,
+                event.rotationY,
+                event.rotationZ,
+                event.rotationW,
+                event.translationX,
+                event.translationY,
+                event.translationZ,
+                event.scaleX,
+                event.scaleY,
+                event.scaleZ,
+            )
+        }
     }
 
     override fun locAnim(message: LocAnim) {
@@ -860,6 +907,53 @@ public class TextRs3ServerPacketTranscriber(
         zoneCoord(event.xInZone, event.zInZone)
         scriptVarType("shape", ScriptVarType.LOC_SHAPE, event.shape)
         int("rotation", event.rotation)
+        if (event.hasExtendedTransform) {
+            // An absent transform may retain existing state; only log an explicitly supplied transform.
+            locationTransform(
+                event.rotationX,
+                event.rotationY,
+                event.rotationZ,
+                event.rotationW,
+                event.translationX,
+                event.translationY,
+                event.translationZ,
+                event.scaleX,
+                event.scaleY,
+                event.scaleZ,
+            )
+        }
+    }
+
+    private fun Property.locationTransform(
+        rotationX: Float,
+        rotationY: Float,
+        rotationZ: Float,
+        rotationW: Float,
+        translationX: Float,
+        translationY: Float,
+        translationZ: Float,
+        scaleX: Float,
+        scaleY: Float,
+        scaleZ: Float,
+    ) {
+        group("TRANSFORM") {
+            group("ROTATION") {
+                any("x", rotationX)
+                any("y", rotationY)
+                any("z", rotationZ)
+                any("w", rotationW)
+            }
+            group("TRANSLATION") {
+                any("x", translationX)
+                any("y", translationY)
+                any("z", translationZ)
+            }
+            group("SCALE") {
+                any("x", scaleX)
+                any("y", scaleY)
+                any("z", scaleZ)
+            }
+        }
     }
 
     override fun locAddChange(message: LocAddChange) {
@@ -896,6 +990,20 @@ public class TextRs3ServerPacketTranscriber(
         zoneCoord(event.xInZone, event.zInZone)
         scriptVarType("shape", ScriptVarType.LOC_SHAPE, event.shape)
         int("rotation", event.rotation)
+        if (event.hasExtendedTransform) {
+            locationTransform(
+                event.rotationX,
+                event.rotationY,
+                event.rotationZ,
+                event.rotationW,
+                event.translationX,
+                event.translationY,
+                event.translationZ,
+                event.scaleX,
+                event.scaleY,
+                event.scaleZ,
+            )
+        }
     }
 
     override fun locDel(message: LocDel) {
@@ -905,7 +1013,7 @@ public class TextRs3ServerPacketTranscriber(
 
     private fun Property.buildObjAdd(event: ObjAdd) {
         scriptVarType("id", ScriptVarType.OBJ, event.objId)
-        int("count", event.count)
+        formattedInt("count", event.count)
         zoneCoord(event.xInZone, event.zInZone)
     }
 
@@ -926,8 +1034,8 @@ public class TextRs3ServerPacketTranscriber(
 
     private fun Property.buildObjCount(event: ObjCount) {
         scriptVarType("id", ScriptVarType.OBJ, event.objId)
-        int("oldcount", event.oldQuantity)
-        int("newcount", event.newQuantity)
+        formattedInt("oldcount", event.oldQuantity)
+        formattedInt("newcount", event.newQuantity)
         zoneCoord(event.xInZone, event.zInZone)
     }
 
@@ -938,11 +1046,11 @@ public class TextRs3ServerPacketTranscriber(
 
     private fun Property.buildObjReveal(event: ObjReveal) {
         scriptVarType("id", ScriptVarType.OBJ, event.objId)
-        int("count", event.count)
+        formattedInt("count", event.count)
         zoneCoord(event.xInZone, event.zInZone)
-        val ownerName = sessionState.getPlayerOrNull(event.ownerIndex)?.name
-        val ownerLabel = if (ownerName != null) "$ownerName(${event.ownerIndex})" else "${event.ownerIndex}"
-        any("owner", ownerLabel)
+        group("EXCLUDED") {
+            entities.player(this, event.excludedPlayerIndex)
+        }
     }
 
     override fun objReveal(message: ObjReveal) {
@@ -966,13 +1074,33 @@ public class TextRs3ServerPacketTranscriber(
         root.buildMapAnim(message)
     }
 
-    private fun Property.buildMapAnimV2(event: MapAnimV2) {
-        scriptVarType("id", ScriptVarType.SPOTANIM, event.id)
-        zoneCoord(event.xInZone, event.zInZone)
-        int("angle", event.angle)
-        int("attachment", event.attachment)
-        filteredInt("height", event.height, 0)
+    private fun Property.buildMapAnimV1(event: MapAnimV1) {
+        scriptVarType("id", ScriptVarType.SPOTANIM, if (event.id == 65535) -1 else event.id)
         filteredInt("delay", event.delay, 0)
+        filteredInt("height", event.height, 0)
+        filteredInt("rotation", event.rotation, 0)
+        filteredBoolean("independentrotation", event.independentRotation)
+        zoneCoord(event.xInZone, event.zInZone)
+        int("unused0", event.unused0)
+        int("unused1", event.unused1)
+        int("unused2", event.unused2)
+    }
+
+    override fun mapAnimV1(message: MapAnimV1) {
+        if (!filters[PropertyFilter.MAP_ANIM]) return omit()
+        root.buildMapAnimV1(message)
+    }
+
+    private fun Property.buildMapAnimV2(event: MapAnimV2) {
+        scriptVarType("id", ScriptVarType.SPOTANIM, if (event.id == 65535) -1 else event.id)
+        filteredInt("delay", event.delay, 0)
+        filteredInt("height", event.height, 0)
+        filteredInt("rotation", event.rotation, 0)
+        filteredInt("offsetx", event.offsetX, 0)
+        filteredInt("offsetz", event.offsetZ, 0)
+        filteredBoolean("relativeoffset", event.relativeOffset)
+        filteredBoolean("independentrotation", event.independentRotation)
+        zoneCoord(event.xInZone, event.zInZone)
         event.unused0?.let { int("unused0", it) }
         event.unused1?.let { int("unused1", it) }
         event.unused2?.let { int("unused2", it) }
@@ -983,35 +1111,29 @@ public class TextRs3ServerPacketTranscriber(
         root.buildMapAnimV2(message)
     }
 
-    private fun Property.buildSoundArea(event: SoundArea) {
-        zoneCoord(event.xInZone, event.zInZone)
+    private fun Property.buildSoundAreaV1(event: SoundAreaV1) {
         scriptVarType("id", ScriptVarType.SYNTH, event.id)
-        int("loops", event.loops)
+        filteredInt("loops", event.loops, 0)
+        filteredInt("delay", event.delay, 0)
         int("range", event.range)
-        int("loopsandrange", event.loopsAndRange)
-        int("delay", event.delay)
         int("volume", event.volume)
         int("rate", event.rate)
-        int("xinzone", event.xInZone)
-        int("zinzone", event.zInZone)
+        zoneCoord(event.xInZone, event.zInZone)
     }
 
-    override fun soundArea(message: SoundArea) {
+    override fun soundAreaV1(message: SoundAreaV1) {
         if (!filters[PropertyFilter.SOUND_AREA]) return omit()
-        root.buildSoundArea(message)
+        root.buildSoundAreaV1(message)
     }
     private fun Property.buildSoundAreaV2(event: SoundAreaV2) {
-        zoneCoord(event.xInZone, event.zInZone)
         scriptVarType("id", ScriptVarType.SYNTH, event.id)
-        int("loops", event.loops)
+        filteredInt("loops", event.loops, 0)
+        filteredInt("delay", event.delay, 0)
         int("range", event.range)
-        int("loopsandrange", event.loopsAndRange)
-        int("delay", event.delay)
         int("volume", event.volume)
         int("rate", event.rate)
-        int("extendedaudiomode", event.extendedAudioMode)
-        int("xinzone", event.xInZone)
-        int("zinzone", event.zInZone)
+        boolean("speech", event.speech)
+        zoneCoord(event.xInZone, event.zInZone)
     }
 
     override fun soundAreaV2(message: SoundAreaV2) {
@@ -1019,23 +1141,22 @@ public class TextRs3ServerPacketTranscriber(
         root.buildSoundAreaV2(message)
     }
     private fun Property.buildMapProjAnim(event: MapProjAnim) {
-        scriptVarType("id", ScriptVarType.SPOTANIM, event.id)
+        scriptVarType("id", ScriptVarType.SPOTANIM, if (event.id == 65535) -1 else event.id)
         int("starttime", event.startTime)
         int("endtime", event.endTime)
-        int("slope", event.slope)
-        int("distance", event.distance)
+        int("angle", event.angle)
+        int("progress", event.progress)
         int("startheight", event.startHeight)
         int("endheight", event.endHeight)
+        filteredBoolean("followterrain", event.followTerrain)
+        filteredBoolean("unusedcoordbit", event.unusedCoordinateBit)
         group("SOURCE") {
             zoneCoord(event.xInZone, event.zInZone)
         }
         group("TARGET") {
             zoneCoord(event.xInZone + event.deltaX, event.zInZone + event.deltaZ)
-            filteredInt("actor", event.target, 0)
-            int("dx", event.deltaX)
-            int("dz", event.deltaZ)
+            projectileActor(event.target)
         }
-        int("coordinate", event.coordinate)
         int("unused0", event.unused0)
         int("unused1", event.unused1)
         int("unused2", event.unused2)
@@ -1046,25 +1167,24 @@ public class TextRs3ServerPacketTranscriber(
         root.buildMapProjAnim(message)
     }
     private fun Property.buildMapProjAnimV2(event: MapProjAnimV2) {
-        scriptVarType("id", ScriptVarType.SPOTANIM, event.id)
+        scriptVarType("id", ScriptVarType.SPOTANIM, if (event.id == 65535) -1 else event.id)
         int("starttime", event.startTime)
         int("endtime", event.endTime)
-        int("slope", event.slope)
-        int("distance", event.distance)
+        int("angle", event.angle)
+        int("progress", event.progress)
         int("startheight", event.startHeight)
         int("endheight", event.endHeight)
+        filteredBoolean("followterrain", event.followTerrain)
+        filteredBoolean("unusedcoordbit", event.unusedCoordinateBit)
         group("SOURCE") {
             zoneCoord(event.xInZone, event.zInZone)
-            int("attachment", event.startAttachment)
+            projectileOffset(event.startOffset)
         }
         group("TARGET") {
             zoneCoord(event.xInZone + event.deltaX, event.zInZone + event.deltaZ)
-            filteredInt("actor", event.target, 0)
-            int("dx", event.deltaX)
-            int("dz", event.deltaZ)
-            int("attachment", event.endAttachment)
+            projectileActor(event.target)
+            projectileOffset(event.endOffset)
         }
-        int("coordinate", event.coordinate)
         int("unused0", event.unused0)
         int("unused1", event.unused1)
         int("unused2", event.unused2)
@@ -1074,26 +1194,49 @@ public class TextRs3ServerPacketTranscriber(
         if (!filters[PropertyFilter.MAP_PROJANIM]) return omit()
         root.buildMapProjAnimV2(message)
     }
+
+    private fun Property.projectileOffset(offset: ProjectileOffset) {
+        filteredInt("xoffset", offset.x, 0)
+        filteredInt("zoffset", offset.z, 0)
+        filteredBoolean("relativeoffset", offset.relative)
+        filteredInt("unknownoffsetmode", offset.unknownMode, 0)
+    }
+
     private fun Property.buildMapProjAnimHalfsq(event: MapProjAnimHalfsq) {
-        scriptVarType("id", ScriptVarType.SPOTANIM, event.id)
+        scriptVarType("id", ScriptVarType.SPOTANIM, if (event.id == 65535) -1 else event.id)
         int("starttime", event.startTime)
         int("endtime", event.endTime)
-        int("slope", event.slope)
-        int("distance", event.distance)
+        int("angle", event.angle)
+        int("progress", event.progress)
         int("startheight", event.startHeight)
         int("endheight", event.endHeight)
-        int("flags", event.flags)
+        filteredBoolean("followterrain", event.followTerrain)
+        filteredBoolean("finestartheight", event.fineStartHeight)
+        filteredInt("unknownflags", event.unknownFlags, 0)
         group("SOURCE") {
             zoneHalfCoord(event.xInZone, event.zInZone)
-            filteredInt("actor", event.source, 0)
+            projectileActor(event.source)
         }
         group("TARGET") {
             zoneHalfCoord(event.xInZone + event.deltaX, event.zInZone + event.deltaZ)
-            filteredInt("actor", event.target, 0)
-            int("dx", event.deltaX)
-            int("dz", event.deltaZ)
+            projectileActor(event.target)
         }
-        int("coordinate", event.coordinate)
+    }
+
+    private fun Property.projectileActor(actor: Int) {
+        // Native projectile lookup uses a type byte and a direct 16-bit index, not OSRS's signed index.
+        when (actor ushr 16) {
+            1 -> entities.npc(this, actor and 0xFFFF)
+            2 -> entities.player(this, actor and 0xFFFF)
+            else -> {
+                if (actor == 0) {
+                    filteredAny<Any>("entity", null, null)
+                } else {
+                    // Other types resolve to no actor natively; preserve their wire value for inspection.
+                    int("unknownactor", actor)
+                }
+            }
+        }
     }
 
     override fun mapProjAnimHalfsq(message: MapProjAnimHalfsq) {
@@ -1101,27 +1244,26 @@ public class TextRs3ServerPacketTranscriber(
         root.buildMapProjAnimHalfsq(message)
     }
     private fun Property.buildMapProjAnimHalfsqV2(event: MapProjAnimHalfsqV2) {
-        scriptVarType("id", ScriptVarType.SPOTANIM, event.id)
+        scriptVarType("id", ScriptVarType.SPOTANIM, if (event.id == 65535) -1 else event.id)
         int("starttime", event.startTime)
         int("endtime", event.endTime)
-        int("slope", event.slope)
-        int("distance", event.distance)
+        int("angle", event.angle)
+        int("progress", event.progress)
         int("startheight", event.startHeight)
         int("endheight", event.endHeight)
-        int("flags", event.flags)
+        filteredBoolean("followterrain", event.followTerrain)
+        filteredBoolean("finestartheight", event.fineStartHeight)
+        filteredInt("unknownflags", event.unknownFlags, 0)
         group("SOURCE") {
             zoneHalfCoord(event.xInZone, event.zInZone)
-            filteredInt("actor", event.source, 0)
-            int("attachment", event.startAttachment)
+            projectileActor(event.source)
+            projectileOffset(event.startOffset)
         }
         group("TARGET") {
             zoneHalfCoord(event.xInZone + event.deltaX, event.zInZone + event.deltaZ)
-            filteredInt("actor", event.target, 0)
-            int("dx", event.deltaX)
-            int("dz", event.deltaZ)
-            int("attachment", event.endAttachment)
+            projectileActor(event.target)
+            projectileOffset(event.endOffset)
         }
-        int("coordinate", event.coordinate)
     }
 
     override fun mapProjAnimHalfsqV2(message: MapProjAnimHalfsqV2) {
@@ -1243,7 +1385,6 @@ public class TextRs3ServerPacketTranscriber(
         val includeZoneHeader = filters[PropertyFilter.ZONE_HEADER]
         if (includeZoneHeader) {
             root.buildZoneFollowsCommon(message.level, message.zoneX, message.zoneZ)
-            root.int("packetcount", message.packets.size)
         } else {
             omit()
         }
@@ -1283,9 +1424,9 @@ public class TextRs3ServerPacketTranscriber(
                     if (!filters[PropertyFilter.SOUND_AREA]) continue
                     root.group("SOUND_AREA_V2") { buildSoundAreaV2(event) }
                 }
-                is SoundArea -> {
+                is SoundAreaV1 -> {
                     if (!filters[PropertyFilter.SOUND_AREA]) continue
-                    root.group("SOUND_AREA") { buildSoundArea(event) }
+                    root.group("SOUND_AREA_V1") { buildSoundAreaV1(event) }
                 }
                 is LocAnim -> {
                     if (!filters[PropertyFilter.LOC_ANIM]) continue
@@ -1313,23 +1454,27 @@ public class TextRs3ServerPacketTranscriber(
                 }
                 is ObjAdd -> {
                     if (!filters[PropertyFilter.OBJ_ADD]) continue
-                    root.group("OBJ_ADD") { buildObjAdd(event) }
+                    root.group(if (event.big) "OBJ_ADD_V2" else "OBJ_ADD") { buildObjAdd(event) }
                 }
                 is ObjDel -> {
                     if (!filters[PropertyFilter.OBJ_DEL]) continue
-                    root.group("OBJ_DEL") { buildObjDel(event) }
+                    root.group(if (event.big) "OBJ_DEL_V2" else "OBJ_DEL") { buildObjDel(event) }
                 }
                 is ObjCount -> {
                     if (!filters[PropertyFilter.OBJ_COUNT]) continue
-                    root.group("OBJ_COUNT") { buildObjCount(event) }
+                    root.group(if (event.big) "OBJ_COUNT_V2" else "OBJ_COUNT") { buildObjCount(event) }
                 }
                 is ObjReveal -> {
                     if (!filters[PropertyFilter.OBJ_ADD]) continue
-                    root.group("OBJ_REVEAL") { buildObjReveal(event) }
+                    root.group(if (event.big) "OBJ_REVEAL_V2" else "OBJ_REVEAL") { buildObjReveal(event) }
                 }
                 is MapAnim -> {
                     if (!filters[PropertyFilter.MAP_ANIM]) continue
                     root.group("MAP_ANIM") { buildMapAnim(event) }
+                }
+                is MapAnimV1 -> {
+                    if (!filters[PropertyFilter.MAP_ANIM]) continue
+                    root.group("MAP_ANIM_V1") { buildMapAnimV1(event) }
                 }
                 is MapAnimV2 -> {
                     if (!filters[PropertyFilter.MAP_ANIM]) continue
@@ -1387,9 +1532,9 @@ public class TextRs3ServerPacketTranscriber(
                     if (!filters[PropertyFilter.SOUND_AREA]) continue
                     sessionState.createFakeServerRoot("SOUND_AREA_V2").buildSoundAreaV2(event)
                 }
-                is SoundArea -> {
+                is SoundAreaV1 -> {
                     if (!filters[PropertyFilter.SOUND_AREA]) continue
-                    sessionState.createFakeServerRoot("SOUND_AREA").buildSoundArea(event)
+                    sessionState.createFakeServerRoot("SOUND_AREA_V1").buildSoundAreaV1(event)
                 }
                 is LocAnim -> {
                     if (!filters[PropertyFilter.LOC_ANIM]) continue
@@ -1401,7 +1546,7 @@ public class TextRs3ServerPacketTranscriber(
                 }
                 is LocCustomise -> {
                     if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
-                    sessionState.createFakeServerRoot("LOC_CUSTOMISE?").buildLocCustomise(event)
+                    sessionState.createFakeServerRoot("LOC_CUSTOMISE").buildLocCustomise(event)
                 }
                 is LocPrefetch -> {
                     if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
@@ -1417,23 +1562,28 @@ public class TextRs3ServerPacketTranscriber(
                 }
                 is ObjAdd -> {
                     if (!filters[PropertyFilter.OBJ_ADD]) continue
-                    sessionState.createFakeServerRoot("OBJ_ADD").buildObjAdd(event)
+                    sessionState.createFakeServerRoot(if (event.big) "OBJ_ADD_V2" else "OBJ_ADD").buildObjAdd(event)
                 }
                 is ObjDel -> {
                     if (!filters[PropertyFilter.OBJ_DEL]) continue
-                    sessionState.createFakeServerRoot("OBJ_DEL").buildObjDel(event)
+                    sessionState.createFakeServerRoot(if (event.big) "OBJ_DEL_V2" else "OBJ_DEL").buildObjDel(event)
                 }
                 is ObjCount -> {
                     if (!filters[PropertyFilter.OBJ_COUNT]) continue
-                    sessionState.createFakeServerRoot("OBJ_COUNT").buildObjCount(event)
+                    sessionState.createFakeServerRoot(if (event.big) "OBJ_COUNT_V2" else "OBJ_COUNT").buildObjCount(event)
                 }
                 is ObjReveal -> {
                     if (!filters[PropertyFilter.OBJ_ADD]) continue
-                    sessionState.createFakeServerRoot("OBJ_REVEAL").buildObjReveal(event)
+                    sessionState.createFakeServerRoot(if (event.big) "OBJ_REVEAL_V2" else "OBJ_REVEAL")
+                        .buildObjReveal(event)
                 }
                 is MapAnim -> {
                     if (!filters[PropertyFilter.MAP_ANIM]) continue
                     sessionState.createFakeServerRoot("MAP_ANIM").buildMapAnim(event)
+                }
+                is MapAnimV1 -> {
+                    if (!filters[PropertyFilter.MAP_ANIM]) continue
+                    sessionState.createFakeServerRoot("MAP_ANIM_V1").buildMapAnimV1(event)
                 }
                 is MapAnimV2 -> {
                     if (!filters[PropertyFilter.MAP_ANIM]) continue
@@ -1765,7 +1915,7 @@ public class TextRs3ServerPacketTranscriber(
 
     override fun setTarget(message: SetTarget) {
         if (!filters[PropertyFilter.SET_TARGET]) return omit()
-        root.int("target", message.target)
+        entities.entity(root, message.target)
     }
 
     override fun loyaltyUpdate(message: LoyaltyUpdate) {
@@ -1844,7 +1994,9 @@ public class TextRs3ServerPacketTranscriber(
     override fun updateInvFull(message: UpdateInvFull) {
         if (!filters[PropertyFilter.UPDATE_INV]) return omit()
         root.scriptVarType("id", ScriptVarType.INV, message.inventoryId)
-        root.int("flags", message.flags)
+        root.filteredBoolean("secondary", message.flags and 0x1 != 0)
+        root.filteredBoolean("hasvarobj", message.flags and 0x2 != 0)
+        root.filteredInt("unknownflags", message.flags and 0xFC, 0)
         root.group("OBJS") {
             for (obj in message.objs) {
                 group {
@@ -1852,10 +2004,10 @@ public class TextRs3ServerPacketTranscriber(
                     scriptVarType("id", ScriptVarType.OBJ, obj.id)
                     formattedInt("count", obj.count)
                     if (obj.vars.isNotEmpty()) {
-                        group("VARS") {
+                        group("VAROBJ") {
                             for (variable in obj.vars) {
                                 group {
-                                    int("id", variable.varId)
+                                    varobj("id", variable.varId)
                                     int("value", variable.value)
                                 }
                             }
@@ -1869,13 +2021,16 @@ public class TextRs3ServerPacketTranscriber(
     override fun updateInvStopTransmit(message: UpdateInvStopTransmit) {
         if (!filters[PropertyFilter.UPDATE_INV]) return omit()
         root.scriptVarType("id", ScriptVarType.INV, message.inventoryId)
-        root.int("flags", message.flags)
+        root.filteredBoolean("secondary", message.flags and 0x1 != 0)
+        root.filteredInt("unknownflags", message.flags and 0xFE, 0)
     }
 
     override fun updateInvPartial(message: UpdateInvPartial) {
         if (!filters[PropertyFilter.UPDATE_INV]) return omit()
         root.scriptVarType("id", ScriptVarType.INV, message.inventoryId)
-        root.int("flags", message.flags)
+        root.filteredBoolean("secondary", message.flags and 0x1 != 0)
+        root.filteredBoolean("hasvarobj", message.flags and 0x2 != 0)
+        root.filteredInt("unknownflags", message.flags and 0xFC, 0)
         root.group("OBJS") {
             for (obj in message.objs) {
                 group {
@@ -1883,10 +2038,10 @@ public class TextRs3ServerPacketTranscriber(
                     scriptVarType("id", ScriptVarType.OBJ, obj.id)
                     formattedInt("count", obj.count)
                     if (obj.vars.isNotEmpty()) {
-                        group("VARS") {
+                        group("VAROBJ") {
                             for (variable in obj.vars) {
                                 group {
-                                    int("id", variable.varId)
+                                    varobj("id", variable.varId)
                                     int("value", variable.value)
                                 }
                             }
@@ -2098,27 +2253,38 @@ public class TextRs3ServerPacketTranscriber(
 
     override fun projAnimSpecificV2(message: ProjAnimSpecificV2) {
         if (!filters[PropertyFilter.PROJANIM_SPECIFIC]) return omit()
-        root.scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
+        root.scriptVarType("id", ScriptVarType.SPOTANIM, if (message.id == 65535) -1 else message.id)
         root.int("starttime", message.startTime)
         root.int("endtime", message.endTime)
-        root.int("slope", message.slope)
-        root.int("distance", message.distance)
+        root.int("angle", message.angle)
+        root.int("progress", message.progress)
         root.int("startheight", message.startHeight)
         root.int("endheight", message.endHeight)
-        root.int("flags", message.flags)
-        root.int("level", message.level)
+        root.filteredBoolean("followterrain", message.followTerrain)
+        root.filteredBoolean("finestartheight", message.fineStartHeight)
+        root.filteredInt("unknownflags", message.unknownFlags, 0)
         root.group("SOURCE") {
-            int("x", message.startX)
-            int("z", message.startZ)
-            int("actor", message.source)
-            int("attachment", message.startAttachment)
+            specificHalfCoord(message.level, message.startX, message.startZ)
+            projectileActor(message.source)
+            projectileOffset(message.startOffset)
         }
         root.group("TARGET") {
-            // These are wire deltas, not absolute world coordinates.
-            int("dx", message.deltaX)
-            int("dz", message.deltaZ)
-            int("actor", message.target)
-            int("attachment", message.endAttachment)
+            specificHalfCoord(message.level, message.startX + message.deltaX, message.startZ + message.deltaZ)
+            projectileActor(message.target)
+            projectileOffset(message.endOffset)
+        }
+    }
+
+    private fun Property.specificHalfCoord(level: Int, x: Int, z: Int) {
+        // Wire positions/deltas are absolute half-tiles, not zone-relative or whole tiles.
+        if (level in 0..3 && x in 0..32767 && z in 0..32767) {
+            coordinates.appendFine(this, level, x shr 1, z shr 1, (x and 1) * 64, (z and 1) * 64, "coord")
+        } else {
+            group("coord") {
+                int("level", level)
+                int("2x", x)
+                int("2z", z)
+            }
         }
     }
 
@@ -2145,9 +2311,7 @@ public class TextRs3ServerPacketTranscriber(
 
     override fun locPrefetch(message: LocPrefetch) {
         if (!filters[PropertyFilter.LOC_ADD_CHANGE]) return omit()
-        root.scriptVarType("loc", ScriptVarType.LOC, message.id)
-        root.scriptVarType("shape", ScriptVarType.LOC_SHAPE, message.shape)
-        root.int("rotation", message.rotation)
+        root.buildLocPrefetch(message)
     }
 
     override fun cutscene2dPlay(message: Cutscene2dPlay) {
@@ -2333,58 +2497,81 @@ public class TextRs3ServerPacketTranscriber(
 
     override fun locAnimSpecific(message: LocAnimSpecific) {
         if (!filters[PropertyFilter.LOC_ANIM_SPECIFIC]) return omit()
-        root.int("shaperotation", message.shapeRotation)
-        root.int("speed", message.speed)
-        root.scriptVarType("animation", ScriptVarType.SEQ, message.animation)
-        root.int("coordinate", message.coordinate)
+        if (message.coordinate == -1) {
+            root.any<Any>("coord", null)
+        } else {
+            root.coordGrid("coord", CoordGrid(message.coordinate and 0x3FFFFFFF))
+        }
+        root.scriptVarType("shape", ScriptVarType.LOC_SHAPE, message.shape)
+        root.int("rotation", message.rotation)
+        root.scriptVarType("anim", ScriptVarType.SEQ, message.animation)
+        root.filteredInt("delay", message.delay, 0)
     }
 
     override fun npcAnimSpecific(message: NpcAnimSpecific) {
         if (!filters[PropertyFilter.NPC_ANIM_SPECIFIC]) return omit()
-        root.scriptVarType("animation0", ScriptVarType.SEQ, message.animation0)
-        root.scriptVarType("animation1", ScriptVarType.SEQ, message.animation1)
-        root.scriptVarType("animation2", ScriptVarType.SEQ, message.animation2)
-        root.scriptVarType("animation3", ScriptVarType.SEQ, message.animation3)
-        root.int("delay", message.delay)
-        root.int("npc", message.npc)
+        entities.npc(root, message.npc)
+        root.appendSequences(
+            listOf(message.animation0, message.animation1, message.animation2, message.animation3),
+            message.delay,
+        )
     }
 
     override fun playerAnimSpecific(message: PlayerAnimSpecific) {
         if (!filters[PropertyFilter.ANIM_SPECIFIC]) return omit()
-        root.int("delay", message.delay)
-        root.scriptVarType("animation0", ScriptVarType.SEQ, message.animation0)
-        root.scriptVarType("animation1", ScriptVarType.SEQ, message.animation1)
-        root.scriptVarType("animation2", ScriptVarType.SEQ, message.animation2)
-        root.scriptVarType("animation3", ScriptVarType.SEQ, message.animation3)
+        root.appendSequences(
+            listOf(message.animation0, message.animation1, message.animation2, message.animation3),
+            message.delay,
+        )
     }
 
     override fun npcHeadiconSpecific(message: NpcHeadiconSpecific) {
         if (!filters[PropertyFilter.NPC_HEADICON_SPECIFIC]) return omit()
-        root.int("slot", message.slot)
-        root.int("archive", message.archive)
-        root.int("npc", message.npc)
-        root.int("sprite", message.sprite)
+        entities.npc(root, message.npcIndex)
+        root.int("headiconslot", message.slot)
+        root.scriptVarType("id", ScriptVarType.GRAPHIC, message.id)
+        root.int("spriteindex", message.spriteIndex)
     }
 
     override fun spotanimSpecific(message: SpotanimSpecific) {
         if (!filters[PropertyFilter.SPOTANIM_SPECIFIC]) return omit()
-        root.int("height", message.height)
-        root.int("delay", message.delay)
-        root.int("flags", message.flags)
-        root.int("target", message.target)
-        root.scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
-        root.int("slot", message.slot)
+        buildSpotanimSpecific(message)
+    }
+
+    private fun buildSpotanimSpecific(message: SpotanimSpecific) {
+        if (message.isMapTarget) {
+            root.scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
+            root.filteredInt("delay", message.delay, 0)
+            root.filteredInt("height", message.height, 0)
+            if (message.targetCoord == CoordGrid.INVALID) {
+                root.any<Any>("coord", null)
+            } else {
+                root.coordGrid("coord", message.targetCoord)
+            }
+            // Map effects use the tile, not the actor slot, including on removal.
+            root.filteredInt("unusedslot", message.slot, 0)
+        } else {
+            if (message.isNpcTarget) {
+                entities.npc(root, message.targetIndex)
+            } else {
+                entities.player(root, message.targetIndex)
+            }
+            root.int("slot", message.slot)
+            root.scriptVarType("spotanim", ScriptVarType.SPOTANIM, message.id)
+            root.filteredInt("height", message.height, 0)
+            root.filteredInt("delay", message.delay, 0)
+            root.filteredInt("unusedtargetbits", message.unusedTargetBits, 0)
+        }
+        root.filteredInt("rotation", message.rotation, 0)
+        root.filteredBoolean("loop", message.loop)
+        root.filteredBoolean("independentrotation", message.independentRotation)
+        root.filteredInt("unknownflags", message.unknownFlags, 0)
     }
 
     override fun spotanimSpecificV2(message: SpotanimSpecificV2) {
         if (!filters[PropertyFilter.SPOTANIM_SPECIFIC]) return omit()
-        root.int("target", message.target)
-        root.int("flags", message.flags)
-        root.int("attachment", message.attachment)
-        root.int("slot", message.slot)
-        root.int("height", message.height)
-        root.scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
-        root.int("delay", message.delay)
+        buildSpotanimSpecific(message.effect)
+        root.projectileOffset(message.offset)
     }
 
     override fun setMoveAction(message: SetMoveAction) {
@@ -2400,10 +2587,10 @@ public class TextRs3ServerPacketTranscriber(
 
     override fun npcSaySpecific(message: NpcSaySpecific) {
         if (!filters[PropertyFilter.NPC_SAY]) return omit()
+        entities.npc(root, message.npcIndex)
         root.string("text", message.text)
-        root.int("colour", message.colour)
-        root.int("npcindex", message.npcIndex)
-        root.int("effect", message.effect)
+        root.filteredInt("colour", message.colour, 0)
+        root.filteredInt("effect", message.effect, 0)
     }
 
     override fun doCheat(message: DoCheat) {
@@ -2439,21 +2626,24 @@ public class TextRs3ServerPacketTranscriber(
 
     override fun projAnimSpecific(message: ProjAnimSpecific) {
         if (!filters[PropertyFilter.PROJANIM_SPECIFIC]) return omit()
-        root.int("target", message.target)
-        root.int("endheight", message.endHeight)
-        root.int("startz", message.startZ)
-        root.int("deltaz", message.deltaZ)
+        root.scriptVarType("id", ScriptVarType.SPOTANIM, if (message.id == 65535) -1 else message.id)
         root.int("starttime", message.startTime)
-        root.int("startheight", message.startHeight)
-        root.int("flags", message.flags)
-        root.int("distance", message.distance)
-        root.int("startx", message.startX)
         root.int("endtime", message.endTime)
-        root.int("slope", message.slope)
-        root.int("source", message.source)
-        root.int("deltax", message.deltaX)
-        root.scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
-        root.int("level", message.level)
+        root.int("angle", message.angle)
+        root.int("progress", message.progress)
+        root.int("startheight", message.startHeight)
+        root.int("endheight", message.endHeight)
+        root.filteredBoolean("followterrain", message.followTerrain)
+        root.filteredBoolean("finestartheight", message.fineStartHeight)
+        root.filteredInt("unknownflags", message.unknownFlags, 0)
+        root.group("SOURCE") {
+            specificHalfCoord(message.level, message.startX, message.startZ)
+            projectileActor(message.source)
+        }
+        root.group("TARGET") {
+            specificHalfCoord(message.level, message.startX + message.deltaX, message.startZ + message.deltaZ)
+            projectileActor(message.target)
+        }
     }
 
     override fun debugServerTriggers(message: DebugServerTriggers) {

@@ -15,7 +15,7 @@ internal object GameServerProtId {
     const val LOC_ADD_CHANGE: Int = 11
     const val DEBUG_SERVER_TRIGGERS: Int = 12
     const val IF_OPENSUB_ACTIVE_PLAYER: Int = 13
-    const val MAP_ANIM: Int = 14
+    const val MAP_ANIM_V1: Int = 14
     const val MESSAGE_PRIVATE_ECHO: Int = 15
     const val IF_SETSCROLLPOS: Int = 16
     const val PROJANIM_SPECIFIC: Int = 17
@@ -165,7 +165,7 @@ internal object GameServerProtId {
     const val MIDI_SONG_STOP: Int = 161
     const val SOCIAL_NETWORK_LOGOUT: Int = 162
     const val LOBBY_APPEARANCE: Int = 163
-    const val SOUND_AREA: Int = 164
+    const val SOUND_AREA_V1: Int = 164
     const val VARP_LONG: Int = 165
     const val PLAYER_SNAPSHOT: Int = 166
     const val POINTLIGHT_INTENSITYSCALE: Int = 167

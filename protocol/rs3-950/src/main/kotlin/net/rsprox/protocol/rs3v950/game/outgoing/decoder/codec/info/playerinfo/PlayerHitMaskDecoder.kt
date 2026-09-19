@@ -37,16 +37,16 @@ internal object PlayerHitMaskDecoder {
         val duration = buffer.gSmart1or2()
         if (duration == 32767) return Headbar.Remove(type)
         val delay = buffer.gSmart1or2()
-        val first = if (wide) buffer.g1Alt1() else buffer.g1Alt2()
-        val second = if (duration == 0) first else if (wide) buffer.g1Alt1() else buffer.g1Alt3()
-        val extraId = buffer.gSmart1or2() - 1
-        val extra = if (extraId == -1) {
+        val startFill = if (wide) buffer.g1Alt1() else buffer.g1Alt2()
+        val endFill = if (duration == 0) startFill else if (wide) buffer.g1Alt1() else buffer.g1Alt3()
+        val secondaryId = buffer.gSmart1or2() - 1
+        val secondary = if (secondaryId == -1) {
             null
         } else {
-            val extraFirst = if (wide) buffer.g1() else buffer.g1Alt1()
-            val extraSecond = if (duration == 0) extraFirst else if (wide) buffer.g1() else buffer.g1Alt1()
-            PlayerExtendedInfo.HeadbarExtra(extraId, extraFirst, extraSecond)
+            val secondaryStartFill = if (wide) buffer.g1() else buffer.g1Alt1()
+            val secondaryEndFill = if (duration == 0) secondaryStartFill else if (wide) buffer.g1() else buffer.g1Alt1()
+            PlayerExtendedInfo.SecondaryHeadbar(secondaryId, secondaryStartFill, secondaryEndFill)
         }
-        return Headbar.Update(type, duration, delay, first, second, extra)
+        return Headbar.Update(type, duration, delay, startFill, endFill, secondary)
     }
 }

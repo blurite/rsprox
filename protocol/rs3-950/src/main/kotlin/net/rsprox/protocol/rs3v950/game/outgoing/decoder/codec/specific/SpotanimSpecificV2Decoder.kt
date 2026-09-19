@@ -4,6 +4,7 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.rs3.game.outgoing.model.specific.SpotanimSpecificV2
+import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.ProjectileOffset
 import net.rsprox.protocol.rs3v950.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.session.Session
 
@@ -15,20 +16,20 @@ internal class SpotanimSpecificV2Decoder : ProxyMessageDecoder<SpotanimSpecificV
         session: Session,
     ): SpotanimSpecificV2 {
         val target = buffer.g4Alt2()
-        val flags = buffer.g1()
-        val attachment = buffer.g3Alt3()
+        val rotationFlags = buffer.g1()
+        val offset = ProjectileOffset(buffer.g3Alt3())
         val slot = buffer.g1Alt1()
         val height = buffer.g2Alt2().toShort().toInt()
         val id = buffer.g2Alt3().let { if (it == 65535) -1 else it }
-        val delay = buffer.g2Alt3()
+        val packedDelay = buffer.g2Alt3()
         return SpotanimSpecificV2(
             target,
-            flags,
-            attachment,
+            rotationFlags,
+            offset,
             slot,
             height,
             id,
-            delay,
+            packedDelay,
         )
     }
 }

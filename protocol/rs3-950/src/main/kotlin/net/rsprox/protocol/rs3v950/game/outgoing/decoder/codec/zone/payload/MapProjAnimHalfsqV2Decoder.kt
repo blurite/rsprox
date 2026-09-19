@@ -4,6 +4,7 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.MapProjAnimHalfsqV2
+import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.ProjectileOffset
 import net.rsprox.protocol.rs3v950.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.session.Session
 
@@ -25,10 +26,10 @@ internal class MapProjAnimHalfsqV2Decoder : ProxyMessageDecoder<MapProjAnimHalfs
         val endHeight = buffer.g2s()
         val startTime = buffer.g2()
         val endTime = buffer.g2()
-        val slope = buffer.g1()
-        val distance = buffer.g2()
-        val startAttachment = buffer.g3()
-        val endAttachment = buffer.g3()
+        val angle = buffer.g1().let { if (it == 255) -1 else it }
+        val progress = buffer.g2()
+        val startOffset = ProjectileOffset(buffer.g3())
+        val endOffset = ProjectileOffset(buffer.g3())
         return MapProjAnimHalfsqV2(
             coordinate = coordinate,
             flags = flags,
@@ -41,10 +42,10 @@ internal class MapProjAnimHalfsqV2Decoder : ProxyMessageDecoder<MapProjAnimHalfs
             endHeight = endHeight,
             startTime = startTime,
             endTime = endTime,
-            slope = slope,
-            distance = distance,
-            startAttachment = startAttachment,
-            endAttachment = endAttachment,
+            angle = angle,
+            progress = progress,
+            startOffset = startOffset,
+            endOffset = endOffset,
         )
     }
 }

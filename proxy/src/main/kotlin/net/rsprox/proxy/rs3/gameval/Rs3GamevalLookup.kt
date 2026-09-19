@@ -33,6 +33,7 @@ public object Rs3GamevalLookup : SymbolDictionary {
             ScriptVarType.SEQ -> name(Gameval.SEQ, id)
             ScriptVarType.BAS -> name(Gameval.BAS, id)
             ScriptVarType.MODEL -> name(Gameval.MODEL, id)
+            ScriptVarType.GRAPHIC -> name(Gameval.GRAPHIC, id)
             ScriptVarType.INV -> name(Gameval.INV, id)
             ScriptVarType.MIDI -> name(Gameval.MIDI, id)
             ScriptVarType.SYNTH -> name(Gameval.SOUND, id)
@@ -44,6 +45,10 @@ public object Rs3GamevalLookup : SymbolDictionary {
     override fun getVarpName(id: Int): String? = name(Gameval.VARP, id)
 
     override fun getVarcName(id: Int): String? = name(Gameval.VARC, id)
+
+    override fun getVarNpcName(id: Int): String? = name(Gameval.VARNPC, id)
+
+    override fun getVarObjName(id: Int): String? = name(Gameval.VAROBJ, id)
 
     override fun getVarbitName(id: Int): String? = name(Gameval.VARBIT, id)
 
@@ -151,6 +156,8 @@ public object Rs3GamevalLookup : SymbolDictionary {
     ) {
         VARP("var_player"),
         VARC("var_client"),
+        VARNPC("var_npc"),
+        VAROBJ("var_object"),
         VARBIT("varbit"),
         MIDI("midi"),
         INTERFACE("interface"),
@@ -164,5 +171,6 @@ public object Rs3GamevalLookup : SymbolDictionary {
         OBJ("obj"),
         INV("inv"),
         MODEL("model"),
+        GRAPHIC("graphic"),
     }
 }

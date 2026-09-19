@@ -27,6 +27,9 @@ public data class Rs3NpcDefinition(
     public val recolourCount: Int,
     public val retextureCount: Int,
     public val morph: Rs3NpcMorph? = null,
+    /** Zero-based palette slots, in customisation wire order (cache opcodes 44/45). */
+    public val recolourSlots: List<Int> = List(recolourCount) { it },
+    public val retextureSlots: List<Int> = List(retextureCount) { it },
 )
 
 public data class Rs3NpcMorph(

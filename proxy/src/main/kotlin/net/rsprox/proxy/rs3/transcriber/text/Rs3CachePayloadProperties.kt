@@ -61,7 +61,11 @@ internal fun Property.appendVariable(
         else -> int("id", variable.id)
     }
     int("scriptType", variable.scriptType)
-    when (val value = variable.value) {
+    appendVariableValue(variable.value)
+}
+
+internal fun Property.appendVariableValue(value: TypedVariable.Value) {
+    when (value) {
         is TypedVariable.IntValue -> int("value", value.value)
         is TypedVariable.LongValue -> long("value", value.value)
         is TypedVariable.StringValue -> string("value", value.value)

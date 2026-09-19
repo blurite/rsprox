@@ -15,15 +15,15 @@ internal class SpotanimSpecificDecoder : ProxyMessageDecoder<SpotanimSpecific> {
         session: Session,
     ): SpotanimSpecific {
         val height = buffer.g2Alt3().toShort().toInt()
-        val delay = buffer.g2Alt1()
-        val flags = buffer.g1Alt2()
+        val packedDelay = buffer.g2Alt1()
+        val rotationFlags = buffer.g1Alt2()
         val target = buffer.g4()
         val id = buffer.g2Alt3().let { if (it == 65535) -1 else it }
         val slot = buffer.g1Alt1()
         return SpotanimSpecific(
             height,
-            delay,
-            flags,
+            packedDelay,
+            rotationFlags,
             target,
             id,
             slot,

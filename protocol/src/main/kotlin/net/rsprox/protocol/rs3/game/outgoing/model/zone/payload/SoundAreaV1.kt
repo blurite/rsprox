@@ -3,7 +3,7 @@ package net.rsprox.protocol.rs3.game.outgoing.model.zone.payload
 import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /** Decoded wire fields; client scaling is not applied to the stored values. */
-public data class SoundArea(
+public data class SoundAreaV1(
     public val coordinate: Int,
     public val id: Int,
     public val loopsAndRange: Int,

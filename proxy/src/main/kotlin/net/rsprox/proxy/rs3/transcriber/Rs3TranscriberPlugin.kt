@@ -31,11 +31,12 @@ import net.rsprox.protocol.rs3.game.outgoing.model.social.MessagePrivate
 import net.rsprox.protocol.rs3.game.outgoing.model.social.MessagePublic
 import net.rsprox.protocol.rs3.game.outgoing.model.specific.ProjAnimSpecificV2
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.MapProjAnim
+import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.LocCustomise
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.MapProjAnimHalfsq
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.MapProjAnimHalfsqV2
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.MapProjAnimV2
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.MidiSongLocation
-import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.SoundArea
+import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.SoundAreaV1
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.SoundAreaV2
 
 public class Rs3TranscriberPlugin(
@@ -267,8 +268,12 @@ public class Rs3TranscriberPlugin(
             pass(message, Rs3Transcriber::soundAreaV2)
             return
         }
-        if (message is SoundArea) {
-            pass(message, Rs3Transcriber::soundArea)
+        if (message is SoundAreaV1) {
+            pass(message, Rs3Transcriber::soundAreaV1)
+            return
+        }
+        if (message is LocCustomise) {
+            pass(message, Rs3Transcriber::locCustomise)
             return
         }
         if (message is UnknownServerPacket) {
@@ -446,6 +451,7 @@ public class Rs3TranscriberPlugin(
             "OBJ_COUNT", "OBJ_COUNT_V2" -> pass(message, Rs3Transcriber::objCount)
             "OBJ_REVEAL", "OBJ_REVEAL_V2" -> pass(message, Rs3Transcriber::objReveal)
             "MAP_ANIM" -> pass(message, Rs3Transcriber::mapAnim)
+            "MAP_ANIM_V1" -> pass(message, Rs3Transcriber::mapAnimV1)
             "MAP_ANIM_V2" -> pass(message, Rs3Transcriber::mapAnimV2)
             "MIDI_SONG_LOCATION" -> pass(message, Rs3Transcriber::legacyMidiSongLocation)
             "SOUND_AREA" -> pass(message, Rs3Transcriber::legacySoundArea)

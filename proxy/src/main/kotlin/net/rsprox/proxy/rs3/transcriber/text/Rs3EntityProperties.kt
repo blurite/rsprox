@@ -41,19 +41,17 @@ internal class Rs3EntityProperties(
         )
     }
 
-    fun face(property: Property, target: Int) {
+    /** Packed actor identity shared by FACE_ENTITY and SET_TARGET: type byte followed by a 16-bit index. */
+    fun entity(property: Property, target: Int) {
         val kind = target ushr 16
         val index = target and 0xFFFF
         // Native 950 masks dispatch by the high byte; this is not a threshold-based actor index.
         when (kind) {
-            1 -> {
-                val npc = state.getActiveWorld().getNpcOrNull(index)
-                if (npc == null) property.unidentifiedNpc(index) else property.shortNpc(index, npc.id)
-            }
+            1 -> npc(property, index)
             2 -> player(property, index)
-            127, 255 -> property.any("entitytype", "none")
+            127, 255 -> property.any<Any>("entity", null)
             else -> {
-                // Other kinds consume the field without changing the native facing target.
+                // Preserve unknown tags explicitly rather than guessing an actor type.
                 property.any("entitytype", "unknown")
                 property.int("kind", kind)
                 property.int("index", index)

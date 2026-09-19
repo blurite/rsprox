@@ -1,5 +1,6 @@
 package net.rsprox.proxy.rs3.transcriber.text
 
+import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.NpcInfo
 import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.NpcUpdateType
 import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.extendedinfo.AnimationExtendedInfo
@@ -72,8 +73,9 @@ public class TextRs3NpcInfoTranscriber(
                         2 -> PropertyFilter.NPC_TRANSFORMATION
                         14 -> PropertyFilter.NPC_EXACTMOVE
                         18 -> PropertyFilter.NPC_NAME_CHANGE
-                        15 -> PropertyFilter.NPC_ENABLED_OPS
-                        1, 7, 12 -> PropertyFilter.NPC_FACING
+                        25 -> PropertyFilter.NPC_ENABLED_OPS
+                        1, 7 -> PropertyFilter.NPC_FACING
+                        12 -> PropertyFilter.NPC_BAS
                         10 -> PropertyFilter.NPC_BODY_CUSTOMISATION
                         24 -> PropertyFilter.NPC_SPOTANIMS
                         5, 33 -> PropertyFilter.NPC_HITS
@@ -87,9 +89,16 @@ public class TextRs3NpcInfoTranscriber(
         return filters[filter]
     }
 
-    private fun Property.extBlock(info: NpcExtendedInfo, level: Int) {
+    private fun Property.extBlock(info: NpcExtendedInfo, baseCoord: CoordGrid) {
         when (info) {
-            is NpcMask -> appendNpcMask(info, entities, coordinates, level)
+            is NpcMask ->
+                appendNpcMask(
+                    info,
+                    entities,
+                    coordinates,
+                    baseCoord,
+                    settings[Setting.EXACTMOVE_SUBTRACT_FIRST_DELAY],
+                )
             is AnimationExtendedInfo -> {
                 group("ANIMATION") {
                     scriptVarType("anim", ScriptVarType.SEQ, info.animId)
@@ -157,7 +166,9 @@ public class TextRs3NpcInfoTranscriber(
                                 }
                                 if (!skipExtendedInfo) {
                                     for (info in visibleExtendedInfo) {
-                                        extBlock(info, update.level)
+                                        // Same-frame movement has already changed the native queue's endpoint;
+                                        // sessionState still holds the pre-movement coordinate until after logging.
+                                        extBlock(info, CoordGrid(update.level, update.x, update.z))
                                     }
                                 }
                             }
@@ -178,7 +189,7 @@ public class TextRs3NpcInfoTranscriber(
                                 }
                                 if (!skipExtendedInfo) {
                                     for (info in visibleExtendedInfo) {
-                                        extBlock(info, update.level)
+                                        extBlock(info, CoordGrid(update.level, update.x, update.z))
                                     }
                                 }
                             }
