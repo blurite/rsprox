@@ -8,10 +8,14 @@ public data class RebuildNormal(
     public val format: Int,
     /** Bit width of each signed, local-player-relative NPC-add X/Z offset. */
     public val npcCoordinateBits: Int,
-    public val reserved: Int,
+    /** Raw bytes skipped by the native handler, retained only for inspection. */
+    public val unused: Int,
     public val baseChunkX: Int,
-    public val templateId: Int,
+    /** World-area definition in config group 83. */
+    public val worldAreaId: Int,
+    /** Packed coordinate; native scene loading uses its X/Z map-square bounds. */
     public val minimumCoordinate: Int,
+    /** Packed coordinate; the containing map square is included in the loading bounds. */
     public val maximumCoordinate: Int,
     public val sceneSize: Int,
     public val playerInfoInit: PlayerInfoInitBlock? = null,

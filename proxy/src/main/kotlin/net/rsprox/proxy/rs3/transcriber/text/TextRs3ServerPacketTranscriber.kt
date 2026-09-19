@@ -713,10 +713,10 @@ public class TextRs3ServerPacketTranscriber(
         root.int("basechunkz", message.baseChunkZ)
         root.int("format", message.format)
         root.int("npccoordbits", message.npcCoordinateBits)
-        root.int("reserved", message.reserved)
-        root.int("templateid", message.templateId)
-        root.int("minimumcoordinate", message.minimumCoordinate)
-        root.int("maximumcoordinate", message.maximumCoordinate)
+        root.int("worldarea", message.worldAreaId)
+        root.scriptVarType("mincoord", ScriptVarType.COORDGRID, message.minimumCoordinate)
+        root.scriptVarType("maxcoord", ScriptVarType.COORDGRID, message.maximumCoordinate)
+        root.filteredInt("unused", message.unused, 0xFF80)
     }
 
     override fun reconnect(message: Reconnect) {
