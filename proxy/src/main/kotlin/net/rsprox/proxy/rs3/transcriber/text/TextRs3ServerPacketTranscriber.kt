@@ -167,6 +167,7 @@ import net.rsprox.shared.property.coordGridProperty
 import net.rsprox.shared.property.enum
 import net.rsprox.shared.property.filteredBoolean
 import net.rsprox.shared.property.filteredInt
+import net.rsprox.shared.property.filteredString
 import net.rsprox.shared.property.filteredScriptVarType
 import net.rsprox.shared.property.formattedInt
 import net.rsprox.shared.property.formattedLong
@@ -554,7 +555,7 @@ public class TextRs3ServerPacketTranscriber(
         val existing = sessionState.toplevelInterface
         root.filteredScriptVarType("previousid", ScriptVarType.INTERFACE, existing, -1)
         root.scriptVarType("id", ScriptVarType.INTERFACE, message.interfaceId)
-        message.unused?.let { root.int("unused", it) }
+        message.unused?.let { root.filteredInt("unused", it, 128) }
         root.xteas(message.legacyWord0, message.legacyWord1, message.legacyWord2, message.legacyWord3)
     }
 
@@ -1065,9 +1066,9 @@ public class TextRs3ServerPacketTranscriber(
         filteredInt("height", event.height, 0)
         zoneCoord(event.xInZone, event.zInZone)
         int("rotation", event.rotation)
-        event.unused0?.let { int("unused0", it) }
-        event.unused1?.let { int("unused1", it) }
-        event.unused2?.let { int("unused2", it) }
+        event.unused0?.let { filteredInt("unused0", it, 255) }
+        event.unused1?.let { filteredInt("unused1", it, 0) }
+        event.unused2?.let { filteredInt("unused2", it, 0) }
     }
 
     override fun mapAnim(message: MapAnim) {
@@ -1082,9 +1083,9 @@ public class TextRs3ServerPacketTranscriber(
         filteredInt("rotation", event.rotation, 0)
         filteredBoolean("independentrotation", event.independentRotation)
         zoneCoord(event.xInZone, event.zInZone)
-        int("unused0", event.unused0)
-        int("unused1", event.unused1)
-        int("unused2", event.unused2)
+        filteredInt("unused0", event.unused0, 255)
+        filteredInt("unused1", event.unused1, 0)
+        filteredInt("unused2", event.unused2, 0)
     }
 
     override fun mapAnimV1(message: MapAnimV1) {
@@ -1102,9 +1103,9 @@ public class TextRs3ServerPacketTranscriber(
         filteredBoolean("relativeoffset", event.relativeOffset)
         filteredBoolean("independentrotation", event.independentRotation)
         zoneCoord(event.xInZone, event.zInZone)
-        event.unused0?.let { int("unused0", it) }
-        event.unused1?.let { int("unused1", it) }
-        event.unused2?.let { int("unused2", it) }
+        event.unused0?.let { filteredInt("unused0", it, 255) }
+        event.unused1?.let { filteredInt("unused1", it, 0) }
+        event.unused2?.let { filteredInt("unused2", it, 0) }
     }
 
     override fun mapAnimV2(message: MapAnimV2) {
@@ -1158,9 +1159,9 @@ public class TextRs3ServerPacketTranscriber(
             zoneCoord(event.xInZone + event.deltaX, event.zInZone + event.deltaZ)
             projectileActor(event.target)
         }
-        int("unused0", event.unused0)
-        int("unused1", event.unused1)
-        int("unused2", event.unused2)
+        filteredInt("unused0", event.unused0, 255)
+        filteredInt("unused1", event.unused1, 0)
+        filteredInt("unused2", event.unused2, 0)
     }
 
     override fun mapProjAnim(message: MapProjAnim) {
@@ -1186,9 +1187,9 @@ public class TextRs3ServerPacketTranscriber(
             projectileActor(event.target)
             projectileOffset(event.endOffset)
         }
-        int("unused0", event.unused0)
-        int("unused1", event.unused1)
-        int("unused2", event.unused2)
+        filteredInt("unused0", event.unused0, 255)
+        filteredInt("unused1", event.unused1, 0)
+        filteredInt("unused2", event.unused2, 0)
     }
 
     override fun mapProjAnimV2(message: MapProjAnimV2) {
@@ -2844,13 +2845,13 @@ public class TextRs3ServerPacketTranscriber(
             int("regionoriginz", message.regionOriginZ)
             int("format", message.format)
             int("npcscenevalue", message.npcSceneValue)
-            filteredInt("unused", message.unused, 0)
+            filteredInt("unused", message.unused, 255)
         }
     }
 
     override fun consoleFeedback(message: ConsoleFeedback) {
         if (!filters[PropertyFilter.CONSOLE_FEEDBACK]) return omit()
-        root.string("unusedtext", message.unusedText)
+        root.filteredString("unusedtext", message.unusedText, "")
         root.string("prefix", message.prefix)
         root.int("totalmatches", message.totalMatches)
         root.int("resultcount", message.resultCount)
@@ -2944,7 +2945,7 @@ public class TextRs3ServerPacketTranscriber(
                     int("rank", record.rank)
                     int("world", record.world)
                     long("memberidentity", record.memberIdentity)
-                    int("unused", record.unused)
+                    filteredInt("unused", record.unused, 0)
                     boolean("discarded", record.memberBoolean)
                 }
                 is ClanChannelDelta.Rejected -> root.group("REJECTED") {
