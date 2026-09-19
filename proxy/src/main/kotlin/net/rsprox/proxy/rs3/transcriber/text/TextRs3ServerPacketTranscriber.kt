@@ -324,11 +324,13 @@ public class TextRs3ServerPacketTranscriber(
     }
 
     override fun lobbyAppearance(message: LobbyAppearance) {
+        if (!filters[PropertyFilter.LOBBY_APPEARANCE]) return omit()
         root.int("flags", message.appearanceFlags)
         root.appendAppearanceBody(message.appearance)
     }
 
     override fun playerSnapshot(message: PlayerSnapshot) {
+        if (!filters[PropertyFilter.PLAYER_SNAPSHOT]) return omit()
         root.int("slot", message.snapshotIndex)
         root.int("flags", message.appearanceFlags)
         root.appendAppearanceBody(message.appearance)

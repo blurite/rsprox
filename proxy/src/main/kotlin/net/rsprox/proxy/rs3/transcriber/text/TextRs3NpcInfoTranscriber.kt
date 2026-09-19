@@ -7,6 +7,7 @@ import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.extendedinfo.Ani
 import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.extendedinfo.NpcExtendedInfo
 import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.extendedinfo.NpcMask
 import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.extendedinfo.OpaqueExtendedInfo
+import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.util.Rs3NpcUpdateMaskKey
 import net.rsprox.proxy.rs3.transcriber.interfaces.Rs3NpcInfoTranscriber
 import net.rsprox.proxy.rs3.transcriber.state.Rs3SessionState
 import net.rsprox.shared.ScriptVarType
@@ -64,27 +65,41 @@ public class TextRs3NpcInfoTranscriber(
         val filter =
             when (info) {
                 is AnimationExtendedInfo -> PropertyFilter.NPC_SEQUENCE
-                is OpaqueExtendedInfo -> return true
+                is OpaqueExtendedInfo -> PropertyFilter.NPC_UNKNOWN_EXT_INFO
                 is NpcMask ->
-                    when (info.key.bit) {
-                        6 -> PropertyFilter.NPC_SAY
-                        20 -> PropertyFilter.NPC_HEAD_CUSTOMISATION
-                        28 -> PropertyFilter.NPC_TINTING
-                        2 -> PropertyFilter.NPC_TRANSFORMATION
-                        14 -> PropertyFilter.NPC_EXACTMOVE
-                        18 -> PropertyFilter.NPC_NAME_CHANGE
-                        25 -> PropertyFilter.NPC_ENABLED_OPS
-                        1, 7 -> PropertyFilter.NPC_FACING
-                        12 -> PropertyFilter.NPC_BAS
-                        10 -> PropertyFilter.NPC_BODY_CUSTOMISATION
-                        24 -> PropertyFilter.NPC_SPOTANIMS
-                        5, 33 -> PropertyFilter.NPC_HITS
-                        17 -> PropertyFilter.NPC_LEVEL_CHANGE
-                        3 -> PropertyFilter.NPC_SEQUENCE
-                        22 -> PropertyFilter.NPC_HEADICON_CUSTOMISATION
-                        else -> return true
+                    when (info.key) {
+                        Rs3NpcUpdateMaskKey.SAY -> PropertyFilter.NPC_SAY
+                        Rs3NpcUpdateMaskKey.HEAD_CUSTOMISATION -> PropertyFilter.NPC_HEAD_CUSTOMISATION
+                        Rs3NpcUpdateMaskKey.TINTING -> PropertyFilter.NPC_TINTING
+                        Rs3NpcUpdateMaskKey.TRANSFORMATION -> PropertyFilter.NPC_TRANSFORMATION
+                        Rs3NpcUpdateMaskKey.EXACT_MOVE -> PropertyFilter.NPC_EXACTMOVE
+                        Rs3NpcUpdateMaskKey.NAME_CHANGE -> PropertyFilter.NPC_NAME_CHANGE
+                        Rs3NpcUpdateMaskKey.DISABLED_OPS -> PropertyFilter.NPC_ENABLED_OPS
+                        Rs3NpcUpdateMaskKey.FACE_ENTITY, Rs3NpcUpdateMaskKey.FACE_TILE -> PropertyFilter.NPC_FACING
+                        Rs3NpcUpdateMaskKey.BAS_OVERRIDE -> PropertyFilter.NPC_BAS
+                        Rs3NpcUpdateMaskKey.BODY_CUSTOMISATION -> PropertyFilter.NPC_BODY_CUSTOMISATION
+                        Rs3NpcUpdateMaskKey.SPOTANIM -> PropertyFilter.NPC_SPOTANIMS
+                        Rs3NpcUpdateMaskKey.HITMARKS_AND_HEADBARS_V1,
+                        Rs3NpcUpdateMaskKey.HITMARKS_AND_HEADBARS_V2,
+                        -> PropertyFilter.NPC_HITS
+                        Rs3NpcUpdateMaskKey.COMBAT_LEVEL_CHANGE -> PropertyFilter.NPC_LEVEL_CHANGE
+                        Rs3NpcUpdateMaskKey.SEQUENCE -> PropertyFilter.NPC_SEQUENCE
+                        Rs3NpcUpdateMaskKey.HEADICON_CUSTOMISATION -> PropertyFilter.NPC_HEADICON_CUSTOMISATION
+                        Rs3NpcUpdateMaskKey.PRIORITY_OFFSET -> PropertyFilter.NPC_PRIORITY_OFFSET
+                        Rs3NpcUpdateMaskKey.OVERLAP_CULLING -> PropertyFilter.NPC_OVERLAP_CULLING
+                        Rs3NpcUpdateMaskKey.VARNPC_FULL -> PropertyFilter.NPC_VARNPC_FULL
+                        Rs3NpcUpdateMaskKey.VARNPC_DELTA -> PropertyFilter.NPC_VARNPC_DELTA
+                        Rs3NpcUpdateMaskKey.NPC_STATS -> PropertyFilter.NPC_STATS
+                        Rs3NpcUpdateMaskKey.ATTACHMENTS -> PropertyFilter.NPC_ATTACHMENTS
+                        Rs3NpcUpdateMaskKey.UNUSED_MASK_0 -> PropertyFilter.NPC_UNUSED_MASK_0
+                        Rs3NpcUpdateMaskKey.UNUSED_MASK_8 -> PropertyFilter.NPC_UNUSED_MASK_8
+                        Rs3NpcUpdateMaskKey.UNUSED_MASK_11 -> PropertyFilter.NPC_UNUSED_MASK_11
+                        Rs3NpcUpdateMaskKey.UNUSED_MASK_15 -> PropertyFilter.NPC_UNUSED_MASK_15
+                        Rs3NpcUpdateMaskKey.UNUSED_MASK_29 -> PropertyFilter.NPC_UNUSED_MASK_29
+                        Rs3NpcUpdateMaskKey.UNUSED_MASK_30 -> PropertyFilter.NPC_UNUSED_MASK_30
+                        Rs3NpcUpdateMaskKey.UNUSED_MASK_31 -> PropertyFilter.NPC_UNUSED_MASK_31
                     }
-                else -> return true
+                else -> PropertyFilter.NPC_UNKNOWN_EXT_INFO
             }
         return filters[filter]
     }

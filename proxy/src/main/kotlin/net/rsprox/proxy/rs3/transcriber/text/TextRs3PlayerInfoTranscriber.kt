@@ -73,7 +73,24 @@ public class TextRs3PlayerInfoTranscriber(
                             (it.removals.isNotEmpty() || it.additions.isNotEmpty())
                     is PlayerExtendedInfo.ExactMove -> filters[PropertyFilter.PLAYER_EXACTMOVE]
                     is PlayerExtendedInfo.SayV1, is PlayerExtendedInfo.SayV2 -> filters[PropertyFilter.PLAYER_SAY]
-                    else -> true
+                    is PlayerExtendedInfo.Variables ->
+                        filters[if (it.full) PropertyFilter.PLAYER_VARP_FULL else PropertyFilter.PLAYER_VARP_DELTA]
+                    is PlayerExtendedInfo.Attachments -> filters[PropertyFilter.PLAYER_ATTACHMENTS]
+                    is PlayerExtendedInfo.ClanMember -> filters[PropertyFilter.PLAYER_CLAN_MEMBER]
+                    is PlayerExtendedInfo.PlayerStatus -> filters[PropertyFilter.PLAYER_STATUS]
+                    is PlayerExtendedInfo.HeadIcons -> filters[PropertyFilter.PLAYER_HEAD_ICONS]
+                    is PlayerExtendedInfo.UnusedMask16 -> filters[PropertyFilter.PLAYER_UNUSED_MASK_16]
+                    is PlayerExtendedInfo.Unused ->
+                        filters[
+                            when (it.kind) {
+                                PlayerExtendedInfo.Unused.Kind.UNUSED_MASK_2 -> PropertyFilter.PLAYER_UNUSED_MASK_2
+                                PlayerExtendedInfo.Unused.Kind.UNUSED_MASK_8 -> PropertyFilter.PLAYER_UNUSED_MASK_8
+                                PlayerExtendedInfo.Unused.Kind.UNUSED_MASK_12 -> PropertyFilter.PLAYER_UNUSED_MASK_12
+                                PlayerExtendedInfo.Unused.Kind.UNUSED_MASK_13 -> PropertyFilter.PLAYER_UNUSED_MASK_13
+                                PlayerExtendedInfo.Unused.Kind.UNUSED_MASK_20 -> PropertyFilter.PLAYER_UNUSED_MASK_20
+                                PlayerExtendedInfo.Unused.Kind.UNUSED_MASK_24 -> PropertyFilter.PLAYER_UNUSED_MASK_24
+                            }
+                        ]
                 }
             }
             val showMasks = filters[PropertyFilter.PLAYER_EXT_INFO] && visibleInfo.isNotEmpty()
