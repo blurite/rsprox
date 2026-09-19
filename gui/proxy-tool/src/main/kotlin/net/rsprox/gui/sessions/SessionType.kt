@@ -8,9 +8,9 @@ public enum class SessionType(
     public val displayName: String,
 ) {
     Java("Java"),
-    Native("Native"),
-    RuneLite("RuneLite"),
-    RS3("RuneScape 3"),
+    Native("Old School (Native)"),
+    RuneLite("Old School (RuneLite)"),
+    RS3("RuneScape 3 (OpenGL)"),
     ;
 
     public val icon: Icon by lazy {
