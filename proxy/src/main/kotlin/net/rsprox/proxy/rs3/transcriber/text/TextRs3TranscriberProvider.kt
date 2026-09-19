@@ -1,5 +1,6 @@
 package net.rsprox.proxy.rs3.transcriber.text
 
+import net.rsprox.cache.api.type.ClientScriptDefinitionProvider
 import net.rsprox.proxy.rs3.transcriber.Rs3TranscriberPlugin
 import net.rsprox.proxy.rs3.transcriber.Rs3TranscriberSession
 import net.rsprox.proxy.rs3.transcriber.state.Rs3SessionState
@@ -13,9 +14,10 @@ public class TextRs3TranscriberProvider {
         container: MessageConsumerContainer,
         filters: PropertyFilterSetStore,
         settings: SettingSetStore,
+        clientScripts: ClientScriptDefinitionProvider = ClientScriptDefinitionProvider.EMPTY,
     ): Rs3TranscriberSession {
-        val formatter = Rs3PropertyFormatter.create(settings)
-        val sessionState = Rs3SessionState()
+        val formatter = Rs3PropertyFormatter.create(settings, clientScripts)
+        val sessionState = Rs3SessionState(clientScripts)
         val sessionTracker = Rs3SessionTracker(sessionState)
         val plugin =
             Rs3TranscriberPlugin(

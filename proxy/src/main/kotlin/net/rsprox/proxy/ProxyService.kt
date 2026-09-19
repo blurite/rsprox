@@ -1,5 +1,6 @@
 package net.rsprox.proxy
 
+import net.rsprox.cache.clientscript.RSProxArchiveClientScriptIndex
 import com.github.michaelbull.logging.InlineLogger
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.buffer.ByteBufAllocator
@@ -1000,6 +1001,9 @@ public class ProxyService(
         // Bootstrap on the launch worker, before relay event loops see any game packets.
         val cacheResolver = Rs3LiveCacheResolver(upstreamConfig.captureJs5ConnectionInfo())
         val packetDefinitions = cacheResolver.loadPacketDefinitions()
+        val clientScripts =
+            RSProxArchiveClientScriptIndex.forRuneScape(targets.revision, cacheResolver.masterIndexSnapshot)
+                .also { it.preload() }
 
         val relayServer =
             Rs3RelayServer(
@@ -1009,6 +1013,7 @@ public class ProxyService(
                 realServerModulusHex = originalModulusHex,
                 revision = targets.revision,
                 packetDefinitions = packetDefinitions,
+                clientScripts = clientScripts,
                 masterIndex = cacheResolver.masterIndexSnapshot,
                 resolveUpstream = {
                     val fresh = Rs3JavConfig(URL(upstreamJavConfigUrl)).captureUpstreamTargets()

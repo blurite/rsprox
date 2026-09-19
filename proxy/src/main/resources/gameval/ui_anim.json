@@ -1,0 +1,23 @@
+{
+  "revision": 949,
+  "url": "https://archive.openrs2.org/caches/runescape/2670",
+  "date": "August 25, 2026, 1:02 PM",
+  "entries": {
+    "1": "test_uianims_pulse",
+    "2": "test_uianims_resize",
+    "3": "test_uianims_colourchange",
+    "4": "test_uianims_multiplyalpha",
+    "5": "subtle_fade",
+    "6": "partial_fade_in",
+    "7": "partial_fade_out_full",
+    "8": "full_fade_in",
+    "9": "full_fade_out",
+    "10": "partial_fade_in_out",
+    "11": "partial_fade_out_in",
+    "12": "fade_quick_in_slow_out",
+    "13": "partial_expand_deflate",
+    "14": "anim_move_north_east",
+    "15": "anim_move_north_west",
+    "16": "anim_move_north_wobble"
+  }
+}

@@ -1,5 +1,6 @@
 package net.rsprox.proxy.rs3.relay
 
+import net.rsprox.cache.api.type.ClientScriptDefinitionProvider
 import com.github.michaelbull.logging.InlineLogger
 import io.netty.bootstrap.Bootstrap
 import io.netty.bootstrap.ServerBootstrap
@@ -101,6 +102,7 @@ public class Rs3RelayServer(
     private val resolveUpstream: () -> Pair<String, Int>,
     masterIndex: ByteArray = ByteArray(0),
     private val packetDefinitions: Rs3PacketDefinitions? = null,
+    private val clientScripts: ClientScriptDefinitionProvider = ClientScriptDefinitionProvider.EMPTY,
     private val filterSetStore: PropertyFilterSetStore =
         DefaultPropertyFilterSetStore(Path.of("."), mutableListOf(UnmodifiablePropertyFilterSet())),
     private val settingSetStore: SettingSetStore =
@@ -128,6 +130,7 @@ public class Rs3RelayServer(
 
     init {
         packetDefinitions?.let(sessionMonitor::onPacketDefinitionsUpdate)
+        sessionMonitor.onClientScriptsUpdate(clientScripts)
     }
 
     private val dnsResolver =
@@ -332,6 +335,7 @@ public class Rs3RelayServer(
                 container = monitoredContainer,
                 filters = filterSetStore,
                 settings = settingSetStore,
+                clientScripts = clientScripts,
             )
 
         var state =

@@ -1,0 +1,21 @@
+{
+  "revision": 949,
+  "url": "https://archive.openrs2.org/caches/runescape/2670",
+  "date": "August 25, 2026, 1:02 PM",
+  "entries": {
+    "1": "test_uianims_linear",
+    "2": "test_uianims_inout_sine",
+    "3": "test_uianims_linear_chain",
+    "4": "test_uianims_linear_simple",
+    "5": "test_uianims_linear_simple_converted",
+    "6": "test_uianims_ease_out_elastic",
+    "7": "test_uianims_cubic_out",
+    "8": "linear",
+    "9": "inout_sine",
+    "10": "linear_chain",
+    "11": "linear_simple",
+    "12": "linear_simple_converted",
+    "13": "ease_out_elastic",
+    "14": "cubic_out"
+  }
+}

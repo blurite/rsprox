@@ -34,6 +34,18 @@ public object Rs3GamevalLookup : SymbolDictionary {
             ScriptVarType.BAS -> name(Gameval.BAS, id)
             ScriptVarType.MODEL -> name(Gameval.MODEL, id)
             ScriptVarType.GRAPHIC -> name(Gameval.GRAPHIC, id)
+            ScriptVarType.STRUCT -> name(Gameval.STRUCT, id)
+            ScriptVarType.MAPELEMENT -> name(Gameval.MAPELEMENT, id)
+            ScriptVarType.CURSOR -> name(Gameval.CURSOR, id)
+            ScriptVarType.FONTMETRICS -> name(Gameval.FONTMETRICS, id)
+            ScriptVarType.QUEST -> name(Gameval.QUEST, id)
+            ScriptVarType.CATEGORY -> name(Gameval.CATEGORY, id)
+            ScriptVarType.DBROW -> name(Gameval.DBROW, id)
+            ScriptVarType.DBTABLE -> name(Gameval.DBTABLE, id)
+            ScriptVarType.ENUM -> name(Gameval.ENUM, id)
+            ScriptVarType.HEADBAR -> name(Gameval.HEADBAR, id)
+            ScriptVarType.HITMARK -> name(Gameval.HITMARK, id)
+            ScriptVarType.MATERIAL -> name(Gameval.MATERIAL, id)
             ScriptVarType.INV -> name(Gameval.INV, id)
             ScriptVarType.MIDI -> name(Gameval.MIDI, id)
             ScriptVarType.SYNTH -> name(Gameval.SOUND, id)
@@ -52,7 +64,8 @@ public object Rs3GamevalLookup : SymbolDictionary {
 
     override fun getVarbitName(id: Int): String? = name(Gameval.VARBIT, id)
 
-    override fun getScriptName(id: Int): String? = name(Gameval.SCRIPT, id)
+    // Script names come from the session's cache-specific archived signatures, not bundled gamevals.
+    override fun getScriptName(id: Int): String? = null
 
     public fun varp(id: Int): String = display(Gameval.VARP, id)
 
@@ -67,8 +80,6 @@ public object Rs3GamevalLookup : SymbolDictionary {
     public fun loc(id: Int): String = display(Gameval.LOC, id)
 
     public fun npc(id: Int): String = display(Gameval.NPC, id)
-
-    public fun cs2(id: Int): String = display(Gameval.SCRIPT, id)
 
     public fun seq(id: Int): String = display(Gameval.SEQ, id)
 
@@ -164,7 +175,6 @@ public object Rs3GamevalLookup : SymbolDictionary {
         COMPONENT("component"),
         LOC("loc"),
         NPC("npc"),
-        SCRIPT("cs2"),
         SEQ("seq"),
         BAS("bas"),
         SOUND("sound"),
@@ -172,5 +182,26 @@ public object Rs3GamevalLookup : SymbolDictionary {
         INV("inv"),
         MODEL("model"),
         GRAPHIC("graphic"),
+        STRUCT("struct"),
+        MAPELEMENT("map_element"),
+        CURSOR("cursor"),
+        FONTMETRICS("fontmetrics"),
+        QUEST("quest"),
+        CATEGORY("category"),
+        DBROW("dbrow"),
+        DBTABLE("dbtable"),
+        ENUM("enum"),
+        HEADBAR("headbar"),
+        HITMARK("hitmark"),
+        MATERIAL("material"),
+        // These dictionaries currently have no corresponding shared ScriptVarType.
+        VAR_PLAYER_GROUP("var_player_group"),
+        VAR_CLAN("var_clan"),
+        VAR_CLAN_SETTING("var_clan_setting"),
+        ACHIEVEMENT("achievement"),
+        STYLESHEET("stylesheet"),
+        PARAM("param"),
+        UI_ANIM("ui_anim"),
+        UI_ANIM_CURVE("ui_anim_curve"),
     }
 }

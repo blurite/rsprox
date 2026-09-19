@@ -184,6 +184,7 @@ import net.rsprox.shared.property.varbit
 import net.rsprox.shared.property.varc
 import net.rsprox.shared.property.varobj
 import net.rsprox.shared.property.varp
+import net.rsprox.shared.clientscript.ClientScriptTypes
 import net.rsprox.shared.settings.Setting
 import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.protocol.rs3v949.game.outgoing.model.camera.CamForceAngle as LegacyCamForceAngle
@@ -2229,17 +2230,32 @@ public class TextRs3ServerPacketTranscriber(
     override fun runClientScript(message: RunClientScript) {
         if (!filters[PropertyFilter.RUNCLIENTSCRIPT]) return omit()
         root.script("id", message.id)
-        root.any("types", String(message.types))
+        val types =
+            if (settingSetStore.getActive()[Setting.INFER_CLIENTSCRIPT_TYPES]) {
+                ClientScriptTypes.infer(
+                    sessionState.clientScripts.getClientScriptDefinition(message.id),
+                    message.types,
+                    message.values,
+                )
+            } else {
+                message.types
+            }
+        if (types.isEmpty() || message.values.isEmpty()) return
+        root.any("types", String(types))
         root.group("PARAMS") {
             for ((index, value) in message.values.withIndex()) {
                 group {
                     val type =
                         when (value) {
                             is String -> ScriptVarType.STRING
-                            is Long -> ScriptVarType.LONG
+                            is Long -> {
+                                ScriptVarType.entries.firstOrNull {
+                                    it.char == types[index] && it.baseVarType == BaseVarType.LONG
+                                } ?: ScriptVarType.LONG
+                            }
                             is Int -> {
                                 ScriptVarType.entries.firstOrNull {
-                                    it.char == message.types[index] && it.baseVarType == BaseVarType.INTEGER
+                                    it.char == types[index] && it.baseVarType == BaseVarType.INTEGER
                                 } ?: ScriptVarType.INT
                             }
                             else -> error("Unsupported clientscript parameter type: ${value.javaClass.name}")

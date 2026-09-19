@@ -1,6 +1,7 @@
 package net.rsprox.proxy.rs3.transcriber
 
 import net.rsprox.cache.api.CacheProvider
+import net.rsprox.cache.api.type.ClientScriptDefinitionProvider
 import net.rsprox.cache.api.rs3.Rs3PacketDefinitions
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.property.ChildProperty
@@ -24,6 +25,7 @@ public class Rs3SessionMonitor(
         public val userHash: Long = -1,
         public val cacheProvider: CacheProvider? = null,
         public val packetDefinitions: Rs3PacketDefinitions? = null,
+        public val clientScripts: ClientScriptDefinitionProvider = ClientScriptDefinitionProvider.EMPTY,
     )
 
     private data class Connection(
@@ -130,7 +132,13 @@ public class Rs3SessionMonitor(
         lastName = ""
         incomingBytes = 0
         outgoingBytes = 0
-        update(State(cacheProvider = state.cacheProvider, packetDefinitions = state.packetDefinitions))
+        update(
+            State(
+                cacheProvider = state.cacheProvider,
+                packetDefinitions = state.packetDefinitions,
+                clientScripts = state.clientScripts,
+            ),
+        )
     }
 
     @Synchronized
@@ -142,6 +150,11 @@ public class Rs3SessionMonitor(
     @Synchronized
     public fun onPacketDefinitionsUpdate(definitions: Rs3PacketDefinitions) {
         update(state.copy(packetDefinitions = definitions))
+    }
+
+    @Synchronized
+    public fun onClientScriptsUpdate(clientScripts: ClientScriptDefinitionProvider) {
+        update(state.copy(clientScripts = clientScripts))
     }
 
     @Synchronized

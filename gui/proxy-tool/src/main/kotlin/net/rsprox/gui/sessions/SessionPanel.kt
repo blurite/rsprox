@@ -7,6 +7,7 @@ import com.formdev.flatlaf.extras.components.FlatToolBar
 import com.formdev.flatlaf.util.ColorFunctions
 import com.github.michaelbull.logging.InlineLogger
 import net.rsprox.cache.api.CacheProvider
+import net.rsprox.cache.api.type.ClientScriptDefinitionProvider
 import net.rsprox.gui.App
 import net.rsprox.gui.AppIcons
 import net.rsprox.proxy.binary.BinaryHeader
@@ -59,7 +60,11 @@ public class SessionPanel(
     private var jumpToBottom: Boolean = true
     private var scrollbarMax: Int = -1
 
-    private val rs3Formatter = Rs3PropertyFormatter.create(App.service.settingsStore)
+    private var rs3ClientScripts = ClientScriptDefinitionProvider.EMPTY
+    private val rs3Formatter =
+        Rs3PropertyFormatter.create(App.service.settingsStore) { id ->
+            rs3ClientScripts.getClientScriptDefinition(id)
+        }
 
     init {
         layout = BorderLayout()
@@ -217,6 +222,7 @@ public class SessionPanel(
                                 val rs3SessionMonitor = Rs3SessionMonitor()
                                 rs3SessionMonitor.stateListener = { state ->
                                     SwingUtilities.invokeLater {
+                                        rs3ClientScripts = state.clientScripts
                                         val status = state.status
                                         val name = status?.name.orEmpty()
                                         val identityChanged =

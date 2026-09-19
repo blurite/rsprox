@@ -1,10 +1,13 @@
 package net.rsprox.proxy.rs3.transcriber.state
 
+import net.rsprox.cache.api.type.ClientScriptDefinitionProvider
 import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
 import net.rsprox.shared.property.ChildProperty
 import net.rsprox.shared.property.RootProperty
 
-public class Rs3SessionState {
+public class Rs3SessionState(
+    public val clientScripts: ClientScriptDefinitionProvider = ClientScriptDefinitionProvider.EMPTY,
+) {
     public var cycle: Int = 0
         private set
 

@@ -1,5 +1,6 @@
 package net.rsprox.proxy.rs3.binary
 
+import net.rsprox.cache.clientscript.RSProxArchiveClientScriptIndex
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.crypto.cipher.NopStreamCipher
 import net.rsprot.protocol.ClientProt
@@ -46,6 +47,9 @@ internal object Rs3BinaryTranscriber {
         callback?.indeterminate("Loading recorded RS3 cache definitions...")
         val header = binary.header
         val definitions = Rs3LiveCacheResolver.loadRecordedPacketDefinitions(header.revision, header.js5MasterIndex)
+        val clientScripts =
+            RSProxArchiveClientScriptIndex.forRuneScape(header.revision, header.js5MasterIndex)
+                .also { it.preload() }
         if (callback?.isCancelled() == true) return
         HuffmanProvider.load()
         // ISAAC-dependent payload bytes were already normalized when the recording was written.
@@ -70,9 +74,9 @@ internal object Rs3BinaryTranscriber {
                 writer.appendLine("-------------------")
                 val consumer = TranscribeCommand.createBufferedWriterConsumer(writer)
                 val container = TextMessageConsumerContainer(listOf(consumer))
-                val formatter = Rs3PropertyFormatter.create(settings)
+                val formatter = Rs3PropertyFormatter.create(settings, clientScripts)
                 val provider = TextRs3TranscriberProvider()
-                var transcriber = provider.provide(container, filters, settings)
+                var transcriber = provider.provide(container, filters, settings, clientScripts)
 
                 fun session(index: Int): Session =
                     Session(index, AttributeMap()).apply {
@@ -104,7 +108,7 @@ internal object Rs3BinaryTranscriber {
                         Rs3RecordingProt.LOBBY_TRANSFER -> {
                             val transfer = initialization.transfer(packet.payload, packet.epochTimeMillis)
                             // Live lobby and game sockets each get independent protocol and transcript state.
-                            transcriber = provider.provide(container, filters, settings)
+                            transcriber = provider.provide(container, filters, settings, clientScripts)
                             transcriber.sessionState.localPlayerIndex = transfer.playerIndex
                             clientSession = session(transfer.playerIndex)
                             serverSession = session(transfer.playerIndex).apply { rs3PlayerInfoInitPending = true }
