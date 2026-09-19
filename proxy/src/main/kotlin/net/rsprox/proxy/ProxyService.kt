@@ -63,6 +63,7 @@ import net.rsprox.proxy.rs3.relay.Rs3Endpoint
 import net.rsprox.proxy.rs3.relay.Rs3RelayPorts
 import net.rsprox.proxy.rs3.relay.Rs3RelayServer
 import net.rsprox.proxy.rs3.relay.Rs3RoutingNamespace
+import net.rsprox.proxy.rs3.window.Rs3LauncherConnection
 import net.rsprox.proxy.rsa.Rs3ProxyRsaKeyProvider
 import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
@@ -1024,6 +1025,7 @@ public class ProxyService(
             )
         var namespace: Rs3RoutingNamespace? = null
         var handle: Rs3ClientHandle? = null
+        var launcher: Rs3LauncherConnection? = null
         try {
             val lease =
                 Rs3RoutingNamespace.acquire(CONFIGURATION_PATH.resolve("rs3-routing-target"), localPorts)
@@ -1046,7 +1048,16 @@ public class ProxyService(
             handle = running
             val rewritten =
                 upstreamConfig.rewriteLobbyEndpoint(host, localPorts.primary, localPorts.alternate)
-            val clientArgs = rewritten.toClientArgs()
+            val windowLauncher =
+                if (operatingSystem == OperatingSystem.WINDOWS) {
+                    Rs3LauncherConnection.open(CONFIGURATION_PATH.resolve("rs3-windows"), rewritten.text)
+                } else {
+                    null
+                }
+            launcher = windowLauncher
+            val clientArgs =
+                rewritten.toClientArgs() +
+                    (windowLauncher?.let { listOf("launcher", it.id) } ?: emptyList())
 
             launchExecutable(
                 port = localPorts.primary,
@@ -1054,9 +1065,21 @@ public class ProxyService(
                 operatingSystem = operatingSystem,
                 character = character,
                 args = clientArgs,
-                onProcessExit = running::shutdown,
+                onProcessExit = {
+                    try {
+                        windowLauncher?.close()
+                    } finally {
+                        running.shutdown()
+                    }
+                },
+                onProcessStart = windowLauncher?.let { it::attach },
             )
         } catch (t: Throwable) {
+            try {
+                launcher?.close()
+            } catch (closeFailure: Exception) {
+                t.addSuppressed(closeFailure)
+            }
             val running = handle
             if (running != null) {
                 running.shutdown()
@@ -1326,6 +1349,7 @@ public class ProxyService(
         character: JagexCharacter?,
         args: List<String> = emptyList(),
         onProcessExit: (() -> Unit)? = null,
+        onProcessStart: ((ProcessHandle) -> Unit)? = null,
     ) {
         when (operatingSystem) {
             OperatingSystem.WINDOWS, OperatingSystem.UNIX -> {
@@ -1342,6 +1366,7 @@ public class ProxyService(
                         ClientType.Native,
                         proton = operatingSystem == OperatingSystem.UNIX && usingProton(),
                         onProcessExit = onProcessExit,
+                        onProcessStart = onProcessStart,
                     )
                 } catch (e: IOException) {
                     if (operatingSystem == OperatingSystem.UNIX) {
@@ -1365,6 +1390,7 @@ public class ProxyService(
                     operatingSystem,
                     ClientType.Native,
                     onProcessExit = onProcessExit,
+                    onProcessStart = onProcessStart,
                 )
             }
 
@@ -1385,6 +1411,7 @@ public class ProxyService(
         useStoredCredentials: Boolean = true,
         useFakeJagexAccount: Boolean = false,
         onProcessExit: (() -> Unit)? = null,
+        onProcessStart: ((ProcessHandle) -> Unit)? = null,
     ) {
         logger.debug { "Attempting to create process $command" }
         val builder =
@@ -1457,6 +1484,7 @@ public class ProxyService(
                 .onExit()
                 .thenRun(onProcessExit)
         }
+        onProcessStart?.invoke(process.toHandle())
     }
 
     private fun checkVisualCPlusPlusRedistributable() {
