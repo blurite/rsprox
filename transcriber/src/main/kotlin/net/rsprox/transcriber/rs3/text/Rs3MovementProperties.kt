@@ -6,7 +6,9 @@ import net.rsprox.shared.property.int
 import net.rsprox.shared.property.namedEnum
 
 /** Wire/table indices, not the native enum object's stored values (-1, 0, 1, 2, 3). */
-internal enum class Rs3MovementMode(override val prettyName: String) : NamedEnum {
+internal enum class Rs3MovementMode(
+    override val prettyName: String,
+) : NamedEnum {
     STATIONARY("stationary"),
     CRAWL("crawl"),
     WALK("walk"),
@@ -29,7 +31,9 @@ internal fun Property.appendMovementMode(id: Int) {
 }
 
 /** Native NPC stepping is clockwise from north, unlike the OSRS step-code table. */
-internal enum class Rs3NpcStep(override val prettyName: String) : NamedEnum {
+internal enum class Rs3NpcStep(
+    override val prettyName: String,
+) : NamedEnum {
     NORTH("north"),
     NORTH_EAST("north-east"),
     EAST("east"),

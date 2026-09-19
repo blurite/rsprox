@@ -285,8 +285,11 @@ public class ReplayPanel(
     ): Boolean? {
         return onEventDispatchThread {
             val detail =
-                if (match == ReplayCacheMatch.MISMATCH) "does not match"
-                else "could not be verified against"
+                if (match == ReplayCacheMatch.MISMATCH) {
+                    "does not match"
+                } else {
+                    "could not be verified against"
+                }
             val options = arrayOf("Use Anyway", "Choose Another", "Cancel")
             when (
                 JOptionPane.showOptionDialog(

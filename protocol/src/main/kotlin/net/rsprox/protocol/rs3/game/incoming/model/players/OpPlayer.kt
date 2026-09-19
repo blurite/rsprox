@@ -46,6 +46,5 @@ public class OpPlayer private constructor(
         return result
     }
 
-    override fun toString(): String =
-        "OpPlayer(index=$index, op=$op, run=$run)"
+    override fun toString(): String = "OpPlayer(index=$index, op=$op, run=$run)"
 }

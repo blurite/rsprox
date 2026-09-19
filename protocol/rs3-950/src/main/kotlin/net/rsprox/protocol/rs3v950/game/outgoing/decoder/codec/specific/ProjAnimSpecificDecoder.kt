@@ -31,8 +31,21 @@ internal class ProjAnimSpecificDecoder : ProxyMessageDecoder<ProjAnimSpecific> {
         val id = buffer.g2()
         val level = buffer.g1()
         return ProjAnimSpecific(
-            target, endHeight, startZ, deltaZ, startTime, startHeight, flags, progress,
-            startX, endTime, angle, source, deltaX, id, level,
+            target,
+            endHeight,
+            startZ,
+            deltaZ,
+            startTime,
+            startHeight,
+            flags,
+            progress,
+            startX,
+            endTime,
+            angle,
+            source,
+            deltaX,
+            id,
+            level,
         )
     }
 }

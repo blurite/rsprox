@@ -127,9 +127,7 @@ public class FileDropHandler(
     }
 }
 
-internal fun binaryOpenPane(
-    name: String,
-): JOptionPane {
+internal fun binaryOpenPane(name: String): JOptionPane {
     val replay = JButton("Replay")
     val transcribe = JButton("Transcribe")
     val cancel = JButton("Cancel")

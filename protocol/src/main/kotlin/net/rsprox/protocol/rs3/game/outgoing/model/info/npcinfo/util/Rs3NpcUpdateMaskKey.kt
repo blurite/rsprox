@@ -1,6 +1,9 @@
 package net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.util
 
-public enum class Rs3NpcUpdateMaskKey(public val bit: Int, public val order: Int) {
+public enum class Rs3NpcUpdateMaskKey(
+    public val bit: Int,
+    public val order: Int,
+) {
     SAY(6, 1),
     UNUSED_MASK_0(0, 2),
     PRIORITY_OFFSET(34, 3),

@@ -9,7 +9,9 @@ public data class HintArrow(
 ) : IncomingServerGameMessage {
     public sealed interface Payload
 
-    public data class Clear(public val reserved: List<Int>) : Payload
+    public data class Clear(
+        public val reserved: List<Int>,
+    ) : Payload
 
     public data class Actor(
         public val sprite: Int,

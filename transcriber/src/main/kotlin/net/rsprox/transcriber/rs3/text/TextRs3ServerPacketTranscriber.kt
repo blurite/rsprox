@@ -1,23 +1,10 @@
 package net.rsprox.transcriber.rs3.text
 
 import net.rsprox.cache.api.rs3.Rs3VariableDomain
-
-import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatPrivate
-import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatPrivateEcho
-import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatClanchannel
-import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatFriendchat
-import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatPlayerGroup
-import net.rsprox.protocol.rs3.game.outgoing.model.varclan.Varclan
-
-import net.rsprox.protocol.rs3.game.outgoing.model.appearance.LobbyAppearance
-import net.rsprox.protocol.rs3.game.outgoing.model.appearance.PlayerSnapshot
-
-import java.text.DecimalFormat
-import java.text.NumberFormat
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
-import net.rsprox.protocol.game.outgoing.model.misc.client.SiteSettings
 import net.rsprox.protocol.game.outgoing.model.misc.client.MinimapToggle
+import net.rsprox.protocol.game.outgoing.model.misc.client.SiteSettings
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettingsPrivateChat
 import net.rsprox.protocol.game.outgoing.model.misc.player.RunClientScript
 import net.rsprox.protocol.game.outgoing.model.unknown.UnknownServerPacket
@@ -28,6 +15,8 @@ import net.rsprox.protocol.rs3.game.outgoing.model.account.CreateSuggestNameErro
 import net.rsprox.protocol.rs3.game.outgoing.model.account.CreateSuggestNameReply
 import net.rsprox.protocol.rs3.game.outgoing.model.account.FriendlistLoaded
 import net.rsprox.protocol.rs3.game.outgoing.model.account.UpdateDob
+import net.rsprox.protocol.rs3.game.outgoing.model.appearance.LobbyAppearance
+import net.rsprox.protocol.rs3.game.outgoing.model.appearance.PlayerSnapshot
 import net.rsprox.protocol.rs3.game.outgoing.model.camera.*
 import net.rsprox.protocol.rs3.game.outgoing.model.clan.ClanChannelDelta
 import net.rsprox.protocol.rs3.game.outgoing.model.clan.ClanChannelFull
@@ -43,8 +32,8 @@ import net.rsprox.protocol.rs3.game.outgoing.model.inv.UpdateInvPartial
 import net.rsprox.protocol.rs3.game.outgoing.model.inv.UpdateInvStopTransmit
 import net.rsprox.protocol.rs3.game.outgoing.model.map.EnvironmentOverride
 import net.rsprox.protocol.rs3.game.outgoing.model.map.RebuildNormal
-import net.rsprox.protocol.rs3.game.outgoing.model.map.Reconnect
 import net.rsprox.protocol.rs3.game.outgoing.model.map.RebuildRegion
+import net.rsprox.protocol.rs3.game.outgoing.model.map.Reconnect
 import net.rsprox.protocol.rs3.game.outgoing.model.map.lighting.PointLightAttenuationFalloff
 import net.rsprox.protocol.rs3.game.outgoing.model.map.lighting.PointLightColour
 import net.rsprox.protocol.rs3.game.outgoing.model.map.lighting.PointLightEnabled
@@ -94,6 +83,11 @@ import net.rsprox.protocol.rs3.game.outgoing.model.social.MessagePlayerGroup
 import net.rsprox.protocol.rs3.game.outgoing.model.social.MessagePrivate
 import net.rsprox.protocol.rs3.game.outgoing.model.social.MessagePrivateEcho
 import net.rsprox.protocol.rs3.game.outgoing.model.social.MessagePublic
+import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatClanchannel
+import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatFriendchat
+import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatPlayerGroup
+import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatPrivate
+import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatPrivateEcho
 import net.rsprox.protocol.rs3.game.outgoing.model.social.SocialNetworkLogout
 import net.rsprox.protocol.rs3.game.outgoing.model.social.UpdateFriendchatChannelFull
 import net.rsprox.protocol.rs3.game.outgoing.model.social.UpdateFriendchatChannelSingleUser
@@ -141,6 +135,7 @@ import net.rsprox.protocol.rs3.game.outgoing.model.varbit.Varbit
 import net.rsprox.protocol.rs3.game.outgoing.model.varbit.VarbitLarge
 import net.rsprox.protocol.rs3.game.outgoing.model.varbit.VarbitSmall
 import net.rsprox.protocol.rs3.game.outgoing.model.varc.*
+import net.rsprox.protocol.rs3.game.outgoing.model.varclan.Varclan
 import net.rsprox.protocol.rs3.game.outgoing.model.varclan.VarclanDisable
 import net.rsprox.protocol.rs3.game.outgoing.model.varclan.VarclanEnable
 import net.rsprox.protocol.rs3.game.outgoing.model.varp.VarpLarge
@@ -151,24 +146,23 @@ import net.rsprox.protocol.rs3.game.outgoing.model.zone.header.UpdateZoneFullFol
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.header.UpdateZonePartialFollows
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.*
-import net.rsprox.transcriber.rs3.interfaces.Rs3ServerPacketTranscriber
-import net.rsprox.transcriber.rs3.state.Rs3SessionState
 import net.rsprox.shared.BaseVarType
 import net.rsprox.shared.ScriptVarType
+import net.rsprox.shared.clientscript.ClientScriptTypes
 import net.rsprox.shared.filters.PropertyFilter
 import net.rsprox.shared.filters.PropertyFilterSet
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.property.Property
 import net.rsprox.shared.property.RootProperty
 import net.rsprox.shared.property.any
-import net.rsprox.shared.property.filteredAny
 import net.rsprox.shared.property.boolean
 import net.rsprox.shared.property.coordGridProperty
 import net.rsprox.shared.property.enum
+import net.rsprox.shared.property.filteredAny
 import net.rsprox.shared.property.filteredBoolean
 import net.rsprox.shared.property.filteredInt
-import net.rsprox.shared.property.filteredString
 import net.rsprox.shared.property.filteredScriptVarType
+import net.rsprox.shared.property.filteredString
 import net.rsprox.shared.property.formattedInt
 import net.rsprox.shared.property.formattedLong
 import net.rsprox.shared.property.group
@@ -185,9 +179,12 @@ import net.rsprox.shared.property.varbit
 import net.rsprox.shared.property.varc
 import net.rsprox.shared.property.varobj
 import net.rsprox.shared.property.varp
-import net.rsprox.shared.clientscript.ClientScriptTypes
 import net.rsprox.shared.settings.Setting
 import net.rsprox.shared.settings.SettingSetStore
+import net.rsprox.transcriber.rs3.interfaces.Rs3ServerPacketTranscriber
+import net.rsprox.transcriber.rs3.state.Rs3SessionState
+import java.text.DecimalFormat
+import java.text.NumberFormat
 
 public class TextRs3ServerPacketTranscriber(
     private val sessionState: Rs3SessionState,
@@ -210,9 +207,10 @@ public class TextRs3ServerPacketTranscriber(
     ): ScriptVarTypeProperty<*> = coordinates.append(this, level, x, z, name)
 
     private val root: RootProperty
-        get() = checkNotNull(sessionState.root.lastOrNull()) {
-            "No active root - onTranscribeStart() must run before dispatching to a transcriber method"
-        }
+        get() =
+            checkNotNull(sessionState.root.lastOrNull()) {
+                "No active root - onTranscribeStart() must run before dispatching to a transcriber method"
+            }
     private val filters: PropertyFilterSet
         get() = filterSetStore.getActive()
 
@@ -220,7 +218,11 @@ public class TextRs3ServerPacketTranscriber(
         sessionState.deleteRoot()
     }
 
-    private fun Property.zoneCoord(x: Int, z: Int, name: String = "coord") {
+    private fun Property.zoneCoord(
+        x: Int,
+        z: Int,
+        name: String = "coord",
+    ) {
         val coord = sessionState.getActiveWorld().relativizeZoneCoord(x, z)
         if (coord != CoordGrid.INVALID) {
             coordGrid(name, coord)
@@ -233,7 +235,11 @@ public class TextRs3ServerPacketTranscriber(
         }
     }
 
-    private fun Property.zoneHalfCoord(x: Int, z: Int, name: String = "coord") {
+    private fun Property.zoneHalfCoord(
+        x: Int,
+        z: Int,
+        name: String = "coord",
+    ) {
         val origin = sessionState.getActiveWorld().relativizeZoneCoord(0, 0)
         if (origin != CoordGrid.INVALID) {
             coordinates.appendFine(
@@ -724,7 +730,11 @@ public class TextRs3ServerPacketTranscriber(
         root.coordGrid(init.localPlayerLevel, init.localPlayerX, init.localPlayerZ, "localplayercoord")
     }
 
-    private fun Property.buildZoneFollowsCommon(level: Int, zoneX: Int, zoneZ: Int) {
+    private fun Property.buildZoneFollowsCommon(
+        level: Int,
+        zoneX: Int,
+        zoneZ: Int,
+    ) {
         val base = sessionState.getActiveWorld().relativizeZoneCoord(0, 0)
         if (base != CoordGrid.INVALID) {
             coordGrid("coord", base)
@@ -1069,6 +1079,7 @@ public class TextRs3ServerPacketTranscriber(
         if (!filters[PropertyFilter.SOUND_AREA]) return omit()
         root.buildSoundAreaV1(message)
     }
+
     private fun Property.buildSoundAreaV2(event: SoundAreaV2) {
         scriptVarType("id", ScriptVarType.SYNTH, event.id)
         filteredInt("loops", event.loops, 0)
@@ -1084,6 +1095,7 @@ public class TextRs3ServerPacketTranscriber(
         if (!filters[PropertyFilter.SOUND_AREA]) return omit()
         root.buildSoundAreaV2(message)
     }
+
     private fun Property.buildMapProjAnim(event: MapProjAnim) {
         scriptVarType("id", ScriptVarType.SPOTANIM, if (event.id == 65535) -1 else event.id)
         int("starttime", event.startTime)
@@ -1110,6 +1122,7 @@ public class TextRs3ServerPacketTranscriber(
         if (!filters[PropertyFilter.MAP_PROJANIM]) return omit()
         root.buildMapProjAnim(message)
     }
+
     private fun Property.buildMapProjAnimV2(event: MapProjAnimV2) {
         scriptVarType("id", ScriptVarType.SPOTANIM, if (event.id == 65535) -1 else event.id)
         int("starttime", event.startTime)
@@ -1187,6 +1200,7 @@ public class TextRs3ServerPacketTranscriber(
         if (!filters[PropertyFilter.MAP_PROJANIM]) return omit()
         root.buildMapProjAnimHalfsq(message)
     }
+
     private fun Property.buildMapProjAnimHalfsqV2(event: MapProjAnimHalfsqV2) {
         scriptVarType("id", ScriptVarType.SPOTANIM, if (event.id == 65535) -1 else event.id)
         int("starttime", event.startTime)
@@ -1390,11 +1404,15 @@ public class TextRs3ServerPacketTranscriber(
                 }
                 is ObjCount -> {
                     if (!filters[PropertyFilter.OBJ_COUNT]) continue
-                    sessionState.createFakeServerRoot(if (event.big) "OBJ_COUNT_V2" else "OBJ_COUNT").buildObjCount(event)
+                    sessionState
+                        .createFakeServerRoot(
+                            if (event.big) "OBJ_COUNT_V2" else "OBJ_COUNT",
+                        ).buildObjCount(event)
                 }
                 is ObjReveal -> {
                     if (!filters[PropertyFilter.OBJ_ADD]) continue
-                    sessionState.createFakeServerRoot(if (event.big) "OBJ_REVEAL_V2" else "OBJ_REVEAL")
+                    sessionState
+                        .createFakeServerRoot(if (event.big) "OBJ_REVEAL_V2" else "OBJ_REVEAL")
                         .buildObjReveal(event)
                 }
                 is MapAnim -> {
@@ -1770,7 +1788,6 @@ public class TextRs3ServerPacketTranscriber(
         root.group("OBJS") {
             for (obj in message.objs) {
                 group {
-
                     scriptVarType("id", ScriptVarType.OBJ, obj.id)
                     formattedInt("count", obj.count)
                     if (obj.vars.isNotEmpty()) {
@@ -2031,7 +2048,11 @@ public class TextRs3ServerPacketTranscriber(
         }
     }
 
-    private fun Property.specificHalfCoord(level: Int, x: Int, z: Int) {
+    private fun Property.specificHalfCoord(
+        level: Int,
+        x: Int,
+        z: Int,
+    ) {
         // Wire positions/deltas are absolute half-tiles, not zone-relative or whole tiles.
         if (level in 0..3 && x in 0..32767 && z in 0..32767) {
             coordinates.appendFine(this, level, x shr 1, z shr 1, (x and 1) * 64, (z and 1) * 64, "coord")
@@ -2640,36 +2661,41 @@ public class TextRs3ServerPacketTranscriber(
         // Preserve wire order, not the native application's reverse iteration.
         for (record in message.records) {
             when (record) {
-                is ClanChannelDelta.Add -> root.group("ADD_USER") {
-                    string("name", record.name)
-                    int("world", record.world)
-                    int("rank", record.rank)
-                    long("memberidentity", record.memberIdentity)
-                }
-                is ClanChannelDelta.Remove -> root.group("DEL_USER") {
-                    int("memberindex", record.index)
-                    int("auxiliary", record.auxiliary)
-                    int("sentinel", record.sentinel)
-                }
-                is ClanChannelDelta.Header -> root.group("UPDATE_BASE_SETTINGS") {
-                    string("clanname", record.name)
-                    int("talkrank", record.talkRank)
-                    int("kickrank", record.kickRank)
-                    boolean("discarded", record.headerBoolean)
-                }
-                is ClanChannelDelta.Member -> root.group("UPDATE_USER_DETAILS") {
-                    int("memberindex", record.index)
-                    string("name", record.name)
-                    int("rank", record.rank)
-                    int("world", record.world)
-                    long("memberidentity", record.memberIdentity)
-                    filteredInt("unused", record.unused, 0)
-                    boolean("discarded", record.memberBoolean)
-                }
-                is ClanChannelDelta.Rejected -> root.group("REJECTED") {
-                    int("type", record.type)
-                    int("sentinel", record.sentinel)
-                }
+                is ClanChannelDelta.Add ->
+                    root.group("ADD_USER") {
+                        string("name", record.name)
+                        int("world", record.world)
+                        int("rank", record.rank)
+                        long("memberidentity", record.memberIdentity)
+                    }
+                is ClanChannelDelta.Remove ->
+                    root.group("DEL_USER") {
+                        int("memberindex", record.index)
+                        int("auxiliary", record.auxiliary)
+                        int("sentinel", record.sentinel)
+                    }
+                is ClanChannelDelta.Header ->
+                    root.group("UPDATE_BASE_SETTINGS") {
+                        string("clanname", record.name)
+                        int("talkrank", record.talkRank)
+                        int("kickrank", record.kickRank)
+                        boolean("discarded", record.headerBoolean)
+                    }
+                is ClanChannelDelta.Member ->
+                    root.group("UPDATE_USER_DETAILS") {
+                        int("memberindex", record.index)
+                        string("name", record.name)
+                        int("rank", record.rank)
+                        int("world", record.world)
+                        long("memberidentity", record.memberIdentity)
+                        filteredInt("unused", record.unused, 0)
+                        boolean("discarded", record.memberBoolean)
+                    }
+                is ClanChannelDelta.Rejected ->
+                    root.group("REJECTED") {
+                        int("type", record.type)
+                        int("sentinel", record.sentinel)
+                    }
             }
         }
         root.int("terminator", message.terminator)
@@ -2728,71 +2754,83 @@ public class TextRs3ServerPacketTranscriber(
         root.group("UPDATES") {
             for (record in message.records) {
                 when (record) {
-                    is ClanSettingsDelta.AddName -> group(
-                        when (record.type) {
-                            1 -> "ADD_MEMBER_V1"
-                            3 -> "ADD_BANNED"
-                            13 -> "ADD_MEMBER_V2"
-                            else -> error("Unknown add-name selector " + record.type)
-                        },
-                    ) {
-                        string("name", record.name)
-                        record.joinedDay?.let { int("joinruneday", it) }
-                    }
-                    is ClanSettingsDelta.Rank -> group("SET_MEMBER_RANK") {
-                        int("memberindex", record.index)
-                        int("rank", record.rank)
-                    }
-                    is ClanSettingsDelta.Permissions -> group("BASE_SETTINGS") {
-                        boolean("allowunaffined", record.allowGuests)
-                        int("rank0", record.rank0)
-                        int("rank1", record.rank1)
-                        int("rank2", record.rank2)
-                        boolean("headerboolean", record.headerBoolean)
-                    }
-                    is ClanSettingsDelta.Remove -> group(
-                        when (record.type) {
-                            5 -> "DELETE_MEMBER"
-                            6 -> "DELETE_BANNED"
-                            else -> error("Unknown removal selector " + record.type)
-                        },
-                    ) { int("memberindex", record.index) }
-                    is ClanSettingsDelta.MemberBits -> group("SET_MEMBER_EXTRA_INFO") {
-                        int("memberindex", record.index)
-                        int("value", record.value)
-                        int("startbit", record.start)
-                        int("endbit", record.end)
-                    }
-                    is ClanSettingsDelta.IntParameter -> group("SET_INT_SETTING") {
-                        int("id", record.key)
-                        int("value", record.value)
-                    }
-                    is ClanSettingsDelta.LongParameter -> group("SET_LONG_SETTING") {
-                        int("id", record.key)
-                        long("value", record.value)
-                    }
-                    is ClanSettingsDelta.StringParameter -> group("SET_STRING_SETTING") {
-                        int("id", record.key)
-                        string("value", record.value)
-                    }
-                    is ClanSettingsDelta.IntBits -> group("SET_VARBIT_SETTING") {
-                        int("id", record.key)
-                        int("value", record.value)
-                        int("startbit", record.start)
-                        int("endbit", record.end)
-                    }
-                    is ClanSettingsDelta.Name -> group("SET_CLAN_NAME") {
-                        string("clanname", record.name)
-                        int("extra", record.extra)
-                    }
-                    is ClanSettingsDelta.Mute -> group("SET_MEMBER_MUTED") {
-                        int("memberindex", record.index)
-                        boolean("muted", record.muted)
-                    }
-                    is ClanSettingsDelta.Rejected -> group("REJECTED") {
-                        int("type", record.type)
-                        int("sentinel", record.sentinel)
-                    }
+                    is ClanSettingsDelta.AddName ->
+                        group(
+                            when (record.type) {
+                                1 -> "ADD_MEMBER_V1"
+                                3 -> "ADD_BANNED"
+                                13 -> "ADD_MEMBER_V2"
+                                else -> error("Unknown add-name selector " + record.type)
+                            },
+                        ) {
+                            string("name", record.name)
+                            record.joinedDay?.let { int("joinruneday", it) }
+                        }
+                    is ClanSettingsDelta.Rank ->
+                        group("SET_MEMBER_RANK") {
+                            int("memberindex", record.index)
+                            int("rank", record.rank)
+                        }
+                    is ClanSettingsDelta.Permissions ->
+                        group("BASE_SETTINGS") {
+                            boolean("allowunaffined", record.allowGuests)
+                            int("rank0", record.rank0)
+                            int("rank1", record.rank1)
+                            int("rank2", record.rank2)
+                            boolean("headerboolean", record.headerBoolean)
+                        }
+                    is ClanSettingsDelta.Remove ->
+                        group(
+                            when (record.type) {
+                                5 -> "DELETE_MEMBER"
+                                6 -> "DELETE_BANNED"
+                                else -> error("Unknown removal selector " + record.type)
+                            },
+                        ) { int("memberindex", record.index) }
+                    is ClanSettingsDelta.MemberBits ->
+                        group("SET_MEMBER_EXTRA_INFO") {
+                            int("memberindex", record.index)
+                            int("value", record.value)
+                            int("startbit", record.start)
+                            int("endbit", record.end)
+                        }
+                    is ClanSettingsDelta.IntParameter ->
+                        group("SET_INT_SETTING") {
+                            int("id", record.key)
+                            int("value", record.value)
+                        }
+                    is ClanSettingsDelta.LongParameter ->
+                        group("SET_LONG_SETTING") {
+                            int("id", record.key)
+                            long("value", record.value)
+                        }
+                    is ClanSettingsDelta.StringParameter ->
+                        group("SET_STRING_SETTING") {
+                            int("id", record.key)
+                            string("value", record.value)
+                        }
+                    is ClanSettingsDelta.IntBits ->
+                        group("SET_VARBIT_SETTING") {
+                            int("id", record.key)
+                            int("value", record.value)
+                            int("startbit", record.start)
+                            int("endbit", record.end)
+                        }
+                    is ClanSettingsDelta.Name ->
+                        group("SET_CLAN_NAME") {
+                            string("clanname", record.name)
+                            int("extra", record.extra)
+                        }
+                    is ClanSettingsDelta.Mute ->
+                        group("SET_MEMBER_MUTED") {
+                            int("memberindex", record.index)
+                            boolean("muted", record.muted)
+                        }
+                    is ClanSettingsDelta.Rejected ->
+                        group("REJECTED") {
+                            int("type", record.type)
+                            int("sentinel", record.sentinel)
+                        }
                 }
             }
         }

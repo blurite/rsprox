@@ -4,9 +4,9 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.rs3.game.outgoing.model.specific.NpcSaySpecific
+import net.rsprox.protocol.rs3v950.buffer.readNativeString
 import net.rsprox.protocol.rs3v950.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.session.Session
-import net.rsprox.protocol.rs3v950.buffer.readNativeString
 
 internal class NpcSaySpecificDecoder : ProxyMessageDecoder<NpcSaySpecific> {
     override val prot: ClientProt = GameServerProt.NPC_SAY_SPECIFIC

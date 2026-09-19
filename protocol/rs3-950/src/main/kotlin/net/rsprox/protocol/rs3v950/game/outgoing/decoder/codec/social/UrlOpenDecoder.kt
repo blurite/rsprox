@@ -9,10 +9,15 @@ import net.rsprox.protocol.rs3v950.game.outgoing.decoder.codec.readNativeIsaacSt
 import net.rsprox.protocol.rs3v950.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.session.Session
 
-internal class UrlOpenDecoder(private val cipher: () -> StreamCipher?) : ProxyMessageDecoder<UrlOpen> {
+internal class UrlOpenDecoder(
+    private val cipher: () -> StreamCipher?,
+) : ProxyMessageDecoder<UrlOpen> {
     override val prot: ClientProt = GameServerProt.URL_OPEN
 
-    override fun decode(buffer: JagByteBuf, session: Session): UrlOpen {
+    override fun decode(
+        buffer: JagByteBuf,
+        session: Session,
+    ): UrlOpen {
         val activeCipher = checkNotNull(cipher()) { "URL_OPEN requires the inbound opcode cipher" }
         val length = buffer.readableBytes()
         val mode = buffer.g1()

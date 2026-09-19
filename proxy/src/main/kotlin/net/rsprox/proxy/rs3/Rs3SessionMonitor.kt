@@ -64,7 +64,10 @@ public class Rs3SessionMonitor(
     }
 
     @Synchronized
-    public fun onConnectionNameUpdate(connection: Any, name: String) {
+    public fun onConnectionNameUpdate(
+        connection: Any,
+        name: String,
+    ) {
         val current = connections[connection] ?: return
         if (current.userId != state.userId || current.userHash != state.userHash) return
         onNameUpdate(name)
@@ -88,7 +91,11 @@ public class Rs3SessionMonitor(
 
     /** Count each post-login stream chunk once, independently of decoding, filters and recording success. */
     @Synchronized
-    public fun onBytes(connection: Any, incoming: Boolean, count: Int) {
+    public fun onBytes(
+        connection: Any,
+        incoming: Boolean,
+        count: Int,
+    ) {
         require(count >= 0)
         if (connection !in connections) return
         if (incoming) incomingBytes += count else outgoingBytes += count
@@ -107,7 +114,10 @@ public class Rs3SessionMonitor(
         lastBandwidthUpdate = now
     }
 
-    public fun onGameLogin(world: Int, localPlayerIndex: Int) {
+    public fun onGameLogin(
+        world: Int,
+        localPlayerIndex: Int,
+    ) {
         val marker =
             object : RootProperty {
                 override val prot: String = "LOBBY_TRANSFER"
@@ -184,7 +194,10 @@ public class Rs3SessionMonitor(
     }
 
     @Synchronized
-    override fun onUserInformationUpdate(userId: Long, userHash: Long) {
+    override fun onUserInformationUpdate(
+        userId: Long,
+        userHash: Long,
+    ) {
         update(state.copy(userId = userId, userHash = userHash))
     }
 
@@ -195,7 +208,10 @@ public class Rs3SessionMonitor(
         stateListener?.invoke(next)
     }
 
-    override fun onTranscribe(cycle: Int, property: RootProperty) {
+    override fun onTranscribe(
+        cycle: Int,
+        property: RootProperty,
+    ) {
         listener?.invoke(cycle, property)
     }
 }

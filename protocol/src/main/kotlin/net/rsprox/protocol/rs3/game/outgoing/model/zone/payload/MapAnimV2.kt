@@ -16,9 +16,11 @@ public data class MapAnimV2(
 ) : IncomingServerGameMessage {
     public val delay: Int get() = packedDelay and 0x7FFF
     public val independentRotation: Boolean get() = packedDelay and 0x8000 != 0
+
     // Fine-coordinate units (512 per tile), biased by 1023 on the wire.
     public val offsetX: Int get() = (packedOffsets and 0x7FF) - 1023
     public val offsetZ: Int get() = (packedOffsets ushr 11 and 0x7FF) - 1023
+
     // The native client tests the entire two-bit selector, not just bit 22.
     public val relativeOffset: Boolean get() = packedOffsets ushr 22 == 1
 }

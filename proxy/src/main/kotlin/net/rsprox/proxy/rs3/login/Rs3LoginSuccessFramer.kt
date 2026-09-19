@@ -46,7 +46,9 @@ public open class Rs3LoginSuccessFramer protected constructor(
     private fun identityLong(distanceFromEnd: Int): Long? {
         val data = loginData ?: return null
         if (data.size < 25 + initialCipherDraws) return null
-        return java.nio.ByteBuffer.wrap(data, data.size - distanceFromEnd, Long.SIZE_BYTES).long
+        return java.nio.ByteBuffer
+            .wrap(data, data.size - distanceFromEnd, Long.SIZE_BYTES)
+            .long
     }
 
     public val variableBlocks: MutableList<ByteArray> = ArrayList()

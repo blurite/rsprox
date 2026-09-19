@@ -15,8 +15,8 @@ import net.rsprox.cache.api.CacheProvider
 import net.rsprox.proxy.attributes.BINARY_BLOB
 import net.rsprox.proxy.attributes.BINARY_HEADER_BUILDER
 import net.rsprox.proxy.binary.BinaryBlob
-import net.rsprox.proxy.binary.isOldSchoolRuneScape
 import net.rsprox.proxy.binary.BinaryStream
+import net.rsprox.proxy.binary.isOldSchoolRuneScape
 import net.rsprox.proxy.channel.getAndDropEncodeSeed
 import net.rsprox.proxy.channel.getBinaryHeaderBuilder
 import net.rsprox.proxy.channel.getClientToServerStreamCipher

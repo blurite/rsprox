@@ -84,7 +84,11 @@ internal class Rs3LauncherProtocol(
         require(input.available() == 0) { "Unexpected RS3 launcher message length: $id/$version" }
     }
 
-    private fun reply(id: Int, version: Int = 1, body: DataOutputStream.() -> Unit) {
+    private fun reply(
+        id: Int,
+        version: Int = 1,
+        body: DataOutputStream.() -> Unit,
+    ) {
         val bytes = ByteArrayOutputStream()
         DataOutputStream(bytes).use {
             it.writeShort(id)

@@ -76,10 +76,11 @@ internal class Rs3ConnectionRecording(
         }
     }
 
-    fun reconnect(payload: ByteArray) = safely {
-        check(successful) { "Reconnect has no previous recording" }
-        recorder.packet(connection, true, 0xFF, -2, payload)
-    }
+    fun reconnect(payload: ByteArray) =
+        safely {
+            check(successful) { "Reconnect has no previous recording" }
+            recorder.packet(connection, true, 0xFF, -2, payload)
+        }
 
     /** A broken socket may end halfway through a packet. Only complete packets were recorded. */
     fun suspend() {

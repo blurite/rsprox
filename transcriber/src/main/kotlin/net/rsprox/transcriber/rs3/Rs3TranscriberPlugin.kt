@@ -1,25 +1,14 @@
 package net.rsprox.transcriber.rs3
 
-import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatClanchannel
-import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatFriendchat
-import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatPlayerGroup
-import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatPrivate
-import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatPrivateEcho
-import net.rsprox.protocol.rs3.game.outgoing.model.varclan.Varclan
-
-import net.rsprox.protocol.rs3.game.outgoing.model.appearance.LobbyAppearance
-import net.rsprox.protocol.rs3.game.outgoing.model.appearance.PlayerSnapshot
-
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.message.IncomingMessage
 import net.rsprox.protocol.game.incoming.model.unknown.UnknownClientPacket
 import net.rsprox.protocol.game.outgoing.model.unknown.UnknownServerPacket
-import net.rsprox.protocol.rs3.game.incoming.model.chat.MessagePrivate as ClientMessagePrivate
-import net.rsprox.protocol.rs3.game.incoming.model.chat.MessagePublic as ClientMessagePublic
-import net.rsprox.protocol.rs3.game.incoming.model.misc.client.NoTimeout as ClientNoTimeout
-import net.rsprox.protocol.rs3.game.outgoing.model.camera.CameraUpdate
+import net.rsprox.protocol.rs3.game.outgoing.model.appearance.LobbyAppearance
+import net.rsprox.protocol.rs3.game.outgoing.model.appearance.PlayerSnapshot
 import net.rsprox.protocol.rs3.game.outgoing.model.camera.CamForceAngle
 import net.rsprox.protocol.rs3.game.outgoing.model.camera.CamShake
+import net.rsprox.protocol.rs3.game.outgoing.model.camera.CameraUpdate
 import net.rsprox.protocol.rs3.game.outgoing.model.map.RebuildNormal
 import net.rsprox.protocol.rs3.game.outgoing.model.map.Reconnect
 import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.HintArrow
@@ -29,23 +18,40 @@ import net.rsprox.protocol.rs3.game.outgoing.model.misc.player.MessageGame
 import net.rsprox.protocol.rs3.game.outgoing.model.misc.player.SetPlayerOp
 import net.rsprox.protocol.rs3.game.outgoing.model.social.MessagePrivate
 import net.rsprox.protocol.rs3.game.outgoing.model.social.MessagePublic
+import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatClanchannel
+import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatFriendchat
+import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatPlayerGroup
+import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatPrivate
+import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatPrivateEcho
 import net.rsprox.protocol.rs3.game.outgoing.model.specific.ProjAnimSpecificV2
-import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.MapProjAnim
+import net.rsprox.protocol.rs3.game.outgoing.model.varclan.Varclan
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.LocCustomise
+import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.MapProjAnim
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.MapProjAnimHalfsq
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.MapProjAnimHalfsqV2
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.MapProjAnimV2
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.MidiSongLocation
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.SoundAreaV1
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.SoundAreaV2
+import net.rsprox.protocol.rs3.game.incoming.model.chat.MessagePrivate as ClientMessagePrivate
+import net.rsprox.protocol.rs3.game.incoming.model.chat.MessagePublic as ClientMessagePublic
+import net.rsprox.protocol.rs3.game.incoming.model.misc.client.NoTimeout as ClientNoTimeout
 
 public class Rs3TranscriberPlugin(
     private val transcriber: Rs3Transcriber,
 ) : Rs3TranscriberRunner {
     private val ifButtonProtNames: Set<String> =
         setOf(
-            "IF_BUTTON1_V2", "IF_BUTTON2_V2", "IF_BUTTON3_V2", "IF_BUTTON4_V2", "IF_BUTTON5_V2",
-            "IF_BUTTON6_V2", "IF_BUTTON7_V2", "IF_BUTTON8_V2", "IF_BUTTON9_V2", "IF_BUTTON10_V2",
+            "IF_BUTTON1_V2",
+            "IF_BUTTON2_V2",
+            "IF_BUTTON3_V2",
+            "IF_BUTTON4_V2",
+            "IF_BUTTON5_V2",
+            "IF_BUTTON6_V2",
+            "IF_BUTTON7_V2",
+            "IF_BUTTON8_V2",
+            "IF_BUTTON9_V2",
+            "IF_BUTTON10_V2",
         )
 
     private val opNpcProtNames: Set<String> =
@@ -59,8 +65,16 @@ public class Rs3TranscriberPlugin(
 
     private val opPlayerProtNames: Set<String> =
         setOf(
-            "OPPLAYER1", "OPPLAYER2", "OPPLAYER3", "OPPLAYER4", "OPPLAYER5",
-            "OPPLAYER6", "OPPLAYER7", "OPPLAYER8", "OPPLAYER9", "OPPLAYER10",
+            "OPPLAYER1",
+            "OPPLAYER2",
+            "OPPLAYER3",
+            "OPPLAYER4",
+            "OPPLAYER5",
+            "OPPLAYER6",
+            "OPPLAYER7",
+            "OPPLAYER8",
+            "OPPLAYER9",
+            "OPPLAYER10",
         )
 
     private inline fun <reified T> pass(
@@ -79,7 +93,10 @@ public class Rs3TranscriberPlugin(
         }
     }
 
-    override fun onClientProt(prot: ClientProt, message: IncomingMessage) {
+    override fun onClientProt(
+        prot: ClientProt,
+        message: IncomingMessage,
+    ) {
         if (message is UnknownClientPacket) {
             pass(message, Rs3Transcriber::unknownClientOpcode)
             return
@@ -199,7 +216,10 @@ public class Rs3TranscriberPlugin(
         }
     }
 
-    override fun onServerPacket(prot: ClientProt, message: IncomingMessage) {
+    override fun onServerPacket(
+        prot: ClientProt,
+        message: IncomingMessage,
+    ) {
         if (message is Reconnect) {
             pass(message, Rs3Transcriber::reconnect)
             return

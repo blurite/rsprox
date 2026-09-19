@@ -19,8 +19,7 @@ internal fun JagByteBuf.readNativeString2(): String {
     return readNativeString()
 }
 
-internal fun nativeCharacter(byte: Int): Char =
-    if (byte in 128..159) CP1252_EXTENSION[byte - 128] else byte.toChar()
+internal fun nativeCharacter(byte: Int): Char = if (byte in 128..159) CP1252_EXTENSION[byte - 128] else byte.toChar()
 
 private const val CP1252_EXTENSION =
     "\u20ac\u0000\u201a\u0192\u201e\u2026\u2020\u2021\u02c6\u2030\u0160\u2039\u0152\u0000\u017d\u0000" +

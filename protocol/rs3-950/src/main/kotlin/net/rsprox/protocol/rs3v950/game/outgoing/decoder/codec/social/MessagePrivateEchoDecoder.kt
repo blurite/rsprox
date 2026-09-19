@@ -15,7 +15,10 @@ internal class MessagePrivateEchoDecoder(
 ) : ProxyMessageDecoder<MessagePrivateEcho> {
     override val prot: ClientProt = GameServerProt.MESSAGE_PRIVATE_ECHO
 
-    override fun decode(buffer: JagByteBuf, session: Session): MessagePrivateEcho {
+    override fun decode(
+        buffer: JagByteBuf,
+        session: Session,
+    ): MessagePrivateEcho {
         val recipient = buffer.readNativeString()
         val message = buffer.readNativeHuffman(huffmanCodec)
         return MessagePrivateEcho(

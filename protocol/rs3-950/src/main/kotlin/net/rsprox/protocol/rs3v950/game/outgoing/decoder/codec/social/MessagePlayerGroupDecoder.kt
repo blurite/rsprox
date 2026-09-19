@@ -15,7 +15,10 @@ internal class MessagePlayerGroupDecoder(
 ) : ProxyMessageDecoder<MessagePlayerGroup> {
     override val prot: ClientProt = GameServerProt.MESSAGE_PLAYER_GROUP
 
-    override fun decode(buffer: JagByteBuf, session: Session): MessagePlayerGroup {
+    override fun decode(
+        buffer: JagByteBuf,
+        session: Session,
+    ): MessagePlayerGroup {
         val sender = buffer.readNativeString()
         val messageWorld = buffer.g2()
         val messageCounter = buffer.g3()

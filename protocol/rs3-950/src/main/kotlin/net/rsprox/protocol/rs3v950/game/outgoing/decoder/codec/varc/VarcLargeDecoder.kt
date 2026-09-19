@@ -22,4 +22,3 @@ internal class VarcLargeDecoder : ProxyMessageDecoder<VarcLarge> {
         )
     }
 }
-

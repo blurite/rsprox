@@ -48,7 +48,13 @@ internal class Rs3LivePacketDecoder(
                 decoder.clientPacketDecoder.decode(opcode, buffer.toJagByteBuf(), session)
             }
         } catch (exception: Exception) {
-            unknown(server, opcode, name, safePayload, "${exception.javaClass.simpleName}: ${exception.message.orEmpty()}")
+            unknown(
+                server,
+                opcode,
+                name,
+                safePayload,
+                "${exception.javaClass.simpleName}: ${exception.message.orEmpty()}",
+            )
         } finally {
             buffer.release()
         }

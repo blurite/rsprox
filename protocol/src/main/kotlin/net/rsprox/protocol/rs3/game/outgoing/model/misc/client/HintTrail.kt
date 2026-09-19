@@ -14,5 +14,8 @@ public data class HintTrail(
         public val points: List<Point>,
     )
 
-    public data class Point(public val deltaX: Int, public val deltaZ: Int)
+    public data class Point(
+        public val deltaX: Int,
+        public val deltaZ: Int,
+    )
 }

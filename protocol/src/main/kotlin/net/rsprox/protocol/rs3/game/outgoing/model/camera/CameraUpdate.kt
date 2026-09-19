@@ -11,28 +11,54 @@ public data class CameraUpdate(
     public val lookPayload: Controller?,
     public val positionPayload: Controller?,
 ) : IncomingServerGameMessage {
-    public data class Vector3(public val x: Float, public val y: Float, public val z: Float)
+    public data class Vector3(
+        public val x: Float,
+        public val y: Float,
+        public val z: Float,
+    )
 
-    public data class Quaternion(public val x: Float, public val y: Float, public val z: Float, public val w: Float)
+    public data class Quaternion(
+        public val x: Float,
+        public val y: Float,
+        public val z: Float,
+        public val w: Float,
+    )
 
     public sealed interface Setting {
         public val bit: Int
 
-        public data class Vector(override val bit: Int, public val value: Vector3) : Setting
+        public data class Vector(
+            override val bit: Int,
+            public val value: Vector3,
+        ) : Setting
 
-        public data class Pair(override val bit: Int, public val first: Float, public val second: Float) : Setting
+        public data class Pair(
+            override val bit: Int,
+            public val first: Float,
+            public val second: Float,
+        ) : Setting
 
-        public data class ByteValue(override val bit: Int, public val value: Int) : Setting
+        public data class ByteValue(
+            override val bit: Int,
+            public val value: Int,
+        ) : Setting
 
-        public data class Reserved(public val value: Int) : Setting {
+        public data class Reserved(
+            public val value: Int,
+        ) : Setting {
             override val bit: Int = 7
         }
 
-        public data class Effects(public val updates: List<EffectUpdate>) : Setting {
+        public data class Effects(
+            public val updates: List<EffectUpdate>,
+        ) : Setting {
             override val bit: Int = 9
         }
 
-        public data class ShortFloat(public val parameter: Int, public val value: Float) : Setting {
+        public data class ShortFloat(
+            public val parameter: Int,
+            public val value: Float,
+        ) : Setting {
             override val bit: Int = 10
         }
 
@@ -45,7 +71,10 @@ public data class CameraUpdate(
             override val bit: Int = 12
         }
 
-        public data class FloatValue(override val bit: Int, public val value: Float) : Setting
+        public data class FloatValue(
+            override val bit: Int,
+            public val value: Float,
+        ) : Setting
     }
 
     public data class EffectUpdate(
@@ -57,13 +86,21 @@ public data class CameraUpdate(
     )
 
     public sealed interface EffectPayload {
-        public data class Axis(public val axis: Int, public val first: Float, public val second: Float) : EffectPayload
+        public data class Axis(
+            public val axis: Int,
+            public val first: Float,
+            public val second: Float,
+        ) : EffectPayload
 
-        public data class Scalar(public val value: Float) : EffectPayload
+        public data class Scalar(
+            public val value: Float,
+        ) : EffectPayload
     }
 
     public sealed interface Controller {
-        public data class Coordinate(public val value: Vector3) : Controller
+        public data class Coordinate(
+            public val value: Vector3,
+        ) : Controller
 
         public data class ActorLook(
             public val targetKind: Int,
@@ -82,9 +119,13 @@ public data class CameraUpdate(
             public val duration: Int,
         ) : Controller
 
-        public data class Rotation(public val value: Quaternion) : Controller
+        public data class Rotation(
+            public val value: Quaternion,
+        ) : Controller
 
-        public data class Path(public val spline: Spline) : Controller
+        public data class Path(
+            public val spline: Spline,
+        ) : Controller
 
         public data class Paths(
             public val subtype: Int,
@@ -93,10 +134,20 @@ public data class CameraUpdate(
         ) : Controller
     }
 
-    public data class Spline(public val pointCount: Int, public val points: List<SplinePoint>)
+    public data class Spline(
+        public val pointCount: Int,
+        public val points: List<SplinePoint>,
+    )
 
     /** Control vectors are retained as transmitted, before native tangent reflection. */
-    public data class SplinePoint(public val point: Vector3, public val control: Vector3, public val weight: Float)
+    public data class SplinePoint(
+        public val point: Vector3,
+        public val control: Vector3,
+        public val weight: Float,
+    )
 
-    public data class PathEntry(public val spline: Spline, public val factor: Float)
+    public data class PathEntry(
+        public val spline: Spline,
+        public val factor: Float,
+    )
 }

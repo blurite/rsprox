@@ -104,7 +104,10 @@ public class TextRs3NpcInfoTranscriber(
         return filters[filter]
     }
 
-    private fun Property.extBlock(info: NpcExtendedInfo, baseCoord: CoordGrid) {
+    private fun Property.extBlock(
+        info: NpcExtendedInfo,
+        baseCoord: CoordGrid,
+    ) {
         when (info) {
             is NpcMask ->
                 appendNpcMask(

@@ -20,7 +20,9 @@ public data class Rs3Js5ConnectionInfo(
 }
 
 /** Sequential, bounded JS5 transport for bootstrap downloads, never called on the game event loop. */
-internal class Rs3Js5Connection(private val info: Rs3Js5ConnectionInfo) : AutoCloseable {
+internal class Rs3Js5Connection(
+    private val info: Rs3Js5ConnectionInfo,
+) : AutoCloseable {
     private var socket: Socket? = null
 
     private fun connect(): Socket {
@@ -43,7 +45,16 @@ internal class Rs3Js5Connection(private val info: Rs3Js5ConnectionInfo) : AutoCl
             val status = DataInputStream(connection.getInputStream()).readUnsignedByte()
             if (status != 0) throw IOException("RS3 JS5 handshake rejected: $status")
             // RS3 control and request records are padded to ten bytes.
-            output.write(ByteBuffer.allocate(10).put(6).put(0).put(0).put(5).putInt(info.revision).array())
+            output.write(
+                ByteBuffer
+                    .allocate(10)
+                    .put(6)
+                    .put(0)
+                    .put(0)
+                    .put(5)
+                    .putInt(info.revision)
+                    .array(),
+            )
             output.write(ByteBuffer.allocate(10).put(3).array())
             output.flush()
             socket = connection
@@ -54,7 +65,10 @@ internal class Rs3Js5Connection(private val info: Rs3Js5ConnectionInfo) : AutoCl
         }
     }
 
-    fun get(archive: Int, group: Int): ByteArray {
+    fun get(
+        archive: Int,
+        group: Int,
+    ): ByteArray {
         require(archive in 0..255 && group >= 0)
         repeat(2) { attempt ->
             try {
@@ -67,11 +81,23 @@ internal class Rs3Js5Connection(private val info: Rs3Js5ConnectionInfo) : AutoCl
         error("Unreachable")
     }
 
-    private fun request(connection: Socket, archive: Int, group: Int): ByteArray {
+    private fun request(
+        connection: Socket,
+        archive: Int,
+        group: Int,
+    ): ByteArray {
         val output = connection.getOutputStream()
-        output.write(ByteBuffer.allocate(10).put(1).put(archive.toByte()).putInt(group).array())
+        output.write(
+            ByteBuffer
+                .allocate(10)
+                .put(1)
+                .put(archive.toByte())
+                .putInt(group)
+                .array(),
+        )
         output.flush()
         val input = DataInputStream(connection.getInputStream())
+
         fun header() {
             val receivedArchive = input.readUnsignedByte()
             val receivedGroup = input.readInt() and Int.MAX_VALUE

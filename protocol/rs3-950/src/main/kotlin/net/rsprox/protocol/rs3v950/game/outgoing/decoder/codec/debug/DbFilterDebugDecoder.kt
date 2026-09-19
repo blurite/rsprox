@@ -14,14 +14,20 @@ import net.rsprox.protocol.session.Session
 internal class DbFilterDebugDecoder : ProxyMessageDecoder<DbFilterDebug> {
     override val prot: ClientProt = GameServerProt.DBFILTER_DEBUG
 
-    override fun decode(buffer: JagByteBuf, session: Session): DbFilterDebug {
+    override fun decode(
+        buffer: JagByteBuf,
+        session: Session,
+    ): DbFilterDebug {
         val version = buffer.g1()
         val titleMarker = buffer.g1()
         val title = if (titleMarker == 0) buffer.readNativeString() else null
         return DbFilterDebug(version, titleMarker, title, readFilter(buffer, 0))
     }
 
-    private fun readFilter(buffer: JagByteBuf, depth: Int): Filter {
+    private fun readFilter(
+        buffer: JagByteBuf,
+        depth: Int,
+    ): Filter {
         require(depth < 128) { "DB filter nesting exceeds the proxy safety limit (128)" }
         return when (val type = buffer.gSmart1or2()) {
             1 -> {
@@ -46,7 +52,12 @@ internal class DbFilterDebugDecoder : ProxyMessageDecoder<DbFilterDebug> {
                 val operandVersion = buffer.g1()
                 if (type == 5) {
                     Filter.CompareField(
-                        version, valueType, fieldId, operator, operandVersion, readValue(buffer, valueType),
+                        version,
+                        valueType,
+                        fieldId,
+                        operator,
+                        operandVersion,
+                        readValue(buffer, valueType),
                     )
                 } else {
                     Filter.CompareFieldInteger(version, valueType, fieldId, operator, operandVersion, buffer.g4())
@@ -71,7 +82,10 @@ internal class DbFilterDebugDecoder : ProxyMessageDecoder<DbFilterDebug> {
         }
     }
 
-    private fun readChildren(buffer: JagByteBuf, depth: Int): List<Filter> {
+    private fun readChildren(
+        buffer: JagByteBuf,
+        depth: Int,
+    ): List<Filter> {
         val count = buffer.gSmart1or2()
         require(count <= buffer.readableBytes() / 2) { "Truncated DB child list" }
         return List(count) { readFilter(buffer, depth + 1) }
@@ -86,7 +100,10 @@ internal class DbFilterDebugDecoder : ProxyMessageDecoder<DbFilterDebug> {
         return RowSet(version, tableId, if (count == -1) null else List(count) { buffer.g4() })
     }
 
-    private fun readValue(buffer: JagByteBuf, type: Int): Value =
+    private fun readValue(
+        buffer: JagByteBuf,
+        type: Int,
+    ): Value =
         when (type) {
             0 -> Value.IntegerValue(buffer.g4())
             1 -> Value.LongValue(buffer.g8())

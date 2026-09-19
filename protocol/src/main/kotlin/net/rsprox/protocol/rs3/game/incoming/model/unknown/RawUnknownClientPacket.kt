@@ -8,6 +8,7 @@ public class RawUnknownClientPacket(
     override val name: String,
     override val bytes: ByteArray,
     public val decodeFailure: String? = null,
-) : IncomingMessage, UnknownClientPacket {
+) : IncomingMessage,
+    UnknownClientPacket {
     override fun toString(): String = "RawUnknownClientPacket(opcode=$opcode, name=$name, ${bytes.size}b)"
 }

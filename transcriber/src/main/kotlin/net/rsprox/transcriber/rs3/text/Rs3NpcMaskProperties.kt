@@ -93,7 +93,14 @@ internal fun Property.appendNpcMask(
                     Rs3NpcUpdateMaskKey.COMBAT_LEVEL_CHANGE -> int("level", mask.values.single())
                     Rs3NpcUpdateMaskKey.DISABLED_OPS -> {
                         // Set bits hide options; preserve all eight wire bits, including unknown upper bits.
-                        any("opflags", "0b" + mask.values.single().toString(2).padStart(8, '0'))
+                        any(
+                            "opflags",
+                            "0b" +
+                                mask.values
+                                    .single()
+                                    .toString(2)
+                                    .padStart(8, '0'),
+                        )
                     }
                     Rs3NpcUpdateMaskKey.FACE_TILE -> {
                         val (x2, z2) = mask.values

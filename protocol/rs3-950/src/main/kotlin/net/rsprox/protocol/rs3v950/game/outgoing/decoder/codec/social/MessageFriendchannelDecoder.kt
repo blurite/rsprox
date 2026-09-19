@@ -15,7 +15,10 @@ internal class MessageFriendchannelDecoder(
 ) : ProxyMessageDecoder<MessageFriendchannel> {
     override val prot: ClientProt = GameServerProt.MESSAGE_FRIENDCHANNEL
 
-    override fun decode(buffer: JagByteBuf, session: Session): MessageFriendchannel {
+    override fun decode(
+        buffer: JagByteBuf,
+        session: Session,
+    ): MessageFriendchannel {
         val alternateSenderFlag = buffer.g1()
         val sender = buffer.readNativeString()
         val alternateSender = if (alternateSenderFlag == 1) buffer.readNativeString() else null

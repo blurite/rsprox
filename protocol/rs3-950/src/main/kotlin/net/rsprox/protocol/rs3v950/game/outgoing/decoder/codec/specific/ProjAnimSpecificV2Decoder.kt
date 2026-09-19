@@ -11,7 +11,10 @@ import net.rsprox.protocol.session.Session
 internal class ProjAnimSpecificV2Decoder : ProxyMessageDecoder<ProjAnimSpecificV2> {
     override val prot: ClientProt = GameServerProt.PROJANIM_SPECIFIC_V2
 
-    override fun decode(buffer: JagByteBuf, session: Session): ProjAnimSpecificV2 {
+    override fun decode(
+        buffer: JagByteBuf,
+        session: Session,
+    ): ProjAnimSpecificV2 {
         val startX = buffer.g2()
         val source = buffer.g3Alt1()
         val endHeight = buffer.g2sAlt2()

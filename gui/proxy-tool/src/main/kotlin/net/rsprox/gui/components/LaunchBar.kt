@@ -162,6 +162,7 @@ public class LaunchBar(
             }
 
         val proxyTargetLabel = createFieldLabel("Proxy Target")
+
         fun updateProxyTargetRowState() {
             val isRs3 = clientTypeDropdown.selectedItem == SessionType.RS3
             val disabledReason =

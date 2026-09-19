@@ -31,7 +31,10 @@ public object ClientScriptTypes {
         return inferred
     }
 
-    private fun isCompatible(char: Char, value: Any): Boolean {
+    private fun isCompatible(
+        char: Char,
+        value: Any,
+    ): Boolean {
         if (char == 'W') return value is IntArray
         if (char == 'X') return value is Array<*> && value.all { it is String }
         return when (typesByChar[char]?.baseVarType) {

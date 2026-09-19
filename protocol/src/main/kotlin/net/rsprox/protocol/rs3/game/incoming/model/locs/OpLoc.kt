@@ -60,6 +60,5 @@ public class OpLoc private constructor(
         return result
     }
 
-    override fun toString(): String =
-        "OpLoc(id=$id, x=$x, y=$y, op=$op, run=$run)"
+    override fun toString(): String = "OpLoc(id=$id, x=$x, y=$y, op=$op, run=$run)"
 }

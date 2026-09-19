@@ -8,6 +8,7 @@ public class RawUnknownServerPacket(
     override val name: String,
     override val bytes: ByteArray,
     public val decodeFailure: String? = null,
-) : IncomingServerGameMessage, UnknownServerPacket {
+) : IncomingServerGameMessage,
+    UnknownServerPacket {
     override fun toString(): String = "RawUnknownServerPacket(opcode=$opcode, name=$name, ${bytes.size}b)"
 }

@@ -2,7 +2,6 @@ package net.rsprox.transcriber.rs3.text
 
 import net.rsprox.cache.api.rs3.Rs3VariableDomain
 import net.rsprox.protocol.common.CoordGrid
-
 import net.rsprox.protocol.game.incoming.model.unknown.UnknownClientPacket
 import net.rsprox.protocol.rs3.game.incoming.model.account.AddNewEmailAddress
 import net.rsprox.protocol.rs3.game.incoming.model.account.ChangeEmailAddress
@@ -84,8 +83,6 @@ import net.rsprox.protocol.rs3.game.incoming.model.social.IgnoreListAdd
 import net.rsprox.protocol.rs3.game.incoming.model.social.IgnoreListDel
 import net.rsprox.protocol.rs3.game.incoming.model.social.IgnoreSetNotes
 import net.rsprox.protocol.rs3.game.incoming.model.unknown.RawUnknownClientPacket
-import net.rsprox.transcriber.rs3.interfaces.Rs3ClientPacketTranscriber
-import net.rsprox.transcriber.rs3.state.Rs3SessionState
 import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.filters.PropertyFilter
 import net.rsprox.shared.filters.PropertyFilterSet
@@ -98,7 +95,6 @@ import net.rsprox.shared.property.boolean
 import net.rsprox.shared.property.filteredBoolean
 import net.rsprox.shared.property.filteredInt
 import net.rsprox.shared.property.filteredScriptVarType
-import net.rsprox.shared.property.formattedInt
 import net.rsprox.shared.property.group
 import net.rsprox.shared.property.identifiedPlayer
 import net.rsprox.shared.property.int
@@ -114,6 +110,8 @@ import net.rsprox.shared.property.unidentifiedPlayer
 import net.rsprox.shared.settings.Setting
 import net.rsprox.shared.settings.SettingSet
 import net.rsprox.shared.settings.SettingSetStore
+import net.rsprox.transcriber.rs3.interfaces.Rs3ClientPacketTranscriber
+import net.rsprox.transcriber.rs3.state.Rs3SessionState
 
 public class TextRs3ClientPacketTranscriber(
     private val sessionState: Rs3SessionState,
@@ -130,9 +128,10 @@ public class TextRs3ClientPacketTranscriber(
     ): ScriptVarTypeProperty<*> = coordinates.append(this, level, x, z, name)
 
     private val root: RootProperty
-        get() = checkNotNull(sessionState.root.lastOrNull()) {
-            "No active root - onTranscribeStart() must run before dispatching to a transcriber method"
-        }
+        get() =
+            checkNotNull(sessionState.root.lastOrNull()) {
+                "No active root - onTranscribeStart() must run before dispatching to a transcriber method"
+            }
     private val filters: PropertyFilterSet
         get() = filterSetStore.getActive()
     private val settings: SettingSet
@@ -233,7 +232,10 @@ public class TextRs3ClientPacketTranscriber(
         root.int("mode", message.mode)
     }
 
-    private fun Property.movementCoordinate(x: Int, z: Int) {
+    private fun Property.movementCoordinate(
+        x: Int,
+        z: Int,
+    ) {
         val level = sessionState.getPlayerOrNull(sessionState.localPlayerIndex)?.level
         if (level != null) {
             coordGrid(sessionState.level(), x, z)

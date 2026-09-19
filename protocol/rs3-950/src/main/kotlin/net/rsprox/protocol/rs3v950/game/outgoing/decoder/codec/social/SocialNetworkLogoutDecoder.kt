@@ -14,7 +14,10 @@ internal class SocialNetworkLogoutDecoder(
 ) : ProxyMessageDecoder<SocialNetworkLogout> {
     override val prot: ClientProt = GameServerProt.SOCIAL_NETWORK_LOGOUT
 
-    override fun decode(buffer: JagByteBuf, session: Session): SocialNetworkLogout {
+    override fun decode(
+        buffer: JagByteBuf,
+        session: Session,
+    ): SocialNetworkLogout {
         val activeCipher = checkNotNull(cipher()) { "SOCIAL_NETWORK_LOGOUT requires the inbound opcode cipher" }
         return SocialNetworkLogout(buffer.readNativeIsaacString(activeCipher, buffer.readableBytes().toLong()))
     }

@@ -28,7 +28,10 @@ internal class EnvironmentOverrideDecoder : ProxyMessageDecoder<EnvironmentOverr
                     17, 18, 19 -> EnvironmentOverride.WordScalar(bit, buffer.g2(), Float.fromBits(buffer.g4()))
                     4, 32, 33, 34 ->
                         EnvironmentOverride.VectorValue(
-                            bit, Float.fromBits(buffer.g4()), Float.fromBits(buffer.g4()), Float.fromBits(buffer.g4()),
+                            bit,
+                            Float.fromBits(buffer.g4()),
+                            Float.fromBits(buffer.g4()),
+                            Float.fromBits(buffer.g4()),
                         )
                     else -> EnvironmentOverride.ScalarValue(bit, Float.fromBits(buffer.g4()))
                 }

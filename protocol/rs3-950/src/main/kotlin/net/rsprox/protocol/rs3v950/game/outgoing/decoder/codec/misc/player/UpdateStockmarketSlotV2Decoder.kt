@@ -42,9 +42,19 @@ internal class UpdateStockmarketSlotV2Decoder : ProxyMessageDecoder<UpdateStockm
             }
         val reserved = List(reservedCount) { buffer.g1() }
         return UpdateStockmarketSlotV2(
-            group, slot, state,
+            group,
+            slot,
+            state,
             UpdateStockmarketSlotV2.Offer(
-                version, updatedState, objectId, price, quantity, completedQuantity, total, extensionLength, extension,
+                version,
+                updatedState,
+                objectId,
+                price,
+                quantity,
+                completedQuantity,
+                total,
+                extensionLength,
+                extension,
             ),
             reserved,
         )

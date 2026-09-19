@@ -72,12 +72,13 @@ public class Rs3SessionTracker(
                         val name = sessionState.getPlayerOrNull(index)?.name
                         sessionState.overridePlayer(Rs3Player(index, name, update.level, update.x, update.z))
                     }
-                    val masks = when (update) {
-                        is PlayerUpdateType.LowResolutionToHighResolution -> update.extendedInfo
-                        is PlayerUpdateType.HighResolutionMovement -> update.extendedInfo
-                        is PlayerUpdateType.HighResolutionIdle -> update.extendedInfo
-                        else -> emptyList()
-                    }
+                    val masks =
+                        when (update) {
+                            is PlayerUpdateType.LowResolutionToHighResolution -> update.extendedInfo
+                            is PlayerUpdateType.HighResolutionMovement -> update.extendedInfo
+                            is PlayerUpdateType.HighResolutionIdle -> update.extendedInfo
+                            else -> emptyList()
+                        }
                     val appearance = masks.filterIsInstance<PlayerExtendedInfo.Appearance>().lastOrNull()
                     if (appearance != null) {
                         val player = sessionState.getPlayerOrNull(index) ?: Rs3Player(index)
@@ -86,17 +87,24 @@ public class Rs3SessionTracker(
                 }
             }
             is RebuildNormal, is RebuildRegion, is Reconnect -> {
-                val init = when (message) {
-                    is RebuildNormal -> message.playerInfoInit
-                    is RebuildRegion -> message.playerInfoInit
-                    is Reconnect -> message.playerInfoInit
-                    else -> null
-                }
+                val init =
+                    when (message) {
+                        is RebuildNormal -> message.playerInfoInit
+                        is RebuildRegion -> message.playerInfoInit
+                        is Reconnect -> message.playerInfoInit
+                        else -> null
+                    }
                 if (init != null) {
                     sessionState.clearPlayers()
                     sessionState.localPlayerIndex = init.localPlayerIndex
                     sessionState.overridePlayer(
-                        Rs3Player(init.localPlayerIndex, null, init.localPlayerLevel, init.localPlayerX, init.localPlayerZ),
+                        Rs3Player(
+                            init.localPlayerIndex,
+                            null,
+                            init.localPlayerLevel,
+                            init.localPlayerX,
+                            init.localPlayerZ,
+                        ),
                     )
                 }
                 when (message) {
@@ -173,14 +181,18 @@ public class Rs3SessionTracker(
                             val world = sessionState.getActiveWorld()
                             if (update is NpcUpdateType.Active) {
                                 world.getNpcOrNull(index)?.let { npc ->
-                                    world.updateNpc(index, npc.copy(coord = CoordGrid(update.level, update.x, update.z)))
+                                    world.updateNpc(
+                                        index,
+                                        npc.copy(coord = CoordGrid(update.level, update.x, update.z)),
+                                    )
                                 }
                             }
-                            val masks = when (update) {
-                                is NpcUpdateType.Active -> update.extendedInfo
-                                is NpcUpdateType.Add -> update.extendedInfo
-                                else -> error("Not an active NPC update")
-                            }
+                            val masks =
+                                when (update) {
+                                    is NpcUpdateType.Active -> update.extendedInfo
+                                    is NpcUpdateType.Add -> update.extendedInfo
+                                    else -> error("Not an active NPC update")
+                                }
                             masks.filterIsInstance<NpcMask.Transformation>().lastOrNull()?.let {
                                 val npc = world.getNpcOrNull(index) ?: Rs3Npc(index, it.id)
                                 world.updateNpc(index, npc.copy(id = it.id, name = null))

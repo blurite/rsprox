@@ -15,7 +15,10 @@ internal class MessageClanchannelDecoder(
 ) : ProxyMessageDecoder<MessageClanchannel> {
     override val prot: ClientProt = GameServerProt.MESSAGE_CLANCHANNEL
 
-    override fun decode(buffer: JagByteBuf, session: Session): MessageClanchannel {
+    override fun decode(
+        buffer: JagByteBuf,
+        session: Session,
+    ): MessageClanchannel {
         val channel = buffer.g1s()
         val sender = buffer.readNativeString()
         val messageWorld = buffer.g2()

@@ -1,6 +1,9 @@
 package net.rsprox.protocol.rs3.game.outgoing.model.info.playerinfo.util
 
-public enum class Rs3PlayerUpdateMaskKey(public val bit: Int, public val order: Int) {
+public enum class Rs3PlayerUpdateMaskKey(
+    public val bit: Int,
+    public val order: Int,
+) {
     SPOTANIM(26, 1),
     UNUSED_MASK_8(8, 2),
     UNUSED_MASK_20(20, 3),

@@ -9,9 +9,18 @@ public data class DbFilterDebug(
     public val filter: Filter,
 ) : IncomingServerGameMessage {
     public sealed interface Value {
-        public data class IntegerValue(public val value: Int) : Value
-        public data class LongValue(public val value: Long) : Value
-        public data class StringValue(public val value: String) : Value
+        public data class IntegerValue(
+            public val value: Int,
+        ) : Value
+
+        public data class LongValue(
+            public val value: Long,
+        ) : Value
+
+        public data class StringValue(
+            public val value: String,
+        ) : Value
+
         public data class Coordinate(
             public val plane: Int,
             public val x: Int,
@@ -35,7 +44,10 @@ public data class DbFilterDebug(
             public val operator: Int,
         ) : Filter
 
-        public data class Unary(public val version: Int, public val child: Filter) : Filter
+        public data class Unary(
+            public val version: Int,
+            public val child: Filter,
+        ) : Filter
 
         public data class Compound(
             public val type: Int,

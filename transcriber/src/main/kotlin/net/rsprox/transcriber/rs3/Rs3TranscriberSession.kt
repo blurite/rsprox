@@ -10,7 +10,10 @@ public class Rs3TranscriberSession(
     private val sessionTracker: Rs3SessionTracker,
     public val sessionState: Rs3SessionState,
 ) {
-    public fun onClientProt(prot: ClientProt, message: IncomingMessage) {
+    public fun onClientProt(
+        prot: ClientProt,
+        message: IncomingMessage,
+    ) {
         sessionTracker.onClientPacket(message, prot)
         sessionTracker.beforeTranscribe(message)
         try {
@@ -20,7 +23,10 @@ public class Rs3TranscriberSession(
         }
     }
 
-    public fun onServerPacket(prot: ClientProt, message: IncomingMessage) {
+    public fun onServerPacket(
+        prot: ClientProt,
+        message: IncomingMessage,
+    ) {
         sessionTracker.onServerPacket(message, prot)
         sessionTracker.beforeTranscribe(message)
         try {

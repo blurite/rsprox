@@ -15,7 +15,10 @@ internal class MessagePrivateDecoder(
 ) : ProxyMessageDecoder<MessagePrivate> {
     override val prot: ClientProt = GameServerProt.MESSAGE_PRIVATE
 
-    override fun decode(buffer: JagByteBuf, session: Session): MessagePrivate {
+    override fun decode(
+        buffer: JagByteBuf,
+        session: Session,
+    ): MessagePrivate {
         val alternateSenderFlag = buffer.g1()
         val sender = buffer.readNativeString()
         val alternateSender = if (alternateSenderFlag == 1) buffer.readNativeString() else null

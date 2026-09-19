@@ -107,11 +107,15 @@ public class RSProxArchiveClientScriptIndex(
 
     public companion object {
         /** RS3 live snapshots and recording headers contain the uncompressed master index. */
-        public fun forRuneScape(revision: Int, masterIndex: ByteArray): RSProxArchiveClientScriptIndex {
+        public fun forRuneScape(
+            revision: Int,
+            masterIndex: ByteArray,
+        ): RSProxArchiveClientScriptIndex {
             require(masterIndex.isNotEmpty()) { "Missing RS3 master index for clientscript metadata" }
             // OpenRS2/RSProx Archive identify the complete, uncompressed JS5 container (type + length + data).
             val container =
-                ByteBuffer.allocate(5 + masterIndex.size)
+                ByteBuffer
+                    .allocate(5 + masterIndex.size)
                     .put(0.toByte())
                     .putInt(masterIndex.size)
                     .put(masterIndex)

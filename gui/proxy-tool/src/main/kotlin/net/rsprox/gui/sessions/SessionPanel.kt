@@ -175,7 +175,14 @@ public class SessionPanel(
 
                 // Replace the stream node directly instead of purging it one by one
                 val oldHeader = streamNode.header
-                val streamNode = if (oldHeader != null) StreamTreeTableNode(oldHeader) else StreamTreeTableNode(streamNode.label ?: "")
+                val streamNode =
+                    if (oldHeader !=
+                        null
+                    ) {
+                        StreamTreeTableNode(oldHeader)
+                    } else {
+                        StreamTreeTableNode(streamNode.label ?: "")
+                    }
                 addNodeAndExpand(streamNode, root, root.childCount)
                 this@SessionPanel.streamNode = streamNode
             }
@@ -228,7 +235,8 @@ public class SessionPanel(
                                         val name = status?.name.orEmpty()
                                         val identityChanged =
                                             metrics.username != name ||
-                                                metrics.userId != state.userId || metrics.userHash != state.userHash
+                                                metrics.userId != state.userId ||
+                                                metrics.userHash != state.userHash
                                         rs3Connected = status != null
                                         metrics.username = status?.name?.ifBlank { "Connected" }.orEmpty()
                                         metrics.userId = state.userId
@@ -243,8 +251,10 @@ public class SessionPanel(
                                             state.incomingBytesPerSecond.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
                                         metrics.bandOutPerSec =
                                             state.outgoingBytesPerSecond.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
-                                        if (identityChanged && name.isNotBlank() &&
-                                            state.userId != -1L && state.userHash != -1L
+                                        if (identityChanged &&
+                                            name.isNotBlank() &&
+                                            state.userId != -1L &&
+                                            state.userHash != -1L
                                         ) {
                                             App.service.updateCredentials(name, state.userId, state.userHash)
                                         }
@@ -271,7 +281,7 @@ public class SessionPanel(
                                 val handle =
                                     App.service.launchRs3Client(
                                         rs3SessionMonitor,
-                                        character
+                                        character,
                                     )
                                 portNumber = handle.port
                             }

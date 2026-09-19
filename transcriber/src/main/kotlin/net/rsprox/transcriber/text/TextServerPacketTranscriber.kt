@@ -105,8 +105,8 @@ import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialFoll
 import net.rsprox.protocol.game.outgoing.model.zone.payload.*
 import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildArea
 import net.rsprox.protocol.reflection.ReflectionCheck
-import net.rsprox.shared.clientscript.ClientScriptTypes
 import net.rsprox.shared.ScriptVarType
+import net.rsprox.shared.clientscript.ClientScriptTypes
 import net.rsprox.shared.filters.PropertyFilter
 import net.rsprox.shared.filters.PropertyFilterSet
 import net.rsprox.shared.filters.PropertyFilterSetStore

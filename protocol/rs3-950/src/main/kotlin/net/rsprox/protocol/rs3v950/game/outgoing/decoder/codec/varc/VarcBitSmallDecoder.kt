@@ -22,4 +22,3 @@ internal class VarcBitSmallDecoder : ProxyMessageDecoder<VarcBitSmall> {
         )
     }
 }
-

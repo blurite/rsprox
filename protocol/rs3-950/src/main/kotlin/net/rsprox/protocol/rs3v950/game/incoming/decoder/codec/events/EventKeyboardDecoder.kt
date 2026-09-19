@@ -16,9 +16,10 @@ internal class EventKeyboardDecoder(
         require(buffer.readableBytes() > 0 && buffer.readableBytes() % 4 == 0) {
             "Keyboard payload must contain complete four-byte records"
         }
-        val events = List(buffer.readableBytes() / 4) {
-            EventKeyboard.Key(buffer.g1(), buffer.g3())
-        }
+        val events =
+            List(buffer.readableBytes() / 4) {
+                EventKeyboard.Key(buffer.g1(), buffer.g3())
+            }
         return EventKeyboard(
             events,
         )

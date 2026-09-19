@@ -745,7 +745,9 @@ public class ProxyService(
         manualCacheSelector: (Js5MasterIndex) -> ReplayDiskCacheStore?,
     ): ReplaySession? {
         val binary = BinaryBlob.decode(path, filterSetStore, settingsStore)
-        require(!binary.header.isRuneScape3()) { "RS3 binary recording is supported; RS3 replay is not implemented yet." }
+        require(
+            !binary.header.isRuneScape3(),
+        ) { "RS3 binary recording is supported; RS3 replay is not implemented yet." }
         val masterIndex =
             Js5MasterIndex.trimmed(
                 binary.header.revision,
@@ -972,7 +974,9 @@ public class ProxyService(
                 val extension = if (downloaded.extension.isNotEmpty()) ".${downloaded.extension}" else ""
                 val stamp = System.currentTimeMillis()
                 val path =
-                    TEMP_CLIENTS_DIRECTORY.resolve("${downloaded.nameWithoutExtension}-rs3-$primaryPort-$stamp$extension")
+                    TEMP_CLIENTS_DIRECTORY.resolve(
+                        "${downloaded.nameWithoutExtension}-rs3-$primaryPort-$stamp$extension",
+                    )
                 downloaded.copyTo(path, overwrite = false)
                 path
             }
@@ -1003,7 +1007,8 @@ public class ProxyService(
         val cacheResolver = Rs3LiveCacheResolver(upstreamConfig.captureJs5ConnectionInfo())
         val packetDefinitions = cacheResolver.loadPacketDefinitions()
         val clientScripts =
-            RSProxArchiveClientScriptIndex.forRuneScape(targets.revision, cacheResolver.masterIndexSnapshot)
+            RSProxArchiveClientScriptIndex
+                .forRuneScape(targets.revision, cacheResolver.masterIndexSnapshot)
                 .also { it.preload() }
 
         val relayServer =
@@ -1033,7 +1038,11 @@ public class ProxyService(
             val lobby = Rs3Endpoint.Lobby(targets.lobbyId)
             val routes =
                 localPorts.routes(
-                    lease.addresses, lobby, targets.lobbyHost, targets.lobbyPort, targets.lobbyAlternatePort,
+                    lease.addresses,
+                    lobby,
+                    targets.lobbyHost,
+                    targets.lobbyPort,
+                    targets.lobbyAlternatePort,
                 )
             relayServer.registerRoutes(routes).get(20, TimeUnit.SECONDS)
             val host = lease.addresses.address(lobby).hostAddress

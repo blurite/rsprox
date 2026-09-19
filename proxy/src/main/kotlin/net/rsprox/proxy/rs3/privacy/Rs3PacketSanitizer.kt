@@ -143,7 +143,10 @@ internal class Rs3PacketSanitizer(
         }
     }
 
-    private fun sanitizeInterfaceAction(name: String, payload: ByteArray): ByteArray? {
+    private fun sanitizeInterfaceAction(
+        name: String,
+        payload: ByteArray,
+    ): ByteArray? {
         val buffer = Unpooled.wrappedBuffer(payload)
         return try {
             val input = buffer.toJagByteBuf()
@@ -185,7 +188,9 @@ internal class Rs3PacketSanitizer(
         }
     }
 
-    private class Cursor(val bytes: ByteArray) {
+    private class Cursor(
+        val bytes: ByteArray,
+    ) {
         var position = 0
             private set
         val remaining: Int
@@ -203,7 +208,10 @@ internal class Rs3PacketSanitizer(
 
         fun g2(): Int = (g1() shl 8) or g1()
 
-        fun string(mask: Boolean = false, url: Boolean = false) {
+        fun string(
+            mask: Boolean = false,
+            url: Boolean = false,
+        ) {
             val start = position
             while (g1() != 0) {
                 // Preserve native byte representation and terminators, including non-ASCII names.
@@ -226,10 +234,13 @@ internal class Rs3PacketSanitizer(
         // Preserve only an ordinary HTTP(S) origin. Paths, queries and fragments can carry tokens.
         // Userinfo, malformed URLs and other schemes are entirely masked, never passed through.
         val URL_ORIGIN = Regex("^https?://[a-z0-9.-]+(?::[0-9]+)?(?:[/?#]|$)", RegexOption.IGNORE_CASE)
+
         // Note(revision): Review protected/omitted packet names below, including new variants carrying sensitive fields.
         val OMITTED_CLIENT_PACKETS = setOf("CREATE_ACCOUNT", "CREATE_CHECK_EMAIL")
+
         // Note(revision): Verify both PIN interface ids in the cache; component ids are deliberately not restricted.
         val BANK_PIN_INTERFACES = setOf(13, 759) // bankpin_main, bankpin_numbers.
+
         // Note(revision): Verify the PIN submission packet types; new action variants must be covered here too.
         val INTERFACE_ACTION_PACKETS =
             (1..10).map { "IF_BUTTON${it}_V2" }.toSet() + "RESUME_PAUSEBUTTON"

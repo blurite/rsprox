@@ -134,7 +134,11 @@ internal class Rs3LauncherConnection private constructor(
         }
     }
 
-    private fun connect(pipe: HANDLE, process: ProcessHandle, deadline: Long) {
+    private fun connect(
+        pipe: HANDLE,
+        process: ProcessHandle,
+        deadline: Long,
+    ) {
         while (!stopped.get() && process.isAlive) {
             val connected = kernel.ConnectNamedPipe(pipe, null)
             val error = if (connected) 0 else kernel.GetLastError()
@@ -210,15 +214,22 @@ internal class Rs3LauncherConnection private constructor(
         private val random = SecureRandom()
         private val kernel = Native.load("kernel32", PipeKernel32::class.java, W32APIOptions.DEFAULT_OPTIONS)
 
-        fun open(directory: Path, javConfig: String): Rs3LauncherConnection {
+        fun open(
+            directory: Path,
+            javConfig: String,
+        ): Rs3LauncherConnection {
             val config =
-                javConfig.lineSequence()
+                javConfig
+                    .lineSequence()
                     .map { it.removePrefix("msg=") }
                     .filter { '=' in it }
                     .associate { it.substringBefore('=') to it.substringAfter('=') }
             val store = Rs3WindowStateStore.acquire(directory)
             try {
-                val id = java.lang.Long.toUnsignedString(random.nextLong().or(1), 16).uppercase()
+                val id =
+                    java.lang.Long
+                        .toUnsignedString(random.nextLong().or(1), 16)
+                        .uppercase()
                 val name = "\\\\.\\pipe\\RS2LauncherConnection_$id"
                 val inbound = createPipe("${name}_i", 1)
                 try {
@@ -239,7 +250,10 @@ internal class Rs3LauncherConnection private constructor(
             }
         }
 
-        private fun createPipe(name: String, access: Int): HANDLE {
+        private fun createPipe(
+            name: String,
+            access: Int,
+        ): HANDLE {
             // First-instance-only, nonblocking byte streams, local clients only. Never inherited by children.
             val pipe = kernel.CreateNamedPipe(name, access or 0x80000, 1 or 8, 1, 65536, 65536, 0, null)
             check(pipe != WinBase.INVALID_HANDLE_VALUE) { "Cannot create RS3 launcher pipe: ${kernel.GetLastError()}" }
@@ -252,6 +266,9 @@ internal class Rs3LauncherConnection private constructor(
 
     internal interface PipeKernel32 : Kernel32 {
         @Suppress("FunctionName")
-        fun GetNamedPipeClientProcessId(pipe: HANDLE, processId: IntByReference): Boolean
+        fun GetNamedPipeClientProcessId(
+            pipe: HANDLE,
+            processId: IntByReference,
+        ): Boolean
     }
 }

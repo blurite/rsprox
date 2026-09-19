@@ -19,16 +19,18 @@ internal class RsaModulusProcessor(
 
         // 1. Look before exponent (OSRS native client & RS3 rs2client.exe)
         val searchBeforeStart = maxOf(0, index - expectedLength - 64)
-        var sliceIndices = client.bytes.firstSliceIndices(searchBeforeStart, expectedLength) { byte ->
-            isHex(byte.toInt().toChar())
-        }
+        var sliceIndices =
+            client.bytes.firstSliceIndices(searchBeforeStart, expectedLength) { byte ->
+                isHex(byte.toInt().toChar())
+            }
 
         // 2. If not found before exponent, search after exponent (RS3 launcher)
         if (sliceIndices == null || sliceIndices.first >= index) {
             val searchAfterStart = index + exponent.size
-            sliceIndices = client.bytes.firstSliceIndices(searchAfterStart, expectedLength) { byte ->
-                isHex(byte.toInt().toChar())
-            }
+            sliceIndices =
+                client.bytes.firstSliceIndices(searchAfterStart, expectedLength) { byte ->
+                    isHex(byte.toInt().toChar())
+                }
         }
 
         if (sliceIndices == null) {

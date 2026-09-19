@@ -33,8 +33,7 @@ public class ReplaySession(
         timeline.frames
             .indexOfFirst {
                 it.direction == StreamDirection.SERVER_TO_CLIENT && it.prot.isReplayRebuildNormal()
-            }
-            .takeIf { it >= 0 }
+            }.takeIf { it >= 0 }
     }
     private val sendPingProt by lazy {
         revisionDecoder.gameServerProtProvider

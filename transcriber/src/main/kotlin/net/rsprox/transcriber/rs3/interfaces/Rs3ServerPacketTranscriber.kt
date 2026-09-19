@@ -1,122 +1,96 @@
 package net.rsprox.transcriber.rs3.interfaces
 
+import net.rsprox.protocol.game.outgoing.model.misc.client.MinimapToggle
+import net.rsprox.protocol.game.outgoing.model.misc.client.SiteSettings
+import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettingsPrivateChat
+import net.rsprox.protocol.game.outgoing.model.misc.player.RunClientScript
+import net.rsprox.protocol.game.outgoing.model.unknown.UnknownServerPacket
+import net.rsprox.protocol.rs3.game.outgoing.model.account.CreateAccountReply
+import net.rsprox.protocol.rs3.game.outgoing.model.account.CreateCheckEmailReply
+import net.rsprox.protocol.rs3.game.outgoing.model.account.CreateCheckNameReply
+import net.rsprox.protocol.rs3.game.outgoing.model.account.CreateSuggestNameError
+import net.rsprox.protocol.rs3.game.outgoing.model.account.CreateSuggestNameReply
+import net.rsprox.protocol.rs3.game.outgoing.model.account.FriendlistLoaded
+import net.rsprox.protocol.rs3.game.outgoing.model.account.UpdateDob
+import net.rsprox.protocol.rs3.game.outgoing.model.appearance.LobbyAppearance
+import net.rsprox.protocol.rs3.game.outgoing.model.appearance.PlayerSnapshot
+import net.rsprox.protocol.rs3.game.outgoing.model.camera.*
+import net.rsprox.protocol.rs3.game.outgoing.model.clan.ClanChannelDelta
+import net.rsprox.protocol.rs3.game.outgoing.model.clan.ClanChannelFull
+import net.rsprox.protocol.rs3.game.outgoing.model.clan.ClanSettingsDelta
+import net.rsprox.protocol.rs3.game.outgoing.model.clan.ClanSettingsFull
+import net.rsprox.protocol.rs3.game.outgoing.model.debug.DbFilterDebug
+import net.rsprox.protocol.rs3.game.outgoing.model.group.PlayerGroupDelta
+import net.rsprox.protocol.rs3.game.outgoing.model.group.PlayerGroupFull
+import net.rsprox.protocol.rs3.game.outgoing.model.group.PlayerGroupVarps
+import net.rsprox.protocol.rs3.game.outgoing.model.interfaces.*
+import net.rsprox.protocol.rs3.game.outgoing.model.inv.UpdateInvFull
+import net.rsprox.protocol.rs3.game.outgoing.model.inv.UpdateInvPartial
+import net.rsprox.protocol.rs3.game.outgoing.model.inv.UpdateInvStopTransmit
+import net.rsprox.protocol.rs3.game.outgoing.model.map.EnvironmentOverride
+import net.rsprox.protocol.rs3.game.outgoing.model.map.RebuildNormal
+import net.rsprox.protocol.rs3.game.outgoing.model.map.RebuildRegion
+import net.rsprox.protocol.rs3.game.outgoing.model.map.Reconnect
+import net.rsprox.protocol.rs3.game.outgoing.model.map.lighting.PointLightAttenuationFalloff
+import net.rsprox.protocol.rs3.game.outgoing.model.map.lighting.PointLightColour
+import net.rsprox.protocol.rs3.game.outgoing.model.map.lighting.PointLightEnabled
+import net.rsprox.protocol.rs3.game.outgoing.model.map.lighting.PointLightExtendAbove
+import net.rsprox.protocol.rs3.game.outgoing.model.map.lighting.PointLightExtendBelow
+import net.rsprox.protocol.rs3.game.outgoing.model.map.lighting.PointLightIntensityScale
+import net.rsprox.protocol.rs3.game.outgoing.model.map.lighting.PointLightShadow
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.ChangeLobby
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.ConsoleFeedback
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.Cutscene2dPlay
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.DebugServerTriggers
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.DoCheat
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.ExecuteClientCheat
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.HintArrow
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.HintTrail
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.Js5Reload
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.Logout
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.LogoutFull
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.LogoutTransfer
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.NoTimeout
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.ResetAnims
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.SendPing
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.SetDrawOrder
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.ShowFaceHere
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.StoreReset
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.StoreServerpermVarcsAck
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.SyncClock
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.TickEnd
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.TriggerOnDialogAbort
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.Unnamed1
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.Unnamed2
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.UpdateRebootTimer
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.UpdateUid192
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.player.*
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.player.ClearPlayerSnapshot
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.player.SetMapFlag
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.player.SetMoveAction
+import net.rsprox.protocol.rs3.game.outgoing.model.misc.player.UpdateStockmarketSlotV2
+import net.rsprox.protocol.rs3.game.outgoing.model.selection.LocSelectAdd
+import net.rsprox.protocol.rs3.game.outgoing.model.selection.LocSelectClear
+import net.rsprox.protocol.rs3.game.outgoing.model.selection.LocSelectConfigure
+import net.rsprox.protocol.rs3.game.outgoing.model.selection.SetLocOpOverride
+import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageClanchannel
+import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageClanchannelSystem
+import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageFriendchannel
+import net.rsprox.protocol.rs3.game.outgoing.model.social.MessagePlayerGroup
+import net.rsprox.protocol.rs3.game.outgoing.model.social.MessagePrivate
+import net.rsprox.protocol.rs3.game.outgoing.model.social.MessagePrivateEcho
+import net.rsprox.protocol.rs3.game.outgoing.model.social.MessagePublic
 import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatClanchannel
 import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatFriendchat
 import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatPlayerGroup
 import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatPrivate
 import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatPrivateEcho
-import net.rsprox.protocol.rs3.game.outgoing.model.varclan.Varclan
-
-import net.rsprox.protocol.rs3.game.outgoing.model.appearance.LobbyAppearance
-import net.rsprox.protocol.rs3.game.outgoing.model.appearance.PlayerSnapshot
-
-import net.rsprox.protocol.rs3.game.outgoing.model.social.MessagePublic
-import net.rsprox.protocol.rs3.game.outgoing.model.group.PlayerGroupFull
-import net.rsprox.protocol.rs3.game.outgoing.model.group.PlayerGroupDelta
-import net.rsprox.protocol.rs3.game.outgoing.model.group.PlayerGroupVarps
-import net.rsprox.protocol.rs3.game.outgoing.model.social.MessagePrivateEcho
-import net.rsprox.protocol.rs3.game.outgoing.model.social.MessagePrivate
-import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageClanchannel
-import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageFriendchannel
-import net.rsprox.protocol.rs3.game.outgoing.model.social.MessagePlayerGroup
-import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageClanchannelSystem
-import net.rsprox.protocol.rs3.game.outgoing.model.debug.DbFilterDebug
-import net.rsprox.protocol.rs3.game.outgoing.model.social.UrlOpen
 import net.rsprox.protocol.rs3.game.outgoing.model.social.SocialNetworkLogout
-import net.rsprox.protocol.game.outgoing.model.misc.client.SiteSettings
-import net.rsprox.protocol.rs3.game.outgoing.model.world.WorldlistFetchReply
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.Logout
-import net.rsprox.protocol.rs3.game.outgoing.model.account.FriendlistLoaded
-import net.rsprox.protocol.rs3.game.outgoing.model.varclan.VarclanEnable
-import net.rsprox.protocol.rs3.game.outgoing.model.varclan.VarclanDisable
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.ResetAnims
-import net.rsprox.protocol.rs3.game.outgoing.model.selection.LocSelectClear
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.StoreServerpermVarcsAck
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.Js5Reload
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.StoreReset
-import net.rsprox.protocol.rs3.game.outgoing.model.account.CreateCheckNameReply
-import net.rsprox.protocol.rs3.game.outgoing.model.account.CreateCheckEmailReply
-import net.rsprox.protocol.rs3.game.outgoing.model.account.CreateAccountReply
-import net.rsprox.protocol.rs3.game.outgoing.model.account.CreateSuggestNameError
-import net.rsprox.protocol.rs3.game.outgoing.model.account.UpdateDob
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.ExecuteClientCheat
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.player.ClearPlayerSnapshot
-import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryGridAddColumn
-import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryGridRemoveRow
-import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryGridSetRowPinned
-import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryGridMoveColumn
-import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryGridAddGroup
-import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryGridMoveRow
-import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryGridAddRow
-import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryClearGridValue
-import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryGridRemoveGroup
-import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryGridRemoveColumn
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.SendPing
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.UpdateUid192
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.player.SetMapFlag
-import net.rsprox.protocol.rs3.game.outgoing.model.selection.LocSelectConfigure
-import net.rsprox.protocol.rs3.game.outgoing.model.specific.LocAnimSpecific
-import net.rsprox.protocol.rs3.game.outgoing.model.specific.NpcAnimSpecific
-import net.rsprox.protocol.rs3.game.outgoing.model.specific.PlayerAnimSpecific
-import net.rsprox.protocol.rs3.game.outgoing.model.specific.NpcHeadiconSpecific
-import net.rsprox.protocol.rs3.game.outgoing.model.specific.SpotanimSpecific
-import net.rsprox.protocol.rs3.game.outgoing.model.specific.SpotanimSpecificV2
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.player.SetMoveAction
-import net.rsprox.protocol.rs3.game.outgoing.model.account.CreateSuggestNameReply
-import net.rsprox.protocol.rs3.game.outgoing.model.specific.NpcSaySpecific
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.DoCheat
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.LogoutTransfer
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.ChangeLobby
-import net.rsprox.protocol.rs3.game.outgoing.model.selection.SetLocOpOverride
-import net.rsprox.protocol.rs3.game.outgoing.model.specific.ProjAnimSpecific
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.DebugServerTriggers
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.Unnamed1
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.Unnamed2
-import net.rsprox.protocol.rs3.game.outgoing.model.social.UpdateFriendlist
-import net.rsprox.protocol.rs3.game.outgoing.model.social.UpdateIgnorelist
 import net.rsprox.protocol.rs3.game.outgoing.model.social.UpdateFriendchatChannelFull
 import net.rsprox.protocol.rs3.game.outgoing.model.social.UpdateFriendchatChannelSingleUser
-import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryGridValuesDelta
-import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryGridFull
-import net.rsprox.protocol.rs3.game.outgoing.model.selection.LocSelectAdd
-import net.rsprox.protocol.rs3.game.outgoing.model.map.RebuildRegion
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.ConsoleFeedback
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.player.UpdateStockmarketSlotV2
-import net.rsprox.protocol.rs3.game.outgoing.model.map.EnvironmentOverride
-import net.rsprox.protocol.rs3.game.outgoing.model.clan.ClanChannelFull
-import net.rsprox.protocol.rs3.game.outgoing.model.clan.ClanChannelDelta
-import net.rsprox.protocol.rs3.game.outgoing.model.clan.ClanSettingsFull
-import net.rsprox.protocol.rs3.game.outgoing.model.clan.ClanSettingsDelta
-import net.rsprox.protocol.game.outgoing.model.misc.client.MinimapToggle
-import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettingsPrivateChat
-import net.rsprox.protocol.game.outgoing.model.misc.player.RunClientScript
-import net.rsprox.protocol.game.outgoing.model.unknown.UnknownServerPacket
-import net.rsprox.protocol.rs3.game.outgoing.model.camera.*
-import net.rsprox.protocol.rs3.game.outgoing.model.interfaces.*
-import net.rsprox.protocol.rs3.game.outgoing.model.inv.UpdateInvFull
-import net.rsprox.protocol.rs3.game.outgoing.model.inv.UpdateInvPartial
-import net.rsprox.protocol.rs3.game.outgoing.model.inv.UpdateInvStopTransmit
-import net.rsprox.protocol.rs3.game.outgoing.model.map.RebuildNormal
-import net.rsprox.protocol.rs3.game.outgoing.model.map.Reconnect
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.SyncClock
-import net.rsprox.protocol.rs3.game.outgoing.model.map.lighting.PointLightExtendAbove
-import net.rsprox.protocol.rs3.game.outgoing.model.map.lighting.PointLightExtendBelow
-import net.rsprox.protocol.rs3.game.outgoing.model.map.lighting.PointLightAttenuationFalloff
-import net.rsprox.protocol.rs3.game.outgoing.model.map.lighting.PointLightIntensityScale
-import net.rsprox.protocol.rs3.game.outgoing.model.map.lighting.PointLightColour
-import net.rsprox.protocol.rs3.game.outgoing.model.map.lighting.PointLightEnabled
-import net.rsprox.protocol.rs3.game.outgoing.model.map.lighting.PointLightShadow
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.Cutscene2dPlay
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.HintArrow
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.HintTrail
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.LogoutFull
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.NoTimeout
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.SetDrawOrder
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.ShowFaceHere
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.TickEnd
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.TriggerOnDialogAbort
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.UpdateRebootTimer
-import net.rsprox.protocol.rs3.game.outgoing.model.misc.player.*
+import net.rsprox.protocol.rs3.game.outgoing.model.social.UpdateFriendlist
+import net.rsprox.protocol.rs3.game.outgoing.model.social.UpdateIgnorelist
+import net.rsprox.protocol.rs3.game.outgoing.model.social.UrlOpen
 import net.rsprox.protocol.rs3.game.outgoing.model.sound.MidiJingle
 import net.rsprox.protocol.rs3.game.outgoing.model.sound.MidiSong
 import net.rsprox.protocol.rs3.game.outgoing.model.sound.MidiSongStop
@@ -132,14 +106,38 @@ import net.rsprox.protocol.rs3.game.outgoing.model.sound.VorbisSoundGroupStart
 import net.rsprox.protocol.rs3.game.outgoing.model.sound.VorbisSoundGroupStop
 import net.rsprox.protocol.rs3.game.outgoing.model.sound.VorbisSpeechSound
 import net.rsprox.protocol.rs3.game.outgoing.model.sound.VorbisSpeechStop
+import net.rsprox.protocol.rs3.game.outgoing.model.specific.LocAnimSpecific
+import net.rsprox.protocol.rs3.game.outgoing.model.specific.NpcAnimSpecific
+import net.rsprox.protocol.rs3.game.outgoing.model.specific.NpcHeadiconSpecific
+import net.rsprox.protocol.rs3.game.outgoing.model.specific.NpcSaySpecific
+import net.rsprox.protocol.rs3.game.outgoing.model.specific.PlayerAnimSpecific
+import net.rsprox.protocol.rs3.game.outgoing.model.specific.ProjAnimSpecific
 import net.rsprox.protocol.rs3.game.outgoing.model.specific.ProjAnimSpecificV2
+import net.rsprox.protocol.rs3.game.outgoing.model.specific.SpotanimSpecific
+import net.rsprox.protocol.rs3.game.outgoing.model.specific.SpotanimSpecificV2
+import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryClearGridValue
+import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryGridAddColumn
+import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryGridAddGroup
+import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryGridAddRow
+import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryGridFull
+import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryGridMoveColumn
+import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryGridMoveRow
+import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryGridRemoveColumn
+import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryGridRemoveGroup
+import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryGridRemoveRow
+import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryGridSetRowPinned
+import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryGridValuesDelta
 import net.rsprox.protocol.rs3.game.outgoing.model.varbit.Varbit
 import net.rsprox.protocol.rs3.game.outgoing.model.varbit.VarbitLarge
 import net.rsprox.protocol.rs3.game.outgoing.model.varbit.VarbitSmall
 import net.rsprox.protocol.rs3.game.outgoing.model.varc.*
+import net.rsprox.protocol.rs3.game.outgoing.model.varclan.Varclan
+import net.rsprox.protocol.rs3.game.outgoing.model.varclan.VarclanDisable
+import net.rsprox.protocol.rs3.game.outgoing.model.varclan.VarclanEnable
 import net.rsprox.protocol.rs3.game.outgoing.model.varp.VarpLarge
 import net.rsprox.protocol.rs3.game.outgoing.model.varp.VarpLong
 import net.rsprox.protocol.rs3.game.outgoing.model.varp.VarpSmall
+import net.rsprox.protocol.rs3.game.outgoing.model.world.WorldlistFetchReply
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.header.UpdateZoneFullFollows
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.header.UpdateZonePartialFollows
@@ -181,19 +179,33 @@ public interface Rs3ServerPacketTranscriber {
     public fun varcStrLarge(message: VarcStrLarge)
 
     public fun vorbisSpeechStop(message: VorbisSpeechStop)
+
     public fun midiSongStop(message: MidiSongStop)
+
     public fun midiJingle(message: MidiJingle)
+
     public fun soundStop(message: SoundStop)
+
     public fun soundMixbussSetLevel(message: SoundMixbussSetLevel)
+
     public fun midiSong(message: MidiSong)
+
     public fun songPreload(message: SongPreload)
+
     public fun vorbisSoundGroupStop(message: VorbisSoundGroupStop)
+
     public fun vorbisSoundGroupStart(message: VorbisSoundGroupStart)
+
     public fun soundMixbussAdd(message: SoundMixbussAdd)
+
     public fun vorbisPreloadSounds(message: VorbisPreloadSounds)
+
     public fun vorbisSoundGroup(message: VorbisSoundGroup)
+
     public fun vorbisSpeechSound(message: VorbisSpeechSound)
+
     public fun synthSound(message: SynthSound)
+
     public fun mapProjAnimHalfsqV2(message: MapProjAnimHalfsqV2)
 
     public fun mapProjAnimHalfsq(message: MapProjAnimHalfsq)

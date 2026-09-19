@@ -27,7 +27,10 @@ internal fun Property.appendTint(
     int("weight", weight)
 }
 
-internal fun Property.appendSequences(ids: List<Int>, delay: Int) {
+internal fun Property.appendSequences(
+    ids: List<Int>,
+    delay: Int,
+) {
     if (ids.size == 4 && ids.all { it == ids[0] }) {
         any("slot", "all")
         scriptVarType("id", ScriptVarType.SEQ, ids[0])
@@ -102,7 +105,12 @@ internal fun Property.appendHit(
     }
 }
 
-internal fun Property.appendHeadbarFill(startFill: Int, endFill: Int, delay: Int, duration: Int) {
+internal fun Property.appendHeadbarFill(
+    startFill: Int,
+    endFill: Int,
+    delay: Int,
+    duration: Int,
+) {
     if (startFill == endFill && delay == 0 && duration == 0) {
         int("fill", startFill)
     } else {

@@ -9,7 +9,10 @@ public class Rs3ProtDecoder(
     private val cipher: () -> StreamCipher?,
     private val onPacket: (opcode: Int, payload: ByteArray) -> Unit,
 ) {
-    public data class ProtEntry(val length: Int, val name: String)
+    public data class ProtEntry(
+        val length: Int,
+        val name: String,
+    )
 
     private enum class State {
         AWAITING_OPCODE,
@@ -60,10 +63,11 @@ public class Rs3ProtDecoder(
         while (true) {
             when (state) {
                 State.AWAITING_OPCODE -> {
-                    val activeCipher = cipher() ?: run {
-                        buffer = ByteArray(0)
-                        return
-                    }
+                    val activeCipher =
+                        cipher() ?: run {
+                            buffer = ByteArray(0)
+                            return
+                        }
                     if (buffer.isEmpty()) return
                     val raw = buffer[0].toInt() and 0xFF
                     val decrypted = (raw - activeCipher.nextInt()) and 0xFF
@@ -79,10 +83,11 @@ public class Rs3ProtDecoder(
                 }
 
                 State.AWAITING_OPCODE_BYTE2 -> {
-                    val activeCipher = cipher() ?: run {
-                        buffer = ByteArray(0)
-                        return
-                    }
+                    val activeCipher =
+                        cipher() ?: run {
+                            buffer = ByteArray(0)
+                            return
+                        }
                     if (buffer.isEmpty()) return
                     val raw2 = buffer[0].toInt() and 0xFF
                     val decrypted2 = (raw2 - activeCipher.nextInt()) and 0xFF

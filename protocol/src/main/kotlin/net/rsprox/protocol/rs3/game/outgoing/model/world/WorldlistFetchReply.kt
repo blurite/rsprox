@@ -24,8 +24,16 @@ public data class WorldlistFetchReply(
         public val checksum: Int,
     )
 
-    public data class MarkedString(public val marker: Int, public val text: String?)
-    public data class Country(public val id: Int, public val name: MarkedString)
+    public data class MarkedString(
+        public val marker: Int,
+        public val text: String?,
+    )
+
+    public data class Country(
+        public val id: Int,
+        public val name: MarkedString,
+    )
+
     public data class World(
         public val index: Int,
         public val countryIndex: Int,
@@ -37,5 +45,8 @@ public data class WorldlistFetchReply(
     )
 
     /** Indices are transmitted relative to minimumWorldId; 65535 population is offline (-1). */
-    public data class Population(public val index: Int, public val population: Int)
+    public data class Population(
+        public val index: Int,
+        public val population: Int,
+    )
 }

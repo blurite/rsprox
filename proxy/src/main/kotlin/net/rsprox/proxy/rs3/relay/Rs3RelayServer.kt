@@ -113,6 +113,7 @@ public class Rs3RelayServer(
         RSAKeyParameters(false, BigInteger(realServerModulusHex, 16), Rsa.PUBLIC_EXPONENT)
 
     private val bossGroup = NioEventLoopGroup(1)
+
     // All sockets for one launched client share mutable protocol state across reconnects.
     private val workerGroup = NioEventLoopGroup(1)
     private var gameSession: Rs3RelaySession? = null
@@ -362,7 +363,11 @@ public class Rs3RelayServer(
             }
             sessionMonitor.onConnectionClosed(clientChannel.id())
         }
-        fun acceptPacketBytes(server: Boolean, bytes: ByteArray) {
+
+        fun acceptPacketBytes(
+            server: Boolean,
+            bytes: ByteArray,
+        ) {
             sessionMonitor.onBytes(clientChannel.id(), server, bytes.size)
             state.recording.accept(server, bytes)
         }
@@ -480,11 +485,12 @@ public class Rs3RelayServer(
                                                 val payload = checkNotNull(framer.reconnectData)
                                                 val buffer = Unpooled.wrappedBuffer(payload)
                                                 try {
-                                                    val message = serverDecoderService.decode(
-                                                        0xFF,
-                                                        buffer.toJagByteBuf(),
-                                                        Session(state.localPlayerIndex, state.serverAttributes),
-                                                    )
+                                                    val message =
+                                                        serverDecoderService.decode(
+                                                            0xFF,
+                                                            buffer.toJagByteBuf(),
+                                                            Session(state.localPlayerIndex, state.serverAttributes),
+                                                        )
                                                     state.recording.reconnect(payload)
                                                     state.transcriber.onServerPacket(
                                                         rs3Decoder.gameServerProtProvider[0xFF],
@@ -500,8 +506,10 @@ public class Rs3RelayServer(
                                                 logger.info { "RS3 reconnected to world ${state.endpoint}" }
                                             } else {
                                                 gameSession
-                                                    ?.takeIf { it !== state && (isWorldConnection || !it.channel.isActive) }
-                                                    ?.let(::finishSession)
+                                                    ?.takeIf {
+                                                        it !== state &&
+                                                            (isWorldConnection || !it.channel.isActive)
+                                                    }?.let(::finishSession)
                                                 state.recording.login(framer)
                                                 state.userId = framer.userId ?: -1
                                                 state.userHash = framer.userHash ?: -1
@@ -573,7 +581,8 @@ public class Rs3RelayServer(
                                 check(isWorldConnection && revision == 950) { "Unsupported reconnect target" }
                                 val previous = checkNotNull(gameSession) { "Reconnect has no previous game session" }
                                 check(
-                                    !previous.ended && previous.endpoint == state.endpoint &&
+                                    !previous.ended &&
+                                        previous.endpoint == state.endpoint &&
                                         previous.localPlayerIndex in 1..2047,
                                 ) {
                                     "Reconnect does not match the previous world session"

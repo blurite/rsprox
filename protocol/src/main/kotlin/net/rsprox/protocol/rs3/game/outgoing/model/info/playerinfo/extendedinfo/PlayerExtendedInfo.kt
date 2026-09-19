@@ -46,7 +46,10 @@ public sealed interface PlayerExtendedInfo {
             get() = flags ushr 7 and 1
     }
 
-    public data class NameIcon(public val sprite: Int, public val flags: Int) {
+    public data class NameIcon(
+        public val sprite: Int,
+        public val flags: Int,
+    ) {
         public val menu: Boolean
             get() = flags and 1 != 0
 
@@ -64,7 +67,11 @@ public sealed interface PlayerExtendedInfo {
         public val volume: Int,
     )
 
-    public data class Equipment(public val slot: Int, public val kind: Kind, public val id: Int) {
+    public data class Equipment(
+        public val slot: Int,
+        public val kind: Kind,
+        public val id: Int,
+    ) {
         public enum class Kind {
             EMPTY,
             KIT,
@@ -81,9 +88,16 @@ public sealed interface PlayerExtendedInfo {
         public val retextures: List<PaletteReplacement>,
     )
 
-    public data class ModelPair(public val slot: Int, public val male: Int, public val female: Int)
+    public data class ModelPair(
+        public val slot: Int,
+        public val male: Int,
+        public val female: Int,
+    )
 
-    public data class PaletteReplacement(public val index: Int, public val value: Int)
+    public data class PaletteReplacement(
+        public val index: Int,
+        public val value: Int,
+    )
 
     public data class Hits(
         public val wide: Boolean,
@@ -102,7 +116,9 @@ public sealed interface PlayerExtendedInfo {
     public sealed interface Headbar {
         public val type: Int
 
-        public data class Remove(override val type: Int) : Headbar
+        public data class Remove(
+            override val type: Int,
+        ) : Headbar
 
         /** Fills use 0..255; the optional secondary bar overlays the primary with shared timing. */
         public data class Update(
@@ -132,11 +148,17 @@ public sealed interface PlayerExtendedInfo {
     )
 
     public sealed interface VariableValue {
-        public data class IntegerValue(public val value: Int) : VariableValue
+        public data class IntegerValue(
+            public val value: Int,
+        ) : VariableValue
 
-        public data class LongValue(public val value: Long) : VariableValue
+        public data class LongValue(
+            public val value: Long,
+        ) : VariableValue
 
-        public data class StringValue(public val value: String) : VariableValue
+        public data class StringValue(
+            public val value: String,
+        ) : VariableValue
 
         /** Native coordinate axes are signed integers on the wire, converted to floats by the client. */
         public data class Coordinate(
@@ -179,9 +201,13 @@ public sealed interface PlayerExtendedInfo {
         public val delay: Int,
     ) : PlayerExtendedInfo
 
-    public data class ClanMember(public val enabled: Boolean) : PlayerExtendedInfo
+    public data class ClanMember(
+        public val enabled: Boolean,
+    ) : PlayerExtendedInfo
 
-    public data class FaceEntity(public val target: Int) : PlayerExtendedInfo
+    public data class FaceEntity(
+        public val target: Int,
+    ) : PlayerExtendedInfo
 
     /** Native consumes these fields without applying them. Retain the full payload for inspection. */
     public data class Unused(
@@ -235,12 +261,18 @@ public sealed interface PlayerExtendedInfo {
     ) : PlayerExtendedInfo
 
     /** Minimap/headbar classification, not alpha. Retain unknown status values. */
-    public data class PlayerStatus(public val value: Int) : PlayerExtendedInfo
+    public data class PlayerStatus(
+        public val value: Int,
+    ) : PlayerExtendedInfo
 
-    public data class SayV1(public val text: String) : PlayerExtendedInfo
+    public data class SayV1(
+        public val text: String,
+    ) : PlayerExtendedInfo
 
     /** Raw wire angle; revision 950 uses 16,384 units per turn for whole-player facing. */
-    public data class FaceAngle(public val angle: Int) : PlayerExtendedInfo
+    public data class FaceAngle(
+        public val angle: Int,
+    ) : PlayerExtendedInfo
 
     public data class Spotanims(
         public val removals: List<Int>,

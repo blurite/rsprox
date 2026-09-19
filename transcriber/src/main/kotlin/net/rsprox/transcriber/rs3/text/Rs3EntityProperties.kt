@@ -21,7 +21,10 @@ internal class Rs3EntityProperties(
 ) {
     private val coordinates = Rs3CoordinateProperties(state, settingSetStore)
 
-    fun player(property: Property, index: Int): ChildProperty<*> {
+    fun player(
+        property: Property,
+        index: Int,
+    ): ChildProperty<*> {
         val player = state.getPlayerOrNull(index) ?: return property.unidentifiedPlayer(index)
         if (player.name == null || player.level == null || player.x == null || player.z == null) {
             return property.shortPlayer(index, player.name)
@@ -31,18 +34,30 @@ internal class Rs3EntityProperties(
         return property.identifiedPlayer(visibleIndex, player.name, coord.level, coord.x, coord.z)
     }
 
-    fun npc(property: Property, index: Int): ChildProperty<*> {
+    fun npc(
+        property: Property,
+        index: Int,
+    ): ChildProperty<*> {
         val npc = state.getActiveWorld().getNpcOrNull(index) ?: return property.unidentifiedNpc(index)
         val position = npc.coord ?: return property.shortNpc(index, npc.id)
         val coord = coordinates.translate(position)
         val visibleIndex = if (settingSetStore.getActive()[Setting.HIDE_NPC_INDICES]) Int.MIN_VALUE else index
         return property.identifiedNpc(
-            visibleIndex, npc.id, npc.name ?: "null", coord.level, coord.x, coord.z, npc.spawnAngle,
+            visibleIndex,
+            npc.id,
+            npc.name ?: "null",
+            coord.level,
+            coord.x,
+            coord.z,
+            npc.spawnAngle,
         )
     }
 
     /** Packed actor identity shared by FACE_ENTITY and SET_TARGET: type byte followed by a 16-bit index. */
-    fun entity(property: Property, target: Int) {
+    fun entity(
+        property: Property,
+        target: Int,
+    ) {
         val kind = target ushr 16
         val index = target and 0xFFFF
         // Native 950 masks dispatch by the high byte; this is not a threshold-based actor index.

@@ -28,7 +28,10 @@ internal class PlayerInfoDecoder : ProxyMessageDecoder<PlayerInfo> {
 }
 
 /** Native 0x00cd1a00, called before either initial rebuild body. Not a packet-size heuristic. */
-internal fun Session.readPlayerInfoInit(buffer: JagByteBuf, reconnect: Boolean = false): PlayerInfoInitBlock? {
+internal fun Session.readPlayerInfoInit(
+    buffer: JagByteBuf,
+    reconnect: Boolean = false,
+): PlayerInfoInitBlock? {
     if (!reconnect && rs3PlayerInfoInitPending != true) return null
     require(localPlayerIndex in 1..2047) { "Invalid login player index $localPlayerIndex" }
     val positions = IntArray(2048)

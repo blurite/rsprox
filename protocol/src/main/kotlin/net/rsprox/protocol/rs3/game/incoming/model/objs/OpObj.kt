@@ -66,6 +66,5 @@ public class OpObj private constructor(
         return result
     }
 
-    override fun toString(): String =
-        "OpObj(id=$id, x=$x, y=$y, op=$op, run=$run, flags=$flags)"
+    override fun toString(): String = "OpObj(id=$id, x=$x, y=$y, op=$op, run=$run, flags=$flags)"
 }

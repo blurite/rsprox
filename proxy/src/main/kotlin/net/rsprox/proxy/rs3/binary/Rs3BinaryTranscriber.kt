@@ -49,7 +49,8 @@ internal object Rs3BinaryTranscriber {
         val header = binary.header
         val definitions = Rs3LiveCacheResolver.loadRecordedPacketDefinitions(header.revision, header.js5MasterIndex)
         val clientScripts =
-            RSProxArchiveClientScriptIndex.forRuneScape(header.revision, header.js5MasterIndex)
+            RSProxArchiveClientScriptIndex
+                .forRuneScape(header.revision, header.js5MasterIndex)
                 .also { it.preload() }
         if (callback?.isCancelled() == true) return
         HuffmanProvider.load()

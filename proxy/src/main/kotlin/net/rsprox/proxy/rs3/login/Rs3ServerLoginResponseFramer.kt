@@ -9,7 +9,12 @@ public class Rs3ServerLoginResponseFramer : Rs3LoginSuccessFramer(world = false)
             if (data.getOrNull(marker) != 0.toByte()) return null
             val start = marker + 1
             val end = (start until data.size).firstOrNull { data[it] == 0.toByte() } ?: return null
-            return String(data, start, end - start, java.nio.charset.Charset.forName("windows-1252"))
-                .replace("\uFFFD", "")
+            return String(
+                data,
+                start,
+                end - start,
+                java.nio.charset.Charset
+                    .forName("windows-1252"),
+            ).replace("\uFFFD", "")
         }
 }

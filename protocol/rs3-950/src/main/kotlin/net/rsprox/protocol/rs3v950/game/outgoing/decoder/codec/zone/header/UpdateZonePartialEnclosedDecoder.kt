@@ -23,9 +23,10 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
             buildList {
                 while (buffer.isReadable) {
                     val index = buffer.g1()
-                    val decoder = requireNotNull(IndexedZoneProtDecoder.byIndexOrNull(index)) {
-                        "Unknown revision 950 zone selector $index at byte ${buffer.buffer.readerIndex() - 1}"
-                    }
+                    val decoder =
+                        requireNotNull(IndexedZoneProtDecoder.byIndexOrNull(index)) {
+                            "Unknown revision 950 zone selector $index at byte ${buffer.buffer.readerIndex() - 1}"
+                        }
                     add(decoder.decoder.decode(buffer, session) as IncomingServerGameMessage)
                 }
             }
@@ -58,6 +59,7 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
 
         companion object {
             private val VALUES = entries.toTypedArray()
+
             fun byIndexOrNull(index: Int): IndexedZoneProtDecoder? = VALUES.getOrNull(index)
         }
     }

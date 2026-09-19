@@ -53,7 +53,11 @@ internal class Rs3WindowApi {
         val rect = placement.rcNormalPosition
         if (rect.right <= rect.left || rect.bottom <= rect.top) return null
         return Rs3WindowPlacement(
-            rect.left, rect.top, rect.right, rect.bottom, placement.showCmd == WinUser.SW_SHOWMAXIMIZED,
+            rect.left,
+            rect.top,
+            rect.right,
+            rect.bottom,
+            placement.showCmd == WinUser.SW_SHOWMAXIMIZED,
         )
     }
 
@@ -80,17 +84,18 @@ internal class Rs3WindowApi {
                 ?: (work.top + (work.bottom - work.top - height) / 2)
         val x = left.coerceIn(work.left, work.right - width)
         val y = top.coerceIn(work.top, work.bottom - height)
-        return ByteArrayOutputStream(34).also { bytes ->
-            DataOutputStream(bytes).use { output ->
-                output.writeByte(0)
-                output.writeByte(if (saved?.maximized == true) WinUser.SW_SHOWMAXIMIZED else WinUser.SW_SHOWNORMAL)
-                repeat(4) { output.writeInt(-1) }
-                output.writeInt(x)
-                output.writeInt(y)
-                output.writeInt(x + width)
-                output.writeInt(y + height)
-            }
-        }.toByteArray()
+        return ByteArrayOutputStream(34)
+            .also { bytes ->
+                DataOutputStream(bytes).use { output ->
+                    output.writeByte(0)
+                    output.writeByte(if (saved?.maximized == true) WinUser.SW_SHOWMAXIMIZED else WinUser.SW_SHOWNORMAL)
+                    repeat(4) { output.writeInt(-1) }
+                    output.writeInt(x)
+                    output.writeInt(y)
+                    output.writeInt(x + width)
+                    output.writeInt(y + height)
+                }
+            }.toByteArray()
     }
 
     private fun isWindowed(window: HWND): Boolean =

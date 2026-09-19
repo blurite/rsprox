@@ -30,7 +30,8 @@ public class OldSchoolCache(
     private lateinit var varbits: Map<Int, VarBitType>
     private val clientScripts = RSProxArchiveClientScriptIndex(masterIndex)
 
-    override fun getClientScriptDefinition(id: Int): ClientScriptDefinition? = clientScripts.getClientScriptDefinition(id)
+    override fun getClientScriptDefinition(id: Int): ClientScriptDefinition? =
+        clientScripts.getClientScriptDefinition(id)
 
     override fun getNpcType(id: Int): NpcType? {
         if (!this::npcs.isInitialized) {

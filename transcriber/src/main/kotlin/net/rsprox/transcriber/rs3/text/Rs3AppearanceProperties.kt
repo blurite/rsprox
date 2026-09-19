@@ -83,7 +83,10 @@ internal fun Property.appendAppearance(
     }
 }
 
-private fun Property.appendAppearanceTransform(npc: Int?, team: Int?) {
+private fun Property.appendAppearanceTransform(
+    npc: Int?,
+    team: Int?,
+) {
     npc?.let { filteredScriptVarType("npc", ScriptVarType.NPC, it, -1) }
     team?.let { filteredInt("team", it, 0) }
 }

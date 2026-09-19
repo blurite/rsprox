@@ -67,7 +67,10 @@ public object Rs3GamevalLookup : SymbolDictionary {
     // Script names come from the session's cache-specific archived signatures, not bundled gamevals.
     override fun getScriptName(id: Int): String? = null
 
-    private fun name(gameval: Gameval, id: Int): String? = dictionary.names.getValue(gameval)[id]
+    private fun name(
+        gameval: Gameval,
+        id: Int,
+    ): String? = dictionary.names.getValue(gameval)[id]
 
     private fun loadDictionary(): Dictionary {
         val gson = Gson()
@@ -102,7 +105,10 @@ public object Rs3GamevalLookup : SymbolDictionary {
         return Dictionary(checkNotNull(revision), names)
     }
 
-    private fun parseId(gameval: Gameval, key: String): Int {
+    private fun parseId(
+        gameval: Gameval,
+        key: String,
+    ): Int {
         if (gameval != Gameval.COMPONENT) {
             return key.toInt().also { require(it >= 0) { "Invalid ID: $key" } }
         }
@@ -156,6 +162,7 @@ public object Rs3GamevalLookup : SymbolDictionary {
         HEADBAR("headbar"),
         HITMARK("hitmark"),
         MATERIAL("material"),
+
         // These dictionaries currently have no corresponding shared ScriptVarType.
         VAR_PLAYER_GROUP("var_player_group"),
         VAR_CLAN("var_clan"),

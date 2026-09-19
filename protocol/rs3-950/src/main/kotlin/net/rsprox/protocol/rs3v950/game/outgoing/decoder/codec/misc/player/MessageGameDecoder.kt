@@ -10,7 +10,10 @@ import net.rsprox.protocol.session.Session
 internal class MessageGameDecoder : ProxyMessageDecoder<MessageGame> {
     override val prot: ClientProt = GameServerProt.MESSAGE_GAME
 
-    override fun decode(buffer: JagByteBuf, session: Session): MessageGame {
+    override fun decode(
+        buffer: JagByteBuf,
+        session: Session,
+    ): MessageGame {
         val type = buffer.gSmart1or2()
         val channel = buffer.g4()
         val flags = buffer.g1()

@@ -8,8 +8,8 @@ import net.rsprox.protocol.rs3.game.outgoing.model.camera.CameraUpdate.Controlle
 import net.rsprox.protocol.rs3.game.outgoing.model.camera.CameraUpdate.EffectPayload
 import net.rsprox.protocol.rs3.game.outgoing.model.camera.CameraUpdate.Setting
 import net.rsprox.protocol.rs3v950.game.outgoing.decoder.prot.GameServerProt
-import net.rsprox.protocol.session.attribute
 import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.session.attribute
 
 internal class CameraUpdateDecoder : ProxyMessageDecoder<CameraUpdate> {
     override val prot: ClientProt = GameServerProt.CAMERA_UPDATE
@@ -29,14 +29,15 @@ internal class CameraUpdateDecoder : ProxyMessageDecoder<CameraUpdate> {
         if (lookMode != null && lookMode in 0..6) lookReader = lookMode
         if (positionMode != null && positionMode in 0..4) positionReader = positionMode
         val mask = if (flags and 128 != 0) buffer.g2() else null
-        val settings = buildList {
-            if (mask != null) {
-                for (bit in 0..14) {
-                    if (mask and (1 shl bit) == 0) continue
-                    add(readSetting(buffer, bit, effects))
+        val settings =
+            buildList {
+                if (mask != null) {
+                    for (bit in 0..14) {
+                        if (mask and (1 shl bit) == 0) continue
+                        add(readSetting(buffer, bit, effects))
+                    }
                 }
             }
-        }
         val look = if (flags and 32 != 0 && lookReader != null) readController(buffer, lookReader, false) else null
         val position =
             if (flags and 64 != 0 && positionReader != null) readController(buffer, positionReader, true) else null
@@ -75,11 +76,12 @@ internal class CameraUpdateDecoder : ProxyMessageDecoder<CameraUpdate> {
         }
         val suppliedSubtype = buffer.g1()
         val subtype = effects[id] ?: suppliedSubtype
-        val payload = when (subtype) {
-            0 -> EffectPayload.Axis(buffer.g1(), float(buffer), float(buffer))
-            1 -> EffectPayload.Scalar(float(buffer))
-            else -> null
-        }
+        val payload =
+            when (subtype) {
+                0 -> EffectPayload.Axis(buffer.g1(), float(buffer), float(buffer))
+                1 -> EffectPayload.Scalar(float(buffer))
+                else -> null
+            }
         if (payload != null) effects[id] = subtype
         return CameraUpdate.EffectUpdate(operation, id, suppliedSubtype, subtype, payload)
     }
@@ -91,24 +93,28 @@ internal class CameraUpdateDecoder : ProxyMessageDecoder<CameraUpdate> {
     ): Controller =
         when {
             mode == 0 -> Controller.Coordinate(vector(buffer))
-            mode == 1 && position -> Controller.ActorPosition(
-                targetKind = buffer.g1(),
-                targetIndex = buffer.g2(),
-                offset = vector(buffer),
-                rotation = quaternion(buffer),
-                enabled = buffer.g1() == 1,
-                parameter = buffer.g2(),
-                duration = buffer.g2(),
-            )
+            mode == 1 && position ->
+                Controller.ActorPosition(
+                    targetKind = buffer.g1(),
+                    targetIndex = buffer.g2(),
+                    offset = vector(buffer),
+                    rotation = quaternion(buffer),
+                    enabled = buffer.g1() == 1,
+                    parameter = buffer.g2(),
+                    duration = buffer.g2(),
+                )
             mode == 1 -> Controller.ActorLook(buffer.g1(), buffer.g2(), vector(buffer), buffer.g1() == 1)
             !position && mode == 3 -> Controller.Rotation(quaternion(buffer))
             !position && mode == 5 -> Controller.Path(spline(buffer))
             else -> {
                 val subtype = if (position) mode - 1 else mode / 2
                 val entries = List(buffer.g1()) { CameraUpdate.PathEntry(spline(buffer), float(buffer)) }
-                val parameters = if (subtype == 1) emptyList() else {
-                    List(entries.size) { List(if (subtype == 2) 3 else 2) { float(buffer) } }
-                }
+                val parameters =
+                    if (subtype == 1) {
+                        emptyList()
+                    } else {
+                        List(entries.size) { List(if (subtype == 2) 3 else 2) { float(buffer) } }
+                    }
                 Controller.Paths(subtype, entries, parameters)
             }
         }

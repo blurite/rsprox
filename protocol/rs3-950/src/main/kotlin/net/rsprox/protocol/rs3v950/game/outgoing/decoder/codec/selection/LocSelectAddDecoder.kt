@@ -29,7 +29,15 @@ internal class LocSelectAddDecoder : ProxyMessageDecoder<LocSelectAdd> {
                 val scaleY = if (uniformScale == null && flags and 64 != 0) buffer.g2s() else null
                 val scaleZ = if (uniformScale == null && flags and 128 != 0) buffer.g2s() else null
                 LocSelectAdd.Transform(
-                    flags, quaternion, translateX, translateY, translateZ, uniformScale, scaleX, scaleY, scaleZ,
+                    flags,
+                    quaternion,
+                    translateX,
+                    translateY,
+                    translateZ,
+                    uniformScale,
+                    scaleX,
+                    scaleY,
+                    scaleZ,
                 )
             } else {
                 null

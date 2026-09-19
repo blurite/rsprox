@@ -20,7 +20,10 @@ import net.rsprox.protocol.session.attribute
 internal class WorldlistFetchReplyDecoder : ProxyMessageDecoder<WorldlistFetchReply> {
     override val prot: ClientProt = GameServerProt.WORLDLIST_FETCH_REPLY
 
-    override fun decode(buffer: JagByteBuf, session: Session): WorldlistFetchReply {
+    override fun decode(
+        buffer: JagByteBuf,
+        session: Session,
+    ): WorldlistFetchReply {
         val completeFlag = buffer.g1()
         val previous = session.pendingWorldList ?: byteArrayOf()
         val chunkLength = buffer.readableBytes()
@@ -45,20 +48,23 @@ internal class WorldlistFetchReplyDecoder : ProxyMessageDecoder<WorldlistFetchRe
             val worldCount = definitions?.worlds?.size ?: session.worldListCount
             // The client can already have definitions from before this proxy session.
             // A completed reply still frames its population records; keep their relative indices.
-            val populations = buildList {
-                while (data.readableBytes() > 0 && (worldCount == null || size < worldCount)) {
-                    require(data.readableBytes() >= 3) { "Truncated world population record" }
-                    val index = data.gSmart1or2()
-                    require(data.readableBytes() >= 2) { "Truncated world population value" }
-                    val population = data.g2()
-                    add(Population(index, if (population == 65535) -1 else population))
+            val populations =
+                buildList {
+                    while (data.readableBytes() > 0 && (worldCount == null || size < worldCount)) {
+                        require(data.readableBytes() >= 3) { "Truncated world population record" }
+                        val index = data.gSmart1or2()
+                        require(data.readableBytes() >= 2) { "Truncated world population value" }
+                        val population = data.g2()
+                        add(Population(index, if (population == 65535) -1 else population))
+                    }
                 }
-            }
             require(worldCount == null || populations.size == worldCount) { "Truncated world populations" }
             require(data.readableBytes() == 0) { "Unexpected bytes after world list" }
             session.worldListCount = worldCount
             return WorldlistFetchReply(
-                completeFlag, chunkLength, accumulated.size,
+                completeFlag,
+                chunkLength,
+                accumulated.size,
                 Reply(version, definitionsFlag, definitions, populations),
             )
         } finally {
@@ -74,16 +80,17 @@ internal class WorldlistFetchReplyDecoder : ProxyMessageDecoder<WorldlistFetchRe
         val maximumWorldId = buffer.gSmart1or2()
         val worldCount = buffer.gSmart1or2()
         require(worldCount <= buffer.readableBytes() / 9) { "Truncated world definitions" }
-        val worlds = List(worldCount) {
-            val index = buffer.gSmart1or2()
-            val countryIndex = buffer.g1()
-            val properties = buffer.g4()
-            val extraId = buffer.gSmart1or2()
-            val extraName = if (extraId != 0) readString(buffer) else null
-            val activity = readString(buffer)
-            val hostname = readString(buffer)
-            World(index, countryIndex, properties, extraId, extraName, activity, hostname)
-        }
+        val worlds =
+            List(worldCount) {
+                val index = buffer.gSmart1or2()
+                val countryIndex = buffer.g1()
+                val properties = buffer.g4()
+                val extraId = buffer.gSmart1or2()
+                val extraName = if (extraId != 0) readString(buffer) else null
+                val activity = readString(buffer)
+                val hostname = readString(buffer)
+                World(index, countryIndex, properties, extraId, extraName, activity, hostname)
+            }
         return Definitions(countries, minimumWorldId, maximumWorldId, worlds, buffer.g4())
     }
 

@@ -52,73 +52,79 @@ public class TextRs3PlayerInfoTranscriber(
         if (!filters[PropertyFilter.PLAYER_INFO]) return sessionState.deleteRoot()
         for ((index, update) in message.updates) {
             if (settings[Setting.PLAYER_INFO_LOCAL_PLAYER_ONLY] && index != sessionState.localPlayerIndex) continue
-            val extendedInfo = when (update) {
-                is PlayerUpdateType.HighResolutionIdle -> update.extendedInfo
-                is PlayerUpdateType.LowResolutionToHighResolution -> update.extendedInfo
-                is PlayerUpdateType.HighResolutionMovement -> update.extendedInfo
-                else -> emptyList()
-            }
-            val visibleInfo = extendedInfo.filter {
-                when (it) {
-                    is PlayerExtendedInfo.Hits ->
-                        filters[PropertyFilter.PLAYER_HITS] && (it.hits.isNotEmpty() || it.headbars.isNotEmpty())
-                    is PlayerExtendedInfo.UndecodedAppearance, is PlayerExtendedInfo.Appearance ->
-                        filters[PropertyFilter.PLAYER_APPEARANCE]
-                    is PlayerExtendedInfo.FaceEntity, is PlayerExtendedInfo.FaceAngle ->
-                        filters[PropertyFilter.PLAYER_FACING]
-                    is PlayerExtendedInfo.Tinting -> filters[PropertyFilter.PLAYER_TINTING]
-                    is PlayerExtendedInfo.Sequence -> filters[PropertyFilter.PLAYER_SEQUENCE]
-                    is PlayerExtendedInfo.Spotanims ->
-                        filters[PropertyFilter.PLAYER_SPOTANIMS] &&
-                            (it.removals.isNotEmpty() || it.additions.isNotEmpty())
-                    is PlayerExtendedInfo.ExactMove -> filters[PropertyFilter.PLAYER_EXACTMOVE]
-                    is PlayerExtendedInfo.SayV1, is PlayerExtendedInfo.SayV2 -> filters[PropertyFilter.PLAYER_SAY]
-                    is PlayerExtendedInfo.Variables ->
-                        filters[if (it.full) PropertyFilter.PLAYER_VARP_FULL else PropertyFilter.PLAYER_VARP_DELTA]
-                    is PlayerExtendedInfo.Attachments -> filters[PropertyFilter.PLAYER_ATTACHMENTS]
-                    is PlayerExtendedInfo.ClanMember -> filters[PropertyFilter.PLAYER_CLAN_MEMBER]
-                    is PlayerExtendedInfo.PlayerStatus -> filters[PropertyFilter.PLAYER_STATUS]
-                    is PlayerExtendedInfo.HeadIcons -> filters[PropertyFilter.PLAYER_HEAD_ICONS]
-                    is PlayerExtendedInfo.UnusedMask16 -> filters[PropertyFilter.PLAYER_UNUSED_MASK_16]
-                    is PlayerExtendedInfo.Unused ->
-                        filters[
-                            when (it.kind) {
-                                PlayerExtendedInfo.Unused.Kind.UNUSED_MASK_2 -> PropertyFilter.PLAYER_UNUSED_MASK_2
-                                PlayerExtendedInfo.Unused.Kind.UNUSED_MASK_8 -> PropertyFilter.PLAYER_UNUSED_MASK_8
-                                PlayerExtendedInfo.Unused.Kind.UNUSED_MASK_12 -> PropertyFilter.PLAYER_UNUSED_MASK_12
-                                PlayerExtendedInfo.Unused.Kind.UNUSED_MASK_13 -> PropertyFilter.PLAYER_UNUSED_MASK_13
-                                PlayerExtendedInfo.Unused.Kind.UNUSED_MASK_20 -> PropertyFilter.PLAYER_UNUSED_MASK_20
-                                PlayerExtendedInfo.Unused.Kind.UNUSED_MASK_24 -> PropertyFilter.PLAYER_UNUSED_MASK_24
-                            }
-                        ]
+            val extendedInfo =
+                when (update) {
+                    is PlayerUpdateType.HighResolutionIdle -> update.extendedInfo
+                    is PlayerUpdateType.LowResolutionToHighResolution -> update.extendedInfo
+                    is PlayerUpdateType.HighResolutionMovement -> update.extendedInfo
+                    else -> emptyList()
                 }
-            }
+            val visibleInfo =
+                extendedInfo.filter {
+                    when (it) {
+                        is PlayerExtendedInfo.Hits ->
+                            filters[PropertyFilter.PLAYER_HITS] && (it.hits.isNotEmpty() || it.headbars.isNotEmpty())
+                        is PlayerExtendedInfo.UndecodedAppearance, is PlayerExtendedInfo.Appearance ->
+                            filters[PropertyFilter.PLAYER_APPEARANCE]
+                        is PlayerExtendedInfo.FaceEntity, is PlayerExtendedInfo.FaceAngle ->
+                            filters[PropertyFilter.PLAYER_FACING]
+                        is PlayerExtendedInfo.Tinting -> filters[PropertyFilter.PLAYER_TINTING]
+                        is PlayerExtendedInfo.Sequence -> filters[PropertyFilter.PLAYER_SEQUENCE]
+                        is PlayerExtendedInfo.Spotanims ->
+                            filters[PropertyFilter.PLAYER_SPOTANIMS] &&
+                                (it.removals.isNotEmpty() || it.additions.isNotEmpty())
+                        is PlayerExtendedInfo.ExactMove -> filters[PropertyFilter.PLAYER_EXACTMOVE]
+                        is PlayerExtendedInfo.SayV1, is PlayerExtendedInfo.SayV2 -> filters[PropertyFilter.PLAYER_SAY]
+                        is PlayerExtendedInfo.Variables ->
+                            filters[if (it.full) PropertyFilter.PLAYER_VARP_FULL else PropertyFilter.PLAYER_VARP_DELTA]
+                        is PlayerExtendedInfo.Attachments -> filters[PropertyFilter.PLAYER_ATTACHMENTS]
+                        is PlayerExtendedInfo.ClanMember -> filters[PropertyFilter.PLAYER_CLAN_MEMBER]
+                        is PlayerExtendedInfo.PlayerStatus -> filters[PropertyFilter.PLAYER_STATUS]
+                        is PlayerExtendedInfo.HeadIcons -> filters[PropertyFilter.PLAYER_HEAD_ICONS]
+                        is PlayerExtendedInfo.UnusedMask16 -> filters[PropertyFilter.PLAYER_UNUSED_MASK_16]
+                        is PlayerExtendedInfo.Unused ->
+                            filters[
+                                when (it.kind) {
+                                    PlayerExtendedInfo.Unused.Kind.UNUSED_MASK_2 -> PropertyFilter.PLAYER_UNUSED_MASK_2
+                                    PlayerExtendedInfo.Unused.Kind.UNUSED_MASK_8 -> PropertyFilter.PLAYER_UNUSED_MASK_8
+                                    PlayerExtendedInfo.Unused.Kind.UNUSED_MASK_12 -> PropertyFilter.PLAYER_UNUSED_MASK_12
+                                    PlayerExtendedInfo.Unused.Kind.UNUSED_MASK_13 -> PropertyFilter.PLAYER_UNUSED_MASK_13
+                                    PlayerExtendedInfo.Unused.Kind.UNUSED_MASK_20 -> PropertyFilter.PLAYER_UNUSED_MASK_20
+                                    PlayerExtendedInfo.Unused.Kind.UNUSED_MASK_24 -> PropertyFilter.PLAYER_UNUSED_MASK_24
+                                },
+                            ]
+                    }
+                }
             val showMasks = filters[PropertyFilter.PLAYER_EXT_INFO] && visibleInfo.isNotEmpty()
-            val showUpdate = when (update) {
-                is PlayerUpdateType.LowResolutionToHighResolution -> filters[PropertyFilter.PLAYER_ADD]
-                is PlayerUpdateType.HighResolutionToLowResolution -> filters[PropertyFilter.PLAYER_DEL]
-                is PlayerUpdateType.HighResolutionMovement -> filters[PropertyFilter.PLAYER_MOVEMENT]
-                else -> false
-            }
+            val showUpdate =
+                when (update) {
+                    is PlayerUpdateType.LowResolutionToHighResolution -> filters[PropertyFilter.PLAYER_ADD]
+                    is PlayerUpdateType.HighResolutionToLowResolution -> filters[PropertyFilter.PLAYER_DEL]
+                    is PlayerUpdateType.HighResolutionMovement -> filters[PropertyFilter.PLAYER_MOVEMENT]
+                    else -> false
+                }
             if (!showUpdate && !showMasks) continue
             // Movement is committed after transcription; use this update's destination for mask offsets.
-            val baseCoord = when (update) {
-                is PlayerUpdateType.HighResolutionMovement -> CoordGrid(update.level, update.x, update.z)
-                is PlayerUpdateType.LowResolutionToHighResolution -> CoordGrid(update.level, update.x, update.z)
-                else -> sessionState.getPlayerOrNull(index)?.let { player ->
-                    val level = player.level
-                    val x = player.x
-                    val z = player.z
-                    if (level == null || x == null || z == null) null else CoordGrid(level, x, z)
+            val baseCoord =
+                when (update) {
+                    is PlayerUpdateType.HighResolutionMovement -> CoordGrid(update.level, update.x, update.z)
+                    is PlayerUpdateType.LowResolutionToHighResolution -> CoordGrid(update.level, update.x, update.z)
+                    else ->
+                        sessionState.getPlayerOrNull(index)?.let { player ->
+                            val level = player.level
+                            val x = player.x
+                            val z = player.z
+                            if (level == null || x == null || z == null) null else CoordGrid(level, x, z)
+                        }
                 }
-            }
-            val label = when (update) {
-                is PlayerUpdateType.LowResolutionToHighResolution -> "ADD"
-                is PlayerUpdateType.HighResolutionToLowResolution -> "DEL"
-                is PlayerUpdateType.HighResolutionMovement ->
-                    if (update.teleport) "TELEPORT" else Rs3MovementMode.fromId(update.movementMode)?.name ?: "MOVE"
-                else -> "IDLE"
-            }
+            val label =
+                when (update) {
+                    is PlayerUpdateType.LowResolutionToHighResolution -> "ADD"
+                    is PlayerUpdateType.HighResolutionToLowResolution -> "DEL"
+                    is PlayerUpdateType.HighResolutionMovement ->
+                        if (update.teleport) "TELEPORT" else Rs3MovementMode.fromId(update.movementMode)?.name ?: "MOVE"
+                    else -> "IDLE"
+                }
             root.group(label) {
                 player(index)
                 if (showUpdate) {
@@ -147,7 +153,10 @@ public class TextRs3PlayerInfoTranscriber(
         if (root.children.isEmpty() && settings[Setting.PLAYER_INFO_HIDE_EMPTY]) sessionState.deleteRoot()
     }
 
-    private fun Property.appendExactMove(info: PlayerExtendedInfo.ExactMove, baseCoord: CoordGrid?) {
+    private fun Property.appendExactMove(
+        info: PlayerExtendedInfo.ExactMove,
+        baseCoord: CoordGrid?,
+    ) {
         val subtractFirstDelay = settingSetStore.getActive()[Setting.EXACTMOVE_SUBTRACT_FIRST_DELAY]
         if (baseCoord == null) {
             int("deltax1", info.deltaX1)
@@ -183,95 +192,112 @@ public class TextRs3PlayerInfoTranscriber(
         int("angle", info.angle)
     }
 
-    private fun Property.extendedInfo(info: PlayerExtendedInfo, baseCoord: CoordGrid?) {
+    private fun Property.extendedInfo(
+        info: PlayerExtendedInfo,
+        baseCoord: CoordGrid?,
+    ) {
         when (info) {
-            is PlayerExtendedInfo.UndecodedAppearance -> group("APPEARANCE") {
-                string("status", "undecoded: ${info.reason}")
-                int("length", info.payload.size)
-                string("payload", info.payload.joinToString(" ") { (it.toInt() and 255).toString(16).padStart(2, '0') })
-            }
+            is PlayerExtendedInfo.UndecodedAppearance ->
+                group("APPEARANCE") {
+                    string("status", "undecoded: ${info.reason}")
+                    int("length", info.payload.size)
+                    string(
+                        "payload",
+                        info.payload.joinToString(" ") { (it.toInt() and 255).toString(16).padStart(2, '0') },
+                    )
+                }
             is PlayerExtendedInfo.Appearance -> appendAppearance(info, filterSetStore.getActive())
             is PlayerExtendedInfo.Hits -> appendHits(info)
-            is PlayerExtendedInfo.Variables -> group(if (info.full) "VARP_FULL" else "VARP_DELTA") {
-                for (entry in info.entries) {
-                    group {
-                        varp("varp", entry.id)
-                        when (val value = entry.value) {
-                            is PlayerExtendedInfo.VariableValue.IntegerValue -> int("value", value.value)
-                            is PlayerExtendedInfo.VariableValue.LongValue -> long("value", value.value)
-                            is PlayerExtendedInfo.VariableValue.StringValue -> string("value", value.value)
-                            is PlayerExtendedInfo.VariableValue.Coordinate -> group("value") {
-                                // This is a four-component fine coordinate, not a packed tile COORDGRID.
-                                int("level", value.level)
-                                int("x", value.x)
-                                int("y", value.y)
-                                int("z", value.z)
+            is PlayerExtendedInfo.Variables ->
+                group(if (info.full) "VARP_FULL" else "VARP_DELTA") {
+                    for (entry in info.entries) {
+                        group {
+                            varp("varp", entry.id)
+                            when (val value = entry.value) {
+                                is PlayerExtendedInfo.VariableValue.IntegerValue -> int("value", value.value)
+                                is PlayerExtendedInfo.VariableValue.LongValue -> long("value", value.value)
+                                is PlayerExtendedInfo.VariableValue.StringValue -> string("value", value.value)
+                                is PlayerExtendedInfo.VariableValue.Coordinate ->
+                                    group("value") {
+                                        // This is a four-component fine coordinate, not a packed tile COORDGRID.
+                                        int("level", value.level)
+                                        int("x", value.x)
+                                        int("y", value.y)
+                                        int("z", value.z)
+                                    }
                             }
                         }
                     }
                 }
-            }
-            is PlayerExtendedInfo.Attachments -> group("ATTACHMENTS") {
-                int("count", info.count)
-                if (info.count == 0) boolean("reset", true)
-                for (attachment in info.attachments) {
-                    group {
-                        int("slot", attachment.slot)
-                        when {
-                            attachment.flags and 0x400 != 0 ->
-                                scriptVarType("obj", ScriptVarType.OBJ, requireNotNull(attachment.id))
-                            attachment.flags and 0x800 != 0 -> {
-                                val id = requireNotNull(attachment.id)
-                                // Native narrows only VFX IDs to 16 bits. Preserve unusual wire values too.
-                                int("vfx", id and 0xFFFF)
-                                if (id != (id and 0xFFFF)) int("rawid", id)
+            is PlayerExtendedInfo.Attachments ->
+                group("ATTACHMENTS") {
+                    int("count", info.count)
+                    if (info.count == 0) boolean("reset", true)
+                    for (attachment in info.attachments) {
+                        group {
+                            int("slot", attachment.slot)
+                            when {
+                                attachment.flags and 0x400 != 0 ->
+                                    scriptVarType("obj", ScriptVarType.OBJ, requireNotNull(attachment.id))
+                                attachment.flags and 0x800 != 0 -> {
+                                    val id = requireNotNull(attachment.id)
+                                    // Native narrows only VFX IDs to 16 bits. Preserve unusual wire values too.
+                                    int("vfx", id and 0xFFFF)
+                                    if (id != (id and 0xFFFF)) int("rawid", id)
+                                }
+                                // No resource setter is invoked; listed slots are still retained.
+                                else -> boolean("retain", true)
                             }
-                            // No resource setter is invoked; listed slots are still retained.
-                            else -> boolean("retain", true)
+                            int("flags", attachment.flags)
+                            boolean("rotateoffset", attachment.flags and 0x40 != 0)
+                            axes("translation", attachment.translation)
+                            axes("rotation", attachment.rotation)
+                            axes("scale", attachment.scale)
                         }
-                        int("flags", attachment.flags)
-                        boolean("rotateoffset", attachment.flags and 0x40 != 0)
-                        axes("translation", attachment.translation)
-                        axes("rotation", attachment.rotation)
-                        axes("scale", attachment.scale)
                     }
                 }
-            }
-            is PlayerExtendedInfo.Sequence -> group("SEQUENCE") {
-                appendSequences(info.ids, info.delay)
-            }
-            is PlayerExtendedInfo.ClanMember -> group("CLAN_MEMBER") {
-                boolean("enabled", info.enabled)
-            }
+            is PlayerExtendedInfo.Sequence ->
+                group("SEQUENCE") {
+                    appendSequences(info.ids, info.delay)
+                }
+            is PlayerExtendedInfo.ClanMember ->
+                group("CLAN_MEMBER") {
+                    boolean("enabled", info.enabled)
+                }
             is PlayerExtendedInfo.FaceEntity -> group("FACE_ENTITY") { entities.entity(this, info.target) }
-            is PlayerExtendedInfo.Unused -> group(info.kind.name) {
-                int("field0", info.field0)
-                int("field1", info.field1)
-                int("field2", info.field2)
-            }
-            is PlayerExtendedInfo.SayV2 -> group("SAY_V2") {
-                string("text", info.text)
-                boolean("chatbox", info.chatbox)
-            }
-            is PlayerExtendedInfo.ExactMove -> group("EXACTMOVE") { appendExactMove(info, baseCoord) }
-            is PlayerExtendedInfo.Tinting -> group("TINTING") {
-                appendTint(info.hue, info.saturation, info.lightness, info.weight, info.start, info.end)
-            }
-            is PlayerExtendedInfo.UnusedMask16 -> group("UNUSED_MASK_16") {
-                int("field0", info.field0)
-                int("field1", info.field1)
-                int("field2", info.field2)
-                int("field3", info.field3)
-            }
-            is PlayerExtendedInfo.PlayerStatus -> group("PLAYER_STATUS") {
-                when (info.value) {
-                    0 -> any("status", "normal")
-                    1 -> any("status", "group_member")
-                    // Note: status 2 selects cyan minimap/alternate headbar sprites.
-                    // Its exact role still needs confirmation.
-                    else -> int("status", info.value)
+            is PlayerExtendedInfo.Unused ->
+                group(info.kind.name) {
+                    int("field0", info.field0)
+                    int("field1", info.field1)
+                    int("field2", info.field2)
                 }
-            }
+            is PlayerExtendedInfo.SayV2 ->
+                group("SAY_V2") {
+                    string("text", info.text)
+                    boolean("chatbox", info.chatbox)
+                }
+            is PlayerExtendedInfo.ExactMove -> group("EXACTMOVE") { appendExactMove(info, baseCoord) }
+            is PlayerExtendedInfo.Tinting ->
+                group("TINTING") {
+                    appendTint(info.hue, info.saturation, info.lightness, info.weight, info.start, info.end)
+                }
+            is PlayerExtendedInfo.UnusedMask16 ->
+                group("UNUSED_MASK_16") {
+                    int("field0", info.field0)
+                    int("field1", info.field1)
+                    int("field2", info.field2)
+                    int("field3", info.field3)
+                }
+            is PlayerExtendedInfo.PlayerStatus ->
+                group("PLAYER_STATUS") {
+                    when (info.value) {
+                        0 -> any("status", "normal")
+                        1 -> any("status", "group_member")
+                        // Note: status 2 selects cyan minimap/alternate headbar sprites.
+                        // Its exact role still needs confirmation.
+                        else -> int("status", info.value)
+                    }
+                }
             is PlayerExtendedInfo.SayV1 -> group("SAY_V1") { string("text", info.text) }
             is PlayerExtendedInfo.FaceAngle -> group("FACE_ANGLE") { int("angle", info.angle) }
             is PlayerExtendedInfo.Spotanims -> {
@@ -286,28 +312,32 @@ public class TextRs3PlayerInfoTranscriber(
                     )
                 }
             }
-            is PlayerExtendedInfo.HeadIcons -> group("HEAD_ICONS") {
-                boolean("update", info.update)
-                // Removal can fade out using previously stored flags/duration; it is not an instant reset.
-                if (info.update && info.slots.isEmpty()) boolean("removeall", true)
-                for (slot in info.slots) {
-                    group {
-                        int("headiconslot", slot.slot)
-                        scriptVarType("id", ScriptVarType.GRAPHIC, slot.id)
-                        int("spriteindex", slot.spriteIndex)
-                        int("flags", slot.flags)
-                        boolean("fadein", slot.fadeIn)
-                        boolean("fadeout", slot.fadeOut)
-                        int("fadeinms", slot.fadeInDuration)
-                        int("fadeoutms", slot.fadeOutDuration)
-                        int("restartkey", slot.restartKey)
+            is PlayerExtendedInfo.HeadIcons ->
+                group("HEAD_ICONS") {
+                    boolean("update", info.update)
+                    // Removal can fade out using previously stored flags/duration; it is not an instant reset.
+                    if (info.update && info.slots.isEmpty()) boolean("removeall", true)
+                    for (slot in info.slots) {
+                        group {
+                            int("headiconslot", slot.slot)
+                            scriptVarType("id", ScriptVarType.GRAPHIC, slot.id)
+                            int("spriteindex", slot.spriteIndex)
+                            int("flags", slot.flags)
+                            boolean("fadein", slot.fadeIn)
+                            boolean("fadeout", slot.fadeOut)
+                            int("fadeinms", slot.fadeInDuration)
+                            int("fadeoutms", slot.fadeOutDuration)
+                            int("restartkey", slot.restartKey)
+                        }
                     }
                 }
-            }
         }
     }
 
-    private fun Property.axes(name: String, axes: PlayerExtendedInfo.TransformAxes) {
+    private fun Property.axes(
+        name: String,
+        axes: PlayerExtendedInfo.TransformAxes,
+    ) {
         if (axes.x == null && axes.y == null && axes.z == null) return
         group(name) {
             axes.x?.let { int("x", it) }

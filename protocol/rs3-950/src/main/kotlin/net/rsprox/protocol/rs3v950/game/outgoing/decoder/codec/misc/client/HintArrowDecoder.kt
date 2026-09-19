@@ -19,12 +19,24 @@ internal class HintArrowDecoder : ProxyMessageDecoder<HintArrow> {
         val payload =
             when (kind) {
                 0 -> HintArrow.Clear(List(13) { buffer.g1() })
-                1, 10 -> HintArrow.Actor(
-                    buffer.g1(), buffer.g2(), buffer.g2(), List(4) { buffer.g1() }, buffer.g4(),
-                )
-                in 2..6 -> HintArrow.Location(
-                    buffer.g1(), buffer.g1(), buffer.g2(), buffer.g2(), buffer.g1(), buffer.g2(), buffer.g4(),
-                )
+                1, 10 ->
+                    HintArrow.Actor(
+                        buffer.g1(),
+                        buffer.g2(),
+                        buffer.g2(),
+                        List(4) { buffer.g1() },
+                        buffer.g4(),
+                    )
+                in 2..6 ->
+                    HintArrow.Location(
+                        buffer.g1(),
+                        buffer.g1(),
+                        buffer.g2(),
+                        buffer.g2(),
+                        buffer.g1(),
+                        buffer.g2(),
+                        buffer.g4(),
+                    )
                 else -> HintArrow.Other(buffer.g1(), buffer.g4(), List(8) { buffer.g1() })
             }
         return HintArrow(header ushr 5, kind, payload)

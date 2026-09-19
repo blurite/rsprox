@@ -12,7 +12,10 @@ import net.rsprox.protocol.session.Session
 internal class ReconnectDecoder : ProxyMessageDecoder<Reconnect> {
     override val prot = GameServerProt.RECONNECT
 
-    override fun decode(buffer: JagByteBuf, session: Session): Reconnect {
+    override fun decode(
+        buffer: JagByteBuf,
+        session: Session,
+    ): Reconnect {
         val init = checkNotNull(session.readPlayerInfoInit(buffer, reconnect = true))
         require(buffer.readableBytes() == 0) { "Unconsumed reconnect initialization" }
         session.initializePlayerInfo(init)

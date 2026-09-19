@@ -4,9 +4,9 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.rs3.game.outgoing.model.clan.ClanSettingsFull
+import net.rsprox.protocol.rs3v950.buffer.readNativeString
 import net.rsprox.protocol.rs3v950.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.session.Session
-import net.rsprox.protocol.rs3v950.buffer.readNativeString
 
 internal class ClanSettingsFullDecoder : ProxyMessageDecoder<ClanSettingsFull> {
     override val prot: ClientProt = GameServerProt.CLANSETTINGS_FULL
@@ -32,17 +32,19 @@ internal class ClanSettingsFullDecoder : ProxyMessageDecoder<ClanSettingsFull> {
         val rank1 = buffer.g1s()
         val rank2 = buffer.g1s()
         val headerBoolean = buffer.g1() == 1
-        val minimumMemberSize = 2 + (if (version >= 2) 4 else 0) +
-            (if (version >= 5) 2 else 0) + (if (version >= 6) 1 else 0)
+        val minimumMemberSize =
+            2 + (if (version >= 2) 4 else 0) +
+                (if (version >= 5) 2 else 0) + (if (version >= 6) 1 else 0)
         require(memberCount <= buffer.readableBytes() / minimumMemberSize) { "Truncated clan-settings members" }
-        val members = List(memberCount) {
-            val memberName = buffer.readNativeString()
-            val rank = buffer.g1s()
-            val bits = if (version >= 2) buffer.g4() else null
-            val joinedDay = if (version >= 5) buffer.g2() else null
-            val muted = if (version >= 6) buffer.g1() == 1 else null
-            ClanSettingsFull.Member(memberName, rank, bits, joinedDay, muted)
-        }
+        val members =
+            List(memberCount) {
+                val memberName = buffer.readNativeString()
+                val rank = buffer.g1s()
+                val bits = if (version >= 2) buffer.g4() else null
+                val joinedDay = if (version >= 5) buffer.g2() else null
+                val muted = if (version >= 6) buffer.g1() == 1 else null
+                ClanSettingsFull.Member(memberName, rank, bits, joinedDay, muted)
+            }
         require(bannedCount <= buffer.readableBytes()) { "Truncated clan-settings banned names" }
         val banned = List(bannedCount) { buffer.readNativeString() }
         val parameters =
@@ -65,8 +67,20 @@ internal class ClanSettingsFullDecoder : ProxyMessageDecoder<ClanSettingsFull> {
         return ClanSettingsFull(
             channelIndex,
             ClanSettingsFull.Settings(
-                version, flags, updateNumber, legacyTimestamp, name, extra, allowGuests,
-                rank0, rank1, rank2, headerBoolean, members, banned, parameters,
+                version,
+                flags,
+                updateNumber,
+                legacyTimestamp,
+                name,
+                extra,
+                allowGuests,
+                rank0,
+                rank1,
+                rank2,
+                headerBoolean,
+                members,
+                banned,
+                parameters,
             ),
         )
     }
