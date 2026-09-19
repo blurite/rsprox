@@ -47,18 +47,6 @@ public class Rs3World {
         return this.npcs[index]
     }
 
-    public fun rebuild(southWestCoord: CoordGrid) {
-        sceneBounds = null
-        instanceMap = null
-        sceneOrigin =
-            if (southWestCoord == CoordGrid.INVALID) {
-                null
-            } else {
-                SceneOrigin(southWestCoord.x, southWestCoord.z)
-            }
-        activeZoneSouthWestCoord = null
-    }
-
     public fun rebuild(
         baseTileX: Int,
         baseTileZ: Int,

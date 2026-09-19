@@ -25,7 +25,6 @@ import net.rsprox.protocol.rs3.game.outgoing.model.misc.player.UpdateStat
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.header.UpdateZoneFullFollows
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.header.UpdateZonePartialFollows
-import net.rsprox.protocol.rs3v949.game.outgoing.model.map.RebuildNormal as LegacyRebuildNormal
 
 public class Rs3SessionTracker(
     private val sessionState: Rs3SessionState,
@@ -107,11 +106,6 @@ public class Rs3SessionTracker(
                     is RebuildRegion -> {
                         sessionState.getActiveWorld().rebuild(message)
                     }
-                }
-            }
-            is LegacyRebuildNormal -> {
-                if (message.trailerAligned) {
-                    sessionState.getActiveWorld().rebuild(CoordGrid(0, message.baseTileX, message.baseTileZ))
                 }
             }
             is UpdateZoneFullFollows -> {

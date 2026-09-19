@@ -144,21 +144,6 @@ import net.rsprox.protocol.rs3.game.outgoing.model.zone.header.UpdateZoneFullFol
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.header.UpdateZonePartialFollows
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.*
-import net.rsprox.protocol.rs3v949.game.outgoing.model.camera.CameraUpdate as LegacyCameraUpdate
-import net.rsprox.protocol.rs3v949.game.outgoing.model.camera.CamForceAngle as LegacyCamForceAngle
-import net.rsprox.protocol.rs3v949.game.outgoing.model.camera.CamShake as LegacyCamShake
-import net.rsprox.protocol.rs3v949.game.outgoing.model.map.RebuildNormal as LegacyRebuildNormal
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.client.HintArrow as LegacyHintArrow
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.client.HintTrail as LegacyHintTrail
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.MessageGame as LegacyMessageGame
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.SetPlayerOp as LegacySetPlayerOp
-import net.rsprox.protocol.rs3v949.game.outgoing.model.specific.ProjAnimSpecificV2 as LegacyProjAnimSpecificV2
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapProjAnim as LegacyMapProjAnim
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapProjAnimHalfsq as LegacyMapProjAnimHalfsq
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapProjAnimHalfsqV2 as LegacyMapProjAnimHalfsqV2
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapProjAnimV2 as LegacyMapProjAnimV2
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MidiSongLocation as LegacyMidiSongLocation
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.SoundArea as LegacySoundArea
 
 public interface Rs3ServerPacketTranscriber {
     public fun lastLoginInfo(message: LastLoginInfo)
@@ -271,13 +256,9 @@ public interface Rs3ServerPacketTranscriber {
 
     public fun messageGame(message: MessageGame)
 
-    public fun legacyMessageGame(message: LegacyMessageGame)
-
     public fun rebuildNormal(message: RebuildNormal)
 
     public fun reconnect(message: Reconnect)
-
-    public fun legacyRebuildNormal(message: LegacyRebuildNormal)
 
     public fun updateZoneFullFollows(message: UpdateZoneFullFollows)
 
@@ -307,19 +288,7 @@ public interface Rs3ServerPacketTranscriber {
 
     public fun midiSongLocation(message: MidiSongLocation)
 
-    public fun legacyMidiSongLocation(message: LegacyMidiSongLocation)
-
-    public fun legacySoundArea(message: LegacySoundArea)
-
     public fun textCoord(message: TextCoord)
-
-    public fun legacyMapProjAnim(message: LegacyMapProjAnim)
-
-    public fun legacyMapProjAnimHalfsq(message: LegacyMapProjAnimHalfsq)
-
-    public fun legacyMapProjAnimHalfsqV2(message: LegacyMapProjAnimHalfsqV2)
-
-    public fun legacyMapProjAnimV2(message: LegacyMapProjAnimV2)
 
     public fun updateZonePartialEnclosed(message: UpdateZonePartialEnclosed)
 
@@ -365,11 +334,7 @@ public interface Rs3ServerPacketTranscriber {
 
     public fun camShake(message: CamShake)
 
-    public fun legacyCamShake(message: LegacyCamShake)
-
     public fun camForceAngle(message: CamForceAngle)
-
-    public fun legacyCamForceAngle(message: LegacyCamForceAngle)
 
     public fun camMoveTo(message: CamMoveTo)
 
@@ -431,8 +396,6 @@ public interface Rs3ServerPacketTranscriber {
 
     public fun cameraUpdate(message: CameraUpdate)
 
-    public fun legacyCameraUpdate(message: LegacyCameraUpdate)
-
     public fun updateInvFull(message: UpdateInvFull)
 
     public fun updateInvStopTransmit(message: UpdateInvStopTransmit)
@@ -449,17 +412,11 @@ public interface Rs3ServerPacketTranscriber {
 
     public fun hintTrail(message: HintTrail)
 
-    public fun legacyHintTrail(message: LegacyHintTrail)
-
     public fun hintArrow(message: HintArrow)
-
-    public fun legacyHintArrow(message: LegacyHintArrow)
 
     public fun chatFilterSettingsPrivateChat(message: ChatFilterSettingsPrivateChat)
 
     public fun setPlayerOp(message: SetPlayerOp)
-
-    public fun legacySetPlayerOp(message: LegacySetPlayerOp)
 
     public fun ifSetPlayerModelSnapshot(message: IfSetPlayerModelSnapshot)
 
@@ -470,8 +427,6 @@ public interface Rs3ServerPacketTranscriber {
     public fun runClientScript(message: RunClientScript)
 
     public fun projAnimSpecificV2(message: ProjAnimSpecificV2)
-
-    public fun legacyProjAnimSpecificV2(message: LegacyProjAnimSpecificV2)
 
     public fun locPrefetch(message: LocPrefetch)
 

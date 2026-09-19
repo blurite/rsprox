@@ -1,7 +1,6 @@
 package net.rsprox.proxy.rs3.transcriber.state
 
 import net.rsprox.cache.api.type.ClientScriptDefinitionProvider
-import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
 import net.rsprox.shared.property.ChildProperty
 import net.rsprox.shared.property.RootProperty
 
@@ -83,15 +82,6 @@ public class Rs3SessionState(
         this.activeWorldId = id
     }
 
-    public fun npcLabel(index: Int): String {
-        val npc = getActiveWorld().getNpcOrNull(index)
-        return if (npc != null) {
-            "$index(${Rs3GamevalLookup.npc(npc.id)})"
-        } else {
-            "$index(unidentified)"
-        }
-    }
-
     public fun overridePlayer(player: Rs3Player) {
         this.players[player.index] = player
     }
@@ -110,12 +100,6 @@ public class Rs3SessionState(
 
     public fun getPlayerOrNull(index: Int): Rs3Player? {
         return this.players[index]
-    }
-
-    public fun playerLabel(index: Int): String {
-        val player = getPlayerOrNull(index)
-        val name = player?.name
-        return if (name != null) "$index($name)" else "$index(unidentified)"
     }
 
     public fun level(): Int {

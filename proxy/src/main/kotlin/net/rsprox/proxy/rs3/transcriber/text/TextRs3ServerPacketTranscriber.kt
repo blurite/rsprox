@@ -188,21 +188,6 @@ import net.rsprox.shared.property.varp
 import net.rsprox.shared.clientscript.ClientScriptTypes
 import net.rsprox.shared.settings.Setting
 import net.rsprox.shared.settings.SettingSetStore
-import net.rsprox.protocol.rs3v949.game.outgoing.model.camera.CamForceAngle as LegacyCamForceAngle
-import net.rsprox.protocol.rs3v949.game.outgoing.model.camera.CamShake as LegacyCamShake
-import net.rsprox.protocol.rs3v949.game.outgoing.model.camera.CameraUpdate as LegacyCameraUpdate
-import net.rsprox.protocol.rs3v949.game.outgoing.model.map.RebuildNormal as LegacyRebuildNormal
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.client.HintArrow as LegacyHintArrow
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.client.HintTrail as LegacyHintTrail
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.MessageGame as LegacyMessageGame
-import net.rsprox.protocol.rs3v949.game.outgoing.model.misc.player.SetPlayerOp as LegacySetPlayerOp
-import net.rsprox.protocol.rs3v949.game.outgoing.model.specific.ProjAnimSpecificV2 as LegacyProjAnimSpecificV2
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapProjAnim as LegacyMapProjAnim
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapProjAnimHalfsq as LegacyMapProjAnimHalfsq
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapProjAnimHalfsqV2 as LegacyMapProjAnimHalfsqV2
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MapProjAnimV2 as LegacyMapProjAnimV2
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.MidiSongLocation as LegacyMidiSongLocation
-import net.rsprox.protocol.rs3v949.game.outgoing.model.zone.payload.SoundArea as LegacySoundArea
 
 public class TextRs3ServerPacketTranscriber(
     private val sessionState: Rs3SessionState,
@@ -721,17 +706,6 @@ public class TextRs3ServerPacketTranscriber(
         root.string("message", message.message)
     }
 
-    override fun legacyMessageGame(message: LegacyMessageGame) {
-        if (!filters[PropertyFilter.MESSAGE_GAME]) return omit()
-        root.int("type", message.type)
-        root.filteredInt("flags", message.effectFlags, 0)
-        val name = message.name
-        if (name != null) {
-            root.string("name", name)
-        }
-        root.string("message", message.message)
-    }
-
     override fun rebuildNormal(message: RebuildNormal) {
         if (!filters[PropertyFilter.REBUILD]) return omit()
         root.sceneBase(message.baseTileX, message.baseTileZ)
@@ -748,27 +722,6 @@ public class TextRs3ServerPacketTranscriber(
     override fun reconnect(message: Reconnect) {
         val init = message.playerInfoInit
         root.coordGrid(init.localPlayerLevel, init.localPlayerX, init.localPlayerZ, "localplayercoord")
-    }
-
-    override fun legacyRebuildNormal(message: LegacyRebuildNormal) {
-        if (!filters[PropertyFilter.REBUILD]) return omit()
-        val initBlock = message.playerInfoInitBlock
-        root.filteredBoolean("gpitooshort", initBlock == null)
-        if (initBlock != null) {
-            root.coordGrid(
-                initBlock.localPlayerLevel,
-                initBlock.localPlayerX,
-                initBlock.localPlayerZ,
-                "self",
-            )
-            root.int("nonzeropositioncount", initBlock.nonZeroPositionCount)
-        }
-        root.filteredBoolean("trailermisaligned", !message.trailerAligned)
-        if (!message.trailerAligned) {
-            return
-        }
-        root.int("worldareatypeid", message.worldAreaTypeId)
-        root.coordGridProperty(0, message.baseTileX, message.baseTileZ, "basetile")
     }
 
     private fun Property.buildZoneFollowsCommon(level: Int, zoneX: Int, zoneZ: Int) {
@@ -965,14 +918,6 @@ public class TextRs3ServerPacketTranscriber(
         root.buildLocAddChange(message)
     }
 
-    private fun Property.buildLegacyMidiSongLocation(event: LegacyMidiSongLocation) {
-        scriptVarType("song", ScriptVarType.MIDI, event.id)
-        zoneCoord(event.xInZone, event.zInZone)
-        int("maxdistance", event.maxDistance)
-        int("mindistance", event.minDistance)
-        int("volume", event.volume)
-    }
-
     override fun midiSongLocation(message: MidiSongLocation) {
         if (!filters[PropertyFilter.MIDI_SONG]) return omit()
         root.scriptVarType("song", ScriptVarType.MIDI, message.id)
@@ -983,11 +928,6 @@ public class TextRs3ServerPacketTranscriber(
         root.int("radius", message.radius)
         root.int("range", message.range)
         root.int("volume", message.volume)
-    }
-
-    override fun legacyMidiSongLocation(message: LegacyMidiSongLocation) {
-        if (!filters[PropertyFilter.MIDI_SONG]) return omit()
-        root.buildLegacyMidiSongLocation(message)
     }
 
     private fun Property.buildLocDel(event: LocDel) {
@@ -1274,19 +1214,6 @@ public class TextRs3ServerPacketTranscriber(
         if (!filters[PropertyFilter.MAP_PROJANIM]) return omit()
         root.buildMapProjAnimHalfsqV2(message)
     }
-    private fun Property.buildLegacySoundArea(event: LegacySoundArea) {
-        scriptVarType("sound", ScriptVarType.SYNTH, event.soundId)
-        zoneCoord(event.xInZone, event.zInZone)
-        int("loopcount", event.loopCount)
-        int("range", event.range)
-        filteredInt("rotation", event.rotation, 0)
-        filteredInt("heightoffset", event.heightOffset, 0)
-    }
-
-    override fun legacySoundArea(message: LegacySoundArea) {
-        if (!filters[PropertyFilter.SOUND_AREA]) return omit()
-        root.buildLegacySoundArea(message)
-    }
 
     private fun Property.buildTextCoord(event: TextCoord) {
         event.ignored?.let { int("ignored", it) }
@@ -1301,89 +1228,6 @@ public class TextRs3ServerPacketTranscriber(
         if (!filters[PropertyFilter.MAP_ANIM]) return omit()
         root.buildTextCoord(message)
     }
-
-    private fun Property.buildLegacyMapProjAnim(event: LegacyMapProjAnim) {
-        val world = sessionState.getActiveWorld()
-        val c = world.relativizeZoneCoord(event.xInZone, event.zInZone)
-        val dest = world.relativizeZoneCoord(event.xInZone + event.targetDeltaX, event.zInZone + event.targetDeltaY)
-        scriptVarType("id", ScriptVarType.SPOTANIM, event.id)
-        coordGrid("coord", c)
-        coordGrid("destcoord", dest)
-        int("startheight", event.startHeight)
-        int("endheight", event.endHeight)
-        int("starttime", event.startTime)
-        int("endtime", event.endTime)
-        filteredInt("alpha", event.alpha, 0)
-        filteredInt("lockonslot", event.lockonSlot, 0)
-    }
-
-    override fun legacyMapProjAnim(message: LegacyMapProjAnim) {
-        if (!filters[PropertyFilter.MAP_PROJANIM]) return omit()
-        root.buildLegacyMapProjAnim(message)
-    }
-
-    private fun Property.buildLegacyMapProjAnimHalfsq(event: LegacyMapProjAnimHalfsq) {
-        scriptVarType("id", ScriptVarType.SPOTANIM, event.id)
-        zoneCoord(event.xInZone, event.zInZone)
-        int("destxdeltahalf", event.destXdeltaHalf)
-        int("destydeltahalf", event.destYdeltaHalf)
-        if (event.trailingBytes.isNotEmpty()) {
-            any("trailingbytes", hex(event.trailingBytes))
-        }
-    }
-
-    override fun legacyMapProjAnimHalfsq(message: LegacyMapProjAnimHalfsq) {
-        if (!filters[PropertyFilter.MAP_PROJANIM]) return omit()
-        root.buildLegacyMapProjAnimHalfsq(message)
-    }
-
-    private fun Property.buildLegacyMapProjAnimHalfsqV2(event: LegacyMapProjAnimHalfsqV2) {
-        scriptVarType("spotanimid", ScriptVarType.SPOTANIM, event.spotAnimId)
-        zoneHalfCoord(event.xInZoneHalf, event.zInZoneHalf, "startcoord")
-        zoneHalfCoord(event.xInZoneHalf + event.destXdeltaHalf, event.zInZoneHalf + event.destYdeltaHalf, "destcoord")
-        any("source", formatEntityRef(event.sourceType, event.sourceIndex))
-        any("target", formatEntityRef(event.targetType, event.targetIndex))
-        int("startheight", event.startHeight)
-        int("endheight", event.endHeight)
-        int("starttime", event.startTime)
-        int("endtime", event.endTime)
-        filteredInt("alpha?", event.alpha, 0)
-        int("angle?", event.angle)
-        int("flags?", event.flags)
-        any("startOffset?", "0x%06x".format(event.startOffset))
-        any("endOffset?", "0x%06x".format(event.endOffset))
-    }
-
-    private fun formatEntityRef(
-        kind: Int,
-        index: Int,
-    ): String {
-        return when (kind) {
-            1 -> sessionState.npcLabel(index)
-            2 -> sessionState.playerLabel(index)
-            10 -> "Follow Source"
-            255 -> "NONE"
-            else -> "UNK_$kind($index)"
-        }
-    }
-
-    override fun legacyMapProjAnimHalfsqV2(message: LegacyMapProjAnimHalfsqV2) {
-        if (!filters[PropertyFilter.MAP_PROJANIM]) return omit()
-        root.buildLegacyMapProjAnimHalfsqV2(message)
-    }
-
-    override fun legacyMapProjAnimV2(message: LegacyMapProjAnimV2) {
-        if (!filters[PropertyFilter.MAP_PROJANIM]) return omit()
-        val c = sessionState.getActiveWorld().relativizeZoneCoord(message.xInZone, message.zInZone)
-        root.scriptVarType("id", ScriptVarType.SPOTANIM, message.id)
-        root.coordGrid("coord", c)
-        root.int("targetdeltax", message.targetDeltaX)
-        root.int("targetdeltay", message.targetDeltaY)
-        if (message.trailingBytes.isNotEmpty()) {
-            root.any("trailingbytes", hex(message.trailingBytes))
-        }
-    }
-
 
     override fun updateZonePartialEnclosed(message: UpdateZonePartialEnclosed) {
         val includeZoneHeader = filters[PropertyFilter.ZONE_HEADER]
@@ -1448,10 +1292,6 @@ public class TextRs3ServerPacketTranscriber(
                     if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
                     root.group("LOC_PREFETCH") { buildLocPrefetch(event) }
                 }
-                is LegacyMidiSongLocation -> {
-                    if (!filters[PropertyFilter.MIDI_SONG]) continue
-                    root.group("MIDI_SONG_LOCATION") { buildLegacyMidiSongLocation(event) }
-                }
                 is LocDel -> {
                     if (!filters[PropertyFilter.LOC_DEL]) continue
                     root.group("LOC_DEL") { buildLocDel(event) }
@@ -1484,29 +1324,9 @@ public class TextRs3ServerPacketTranscriber(
                     if (!filters[PropertyFilter.MAP_ANIM]) continue
                     root.group("MAP_ANIM_V2") { buildMapAnimV2(event) }
                 }
-                is LegacySoundArea -> {
-                    if (!filters[PropertyFilter.SOUND_AREA]) continue
-                    root.group("SOUND_AREA") { buildLegacySoundArea(event) }
-                }
                 is TextCoord -> {
                     if (!filters[PropertyFilter.MAP_ANIM]) continue
                     root.group("TEXT_COORD") { buildTextCoord(event) }
-                }
-                is LegacyMapProjAnim -> {
-                    if (!filters[PropertyFilter.MAP_PROJANIM]) continue
-                    root.group("MAP_PROJANIM") { buildLegacyMapProjAnim(event) }
-                }
-                is LegacyMapProjAnimHalfsq -> {
-                    if (!filters[PropertyFilter.MAP_PROJANIM]) continue
-                    root.group("MAP_PROJANIM_HALFSQ") { buildLegacyMapProjAnimHalfsq(event) }
-                }
-                is LegacyMapProjAnimHalfsqV2 -> {
-                    if (!filters[PropertyFilter.MAP_PROJANIM]) continue
-                    root.group("MAP_PROJANIM_HALFSQ_V2") { buildLegacyMapProjAnimHalfsqV2(event) }
-                }
-                is LegacyMapProjAnimV2 -> {
-                    if (!filters[PropertyFilter.MAP_PROJANIM]) continue
-                    root.group("MAP_PROJANIM_V2") { buildLegacyMapProjAnimV2(event) }
                 }
                 else -> Unit
             }
@@ -1556,10 +1376,6 @@ public class TextRs3ServerPacketTranscriber(
                     if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
                     sessionState.createFakeServerRoot("LOC_PREFETCH").buildLocPrefetch(event)
                 }
-                is LegacyMidiSongLocation -> {
-                    if (!filters[PropertyFilter.MIDI_SONG]) continue
-                    sessionState.createFakeServerRoot("MIDI_SONG_LOCATION").buildLegacyMidiSongLocation(event)
-                }
                 is LocDel -> {
                     if (!filters[PropertyFilter.LOC_DEL]) continue
                     sessionState.createFakeServerRoot("LOC_DEL").buildLocDel(event)
@@ -1593,42 +1409,13 @@ public class TextRs3ServerPacketTranscriber(
                     if (!filters[PropertyFilter.MAP_ANIM]) continue
                     sessionState.createFakeServerRoot("MAP_ANIM_V2").buildMapAnimV2(event)
                 }
-                is LegacySoundArea -> {
-                    if (!filters[PropertyFilter.SOUND_AREA]) continue
-                    sessionState.createFakeServerRoot("SOUND_AREA").buildLegacySoundArea(event)
-                }
                 is TextCoord -> {
                     if (!filters[PropertyFilter.MAP_ANIM]) continue
                     sessionState.createFakeServerRoot("TEXT_COORD").buildTextCoord(event)
                 }
-                is LegacyMapProjAnim -> {
-                    if (!filters[PropertyFilter.MAP_PROJANIM]) continue
-                    sessionState.createFakeServerRoot("MAP_PROJANIM").buildLegacyMapProjAnim(event)
-                }
-                is LegacyMapProjAnimHalfsq -> {
-                    if (!filters[PropertyFilter.MAP_PROJANIM]) continue
-                    sessionState.createFakeServerRoot("MAP_PROJANIM_HALFSQ").buildLegacyMapProjAnimHalfsq(event)
-                }
-                is LegacyMapProjAnimHalfsqV2 -> {
-                    if (!filters[PropertyFilter.MAP_PROJANIM]) continue
-                    sessionState.createFakeServerRoot("MAP_PROJANIM_HALFSQ_V2").buildLegacyMapProjAnimHalfsqV2(event)
-                }
-                is LegacyMapProjAnimV2 -> {
-                    if (!filters[PropertyFilter.MAP_PROJANIM]) continue
-                    sessionState.createFakeServerRoot("MAP_PROJANIM_V2").buildLegacyMapProjAnimV2(event)
-                }
                 else -> Unit
             }
         }
-    }
-
-    private fun Property.buildLegacyMapProjAnimV2(event: LegacyMapProjAnimV2) {
-        zoneCoord(event.xInZone, event.zInZone)
-        int("targetdeltax", event.targetDeltaX)
-        int("targetdeltay", event.targetDeltaY)
-        int("idmedium", event.idMedium)
-        scriptVarType("id", ScriptVarType.SPOTANIM, event.id)
-        any("trailingbytes", hex(event.trailingBytes))
     }
 
     override fun varcSmall(message: VarcSmall) {
@@ -1777,25 +1564,10 @@ public class TextRs3ServerPacketTranscriber(
         root.int("duration", message.duration)
     }
 
-    override fun legacyCamShake(message: LegacyCamShake) {
-        if (!filters[PropertyFilter.CAM_SHAKE]) return omit()
-        root.int("shakemode", message.shakeMode)
-        root.int("param0", message.param0)
-        root.int("param1", message.param1)
-        root.int("param2", message.param2)
-        root.int("param3", message.param3)
-    }
-
     override fun camForceAngle(message: CamForceAngle) {
         if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
         root.int("angle0", message.angle0)
         root.int("angle1", message.angle1)
-    }
-
-    override fun legacyCamForceAngle(message: LegacyCamForceAngle) {
-        if (!filters[PropertyFilter.CAM_LOOKAT]) return omit()
-        root.int("yaw", message.yaw)
-        root.int("pitch", message.pitch)
     }
 
     override fun camMoveTo(message: CamMoveTo) {
@@ -1989,12 +1761,6 @@ public class TextRs3ServerPacketTranscriber(
         root.appendCameraUpdate(message)
     }
 
-    override fun legacyCameraUpdate(message: LegacyCameraUpdate) {
-        if (!filters[PropertyFilter.CAM_MOVETO]) return omit()
-        root.any("headerflags", "0x${message.headerFlags.toString(16)}")
-        root.any("bitmask", "0x${message.bitmask.toString(16)}")
-    }
-
     override fun updateInvFull(message: UpdateInvFull) {
         if (!filters[PropertyFilter.UPDATE_INV]) return omit()
         root.scriptVarType("id", ScriptVarType.INV, message.inventoryId)
@@ -2114,12 +1880,6 @@ public class TextRs3ServerPacketTranscriber(
         }
     }
 
-    override fun legacyHintTrail(message: LegacyHintTrail) {
-        if (!filters[PropertyFilter.HINT_ARROW]) return omit()
-        root.int("slot", message.slot)
-        root.scriptVarType("model", ScriptVarType.MODEL, message.modelId)
-    }
-
     override fun hintArrow(message: HintArrow) {
         if (!filters[PropertyFilter.HINT_ARROW]) return omit()
         root.int("slot", message.slot)
@@ -2169,21 +1929,6 @@ public class TextRs3ServerPacketTranscriber(
         }
     }
 
-    override fun legacyHintArrow(message: LegacyHintArrow) {
-        if (!filters[PropertyFilter.HINT_ARROW]) return omit()
-        root.int("slot", message.slot)
-        if (message.isReset) {
-            root.string("type", "RESET")
-            return
-        }
-        root.int("type", message.type)
-        root.int("targetindex", message.targetIndex ?: -1)
-        root.int("x", message.x ?: -1)
-        root.int("y", message.y ?: -1)
-        root.int("z", message.z ?: -1)
-        root.int("distance", message.distance ?: -1)
-    }
-
     override fun chatFilterSettingsPrivateChat(message: ChatFilterSettingsPrivateChat) {
         if (!filters[PropertyFilter.CHAT_FILTER_SETTINGS]) return omit()
         root.int("private", message.privateChatFilter)
@@ -2199,14 +1944,6 @@ public class TextRs3ServerPacketTranscriber(
         }
         root.filteredBoolean("priority", message.priority)
         root.any("cursor", message.cursor.takeUnless { it == -1 })
-    }
-
-    override fun legacySetPlayerOp(message: LegacySetPlayerOp) {
-        if (!filters[PropertyFilter.SET_PLAYER_OP]) return omit()
-        root.int("slot", message.slot)
-        root.string("text", message.text)
-        root.boolean("priority", message.priority)
-        root.int("worldid", message.worldId)
     }
 
     override fun ifSetPlayerModelSnapshot(message: IfSetPlayerModelSnapshot) {
@@ -2305,27 +2042,6 @@ public class TextRs3ServerPacketTranscriber(
                 int("2z", z)
             }
         }
-    }
-
-    override fun legacyProjAnimSpecificV2(message: LegacyProjAnimSpecificV2) {
-        if (!filters[PropertyFilter.PROJANIM_SPECIFIC]) return omit()
-        root.scriptVarType("spotanim", ScriptVarType.SPOTANIM, message.spotAnimId)
-        root.int("field1", message.field1)
-        root.int("field2", message.field2)
-        root.int("field4", message.field4)
-        root.int("field5", message.field5)
-        root.int("field6", message.field6)
-        root.int("field7", message.field7)
-        root.int("field8", message.field8)
-        root.int("field9", message.field9)
-        root.int("field10", message.field10)
-        root.int("field11", message.field11)
-        root.int("field12", message.field12)
-        root.int("field13", message.field13)
-        root.int("field14", message.field14)
-        root.int("field15", message.field15)
-        root.int("field16", message.field16)
-        root.int("field17", message.field17)
     }
 
     override fun locPrefetch(message: LocPrefetch) {
