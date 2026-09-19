@@ -74,6 +74,7 @@ public fun downloadOpenRs2Group(
             .toURL()
             .openConnection()
     connection.connectTimeout = CONNECT_TIMEOUT_MS
+    connection.readTimeout = 30_000
     return connection.getInputStream().use { stream ->
         stream.readBytes()
     }

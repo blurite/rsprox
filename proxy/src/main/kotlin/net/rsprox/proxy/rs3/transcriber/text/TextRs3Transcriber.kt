@@ -54,7 +54,12 @@ public class TextRs3Transcriber(
     }
 
     override fun onTranscribeStart(): Boolean {
-        if (sessionState.cycle == 0 && settingSetStore.getActive()[Setting.SKIP_FIRST_TICK]) return false
+        val settings = settingSetStore.getActive()
+        if (sessionState.isLobby) {
+            if (settings[Setting.HIDE_RS3_LOBBY]) return false
+        } else if (sessionState.cycle == 0 && settings[Setting.SKIP_FIRST_TICK]) {
+            return false
+        }
         sessionState.setRoot()
         return true
     }

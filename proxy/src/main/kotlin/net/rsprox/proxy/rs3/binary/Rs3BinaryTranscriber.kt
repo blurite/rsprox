@@ -44,7 +44,7 @@ internal object Rs3BinaryTranscriber {
         settings: SettingSetStore,
         callback: TranscribeCallback?,
     ) {
-        callback?.indeterminate("Loading recorded RS3 cache definitions...")
+        callback?.indeterminate("Resolving recorded RS3 cache definitions (local cache / OpenRS2)...")
         val header = binary.header
         val definitions = Rs3LiveCacheResolver.loadRecordedPacketDefinitions(header.revision, header.js5MasterIndex)
         val clientScripts =
@@ -76,7 +76,7 @@ internal object Rs3BinaryTranscriber {
                 val container = TextMessageConsumerContainer(listOf(consumer))
                 val formatter = Rs3PropertyFormatter.create(settings, clientScripts)
                 val provider = TextRs3TranscriberProvider()
-                var transcriber = provider.provide(container, filters, settings, clientScripts)
+                var transcriber = provider.provide(container, filters, settings, clientScripts, isLobby = true)
 
                 fun session(index: Int): Session =
                     Session(index, AttributeMap()).apply {
@@ -108,7 +108,7 @@ internal object Rs3BinaryTranscriber {
                         Rs3RecordingProt.LOBBY_TRANSFER -> {
                             val transfer = initialization.transfer(packet.payload, packet.epochTimeMillis)
                             // Live lobby and game sockets each get independent protocol and transcript state.
-                            transcriber = provider.provide(container, filters, settings, clientScripts)
+                            transcriber = provider.provide(container, filters, settings, clientScripts, isLobby = false)
                             transcriber.sessionState.localPlayerIndex = transfer.playerIndex
                             clientSession = session(transfer.playerIndex)
                             serverSession = session(transfer.playerIndex).apply { rs3PlayerInfoInitPending = true }

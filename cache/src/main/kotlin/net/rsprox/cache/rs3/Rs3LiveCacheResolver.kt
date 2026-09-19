@@ -10,11 +10,14 @@ import net.rsprox.cache.api.rs3.Rs3QuickChatPhrase
 import net.rsprox.cache.api.rs3.Rs3VarbitDefinition
 import net.rsprox.cache.api.rs3.Rs3VariableDefinition
 import net.rsprox.cache.api.rs3.Rs3VariableDomain
+import net.rsprox.cache.dictionary.openrs2.CacheScope
+import net.rsprox.cache.util.downloadOpenRs2Group
 import org.openrs2.buffer.use
 import org.openrs2.cache.Group
 import org.openrs2.cache.Js5Compression
 import org.openrs2.cache.Js5Index
 import java.nio.ByteBuffer
+import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
@@ -36,7 +39,7 @@ public class Rs3LiveCacheResolver(
             val master = unpack(connection.get(255, 255))
             val snapshot =
                 loadSnapshot(master) { archive, group, version, crc ->
-                    readGroup(connection, archive, group, version, crc)
+                    readGroup(directory, archive, group, version, crc) { connection.get(archive, group) }
                 }
             require(master.contentEquals(unpack(connection.get(255, 255)))) {
                 "RS3 cache changed during bootstrap; please launch again"
@@ -46,36 +49,10 @@ public class Rs3LiveCacheResolver(
         }
     }
 
-    private fun readGroup(
-        connection: Rs3Js5Connection,
-        archive: Int,
-        group: Int,
-        version: Int,
-        crc: Int,
-    ): ByteArray {
-        val path = directory.resolve("$archive/${group}_${version}_${crc.toUInt().toString(16)}.dat")
-        if (Files.isRegularFile(path)) {
-            val cached = Files.readAllBytes(path)
-            if (checksum(cached) == crc) return cached
-            logger.warn { "Ignoring corrupt RS3 cached group $archive:$group" }
-        }
-        val bytes = connection.get(archive, group)
-        require(checksum(bytes) == crc) { "RS3 JS5 checksum mismatch for $archive:$group; cache may have updated" }
-        Files.createDirectories(path.parent)
-        val temporary = Files.createTempFile(path.parent, "js5-", ".tmp")
-        try {
-            Files.write(temporary, bytes)
-            Files.move(temporary, path, StandardCopyOption.REPLACE_EXISTING)
-        } finally {
-            Files.deleteIfExists(temporary)
-        }
-        return bytes
-    }
-
     public companion object {
         private val logger = InlineLogger()
 
-        /** Uses only the exact checksum/version-addressed groups saved during live capture. */
+        /** Resolves exact recorded groups locally, then through OpenRS2, never from the current live cache. */
         public fun loadRecordedPacketDefinitions(
             revision: Int,
             masterIndex: ByteArray,
@@ -83,14 +60,54 @@ public class Rs3LiveCacheResolver(
         ): Rs3PacketDefinitions {
             require(revision == 950) { "Unsupported recorded RS3 revision: $revision" }
             return loadSnapshot(masterIndex) { archive, group, version, crc ->
-                val path = directory.resolve("$archive/${group}_${version}_${crc.toUInt().toString(16)}.dat")
-                require(Files.isRegularFile(path)) {
-                    "Missing recorded RS3 cache group $archive:$group (version $version): $path"
-                }
-                Files.readAllBytes(path).also {
-                    require(checksum(it) == crc) { "Corrupt recorded RS3 cache group: $path" }
+                readGroup(directory, archive, group, version, crc) {
+                    logger.debug { "Downloading recorded RS3 cache group $archive:$group (version $version) from OpenRS2" }
+                    try {
+                        downloadOpenRs2Group(CacheScope.RuneScape, archive, group, version, crc)
+                    } catch (error: Exception) {
+                        throw IllegalStateException(
+                            "Unable to obtain recorded RS3 cache group $archive:$group " +
+                                "(revision $revision, version $version, checksum ${crc.toUInt().toString(16)}) " +
+                                "from OpenRS2; no valid local copy is available",
+                            error,
+                        )
+                    }
                 }
             }
+        }
+
+        private fun readGroup(
+            directory: Path,
+            archive: Int,
+            group: Int,
+            version: Int,
+            crc: Int,
+            download: () -> ByteArray,
+        ): ByteArray {
+            val path = directory.resolve("$archive/${group}_${version}_${crc.toUInt().toString(16)}.dat")
+            if (Files.isRegularFile(path)) {
+                val cached = Files.readAllBytes(path)
+                if (checksum(cached) == crc) return cached
+                logger.warn { "Ignoring corrupt RS3 cached group $archive:$group" }
+            }
+            val bytes = download()
+            require(checksum(bytes) == crc) {
+                "RS3 cache checksum mismatch for $archive:$group (version $version): " +
+                    "expected ${crc.toUInt().toString(16)}, got ${checksum(bytes).toUInt().toString(16)}"
+            }
+            Files.createDirectories(path.parent)
+            val temporary = Files.createTempFile(path.parent, "js5-", ".tmp")
+            try {
+                Files.write(temporary, bytes)
+                try {
+                    Files.move(temporary, path, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE)
+                } catch (_: AtomicMoveNotSupportedException) {
+                    Files.move(temporary, path, StandardCopyOption.REPLACE_EXISTING)
+                }
+            } finally {
+                Files.deleteIfExists(temporary)
+            }
+            return bytes
         }
 
         private fun loadSnapshot(

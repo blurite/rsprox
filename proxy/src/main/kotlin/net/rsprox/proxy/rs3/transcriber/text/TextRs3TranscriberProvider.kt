@@ -15,9 +15,10 @@ public class TextRs3TranscriberProvider {
         filters: PropertyFilterSetStore,
         settings: SettingSetStore,
         clientScripts: ClientScriptDefinitionProvider = ClientScriptDefinitionProvider.EMPTY,
+        isLobby: Boolean = false,
     ): Rs3TranscriberSession {
         val formatter = Rs3PropertyFormatter.create(settings, clientScripts)
-        val sessionState = Rs3SessionState(clientScripts)
+        val sessionState = Rs3SessionState(clientScripts, isLobby)
         val sessionTracker = Rs3SessionTracker(sessionState)
         val plugin =
             Rs3TranscriberPlugin(

@@ -336,6 +336,7 @@ public class Rs3RelayServer(
                 filters = filterSetStore,
                 settings = settingSetStore,
                 clientScripts = clientScripts,
+                isLobby = !isWorldConnection,
             )
 
         var state =

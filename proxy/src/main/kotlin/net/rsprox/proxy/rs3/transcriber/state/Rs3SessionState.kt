@@ -6,6 +6,7 @@ import net.rsprox.shared.property.RootProperty
 
 public class Rs3SessionState(
     public val clientScripts: ClientScriptDefinitionProvider = ClientScriptDefinitionProvider.EMPTY,
+    public val isLobby: Boolean = false,
 ) {
     public var cycle: Int = 0
         private set
