@@ -20,6 +20,7 @@ public class SessionsPanel(
     private val app: App,
 ) : FlatTabbedPane() {
     private var counter = 0
+    private val rs3LaunchWarning = Rs3LaunchWarning()
     private var homeComponent: Component? = null
     private var replayComponent: Component? = null
 
@@ -79,6 +80,8 @@ public class SessionsPanel(
         type: SessionType,
         character: JagexCharacter?,
     ) {
+        if (type == SessionType.RS3 && !rs3LaunchWarning.confirm(this)) return
+
         val session = SessionPanel(type, this, character)
         addTab("Session ${++counter}", type.icon, session, "")
         selectedComponent = session
