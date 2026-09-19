@@ -6,7 +6,8 @@ import net.rsprox.protocol.rs3.game.outgoing.model.info.playerinfo.util.PlayerIn
 public data class RebuildRegion(
     public val baseChunkZ: Int,
     public val unused: Int,
-    public val npcSceneValue: Int,
+    /** Bit width of each signed, local-player-relative NPC-add X/Z offset. */
+    public val npcCoordinateBits: Int,
     public val format: Int,
     public val mode: Int,
     public val baseChunkX: Int,

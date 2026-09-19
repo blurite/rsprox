@@ -22,7 +22,7 @@ internal class RebuildNormalDecoder : ProxyMessageDecoder<RebuildNormal> {
             RebuildNormal(
                 baseChunkZ = buffer.g2Alt2(),
                 format = buffer.g1(),
-                npcSceneValue = buffer.g1Alt1(),
+                npcCoordinateBits = buffer.g1Alt1(),
                 reserved = buffer.g2(),
                 baseChunkX = buffer.g2(),
                 templateId = buffer.g2(),
@@ -33,7 +33,7 @@ internal class RebuildNormalDecoder : ProxyMessageDecoder<RebuildNormal> {
             )
         require(message.format == 5) { "Unsupported REBUILD_NORMAL format ${message.format}" }
         require(buffer.readableBytes() == 0) { "Trailing REBUILD_NORMAL bytes" }
-        session.initializeNpcInfo(message.npcSceneValue, init != null)
+        session.initializeNpcInfo(message.npcCoordinateBits, init != null)
         session.initializePlayerInfo(init)
         return message
     }

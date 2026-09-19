@@ -21,7 +21,7 @@ internal class RebuildRegionDecoder : ProxyMessageDecoder<RebuildRegion> {
         val init = session.readPlayerInfoInit(buffer)
         val baseChunkZ = buffer.g2Alt1()
         val unused = buffer.g1()
-        val npcSceneValue = buffer.g1()
+        val npcCoordinateBits = buffer.g1()
         val format = buffer.g1()
         val mode = buffer.g1Alt1()
         val baseChunkX = buffer.g2Alt1()
@@ -48,12 +48,12 @@ internal class RebuildRegionDecoder : ProxyMessageDecoder<RebuildRegion> {
                 }
             }
         require(buffer.readableBytes() == 0) { "Trailing REBUILD_REGION bytes" }
-        session.initializeNpcInfo(npcSceneValue, init != null)
+        session.initializeNpcInfo(npcCoordinateBits, init != null)
         session.initializePlayerInfo(init)
         return RebuildRegion(
             baseChunkZ,
             unused,
-            npcSceneValue,
+            npcCoordinateBits,
             format,
             mode,
             baseChunkX,

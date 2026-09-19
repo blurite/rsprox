@@ -712,7 +712,7 @@ public class TextRs3ServerPacketTranscriber(
         root.int("basechunkx", message.baseChunkX)
         root.int("basechunkz", message.baseChunkZ)
         root.int("format", message.format)
-        root.int("npcscenevalue", message.npcSceneValue)
+        root.int("npccoordbits", message.npcCoordinateBits)
         root.int("reserved", message.reserved)
         root.int("templateid", message.templateId)
         root.int("minimumcoordinate", message.minimumCoordinate)
@@ -2562,7 +2562,7 @@ public class TextRs3ServerPacketTranscriber(
             int("regionoriginx", message.regionOriginX)
             int("regionoriginz", message.regionOriginZ)
             int("format", message.format)
-            int("npcscenevalue", message.npcSceneValue)
+            int("npccoordbits", message.npcCoordinateBits)
             filteredInt("unused", message.unused, 255)
         }
     }
