@@ -20,6 +20,7 @@ public object AppIcons {
     public val Resume: FlatSVGIcon = loadSvgIcon("resume")
     public val Run: FlatSVGIcon = loadSvgIcon("run")
     public val RuneLite: ImageIcon = loadIcon("runelite")
+    public val RuneScape3: ImageIcon = loadIcon("runescape3")
     public val Settings: FlatSVGIcon = loadSvgIcon("settings")
     public val StepBack: FlatSVGIcon = loadSvgIcon("step-back")
     public val StepForward: FlatSVGIcon = loadSvgIcon("step-forward")

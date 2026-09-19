@@ -10,6 +10,12 @@ public interface SymbolDictionary {
 
     public fun getVarpName(id: Int): String?
 
+    public fun getVarcName(id: Int): String? = null
+
+    public fun getVarNpcName(id: Int): String? = null
+
+    public fun getVarObjName(id: Int): String? = null
+
     public fun getVarbitName(id: Int): String?
 
     public fun getScriptName(id: Int): String?

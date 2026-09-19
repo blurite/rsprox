@@ -18,7 +18,6 @@ public value class LocalHostAddress private constructor(
 
     public companion object {
         private const val LOCALHOST_GROUP_HEADER: Int = 127
-        private const val LOCALHOST_GROUP_SUFFIX: Int = 2
         private val ipv4Regex =
             Regex("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")
 
@@ -36,7 +35,7 @@ public value class LocalHostAddress private constructor(
                     LOCALHOST_GROUP_HEADER,
                     b,
                     c,
-                    LOCALHOST_GROUP_SUFFIX + config.id,
+                    LocalAddressRanges.osrsSuffix(config.id),
                 ),
             )
         }

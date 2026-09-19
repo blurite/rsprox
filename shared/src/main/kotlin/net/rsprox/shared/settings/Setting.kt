@@ -43,12 +43,20 @@ public enum class Setting(
         false,
         "Collapses a set of zones that is copied in a 1:1 manner in logging.",
     ),
+    HIDE_RS3_LOBBY(
+        SettingGroup.LOGGING,
+        SettingCategory.MISC,
+        "Hide RS3 Lobby",
+        false,
+        "Hides RuneScape 3 lobby packets in live and saved transcripts. Binary recordings retain all lobby data.",
+    ),
     SKIP_FIRST_TICK(
         SettingGroup.LOGGING,
         SettingCategory.MISC,
         "Skip First Tick",
         false,
-        "Skips logging all packets on tick 0. Most of this is the initial state being assigned.",
+        "Skips logging all packets on game tick 0. Most of this is the initial state being assigned. " +
+            "RuneScape 3 lobby packets are unaffected.",
     ),
     HIDE_UNNECESSARY_VARPS(
         SettingGroup.LOGGING,

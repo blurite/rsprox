@@ -7,25 +7,33 @@ import net.rsprox.cache.CLIENTSCRIPT_INDEXES_DIRECTORY
 import net.rsprox.cache.Js5MasterIndex
 import net.rsprox.cache.api.type.ClientScriptArgument
 import net.rsprox.cache.api.type.ClientScriptDefinition
+import net.rsprox.cache.api.type.ClientScriptDefinitionProvider
 import net.rsprox.cache.util.atomicWrite
 import net.rsprox.cache.util.mapper
 import java.net.URI
+import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.isRegularFile
 
-internal class RSProxArchiveClientScriptIndex(
+public class RSProxArchiveClientScriptIndex(
     private val masterIndex: Js5MasterIndex,
-) {
+    private val game: ClientScriptGame = ClientScriptGame.OLD_SCHOOL,
+) : ClientScriptDefinitionProvider {
     private val scripts: Map<Int, ClientScriptDefinition> by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         load()
     }
 
-    fun get(id: Int): ClientScriptDefinition? = scripts[id]
+    override fun getClientScriptDefinition(id: Int): ClientScriptDefinition? = scripts[id]
+
+    /** Resolve on the launch/transcription worker, not the relay event loop or Swing thread. */
+    public fun preload() {
+        scripts
+    }
 
     private fun load(): Map<Int, ClientScriptDefinition> {
         val sha256 = masterIndex.sha256()
-        val path = CLIENTSCRIPT_INDEXES_DIRECTORY.resolve(sha256).resolve(INDEX_FILE)
+        val path = CLIENTSCRIPT_INDEXES_DIRECTORY.resolve(game.namespace).resolve(sha256).resolve(INDEX_FILE)
         if (path.isRegularFile()) {
             try {
                 return parse(Files.readAllBytes(path), sha256).also { scripts ->
@@ -51,7 +59,8 @@ internal class RSProxArchiveClientScriptIndex(
         path: Path,
         sha256: String,
     ): Map<Int, ClientScriptDefinition> {
-        val uri = URI("$ARCHIVE_BASE_URL/clientscripts/$sha256/$INDEX_FILE")
+        val prefix = listOf("clientscripts", game.namespace).filter(String::isNotEmpty).joinToString("/")
+        val uri = URI("$ARCHIVE_BASE_URL/$prefix/$sha256/$INDEX_FILE")
         logger.info { "Downloading clientscript definitions from $uri" }
         val connection = uri.toURL().openConnection()
         connection.connectTimeout = CONNECT_TIMEOUT_MS
@@ -72,7 +81,7 @@ internal class RSProxArchiveClientScriptIndex(
         require(index.version == INDEX_VERSION && index.kind == INDEX_KIND) {
             "Unsupported clientscript index schema ${index.kind} version ${index.version}"
         }
-        require(index.game == OLDSCHOOL_GAME) { "Unexpected clientscript index game: ${index.game}" }
+        require(index.game == game.archiveGame) { "Unexpected clientscript index game: ${index.game}" }
         // Don't allow this check as it breaks during revision transitions.
         // require(index.revision == masterIndex.revision) {
         //     "Clientscript index revision ${index.revision} does not match cache revision ${masterIndex.revision}"
@@ -96,12 +105,28 @@ internal class RSProxArchiveClientScriptIndex(
         }
     }
 
-    private companion object {
+    public companion object {
+        /** RS3 live snapshots and recording headers contain the uncompressed master index. */
+        public fun forRuneScape(
+            revision: Int,
+            masterIndex: ByteArray,
+        ): RSProxArchiveClientScriptIndex {
+            require(masterIndex.isNotEmpty()) { "Missing RS3 master index for clientscript metadata" }
+            // OpenRS2/RSProx Archive identify the complete, uncompressed JS5 container (type + length + data).
+            val container =
+                ByteBuffer
+                    .allocate(5 + masterIndex.size)
+                    .put(0.toByte())
+                    .putInt(masterIndex.size)
+                    .put(masterIndex)
+                    .array()
+            return RSProxArchiveClientScriptIndex(Js5MasterIndex(revision, container), ClientScriptGame.RUNESCAPE)
+        }
+
         private const val ARCHIVE_BASE_URL: String = "https://archive.rsprox.net"
         private const val INDEX_FILE: String = "index.json"
         private const val INDEX_VERSION: Int = 1
         private const val INDEX_KIND: String = "clientscript-index"
-        private const val OLDSCHOOL_GAME: String = "oldschool"
         private const val CONNECT_TIMEOUT_MS: Int = 8_000
         private const val READ_TIMEOUT_MS: Int = 30_000
         private val logger = InlineLogger()

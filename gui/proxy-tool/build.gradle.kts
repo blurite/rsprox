@@ -10,6 +10,7 @@ dependencies {
     implementation(libs.bundles.jackson)
     implementation(libs.mig.layout)
     implementation(projects.proxy)
+    implementation(projects.transcriber)
     implementation(libs.inline.logger)
     implementation(platform(rootProject.libs.netty.bom))
     implementation(rootProject.libs.netty.buffer)

@@ -84,6 +84,8 @@ public object Rsa {
 
     public const val JAR_KEY_LENGTH: Int = 2048
 
+    public const val RS3_LOGIN_KEY_LENGTH: Int = 1024
+
     // 1 in 2^80
     private const val CERTAINTY = 80
 

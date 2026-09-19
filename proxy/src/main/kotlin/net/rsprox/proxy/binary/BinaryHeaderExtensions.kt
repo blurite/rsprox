@@ -1,3 +1,21 @@
 package net.rsprox.proxy.binary
 
-internal fun BinaryHeader.isOldSchoolRuneScape(): Boolean = worldHost.endsWith(".runescape.com")
+import io.netty.buffer.Unpooled
+import net.rsprot.buffer.extensions.toJagByteBuf
+import java.nio.file.Files
+import java.nio.file.Path
+
+public fun BinaryHeader.isRuneScape3(): Boolean = clientName == "RS3 Native"
+
+/** Inspect the header without loading the entire packet stream for a GUI file choice. */
+public fun readBinaryHeader(path: Path): BinaryHeader {
+    val bytes = Files.newInputStream(path).use { it.readNBytes(1024 * 1024) }
+    val buffer = Unpooled.wrappedBuffer(bytes)
+    return try {
+        BinaryHeader.decode(buffer.toJagByteBuf())
+    } finally {
+        buffer.release()
+    }
+}
+
+internal fun BinaryHeader.isOldSchoolRuneScape(): Boolean = !isRuneScape3() && worldHost.endsWith(".runescape.com")

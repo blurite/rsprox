@@ -105,8 +105,8 @@ import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialFoll
 import net.rsprox.protocol.game.outgoing.model.zone.payload.*
 import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInBuildArea
 import net.rsprox.protocol.reflection.ReflectionCheck
-import net.rsprox.shared.BaseVarType
 import net.rsprox.shared.ScriptVarType
+import net.rsprox.shared.clientscript.ClientScriptTypes
 import net.rsprox.shared.filters.PropertyFilter
 import net.rsprox.shared.filters.PropertyFilterSet
 import net.rsprox.shared.filters.PropertyFilterSetStore
@@ -2407,42 +2407,8 @@ public class TextServerPacketTranscriber(
     }
 
     private fun inferClientScriptTypes(message: RunClientScript): CharArray {
-        if (!settings[Setting.INFER_CLIENTSCRIPT_TYPES]) {
-            return message.types
-        }
-        val definition = cache.getClientScriptDefinition(message.id) ?: return message.types
-        if (definition.arguments.size != message.types.size || message.types.size != message.values.size) {
-            return message.types
-        }
-        val inferred = CharArray(message.types.size)
-        for (index in inferred.indices) {
-            val type = definition.arguments[index].type
-            val char =
-                when (type) {
-                    "intarray" -> 'W'
-                    "stringarray" -> 'X'
-                    else -> CLIENTSCRIPT_TYPES_BY_NAME[type]?.char ?: return message.types
-                }
-            if (!isClientScriptValueCompatible(char, message.values[index])) {
-                return message.types
-            }
-            inferred[index] = char
-        }
-        return inferred
-    }
-
-    private fun isClientScriptValueCompatible(
-        char: Char,
-        value: Any,
-    ): Boolean {
-        if (char == 'W') return value is IntArray
-        if (char == 'X') return value is Array<*> && value.all { element -> element is String }
-        return when (CLIENTSCRIPT_TYPES_BY_CHAR[char]?.baseVarType) {
-            BaseVarType.INTEGER -> value is Int
-            BaseVarType.LONG -> value is Long
-            BaseVarType.STRING -> value is String
-            null -> false
-        }
+        if (!settings[Setting.INFER_CLIENTSCRIPT_TYPES]) return message.types
+        return ClientScriptTypes.infer(cache.getClientScriptDefinition(message.id), message.types, message.values)
     }
 
     override fun runClientScript(message: RunClientScript) {
@@ -3929,10 +3895,6 @@ public class TextServerPacketTranscriber(
     public companion object {
         private val MS_NUMBER_FORMAT: NumberFormat = DecimalFormat("###,###,###ms")
         private val KG_NUMBER_FORMAT: NumberFormat = DecimalFormat("###,###,###kg")
-        private val CLIENTSCRIPT_TYPES_BY_NAME: Map<String, ScriptVarType> =
-            ScriptVarType.entries.associateBy(ScriptVarType::fullName)
-        private val CLIENTSCRIPT_TYPES_BY_CHAR: Map<Char, ScriptVarType> =
-            ScriptVarType.entries.associateBy(ScriptVarType::char)
         public val worldentityInstanceSwCoords: MutableSet<CoordGrid> = mutableSetOf()
     }
 }

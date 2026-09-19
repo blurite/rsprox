@@ -38,6 +38,7 @@ public class ClientPatcherCommand : CliktCommand(name = "patch") {
             when (this.type) {
                 "win" -> NativeClientType.WIN
                 "mac" -> NativeClientType.MAC
+                "rs3-win" -> NativeClientType.RS3_WIN
                 else -> error("Invalid client type: ${this.type}")
             }
         val folder = CLIENTS_DIRECTORY.resolve(version)

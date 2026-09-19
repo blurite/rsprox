@@ -160,6 +160,27 @@ public fun Property.varp(
     )
 }
 
+public fun Property.varc(
+    name: String,
+    value: Int,
+): VarcProperty {
+    return child(VarcProperty(name, value))
+}
+
+public fun Property.varnpc(
+    name: String,
+    value: Int,
+): VarNpcProperty {
+    return child(VarNpcProperty(name, value))
+}
+
+public fun Property.varobj(
+    name: String,
+    value: Int,
+): VarObjProperty {
+    return child(VarObjProperty(name, value))
+}
+
 public fun Property.varbit(
     name: String,
     value: Int,

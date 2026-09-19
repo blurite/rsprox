@@ -1,0 +1,43 @@
+package net.rsprox.protocol.rs3.game.outgoing.model.varbit
+
+import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
+
+public class VarbitSmall private constructor(
+    private val _id: UShort,
+    private val _value: UByte,
+) : IncomingServerGameMessage {
+    public constructor(
+        id: Int,
+        value: Int,
+    ) : this(
+        id.toUShort(),
+        value.toUByte(),
+    )
+
+    public val id: Int
+        get() = _id.toInt()
+    public val value: Int
+        get() = _value.toInt()
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as VarbitSmall
+
+        if (_id != other._id) return false
+        if (_value != other._value) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = _id.hashCode()
+        result = 31 * result + _value.hashCode()
+        return result
+    }
+
+    override fun toString(): String {
+        return "VarbitSmall(id=$id, value=$value)"
+    }
+}

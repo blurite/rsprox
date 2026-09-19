@@ -49,12 +49,13 @@ public data class BinaryHeader(
     }
 
     @OptIn(ExperimentalStdlibApi::class)
-    public fun fileName(): String {
+    public fun fileName(timestamp: Long = this.timestamp): String {
         val date = Date(timestamp)
-        val formattedDate = FILE_NAME_DATE_FORMATTER.format(date)
+        val formattedDate = synchronized(FILE_NAME_DATE_FORMATTER) { FILE_NAME_DATE_FORMATTER.format(date) }
         val hexHash = accountHash.toHexString(HexFormat.Default)
         val shortHash = hexHash.substring(0, min(7, hexHash.length))
-        return "$formattedDate-$shortHash.$BINARY_EXTENSION"
+        val suffix = if (shortHash.isEmpty()) "" else "-$shortHash"
+        return "$formattedDate$suffix.$BINARY_EXTENSION"
     }
 
     override fun equals(other: Any?): Boolean {
@@ -248,6 +249,7 @@ public data class BinaryHeader(
             buffer.gdata(accountHash)
             val clientName = buffer.gjstr()
             val js5MasterIndexLength = buffer.g4()
+            require(js5MasterIndexLength in 0..buffer.readableBytes()) { "Invalid binary master-index length" }
             val js5MasterIndex = ByteArray(js5MasterIndexLength)
             buffer.gdata(js5MasterIndex)
             return BinaryHeader(

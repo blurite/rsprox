@@ -2,12 +2,15 @@ package net.rsprox.gui
 
 import net.rsprox.cache.resolver.HistoricCacheResolver
 import net.rsprox.proxy.ProxyService
+import net.rsprox.proxy.binary.isRuneScape3
+import net.rsprox.proxy.binary.readBinaryHeader
 import net.rsprox.proxy.cache.CachedCaches
 import net.rsprox.proxy.cli.TranscribeCommand
 import net.rsprox.proxy.util.TranscribeCallback
 import java.awt.datatransfer.DataFlavor
 import java.io.File
 import java.nio.file.Path
+import javax.swing.JButton
 import javax.swing.JOptionPane
 import javax.swing.TransferHandler
 
@@ -41,18 +44,31 @@ public class FileDropHandler(
         }
         if (binaryFiles.size == 1) {
             val file = binaryFiles.single()
-            val options = arrayOf("Replay", "Transcribe", "Cancel")
+            val rs3 =
+                try {
+                    readBinaryHeader(file.toPath()).isRuneScape3()
+                } catch (error: Exception) {
+                    JOptionPane.showMessageDialog(
+                        support.component,
+                        "Unable to read binary header: ${error.message}",
+                        "Open Binary Dump",
+                        JOptionPane.ERROR_MESSAGE,
+                    )
+                    return false
+                }
+            if (rs3) {
+                submitTranscription(file)
+                return true
+            }
+            val pane = binaryOpenPane(file.name)
+            val dialog = pane.createDialog(support.component, "Open Binary Dump")
             val choice =
-                JOptionPane.showOptionDialog(
-                    support.component,
-                    "How would you like to open ${file.name}?",
-                    "Open Binary Dump",
-                    JOptionPane.DEFAULT_OPTION,
-                    JOptionPane.QUESTION_MESSAGE,
-                    null,
-                    options,
-                    options.first(),
-                )
+                try {
+                    dialog.isVisible = true
+                    pane.value as? Int ?: -1
+                } finally {
+                    dialog.dispose()
+                }
             when (choice) {
                 0 -> {
                     openReplay(file.toPath())
@@ -109,4 +125,22 @@ public class FileDropHandler(
             }
         }
     }
+}
+
+internal fun binaryOpenPane(name: String): JOptionPane {
+    val replay = JButton("Replay")
+    val transcribe = JButton("Transcribe")
+    val cancel = JButton("Cancel")
+    val options = arrayOf(replay, transcribe, cancel)
+    val pane =
+        JOptionPane(
+            "How would you like to open $name?",
+            JOptionPane.QUESTION_MESSAGE,
+            JOptionPane.DEFAULT_OPTION,
+            null,
+            options,
+            replay,
+        )
+    options.forEachIndexed { index, button -> button.addActionListener { pane.value = index } }
+    return pane
 }

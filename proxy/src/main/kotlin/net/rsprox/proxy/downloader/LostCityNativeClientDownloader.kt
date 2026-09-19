@@ -22,17 +22,20 @@ public object LostCityNativeClientDownloader {
             when (type) {
                 NativeClientType.WIN -> "osrs-win/"
                 NativeClientType.MAC -> "osrs-mac/"
+                NativeClientType.RS3_WIN -> error("Unsupported client type: $type")
             }
         val versionPath = "$normalizedVersion/"
         val filePath =
             when (type) {
                 NativeClientType.WIN -> "osclient.exe"
                 NativeClientType.MAC -> "osclient.app/Contents/MacOS/osclient"
+                NativeClientType.RS3_WIN -> error("Unsupported client type: $type")
             }
         val filePathWithVersion =
             when (type) {
                 NativeClientType.WIN -> "osclient-$normalizedVersion.exe"
                 NativeClientType.MAC -> "osclient.app/Contents/MacOS/osclient-$normalizedVersion"
+                NativeClientType.RS3_WIN -> error("Unsupported client type: $type")
             }
         val file = folder.resolve(filePathWithVersion)
         // Return the old file if it already exists, assume it is unchanged

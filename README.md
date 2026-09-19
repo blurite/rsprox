@@ -3,52 +3,64 @@
 [![GitHub Actions][actions-badge]][actions] [![MIT license][mit-badge]][mit]
 
 ## Introduction
-RSProx is a locally hosted proxy server intended to act as a middleman between the clients and servers in Old School RuneScape.
-Support for RuneScape 3 may be added later in the future, if a maintainer for packet decoders can be found.
 
-RSProx will work by patching a root client, allowing it to connect to the locally-hosted proxy server rather than the real servers.
-The original information that the patcher overwrote will be passed onto the proxy tool, allowing it to establish connections with
-what the client had originally intended. We intend to support most java clients, as well as the C++ client.
-A technical breakdown of the processes involved can be found in [issues/RSProx](https://github.com/blurite/rsprox/issues/1).
+RSProx is a locally hosted proxy for inspecting traffic between game clients and servers in
+Old School RuneScape and RuneScape 3. It provides live packet transcripts and binary recordings
+that can be transcribed later.
+
+RSProx patches the client to connect through the local proxy, which forwards traffic to the
+intended game servers. Old School RuneScape supports RuneLite and the Windows-native client.
+RuneScape 3 support is experimental and currently targets revision 950's Windows-native client.
+See [RuneScape 3](#runescape-3-experimental) for its features and limitations.
+
+A technical breakdown of the original OSRS implementation can be found in
+[issues/RSProx](https://github.com/blurite/rsprox/issues/1).
 
 ## Installer
 
 > [!TIP]
 > Use the installer for better compatibility and ease of use.
 
-The installer for RSProx can be found [under releases](https://github.com/blurite/rsprox/releases),
-the latest installer is [v1.0](https://github.com/blurite/rsprox/releases/tag/v1.0).
+The installer for RSProx can be found [under releases](https://github.com/blurite/rsprox/releases).
 
 The installer comes with a bundled JDK which it utilizes. The launcher auto-updates
 RSProx whenever a new version is published.
 
 ## Guide
+
 Below is a quick guide demonstrating how to use RSProx.
 
-### Cloning
-As of right now, RSProx can only be used by cloning the repository yourself.
+### Building from Source
+
+Clone the repository to develop RSProx or try changes that have not yet been released.
+For published versions, the installer is also available as described above.
 
 ### Launching
-RSProx project can be launched by either running the class
-`net.rsprox.gui.ProxyToolGuiKt` directly in gui/proxy-tool module,
-or by it via gradle as `./gradlew proxy`.
+
+From a source checkout, run `net.rsprox.gui.ProxyToolGuiKt` in the `gui/proxy-tool` module,
+or launch it through Gradle with `./gradlew proxy` (`.\gradlew.bat proxy` on Windows).
 
 > [!NOTE]
-> Native client can currently only be run on Windows and Linux (requiring wine).
-> MacOS support will be added in the future.
+> The OSRS Windows-native client can run on Windows and Linux using Wine or Proton.
+> Native macOS patching is not currently supported. RS3 has been verified on Windows;
+> RS3 support on Linux/Wine/Proton has not been verified, and macOS is not supported.
 
 ### Usage
-Upon launching RSProx tool, you will be met with a relatively empty GUI.
-In order to start using it, select the Jagex Account Mode from the first
-dropdown as seen below, the client type you wish to use from the second
-dropdown and press the launch button to the right.
-The 'Default' Jagex Account mode means no Jagex Account will be used, and
-you will be prompted for an e-mail and password to login.
+
+In **New Session**, select an **Account** and **Client Type**, then press **Launch Session**.
+For OSRS, **Native** selects the Windows-native client and **RuneLite** selects RuneLite.
+For RS3, select **RuneScape 3**. OSRS also allows selecting a **Proxy Target**;
+for RS3, that selector shows **RuneScape 3** and is disabled.
+
+Select a linked Jagex Account character to launch with that character. **Default** uses the
+normal login flow; OSRS RuneLite can also load exported credentials for the official target.
+See [Jagex Accounts](#jagex-accounts).
 
 > [!CAUTION]
-> MacOS support requires whitelisting certain loopback addresses!
-> See the chapter below.
+> Using OSRS RuneLite on macOS requires whitelisting certain loopback addresses.
+> See [macOS Support (OSRS)](#macos-support-osrs) below. This does not enable RS3 on macOS.
 
+The screenshots below show an older GUI layout; use the named controls above in the current UI.
 
 ![Launching client](https://media.z-kris.com/2024/10/javaw_Zdj10a5jq8.png)
 
@@ -58,9 +70,11 @@ On RuneLite, this can take tens of seconds as everything loads up. Caching
 mechanism is included on RuneLite that makes consecutive launches faster than
 the first one (or whenever the cache is invalidated).
 
-Once the client has fully booted up, you may log in. All the data will flow
-through the proxy and get logged on your PC. No data will leave your PC without
-your permission.
+Once the client has fully booted up, you may log in. Game traffic flows through the proxy,
+with recordings and transcripts stored locally. RSProx also makes external requests for
+login, game connections, updates and supporting data; OSRS map XTEA keys are submitted to
+OpenRS2. See [Security and Privacy](#security-and-privacy) for the distinction between
+forwarded traffic, local recordings and external requests.
 Upon logging in, you should be met with logs being written in your RSProx GUI
 as depicted here:
 
@@ -85,7 +99,55 @@ filter preset.
 > You can have an unlimited amount of filter presets, and they are saved on
 > your PC.
 
-#### MacOS Support
+### RuneScape 3 (Experimental)
+
+> [!WARNING]
+> RuneScape 3 support is new and experimental. There may be bugs, and sensitive-information
+> removal may be incomplete. Recordings, transcripts and the GUI may still contain sensitive
+> information. Review captures before sharing them. Use at your own risk.
+
+The first RS3 launch displays this warning. Choosing **I understand — Continue** saves the
+acknowledgement across restarts; cancelling or closing the dialog stops the launch.
+
+#### Supported Features
+
+- Revision 950's Windows-native client, with Windows as the verified environment.
+- Automatic client downloading and patching, with support for linked Jagex Account characters.
+- Lobby and game traffic inspection in both directions, including player/NPC information and zone updates.
+- Lobby-to-game transitions, returning to the lobby, world hopping and reconnects.
+- Multiple client instances, each with its own local proxy ports.
+- Live GUI transcripts, binary recording and saved-file transcription.
+- Cache-definition loading and gameval/clientscript names for richer transcripts.
+
+RS3 currently connects to the official game. Custom proxy targets are OSRS-only.
+The launcher downloads the live client and checks the supported revision; it is not a general
+launcher for historical RS3 revisions. Later revisions require updated patching and decoders.
+**RS3 replay is not implemented**, even though recording and transcription are supported.
+
+#### Recordings and Lobby Visibility
+
+RS3 recordings are saved under `~/.rsprox/binary/RuneScape 3/`
+(`%USERPROFILE%\.rsprox\binary\RuneScape 3\` on Windows), alongside the OSRS recording folder.
+Filenames use a timestamp and a short account-hash suffix, with collision handling for rapid
+successive sessions. This suffix is an identifier, not a guarantee of anonymity.
+
+A recording is created when a game login succeeds and contains the captured lobby context
+followed by that game session. Lobby-only activity does not create a standalone recording.
+World hopping starts a new recording and copies the preceding lobby context into it, with
+an updated `LOBBY_TRANSFER` marker for the new world. Returning to the lobby supplies a new
+lobby baseline for the next successful game login. Reconnects remain in the existing recording.
+
+Under **Logging → Miscellaneous**:
+
+- **Hide RS3 Lobby** hides lobby packets in live and saved transcripts without removing
+  lobby data from the binary recording.
+- **Skip First Tick** skips the first game tick's transcript output, not the lobby's.
+  It works together with **Hide RS3 Lobby**.
+
+### macOS Support (OSRS)
+
+These instructions apply to OSRS, not RS3.
+
 MacOS does not whitelist any loopback address other than 127.0.0.1 by default,
 which means RSProx cannot establish a connection, as we use unique
 loopback addresses per connection established, which describes the world to
@@ -130,22 +192,27 @@ echo "Alias IPs added for worlds $MIN_WORLD_ID..$MAX_WORLD_ID (group $GROUP_ID).
 ```
 
 ### Transcribing
-Besides live transcribing which happens on the UI directly, it is possible to
-transcribe .bin files previously created. To do so, one can simply drag the
-.bin files they wish to transcribe anywhere onto the GUI, and a background
-process will take place, which ends up making .txt files with the same name.
-The transcription uses the currently-active filters as it would during live
-transcripts.
+
+Besides live GUI transcripts, previously recorded `.bin` files can be transcribed into
+`.txt` files beside the originals, using the same base filename. Drag recordings onto the GUI
+to begin. A single OSRS recording offers a choice of replay or transcription; an RS3 recording
+goes directly to transcription because RS3 replay is not available.
+
+Transcription uses the currently active filters and settings, including the RS3 lobby/first-tick
+settings above. These output filters do not remove packet data from the underlying recording.
 
 ![Example](https://media.z-kris.com/2025/08/java_ywUBskAkZ4.gif)
 
 ### Jagex Accounts
-Jagex Accounts are now fully supported. There are two ways of using a Jagex
-account.
+
+Linked Jagex Account characters can be used with both OSRS and RS3. For OSRS RuneLite on the
+official target, credential export is also available as an alternative to linking an account.
+Use a linked character for Jagex Account login on RS3; its launcher does not import RuneLite's
+`credentials.properties` file.
 
 #### Linking a Jagex Account
-The first option is to link the Jagex Account. You can do this by selecting
-the middle drop-down, and clicking the "Manage Linked Accounts" button.
+
+To link a Jagex Account, open the **Account** dropdown and select **Manage Linked Accounts**.
 
 ![Example](https://media.z-kris.com/2025/11/java_vhIgMxwunA.png)
 
@@ -154,11 +221,11 @@ In order to add one, hit the `+` button. This should launch a new browser window
 to `account.jagex.com`, asking you to login. Complete the login, and you should
 see a window stating "Account Linked Successfully". You may close the browser
 window, and you should then see all your characters show up in the drop-down.
-Selecting the "Default" option will continue to show the e-mail/password box
-on any new clients you launch, while selecting a Jagex Account Character will
-launch a client that directly connects to that Jagex Account Character.
+Selecting a linked character launches the client using that character's credentials.
+**Default** uses the normal login flow, with the OSRS RuneLite exception described below.
 
 Extra notes:
+
 - Linking a Jagex Account requires port 80 to be free, as it binds to it temporarily
 for the linking process. This is how the data is sent from your browser back to
 RSProx, allowing it to store the Jagex Account Token. On Linux, this requires
@@ -170,17 +237,20 @@ If the process fails for you, please let us know so we can figure out a solution
 that will avoid it becoming an issue for other people in the future too.
 
 
-#### Exporting RuneLite Credentials
+#### Exporting RuneLite Credentials (OSRS RuneLite)
+
 The second option to using a Jagex Account is by exporting the short-term token
 via RuneLite, as explained [here](https://github.com/runelite/runelite/wiki/Using-Jagex-Accounts).
 Once you have exported the credentials.properties as shown in the tutorial,
-the RSProx tool will always load them up from `user.home/.runelite/credentials.properties`.
+RSProx loads them from `user.home/.runelite/credentials.properties` when launching OSRS RuneLite
+with the official proxy target and the **Default** account selection.
 If you wish to stop using a Jagex Account in this Default mode,
 simply delete the credentials file. In this Default mode, you may only have
 one character/account, as it always reads from the same file when launching
 the client.
 
-#### Linux Setup
+#### Linux Setup (OSRS)
+
 On Linux, there are a few extra steps involved in setting up a Jagex Account:
 
 1. Run `RSProx.AppImage` normally to generate the required folders.
@@ -194,29 +264,55 @@ Additionally, if you would like to run the Native Client under Proton (at the ti
 /home/grian/.steam/steam/steamapps/common/Proton - Experimental/proton
 ```
 
-### Security
-We have taken many measures to ensure the players can securely use this tool,
-without having to worry about getting banned or having their information leaked.
+### Security and Privacy
+
+We have taken many measures to let players use RSProx securely and protect the
+information captured in their recordings.
 
 #### So, is it safe to use?
-It depends. We are very confident in the Native client being safe for use,
-as there are very minor modifications done to that client, and knowing the limits
-of C++, it is not possible for Jagex to identify these changes.
 
-However, when it comes to RuneLite, there are quite a bit more changes done.
-While we are certain about RuneLite being safe to use right now, nothing prevents
-RuneLite developers from adding in more checks in the future that this tool might
-not catch. Is this likely? No. Could it still happen? Absolutely.
+We are confident in the safety of the established OSRS implementation, which has
+been extensively tested. Native clients receive only the small changes needed
+for proxying; RSProx is a traffic-inspection tool, not a gameplay automation tool.
 
-People may have concerns over so many third-party clients getting banned as of
-recent, and while the concerns are valid, they do not apply to RSProx. We simply
-do not modify enough for it to be detectable. Every bit of information sent on
-login, which is how third party clients tend to get caught, is unaffected.
-This was achieved via numerous clever tricks that will not be explored here,
-as to avoid people maliciously using them.
+RuneLite requires more changes than the Native client. We are confident in the
+current implementation, but future client updates can introduce new checks or
+change behaviour, so compatibility needs to be maintained as the game evolves.
 
-### Private Server Usage
-RSProx can currently be used to connect to private servers, but only under
+RS3 follows the same approach and includes recording privacy protections too.
+It is marked experimental because the integration is new and has had less
+testing than OSRS, not because it is known to be unsafe. We expect it to be safe
+to use, while continuing to verify compatibility and sensitive-packet coverage.
+
+#### Recording Privacy
+
+Sensitive fields are erased from both binary recordings and GUI transcripts.
+Privacy scrubbing applies only to the recorded copies: the original packet
+payloads forwarded to the game client or server are left unchanged.
+
+The protections include private-message contents, login tokens in URL packets,
+the 192-bit UID, site settings, keyboard key values and bank-PIN actions. RS3
+also scrubs selected account-data fields, including dates of birth and
+friend/ignore-list notes. These protections are maintained for each supported
+revision.
+
+> [!NOTE]
+> RS3's sensitive-packet coverage is still being verified, so review its recordings
+> before sharing them. Player names and ordinary gameplay information remain in
+> recordings for analysis. Transcript filters control what is displayed; they do
+> not erase packets from the binary.
+
+#### External Connections
+
+Recordings and transcripts are stored locally. RSProx connects to game and
+authentication servers, downloads clients and updates, and retrieves supporting
+cache data and clientscript signatures. Live OSRS sessions also contribute map
+XTEA keys to OpenRS2; this does not upload your recordings or transcripts.
+
+### Private Server Usage (OSRS)
+
+This section applies to OSRS only; RS3 custom proxy targets are not implemented.
+RSProx can currently be used to connect to OSRS private servers, but only under
 certain circumstances. The following criteria must be met in order to do this:
 
 > [!NOTE]
@@ -230,6 +326,7 @@ the varp count in the client from the size-5000 int array.
 3. Must be on revision 223 or higher.
 
 #### Setting Up Custom Targets
+
 In order to use the new proxy targets feature, one has to provide a yaml file containing them.
 The file is expected at `user.home/.rsprox/proxy-targets.yaml` (.yml suffix also supported).
 The file does not exist by default, so it must be created by the user!
@@ -300,7 +397,22 @@ look at the date it was first and last published and then locate a bootstrap tha
 Simply pick your revision and click the "Copy Link" button in your browser for the Raw File. This is the URL to enter.
 
 ## Progress
-Below is a small task list showing a rough breakdown of what the tool will consist of, and how far the progress is at any given moment.
+
+This describes the implementation in this branch, not necessarily the latest published build.
+
+### Shared Tooling
+
+- [x] Graphical user interface and live transcripts
+- [x] Binary recording and saved-file transcription
+- [x] Filters and transcript settings
+- [x] Linked Jagex Account characters
+- [x] Proxy launcher/updater
+- [ ] Public archive
+  - [ ] Automated binary blob uploading at the end of a session
+  - [x] Indexing of OSRS binary files
+  - [ ] Ability to download any binary blobs
+
+### Old School RuneScape
 
 - [ ] Patch Tool
   - [x] Native (Win)
@@ -313,26 +425,38 @@ Below is a small task list showing a rough breakdown of what the tool will consi
 - [x] HTTP Server (worldlist.ws, jav_config.ws)
 - [x] Binary header building
 - [x] Binary blob reader/writer
-- [x] Privacy concerns
+- [x] Known-field privacy scrubbing (not a guarantee of complete sanitization)
   - [x] Bank Pin erasure (4-digit code)
   - [x] Private message content erasure
   - [x] Login tokens in URL open packets
   - [x] 192-bit UID (linked to account recoveries)
   - [x] Site settings (linked to account recoveries)
   - [x] Erases all keyboard presses
-- [x] Graphical User Interface (Proxy tool)
-- [x] Graphical User Interface (Live Transcriber)
 - [x] Live cache loading
 - [x] Historical cache loading
-- [ ] Public archive
-  - [ ] Automated binary blob uploading at the end of a session
-  - [x] Indexing of binary files
-  - [ ] Ability to download any binary blobs
-- [x] Decoders (Every revision starting from 223)
+- [x] Revision-specific decoders starting from revision 223
 - [x] Transcriber
-- [x] Launchers
-  - [x] Proxy launcher/updater
-  - [x] RuneLite launcher (necessary to avoid detection)
+- [x] RuneLite launcher
+- [x] Replay for supported recordings
+- [x] Custom proxy targets
+
+### RuneScape 3 (Experimental)
+
+- [x] Revision-950 Windows-native client patching
+- [x] World/lobby routing and multiple client instances
+- [x] Lobby/game transitions, world hopping and reconnects
+- [x] Client/server packet decoders and transcribers
+- [x] Player/NPC information and zone packet decoding
+- [x] Binary recording with lobby/game initialization and transfer markers
+- [x] Live cache definitions and historical definition retrieval from OpenRS2
+- [x] Bundled gamevals and archived clientscript signatures
+- [x] Separate lobby visibility and game-only first-tick filtering
+- [x] One-time experimental/privacy warning
+- [x] Known-field privacy scrubbing
+- [ ] Further live validation and privacy coverage review
+- [ ] Replay
+- [ ] Custom proxy targets
+- [ ] Verified non-Windows support
 
 [actions-badge]: https://github.com/blurite/rsprox/actions/workflows/proxy-gui.yml/badge.svg
 [actions]: https://github.com/blurite/rsprox/actions

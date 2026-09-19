@@ -64,6 +64,9 @@ public class LaunchBar(
     private val sessionTypesModel = DefaultComboBoxModel(sessionTypes)
     private val charactersModel = DefaultComboBoxModel<JagexCharacter>()
 
+    public lateinit var clientTypeDropdown: FlatComboBox<SessionType>
+        private set
+
     init {
         layout =
             MigLayout(
@@ -150,15 +153,32 @@ public class LaunchBar(
         )
         add(characterDropdown, "growx")
 
-        val launchModeDropdown =
+        clientTypeDropdown =
             FlatComboBox<SessionType>().apply {
                 model = sessionTypesModel
                 renderer = SessionTypeCellRenderer()
                 selectedIndex = App.service.getSelectedClient()
                 configureComboBox()
             }
-        launchModeDropdown.addActionListener {
-            App.service.setSelectedClient(launchModeDropdown.selectedIndex)
+
+        val proxyTargetLabel = createFieldLabel("Proxy Target")
+
+        fun updateProxyTargetRowState() {
+            val isRs3 = clientTypeDropdown.selectedItem == SessionType.RS3
+            val disabledReason =
+                if (isRs3) "Proxy target selection is currently only supported for Old School RuneScape." else null
+            proxyTargetLabel.isEnabled = !isRs3
+            proxyTargetDropdown.isEnabled = !isRs3
+            proxyTargetDropdown.renderer = ProxyTargetCellRenderer(if (isRs3) SessionType.RS3.displayName else null)
+            importTargetsButton.isEnabled = !isRs3
+            proxyTargetLabel.toolTipText = disabledReason
+            proxyTargetDropdown.toolTipText = disabledReason
+            importTargetsButton.toolTipText = disabledReason ?: "Import Proxy Targets"
+        }
+
+        clientTypeDropdown.addActionListener {
+            App.service.setSelectedClient(clientTypeDropdown.selectedIndex)
+            updateProxyTargetRowState()
         }
 
         val launchButton =
@@ -171,12 +191,13 @@ public class LaunchBar(
         add(createFieldLabel("Account"))
         add(createFieldLabel("Client Type"), "wrap")
         add(characterDropdown, "growx, h $CONTROL_HEIGHT!")
-        add(launchModeDropdown, "growx, h $CONTROL_HEIGHT!, wrap")
-        add(createFieldLabel("Proxy Target"), "spanx 2, growx, gaptop 4, wrap")
+        add(clientTypeDropdown, "growx, h $CONTROL_HEIGHT!, wrap")
+        add(proxyTargetLabel, "spanx 2, growx, gaptop 4, wrap")
         add(proxyTargetDropdown, "growx, h $CONTROL_HEIGHT!, spanx 2, split 2")
         add(importTargetsButton, "w $CONTROL_HEIGHT!, h $CONTROL_HEIGHT!, wrap")
         add(launchButton, "spanx 2, growx, h 34!, gaptop 8")
 
+        updateProxyTargetRowState()
         refreshCharacters()
     }
 
@@ -351,12 +372,14 @@ public class LaunchBar(
         ) = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus).apply {
             if (value is SessionType) {
                 icon = value.icon
-                text = value.name
+                text = value.displayName
             }
         }
     }
 
-    private class ProxyTargetCellRenderer : DefaultListCellRenderer() {
+    private class ProxyTargetCellRenderer(
+        private val displayNameOverride: String? = null,
+    ) : DefaultListCellRenderer() {
         override fun getListCellRendererComponent(
             list: JList<*>?,
             value: Any?,
@@ -364,7 +387,9 @@ public class LaunchBar(
             isSelected: Boolean,
             cellHasFocus: Boolean,
         ) = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus).apply {
-            if (value is ProxyTargetConfig) {
+            if (displayNameOverride != null) {
+                text = displayNameOverride
+            } else if (value is ProxyTargetConfig) {
                 text =
                     if (value.revision != null && value.revision != "latest_supported") {
                         "${value.name} (${value.revision})"

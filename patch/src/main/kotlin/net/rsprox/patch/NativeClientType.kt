@@ -5,4 +5,5 @@ public enum class NativeClientType(
 ) {
     WIN("win"),
     MAC("mac"),
+    RS3_WIN("rs3-win"),
 }

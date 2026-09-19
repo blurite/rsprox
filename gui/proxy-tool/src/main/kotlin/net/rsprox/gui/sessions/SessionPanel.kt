@@ -7,15 +7,19 @@ import com.formdev.flatlaf.extras.components.FlatToolBar
 import com.formdev.flatlaf.util.ColorFunctions
 import com.github.michaelbull.logging.InlineLogger
 import net.rsprox.cache.api.CacheProvider
+import net.rsprox.cache.api.type.ClientScriptDefinitionProvider
 import net.rsprox.gui.App
 import net.rsprox.gui.AppIcons
 import net.rsprox.proxy.binary.BinaryHeader
+import net.rsprox.proxy.rs3.Rs3SessionMonitor
+import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.account.JagexCharacter
 import net.rsprox.shared.property.*
 import net.rsprox.shared.property.regular.GroupProperty
 import net.rsprox.shared.property.regular.ListProperty
 import net.rsprox.shared.symbols.SymbolDictionaryProvider
+import net.rsprox.transcriber.rs3.text.Rs3PropertyFormatter
 import org.jdesktop.swingx.JXTreeTable
 import org.jdesktop.swingx.decorator.ColorHighlighter
 import org.jdesktop.swingx.decorator.HighlightPredicate
@@ -37,7 +41,7 @@ import javax.swing.SwingUtilities
 import kotlin.time.measureTime
 
 public class SessionPanel(
-    private val type: SessionType,
+    public val type: SessionType,
     private val sessionsPanel: SessionsPanel,
     character: JagexCharacter?,
 ) : JPanel() {
@@ -49,11 +53,19 @@ public class SessionPanel(
     private var paused = false
     private var streamNode: StreamTreeTableNode? = null
     private var tickNode: TickTreeTableNode? = null
+    private var lastCycle = -1
+    private var rs3Connected = false
     public val isActive: Boolean
-        get() = streamNode != null
+        get() = if (type == SessionType.RS3) rs3Connected else streamNode != null
     private var portNumber: Int = -1
     private var jumpToBottom: Boolean = true
     private var scrollbarMax: Int = -1
+
+    private var rs3ClientScripts = ClientScriptDefinitionProvider.EMPTY
+    private val rs3Formatter =
+        Rs3PropertyFormatter.create(App.service.settingsStore, Rs3GamevalLookup) { id ->
+            rs3ClientScripts.getClientScriptDefinition(id)
+        }
 
     init {
         layout = BorderLayout()
@@ -162,8 +174,15 @@ public class SessionPanel(
             if (streamNode != null) {
 
                 // Replace the stream node directly instead of purging it one by one
-                // This avoids expensive UI rebuilding and event-firing per node deleted
-                val streamNode = StreamTreeTableNode(streamNode.header)
+                val oldHeader = streamNode.header
+                val streamNode =
+                    if (oldHeader !=
+                        null
+                    ) {
+                        StreamTreeTableNode(oldHeader)
+                    } else {
+                        StreamTreeTableNode(streamNode.label ?: "")
+                    }
                 addNodeAndExpand(streamNode, root, root.childCount)
                 this@SessionPanel.streamNode = streamNode
             }
@@ -183,11 +202,11 @@ public class SessionPanel(
             val time =
                 measureTime {
                     try {
-                        portNumber = App.service.allocatePort()
-                        val target = App.service.initializeHttpServer(portNumber)
                         when (type) {
                             SessionType.Java -> TODO()
                             SessionType.Native -> {
+                                portNumber = App.service.allocatePort()
+                                val target = App.service.initializeHttpServer(portNumber)
                                 App.service.launchNativeClient(
                                     UiSessionMonitor(),
                                     character,
@@ -197,12 +216,74 @@ public class SessionPanel(
                             }
 
                             SessionType.RuneLite -> {
+                                portNumber = App.service.allocatePort()
+                                val target = App.service.initializeHttpServer(portNumber)
                                 App.service.launchRuneLiteClient(
                                     UiSessionMonitor(),
                                     character,
                                     portNumber,
                                     target,
                                 )
+                            }
+
+                            SessionType.RS3 -> {
+                                val rs3SessionMonitor = Rs3SessionMonitor()
+                                rs3SessionMonitor.stateListener = { state ->
+                                    SwingUtilities.invokeLater {
+                                        rs3ClientScripts = state.clientScripts
+                                        val status = state.status
+                                        val name = status?.name.orEmpty()
+                                        val identityChanged =
+                                            metrics.username != name ||
+                                                metrics.userId != state.userId ||
+                                                metrics.userHash != state.userHash
+                                        rs3Connected = status != null
+                                        metrics.username = status?.name?.ifBlank { "Connected" }.orEmpty()
+                                        metrics.userId = state.userId
+                                        metrics.userHash = state.userHash
+                                        metrics.worldName =
+                                            when {
+                                                status == null -> ""
+                                                status.world -> "World ${status.endpoint}"
+                                                else -> "Lobby ${status.endpoint}"
+                                            }
+                                        metrics.bandInPerSec =
+                                            state.incomingBytesPerSecond.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+                                        metrics.bandOutPerSec =
+                                            state.outgoingBytesPerSecond.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+                                        if (identityChanged &&
+                                            name.isNotBlank() &&
+                                            state.userId != -1L &&
+                                            state.userHash != -1L
+                                        ) {
+                                            App.service.updateCredentials(name, state.userId, state.userHash)
+                                        }
+                                        sessionsPanel.updateTabTitle(
+                                            this@SessionPanel,
+                                            status?.name?.ifBlank { "RuneScape 3" } ?: "RuneScape 3",
+                                        )
+                                        notifyMetricsChanged()
+                                    }
+                                }
+                                rs3SessionMonitor.listener = { cycle, property ->
+                                    if (!paused) {
+                                        SwingUtilities.invokeLater {
+                                            if (this@SessionPanel.streamNode == null) {
+                                                val newStreamNode = StreamTreeTableNode("RS3 Session")
+                                                addNodeAndExpand(newStreamNode, root, root.childCount)
+                                                this@SessionPanel.streamNode = newStreamNode
+                                            }
+                                            val tickNode = findOrCreateTickNode(cycle)
+                                            createMessageNode(tickNode, cycle, property, rs3Formatter)
+                                        }
+                                    }
+                                }
+                                val handle =
+                                    App.service.launchRs3Client(
+                                        rs3SessionMonitor,
+                                        character,
+                                    )
+                                portNumber = handle.port
                             }
                         }
                     } catch (e: Exception) {
@@ -231,8 +312,79 @@ public class SessionPanel(
         return alternateRowColor
     }
 
+    private fun createMessageNode(
+        tickNode: AbstractMutableTreeTableNode,
+        cycle: Int,
+        property: RootProperty,
+        formatter: OmitFilteredPropertyTreeFormatter,
+    ) {
+        val previewText = getPreviewText(property, formatter)
+        val rootNode = MessageTreeTableNode(previewText, property.prot)
+        addNodeAndExpand(rootNode, tickNode, tickNode.childCount)
+        createMessageChildNodes(cycle, rootNode, property, formatter)
+    }
+
+    private fun getPreviewText(
+        property: Property,
+        formatter: OmitFilteredPropertyTreeFormatter,
+        indent: Int = 0,
+    ): String {
+        val children = property.children
+        // Groups are rows even when empty; formatting them inline appends their label to the parent.
+        val previewProps = children.filter { it !is GroupProperty && it.children.isEmpty() }
+        val previewText =
+            if (previewProps.isNotEmpty()) {
+                val lines = mutableListOf<String>()
+                val builder = StringBuilder()
+                var count = 0
+                for (child in previewProps) {
+                    if (child.isExcluded()) {
+                        continue
+                    }
+                    val linePrefix = if (count++ == 0) null else ", "
+                    formatter.writeChild(child, builder, lines, indent, linePrefix)
+                }
+                lines.add(builder.toString())
+                lines.joinToString(separator = System.lineSeparator())
+            } else {
+                ""
+            }
+        return previewText
+    }
+
+    private fun createMessageChildNodes(
+        cycle: Int,
+        parentNode: AbstractMutableTreeTableNode,
+        rootProperty: RootProperty,
+        formatter: OmitFilteredPropertyTreeFormatter,
+        property: Property = rootProperty,
+        indent: Int = 0,
+    ) {
+        for (child in property.children) {
+            if (child.isExcluded()) continue
+            if (child !is GroupProperty && child.children.isEmpty()) continue
+            when (child) {
+                is GroupProperty -> {
+                    val previewText = getPreviewText(child, formatter, indent)
+                    val groupNode = MessageTreeTableNode(previewText, child.propertyName)
+                    addNodeAndExpand(groupNode, parentNode, parentNode.childCount)
+                    createMessageChildNodes(cycle, groupNode, rootProperty, formatter, child, indent + 1)
+                }
+
+                is ListProperty -> {
+                    val previewText = getPreviewText(child, formatter, indent)
+                    val groupNode = MessageTreeTableNode(previewText, child.propertyName)
+                    addNodeAndExpand(groupNode, parentNode, parentNode.childCount)
+                }
+
+                else -> {
+                    error("Unsupported property with children. Property type: ${child::class.simpleName}")
+                }
+            }
+        }
+    }
+
     private inner class UiSessionMonitor : SessionMonitor<BinaryHeader> {
-        private var lastCycle = -1
         private var lastCacheProvider: CacheProvider? = null
         private val formatter =
             OmitFilteredPropertyTreeFormatter(
@@ -304,89 +456,21 @@ public class SessionPanel(
             if (paused) return
             SwingUtilities.invokeLater {
                 val tickNode = findOrCreateTickNode(cycle)
-                createMessageNode(tickNode, cycle, property)
+                createMessageNode(tickNode, cycle, property, formatter)
             }
         }
+    }
 
-        private fun createMessageNode(
-            tickNode: AbstractMutableTreeTableNode,
-            cycle: Int,
-            property: RootProperty,
-        ) {
-            val previewText = getPreviewText(property)
-            val rootNode = MessageTreeTableNode(previewText, property.prot)
-            addNodeAndExpand(rootNode, tickNode, tickNode.childCount)
-            createMessageChildNodes(cycle, rootNode, property)
+    private fun findOrCreateTickNode(tickNumber: Int): AbstractMutableTreeTableNode {
+        val streamNode = streamNode!!
+        var tickNode = tickNode
+        if (tickNode == null || lastCycle != tickNumber) {
+            lastCycle = tickNumber
+            tickNode = TickTreeTableNode(tickNumber)
+            this.tickNode = tickNode
+            addNodeAndExpand(tickNode, streamNode, streamNode.childCount)
         }
-
-        private fun getPreviewText(
-            property: Property,
-            indent: Int = 0,
-        ): String {
-            val children = property.children
-            val previewProps = children.filter { it.children.isEmpty() }
-            val previewText =
-                if (previewProps.isNotEmpty()) {
-                    val lines = mutableListOf<String>()
-                    val builder = StringBuilder()
-                    var count = 0
-                    for (child in previewProps) {
-                        if (child.isExcluded()) {
-                            continue
-                        }
-                        val linePrefix = if (count++ == 0) null else ", "
-                        formatter.writeChild(child, builder, lines, indent, linePrefix)
-                    }
-                    lines.add(builder.toString())
-                    lines.joinToString(separator = System.lineSeparator())
-                } else {
-                    ""
-                }
-            return previewText
-        }
-
-        private fun createMessageChildNodes(
-            cycle: Int,
-            parentNode: AbstractMutableTreeTableNode,
-            rootProperty: RootProperty,
-            property: Property = rootProperty,
-            indent: Int = 0,
-        ) {
-            for (child in property.children) {
-                if (child.isExcluded()) continue
-                if (child.children.isEmpty()) continue // they get consumed in preview
-                when (child) {
-                    is GroupProperty -> {
-                        val previewText = getPreviewText(child, indent)
-                        val groupNode = MessageTreeTableNode(previewText, child.propertyName)
-                        addNodeAndExpand(groupNode, parentNode, parentNode.childCount)
-                        createMessageChildNodes(cycle, groupNode, rootProperty, child, indent + 1)
-                    }
-
-                    is ListProperty -> {
-                        val previewText = getPreviewText(child, indent)
-                        val groupNode = MessageTreeTableNode(previewText, child.propertyName)
-                        addNodeAndExpand(groupNode, parentNode, parentNode.childCount)
-                    }
-
-                    else -> {
-                        error("Unsupported property with children. Property type: ${child::class.simpleName}")
-                    }
-                }
-            }
-        }
-
-        private fun findOrCreateTickNode(tickNumber: Int): AbstractMutableTreeTableNode {
-            val streamNode = streamNode!!
-            var tickNode = tickNode
-            if (tickNode == null || lastCycle != tickNumber) {
-                lastCycle = tickNumber
-                tickNode = TickTreeTableNode(tickNumber)
-                this@SessionPanel.tickNode = tickNode
-                addNodeAndExpand(tickNode, streamNode, streamNode.childCount)
-            }
-            return tickNode
-        }
+        return tickNode
     }
 
     private fun addNodeAndExpand(
@@ -404,16 +488,27 @@ public class SessionPanel(
     }
 
     private companion object {
-        private class StreamTreeTableNode(
-            val header: BinaryHeader,
+        private class StreamTreeTableNode private constructor(
+            val header: BinaryHeader?,
+            val label: String?,
         ) : SessionBaseTreeTableNode() {
+            constructor(header: BinaryHeader) : this(header, null)
+
+            constructor(label: String) : this(null, label)
+
             override fun getValueAt(column: Int) =
                 when (column) {
                     0 -> "Stream"
-                    1 ->
-                        "${header.worldId} (${header.worldActivity}) at ${
-                            SimpleDateFormat.getTimeInstance().format(header.timestamp)
-                        }"
+                    1 -> {
+                        val h = header
+                        if (h != null) {
+                            "${h.worldId} (${h.worldActivity}) at ${
+                                SimpleDateFormat.getTimeInstance().format(h.timestamp)
+                            }"
+                        } else {
+                            label ?: ""
+                        }
+                    }
 
                     else -> error("Invalid column index: $column")
                 }

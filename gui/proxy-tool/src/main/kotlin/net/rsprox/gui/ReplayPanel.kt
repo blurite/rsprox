@@ -285,8 +285,11 @@ public class ReplayPanel(
     ): Boolean? {
         return onEventDispatchThread {
             val detail =
-                if (match == ReplayCacheMatch.MISMATCH) "does not match"
-                else "could not be verified against"
+                if (match == ReplayCacheMatch.MISMATCH) {
+                    "does not match"
+                } else {
+                    "could not be verified against"
+                }
             val options = arrayOf("Use Anyway", "Choose Another", "Cancel")
             when (
                 JOptionPane.showOptionDialog(
@@ -829,6 +832,7 @@ public class ReplayPanel(
                     SessionType.Native -> App.service.launchReplayNativeClient(session, port)
                     SessionType.RuneLite -> App.service.launchReplayRuneLiteClient(session, null, port)
                     SessionType.Java -> error("Unsupported replay client type: $type")
+                    SessionType.RS3 -> error("Unsupported replay client type: $type")
                 }
                 SwingUtilities.invokeLater {
                     if (generation != loadGeneration || replaySession !== session) {
