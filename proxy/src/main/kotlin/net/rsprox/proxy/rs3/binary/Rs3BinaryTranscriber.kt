@@ -1,10 +1,10 @@
 package net.rsprox.proxy.rs3.binary
 
-import net.rsprox.cache.clientscript.RSProxArchiveClientScriptIndex
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.crypto.cipher.NopStreamCipher
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.message.IncomingMessage
+import net.rsprox.cache.clientscript.RSProxArchiveClientScriptIndex
 import net.rsprox.cache.rs3.Rs3LiveCacheResolver
 import net.rsprox.protocol.rs3.cache.rs3PacketDefinitions
 import net.rsprox.protocol.rs3.game.incoming.model.unknown.RawUnknownClientPacket
@@ -18,8 +18,7 @@ import net.rsprox.proxy.binary.BinaryStream
 import net.rsprox.proxy.cli.TranscribeCommand
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.rs3.Rs3DecoderLoader
-import net.rsprox.proxy.rs3.transcriber.text.Rs3PropertyFormatter
-import net.rsprox.proxy.rs3.transcriber.text.TextRs3TranscriberProvider
+import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
 import net.rsprox.proxy.util.TranscribeCallback
 import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.filters.PropertyFilterSetStore
@@ -28,6 +27,8 @@ import net.rsprox.shared.property.RootProperty
 import net.rsprox.shared.property.boolean
 import net.rsprox.shared.property.int
 import net.rsprox.shared.settings.SettingSetStore
+import net.rsprox.transcriber.rs3.text.Rs3PropertyFormatter
+import net.rsprox.transcriber.rs3.text.TextRs3TranscriberProvider
 import net.rsprox.transcriber.text.TextMessageConsumerContainer
 import java.nio.file.Files
 import java.nio.file.Path
@@ -74,8 +75,8 @@ internal object Rs3BinaryTranscriber {
                 writer.appendLine("-------------------")
                 val consumer = TranscribeCommand.createBufferedWriterConsumer(writer)
                 val container = TextMessageConsumerContainer(listOf(consumer))
-                val formatter = Rs3PropertyFormatter.create(settings, clientScripts)
-                val provider = TextRs3TranscriberProvider()
+                val formatter = Rs3PropertyFormatter.create(settings, Rs3GamevalLookup, clientScripts)
+                val provider = TextRs3TranscriberProvider(Rs3GamevalLookup)
                 var transcriber = provider.provide(container, filters, settings, clientScripts, isLobby = true)
 
                 fun session(index: Int): Session =

@@ -1,6 +1,5 @@
 package net.rsprox.proxy.rs3.relay
 
-import net.rsprox.cache.api.type.ClientScriptDefinitionProvider
 import com.github.michaelbull.logging.InlineLogger
 import io.netty.bootstrap.Bootstrap
 import io.netty.bootstrap.ServerBootstrap
@@ -26,6 +25,7 @@ import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.crypto.cipher.NopStreamCipher
 import net.rsprot.crypto.cipher.StreamCipherPair
 import net.rsprox.cache.api.rs3.Rs3PacketDefinitions
+import net.rsprox.cache.api.type.ClientScriptDefinitionProvider
 import net.rsprox.protocol.rs3.cache.rs3PacketDefinitions
 import net.rsprox.protocol.rs3.game.outgoing.model.info.playerinfo.rs3AppearanceDefinitions
 import net.rsprox.protocol.rs3.game.outgoing.model.info.playerinfo.rs3PlayerInfoInitPending
@@ -35,7 +35,9 @@ import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.filters.UnmodifiablePropertyFilterSet
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.rs3.Rs3DecoderLoader
+import net.rsprox.proxy.rs3.Rs3SessionMonitor
 import net.rsprox.proxy.rs3.binary.Rs3BinaryRecorder
+import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
 import net.rsprox.proxy.rs3.login.Rs3ClientLoginRsaSwapHandler
 import net.rsprox.proxy.rs3.login.Rs3LoginFrame
 import net.rsprox.proxy.rs3.login.Rs3LoginSuccessFramer
@@ -45,15 +47,14 @@ import net.rsprox.proxy.rs3.login.Rs3WorldLoginResponseFramer
 import net.rsprox.proxy.rs3.privacy.Rs3LivePacketDecoder
 import net.rsprox.proxy.rs3.privacy.Rs3PacketSanitizer
 import net.rsprox.proxy.rs3.protocol.Rs3ProtDecoder
-import net.rsprox.proxy.rs3.transcriber.Rs3SessionMonitor
-import net.rsprox.proxy.rs3.transcriber.Rs3TranscriberSession
-import net.rsprox.proxy.rs3.transcriber.text.TextRs3TranscriberProvider
 import net.rsprox.proxy.rsa.Rsa
 import net.rsprox.proxy.settings.DefaultSettingSetStore
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.settings.NopSettingSet
 import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.transcriber.MessageConsumerContainer
+import net.rsprox.transcriber.rs3.Rs3TranscriberSession
+import net.rsprox.transcriber.rs3.text.TextRs3TranscriberProvider
 import net.rsprox.transcriber.text.MonitoredMessageConsumerContainer
 import net.rsprox.transcriber.text.TextMessageConsumerContainer
 import org.bouncycastle.crypto.params.RSAKeyParameters
@@ -331,7 +332,7 @@ public class Rs3RelayServer(
                 sessionMonitor,
             )
         val transcriberSession: Rs3TranscriberSession =
-            TextRs3TranscriberProvider().provide(
+            TextRs3TranscriberProvider(Rs3GamevalLookup).provide(
                 container = monitoredContainer,
                 filters = filterSetStore,
                 settings = settingSetStore,

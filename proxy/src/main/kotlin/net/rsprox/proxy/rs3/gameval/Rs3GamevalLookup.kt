@@ -67,45 +67,7 @@ public object Rs3GamevalLookup : SymbolDictionary {
     // Script names come from the session's cache-specific archived signatures, not bundled gamevals.
     override fun getScriptName(id: Int): String? = null
 
-    public fun varp(id: Int): String = display(Gameval.VARP, id)
-
-    public fun varc(id: Int): String = display(Gameval.VARC, id)
-
-    public fun varbit(id: Int): String = display(Gameval.VARBIT, id)
-
-    public fun midi(id: Int): String = display(Gameval.MIDI, id)
-
-    public fun interfaceName(id: Int): String = display(Gameval.INTERFACE, id)
-
-    public fun loc(id: Int): String = display(Gameval.LOC, id)
-
-    public fun npc(id: Int): String = display(Gameval.NPC, id)
-
-    public fun seq(id: Int): String = display(Gameval.SEQ, id)
-
-    public fun sound(id: Int): String = display(Gameval.SOUND, id)
-
-    public fun obj(id: Int): String = display(Gameval.OBJ, id)
-
-    public fun inv(id: Int): String = display(Gameval.INV, id)
-
-    public fun model(id: Int): String = display(Gameval.MODEL, id)
-
-    public fun component(hash: Long): String = component(hash.toInt())
-
-    public fun component(hash: Int): String {
-        val interfaceId = hash ushr 16
-        val componentId = hash and 0xFFFF
-        val componentName = name(Gameval.COMPONENT, hash)
-        if (componentName != null) {
-            return "$componentName($interfaceId:$componentId)"
-        }
-        return "${interfaceName(interfaceId)}:$componentId"
-    }
-
     private fun name(gameval: Gameval, id: Int): String? = dictionary.names.getValue(gameval)[id]
-
-    private fun display(gameval: Gameval, id: Int): String = "${name(gameval, id) ?: "?"}($id)"
 
     private fun loadDictionary(): Dictionary {
         val gson = Gson()

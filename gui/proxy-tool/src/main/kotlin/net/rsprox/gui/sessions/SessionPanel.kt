@@ -11,14 +11,15 @@ import net.rsprox.cache.api.type.ClientScriptDefinitionProvider
 import net.rsprox.gui.App
 import net.rsprox.gui.AppIcons
 import net.rsprox.proxy.binary.BinaryHeader
-import net.rsprox.proxy.rs3.transcriber.Rs3SessionMonitor
-import net.rsprox.proxy.rs3.transcriber.text.Rs3PropertyFormatter
+import net.rsprox.proxy.rs3.Rs3SessionMonitor
+import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.account.JagexCharacter
 import net.rsprox.shared.property.*
 import net.rsprox.shared.property.regular.GroupProperty
 import net.rsprox.shared.property.regular.ListProperty
 import net.rsprox.shared.symbols.SymbolDictionaryProvider
+import net.rsprox.transcriber.rs3.text.Rs3PropertyFormatter
 import org.jdesktop.swingx.JXTreeTable
 import org.jdesktop.swingx.decorator.ColorHighlighter
 import org.jdesktop.swingx.decorator.HighlightPredicate
@@ -62,7 +63,7 @@ public class SessionPanel(
 
     private var rs3ClientScripts = ClientScriptDefinitionProvider.EMPTY
     private val rs3Formatter =
-        Rs3PropertyFormatter.create(App.service.settingsStore) { id ->
+        Rs3PropertyFormatter.create(App.service.settingsStore, Rs3GamevalLookup) { id ->
             rs3ClientScripts.getClientScriptDefinition(id)
         }
 
