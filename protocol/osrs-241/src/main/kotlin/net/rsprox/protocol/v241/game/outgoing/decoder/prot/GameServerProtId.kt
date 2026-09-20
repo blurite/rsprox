@@ -12,11 +12,11 @@ internal object GameServerProtId {
     const val SITE_SETTINGS = 9
     const val UPDATE_UID192 = 10
     const val IF_SETTEXT = 11
-    const val OBJ_CUSTOMISE_SPECIFIC = 12
+    const val OBJ_CUSTOMISE_SPECIFIC_V1 = 12
     const val MESSAGE_CLANCHANNEL_SYSTEM = 13
     const val OBJ_UNCUSTOMISE_SPECIFIC = 14
     const val IF_SETROTATESPEED = 15
-    const val UPDATE_TRADINGPOST = 16
+    const val UPDATE_TRADINGPOST_V1 = 16
     const val ANIM_SPECIFIC = 17
     const val UPDATE_FRIENDCHAT_CHANNEL_FULL_V2 = 18
     const val OBJ_DEL_SPECIFIC = 19
@@ -69,7 +69,7 @@ internal object GameServerProtId {
     const val IF_SETPLAYERHEAD = 67
     const val UPDATE_ZONE_FULL_FOLLOWS = 68
     const val SYNTH_SOUND = 69
-    const val UPDATE_STOCKMARKET_SLOT = 70
+    const val UPDATE_STOCKMARKET_SLOT_V1 = 70
     const val RESET_ANIMS = 71
     const val MINIMAP_TOGGLE = 72
     const val IF_SETNPCHEAD = 73

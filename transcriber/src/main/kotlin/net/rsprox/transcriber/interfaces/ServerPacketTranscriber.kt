@@ -44,9 +44,9 @@ import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunEnergy
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunWeight
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV1
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV2
-import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStockMarketSlot
+import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStockMarketSlotV1
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStockMarketSlotV2
-import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateTradingPost
+import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateTradingPostV1
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateTradingPostV2
 import net.rsprox.protocol.game.outgoing.model.social.FriendListLoaded
 import net.rsprox.protocol.game.outgoing.model.social.MessagePrivate
@@ -337,11 +337,11 @@ public interface ServerPacketTranscriber {
 
     public fun updateStatV1(message: UpdateStatV1)
 
-    public fun updateStockMarketSlot(message: UpdateStockMarketSlot)
+    public fun updateStockMarketSlotV1(message: UpdateStockMarketSlotV1)
 
     public fun accountFlags(message: AccountFlags)
 
-    public fun updateTradingPost(message: UpdateTradingPost)
+    public fun updateTradingPostV1(message: UpdateTradingPostV1)
 
     public fun friendListLoaded(message: FriendListLoaded)
 
@@ -395,7 +395,7 @@ public interface ServerPacketTranscriber {
 
     public fun objCountSpecific(message: ObjCountSpecific)
 
-    public fun objCustomiseSpecific(message: ObjCustomiseSpecific)
+    public fun objCustomiseSpecificV1(message: ObjCustomiseSpecificV1)
 
     public fun projAnimSpecificV2(message: ProjAnimSpecificV2)
 

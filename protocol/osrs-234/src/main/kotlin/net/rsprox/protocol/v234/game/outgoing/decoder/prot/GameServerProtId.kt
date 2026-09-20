@@ -108,7 +108,7 @@ internal object GameServerProtId {
     const val IF_SETPLAYERMODEL_BASECOLOUR = 104
     const val MAP_ANIM_SPECIFIC = 105
     const val CAM_RESET = 106
-    const val UPDATE_STOCKMARKET_SLOT = 107
+    const val UPDATE_STOCKMARKET_SLOT_V1 = 107
     const val IF_RESYNC_V2 = 108
     const val IF_SETTEXT = 109
     const val RESET_INTERACTION_MODE = 110
@@ -120,7 +120,7 @@ internal object GameServerProtId {
     const val CAM_ROTATETO_COORDINATE_V1 = 116
     const val HIDELOCOPS = 117
     const val MESSAGE_CLANCHANNEL = 118
-    const val UPDATE_TRADINGPOST = 119
+    const val UPDATE_TRADINGPOST_V1 = 119
     const val CAM_SMOOTHRESET = 120
     const val NPC_INFO_LARGE_V5 = 121
     const val SITE_SETTINGS = 122
@@ -132,7 +132,7 @@ internal object GameServerProtId {
     const val WORLDENTITY_INFO_V6 = 128
     const val ACCOUNT_FLAGS = 129
     const val IF_SETEVENTS_V2 = 130
-    const val OBJ_CUSTOMISE_SPECIFIC = 131
+    const val OBJ_CUSTOMISE_SPECIFIC_V1 = 131
     const val OBJ_UNCUSTOMISE_SPECIFIC = 132
     const val ZBUF = 133
     const val OBJ_COUNT_SPECIFIC = 134

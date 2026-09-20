@@ -14,7 +14,7 @@ internal object GameServerProtId {
     const val NPC_INFO_SMALL_V5 = 10
     const val PROJANIM_SPECIFIC_V3 = 11
     const val URL_OPEN = 12
-    const val UPDATE_STOCKMARKET_SLOT = 13
+    const val UPDATE_STOCKMARKET_SLOT_V1 = 13
     const val CHAT_FILTER_SETTINGS_PRIVATECHAT = 14
     const val MESSAGE_FRIENDCHANNEL = 15
     const val CAM_ROTATETO_COORDINATE_V1 = 16
@@ -92,7 +92,7 @@ internal object GameServerProtId {
     const val UPDATE_FRIENDCHAT_CHANNEL_FULL_V2 = 88
     const val SET_NPC_UPDATE_ORIGIN = 89
     const val CAM_ROTATETO = 90
-    const val UPDATE_TRADINGPOST = 91
+    const val UPDATE_TRADINGPOST_V1 = 91
     const val IF_SETPLAYERMODEL_BODYTYPE = 92
     const val UPDATE_RUNWEIGHT = 93
     const val UPDATE_ZONE_PARTIAL_FOLLOWS = 94

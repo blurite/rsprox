@@ -111,8 +111,8 @@ import net.rsprox.protocol.v239.game.outgoing.decoder.codec.misc.player.TriggerO
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.misc.player.UpdateRunEnergyDecoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.misc.player.UpdateRunWeightDecoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.misc.player.UpdateStatV2Decoder
-import net.rsprox.protocol.v239.game.outgoing.decoder.codec.misc.player.UpdateStockMarketSlotDecoder
-import net.rsprox.protocol.v239.game.outgoing.decoder.codec.misc.player.UpdateTradingPostDecoder
+import net.rsprox.protocol.v239.game.outgoing.decoder.codec.misc.player.UpdateStockMarketSlotV1Decoder
+import net.rsprox.protocol.v239.game.outgoing.decoder.codec.misc.player.UpdateTradingPostV1Decoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.social.FriendListLoadedDecoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.social.MessagePrivateDecoder
 import net.rsprox.protocol.v239.game.outgoing.decoder.codec.social.MessagePrivateEchoDecoder
@@ -278,8 +278,8 @@ internal object ServerMessageDecoderRepository {
                 bind(UpdateRunEnergyDecoder())
                 bind(UpdateRunWeightDecoder())
                 bind(UpdateStatV2Decoder())
-                bind(UpdateStockMarketSlotDecoder())
-                bind(UpdateTradingPostDecoder())
+                bind(UpdateStockMarketSlotV1Decoder())
+                bind(UpdateTradingPostV1Decoder())
                 bind(AccountFlagsDecoder())
 
                 bind(FriendListLoadedDecoder())
@@ -309,7 +309,7 @@ internal object ServerMessageDecoderRepository {
                 bind(ObjDelSpecificDecoder())
                 bind(ObjCountSpecificDecoder())
                 bind(ObjEnabledOpsSpecificDecoder())
-                bind(ObjCustomiseSpecificDecoder())
+                bind(ObjCustomiseSpecificV1Decoder())
                 bind(ObjUncustomiseSpecificDecoder())
 
                 bind(VarpLargeDecoder())

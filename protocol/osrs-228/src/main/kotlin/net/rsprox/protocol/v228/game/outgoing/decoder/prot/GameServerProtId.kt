@@ -65,7 +65,7 @@ internal object GameServerProtId {
     const val IF_SETHIDE = 61
     const val SET_MAP_FLAG_V1 = 62
     const val HISCORE_REPLY = 63
-    const val UPDATE_STOCKMARKET_SLOT = 64
+    const val UPDATE_STOCKMARKET_SLOT_V1 = 64
     const val VARP_LARGE = 65
     const val UPDATE_UID192 = 66
     const val MIDI_SONG_STOP = 67
@@ -76,7 +76,7 @@ internal object GameServerProtId {
     const val SITE_SETTINGS = 72
     const val UPDATE_REBOOT_TIMER_V1 = 73
     const val CAM_MOVETO_CYCLES_V1 = 74
-    const val UPDATE_TRADINGPOST = 75
+    const val UPDATE_TRADINGPOST_V1 = 75
     const val UPDATE_INV_PARTIAL = 76
     const val HINT_ARROW = 77
     const val ANIM_SPECIFIC = 78

@@ -59,7 +59,7 @@ internal object GameServerProtId {
     const val OBJ_DEL = 55
     const val IF_SETPLAYERMODEL_OBJ = 56
     const val IF_SETHIDE = 57
-    const val UPDATE_TRADINGPOST = 58
+    const val UPDATE_TRADINGPOST_V1 = 58
     const val LOGOUT = 59
     const val ANIM_SPECIFIC = 60
     const val UPDATE_FRIENDLIST = 61
@@ -78,7 +78,7 @@ internal object GameServerProtId {
     const val UPDATE_INV_STOPTRANSMIT = 74
     const val WORLDENTITY_INFO_V1 = 75
     const val MIDI_SONG_WITHSECONDARY = 76
-    const val UPDATE_STOCKMARKET_SLOT = 77
+    const val UPDATE_STOCKMARKET_SLOT_V1 = 77
     const val RUNCLIENTSCRIPT = 78
     const val VARP_SYNC = 79
     const val MESSAGE_GAME = 80

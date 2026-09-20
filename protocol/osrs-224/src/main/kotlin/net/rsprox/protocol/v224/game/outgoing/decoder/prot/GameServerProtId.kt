@@ -38,7 +38,7 @@ internal object GameServerProtId {
     const val SET_HEATMAP_ENABLED = 34
     const val UPDATE_ZONE_PARTIAL_ENCLOSED = 35
     const val MIDI_SONG_STOP = 36
-    const val UPDATE_STOCKMARKET_SLOT = 37
+    const val UPDATE_STOCKMARKET_SLOT_V1 = 37
     const val IF_RESYNC_V1 = 38
     const val IF_OPENTOP = 39
     const val UPDATE_FRIENDLIST = 40
@@ -96,7 +96,7 @@ internal object GameServerProtId {
     const val IF_SETPLAYERMODEL_BASECOLOUR = 92
     const val CLANCHANNEL_FULL = 93
     const val NPC_INFO_SMALL_V4 = 94
-    const val UPDATE_TRADINGPOST = 95
+    const val UPDATE_TRADINGPOST_V1 = 95
     const val NPC_INFO_LARGE_V4 = 96
     const val IF_SETSCROLLPOS = 97
     const val MESSAGE_GAME = 98

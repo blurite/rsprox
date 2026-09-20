@@ -120,13 +120,13 @@ internal object GameServerProtId {
     const val MAP_PROJANIM_V1 = 116
     const val IF_CLEARINV = 117
     const val MAP_ANIM_SPECIFIC = 118
-    const val UPDATE_STOCKMARKET_SLOT = 119
+    const val UPDATE_STOCKMARKET_SLOT_V1 = 119
     const val LOC_ANIM_SPECIFIC = 120
     const val UPDATE_FRIENDCHAT_CHANNEL_FULL_V2 = 121
     const val MIDI_SONG_WITHSECONDARY = 122
     const val UNKNOWN_STRING = 123
     const val PROJANIM_SPECIFIC_V3 = 124
-    const val UPDATE_TRADINGPOST = 125
+    const val UPDATE_TRADINGPOST_V1 = 125
     const val LOC_DEL = 126
     const val HIDELOCOPS = 127
     const val RESET_INTERACTION_MODE = 128

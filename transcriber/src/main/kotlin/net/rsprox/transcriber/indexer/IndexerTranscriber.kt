@@ -133,9 +133,9 @@ import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunEnergy
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunWeight
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV1
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV2
-import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStockMarketSlot
+import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStockMarketSlotV1
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStockMarketSlotV2
-import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateTradingPost
+import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateTradingPostV1
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateTradingPostV2
 import net.rsprox.protocol.game.outgoing.model.social.FriendListLoaded
 import net.rsprox.protocol.game.outgoing.model.social.MessagePrivateEcho
@@ -1093,13 +1093,13 @@ public class IndexerTranscriber(
     override fun updateStatV1(message: UpdateStatV1) {
     }
 
-    override fun updateStockMarketSlot(message: UpdateStockMarketSlot) {
+    override fun updateStockMarketSlotV1(message: UpdateStockMarketSlotV1) {
     }
 
     override fun accountFlags(message: AccountFlags) {
     }
 
-    override fun updateTradingPost(message: UpdateTradingPost) {
+    override fun updateTradingPostV1(message: UpdateTradingPostV1) {
     }
 
     override fun friendListLoaded(message: FriendListLoaded) {
@@ -1394,7 +1394,7 @@ public class IndexerTranscriber(
         binaryIndex.increment(IndexedType.OBJ, message.id)
     }
 
-    override fun objCustomiseSpecific(message: ObjCustomiseSpecific) {
+    override fun objCustomiseSpecificV1(message: ObjCustomiseSpecificV1) {
         binaryIndex.increment(IndexedType.OBJ, message.id)
     }
 

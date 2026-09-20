@@ -76,9 +76,9 @@ import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunEnergy
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunWeight
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV1
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV2
-import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStockMarketSlot
+import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStockMarketSlotV1
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStockMarketSlotV2
-import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateTradingPost
+import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateTradingPostV1
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateTradingPostV2
 import net.rsprox.protocol.game.outgoing.model.social.FriendListLoaded
 import net.rsprox.protocol.game.outgoing.model.social.MessagePrivate
@@ -2698,12 +2698,12 @@ public class TextServerPacketTranscriber(
         root.formattedInt("experience", message.experience - (oldXp ?: 0))
     }
 
-    override fun updateStockMarketSlot(message: UpdateStockMarketSlot) {
+    override fun updateStockMarketSlotV1(message: UpdateStockMarketSlotV1) {
         if (!filters[PropertyFilter.UPDATE_STOCKMARKET_SLOT]) return omit()
         root.int("slot", message.slot)
         when (val update = message.update) {
-            UpdateStockMarketSlot.ResetStockMarketSlot -> {}
-            is UpdateStockMarketSlot.SetStockMarketSlot -> {
+            UpdateStockMarketSlotV1.ResetStockMarketSlot -> {}
+            is UpdateStockMarketSlotV1.SetStockMarketSlot -> {
                 root.int("status", update.status)
                 root.scriptVarType("id", ScriptVarType.OBJ, update.obj)
                 root.formattedInt("price", update.price)
@@ -2719,11 +2719,11 @@ public class TextServerPacketTranscriber(
         root.long("flags", message.flags)
     }
 
-    override fun updateTradingPost(message: UpdateTradingPost) {
+    override fun updateTradingPostV1(message: UpdateTradingPostV1) {
         if (!filters[PropertyFilter.DEPRECATED_SERVER]) return omit()
         when (val update = message.updateType) {
-            UpdateTradingPost.ResetTradingPost -> {}
-            is UpdateTradingPost.SetTradingPostOfferList -> {
+            UpdateTradingPostV1.ResetTradingPost -> {}
+            is UpdateTradingPostV1.SetTradingPostOfferList -> {
                 root.long("age", update.age)
                 root.scriptVarType("id", ScriptVarType.OBJ, update.obj)
                 root.boolean("status", update.status)
@@ -3881,7 +3881,7 @@ public class TextServerPacketTranscriber(
         root.coordGrid(message.coordGrid)
     }
 
-    override fun objCustomiseSpecific(message: ObjCustomiseSpecific) {
+    override fun objCustomiseSpecificV1(message: ObjCustomiseSpecificV1) {
         if (!filters[PropertyFilter.OBJ_CUSTOMISE]) return omit()
         root.scriptVarType("id", ScriptVarType.OBJ, message.id.maxUShortToMinusOne())
         root.int("count", message.quantity)
