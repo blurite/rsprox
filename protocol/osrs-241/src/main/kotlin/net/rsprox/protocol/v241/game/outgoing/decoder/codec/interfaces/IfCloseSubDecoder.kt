@@ -2,8 +2,8 @@ package net.rsprox.protocol.v241.game.outgoing.decoder.codec.interfaces
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.metadata.Consistent
 import net.rsprot.protocol.util.gCombinedId
+import net.rsprot.protocol.metadata.Consistent
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.model.interfaces.IfCloseSub
 import net.rsprox.protocol.session.Session

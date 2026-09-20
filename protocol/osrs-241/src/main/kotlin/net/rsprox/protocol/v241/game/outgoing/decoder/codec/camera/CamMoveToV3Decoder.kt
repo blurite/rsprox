@@ -14,11 +14,11 @@ internal class CamMoveToV3Decoder : ProxyMessageDecoder<CamMoveToV3> {
         buffer: JagByteBuf,
         session: Session,
     ): CamMoveToV3 {
-        val rate = buffer.g1Alt2()
-        val z = buffer.g2()
-        val rate2 = buffer.g1Alt1()
-        val height = buffer.g2sAlt1()
-        val x = buffer.g2Alt3()
+        val height = buffer.g2s()
+        val rate = buffer.g1Alt3()
+        val z = buffer.g2Alt3()
+        val x = buffer.g2()
+        val rate2 = buffer.g1Alt2()
         val heightRelative = buffer.g1() == 1
         return CamMoveToV3(
             x,

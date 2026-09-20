@@ -17,10 +17,10 @@ internal class SoundAreaDecoder : ProxyMessageDecoder<SoundArea> {
     ): SoundArea {
         val size = buffer.g1Alt1()
         val loops = buffer.g1Alt1()
+        val radius = buffer.g1()
+        val coordInZone = CoordInZone(buffer.g1Alt2())
         val delay = buffer.g1Alt3()
-        val coordInZone = CoordInZone(buffer.g1Alt1())
-        val radius = buffer.g1Alt2()
-        val id = buffer.g2Alt3()
+        val id = buffer.g2()
         return SoundArea(
             id,
             delay,

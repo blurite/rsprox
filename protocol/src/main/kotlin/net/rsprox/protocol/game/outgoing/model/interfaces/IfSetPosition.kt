@@ -12,8 +12,8 @@ import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
  */
 public class IfSetPosition private constructor(
     public val combinedId: CombinedId,
-    private val _x: UShort,
-    private val _y: UShort,
+    private val _x: Short,
+    private val _y: Short,
 ) : IncomingServerGameMessage {
     public constructor(
         interfaceId: Int,
@@ -22,8 +22,8 @@ public class IfSetPosition private constructor(
         y: Int,
     ) : this(
         CombinedId(interfaceId, componentId),
-        x.toUShort(),
-        y.toUShort(),
+        x.toShort(),
+        y.toShort(),
     )
 
     public val interfaceId: Int

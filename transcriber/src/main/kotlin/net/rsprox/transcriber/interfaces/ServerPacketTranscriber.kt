@@ -29,6 +29,8 @@ import net.rsprox.protocol.game.outgoing.model.logout.LogoutTransfer
 import net.rsprox.protocol.game.outgoing.model.logout.LogoutWithReason
 import net.rsprox.protocol.game.outgoing.model.map.*
 import net.rsprox.protocol.game.outgoing.model.misc.client.*
+import net.rsprox.protocol.game.outgoing.model.misc.client.ObjUnlockReset
+import net.rsprox.protocol.game.outgoing.model.misc.client.ObjUnlockUpdate
 import net.rsprox.protocol.game.outgoing.model.misc.player.AccountFlags
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettings
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettingsPrivateChat
@@ -43,7 +45,9 @@ import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunWeight
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV1
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV2
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStockMarketSlot
+import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStockMarketSlotV2
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateTradingPost
+import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateTradingPostV2
 import net.rsprox.protocol.game.outgoing.model.social.FriendListLoaded
 import net.rsprox.protocol.game.outgoing.model.social.MessagePrivate
 import net.rsprox.protocol.game.outgoing.model.social.MessagePrivateEcho
@@ -59,8 +63,10 @@ import net.rsprox.protocol.game.outgoing.model.sound.MidiSongWithSecondary
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSwap
 import net.rsprox.protocol.game.outgoing.model.sound.SynthSound
 import net.rsprox.protocol.game.outgoing.model.specific.*
+import net.rsprox.protocol.game.outgoing.model.specific.ObjCustomiseSpecificV2
 import net.rsprox.protocol.game.outgoing.model.unknown.UnknownString
 import net.rsprox.protocol.game.outgoing.model.varp.VarpLarge
+import net.rsprox.protocol.game.outgoing.model.varp.VarpLong
 import net.rsprox.protocol.game.outgoing.model.varp.VarpReset
 import net.rsprox.protocol.game.outgoing.model.varp.VarpSmall
 import net.rsprox.protocol.game.outgoing.model.varp.VarpSync
@@ -456,4 +462,16 @@ public interface ServerPacketTranscriber {
     public fun setInteractionMode(message: SetInteractionMode)
 
     public fun resetInteractionMode(message: ResetInteractionMode)
+
+    public fun varpLong(message: VarpLong)
+
+    public fun updateTradingPostV2(message: UpdateTradingPostV2)
+
+    public fun updateStockMarketSlotV2(message: UpdateStockMarketSlotV2)
+
+    public fun objUnlockReset(message: ObjUnlockReset)
+
+    public fun objUnlockUpdate(message: ObjUnlockUpdate)
+
+    public fun objCustomiseSpecificV2(message: ObjCustomiseSpecificV2)
 }

@@ -14,7 +14,7 @@ internal class CamSkyboxDecoder : ProxyMessageDecoder<CamSkybox> {
         buffer: JagByteBuf,
         session: Session,
     ): CamSkybox {
-        val model = buffer.g4Alt2()
+        val model = buffer.g4Alt1()
         return CamSkybox(
             model,
         )

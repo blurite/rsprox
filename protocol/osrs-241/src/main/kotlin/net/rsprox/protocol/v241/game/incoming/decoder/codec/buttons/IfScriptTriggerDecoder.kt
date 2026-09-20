@@ -17,10 +17,10 @@ public class IfScriptTriggerDecoder : ProxyMessageDecoder<IfScriptTrigger> {
         session: Session,
     ): IfScriptTrigger {
         // Function is method(int combinedId, int sub, int obj, int crc, Object[] args)
-        val crc = buffer.g4Alt2()
-        val obj = buffer.g2()
         val combinedId = buffer.gCombinedIdAlt2()
+        val obj = buffer.g2Alt1()
         val sub = buffer.g2Alt1()
+        val crc = buffer.g4Alt2()
         val bytes = buffer.buffer.toByteArray()
         return IfScriptTrigger(
             combinedId,

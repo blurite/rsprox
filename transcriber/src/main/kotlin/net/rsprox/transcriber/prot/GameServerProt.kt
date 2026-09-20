@@ -83,6 +83,7 @@ public enum class GameServerProt : Prot {
     OBJ_UNCUSTOMISE_SPECIFIC,
     OBJ_COUNT_SPECIFIC,
     OBJ_CUSTOMISE_SPECIFIC,
+    OBJ_CUSTOMISE_SPECIFIC_V2,
 
     // Info packets
     PLAYER_INFO,
@@ -240,6 +241,12 @@ public enum class GameServerProt : Prot {
     // Unknown packets
     UNKNOWN_STRING,
     UNHANDLED,
+
+    VARP_LONG,
+    UPDATE_TRADINGPOST_V2,
+    UPDATE_STOCKMARKET_SLOT_V2,
+    OBJUNLOCK_RESET,
+    OBJUNLOCK_UPDATE,
 
     RECONNECT,
 }

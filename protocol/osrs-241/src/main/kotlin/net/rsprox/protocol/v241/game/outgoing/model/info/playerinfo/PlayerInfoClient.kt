@@ -302,23 +302,15 @@ internal class PlayerInfoClient(
             throw IllegalStateException("Unused flags used!")
         }
 
-        if (flags and SPOTANIM != 0) {
-            decodeSpotanims(buffer, blocks)
+        // The retired V2 spotanim mask retains only its count byte.
+        if (flags and SPOTANIM_OLD != 0) {
+            buffer.g1()
         }
-        if (flags and CHAT != 0) {
-            decodeChat(buffer, blocks)
+        if (flags and SAY != 0) {
+            decodeSay(buffer, blocks)
         }
-        if (flags and HEADBARS != 0) {
-            decodeHeadbar(buffer, blocks)
-        }
-        if (flags and APPEARANCE != 0) {
-            val len = buffer.g1Alt3()
-            val data = ByteArray(len)
-            buffer.gdataAlt1(data)
-            decodeAppearance(Unpooled.wrappedBuffer(data).toJagByteBuf(), blocks)
-        }
-        if (flags and PLAYER_FREEZE != 0) {
-            decodeFreeze(buffer, blocks)
+        if (flags and MOVE_SPEED != 0) {
+            decodeMoveSpeed(buffer, blocks)
         }
         if (flags and FACE != 0) {
             decodeFacing(buffer, blocks)
@@ -326,35 +318,44 @@ internal class PlayerInfoClient(
         if (flags and NAME_EXTRAS != 0) {
             decodeNameExtras(buffer, blocks)
         }
-        if (flags and MOVE_SPEED != 0) {
-            decodeMoveSpeed(buffer, blocks)
+        if (flags and SPOTANIM != 0) {
+            decodeSpotanims(buffer, blocks)
+        }
+        if (flags and HEADBARS != 0) {
+            decodeHeadbar(buffer, blocks)
+        }
+        if (flags and APPEARANCE != 0) {
+            val len = buffer.g1Alt2()
+            val data = ByteArray(len)
+            buffer.gdataAlt1(data)
+            decodeAppearance(Unpooled.wrappedBuffer(data).toJagByteBuf(), blocks)
         }
         if (flags and TEMP_MOVE_SPEED != 0) {
             decodeTemporaryMoveSpeed(buffer, blocks)
         }
-        if (flags and SPOTANIM_OLD != 0) {
-            decodeSpotanimsOld(buffer, blocks)
-        }
-        if (flags and PLAYER_TRANSPARENCY != 0) {
-            decodeTransparency(buffer, blocks)
+        if (flags and CHAT != 0) {
+            decodeChat(buffer, blocks)
         }
         if (flags and HITMARKS != 0) {
             decodeHitmark(buffer, blocks)
         }
-        if (flags and EXACT_MOVE != 0) {
-            decodeExactMove(buffer, blocks)
+        if (flags and TINTING != 0) {
+            decodeTinting(buffer, blocks)
         }
         if (flags and SEQUENCE != 0) {
             decodeSequence(buffer, blocks)
         }
-        if (flags and TINTING != 0) {
-            decodeTinting(buffer, blocks)
+        if (flags and EXACT_MOVE != 0) {
+            decodeExactMove(buffer, blocks)
+        }
+        if (flags and PLAYER_TRANSPARENCY != 0) {
+            decodeTransparency(buffer, blocks)
         }
         if (flags and PLAYER_RESET != 0) {
             decodePlayerReset(buffer, blocks)
         }
-        if (flags and SAY != 0) {
-            decodeSay(buffer, blocks)
+        if (flags and PLAYER_FREEZE != 0) {
+            decodeFreeze(buffer, blocks)
         }
     }
 
@@ -362,21 +363,21 @@ internal class PlayerInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        blocks += MoveSpeedExtendedInfo(buffer.g1sAlt3())
+        blocks += MoveSpeedExtendedInfo(buffer.g1sAlt1())
     }
 
     private fun decodeTemporaryMoveSpeed(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        blocks += TemporaryMoveSpeedExtendedInfo(buffer.g1sAlt2())
+        blocks += TemporaryMoveSpeedExtendedInfo(buffer.g1sAlt1())
     }
 
     private fun decodeSequence(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val id = buffer.g2Alt3()
+        val id = buffer.g2Alt2()
         val delay = buffer.g1Alt1()
         blocks += SequenceExtendedInfo(id, delay)
     }
@@ -394,7 +395,7 @@ internal class PlayerInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val flag = buffer.g1()
+        val flag = buffer.g1Alt3()
         val walkType =
             when (val walkTypeValue = flag and 0x7) {
                 0 -> FaceExtendedInfo.WalkType.CancelOnWalk
@@ -488,12 +489,12 @@ internal class PlayerInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val colourAndEffectsPacked = buffer.g2()
+        val colourAndEffectsPacked = buffer.g2Alt1()
         val modIcon = buffer.g1Alt1()
         val autotyper = buffer.g1Alt2() == 1
         val huffmanLength = buffer.g1Alt1()
         val data = ByteArray(huffmanLength)
-        buffer.gdataAlt3(data)
+        buffer.gdataAlt1(data)
         val text = huffmanCodec.decode(Unpooled.wrappedBuffer(data))
         val colour = colourAndEffectsPacked ushr 8
         val effects = colourAndEffectsPacked and 0xFF
@@ -502,7 +503,7 @@ internal class PlayerInfoClient(
             if (patternLength in 1..8) {
                 val array = ByteArray(patternLength)
                 for (i in 0..<patternLength) {
-                    array[i] = buffer.g1Alt2().toByte()
+                    array[i] = buffer.g1Alt3().toByte()
                 }
                 array
             } else {
@@ -523,13 +524,13 @@ internal class PlayerInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val deltaX1 = buffer.g1s()
-        val deltaZ1 = buffer.g1sAlt3()
-        val deltaX2 = buffer.g1s()
-        val deltaZ2 = buffer.g1s()
-        val delay1 = buffer.g2Alt3()
-        val delay2 = buffer.g2Alt3()
-        val direction = buffer.g2Alt3()
+        val deltaX1 = buffer.g1sAlt1()
+        val deltaZ1 = buffer.g1s()
+        val deltaX2 = buffer.g1sAlt1()
+        val deltaZ2 = buffer.g1sAlt3()
+        val delay1 = buffer.g2Alt1()
+        val delay2 = buffer.g2Alt2()
+        val direction = buffer.g2Alt2()
         blocks +=
             ExactMoveExtendedInfo(
                 deltaX1,
@@ -564,12 +565,12 @@ internal class PlayerInfoClient(
         blocks: MutableList<ExtendedInfo>,
     ) {
         val spotanims = mutableMapOf<Int, Spotanim>()
-        val count = buffer.g1Alt1()
+        val count = buffer.g1Alt2()
         for (i in 0..<count) {
             val slot = buffer.g1Alt2()
-            val id = buffer.g2Alt1()
+            val id = buffer.g2Alt2()
             val heightAndDelay = buffer.g4()
-            val loop = buffer.g1Alt3()
+            val loop = buffer.g1()
             val height = heightAndDelay ushr 16
             val delay = heightAndDelay and 0xFFFF
             spotanims[slot] = Spotanim(id, delay, height, loop == 1)
@@ -605,7 +606,7 @@ internal class PlayerInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val headbarCount = buffer.g1Alt3()
+        val headbarCount = buffer.g1()
         val headbars = ArrayList<Headbar>(headbarCount)
         for (i in 0..<headbarCount) {
             val type = buffer.gSmart1or2()
@@ -622,10 +623,10 @@ internal class PlayerInfoClient(
                 continue
             }
             val startTime = buffer.gSmart1or2()
-            val startFill = buffer.g1()
+            val startFill = buffer.g1Alt3()
             val endFill =
                 if (endTime > 0) {
-                    buffer.g1Alt2()
+                    buffer.g1Alt1()
                 } else {
                     startFill
                 }
@@ -645,16 +646,16 @@ internal class PlayerInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        blocks += PlayerResetExtendedInfo(buffer.g1Alt2())
+        blocks += PlayerResetExtendedInfo(buffer.g1())
     }
 
     private fun decodeFreeze(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val delay = buffer.g2Alt2()
+        val delay = buffer.g2Alt1()
         val duration = buffer.g2Alt1()
-        val cancelSequence = buffer.g1Alt2() == 1
+        val cancelSequence = buffer.g1Alt1() == 1
         blocks += FreezeExtendedInfo(delay, duration, cancelSequence)
     }
 
@@ -662,11 +663,11 @@ internal class PlayerInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val start = buffer.g2sAlt2()
+        val start = buffer.g2sAlt3()
         val end = buffer.g2sAlt3()
-        val startTransparency = buffer.g1sAlt3()
-        val endTransparency = buffer.g1sAlt3()
-        val useStartTransparency = buffer.g1Alt3() == 1
+        val startTransparency = buffer.g1sAlt1()
+        val endTransparency = buffer.g1sAlt1()
+        val useStartTransparency = buffer.g1Alt1() == 1
         blocks +=
             TransparencyExtendedInfo(
                 start,
@@ -681,12 +682,12 @@ internal class PlayerInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val start = buffer.g2Alt1()
-        val end = buffer.g2Alt3()
+        val start = buffer.g2()
+        val end = buffer.g2Alt1()
         val hue = buffer.g1sAlt2()
-        val saturation = buffer.g1sAlt1()
-        val lightness = buffer.g1s()
-        val weight = buffer.g1Alt1()
+        val saturation = buffer.g1s()
+        val lightness = buffer.g1sAlt2()
+        val weight = buffer.g1Alt3()
         blocks +=
             TintingExtendedInfo(
                 start,
@@ -752,82 +753,34 @@ internal class PlayerInfoClient(
                 for (i in 0..<12) {
                     val hasCustomisation = customisationFlag shr (12 - i) and 1
                     if (hasCustomisation == 1) {
-                        var recolIndices: Int = -1
-                        var recol1: Int = -1
-                        var recol2: Int = -1
-                        var retexIndices: Int = -1
-                        var retex1: Int = -1
-                        var retex2: Int = -1
-                        var manWear: Int = -1
-                        var womanWear: Int = -1
-                        var manHead: Int = -1
-                        var womanHead: Int = -1
-
                         val slotFlag = buffer.g1()
-                        val recol = slotFlag and 0x1 != 0
-                        val retex = slotFlag and 0x2 != 0
-                        val wearModels = slotFlag and 0x4 != 0
-                        val headModels = slotFlag and 0x8 != 0
-                        if (recol) {
-                            recolIndices = buffer.g1()
-                            val recolIndex1 = recolIndices and 15
-                            val recolIndex2 = recolIndices ushr 4 and 15
-                            recol1 =
-                                if (recolIndex1 != 15) {
-                                    buffer.g2()
-                                } else {
-                                    -1
+                        val recolours =
+                            if (slotFlag and 0x1 != 0) {
+                                List(buffer.g1()) {
+                                    ObjTypeCustomisation.Replacement(buffer.g1(), buffer.g2())
                                 }
-                            recol2 =
-                                if (recolIndex2 != 15) {
-                                    buffer.g2()
-                                } else {
-                                    -1
+                            } else {
+                                null
+                            }
+                        val retextures =
+                            if (slotFlag and 0x2 != 0) {
+                                List(buffer.g1()) {
+                                    ObjTypeCustomisation.Replacement(buffer.g1(), buffer.g2())
                                 }
-                        }
-
-                        if (retex) {
-                            retexIndices = buffer.g1()
-                            val retexIndex1 = retexIndices and 15
-                            val retexIndex2 = retexIndices ushr 4 and 15
-                            retex1 =
-                                if (retexIndex1 != 15) {
-                                    buffer.g2()
-                                } else {
-                                    -1
-                                }
-                            retex2 =
-                                if (retexIndex2 != 15) {
-                                    buffer.g2()
-                                } else {
-                                    -1
-                                }
-                        }
-
-                        // Note: This branch is server-version checked, but we're pushing
-                        // RSProx out after revision 237 is forced,
-                        // meaning we can check this. RSprot does not support it either.
-                        if (wearModels) {
-                            manWear = buffer.g4()
-                            womanWear = buffer.g4()
-                        }
-
-                        if (headModels) {
-                            manHead = buffer.g4()
-                            womanHead = buffer.g4()
-                        }
+                            } else {
+                                null
+                            }
+                        val overrideColour = if (slotFlag and 0x10 != 0) buffer.g1() == 1 else null
+                        val colour = if (slotFlag and 0x10 != 0) buffer.g2() else null
+                        val manWear = if (slotFlag and 0x4 != 0) buffer.g4() else -1
+                        val womanWear = if (slotFlag and 0x4 != 0) buffer.g4() else -1
+                        val manHead = if (slotFlag and 0x8 != 0) buffer.g4() else -1
+                        val womanHead = if (slotFlag and 0x8 != 0) buffer.g4() else -1
                         customisation[i] =
                             ObjTypeCustomisation(
-                                recolIndices,
-                                recol1,
-                                recol2,
-                                retexIndices,
-                                retex1,
-                                retex2,
-                                manWear,
-                                womanWear,
-                                manHead,
-                                womanHead,
+                                -1, -1, -1, -1, -1, -1,
+                                manWear, womanWear, manHead, womanHead,
+                                recolours, retextures, overrideColour, colour,
                             )
                     }
                 }
@@ -1160,25 +1113,25 @@ internal class PlayerInfoClient(
         private const val EXTENDED_SHORT = 0x80
         private const val EXTENDED_MEDIUM = 0x2000
 
-        private const val SEQUENCE = 0x10
-        private const val APPEARANCE = 0x4
-        private const val FACE = 0x40
-        private const val SAY = 0x1
-        private const val CHAT = 0x1000
-        private const val NAME_EXTRAS = 0x200
-        private const val MOVE_SPEED = 0x4000
-        private const val TINTING = 0x400
-        private const val EXACT_MOVE = 0x8000
+        private const val SEQUENCE = 0x40
+        private const val APPEARANCE = 0x2
+        private const val FACE = 0x20
+        private const val SAY = 0x10
+        private const val CHAT = 0x400
+        private const val NAME_EXTRAS = 0x8000
+        private const val MOVE_SPEED = 0x100
+        private const val TINTING = 0x1000
+        private const val EXACT_MOVE = 0x800
         private const val PLAYER_TRANSPARENCY = 0x10000
-        private const val TEMP_MOVE_SPEED = 0x800
-        private const val SPOTANIM_OLD = 0x80000
-        private const val SPOTANIM = 0x20
-        private const val HEADBARS = 0x20000
-        private const val HITMARKS = 0x100000
+        private const val TEMP_MOVE_SPEED = 0x4000
+        private const val SPOTANIM_OLD = 0x100000
+        private const val SPOTANIM = 0x4
+        private const val HEADBARS = 0x80000
+        private const val HITMARKS = 0x20000
 
         private const val PLAYER_FREEZE = 0x40_000
         private const val PLAYER_RESET = 0x8
-        private const val UNUSED_FLAGS = 0x2
+        private const val UNUSED_FLAGS = 0x1
 
         private class Player {
             var queuedMove: Boolean = false

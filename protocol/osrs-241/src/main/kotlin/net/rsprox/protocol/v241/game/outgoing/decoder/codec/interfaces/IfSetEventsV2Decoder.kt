@@ -15,11 +15,11 @@ internal class IfSetEventsV2Decoder : ProxyMessageDecoder<IfSetEventsV2> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetEventsV2 {
+        val events1 = buffer.g4Alt2()
+        val end = buffer.g2Alt3()
+        val start = buffer.g2Alt1()
         val combinedId = buffer.gCombinedId()
-        val events1 = buffer.g4Alt3()
-        val start = buffer.g2Alt2()
         val events2 = buffer.g4Alt1()
-        val end = buffer.g2Alt1()
         return IfSetEventsV2(
             combinedId.interfaceId,
             combinedId.componentId,

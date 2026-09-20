@@ -15,14 +15,14 @@ internal class CamMoveToArcV3Decoder : ProxyMessageDecoder<CamMoveToArcV3> {
         session: Session,
     ): CamMoveToArcV3 {
         val centerZ = buffer.g2Alt2()
+        val centerX = buffer.g2Alt2()
         val heightRelative = buffer.g1Alt1() == 1
-        val height = buffer.g2sAlt3()
-        val easing = buffer.g1Alt2()
-        val destinationZ = buffer.g2Alt3()
+        val easing = buffer.g1Alt3()
+        val height = buffer.g2sAlt2()
+        val destinationZ = buffer.g2Alt2()
+        val destinationX = buffer.g2()
+        val ignoreTerrain = buffer.g1Alt1() == 1
         val cycles = buffer.g2Alt2()
-        val ignoreTerrain = buffer.g1() == 1
-        val centerX = buffer.g2Alt3()
-        val destinationX = buffer.g2Alt1()
         return CamMoveToArcV3(
             centerX,
             centerZ,

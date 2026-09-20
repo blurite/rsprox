@@ -118,6 +118,8 @@ import net.rsprox.protocol.game.outgoing.model.logout.LogoutTransfer
 import net.rsprox.protocol.game.outgoing.model.logout.LogoutWithReason
 import net.rsprox.protocol.game.outgoing.model.map.*
 import net.rsprox.protocol.game.outgoing.model.misc.client.*
+import net.rsprox.protocol.game.outgoing.model.misc.client.ObjUnlockReset
+import net.rsprox.protocol.game.outgoing.model.misc.client.ObjUnlockUpdate
 import net.rsprox.protocol.game.outgoing.model.misc.player.AccountFlags
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettings
 import net.rsprox.protocol.game.outgoing.model.misc.player.ChatFilterSettingsPrivateChat
@@ -132,7 +134,9 @@ import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunWeight
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV1
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV2
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStockMarketSlot
+import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStockMarketSlotV2
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateTradingPost
+import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateTradingPostV2
 import net.rsprox.protocol.game.outgoing.model.social.FriendListLoaded
 import net.rsprox.protocol.game.outgoing.model.social.MessagePrivateEcho
 import net.rsprox.protocol.game.outgoing.model.social.UpdateFriendList
@@ -147,8 +151,10 @@ import net.rsprox.protocol.game.outgoing.model.sound.MidiSongWithSecondary
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSwap
 import net.rsprox.protocol.game.outgoing.model.sound.SynthSound
 import net.rsprox.protocol.game.outgoing.model.specific.*
+import net.rsprox.protocol.game.outgoing.model.specific.ObjCustomiseSpecificV2
 import net.rsprox.protocol.game.outgoing.model.unknown.UnknownString
 import net.rsprox.protocol.game.outgoing.model.varp.VarpLarge
+import net.rsprox.protocol.game.outgoing.model.varp.VarpLong
 import net.rsprox.protocol.game.outgoing.model.varp.VarpReset
 import net.rsprox.protocol.game.outgoing.model.varp.VarpSmall
 import net.rsprox.protocol.game.outgoing.model.varp.VarpSync
@@ -1231,6 +1237,14 @@ public class IndexerTranscriber(
         }
     }
 
+    private fun logVarpLong(id: Int) {
+        // Ignore any varps set on tick 0
+        if (sessionState.cycle == sessionState.lastConnection) {
+            return
+        }
+        binaryIndex.increment(IndexedType.VARP, id)
+    }
+
     override fun varpSync(message: VarpSync) {
     }
 
@@ -1573,5 +1587,25 @@ public class IndexerTranscriber(
                 }
             }
         }
+    }
+
+    override fun varpLong(message: VarpLong) {
+        logVarpLong(message.id)
+    }
+
+    override fun updateTradingPostV2(message: UpdateTradingPostV2) {
+    }
+
+    override fun updateStockMarketSlotV2(message: UpdateStockMarketSlotV2) {
+    }
+
+    override fun objUnlockReset(message: ObjUnlockReset) {
+    }
+
+    override fun objUnlockUpdate(message: ObjUnlockUpdate) {
+    }
+
+    override fun objCustomiseSpecificV2(message: ObjCustomiseSpecificV2) {
+        binaryIndex.increment(IndexedType.OBJ, message.id)
     }
 }

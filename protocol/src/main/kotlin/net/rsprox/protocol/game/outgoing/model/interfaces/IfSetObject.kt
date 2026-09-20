@@ -14,7 +14,7 @@ import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 public class IfSetObject private constructor(
     public val combinedId: CombinedId,
     private val _obj: UShort,
-    private val _count: UShort,
+    private val _count: Int,
 ) : IncomingServerGameMessage {
     public constructor(
         interfaceId: Int,
@@ -24,7 +24,7 @@ public class IfSetObject private constructor(
     ) : this(
         CombinedId(interfaceId, componentId),
         obj.toUShort(),
-        count.toUShort(),
+        count,
     )
 
     public val interfaceId: Int

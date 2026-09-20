@@ -18,9 +18,9 @@ internal class RebuildRegionV2Decoder : ProxyMessageDecoder<RebuildRegionV2> {
         buffer: JagByteBuf,
         session: Session,
     ): RebuildRegionV2 {
-        val zoneZ = buffer.g2Alt2()
+        val zoneZ = buffer.g2()
+        val reload = buffer.g1Alt2() == 1
         val zoneX = buffer.g2Alt1()
-        val reload = buffer.g1Alt1() == 1
 
         @Suppress("UnusedVariable", "unused")
         val distinctMapsquareCount = buffer.g2()

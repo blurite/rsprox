@@ -889,6 +889,14 @@ public class TextPlayerInfoTranscriber(
                             }
                             val pos = WearPos.entries.first { it.id == index }
                             namedEnum("wearpos", pos)
+                            cus.recolours?.forEach { replacement ->
+                                int("recol${replacement.index}", replacement.value)
+                            }
+                            cus.retextures?.forEach { replacement ->
+                                scriptVarType("retex${replacement.index}", ScriptVarType.TEXTURE, replacement.value)
+                            }
+                            cus.overrideColour?.let { boolean("overridecolour", it) }
+                            cus.colour?.let { int("colour", it) }
                             val recolIndex1 = cus.recolIndices and 0xF
                             val recolIndex2 = cus.recolIndices ushr 4 and 0xF
                             if (recolIndex1 != 0xF) {

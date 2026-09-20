@@ -16,9 +16,9 @@ internal class ObjEnabledOpsSpecificDecoder : ProxyMessageDecoder<ObjEnabledOpsS
         buffer: JagByteBuf,
         session: Session,
     ): ObjEnabledOpsSpecific {
-        val id = buffer.g2Alt3()
-        val coordGrid = CoordGrid(buffer.g4Alt2())
         val opFlags = OpFlags(buffer.g1Alt3())
+        val coordGrid = CoordGrid(buffer.g4())
+        val id = buffer.g2()
         return ObjEnabledOpsSpecific(
             id,
             opFlags,

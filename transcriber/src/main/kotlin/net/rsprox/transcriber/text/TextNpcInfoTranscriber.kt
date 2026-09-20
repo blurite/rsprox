@@ -826,6 +826,7 @@ public class TextNpcInfoTranscriber(
         }
         when (val type = info.type) {
             is ModelCustomisation -> {
+                type.recolAll?.let { int("recolall", it) }
                 val composition = info.playerComposition
                 if (composition != null) {
                     val models = type.models
@@ -901,6 +902,7 @@ public class TextNpcInfoTranscriber(
         }
         when (val type = info.type) {
             is ModelCustomisation -> {
+                type.recolAll?.let { int("recolall", it) }
                 val models = type.models
                 if (models != null) {
                     for (model in models) {

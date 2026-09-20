@@ -6,18 +6,13 @@ import net.rsprox.cache.api.CacheProvider
 import net.rsprox.protocol.MessageDecoderRepository
 import net.rsprox.protocol.MessageDecoderRepositoryBuilder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.camera.CamLookAtCyclesDecoder
-import net.rsprox.protocol.v241.game.outgoing.decoder.codec.camera.CamLookAtV2Decoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.camera.CamLookAtV3Decoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.camera.CamModeDecoder
-import net.rsprox.protocol.v241.game.outgoing.decoder.codec.camera.CamMoveToArcV2Decoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.camera.CamMoveToArcV3Decoder
-import net.rsprox.protocol.v241.game.outgoing.decoder.codec.camera.CamMoveToCyclesV2Decoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.camera.CamMoveToCyclesV3Decoder
-import net.rsprox.protocol.v241.game.outgoing.decoder.codec.camera.CamMoveToV2Decoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.camera.CamMoveToV3Decoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.camera.CamResetDecoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.camera.CamRotateBy
-import net.rsprox.protocol.v241.game.outgoing.decoder.codec.camera.CamRotateToCoordinateV2Decoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.camera.CamRotateToCoordinateV3Decoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.camera.CamRotateToDecoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.camera.CamShakeDecoder
@@ -43,9 +38,7 @@ import net.rsprox.protocol.v241.game.outgoing.decoder.codec.group.GroupFullDecod
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.group.GroupVarDecoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.group.GroupVarIntDecoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.group.GroupVarLongDecoder
-import net.rsprox.protocol.v241.game.outgoing.decoder.codec.info.NpcInfoLargeV5Decoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.info.NpcInfoLargeV6Decoder
-import net.rsprox.protocol.v241.game.outgoing.decoder.codec.info.NpcInfoSmallV5Decoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.info.NpcInfoSmallV6Decoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.info.PlayerInfoDecoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.info.SetNpcUpdateOriginDecoder
@@ -89,6 +82,8 @@ import net.rsprox.protocol.v241.game.outgoing.decoder.codec.misc.client.HideObjO
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.misc.client.HintArrowDecoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.misc.client.HiscoreReplyDecoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.misc.client.MinimapToggleDecoder
+import net.rsprox.protocol.v241.game.outgoing.decoder.codec.misc.client.ObjUnlockResetDecoder
+import net.rsprox.protocol.v241.game.outgoing.decoder.codec.misc.client.ObjUnlockUpdateDecoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.misc.client.PacketGroupEndDecoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.misc.client.PacketGroupStartDecoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.misc.client.ReflectionCheckerDecoder
@@ -114,7 +109,9 @@ import net.rsprox.protocol.v241.game.outgoing.decoder.codec.misc.player.UpdateRu
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.misc.player.UpdateRunWeightDecoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.misc.player.UpdateStatV2Decoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.misc.player.UpdateStockMarketSlotDecoder
+import net.rsprox.protocol.v241.game.outgoing.decoder.codec.misc.player.UpdateStockMarketSlotV2Decoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.misc.player.UpdateTradingPostDecoder
+import net.rsprox.protocol.v241.game.outgoing.decoder.codec.misc.player.UpdateTradingPostV2Decoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.social.FriendListLoadedDecoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.social.MessagePrivateDecoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.social.MessagePrivateEchoDecoder
@@ -136,10 +133,12 @@ import net.rsprox.protocol.v241.game.outgoing.decoder.codec.specific.NpcAnimSpec
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.specific.NpcHeadIconSpecificDecoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.specific.NpcSpotAnimSpecificDecoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.specific.ObjAddSpecificDecoder
+import net.rsprox.protocol.v241.game.outgoing.decoder.codec.specific.ObjCustomiseSpecificV2Decoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.specific.PlayerSpotAnimSpecificDecoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.specific.ProjAnimSpecificV4Decoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.unknown.UnknownStringDecoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.varp.VarpLargeDecoder
+import net.rsprox.protocol.v241.game.outgoing.decoder.codec.varp.VarpLongDecoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.varp.VarpResetDecoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.varp.VarpSmallDecoder
 import net.rsprox.protocol.v241.game.outgoing.decoder.codec.varp.VarpSyncDecoder
@@ -167,17 +166,12 @@ internal object ServerMessageDecoderRepository {
             ).apply {
                 bind(CamRotateToDecoder())
                 bind(CamRotateBy())
-                bind(CamRotateToCoordinateV2Decoder())
                 bind(CamRotateToCoordinateV3Decoder())
-                bind(CamLookAtV2Decoder())
                 bind(CamLookAtV3Decoder())
                 bind(CamLookAtCyclesDecoder())
                 bind(CamModeDecoder())
-                bind(CamMoveToArcV2Decoder())
                 bind(CamMoveToArcV3Decoder())
-                bind(CamMoveToCyclesV2Decoder())
                 bind(CamMoveToCyclesV3Decoder())
-                bind(CamMoveToV2Decoder())
                 bind(CamMoveToV3Decoder())
                 bind(CamResetDecoder())
                 bind(CamShakeDecoder())
@@ -207,8 +201,6 @@ internal object ServerMessageDecoderRepository {
                 bind(UpdateFriendChatChannelSingleUserDecoder())
 
                 bind(PlayerInfoDecoder())
-                bind(NpcInfoSmallV5Decoder())
-                bind(NpcInfoLargeV5Decoder())
                 bind(NpcInfoSmallV6Decoder())
                 bind(NpcInfoLargeV6Decoder())
                 bind(SetNpcUpdateOriginDecoder())
@@ -283,7 +275,9 @@ internal object ServerMessageDecoderRepository {
                 bind(UpdateRunWeightDecoder())
                 bind(UpdateStatV2Decoder())
                 bind(UpdateStockMarketSlotDecoder())
+                bind(UpdateStockMarketSlotV2Decoder())
                 bind(UpdateTradingPostDecoder())
+                bind(UpdateTradingPostV2Decoder())
                 bind(AccountFlagsDecoder())
 
                 bind(FriendListLoadedDecoder())
@@ -314,12 +308,17 @@ internal object ServerMessageDecoderRepository {
                 bind(ObjCountSpecificDecoder())
                 bind(ObjEnabledOpsSpecificDecoder())
                 bind(ObjCustomiseSpecificDecoder())
+                bind(ObjCustomiseSpecificV2Decoder())
                 bind(ObjUncustomiseSpecificDecoder())
 
                 bind(VarpLargeDecoder())
                 bind(VarpResetDecoder())
                 bind(VarpSmallDecoder())
+                bind(VarpLongDecoder())
                 bind(VarpSyncDecoder())
+
+                bind(ObjUnlockResetDecoder())
+                bind(ObjUnlockUpdateDecoder())
 
                 bind(SetActiveWorldV2Decoder())
 

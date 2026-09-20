@@ -49,9 +49,9 @@ internal class StaticRebuildV2Decoder(
             } else {
                 null
             }
-        val zoneZ = buffer.g2Alt3()
-        val worldArea = buffer.g2sAlt3()
-        val zoneX = buffer.g2Alt3()
+        val zoneZ = buffer.g2()
+        val zoneX = buffer.g2Alt1()
+        val worldArea = buffer.g2s()
         return if (playerInfoInitBlock != null) {
             val message =
                 RebuildLoginV2(

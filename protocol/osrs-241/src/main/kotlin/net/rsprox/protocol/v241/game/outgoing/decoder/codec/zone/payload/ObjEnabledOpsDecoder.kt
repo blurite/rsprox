@@ -17,8 +17,8 @@ internal class ObjEnabledOpsDecoder : ProxyMessageDecoder<ObjEnabledOps> {
         session: Session,
     ): ObjEnabledOps {
         val id = buffer.g2Alt2()
-        val opFlags = OpFlags(buffer.g1Alt2())
-        val coordInZone = CoordInZone(buffer.g1Alt3())
+        val opFlags = OpFlags(buffer.g1())
+        val coordInZone = CoordInZone(buffer.g1Alt2())
         return ObjEnabledOps(
             id,
             opFlags,
