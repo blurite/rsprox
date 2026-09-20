@@ -190,9 +190,14 @@ public data class BinaryBlob(
     }
 
     public fun reopen() {
-        liveSession?.flush()
         closed.set(false)
-        this.monitor.onLogin(header)
+        val session = liveSession
+        if (session == null) {
+            this.monitor.onLogin(header)
+        } else {
+            // Finish the old segment before the monitor creates the reconnect's UI stream.
+            session.flush { this.monitor.onLogin(header) }
+        }
         this.closeTimestamp = 0L
     }
 

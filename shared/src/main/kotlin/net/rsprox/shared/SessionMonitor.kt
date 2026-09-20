@@ -4,6 +4,9 @@ import net.rsprox.cache.api.CacheProvider
 import net.rsprox.shared.property.RootProperty
 
 public interface SessionMonitor<T> {
+    /** Bind delayed callbacks to one recording rather than the latest active login. */
+    public fun forSession(header: T): SessionMonitor<T> = this
+
     public fun onLogin(header: T)
 
     public fun onLogout(header: T)

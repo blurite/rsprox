@@ -53,8 +53,6 @@ public class SessionPanel(
     public var metrics: SessionMetrics = SessionMetrics()
     private var paused = false
     private var streamNode: StreamTreeTableNode? = null
-    private var tickNode: TickTreeTableNode? = null
-    private var lastCycle = -1
     private var rs3Connected = false
     public val isActive: Boolean
         get() = if (type.isRs3) rs3Connected else streamNode != null
@@ -176,20 +174,14 @@ public class SessionPanel(
 
             if (streamNode != null) {
 
-                // Replace the stream node directly instead of purging it one by one
-                val oldHeader = streamNode.header
-                val streamNode =
-                    if (oldHeader !=
-                        null
-                    ) {
-                        StreamTreeTableNode(oldHeader)
-                    } else {
-                        StreamTreeTableNode(streamNode.label ?: "")
-                    }
+                // Retain the node identity used by this recording's delayed callbacks.
+                for (i in streamNode.childCount - 1 downTo 0) {
+                    streamNode.remove(i)
+                }
+                streamNode.tickNode = null
                 addNodeAndExpand(streamNode, root, root.childCount)
                 this@SessionPanel.streamNode = streamNode
             }
-            this@SessionPanel.tickNode = null
         }
         // make all buttons centered
         toolbar.add(clearAllButton)
@@ -397,6 +389,7 @@ public class SessionPanel(
     }
 
     private inner class UiSessionMonitor : SessionMonitor<BinaryHeader> {
+        private var sessionStreamNode: StreamTreeTableNode? = null
         private var lastCacheProvider: CacheProvider? = null
         private val formatter =
             OmitFilteredPropertyTreeFormatter(
@@ -406,31 +399,31 @@ public class SessionPanel(
                 ) { this.lastCacheProvider?.get() ?: error("Cache unavailable") },
             )
 
+        override fun forSession(header: BinaryHeader): SessionMonitor<BinaryHeader> = UiSessionMonitor()
+
         override fun onCacheUpdate(cacheProvider: CacheProvider) {
             this.lastCacheProvider = cacheProvider
         }
 
         override fun onLogin(header: BinaryHeader) {
-            // Update the session metrics data.
-            metrics.worldName = "World ${header.worldId} (${header.worldActivity})"
-            notifyMetricsChanged()
-
             // Create a new root node for the logged in session.
             SwingUtilities.invokeLater {
+                metrics.worldName = "World ${header.worldId} (${header.worldActivity})"
                 val streamNode = StreamTreeTableNode(header)
                 addNodeAndExpand(streamNode, root, root.childCount)
+                sessionStreamNode = streamNode
                 this@SessionPanel.streamNode = streamNode
+                notifyMetricsChanged()
             }
         }
 
         override fun onLogout(header: BinaryHeader) {
-            // Update the session metrics data.
-            metrics.username = ""
-            notifyMetricsChanged()
-
-            // Clear the stream node.
             SwingUtilities.invokeLater {
+                if (streamNode !== sessionStreamNode) return@invokeLater
+                metrics.username = ""
                 streamNode = null
+                // Keep sessionStreamNode for final rows still queued by the worker.
+                notifyMetricsChanged()
             }
         }
 
@@ -445,11 +438,14 @@ public class SessionPanel(
         }
 
         override fun onNameUpdate(name: String) {
-            metrics.username = name
-            sessionsPanel.updateTabTitle(this@SessionPanel, name)
-            notifyMetricsChanged()
-            if (metrics.userId != -1L && metrics.userHash != -1L) {
-                App.service.updateCredentials(name, metrics.userId, metrics.userHash)
+            SwingUtilities.invokeLater {
+                if (streamNode !== sessionStreamNode || streamNode == null) return@invokeLater
+                metrics.username = name
+                sessionsPanel.updateTabTitle(this@SessionPanel, name)
+                notifyMetricsChanged()
+                if (metrics.userId != -1L && metrics.userHash != -1L) {
+                    App.service.updateCredentials(name, metrics.userId, metrics.userHash)
+                }
             }
         }
 
@@ -467,19 +463,24 @@ public class SessionPanel(
         ) {
             if (paused) return
             SwingUtilities.invokeLater {
-                val tickNode = findOrCreateTickNode(cycle)
+                val owner = sessionStreamNode ?: return@invokeLater
+                // Only discard rows when the user explicitly cleared their recording.
+                if (owner.parent !== root) return@invokeLater
+                val tickNode = findOrCreateTickNode(cycle, owner)
                 createMessageNode(tickNode, cycle, property, formatter)
             }
         }
     }
 
-    private fun findOrCreateTickNode(tickNumber: Int): AbstractMutableTreeTableNode {
-        val streamNode = streamNode!!
-        var tickNode = tickNode
-        if (tickNode == null || lastCycle != tickNumber) {
-            lastCycle = tickNumber
+    private fun findOrCreateTickNode(
+        tickNumber: Int,
+        streamNode: StreamTreeTableNode = checkNotNull(this.streamNode),
+    ): AbstractMutableTreeTableNode {
+        var tickNode = streamNode.tickNode
+        if (tickNode == null || streamNode.lastCycle != tickNumber) {
+            streamNode.lastCycle = tickNumber
             tickNode = TickTreeTableNode(tickNumber)
-            this.tickNode = tickNode
+            streamNode.tickNode = tickNode
             addNodeAndExpand(tickNode, streamNode, streamNode.childCount)
         }
         return tickNode
@@ -504,6 +505,9 @@ public class SessionPanel(
             val header: BinaryHeader?,
             val label: String?,
         ) : SessionBaseTreeTableNode() {
+            var tickNode: TickTreeTableNode? = null
+            var lastCycle: Int = -1
+
             constructor(header: BinaryHeader) : this(header, null)
 
             constructor(label: String) : this(null, label)
