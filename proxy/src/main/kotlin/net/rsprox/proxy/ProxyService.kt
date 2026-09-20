@@ -61,11 +61,11 @@ import net.rsprox.proxy.rs3.Rs3LaunchTracker
 import net.rsprox.proxy.rs3.Rs3SessionMonitor
 import net.rsprox.proxy.rs3.config.Rs3JavConfig
 import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
+import net.rsprox.proxy.rs3.launcher.Rs3OfficialLauncher
 import net.rsprox.proxy.rs3.relay.Rs3Endpoint
 import net.rsprox.proxy.rs3.relay.Rs3RelayPorts
 import net.rsprox.proxy.rs3.relay.Rs3RelayServer
 import net.rsprox.proxy.rs3.relay.Rs3RoutingNamespace
-import net.rsprox.proxy.rs3.window.Rs3LauncherConnection
 import net.rsprox.proxy.rsa.Rs3ProxyRsaKeyProvider
 import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
@@ -1053,7 +1053,7 @@ public class ProxyService(
             )
         var namespace: Rs3RoutingNamespace? = null
         var handle: Rs3ClientHandle? = null
-        var launcher: Rs3LauncherConnection? = null
+        var launcher: Rs3OfficialLauncher? = null
         try {
             val lease =
                 Rs3RoutingNamespace.acquire(CONFIGURATION_PATH.resolve("rs3-routing-target"), localPorts)
@@ -1073,43 +1073,53 @@ public class ProxyService(
             ClientTypeDictionary[localPorts.alternate] = "RS3 ($renderer, ${operatingSystem.shortName})"
             val running =
                 Rs3ClientHandle(relayServer, modulusHex, localPorts.primary) {
-                    ClientTypeDictionary.remove(localPorts.primary)
-                    ClientTypeDictionary.remove(localPorts.alternate)
-                    lease.close()
+                    try {
+                        launcher?.close()
+                    } finally {
+                        processes.remove(localPorts.primary)
+                        ClientTypeDictionary.remove(localPorts.primary)
+                        ClientTypeDictionary.remove(localPorts.alternate)
+                        lease.close()
+                    }
                 }
             handle = running
             val rewritten =
                 upstreamConfig.rewriteLobbyEndpoint(host, localPorts.primary, localPorts.alternate)
-            val windowLauncher =
+            val officialLauncher =
                 if (operatingSystem == OperatingSystem.WINDOWS) {
-                    Rs3LauncherConnection.open(
-                        CONFIGURATION_PATH.resolve("rs3-windows"),
-                        rewritten.text,
+                    Rs3OfficialLauncher.prepare(
+                        CONFIGURATION_PATH.resolve("rs3-launcher"),
+                        patchedGameBinaryPath,
+                        rewritten,
+                        host,
                         progress::update,
                     )
                 } else {
                     null
                 }
-            launcher = windowLauncher
-            val clientArgs =
-                rewritten.toClientArgs() +
-                    (windowLauncher?.let { listOf("launcher", it.id) } ?: emptyList())
+            launcher = officialLauncher
+            val clientArgs = officialLauncher?.arguments ?: rewritten.toClientArgs()
 
             progress.update(Rs3LaunchProgress("Starting client process"))
             launchExecutable(
                 port = localPorts.primary,
-                path = patchedGameBinaryPath,
+                path = officialLauncher?.executable ?: patchedGameBinaryPath,
                 operatingSystem = operatingSystem,
                 character = character,
                 args = clientArgs,
                 onProcessExit = {
                     try {
-                        windowLauncher?.close()
+                        officialLauncher?.close()
                     } finally {
                         running.shutdown()
                     }
                 },
-                onProcessStart = windowLauncher?.let { it::attach },
+                onProcessStart =
+                    officialLauncher?.let { native ->
+                        { parent ->
+                            native.attach(parent) { child -> processes[localPorts.primary] = listOf(child, parent) }
+                        }
+                    },
             )
         } catch (t: Throwable) {
             try {

@@ -8,7 +8,7 @@ import java.net.URL
 public value class Rs3JavConfig(
     public val text: String,
 ) {
-    public constructor(url: URL) : this(url.readText(Charsets.UTF_8))
+    public constructor(url: URL) : this(url.readText(Charsets.ISO_8859_1))
 
     public fun getCodebase(): String {
         return text

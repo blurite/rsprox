@@ -120,6 +120,12 @@ acknowledgement across restarts; cancelling or closing the dialog stops the laun
 - Cache-definition loading and gameval/clientscript names for richer transcripts.
 
 RS3 currently connects to the official game. Custom proxy targets are OSRS-only.
+On Windows, RSProx uses a private copy of the official RuneScape launcher for both
+OpenGL and Vulkan. It extracts a verified launcher from Jagex's installer without
+running the installer or changing an existing RuneScape installation. Each running
+instance has separate launcher preferences and local proxy ports; game-cache assets
+are shared. Launcher downloads are cached under `~/.rsprox/rs3-launcher/`.
+
 The launcher downloads the live client and checks the supported revision; it is not a general
 launcher for historical RS3 revisions. Later revisions require updated patching and decoders.
 **RS3 replay is not implemented**, even though recording and transcription are supported.
