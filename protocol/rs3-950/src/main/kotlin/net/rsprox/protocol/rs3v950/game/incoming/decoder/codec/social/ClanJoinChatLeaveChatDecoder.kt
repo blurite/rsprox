@@ -3,19 +3,23 @@ package net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.social
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
-import net.rsprox.protocol.rs3.game.incoming.model.social.FriendChatKick
+import net.rsprox.protocol.rs3.game.incoming.model.social.ClanJoinChatLeaveChat
 import net.rsprox.protocol.rs3v950.buffer.readNativeString
 import net.rsprox.protocol.session.Session
 
-internal class FriendChatKickDecoder(
+internal class ClanJoinChatLeaveChatDecoder(
     override val prot: ClientProt,
-) : ProxyMessageDecoder<FriendChatKick> {
+) : ProxyMessageDecoder<ClanJoinChatLeaveChat> {
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
-    ): FriendChatKick {
+    ): ClanJoinChatLeaveChat {
+        // Native CLAN_LEAVECHAT writes only a zero frame length, without a string terminator.
+        if (!buffer.isReadable) {
+            return ClanJoinChatLeaveChat(null)
+        }
         val name = buffer.readNativeString()
-        return FriendChatKick(
+        return ClanJoinChatLeaveChat(
             name,
         )
     }

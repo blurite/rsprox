@@ -4,7 +4,7 @@ import net.rsprot.protocol.ClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
-public data object UnnamedLobbyRequest : IncomingGameMessage {
+public data object UidPassportResendRequest : IncomingGameMessage {
     override val category: ClientProtCategory
         get() = GameClientProtCategory.CLIENT_EVENT
 }

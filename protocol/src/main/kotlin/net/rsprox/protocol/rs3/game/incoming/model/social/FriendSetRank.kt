@@ -1,12 +1,13 @@
-package net.rsprox.protocol.rs3.game.incoming.model.events
+package net.rsprox.protocol.rs3.game.incoming.model.social
 
 import net.rsprot.protocol.ClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
-public data class SoundSongEnd(
-    public val song: Int,
+public data class FriendSetRank(
+    public val name: String,
+    public val rank: Int,
 ) : IncomingGameMessage {
     override val category: ClientProtCategory
-        get() = GameClientProtCategory.CLIENT_EVENT
+        get() = GameClientProtCategory.USER_EVENT
 }

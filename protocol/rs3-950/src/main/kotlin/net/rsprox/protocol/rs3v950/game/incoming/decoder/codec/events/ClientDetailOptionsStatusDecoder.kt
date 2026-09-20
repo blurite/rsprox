@@ -3,16 +3,16 @@ package net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.events
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
-import net.rsprox.protocol.rs3.game.incoming.model.events.ClientPreferences
+import net.rsprox.protocol.rs3.game.incoming.model.events.ClientDetailOptionsStatus
 import net.rsprox.protocol.session.Session
 
-internal class ClientPreferencesDecoder(
+internal class ClientDetailOptionsStatusDecoder(
     override val prot: ClientProt,
-) : ProxyMessageDecoder<ClientPreferences> {
+) : ProxyMessageDecoder<ClientDetailOptionsStatus> {
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
-    ): ClientPreferences {
+    ): ClientDetailOptionsStatus {
         val version = buffer.g1()
         require(version == 38) { "Unsupported RS3 preference version $version" }
         val compatibility1 = buffer.g1()
@@ -68,7 +68,7 @@ internal class ClientPreferencesDecoder(
         val setting28 = buffer.g1()
         val setting29 = buffer.g1()
         val compatibility57 = buffer.g1()
-        return ClientPreferences(
+        return ClientDetailOptionsStatus(
             version,
             compatibility1,
             compatibility2,

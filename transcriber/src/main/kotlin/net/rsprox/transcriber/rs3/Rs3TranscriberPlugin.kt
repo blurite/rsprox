@@ -23,6 +23,7 @@ import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatFriend
 import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatPlayerGroup
 import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatPrivate
 import net.rsprox.protocol.rs3.game.outgoing.model.social.MessageQuickchatPrivateEcho
+import net.rsprox.protocol.rs3.game.outgoing.model.sound.MidiSongStop
 import net.rsprox.protocol.rs3.game.outgoing.model.specific.ProjAnimSpecificV2
 import net.rsprox.protocol.rs3.game.outgoing.model.varclan.Varclan
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.LocCustomise
@@ -35,6 +36,7 @@ import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.SoundAreaV1
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.payload.SoundAreaV2
 import net.rsprox.protocol.rs3.game.incoming.model.chat.MessagePrivate as ClientMessagePrivate
 import net.rsprox.protocol.rs3.game.incoming.model.chat.MessagePublic as ClientMessagePublic
+import net.rsprox.protocol.rs3.game.incoming.model.events.MidiSongStop as ClientMidiSongStop
 import net.rsprox.protocol.rs3.game.incoming.model.misc.client.NoTimeout as ClientNoTimeout
 
 public class Rs3TranscriberPlugin(
@@ -125,7 +127,7 @@ public class Rs3TranscriberPlugin(
             name == "WINDOW_STATUS" -> pass(message, Rs3Transcriber::windowStatus)
             name == "RESUME_PAUSEBUTTON" -> pass(message, Rs3Transcriber::resumePauseButton)
             name == "RESUME_P_COUNTDIALOG" -> pass(message, Rs3Transcriber::resumePCountDialog)
-            name == "RESUME_P_COUNTDIALOG_LONG" -> pass(message, Rs3Transcriber::resumePCountDialogLong)
+            name == "RESUME_P_LONGDIALOG" -> pass(message, Rs3Transcriber::resumePLongDialog)
             name == "RESUME_P_HSLDIALOG" -> pass(message, Rs3Transcriber::resumePHslDialog)
             name == "RESUME_P_OBJDIALOG" -> pass(message, Rs3Transcriber::resumePObjDialog)
             name == "RESUME_P_STRINGDIALOG" -> pass(message, Rs3Transcriber::resumePStringDialog)
@@ -136,13 +138,13 @@ public class Rs3TranscriberPlugin(
             name == "CLIENT_CHEAT" -> pass(message, Rs3Transcriber::clientCheat)
             name == "CHAT_SETMODE" -> pass(message, Rs3Transcriber::chatSetMode)
             name == "SET_CHATFILTERSETTINGS" -> pass(message, Rs3Transcriber::setChatFilterSettings)
-            name == "MAP_BUILD_COMPLETE" -> pass(message, Rs3Transcriber::mapBuildComplete)
             name == "CLOSE_MODAL" -> pass(message, Rs3Transcriber::closeModal)
             name == "ABORT_P_DIALOG" -> pass(message, Rs3Transcriber::abortPDialog)
+            name == "CREATE_SUGGEST_NAMES" -> pass(message, Rs3Transcriber::createSuggestNames)
             name == "NO_TIMEOUT" -> pass<ClientNoTimeout>(message, Rs3Transcriber::noTimeout)
-            name == "MAP_BUILD_COMPLETE_V2" -> pass(message, Rs3Transcriber::mapBuildCompleteV2)
-            name == "IF_CRM_BUTTON" ->
-                pass(message, Rs3Transcriber::ifCrmButton)
+            name == "MAP_BUILD_COMPLETE" -> pass(message, Rs3Transcriber::mapBuildComplete)
+            name == "IF_PLAYER" ->
+                pass(message, Rs3Transcriber::ifPlayer)
             name == "IGNORELIST_DEL" ->
                 pass(message, Rs3Transcriber::ignoreListDel)
             name == "FRIENDLIST_ADD" ->
@@ -165,8 +167,8 @@ public class Rs3TranscriberPlugin(
                 pass(message, Rs3Transcriber::sendEmailValidationCode)
             name == "FRIENDLIST_DEL" ->
                 pass(message, Rs3Transcriber::friendListDel)
-            name == "FRIENDCHAT_KICK" ->
-                pass(message, Rs3Transcriber::friendChatKick)
+            name == "CLAN_KICKUSER" ->
+                pass(message, Rs3Transcriber::clanKickUser)
             name == "AFFINEDCLANSETTINGS_SETMUTED_FROMCHANNEL" ->
                 pass(message, Rs3Transcriber::affinedClanSettingsSetMutedFromChannel)
             name == "FACE_SQUARE" ->
@@ -175,8 +177,8 @@ public class Rs3TranscriberPlugin(
                 pass(message, Rs3Transcriber::urlRequest)
             name == "EVENT_MOUSE_CLICK" ->
                 pass(message, Rs3Transcriber::eventMouseClick)
-            name == "FRIENDCHAT_JOIN_LEAVE" ->
-                pass(message, Rs3Transcriber::friendChatJoinLeave)
+            name == "CLAN_JOINCHAT_LEAVECHAT" ->
+                pass(message, Rs3Transcriber::clanJoinChatLeaveChat)
             name == "CREATE_LOG_PROGRESS" ->
                 pass(message, Rs3Transcriber::createLogProgress)
             name == "IGNORE_SETNOTES" ->
@@ -187,12 +189,12 @@ public class Rs3TranscriberPlugin(
                 pass(message, Rs3Transcriber::friendSetNotes)
             name == "SEND_PING_REPLY" ->
                 pass(message, Rs3Transcriber::sendPingReply)
-            name == "FRIENDCHAT_SETRANK" ->
-                pass(message, Rs3Transcriber::friendChatSetRank)
+            name == "FRIEND_SETRANK" ->
+                pass(message, Rs3Transcriber::friendSetRank)
             name == "WORLDLIST_FETCH" ->
                 pass(message, Rs3Transcriber::worldListFetch)
-            name == "SOUND_SONGEND" ->
-                pass(message, Rs3Transcriber::soundSongEnd)
+            name == "MIDI_SONG_STOP" ->
+                pass<ClientMidiSongStop>(message, Rs3Transcriber::midiSongStop)
             name == "IGNORELIST_ADD" ->
                 pass(message, Rs3Transcriber::ignoreListAdd)
             name == "IF_TEXT_CHANGE" ->
@@ -207,11 +209,11 @@ public class Rs3TranscriberPlugin(
             name == "SEND_SNAPSHOT" -> pass(message, Rs3Transcriber::sendSnapshot)
             name == "ADD_NEW_EMAIL_ADDRESS" -> pass(message, Rs3Transcriber::addNewEmailAddress)
             name == "CHANGE_EMAIL_ADDRESS" -> pass(message, Rs3Transcriber::changeEmailAddress)
-            name == "UNNAMED_LOBBY_REQUEST" -> pass(message, Rs3Transcriber::unnamedLobbyRequest)
+            name == "UID_PASSPORT_RESEND_REQUEST" -> pass(message, Rs3Transcriber::uidPassportResendRequest)
             name == "MESSAGE_QUICKCHAT_PUBLIC" -> pass(message, Rs3Transcriber::messageQuickchatPublic)
             name == "MESSAGE_QUICKCHAT_PRIVATE" -> pass(message, Rs3Transcriber::messageQuickchatPrivate)
             name == "STORE_SERVERPERM_VARCS" -> pass(message, Rs3Transcriber::storeServerPermVarcs)
-            name == "CLIENT_PREFERENCES" -> pass(message, Rs3Transcriber::clientPreferences)
+            name == "CLIENT_DETAILOPTIONS_STATUS" -> pass(message, Rs3Transcriber::clientDetailOptionsStatus)
             else -> Unit
         }
     }
@@ -394,7 +396,7 @@ public class Rs3TranscriberPlugin(
             "CLIENT_SETVARC_LONG" -> pass(message, Rs3Transcriber::varcLong)
             "CLIENT_SETVARCSTR_LARGE" -> pass(message, Rs3Transcriber::varcStrLarge)
             "VORBIS_SPEECH_STOP" -> pass(message, Rs3Transcriber::vorbisSpeechStop)
-            "MIDI_SONG_STOP" -> pass(message, Rs3Transcriber::midiSongStop)
+            "MIDI_SONG_STOP" -> pass<MidiSongStop>(message, Rs3Transcriber::midiSongStop)
             "MIDI_JINGLE" -> pass(message, Rs3Transcriber::midiJingle)
             "SOUND_STOP" -> pass(message, Rs3Transcriber::soundStop)
             "SOUND_MIXBUSS_SETLEVEL" -> pass(message, Rs3Transcriber::soundMixbussSetLevel)

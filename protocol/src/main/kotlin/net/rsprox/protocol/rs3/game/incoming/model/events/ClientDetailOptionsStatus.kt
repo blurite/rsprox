@@ -4,7 +4,7 @@ import net.rsprot.protocol.ClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
-public data class ClientPreferences(
+public data class ClientDetailOptionsStatus(
     public val version: Int,
     public val compatibility1: Int,
     public val compatibility2: Int,

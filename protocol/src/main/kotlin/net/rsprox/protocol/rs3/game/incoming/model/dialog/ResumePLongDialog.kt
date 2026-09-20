@@ -1,12 +1,11 @@
-package net.rsprox.protocol.rs3.game.incoming.model.social
+package net.rsprox.protocol.rs3.game.incoming.model.dialog
 
 import net.rsprot.protocol.ClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
-public data class FriendChatJoinLeave(
-    /** Null means the empty-body leave action; otherwise this is the NUL-terminated channel name. */
-    public val name: String?,
+public data class ResumePLongDialog(
+    public val value: Long,
 ) : IncomingGameMessage {
     override val category: ClientProtCategory
         get() = GameClientProtCategory.USER_EVENT

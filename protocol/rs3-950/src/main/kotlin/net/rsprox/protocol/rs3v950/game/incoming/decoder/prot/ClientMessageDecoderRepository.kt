@@ -7,12 +7,13 @@ import net.rsprox.protocol.MessageDecoderRepositoryBuilder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.account.AddNewEmailAddressDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.account.ChangeEmailAddressDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.account.CreateLogProgressDecoder
+import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.account.CreateSuggestNamesDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.account.SendEmailValidationCodeDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.buttons.If3ButtonDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.buttons.IfButtonDDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.buttons.IfButtonTDecoder
-import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.buttons.IfCrmButtonDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.buttons.IfCrmViewOpDecoder
+import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.buttons.IfPlayerDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.buttons.IfTextChangeDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.buttons.IfValueChange32Decoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.chat.ChatSetModeDecoder
@@ -24,13 +25,13 @@ import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.chat.SetChatFilte
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.dialog.AbortPDialogDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.dialog.ResumePClanForumQfcDialogDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.dialog.ResumePCountDialogDecoder
-import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.dialog.ResumePCountDialogLongDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.dialog.ResumePHslDialogDecoder
+import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.dialog.ResumePLongDialogDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.dialog.ResumePNameDialogDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.dialog.ResumePObjDialogDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.dialog.ResumePStringDialogDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.dialog.ResumePauseButtonDecoder
-import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.events.ClientPreferencesDecoder
+import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.events.ClientDetailOptionsStatusDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.events.Cutscene2DFinishedDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.events.EventAppletFocusDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.events.EventCameraPositionDecoder
@@ -39,18 +40,17 @@ import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.events.EventMouse
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.events.EventMouseMoveDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.events.EventNativeMouseClickDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.events.EventNativeMouseMoveDecoder
+import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.events.MidiSongStopDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.events.PingStatisticsDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.events.SendPingReplyDecoder
-import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.events.SoundSongEndDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.events.TransmitVarVerifyIdDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.events.WindowStatusDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.locs.OpLocDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.locs.OpLocTDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.misc.client.MapBuildCompleteDecoder
-import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.misc.client.MapBuildCompleteV2Decoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.misc.client.NoTimeoutDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.misc.client.StoreServerPermVarcsDecoder
-import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.misc.client.UnnamedLobbyRequestDecoder
+import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.misc.client.UidPassportResendRequestDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.misc.user.ApCoordTDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.misc.user.BugReportDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.misc.user.ClickWorldMapDecoder
@@ -73,12 +73,12 @@ import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.players.OpPlayerT
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.social.AffinedClanSettingsAddBannedFromChannelDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.social.AffinedClanSettingsSetMutedFromChannelDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.social.ClanChannelKickUserDecoder
-import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.social.FriendChatJoinLeaveDecoder
-import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.social.FriendChatKickDecoder
-import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.social.FriendChatSetRankDecoder
+import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.social.ClanJoinChatLeaveChatDecoder
+import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.social.ClanKickUserDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.social.FriendListAddDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.social.FriendListDelDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.social.FriendSetNotesDecoder
+import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.social.FriendSetRankDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.social.IgnoreListAddDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.social.IgnoreListDelDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.codec.social.IgnoreSetNotesDecoder
@@ -119,7 +119,7 @@ internal object ClientMessageDecoderRepository {
                 bind(WindowStatusDecoder(GameClientProt.WINDOW_STATUS))
                 bind(ResumePauseButtonDecoder(GameClientProt.RESUME_PAUSEBUTTON))
                 bind(ResumePCountDialogDecoder(GameClientProt.RESUME_P_COUNTDIALOG))
-                bind(ResumePCountDialogLongDecoder(GameClientProt.RESUME_P_COUNTDIALOG_LONG))
+                bind(ResumePLongDialogDecoder(GameClientProt.RESUME_P_LONGDIALOG))
                 bind(ResumePHslDialogDecoder(GameClientProt.RESUME_P_HSLDIALOG))
                 bind(ResumePObjDialogDecoder(GameClientProt.RESUME_P_OBJDIALOG))
                 bind(ResumePStringDialogDecoder(GameClientProt.RESUME_P_STRINGDIALOG))
@@ -130,12 +130,12 @@ internal object ClientMessageDecoderRepository {
                 bind(ClientCheatDecoder(GameClientProt.CLIENT_CHEAT))
                 bind(ChatSetModeDecoder(GameClientProt.CHAT_SETMODE))
                 bind(SetChatFilterSettingsDecoder(GameClientProt.SET_CHATFILTERSETTINGS))
-                bind(MapBuildCompleteDecoder(GameClientProt.MAP_BUILD_COMPLETE))
                 bind(CloseModalDecoder(GameClientProt.CLOSE_MODAL))
                 bind(AbortPDialogDecoder(GameClientProt.ABORT_P_DIALOG))
+                bind(CreateSuggestNamesDecoder(GameClientProt.CREATE_SUGGEST_NAMES))
                 bind(NoTimeoutDecoder(GameClientProt.NO_TIMEOUT))
-                bind(MapBuildCompleteV2Decoder(GameClientProt.MAP_BUILD_COMPLETE_V2))
-                bind(IfCrmButtonDecoder(GameClientProt.IF_CRM_BUTTON))
+                bind(MapBuildCompleteDecoder(GameClientProt.MAP_BUILD_COMPLETE))
+                bind(IfPlayerDecoder(GameClientProt.IF_PLAYER))
                 bind(IgnoreListDelDecoder(GameClientProt.IGNORELIST_DEL))
                 bind(FriendListAddDecoder(GameClientProt.FRIENDLIST_ADD))
                 bind(ClanChannelKickUserDecoder(GameClientProt.CLANCHANNEL_KICKUSER))
@@ -147,7 +147,7 @@ internal object ClientMessageDecoderRepository {
                 bind(PingStatisticsDecoder(GameClientProt.PING_STATISTICS))
                 bind(SendEmailValidationCodeDecoder(GameClientProt.SEND_EMAIL_VALIDATION_CODE))
                 bind(FriendListDelDecoder(GameClientProt.FRIENDLIST_DEL))
-                bind(FriendChatKickDecoder(GameClientProt.FRIENDCHAT_KICK))
+                bind(ClanKickUserDecoder(GameClientProt.CLAN_KICKUSER))
                 bind(
                     AffinedClanSettingsSetMutedFromChannelDecoder(
                         GameClientProt.AFFINEDCLANSETTINGS_SETMUTED_FROMCHANNEL,
@@ -156,7 +156,7 @@ internal object ClientMessageDecoderRepository {
                 bind(FaceSquareDecoder(GameClientProt.FACE_SQUARE))
                 bind(UrlRequestDecoder(GameClientProt.URL_REQUEST))
                 bind(EventMouseClickDecoder(GameClientProt.EVENT_MOUSE_CLICK))
-                bind(FriendChatJoinLeaveDecoder(GameClientProt.FRIENDCHAT_JOIN_LEAVE))
+                bind(ClanJoinChatLeaveChatDecoder(GameClientProt.CLAN_JOINCHAT_LEAVECHAT))
                 bind(CreateLogProgressDecoder(GameClientProt.CREATE_LOG_PROGRESS))
                 bind(IgnoreSetNotesDecoder(GameClientProt.IGNORE_SETNOTES))
                 bind(
@@ -166,9 +166,9 @@ internal object ClientMessageDecoderRepository {
                 )
                 bind(FriendSetNotesDecoder(GameClientProt.FRIEND_SETNOTES))
                 bind(SendPingReplyDecoder(GameClientProt.SEND_PING_REPLY))
-                bind(FriendChatSetRankDecoder(GameClientProt.FRIENDCHAT_SETRANK))
+                bind(FriendSetRankDecoder(GameClientProt.FRIEND_SETRANK))
                 bind(WorldListFetchDecoder(GameClientProt.WORLDLIST_FETCH))
-                bind(SoundSongEndDecoder(GameClientProt.SOUND_SONGEND))
+                bind(MidiSongStopDecoder(GameClientProt.MIDI_SONG_STOP))
                 bind(IgnoreListAddDecoder(GameClientProt.IGNORELIST_ADD))
                 bind(IfTextChangeDecoder(GameClientProt.IF_TEXT_CHANGE))
                 bind(IfValueChange32Decoder(GameClientProt.IF_VALUE_CHANGE_32))
@@ -179,11 +179,11 @@ internal object ClientMessageDecoderRepository {
                 bind(SendSnapshotDecoder(GameClientProt.SEND_SNAPSHOT))
                 bind(AddNewEmailAddressDecoder(GameClientProt.ADD_NEW_EMAIL_ADDRESS))
                 bind(ChangeEmailAddressDecoder(GameClientProt.CHANGE_EMAIL_ADDRESS))
-                bind(UnnamedLobbyRequestDecoder(GameClientProt.UNNAMED_LOBBY_REQUEST))
+                bind(UidPassportResendRequestDecoder(GameClientProt.UID_PASSPORT_RESEND_REQUEST))
                 bind(MessageQuickchatPublicDecoder(GameClientProt.MESSAGE_QUICKCHAT_PUBLIC))
                 bind(MessageQuickchatPrivateDecoder(GameClientProt.MESSAGE_QUICKCHAT_PRIVATE))
                 bind(StoreServerPermVarcsDecoder(GameClientProt.STORE_SERVERPERM_VARCS))
-                bind(ClientPreferencesDecoder(GameClientProt.CLIENT_PREFERENCES))
+                bind(ClientDetailOptionsStatusDecoder(GameClientProt.CLIENT_DETAILOPTIONS_STATUS))
             }
         return builder.build()
     }

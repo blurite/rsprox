@@ -6,12 +6,13 @@ import net.rsprox.protocol.game.incoming.model.unknown.UnknownClientPacket
 import net.rsprox.protocol.rs3.game.incoming.model.account.AddNewEmailAddress
 import net.rsprox.protocol.rs3.game.incoming.model.account.ChangeEmailAddress
 import net.rsprox.protocol.rs3.game.incoming.model.account.CreateLogProgress
+import net.rsprox.protocol.rs3.game.incoming.model.account.CreateSuggestNames
 import net.rsprox.protocol.rs3.game.incoming.model.account.SendEmailValidationCode
 import net.rsprox.protocol.rs3.game.incoming.model.buttons.If3Button
 import net.rsprox.protocol.rs3.game.incoming.model.buttons.IfButtonD
 import net.rsprox.protocol.rs3.game.incoming.model.buttons.IfButtonT
-import net.rsprox.protocol.rs3.game.incoming.model.buttons.IfCrmButton
 import net.rsprox.protocol.rs3.game.incoming.model.buttons.IfCrmViewOp
+import net.rsprox.protocol.rs3.game.incoming.model.buttons.IfPlayer
 import net.rsprox.protocol.rs3.game.incoming.model.buttons.IfTextChange
 import net.rsprox.protocol.rs3.game.incoming.model.buttons.IfValueChange32
 import net.rsprox.protocol.rs3.game.incoming.model.chat.ChatSetMode
@@ -23,13 +24,13 @@ import net.rsprox.protocol.rs3.game.incoming.model.chat.SetChatFilterSettings
 import net.rsprox.protocol.rs3.game.incoming.model.dialog.AbortPDialog
 import net.rsprox.protocol.rs3.game.incoming.model.dialog.ResumePClanForumQfcDialog
 import net.rsprox.protocol.rs3.game.incoming.model.dialog.ResumePCountDialog
-import net.rsprox.protocol.rs3.game.incoming.model.dialog.ResumePCountDialogLong
 import net.rsprox.protocol.rs3.game.incoming.model.dialog.ResumePHslDialog
+import net.rsprox.protocol.rs3.game.incoming.model.dialog.ResumePLongDialog
 import net.rsprox.protocol.rs3.game.incoming.model.dialog.ResumePNameDialog
 import net.rsprox.protocol.rs3.game.incoming.model.dialog.ResumePObjDialog
 import net.rsprox.protocol.rs3.game.incoming.model.dialog.ResumePStringDialog
 import net.rsprox.protocol.rs3.game.incoming.model.dialog.ResumePauseButton
-import net.rsprox.protocol.rs3.game.incoming.model.events.ClientPreferences
+import net.rsprox.protocol.rs3.game.incoming.model.events.ClientDetailOptionsStatus
 import net.rsprox.protocol.rs3.game.incoming.model.events.Cutscene2DFinished
 import net.rsprox.protocol.rs3.game.incoming.model.events.EventAppletFocus
 import net.rsprox.protocol.rs3.game.incoming.model.events.EventCameraPosition
@@ -38,19 +39,18 @@ import net.rsprox.protocol.rs3.game.incoming.model.events.EventMouseClick
 import net.rsprox.protocol.rs3.game.incoming.model.events.EventMouseMove
 import net.rsprox.protocol.rs3.game.incoming.model.events.EventNativeMouseClick
 import net.rsprox.protocol.rs3.game.incoming.model.events.EventNativeMouseMove
+import net.rsprox.protocol.rs3.game.incoming.model.events.MidiSongStop
 import net.rsprox.protocol.rs3.game.incoming.model.events.MouseMovement
 import net.rsprox.protocol.rs3.game.incoming.model.events.PingStatistics
 import net.rsprox.protocol.rs3.game.incoming.model.events.SendPingReply
-import net.rsprox.protocol.rs3.game.incoming.model.events.SoundSongEnd
 import net.rsprox.protocol.rs3.game.incoming.model.events.TransmitVarVerifyId
 import net.rsprox.protocol.rs3.game.incoming.model.events.WindowStatus
 import net.rsprox.protocol.rs3.game.incoming.model.locs.OpLoc
 import net.rsprox.protocol.rs3.game.incoming.model.locs.OpLocT
 import net.rsprox.protocol.rs3.game.incoming.model.misc.client.MapBuildComplete
-import net.rsprox.protocol.rs3.game.incoming.model.misc.client.MapBuildCompleteV2
 import net.rsprox.protocol.rs3.game.incoming.model.misc.client.NoTimeout
 import net.rsprox.protocol.rs3.game.incoming.model.misc.client.StoreServerPermVarcs
-import net.rsprox.protocol.rs3.game.incoming.model.misc.client.UnnamedLobbyRequest
+import net.rsprox.protocol.rs3.game.incoming.model.misc.client.UidPassportResendRequest
 import net.rsprox.protocol.rs3.game.incoming.model.misc.user.ApCoordT
 import net.rsprox.protocol.rs3.game.incoming.model.misc.user.BugReport
 import net.rsprox.protocol.rs3.game.incoming.model.misc.user.ClickWorldMap
@@ -73,12 +73,12 @@ import net.rsprox.protocol.rs3.game.incoming.model.players.OpPlayerT
 import net.rsprox.protocol.rs3.game.incoming.model.social.AffinedClanSettingsAddBannedFromChannel
 import net.rsprox.protocol.rs3.game.incoming.model.social.AffinedClanSettingsSetMutedFromChannel
 import net.rsprox.protocol.rs3.game.incoming.model.social.ClanChannelKickUser
-import net.rsprox.protocol.rs3.game.incoming.model.social.FriendChatJoinLeave
-import net.rsprox.protocol.rs3.game.incoming.model.social.FriendChatKick
-import net.rsprox.protocol.rs3.game.incoming.model.social.FriendChatSetRank
+import net.rsprox.protocol.rs3.game.incoming.model.social.ClanJoinChatLeaveChat
+import net.rsprox.protocol.rs3.game.incoming.model.social.ClanKickUser
 import net.rsprox.protocol.rs3.game.incoming.model.social.FriendListAdd
 import net.rsprox.protocol.rs3.game.incoming.model.social.FriendListDel
 import net.rsprox.protocol.rs3.game.incoming.model.social.FriendSetNotes
+import net.rsprox.protocol.rs3.game.incoming.model.social.FriendSetRank
 import net.rsprox.protocol.rs3.game.incoming.model.social.IgnoreListAdd
 import net.rsprox.protocol.rs3.game.incoming.model.social.IgnoreListDel
 import net.rsprox.protocol.rs3.game.incoming.model.social.IgnoreSetNotes
@@ -338,7 +338,7 @@ public class TextRs3ClientPacketTranscriber(
         root.int("count", message.value)
     }
 
-    override fun resumePCountDialogLong(message: ResumePCountDialogLong) {
+    override fun resumePLongDialog(message: ResumePLongDialog) {
         if (!filters[PropertyFilter.RESUME_P_LONGDIALOG]) return omit()
         root.long("count", message.value)
     }
@@ -400,10 +400,6 @@ public class TextRs3ClientPacketTranscriber(
         root.int("trade", message.tradeMode)
     }
 
-    override fun mapBuildComplete(message: MapBuildComplete) {
-        if (!filters[PropertyFilter.MAP_BUILD_COMPLETE]) return omit()
-    }
-
     override fun closeModal(message: CloseModal) {
         if (!filters[PropertyFilter.CLOSE_MODAL]) return omit()
     }
@@ -412,17 +408,21 @@ public class TextRs3ClientPacketTranscriber(
         if (!filters[PropertyFilter.ABORT_P_DIALOG]) return omit()
     }
 
+    override fun createSuggestNames(message: CreateSuggestNames) {
+        if (!filters[PropertyFilter.CREATE_SUGGEST_NAMES]) return omit()
+    }
+
     override fun noTimeout(message: NoTimeout) {
         if (!filters[PropertyFilter.NO_TIMEOUT]) return omit()
     }
 
-    override fun mapBuildCompleteV2(message: MapBuildCompleteV2) {
+    override fun mapBuildComplete(message: MapBuildComplete) {
         if (!filters[PropertyFilter.MAP_BUILD_COMPLETE]) return omit()
         root.int("builddurationmillis", message.buildDurationMillis)
     }
 
-    override fun ifCrmButton(message: IfCrmButton) {
-        if (!filters[PropertyFilter.IF_CRM_BUTTON]) return omit()
+    override fun ifPlayer(message: IfPlayer) {
+        if (!filters[PropertyFilter.IF_PLAYER]) return omit()
         root.string("crmname", message.crmName)
         root.component("com", message.combinedId)
         root.int("operation", message.operation)
@@ -497,7 +497,7 @@ public class TextRs3ClientPacketTranscriber(
         root.string("name", message.name)
     }
 
-    override fun friendChatKick(message: FriendChatKick) {
+    override fun clanKickUser(message: ClanKickUser) {
         if (!filters[PropertyFilter.FRIENDCHAT_KICK]) return omit()
         root.string("name", message.name)
     }
@@ -529,7 +529,7 @@ public class TextRs3ClientPacketTranscriber(
         root.int("buttonanddelta", message.buttonAndDelta)
     }
 
-    override fun friendChatJoinLeave(message: FriendChatJoinLeave) {
+    override fun clanJoinChatLeaveChat(message: ClanJoinChatLeaveChat) {
         if (!filters[PropertyFilter.FRIENDCHAT_JOIN_LEAVE]) return omit()
         val name = message.name
         if (name == null) {
@@ -570,7 +570,7 @@ public class TextRs3ClientPacketTranscriber(
         root.int("value2", message.challengeB)
     }
 
-    override fun friendChatSetRank(message: FriendChatSetRank) {
+    override fun friendSetRank(message: FriendSetRank) {
         if (!filters[PropertyFilter.FRIENDCHAT_SETRANK]) return omit()
         root.string("name", message.name)
         root.int("rank", message.rank)
@@ -581,8 +581,8 @@ public class TextRs3ClientPacketTranscriber(
         root.int("crc", message.crc)
     }
 
-    override fun soundSongEnd(message: SoundSongEnd) {
-        if (!filters[PropertyFilter.SOUND_SONGEND]) return omit()
+    override fun midiSongStop(message: MidiSongStop) {
+        if (!filters[PropertyFilter.MIDI_SONG_STOP_CLIENT]) return omit()
         root.scriptVarType("song", ScriptVarType.MIDI, message.song)
     }
 
@@ -696,8 +696,8 @@ public class TextRs3ClientPacketTranscriber(
         root.string("oldemail", message.oldEmail)
     }
 
-    override fun unnamedLobbyRequest(message: UnnamedLobbyRequest) {
-        if (!filters[PropertyFilter.UNNAMED_LOBBY_REQUEST]) return omit()
+    override fun uidPassportResendRequest(message: UidPassportResendRequest) {
+        if (!filters[PropertyFilter.UID_PASSPORT_RESEND_REQUEST]) return omit()
     }
 
     override fun messageQuickchatPublic(message: MessageQuickchatPublic) {
@@ -717,8 +717,8 @@ public class TextRs3ClientPacketTranscriber(
         root.appendVariables(message.variables, Rs3VariableDomain.CLIENT)
     }
 
-    override fun clientPreferences(message: ClientPreferences) {
-        if (!filters[PropertyFilter.CLIENT_PREFERENCES]) return omit()
+    override fun clientDetailOptionsStatus(message: ClientDetailOptionsStatus) {
+        if (!filters[PropertyFilter.CLIENT_DETAILOPTIONS_STATUS]) return omit()
         root.int("version", message.version)
         root.int("compatibility1", message.compatibility1)
         root.int("compatibility2", message.compatibility2)

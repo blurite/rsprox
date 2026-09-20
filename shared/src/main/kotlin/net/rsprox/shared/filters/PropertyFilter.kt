@@ -2127,12 +2127,19 @@ public enum class PropertyFilter(
         true,
         searchTerms = "rs3,abort_p_dialog",
     ),
-    IF_CRM_BUTTON(
+    CREATE_SUGGEST_NAMES(
         CLIENT_TO_SERVER,
         OTHER,
-        "If Crm Button",
+        "Create Suggest Names",
         true,
-        searchTerms = "rs3,if_crm_button",
+        searchTerms = "rs3,create_suggest_names",
+    ),
+    IF_PLAYER(
+        CLIENT_TO_SERVER,
+        OTHER,
+        "If Player",
+        true,
+        searchTerms = "rs3,if_player",
     ),
     CUTSCENE2D_FINISHED(
         CLIENT_TO_SERVER,
@@ -2204,12 +2211,12 @@ public enum class PropertyFilter(
         false,
         searchTerms = "rs3,worldlist_fetch",
     ),
-    SOUND_SONGEND(
+    MIDI_SONG_STOP_CLIENT(
         CLIENT_TO_SERVER,
         OTHER,
-        "Sound Song End",
+        "Midi Song Stop",
         true,
-        searchTerms = "rs3,sound_songend",
+        searchTerms = "rs3,midi_song_stop",
     ),
     IF_TEXT_CHANGE(
         CLIENT_TO_SERVER,
@@ -2246,12 +2253,12 @@ public enum class PropertyFilter(
         false,
         searchTerms = "rs3,change_email_address",
     ),
-    UNNAMED_LOBBY_REQUEST(
+    UID_PASSPORT_RESEND_REQUEST(
         CLIENT_TO_SERVER,
         OTHER,
-        "Unnamed Lobby Request",
+        "UID Passport Resend Request",
         false,
-        searchTerms = "rs3,unnamed_lobby_request",
+        searchTerms = "rs3,uid_passport_resend_request",
     ),
     MESSAGE_QUICKCHAT_PUBLIC(
         CLIENT_TO_SERVER,
@@ -2274,11 +2281,11 @@ public enum class PropertyFilter(
         false,
         searchTerms = "rs3,store_serverperm_varcs",
     ),
-    CLIENT_PREFERENCES(
+    CLIENT_DETAILOPTIONS_STATUS(
         CLIENT_TO_SERVER,
         OTHER,
-        "Client Preferences",
+        "Client Detail Options Status",
         false,
-        searchTerms = "rs3,client_preferences",
+        searchTerms = "rs3,client_detailoptions_status",
     ),
 }

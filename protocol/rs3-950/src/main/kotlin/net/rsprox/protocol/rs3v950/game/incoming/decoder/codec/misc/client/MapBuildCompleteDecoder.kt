@@ -13,6 +13,9 @@ internal class MapBuildCompleteDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): MapBuildComplete {
-        return MapBuildComplete
+        val buildDurationMillis = buffer.g4()
+        return MapBuildComplete(
+            buildDurationMillis,
+        )
     }
 }

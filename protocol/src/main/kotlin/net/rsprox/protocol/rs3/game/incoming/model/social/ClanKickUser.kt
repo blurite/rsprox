@@ -1,12 +1,12 @@
-package net.rsprox.protocol.rs3.game.incoming.model.misc.client
+package net.rsprox.protocol.rs3.game.incoming.model.social
 
 import net.rsprot.protocol.ClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
-public data class MapBuildCompleteV2(
-    public val buildDurationMillis: Int,
+public data class ClanKickUser(
+    public val name: String,
 ) : IncomingGameMessage {
     override val category: ClientProtCategory
-        get() = GameClientProtCategory.CLIENT_EVENT
+        get() = GameClientProtCategory.USER_EVENT
 }

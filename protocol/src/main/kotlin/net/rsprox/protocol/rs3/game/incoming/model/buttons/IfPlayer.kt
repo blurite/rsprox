@@ -1,11 +1,15 @@
-package net.rsprox.protocol.rs3.game.incoming.model.dialog
+package net.rsprox.protocol.rs3.game.incoming.model.buttons
 
 import net.rsprot.protocol.ClientProtCategory
 import net.rsprot.protocol.message.IncomingGameMessage
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
-public data class ResumePCountDialogLong(
-    public val value: Long,
+public data class IfPlayer(
+    public val crmName: String,
+    public val combinedId: Int,
+    public val operation: Int,
+    public val sub: Int,
+    public val crmType: Int,
 ) : IncomingGameMessage {
     override val category: ClientProtCategory
         get() = GameClientProtCategory.USER_EVENT
