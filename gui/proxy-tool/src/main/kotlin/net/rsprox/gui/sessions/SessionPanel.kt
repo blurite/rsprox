@@ -11,6 +11,7 @@ import net.rsprox.cache.api.type.ClientScriptDefinitionProvider
 import net.rsprox.gui.App
 import net.rsprox.gui.AppIcons
 import net.rsprox.proxy.binary.BinaryHeader
+import net.rsprox.proxy.downloader.JagexNativeClientDownloader
 import net.rsprox.proxy.rs3.Rs3SessionMonitor
 import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
 import net.rsprox.shared.SessionMonitor
@@ -56,11 +57,11 @@ public class SessionPanel(
     private var lastCycle = -1
     private var rs3Connected = false
     public val isActive: Boolean
-        get() = if (type == SessionType.RS3) rs3Connected else streamNode != null
+        get() = if (type.isRs3) rs3Connected else streamNode != null
     private var portNumber: Int = -1
     private var jumpToBottom: Boolean = true
     private var scrollbarMax: Int = -1
-    private val launchProgress = if (type == SessionType.RS3) Rs3LaunchProgressPanel() else null
+    private val launchProgress = if (type.isRs3) Rs3LaunchProgressPanel() else null
 
     private var rs3ClientScripts = ClientScriptDefinitionProvider.EMPTY
     private val rs3Formatter =
@@ -228,7 +229,7 @@ public class SessionPanel(
                                 )
                             }
 
-                            SessionType.RS3 -> {
+                            SessionType.RS3, SessionType.RS3_VULKAN -> {
                                 val rs3SessionMonitor = Rs3SessionMonitor()
                                 rs3SessionMonitor.stateListener = { state ->
                                     SwingUtilities.invokeLater {
@@ -284,6 +285,12 @@ public class SessionPanel(
                                     App.service.launchRs3Client(
                                         rs3SessionMonitor,
                                         character,
+                                        upstreamJavConfigUrl =
+                                            if (type == SessionType.RS3_VULKAN) {
+                                                JagexNativeClientDownloader.VULKAN_RS3_JAV_CONFIG_URL
+                                            } else {
+                                                JagexNativeClientDownloader.DEFAULT_RS3_JAV_CONFIG_URL
+                                            },
                                         onProgress = { launchProgress?.update(it) },
                                     )
                                 portNumber = handle.port

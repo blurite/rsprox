@@ -832,7 +832,7 @@ public class ReplayPanel(
                     SessionType.Native -> App.service.launchReplayNativeClient(session, port)
                     SessionType.RuneLite -> App.service.launchReplayRuneLiteClient(session, null, port)
                     SessionType.Java -> error("Unsupported replay client type: $type")
-                    SessionType.RS3 -> error("Unsupported replay client type: $type")
+                    SessionType.RS3, SessionType.RS3_VULKAN -> error("Unsupported replay client type: $type")
                 }
                 SwingUtilities.invokeLater {
                     if (generation != loadGeneration || replaySession !== session) {

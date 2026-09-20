@@ -80,7 +80,7 @@ public class SessionsPanel(
         type: SessionType,
         character: JagexCharacter?,
     ) {
-        if (type == SessionType.RS3 && !rs3LaunchWarning.confirm(this)) return
+        if (type.isRs3 && !rs3LaunchWarning.confirm(this)) return
 
         val session = SessionPanel(type, this, character)
         addTab("Session ${++counter}", type.icon, session, "")

@@ -55,6 +55,7 @@ public data class NativePatchCriteria(
             require(primary != DEFAULT_PORT && alternate != DEFAULT_PORT)
             val first = intToHexStringLE(primary)
             val second = intToHexStringLE(alternate)
+            // Note: verified for revision 950 Windows OpenGL (binaryType=2) and Vulkan (binaryType=10).
             // Each guarded instruction window must occur exactly once. Only the two mov immediates change.
             // Later lobby selection, world selection, and the second world selection entry point respectively.
             val sites =

@@ -22,6 +22,7 @@ internal class Rs3BinaryRecorder(
     private val revision: Int,
     private val masterIndex: ByteArray,
     private val directory: Path = BINARY_PATH.resolve("RuneScape 3"),
+    private val clientName: String = "RS3 Native",
 ) {
     data class WorldMetadata(
         val flags: Int,
@@ -226,7 +227,7 @@ internal class Rs3BinaryRecorder(
                         world?.activity ?: "",
                         ownIndex,
                         accountHash,
-                        "RS3 Native",
+                        clientName,
                         masterIndex,
                     )
                 Files.createDirectories(directory)

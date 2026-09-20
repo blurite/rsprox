@@ -24,6 +24,8 @@ public data object JagexNativeClientDownloader {
     private val logger = InlineLogger()
     public const val DEFAULT_RS3_JAV_CONFIG_URL: String =
         "https://world5.runescape.com/jav_config.ws?binaryType=2"
+    public const val VULKAN_RS3_JAV_CONFIG_URL: String =
+        "https://world5.runescape.com/jav_config.ws?binaryType=10"
 
     @OptIn(ExperimentalStdlibApi::class)
     public fun download(
@@ -110,11 +112,12 @@ public data object JagexNativeClientDownloader {
         upstreamJavConfigUrl: String,
         onProgress: (Rs3LaunchProgress) -> Unit,
     ): Path {
-        require("binaryType=2" in upstreamJavConfigUrl) {
-            "upstreamJavConfigUrl must include binaryType=2 (Windows 64-bit)"
-        }
+        val binaryType = rs3BinaryType(upstreamJavConfigUrl)
 
         val config = Rs3JavConfig(URL(upstreamJavConfigUrl))
+        require(config.getServerVersion() == 950) {
+            "RS3 client downloading/patching is currently verified for revision 950 only"
+        }
         val codebase = config.getCodebase()
         val downloadName =
             config.getDownloadName(0)
@@ -123,8 +126,10 @@ public data object JagexNativeClientDownloader {
             config.getDownloadCrc(0)
                 ?: error("RS3 jav_config has no download_crc_0")
 
-        val clientPath = CLIENTS_DIRECTORY.resolve("rs2client.exe")
-        val cacheCrcFile = CLIENTS_DIRECTORY.resolve("rs3-win-cached-crc.txt")
+        // Both distributions advertise rs2client.exe; keep them isolated on disk.
+        val suffix = if (binaryType == 10) "-vulkan" else ""
+        val clientPath = CLIENTS_DIRECTORY.resolve("rs2client$suffix.exe")
+        val cacheCrcFile = CLIENTS_DIRECTORY.resolve("rs3-win$suffix-cached-crc.txt")
 
         if (cacheCrcFile.exists() && clientPath.exists()) {
             val cachedCrc = cacheCrcFile.readText(Charsets.UTF_8).trim().toLongOrNull()
@@ -139,7 +144,7 @@ public data object JagexNativeClientDownloader {
             buildString {
                 append(codebase)
                 if (!codebase.endsWith("/")) append("/")
-                append("client?binaryType=2&fileName=$downloadName&crc=$expectedCrc")
+                append("client?binaryType=$binaryType&fileName=$downloadName&crc=$expectedCrc")
             }
 
         onProgress(Rs3LaunchProgress("Downloading client"))
@@ -180,6 +185,18 @@ public data object JagexNativeClientDownloader {
 
         logger.debug { "Saved RS3 native client to $clientPath" }
         return clientPath
+    }
+
+    internal fun rs3BinaryType(javConfigUrl: String): Int {
+        val values =
+            URI(javConfigUrl).query.orEmpty().split('&')
+                .filter { it.substringBefore('=') == "binaryType" }
+                .map { it.substringAfter('=', "").toIntOrNull() }
+        val binaryType = values.singleOrNull()
+        require(binaryType == 2 || binaryType == 10) {
+            "RS3 javconfig must specify one binaryType: 2 (Windows OpenGL) or 10 (Windows Vulkan)"
+        }
+        return binaryType
     }
 
     private fun buildRepositoryInfo(systemShortName: String): Repository {

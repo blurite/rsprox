@@ -963,9 +963,16 @@ public class ProxyService(
     public fun launchRs3Client(
         sessionMonitor: Rs3SessionMonitor,
         character: JagexCharacter?,
-        upstreamJavConfigUrl: String = "https://world5.runescape.com/jav_config.ws?binaryType=2",
+        upstreamJavConfigUrl: String = JagexNativeClientDownloader.DEFAULT_RS3_JAV_CONFIG_URL,
         onProgress: (Rs3LaunchProgress) -> Unit = {},
     ): Rs3ClientHandle {
+        val renderer =
+            when (JagexNativeClientDownloader.rs3BinaryType(upstreamJavConfigUrl)) {
+                2 -> "OpenGL"
+                10 -> "Vulkan"
+                else -> error("Unsupported RS3 renderer")
+            }
+        val clientName = "RS3 Native ($renderer)"
         val primaryPort = allocatePorts(2)
         val progress = Rs3LaunchTracker(primaryPort, onProgress)
         progress.update(Rs3LaunchProgress("Preparing RuneScape 3"))
@@ -1036,6 +1043,7 @@ public class ProxyService(
                 packetDefinitions = packetDefinitions,
                 clientScripts = clientScripts,
                 masterIndex = cacheResolver.masterIndexSnapshot,
+                clientName = clientName,
                 resolveUpstream = {
                     val fresh = Rs3JavConfig(URL(upstreamJavConfigUrl)).captureUpstreamTargets()
                     fresh.lobbyHost to fresh.lobbyPort
@@ -1061,8 +1069,8 @@ public class ProxyService(
                 )
             relayServer.registerRoutes(routes).get(20, TimeUnit.SECONDS)
             val host = lease.addresses.address(lobby).hostAddress
-            ClientTypeDictionary[localPorts.primary] = "RS3 (${operatingSystem.shortName})"
-            ClientTypeDictionary[localPorts.alternate] = "RS3 (${operatingSystem.shortName})"
+            ClientTypeDictionary[localPorts.primary] = "RS3 ($renderer, ${operatingSystem.shortName})"
+            ClientTypeDictionary[localPorts.alternate] = "RS3 ($renderer, ${operatingSystem.shortName})"
             val running =
                 Rs3ClientHandle(relayServer, modulusHex, localPorts.primary) {
                     ClientTypeDictionary.remove(localPorts.primary)

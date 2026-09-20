@@ -164,12 +164,12 @@ public class LaunchBar(
         val proxyTargetLabel = createFieldLabel("Proxy Target")
 
         fun updateProxyTargetRowState() {
-            val isRs3 = clientTypeDropdown.selectedItem == SessionType.RS3
+            val isRs3 = (clientTypeDropdown.selectedItem as? SessionType)?.isRs3 == true
             val disabledReason =
                 if (isRs3) "Proxy target selection is currently only supported for Old School RuneScape." else null
             proxyTargetLabel.isEnabled = !isRs3
             proxyTargetDropdown.isEnabled = !isRs3
-            proxyTargetDropdown.renderer = ProxyTargetCellRenderer(if (isRs3) SessionType.RS3.displayName else null)
+            proxyTargetDropdown.renderer = ProxyTargetCellRenderer(if (isRs3) "RuneScape 3" else null)
             importTargetsButton.isEnabled = !isRs3
             proxyTargetLabel.toolTipText = disabledReason
             proxyTargetDropdown.toolTipText = disabledReason

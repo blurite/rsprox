@@ -108,6 +108,7 @@ public class Rs3RelayServer(
         DefaultPropertyFilterSetStore(Path.of("."), mutableListOf(UnmodifiablePropertyFilterSet())),
     private val settingSetStore: SettingSetStore =
         DefaultSettingSetStore(Path.of("."), mutableListOf(NopSettingSet)),
+    clientName: String = "RS3 Native",
 ) {
     private val realServerPublicKey: RSAKeyParameters =
         RSAKeyParameters(false, BigInteger(realServerModulusHex, 16), Rsa.PUBLIC_EXPONENT)
@@ -126,7 +127,7 @@ public class Rs3RelayServer(
     }
     private var shuttingDown = false
     private val terminated = CompletableFuture<Unit>()
-    private val recordings = Rs3BinaryRecorder(revision, masterIndex.copyOf())
+    private val recordings = Rs3BinaryRecorder(revision, masterIndex.copyOf(), clientName = clientName)
     private val bandwidthUpdates =
         workerGroup.next().scheduleAtFixedRate(sessionMonitor::updateBandwidth, 1, 1, TimeUnit.SECONDS)
 
