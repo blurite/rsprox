@@ -9,7 +9,7 @@ import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
  * long to the input box. It has no uses as of writing this.
  * @property count the count entered.
  */
-public class ResumePCountDialogLong(
+public class ResumePLongDialog(
     public val count: Long,
 ) : IncomingGameMessage {
     override val category: ClientProtCategory
@@ -19,12 +19,12 @@ public class ResumePCountDialogLong(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as ResumePCountDialogLong
+        other as ResumePLongDialog
 
         return count == other.count
     }
 
     override fun hashCode(): Int = count.hashCode()
 
-    override fun toString(): String = "ResumePCountDialogLong(count=$count)"
+    override fun toString(): String = "ResumePLongDialog(count=$count)"
 }

@@ -38,7 +38,7 @@ internal object GameClientProtId {
     const val FRIENDCHAT_JOIN_LEAVE = 34
     const val OPPLAYER8 = 35
     const val OPOBJ1_V2 = 36
-    const val RESUME_P_COUNTDIALOG_LONG = 37
+    const val RESUME_P_LONGDIALOG = 37
     const val OPPLAYER5 = 38
     const val IDLE = 39
     const val OPWORLDENTITY4 = 40

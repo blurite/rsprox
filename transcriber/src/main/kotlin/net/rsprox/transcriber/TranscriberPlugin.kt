@@ -343,7 +343,7 @@ public class TranscriberPlugin(
             GameClientProt.RESUME_P_NAMEDIALOG -> pass(message, Transcriber::resumePNameDialog)
             GameClientProt.RESUME_P_STRINGDIALOG -> pass(message, Transcriber::resumePStringDialog)
             GameClientProt.RESUME_P_COUNTDIALOG -> pass(message, Transcriber::resumePCountDialog)
-            GameClientProt.RESUME_P_COUNTDIALOG_LONG -> pass(message, Transcriber::resumePCountDialogLong)
+            GameClientProt.RESUME_P_LONGDIALOG -> pass(message, Transcriber::resumePLongDialog)
             GameClientProt.RESUME_P_OBJDIALOG -> pass(message, Transcriber::resumePObjDialog)
             GameClientProt.FRIENDCHAT_KICK -> pass(message, Transcriber::friendChatKick)
             GameClientProt.FRIENDCHAT_SETRANK -> pass(message, Transcriber::friendChatSetRank)

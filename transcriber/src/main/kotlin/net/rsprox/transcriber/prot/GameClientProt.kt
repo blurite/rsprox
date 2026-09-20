@@ -104,7 +104,7 @@ public enum class GameClientProt : Prot {
     RESUME_P_NAMEDIALOG,
     RESUME_P_STRINGDIALOG,
     RESUME_P_COUNTDIALOG,
-    RESUME_P_COUNTDIALOG_LONG,
+    RESUME_P_LONGDIALOG,
     RESUME_P_OBJDIALOG,
 
     // Friend chat packets

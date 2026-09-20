@@ -101,6 +101,6 @@ internal object GameClientProtId {
     const val OPWORLDENTITYU = -1
     const val UPDATE_PLAYER_MODEL_V2 = -1
     const val OPNPCU = -1
-    const val RESUME_P_COUNTDIALOG_LONG = -1
+    const val RESUME_P_LONGDIALOG = -1
     const val OPLOCU = -1
 }
