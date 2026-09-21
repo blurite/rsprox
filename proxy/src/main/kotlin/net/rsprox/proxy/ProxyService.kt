@@ -358,6 +358,7 @@ public class ProxyService(
             237 -> "34b84f8f8a37f1c615d5d99db2fce7df3a269c45"
             238 -> "350ac50d2be83c72b3e35169bc52cb2a1fc53ce3"
             239 -> "c95f866eaa693da187bf986cdf9c8f23b555ed4c"
+            240 -> "c8f9b14be8bd3fae44fa830381795cdfd32aa95f"
             else -> null
         }
     }
@@ -984,7 +985,11 @@ public class ProxyService(
             synchronized(JagexNativeClientDownloader) {
                 progress.update(Rs3LaunchProgress("Checking client download"))
                 val downloaded =
-                    JagexNativeClientDownloader.download(NativeClientType.RS3_WIN, upstreamJavConfigUrl, progress::update)
+                    JagexNativeClientDownloader.download(
+                        NativeClientType.RS3_WIN,
+                        upstreamJavConfigUrl,
+                        progress::update,
+                    )
                 val extension = if (downloaded.extension.isNotEmpty()) ".${downloaded.extension}" else ""
                 val stamp = System.currentTimeMillis()
                 val path =
@@ -1179,8 +1184,8 @@ public class ProxyService(
         val targetRev = target.config.revision
         val binary =
             if (targetRev == null || targetRev == "latest_supported") {
-                JagexNativeClientDownloader.download(nativeClientType)
-                // getHistoricNativeClient("239.4", nativeClientType)
+                // JagexNativeClientDownloader.download(nativeClientType)
+                getHistoricNativeClient("240.1", nativeClientType)
             } else {
                 getHistoricNativeClient(targetRev, nativeClientType)
             }
