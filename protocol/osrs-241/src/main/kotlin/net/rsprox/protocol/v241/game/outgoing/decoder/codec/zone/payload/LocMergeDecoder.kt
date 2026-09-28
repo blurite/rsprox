@@ -4,6 +4,8 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.model.zone.payload.LocMerge
+import net.rsprox.protocol.game.outgoing.model.zone.payload.util.CoordInZone
+import net.rsprox.protocol.game.outgoing.model.zone.payload.util.LocProperties
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v241.game.outgoing.decoder.prot.GameServerProt
 
@@ -14,8 +16,27 @@ internal class LocMergeDecoder : ProxyMessageDecoder<LocMerge> {
         buffer: JagByteBuf,
         session: Session,
     ): LocMerge {
-        throw UnsupportedOperationException(
-            "241 LOC_MERGE is consume-only in the native client; its legacy payload semantics are unverified",
+        val coordInZone = CoordInZone(buffer.g1Alt3())
+        val maxZ = buffer.g1s()
+        val end = buffer.g2()
+        val minX = buffer.g1sAlt1()
+        val locProperties = LocProperties(buffer.g1Alt3())
+        val index = buffer.g2Alt1()
+        val start = buffer.g2Alt3()
+        val maxX = buffer.g1sAlt3()
+        val id = buffer.g2Alt3()
+        val minZ = buffer.g1sAlt1()
+        return LocMerge(
+            index,
+            id,
+            coordInZone,
+            locProperties,
+            start,
+            end,
+            minX,
+            minZ,
+            maxX,
+            maxZ,
         )
     }
 }

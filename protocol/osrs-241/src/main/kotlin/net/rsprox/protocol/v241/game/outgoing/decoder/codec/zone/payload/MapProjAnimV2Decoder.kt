@@ -21,7 +21,7 @@ internal class MapProjAnimV2Decoder : ProxyMessageDecoder<MapProjAnimV2> {
         val sourceIndex = buffer.g3sAlt3()
         val startTime = buffer.g2Alt3()
         val startHeight = buffer.g2Alt1()
-        val coordInZone = CoordInZone(buffer.g1())
+        val coordInZone = CoordInZone(buffer.g1Alt1())
         val endHeight = buffer.g2Alt2()
         val progress = buffer.g2Alt2()
         val targetIndex = buffer.g3sAlt2()

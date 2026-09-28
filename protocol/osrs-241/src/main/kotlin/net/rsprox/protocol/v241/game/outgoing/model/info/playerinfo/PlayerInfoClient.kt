@@ -302,10 +302,6 @@ internal class PlayerInfoClient(
             throw IllegalStateException("Unused flags used!")
         }
 
-        // The retired V2 spotanim mask retains only its count byte.
-        if (flags and SPOTANIM_OLD != 0) {
-            buffer.g1()
-        }
         if (flags and SAY != 0) {
             decodeSay(buffer, blocks)
         }
@@ -655,7 +651,7 @@ internal class PlayerInfoClient(
     ) {
         val delay = buffer.g2Alt1()
         val duration = buffer.g2Alt1()
-        val cancelSequence = buffer.g1Alt1() == 1
+        val cancelSequence = buffer.g1Alt3() == 1
         blocks += FreezeExtendedInfo(delay, duration, cancelSequence)
     }
 
@@ -667,7 +663,7 @@ internal class PlayerInfoClient(
         val end = buffer.g2sAlt3()
         val startTransparency = buffer.g1sAlt1()
         val endTransparency = buffer.g1sAlt1()
-        val useStartTransparency = buffer.g1Alt1() == 1
+        val useStartTransparency = buffer.g1Alt3() == 1
         blocks +=
             TransparencyExtendedInfo(
                 start,
@@ -1124,7 +1120,6 @@ internal class PlayerInfoClient(
         private const val EXACT_MOVE = 0x800
         private const val PLAYER_TRANSPARENCY = 0x10000
         private const val TEMP_MOVE_SPEED = 0x4000
-        private const val SPOTANIM_OLD = 0x100000
         private const val SPOTANIM = 0x4
         private const val HEADBARS = 0x80000
         private const val HITMARKS = 0x20000

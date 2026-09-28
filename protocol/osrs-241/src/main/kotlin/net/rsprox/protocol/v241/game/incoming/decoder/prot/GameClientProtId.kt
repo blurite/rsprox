@@ -11,6 +11,7 @@ internal object GameClientProtId {
     const val EVENT_MOUSE_CLICK_V1 = 7
     const val OPLOCT = 8
     const val OPOBJ5_V2 = 9
+    const val RESUME_P_LONGDIALOG = 10
     const val SEND_PING_REPLY = 11
     const val OPPLAYER1 = 12
     const val OPWORLDENTITY2 = 13
@@ -22,6 +23,7 @@ internal object GameClientProtId {
     const val SET_CHATFILTERSETTINGS = 19
     const val CONNECTION_TELEMETRY = 20
     const val OPWORLDENTITY4 = 21
+    const val OPLOCU = 22
     const val EVENT_MOUSE_SCROLL = 23
     const val OPLOC5_V2 = 24
     const val FRIENDCHAT_JOIN_LEAVE = 25
@@ -36,10 +38,12 @@ internal object GameClientProtId {
     const val EXIT_FREECAM = 34
     const val OPPLAYER2 = 35
     const val HISCORE_REQUEST = 36
+    const val OPNPCU = 37
     const val IF_BUTTONX = 38
     const val OPLOC6 = 39
     const val OPPLAYER8 = 40
     const val CLOSE_MODAL = 41
+    const val OPPLAYERU = 42
     const val EVENT_CAMERA_POSITION = 43
     const val OPNPC2_V2 = 44
     const val SEND_SNAPSHOT = 45
@@ -52,6 +56,7 @@ internal object GameClientProtId {
     const val OPNPC6 = 53
     const val OPPLAYER5 = 54
     const val MOVE_GAMECLICK = 55
+    const val REFLECTION_CHECK_REPLY = 56
     const val FRIENDCHAT_KICK = 57
     const val RESUME_P_STRINGDIALOG = 58
     const val AFFINEDCLANSETTINGS_ADDBANNED_FROMCHANNEL = 59
@@ -83,24 +88,18 @@ internal object GameClientProtId {
     const val IGNORELIST_ADD = 85
     const val OPNPC3_V2 = 86
     const val EVENT_MOUSE_MOVE = 87
+    const val UPDATE_PLAYER_MODEL_V2 = 88
+    const val OPWORLDENTITYU = 89
     const val OPOBJ6 = 90
+    const val OPWORLDENTITYT = 91
     const val OPNPC1_V2 = 92
     const val RSEVEN_STATUS = 93
     const val OPOBJT = 94
     const val OPPLAYER7 = 95
+    const val OPOBJU = 96
+    const val EVENT_APPLET_FOCUS = 97
     const val OPOBJ2_V2 = 98
     const val MAP_BUILD_COMPLETE = 99
     const val OPLOC3_V2 = 100
     const val EVENT_KEYBOARD = 101
-
-    const val OPWORLDENTITYT = -1
-    const val REFLECTION_CHECK_REPLY = -1
-    const val EVENT_APPLET_FOCUS = -1
-    const val OPPLAYERU = -1
-    const val OPOBJU = -1
-    const val OPWORLDENTITYU = -1
-    const val UPDATE_PLAYER_MODEL_V2 = -1
-    const val OPNPCU = -1
-    const val RESUME_P_LONGDIALOG = -1
-    const val OPLOCU = -1
 }

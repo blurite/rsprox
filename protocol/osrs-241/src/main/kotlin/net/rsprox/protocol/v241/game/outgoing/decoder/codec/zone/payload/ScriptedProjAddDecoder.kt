@@ -16,12 +16,12 @@ internal class ScriptedProjAddDecoder : ProxyMessageDecoder<ScriptedProjAdd> {
         buffer: JagByteBuf,
         session: Session,
     ): ScriptedProjAdd {
-        val curveScriptT = buffer.g2()
+        val curveScriptA = buffer.g2()
         val sourceIndex = buffer.g3sAlt1()
-        val sourceHeight = buffer.g2sAlt2()
-        val targetHeight = buffer.g2sAlt3()
-        val sourceOffsetX = buffer.g2s()
-        val targetOffsetX = buffer.g2sAlt2()
+        val sourceOffsetX = buffer.g2sAlt2()
+        val targetOffsetX = buffer.g2sAlt3()
+        val sourceHeight = buffer.g2s()
+        val targetHeight = buffer.g2sAlt2()
         val targetOffsetZ = buffer.g2sAlt1()
         val id = buffer.g2Alt2()
         val targetIndex = buffer.g3sAlt2()
@@ -29,7 +29,7 @@ internal class ScriptedProjAddDecoder : ProxyMessageDecoder<ScriptedProjAdd> {
         val slot = buffer.g2Alt3()
         val startTime = buffer.g2()
         val sourceOffsetZ = buffer.g2sAlt2()
-        val curveScriptA = buffer.g2Alt3()
+        val curveScriptT = buffer.g2Alt3()
         val targetCoord = CoordGrid(buffer.g4Alt1())
         val curveScriptH = buffer.g2Alt3()
         val coordInZone = CoordInZone(buffer.g1Alt2())

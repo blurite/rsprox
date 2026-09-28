@@ -18,7 +18,7 @@ internal class MapAnimDecoder : ProxyMessageDecoder<MapAnim> {
         val delay = buffer.g2Alt1()
         val height = buffer.g1()
         val id = buffer.g2Alt3()
-        val coordInZone = CoordInZone(buffer.g1Alt2())
+        val coordInZone = CoordInZone(buffer.g1Alt3())
         return MapAnim(
             id,
             delay,

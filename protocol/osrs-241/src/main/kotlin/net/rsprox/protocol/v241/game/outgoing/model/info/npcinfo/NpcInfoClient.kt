@@ -173,10 +173,6 @@ internal class NpcInfoClient(
             if (flag and SEQUENCE != 0) {
                 decodeSequence(buffer, blocks)
             }
-            if (flag and SPOTANIM_OLD != 0) {
-                // The retired V2 mask retains only its count byte, even when nonzero.
-                buffer.g1()
-            }
             if (flag and BODY_CUSTOMISATION_V2 != 0) {
                 decodeBodyCustomisationV2(npc.id, buffer, blocks)
             }
@@ -378,7 +374,7 @@ internal class NpcInfoClient(
     ) {
         val delay = buffer.g2Alt1()
         val duration = buffer.g2()
-        val cancelSequence = buffer.g1() == 1
+        val cancelSequence = buffer.g1Alt2() == 1
         blocks += FreezeExtendedInfo(delay, duration, cancelSequence)
     }
 
@@ -444,7 +440,7 @@ internal class NpcInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val flag = buffer.g1()
+        val flag = buffer.g1Alt1()
         if (flag and 0x1 != 0) {
             blocks += BodyCustomisationExtendedInfo(ResetCustomisation)
             return
@@ -985,12 +981,14 @@ internal class NpcInfoClient(
                         val angle = NPC_TURN_ANGLES[buffer.gBits(3)]
                         val hasSpawnCycle = buffer.gBits(1) == 1
                         if (hasSpawnCycle) {
-                            val width = buffer.gBits(2)
-                            npc.spawnCycle = buffer.gBits(spawnClockBitcodes[width])
+                            val index = buffer.gBits(2)
+                            npc.spawnCycle = buffer.gBits(spawnClockBitcodes[index])
                         }
+
                         val extendedInfo = buffer.gBits(1)
                         val idBitCount = buffer.gBits(2)
                         npc.id = buffer.gBits(typeBitcodes[idBitCount])
+
                         deltaX = decodeDelta(large, buffer)
                         if (isNew) {
                             npc.turnAngle = angle
@@ -1148,7 +1146,6 @@ internal class NpcInfoClient(
         private const val NAME_CHANGE: Int = 0x400
         private const val OPS: Int = 0x100
         private const val SPOTANIM: Int = 0x4
-        private const val SPOTANIM_OLD: Int = 0x20000
         private const val HEADBARS: Int = 0x2000000
         private const val BAS_CHANGE: Int = 0x400000
         private const val SAY: Int = 0x40

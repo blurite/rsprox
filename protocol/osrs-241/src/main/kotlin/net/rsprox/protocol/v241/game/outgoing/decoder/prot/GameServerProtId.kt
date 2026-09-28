@@ -1,6 +1,7 @@
 package net.rsprox.protocol.v241.game.outgoing.decoder.prot
 
 internal object GameServerProtId {
+    const val SET_HEATMAP_ENABLED = 0
     const val LOGOUT = 1
     const val SERVER_TICK_END = 2
     const val UPDATE_RUNENERGY = 3
@@ -35,6 +36,7 @@ internal object GameServerProtId {
     const val UPDATE_TRADINGPOST_V2 = 32
     const val LOC_ANIM_SPECIFIC = 33
     const val UPDATE_RUNWEIGHT = 34
+    const val REFLECTION_CHECKER = 35
     const val CLANCHANNEL_FULL = 36
     const val LOC_ANIM = 37
     const val UPDATE_INV_STOPTRANSMIT = 38
@@ -141,6 +143,7 @@ internal object GameServerProtId {
     const val SET_MAP_FLAG_V2 = 139
     const val CAM_LOOKAT_CYCLES = 140
     const val WORLDENTITY_INFO_V7 = 141
+    const val UNHANDLED = 142
     const val CAM_MOVETO_V3 = 143
     const val AMBIENTSOUND_STOP = 144
     const val CAM_MOVETO_ARC_V3 = 145
@@ -149,8 +152,4 @@ internal object GameServerProtId {
     const val CAM_UNLOCK = 148
     const val CAM_ROTATETO_COORDINATE_V3 = 149
     const val NPC_INFO_SMALL_V6 = 150
-
-    const val SET_HEATMAP_ENABLED = -1
-    const val REFLECTION_CHECKER = -1
-    const val UNHANDLED = -1
 }

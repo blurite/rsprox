@@ -15,9 +15,9 @@ internal class ScriptedProjChangeDecoder : ProxyMessageDecoder<ScriptedProjChang
         buffer: JagByteBuf,
         session: Session,
     ): ScriptedProjChange {
-        val targetHeight = buffer.g2sAlt3()
+        val targetOffsetX = buffer.g2sAlt3()
         val targetIndex = buffer.g3sAlt3()
-        val targetOffsetX = buffer.g2s()
+        val targetHeight = buffer.g2s()
         val deleteOnFreezeEnd = buffer.g1Alt2() == 1
         val slot = buffer.g2Alt1()
         val freezeDuration = buffer.g2Alt3()
