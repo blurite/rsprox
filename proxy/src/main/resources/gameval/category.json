@@ -1,7 +1,7 @@
 {
-  "revision": 949,
-  "url": "https://archive.openrs2.org/caches/runescape/2670",
-  "date": "August 25, 2026, 1:02 PM",
+  "revision": 950,
+  "url": "https://archive.openrs2.org/caches/runescape/2725",
+  "date": "September 28, 2026, 3:03 PM",
   "entries": {
     "0": "gloves",
     "1": "weapon_staff",
@@ -5784,6 +5784,27 @@
     "5783": "construction_housing_sawmill",
     "5784": "construction_house_entrance_portal",
     "5785": "marketplace_store_buyable_item",
-    "5786": "farming_watering_can_dummy"
+    "5786": "farming_watering_can_dummy",
+    "5787": "league_herb_charm_bag",
+    "5788": "league_2_yak",
+    "5789": "mtx158_outfit",
+    "5790": "marketplace_furniture",
+    "5791": "sets_orikalkum_arrow",
+    "5792": "sets_necronium_arrow",
+    "5793": "sets_dark_arrow",
+    "5794": "sets_bane_arrow",
+    "5795": "sets_elder_arrow",
+    "5796": "sets_crossbow_bolts_orikalkum",
+    "5797": "sets_crossbow_bolts_necronium",
+    "5798": "sets_crossbow_bolts_bane",
+    "5799": "sets_crossbow_bolts_elder",
+    "5800": "unstrung_longbow",
+    "5801": "construction_house_furniture_override_recipe",
+    "5802": "rand_unstrung_bow",
+    "5803": "rand_arrowhead",
+    "5804": "rand_bag",
+    "5805": "construction_workbench_icon",
+    "5806": "test_house_furniture",
+    "5807": "construction_housing_furniture_trunk"
   }
 }

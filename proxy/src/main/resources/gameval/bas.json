@@ -1,7 +1,7 @@
 {
-  "revision" : 949,
-  "url" : "https://archive.openrs2.org/caches/runescape/2670",
-  "date" : "August 25, 2026, 1:02 PM",
+  "revision" : 950,
+  "url" : "https://archive.openrs2.org/caches/runescape/2725",
+  "date" : "September 28, 2026, 3:03 PM",
   "entries" : {
     "0" : "human_climbing",
     "1" : "human_1",
@@ -355,7 +355,6 @@
     "349" : "templetrek_tentacle_spawning",
     "350" : "rabbit_1",
     "351" : "rabbit_2",
-    "352" : "rabbit_gnome_wink_wife",
     "353" : "bounty_mandrith",
     "354" : "100_osman_froze",
     "355" : "100_osman_seasons_elemental",
@@ -1968,6 +1967,7 @@
     "1962" : "gnomecopter_cleaner",
     "1963" : "mounted_terrorbird_with_gnome",
     "1964" : "mounted_terrorbird_with_gnome_spear",
+    "1965" : "atelf_mod_elfbourne",
     "1966" : "gnome_talking_on_phone",
     "1967" : "gnome_sitting_facing_south",
     "1968" : "gnome_sitting_facing_west",
@@ -2391,7 +2391,6 @@
     "2386" : "omge_soldier_injured_g",
     "2387" : "omge_soldier_injured_h",
     "2388" : "omge_soldier_injured_i",
-    "2389" : "omge_drowning_child_mother",
     "2390" : "omge_trapped_miner_female",
     "2391" : "omge_trapped_miner",
     "2392" : "omge_cutscene_troll_ambush_archer",
@@ -3349,7 +3348,6 @@
     "3344" : "xmas2014_test_boss2_c_idle",
     "3345" : "xmas2014_human_snowboard",
     "3346" : "atelf_elf_hold_wisp_idle",
-    "3347" : "atelf_mod_chubby_elfbourne",
     "3348" : "atelf_child_elf",
     "3349" : "xmas2014_human_snowboard_ramp",
     "3350" : "xmas14_snowboard_grind",
@@ -4919,6 +4917,8 @@
     "4914" : "gnome_old_lamdoo",
     "4915" : "gnome_old_transparent",
     "4916" : "gnome_old_ready",
-    "4917" : "gnome_old_1"
+    "4917" : "gnome_old_1",
+    "4918" : "human_actor_thunder_summon_rest_loop",
+    "4919" : "omge_mother_crying"
   }
 }

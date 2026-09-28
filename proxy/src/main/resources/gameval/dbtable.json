@@ -1,7 +1,7 @@
 {
-  "revision": 949,
-  "url": "https://archive.openrs2.org/caches/runescape/2670",
-  "date": "August 25, 2026, 1:02 PM",
+  "revision": 950,
+  "url": "https://archive.openrs2.org/caches/runescape/2725",
+  "date": "September 28, 2026, 3:03 PM",
   "entries": {
     "4": "invent_material_table",
     "5": "invent_blueprint_table",
@@ -78,6 +78,7 @@
     "116": "con_contracts",
     "117": "secret_santa",
     "118": "extra_action_button",
+    "119": "item_hunt_system",
     "121": "fairyrings",
     "122": "mobile_shop_feature_information",
     "123": "trh_chest",
@@ -240,6 +241,7 @@
     "347": "marketplace_store_data",
     "348": "marketplace_store_item",
     "351": "exploration_set",
+    "352": "exploration_task",
     "353": "exploration_npc_bond",
     "354": "exploration_research_topic",
     "358": "hunter_resource_site",
@@ -253,6 +255,14 @@
     "369": "construction_house_room",
     "370": "construction_house_furniture",
     "376": "construction_house_portal_nexus_teleport_destinations",
-    "378": "herblore_potion"
+    "378": "herblore_potion",
+    "379": "league_locality",
+    "380": "locality_ui_info",
+    "382": "objdialog_acronym",
+    "383": "marketplace_furniture_package",
+    "384": "marketplace_store_sale_data",
+    "385": "marketplace_outfit_variants",
+    "386": "construction_house_furniture_skins_list",
+    "387": "construction_house_furniture_skin"
   }
 }

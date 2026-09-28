@@ -1,7 +1,7 @@
 {
-  "revision": 949,
-  "url": "https://archive.openrs2.org/caches/runescape/2670",
-  "date": "August 25, 2026, 1:02 PM",
+  "revision": 950,
+  "url": "https://archive.openrs2.org/caches/runescape/2725",
+  "date": "September 28, 2026, 3:03 PM",
   "entries": {
     "0": "karamja_underground_fyburglars_tree",
     "1": "karamja_underground_agility_arena",
@@ -5811,6 +5811,9 @@
     "5805": "me_quest_start_construction_tutorial_legacy",
     "5806": "me_quest_progress_construction_tutorial",
     "5807": "me_quest_progress_construction_tutorial_rs3",
-    "5808": "me_quest_progress_construction_tutorial_legacy"
+    "5808": "me_quest_progress_construction_tutorial_legacy",
+    "5809": "construction_workbench_icon",
+    "5810": "construction_workbench_icon_rs3",
+    "5811": "construction_workbench_icon_legacy"
   }
 }
