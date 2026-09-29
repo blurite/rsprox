@@ -1,0 +1,32 @@
+package net.rsprox.protocol.v241.game.outgoing.decoder.codec.camera
+
+import net.rsprot.buffer.JagByteBuf
+import net.rsprot.protocol.ClientProt
+import net.rsprox.protocol.ProxyMessageDecoder
+import net.rsprox.protocol.game.outgoing.model.camera.CamLookAtCycles
+import net.rsprox.protocol.session.Session
+import net.rsprox.protocol.v241.game.outgoing.decoder.prot.GameServerProt
+
+internal class CamLookAtCyclesDecoder : ProxyMessageDecoder<CamLookAtCycles> {
+    override val prot: ClientProt = GameServerProt.CAM_LOOKAT_CYCLES
+
+    override fun decode(
+        buffer: JagByteBuf,
+        session: Session,
+    ): CamLookAtCycles {
+        val height = buffer.g2sAlt2()
+        val easing = buffer.g1()
+        val x = buffer.g2Alt1()
+        val z = buffer.g2Alt1()
+        val cycles = buffer.g2Alt3()
+        val heightRelative = buffer.g1Alt1() == 1
+        return CamLookAtCycles(
+            x,
+            z,
+            height,
+            cycles,
+            easing,
+            heightRelative,
+        )
+    }
+}

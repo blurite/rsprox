@@ -44,7 +44,7 @@ import net.rsprox.protocol.game.incoming.model.objs.OpObjV2
 import net.rsprox.protocol.game.incoming.model.players.OpPlayer
 import net.rsprox.protocol.game.incoming.model.players.OpPlayerT
 import net.rsprox.protocol.game.incoming.model.resumed.ResumePCountDialog
-import net.rsprox.protocol.game.incoming.model.resumed.ResumePCountDialogLong
+import net.rsprox.protocol.game.incoming.model.resumed.ResumePLongDialog
 import net.rsprox.protocol.game.incoming.model.resumed.ResumePNameDialog
 import net.rsprox.protocol.game.incoming.model.resumed.ResumePObjDialog
 import net.rsprox.protocol.game.incoming.model.resumed.ResumePStringDialog
@@ -896,7 +896,7 @@ public open class TextClientPacketTranscriber(
         root.formattedInt("count", message.count)
     }
 
-    override fun resumePCountDialogLong(message: ResumePCountDialogLong) {
+    override fun resumePLongDialog(message: ResumePLongDialog) {
         if (!filters[PropertyFilter.RESUME_P_COUNTDIALOG]) return omit()
         root.formattedLong("count", message.count)
     }

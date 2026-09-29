@@ -96,7 +96,7 @@ internal object GameClientProtId {
     const val MESSAGE_PRIVATE = 108
     const val SET_HEADING = 109
     const val HISCORE_REQUEST = 110
-    const val RESUME_P_COUNTDIALOG_LONG = 111
+    const val RESUME_P_LONGDIALOG = 111
     const val OPOBJ1_V2 = 112
     const val OPOBJ2_V2 = 113
     const val EVENT_MOUSE_MOVE = 114

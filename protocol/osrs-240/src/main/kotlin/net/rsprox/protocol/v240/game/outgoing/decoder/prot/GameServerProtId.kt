@@ -30,7 +30,7 @@ internal object GameServerProtId {
     const val LOGOUT_TRANSFER = 26
     const val MESSAGE_PRIVATE_ECHO = 27
     const val IF_SETCOLOUR = 28
-    const val UPDATE_TRADINGPOST = 29
+    const val UPDATE_TRADINGPOST_V1 = 29
     const val IF_RESYNC_V2 = 30
     const val MIDI_SWAP = 31
     const val CAM_MODE = 32
@@ -53,7 +53,7 @@ internal object GameServerProtId {
     const val UPDATE_ZONE_PARTIAL_ENCLOSED = 49
     const val IF_SETPLAYERMODEL_OBJ = 50
     const val IF_MOVESUB = 51
-    const val OBJ_CUSTOMISE_SPECIFIC = 52
+    const val OBJ_CUSTOMISE_SPECIFIC_V1 = 52
     const val SITE_SETTINGS = 53
     const val IF_SETHIDE = 54
     const val HIDELOCOPS = 55
@@ -104,7 +104,7 @@ internal object GameServerProtId {
     const val VARP_SYNC = 100
     const val NPC_SPOTANIM_SPECIFIC = 101
     const val ANIM_SPECIFIC = 102
-    const val UPDATE_STOCKMARKET_SLOT = 103
+    const val UPDATE_STOCKMARKET_SLOT_V1 = 103
     const val VARCLAN_ENABLE = 104
     const val IF_SETROTATESPEED = 105
     const val IF_SETEVENTS_V2 = 106

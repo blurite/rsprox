@@ -46,6 +46,8 @@ import net.rsprox.protocol.game.outgoing.model.misc.client.HideObjOps
 import net.rsprox.protocol.game.outgoing.model.misc.client.HintArrow
 import net.rsprox.protocol.game.outgoing.model.misc.client.HiscoreReply
 import net.rsprox.protocol.game.outgoing.model.misc.client.MinimapToggle
+import net.rsprox.protocol.game.outgoing.model.misc.client.ObjUnlockReset
+import net.rsprox.protocol.game.outgoing.model.misc.client.ObjUnlockUpdate
 import net.rsprox.protocol.game.outgoing.model.misc.client.PacketGroupEnd
 import net.rsprox.protocol.game.outgoing.model.misc.client.PacketGroupStart
 import net.rsprox.protocol.game.outgoing.model.misc.client.ReflectionChecker
@@ -74,8 +76,10 @@ import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunEnergy
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateRunWeight
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV1
 import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStatV2
-import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStockMarketSlot
-import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateTradingPost
+import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStockMarketSlotV1
+import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateStockMarketSlotV2
+import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateTradingPostV1
+import net.rsprox.protocol.game.outgoing.model.misc.player.UpdateTradingPostV2
 import net.rsprox.protocol.game.outgoing.model.social.FriendListLoaded
 import net.rsprox.protocol.game.outgoing.model.social.MessagePrivate
 import net.rsprox.protocol.game.outgoing.model.social.MessagePrivateEcho
@@ -91,8 +95,10 @@ import net.rsprox.protocol.game.outgoing.model.sound.MidiSongWithSecondary
 import net.rsprox.protocol.game.outgoing.model.sound.MidiSwap
 import net.rsprox.protocol.game.outgoing.model.sound.SynthSound
 import net.rsprox.protocol.game.outgoing.model.specific.*
+import net.rsprox.protocol.game.outgoing.model.specific.ObjCustomiseSpecificV2
 import net.rsprox.protocol.game.outgoing.model.unknown.UnknownString
 import net.rsprox.protocol.game.outgoing.model.varp.VarpLarge
+import net.rsprox.protocol.game.outgoing.model.varp.VarpLong
 import net.rsprox.protocol.game.outgoing.model.varp.VarpReset
 import net.rsprox.protocol.game.outgoing.model.varp.VarpSmall
 import net.rsprox.protocol.game.outgoing.model.varp.VarpSync
@@ -111,6 +117,7 @@ import net.rsprox.shared.filters.PropertyFilter
 import net.rsprox.shared.filters.PropertyFilterSet
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.property.*
+import net.rsprox.shared.property.formattedLong
 import net.rsprox.shared.property.regular.DecimalCoordGridProperty
 import net.rsprox.shared.property.regular.GroupProperty
 import net.rsprox.shared.property.regular.ScriptVarTypeProperty
@@ -2691,12 +2698,12 @@ public class TextServerPacketTranscriber(
         root.formattedInt("experience", message.experience - (oldXp ?: 0))
     }
 
-    override fun updateStockMarketSlot(message: UpdateStockMarketSlot) {
+    override fun updateStockMarketSlotV1(message: UpdateStockMarketSlotV1) {
         if (!filters[PropertyFilter.UPDATE_STOCKMARKET_SLOT]) return omit()
         root.int("slot", message.slot)
         when (val update = message.update) {
-            UpdateStockMarketSlot.ResetStockMarketSlot -> {}
-            is UpdateStockMarketSlot.SetStockMarketSlot -> {
+            UpdateStockMarketSlotV1.ResetStockMarketSlot -> {}
+            is UpdateStockMarketSlotV1.SetStockMarketSlot -> {
                 root.int("status", update.status)
                 root.scriptVarType("id", ScriptVarType.OBJ, update.obj)
                 root.formattedInt("price", update.price)
@@ -2712,11 +2719,11 @@ public class TextServerPacketTranscriber(
         root.long("flags", message.flags)
     }
 
-    override fun updateTradingPost(message: UpdateTradingPost) {
+    override fun updateTradingPostV1(message: UpdateTradingPostV1) {
         if (!filters[PropertyFilter.DEPRECATED_SERVER]) return omit()
         when (val update = message.updateType) {
-            UpdateTradingPost.ResetTradingPost -> {}
-            is UpdateTradingPost.SetTradingPostOfferList -> {
+            UpdateTradingPostV1.ResetTradingPost -> {}
+            is UpdateTradingPostV1.SetTradingPostOfferList -> {
                 root.long("age", update.age)
                 root.scriptVarType("id", ScriptVarType.OBJ, update.obj)
                 root.boolean("status", update.status)
@@ -3874,7 +3881,7 @@ public class TextServerPacketTranscriber(
         root.coordGrid(message.coordGrid)
     }
 
-    override fun objCustomiseSpecific(message: ObjCustomiseSpecific) {
+    override fun objCustomiseSpecificV1(message: ObjCustomiseSpecificV1) {
         if (!filters[PropertyFilter.OBJ_CUSTOMISE]) return omit()
         root.scriptVarType("id", ScriptVarType.OBJ, message.id.maxUShortToMinusOne())
         root.int("count", message.quantity)
@@ -3896,5 +3903,93 @@ public class TextServerPacketTranscriber(
         private val MS_NUMBER_FORMAT: NumberFormat = DecimalFormat("###,###,###ms")
         private val KG_NUMBER_FORMAT: NumberFormat = DecimalFormat("###,###,###kg")
         public val worldentityInstanceSwCoords: MutableSet<CoordGrid> = mutableSetOf()
+    }
+
+    override fun varpLong(message: VarpLong) {
+        if (!filters[PropertyFilter.VARP]) return omit()
+        root.varp("id", message.id)
+        root.long("value", message.value)
+    }
+
+    override fun updateTradingPostV2(message: UpdateTradingPostV2) {
+        if (!filters[PropertyFilter.DEPRECATED_SERVER]) return omit()
+        val update = message.update ?: return
+        root.long("age", update.age)
+        root.scriptVarType("id", ScriptVarType.OBJ, update.obj)
+        root.boolean("status", update.status)
+        root.group("OFFERS") {
+            for ((name, previousName, world, time, price, count) in update.offers) {
+                group {
+                    string("name", name)
+                    string("previousname", previousName)
+                    int("world", world)
+                    long("time", time)
+                    formattedLong("price", price)
+                    formattedInt("count", count)
+                }
+            }
+        }
+    }
+
+    override fun updateStockMarketSlotV2(message: UpdateStockMarketSlotV2) {
+        if (!filters[PropertyFilter.UPDATE_STOCKMARKET_SLOT]) return omit()
+        root.int("slot", message.slot)
+        root.int("version", message.version)
+        root.int("status", message.status)
+        root.scriptVarType("id", ScriptVarType.OBJ, message.obj)
+        root.formattedLong("price", message.price)
+        root.formattedInt("count", message.count)
+        root.formattedInt("completedcount", message.completedCount)
+        root.formattedLong("completedgold", message.completedGold)
+        if (message.extension.isNotEmpty()) {
+            root.group("EXTENSION") {
+                for (value in message.extension) group { int("byte", value) }
+            }
+        }
+    }
+
+    override fun objUnlockReset(message: ObjUnlockReset) {
+    }
+
+    override fun objUnlockUpdate(message: ObjUnlockUpdate) {
+        root.group("OBJS") {
+            for ((wordIndex, flags) in message.entries) {
+                for (bit in 0 until Long.SIZE_BITS) {
+                    if (flags and (1L shl bit) == 0L) continue
+                    group {
+                        scriptVarType("id", ScriptVarType.OBJ, wordIndex * Long.SIZE_BITS + bit)
+                    }
+                }
+            }
+        }
+    }
+
+    override fun objCustomiseSpecificV2(message: ObjCustomiseSpecificV2) {
+        if (!filters[PropertyFilter.OBJ_CUSTOMISE]) return omit()
+        root.scriptVarType("id", ScriptVarType.OBJ, message.id)
+        root.int("count", message.quantity)
+        root.scriptVarType("model", ScriptVarType.MODEL, message.model)
+        root.coordGrid(message.coordGrid)
+        message.colour?.let { root.int("colour", it) }
+        if (message.recolours.isNotEmpty()) {
+            root.group("RECOLOURS") {
+                for ((index, col) in message.recolours) {
+                    group {
+                        int("index", index)
+                        int("colour", col)
+                    }
+                }
+            }
+        }
+        if (message.retextures.isNotEmpty()) {
+            root.group("RETEXTURES") {
+                for ((index, tex) in message.retextures) {
+                    group {
+                        int("index", index)
+                        int("texture", tex)
+                    }
+                }
+            }
+        }
     }
 }

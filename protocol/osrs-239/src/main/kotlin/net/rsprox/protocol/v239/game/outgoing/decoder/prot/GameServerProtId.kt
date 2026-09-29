@@ -53,11 +53,11 @@ internal object GameServerProtId {
     const val REBUILD_NORMAL_V2 = 49
     const val HINT_ARROW = 50
     const val CAM_ROTATEBY = 51
-    const val OBJ_CUSTOMISE_SPECIFIC = 52
-    const val UPDATE_STOCKMARKET_SLOT = 53
+    const val OBJ_CUSTOMISE_SPECIFIC_V1 = 52
+    const val UPDATE_STOCKMARKET_SLOT_V1 = 53
     const val UPDATE_ZONE_FULL_FOLLOWS = 54
     const val IF_SETCOLOUR = 55
-    const val UPDATE_TRADINGPOST = 56
+    const val UPDATE_TRADINGPOST_V1 = 56
     const val LOGOUT = 57
     const val LOGOUT_WITHREASON = 58
     const val IF_SETANIM = 59

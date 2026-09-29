@@ -61,7 +61,7 @@ internal object GameServerProtId {
     const val CAM_SMOOTHRESET = 57
     const val FRIENDLIST_LOADED = 58
     const val REBUILD_WORLDENTITY_V3 = 59
-    const val UPDATE_TRADINGPOST = 60
+    const val UPDATE_TRADINGPOST_V1 = 60
     const val CAM_MOVETO_CYCLES_V1 = 61
     const val RESET_INTERACTION_MODE = 62
     const val CHAT_FILTER_SETTINGS_PRIVATECHAT = 63
@@ -104,7 +104,7 @@ internal object GameServerProtId {
     const val UPDATE_ZONE_FULL_FOLLOWS = 100
     const val UPDATE_ZONE_PARTIAL_ENCLOSED = 101
     const val CLANCHANNEL_DELTA = 102
-    const val UPDATE_STOCKMARKET_SLOT = 103
+    const val UPDATE_STOCKMARKET_SLOT_V1 = 103
     const val CAM_LOOKAT_V1 = 104
     const val UPDATE_FRIENDCHAT_CHANNEL_FULL_V2 = 105
     const val IF_SETPLAYERMODEL_BODYTYPE = 106
@@ -143,5 +143,5 @@ internal object GameServerProtId {
     const val SET_MAP_FLAG_V2 = 139
     const val CAM_LOOKAT_V2 = 140
     const val IF_RESYNC_V2 = 141
-    const val OBJ_CUSTOMISE_SPECIFIC = 142
+    const val OBJ_CUSTOMISE_SPECIFIC_V1 = 142
 }

@@ -55,7 +55,7 @@ internal object GameServerProtId {
     const val NPC_HEADICON_SPECIFIC = 51
     const val SEND_PING = 52
     const val IF_RESYNC_V1 = 53
-    const val UPDATE_STOCKMARKET_SLOT = 54
+    const val UPDATE_STOCKMARKET_SLOT_V1 = 54
     const val SET_ACTIVE_WORLD_V1 = 55
     const val UPDATE_FRIENDLIST = 56
     const val MIDI_SONG_V2 = 57
@@ -126,7 +126,7 @@ internal object GameServerProtId {
     const val OBJ_ENABLED_OPS = 122
     const val IF_SETPLAYERMODEL_BASECOLOUR = 123
     const val HIDENPCOPS = 124
-    const val UPDATE_TRADINGPOST = 125
+    const val UPDATE_TRADINGPOST_V1 = 125
     const val HIDELOCOPS = 126
     const val MAP_PROJANIM_V1 = 127
     const val WORLDENTITY_INFO_V5 = 128

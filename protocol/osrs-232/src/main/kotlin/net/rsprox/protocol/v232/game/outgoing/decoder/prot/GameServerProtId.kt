@@ -29,7 +29,7 @@ internal object GameServerProtId {
     const val UPDATE_INV_FULL = 25
     const val ANIM_SPECIFIC = 26
     const val SYNTH_SOUND = 27
-    const val UPDATE_STOCKMARKET_SLOT = 28
+    const val UPDATE_STOCKMARKET_SLOT_V1 = 28
     const val UPDATE_STAT_V2 = 29
     const val OBJ_COUNT = 30
     const val IF_SETROTATESPEED = 31
@@ -94,7 +94,7 @@ internal object GameServerProtId {
     const val CAM_TARGET_V3 = 90
     const val CLANCHANNEL_DELTA = 91
     const val SERVER_TICK_END = 92
-    const val UPDATE_TRADINGPOST = 93
+    const val UPDATE_TRADINGPOST_V1 = 93
     const val LOC_ANIM_SPECIFIC = 94
     const val OBJ_ENABLED_OPS = 95
     const val UPDATE_ZONE_PARTIAL_ENCLOSED = 96
@@ -138,6 +138,6 @@ internal object GameServerProtId {
     const val OBJ_UNCUSTOMISE = 134
     const val IF_RESYNC_V2 = 135
     const val OBJ_CUSTOMISE = 136
-    const val OBJ_CUSTOMISE_SPECIFIC = 137
+    const val OBJ_CUSTOMISE_SPECIFIC_V1 = 137
     const val PROJANIM_SPECIFIC_V4 = 138
 }

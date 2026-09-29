@@ -331,7 +331,7 @@ public class ServerGameLoginDecoder(
             val encodeSeed = clientChannel.getAndDropEncodeSeed()
             val key = XteaKey(encodeSeed)
             val port = clientChannel.getPort()
-            val sessionMonitor = connections.getSessionMonitor(port)
+            val sessionMonitor = connections.getSessionMonitor(port).forSession(header)
             sessionMonitor.onLogin(header)
             sessionMonitor.onUserInformationUpdate(userId, userHash)
             val blob =

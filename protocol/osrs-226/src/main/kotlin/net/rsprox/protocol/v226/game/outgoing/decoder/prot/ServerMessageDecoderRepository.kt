@@ -99,8 +99,8 @@ import net.rsprox.protocol.v226.game.outgoing.decoder.codec.misc.player.UpdateRu
 import net.rsprox.protocol.v226.game.outgoing.decoder.codec.misc.player.UpdateRunWeightDecoder
 import net.rsprox.protocol.v226.game.outgoing.decoder.codec.misc.player.UpdateStatV1Decoder
 import net.rsprox.protocol.v226.game.outgoing.decoder.codec.misc.player.UpdateStatV2Decoder
-import net.rsprox.protocol.v226.game.outgoing.decoder.codec.misc.player.UpdateStockMarketSlotDecoder
-import net.rsprox.protocol.v226.game.outgoing.decoder.codec.misc.player.UpdateTradingPostDecoder
+import net.rsprox.protocol.v226.game.outgoing.decoder.codec.misc.player.UpdateStockMarketSlotV1Decoder
+import net.rsprox.protocol.v226.game.outgoing.decoder.codec.misc.player.UpdateTradingPostV1Decoder
 import net.rsprox.protocol.v226.game.outgoing.decoder.codec.social.FriendListLoadedDecoder
 import net.rsprox.protocol.v226.game.outgoing.decoder.codec.social.MessagePrivateDecoder
 import net.rsprox.protocol.v226.game.outgoing.decoder.codec.social.MessagePrivateEchoDecoder
@@ -259,8 +259,8 @@ internal object ServerMessageDecoderRepository {
                 bind(UpdateRunWeightDecoder())
                 bind(UpdateStatV2Decoder())
                 bind(UpdateStatV1Decoder())
-                bind(UpdateStockMarketSlotDecoder())
-                bind(UpdateTradingPostDecoder())
+                bind(UpdateStockMarketSlotV1Decoder())
+                bind(UpdateTradingPostV1Decoder())
 
                 bind(FriendListLoadedDecoder())
                 bind(MessagePrivateEchoDecoder(huffmanCodec))

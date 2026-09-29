@@ -82,11 +82,11 @@ internal object GameServerProtId {
     const val MAP_ANIM = 78
     const val VARP_SYNC = 79
     const val MIDI_SONG_WITHSECONDARY = 80
-    const val UPDATE_TRADINGPOST = 81
+    const val UPDATE_TRADINGPOST_V1 = 81
     const val CHAT_FILTER_SETTINGS_PRIVATECHAT = 82
     const val MESSAGE_PRIVATE = 83
     const val MIDI_SONG_V1 = 84
-    const val UPDATE_STOCKMARKET_SLOT = 85
+    const val UPDATE_STOCKMARKET_SLOT_V1 = 85
     const val IF_SETCOLOUR = 86
     const val LOC_DEL = 87
     const val MESSAGE_CLANCHANNEL_SYSTEM = 88

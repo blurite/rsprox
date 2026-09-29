@@ -82,7 +82,8 @@ public enum class GameServerProt : Prot {
     OBJ_ENABLED_OPS_SPECIFIC,
     OBJ_UNCUSTOMISE_SPECIFIC,
     OBJ_COUNT_SPECIFIC,
-    OBJ_CUSTOMISE_SPECIFIC,
+    OBJ_CUSTOMISE_SPECIFIC_V1,
+    OBJ_CUSTOMISE_SPECIFIC_V2,
 
     // Info packets
     PLAYER_INFO,
@@ -208,8 +209,8 @@ public enum class GameServerProt : Prot {
     MESSAGE_GAME,
     CHAT_FILTER_SETTINGS,
     CHAT_FILTER_SETTINGS_PRIVATECHAT,
-    UPDATE_TRADINGPOST,
-    UPDATE_STOCKMARKET_SLOT,
+    UPDATE_TRADINGPOST_V1,
+    UPDATE_STOCKMARKET_SLOT_V1,
     ACCOUNT_FLAGS,
 
     // Misc. client state packets
@@ -240,6 +241,12 @@ public enum class GameServerProt : Prot {
     // Unknown packets
     UNKNOWN_STRING,
     UNHANDLED,
+
+    VARP_LONG,
+    UPDATE_TRADINGPOST_V2,
+    UPDATE_STOCKMARKET_SLOT_V2,
+    OBJUNLOCK_RESET,
+    OBJUNLOCK_UPDATE,
 
     RECONNECT,
 }

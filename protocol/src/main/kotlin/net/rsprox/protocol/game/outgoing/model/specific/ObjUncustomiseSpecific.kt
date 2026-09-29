@@ -46,7 +46,7 @@ public class ObjUncustomiseSpecific private constructor(
     }
 
     override fun toString(): String {
-        return "ObjCustomiseSpecific(" +
+        return "ObjCustomiseSpecificV1(" +
             "id=$id, " +
             "quantity=$quantity, " +
             "coordGrid=$coordGrid" +

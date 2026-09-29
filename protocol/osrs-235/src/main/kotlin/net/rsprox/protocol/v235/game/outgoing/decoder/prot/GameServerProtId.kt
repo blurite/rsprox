@@ -56,10 +56,10 @@ internal object GameServerProtId {
     const val HINT_ARROW = 52
     const val UPDATE_FRIENDLIST = 53
     const val LOC_ADD_CHANGE_V2 = 54
-    const val UPDATE_TRADINGPOST = 55
+    const val UPDATE_TRADINGPOST_V1 = 55
     const val NPC_INFO_SMALL_V5 = 56
     const val IF_CLOSESUB = 57
-    const val UPDATE_STOCKMARKET_SLOT = 58
+    const val UPDATE_STOCKMARKET_SLOT_V1 = 58
     const val IF_SETMODEL = 59
     const val RESET_INTERACTION_MODE = 60
     const val IF_SETROTATESPEED = 61
@@ -130,7 +130,7 @@ internal object GameServerProtId {
     const val RUNCLIENTSCRIPT = 126
     const val VARP_LARGE = 127
     const val ZBUF = 128
-    const val OBJ_CUSTOMISE_SPECIFIC = 129
+    const val OBJ_CUSTOMISE_SPECIFIC_V1 = 129
     const val OBJ_COUNT_SPECIFIC = 130
     const val ACCOUNT_FLAGS = 131
     const val OBJ_UNCUSTOMISE_SPECIFIC = 132

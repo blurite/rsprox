@@ -42,7 +42,7 @@ internal object GameServerProtId {
     const val VARP_RESET = 38
     const val UPDATE_FRIENDLIST = 39
     const val CLEAR_ENTITIES = 40
-    const val UPDATE_TRADINGPOST = 41
+    const val UPDATE_TRADINGPOST_V1 = 41
     const val IF_MOVESUB = 42
     const val UPDATE_ZONE_FULL_FOLLOWS = 43
     const val CLANCHANNEL_FULL = 44
@@ -55,7 +55,7 @@ internal object GameServerProtId {
     const val IF_SETPLAYERMODEL_SELF = 51
     const val CAM_ROTATETO = 52
     const val SOUND_AREA = 53
-    const val UPDATE_STOCKMARKET_SLOT = 54
+    const val UPDATE_STOCKMARKET_SLOT_V1 = 54
     const val CAM_MOVETO_V1 = 55
     const val MAP_PROJANIM_V1 = 56
     const val SET_NPC_UPDATE_ORIGIN = 57

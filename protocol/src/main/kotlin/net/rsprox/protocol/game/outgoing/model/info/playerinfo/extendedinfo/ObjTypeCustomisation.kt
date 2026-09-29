@@ -11,7 +11,16 @@ public class ObjTypeCustomisation(
     public val womanWear: Int,
     public val manHead: Int,
     public val womanHead: Int,
+    public val recolours: List<Replacement>? = null,
+    public val retextures: List<Replacement>? = null,
+    public val overrideColour: Boolean? = null,
+    public val colour: Int? = null,
 ) {
+    public data class Replacement(
+        public val index: Int,
+        public val value: Int,
+    )
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is ObjTypeCustomisation) return false
@@ -26,6 +35,10 @@ public class ObjTypeCustomisation(
         if (womanWear != other.womanWear) return false
         if (manHead != other.manHead) return false
         if (womanHead != other.womanHead) return false
+        if (recolours != other.recolours) return false
+        if (retextures != other.retextures) return false
+        if (overrideColour != other.overrideColour) return false
+        if (colour != other.colour) return false
 
         return true
     }
@@ -41,6 +54,10 @@ public class ObjTypeCustomisation(
         result = 31 * result + womanWear
         result = 31 * result + manHead
         result = 31 * result + womanHead
+        result = 31 * result + (recolours?.hashCode() ?: 0)
+        result = 31 * result + (retextures?.hashCode() ?: 0)
+        result = 31 * result + (overrideColour?.hashCode() ?: 0)
+        result = 31 * result + (colour ?: 0)
         return result
     }
 
@@ -55,7 +72,8 @@ public class ObjTypeCustomisation(
             "manWear=$manWear, " +
             "womanWear=$womanWear, " +
             "manHead=$manHead, " +
-            "womanHead=$womanHead" +
+            "womanHead=$womanHead, " +
+            "recolours=$recolours, retextures=$retextures, overrideColour=$overrideColour, colour=$colour" +
             ")"
     }
 }

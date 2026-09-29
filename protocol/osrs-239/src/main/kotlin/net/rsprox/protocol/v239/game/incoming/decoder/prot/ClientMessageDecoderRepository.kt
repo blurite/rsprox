@@ -62,7 +62,7 @@ import net.rsprox.protocol.v239.game.incoming.decoder.codec.players.OpPlayer7Dec
 import net.rsprox.protocol.v239.game.incoming.decoder.codec.players.OpPlayer8Decoder
 import net.rsprox.protocol.v239.game.incoming.decoder.codec.players.OpPlayerTDecoder
 import net.rsprox.protocol.v239.game.incoming.decoder.codec.resumed.ResumePCountDialogDecoder
-import net.rsprox.protocol.v239.game.incoming.decoder.codec.resumed.ResumePCountDialogLongDecoder
+import net.rsprox.protocol.v239.game.incoming.decoder.codec.resumed.ResumePLongDialogDecoder
 import net.rsprox.protocol.v239.game.incoming.decoder.codec.resumed.ResumePNameDialogDecoder
 import net.rsprox.protocol.v239.game.incoming.decoder.codec.resumed.ResumePObjDialogDecoder
 import net.rsprox.protocol.v239.game.incoming.decoder.codec.resumed.ResumePStringDialogDecoder
@@ -149,7 +149,7 @@ internal object ClientMessageDecoderRepository {
                 bind(ResumePNameDialogDecoder())
                 bind(ResumePStringDialogDecoder())
                 bind(ResumePCountDialogDecoder())
-                bind(ResumePCountDialogLongDecoder())
+                bind(ResumePLongDialogDecoder())
                 bind(ResumePObjDialogDecoder())
 
                 bind(FriendChatKickDecoder())

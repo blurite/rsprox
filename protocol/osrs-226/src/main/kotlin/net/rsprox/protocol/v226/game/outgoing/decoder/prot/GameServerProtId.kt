@@ -56,7 +56,7 @@ internal object GameServerProtId {
     const val PROJANIM_SPECIFIC_V1 = 52
     const val LOC_ANIM_SPECIFIC = 53
     const val UPDATE_FRIENDCHAT_CHANNEL_SINGLEUSER = 54
-    const val UPDATE_STOCKMARKET_SLOT = 55
+    const val UPDATE_STOCKMARKET_SLOT_V1 = 55
     const val MIDI_JINGLE = 56
     const val IF_SETHIDE = 57
     const val IF_SETCOLOUR = 58
@@ -78,7 +78,7 @@ internal object GameServerProtId {
     const val LOC_DEL = 74
     const val HISCORE_REPLY = 75
     const val CAM_SMOOTHRESET = 76
-    const val UPDATE_TRADINGPOST = 77
+    const val UPDATE_TRADINGPOST_V1 = 77
     const val REFLECTION_CHECKER = 78
     const val IF_SETPLAYERHEAD = 79
     const val LOC_ANIM = 80

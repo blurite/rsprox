@@ -1184,8 +1184,8 @@ public class ProxyService(
         val targetRev = target.config.revision
         val binary =
             if (targetRev == null || targetRev == "latest_supported") {
-                // JagexNativeClientDownloader.download(nativeClientType)
-                getHistoricNativeClient("240.1", nativeClientType)
+                JagexNativeClientDownloader.download(nativeClientType)
+                // getHistoricNativeClient("240.1", nativeClientType)
             } else {
                 getHistoricNativeClient(targetRev, nativeClientType)
             }

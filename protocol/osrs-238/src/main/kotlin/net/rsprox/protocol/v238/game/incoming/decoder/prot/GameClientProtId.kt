@@ -61,7 +61,7 @@ internal object GameClientProtId {
     const val FRIENDCHAT_JOIN_LEAVE = 67
     const val MESSAGE_PUBLIC = 69
     const val OPLOC3_V2 = 70
-    const val RESUME_P_COUNTDIALOG_LONG = 72
+    const val RESUME_P_LONGDIALOG = 72
     const val NO_TIMEOUT = 73
     const val OPOBJT = 74
     const val SOUND_JINGLEEND = 76

@@ -53,7 +53,7 @@ internal object GameServerProtId {
     const val REBUILD_NORMAL_V2 = 49
     const val VARP_RESET = 50
     const val RESET_ANIMS = 51
-    const val OBJ_CUSTOMISE_SPECIFIC = 52
+    const val OBJ_CUSTOMISE_SPECIFIC_V1 = 52
     const val IF_OPENTOP = 53
     const val IF_SETHIDE = 54
     const val OCULUS_SYNC = 55
@@ -61,7 +61,7 @@ internal object GameServerProtId {
     const val IF_SETPLAYERMODEL_OBJ = 57
     const val UPDATE_FRIENDCHAT_CHANNEL_FULL_V2 = 58
     const val SET_HEATMAP_ENABLED = 59
-    const val UPDATE_TRADINGPOST = 60
+    const val UPDATE_TRADINGPOST_V1 = 60
     const val UPDATE_UID192 = 61
     const val CAM_RESET = 62
     const val LOC_MERGE = 63
@@ -89,7 +89,7 @@ internal object GameServerProtId {
     const val MINIMAP_TOGGLE = 85
     const val IF_SETSCROLLPOS = 86
     const val CAM_SMOOTHRESET = 87
-    const val UPDATE_STOCKMARKET_SLOT = 88
+    const val UPDATE_STOCKMARKET_SLOT_V1 = 88
     const val CAM_ROTATETO = 89
     const val VARP_SMALL = 90
     const val PLAYER_INFO = 91

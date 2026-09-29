@@ -10,7 +10,7 @@ internal object GameServerProtId {
     const val OBJ_ADD = 6
     const val CAM_LOOKAT_V1 = 7
     const val UPDATE_REBOOT_TIMER_V1 = 8
-    const val UPDATE_STOCKMARKET_SLOT = 9
+    const val UPDATE_STOCKMARKET_SLOT_V1 = 9
     const val CAM_MOVETO_V1 = 10
     const val IF_SETOBJECT = 11
     const val IF_SETPOSITION = 12
@@ -98,7 +98,7 @@ internal object GameServerProtId {
     const val NPC_INFO_LARGE_V5 = 94
     const val UPDATE_ZONE_PARTIAL_ENCLOSED = 95
     const val REFLECTION_CHECKER = 96
-    const val UPDATE_TRADINGPOST = 97
+    const val UPDATE_TRADINGPOST_V1 = 97
     const val UPDATE_STAT_V2 = 98
     const val MESSAGE_CLANCHANNEL = 99
     const val IF_SETPLAYERHEAD = 100
@@ -138,7 +138,7 @@ internal object GameServerProtId {
     const val IF_RESYNC_V2 = 134
     const val PROJANIM_SPECIFIC_V4 = 135
     const val ACCOUNT_FLAGS = 136
-    const val OBJ_CUSTOMISE_SPECIFIC = 137
+    const val OBJ_CUSTOMISE_SPECIFIC_V1 = 137
     const val OBJ_CUSTOMISE = 138
     const val WORLDENTITY_INFO_V6 = 139
     const val SET_ACTIVE_WORLD_V2 = 140

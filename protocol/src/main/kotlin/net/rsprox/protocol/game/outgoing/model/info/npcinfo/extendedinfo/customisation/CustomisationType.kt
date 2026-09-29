@@ -9,6 +9,8 @@ public class ModelCustomisation(
     public val recolours: List<Int>?,
     public val retextures: List<Int>?,
     public val mirror: Boolean?,
+    /** Null uses the definition's colour; 65535 explicitly selects ordinary recolouring. */
+    public val recolAll: Int? = null,
 ) : CustomisationType {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -20,6 +22,7 @@ public class ModelCustomisation(
         if (recolours != other.recolours) return false
         if (retextures != other.retextures) return false
         if (mirror != other.mirror) return false
+        if (recolAll != other.recolAll) return false
 
         return true
     }
@@ -29,6 +32,7 @@ public class ModelCustomisation(
         result = 31 * result + (recolours?.hashCode() ?: 0)
         result = 31 * result + (retextures?.hashCode() ?: 0)
         result = 31 * result + (mirror?.hashCode() ?: 0)
+        result = 31 * result + (recolAll ?: 0)
         return result
     }
 
@@ -37,7 +41,8 @@ public class ModelCustomisation(
             "models=$models, " +
             "recolours=$recolours, " +
             "retextures=$retextures, " +
-            "mirror=$mirror" +
+            "mirror=$mirror, " +
+            "recolAll=$recolAll" +
             ")"
     }
 }

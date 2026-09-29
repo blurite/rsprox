@@ -13,8 +13,6 @@ import net.rsprox.transcriber.Packet
 import net.rsprox.transcriber.TranscriberRunner
 import net.rsprox.transcriber.state.KeyStorage
 import net.rsprox.transcriber.state.SessionTracker
-import java.util.Queue
-import java.util.concurrent.ConcurrentLinkedQueue
 
 public class LiveTranscriberSession(
     private val session: Session,
@@ -26,7 +24,7 @@ public class LiveTranscriberSession(
 ) {
     @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
     private val lock: Object = Object()
-    private val queue: Queue<UnidentifiedPacket> = ConcurrentLinkedQueue()
+    private val queue: ArrayDeque<PendingEvent> = ArrayDeque()
 
     @Volatile
     private var running: Boolean = true
@@ -51,9 +49,12 @@ public class LiveTranscriberSession(
         direction: StreamDirection,
         payload: ByteBuf,
     ) {
-        if (!running) return
-        queue.offer(UnidentifiedPacket(direction, payload))
         synchronized(lock) {
+            if (!running) {
+                payload.release()
+                return
+            }
+            queue.addLast(UnidentifiedPacket(direction, payload))
             lock.notifyAll()
         }
     }
@@ -72,8 +73,7 @@ public class LiveTranscriberSession(
                 val packet = Packet(unidentified.direction, result.prot, result.message)
                 packetList += packet
                 if (result.prot.toString() == "SERVER_TICK_END") {
-                    executeRunner(runner.preprocess(packetList))
-                    packetList.clear()
+                    flushPackets()
                 }
             }
         } catch (t: Throwable) {
@@ -114,42 +114,83 @@ public class LiveTranscriberSession(
     private fun launchThread(): Thread {
         val thread =
             Thread {
-                // Preload gameval types as they take quite long to load up
-                // This will block the decoding and transcribing during it,
-                // while still allowing login to take place
-                cacheProvider.get().allGameValTypes()
-                while (this.running) {
-                    while (queue.isNotEmpty()) {
-                        val next = queue.poll()
-                        decode(next)
+                try {
+                    // Preload gameval types while allowing packets to queue during login.
+                    cacheProvider.get().allGameValTypes()
+                    while (true) {
+                        val next =
+                            synchronized(lock) {
+                                while (queue.isEmpty() && running) {
+                                    lock.wait()
+                                }
+                                queue.removeFirstOrNull()
+                            } ?: break
+                        when (next) {
+                            is UnidentifiedPacket -> decode(next)
+                            is Flush -> {
+                                try {
+                                    flushPackets()
+                                } finally {
+                                    next.afterFlush()
+                                }
+                            }
+                        }
                     }
+                    flushPackets()
+                } catch (t: Throwable) {
+                    logger.error(t) { "Live transcription stopped" }
+                } finally {
                     synchronized(lock) {
-                        lock.wait()
+                        running = false
+                        for (pending in queue) {
+                            if (pending is UnidentifiedPacket) {
+                                pending.payload.release()
+                            }
+                        }
+                        queue.clear()
                     }
+                    packetList.clear()
                 }
             }
         thread.start()
         return thread
     }
 
-    public fun flush() {
+    public fun flush(afterFlush: () -> Unit = {}) {
         synchronized(lock) {
-            executeRunner(runner.preprocess(packetList))
-            packetList.clear()
+            if (running) {
+                // The worker owns packetList and session state, including on disconnect.
+                queue.addLast(Flush(afterFlush))
+                lock.notifyAll()
+                return
+            }
         }
+        afterFlush()
+    }
+
+    private fun flushPackets() {
+        if (packetList.isEmpty()) return
+        val packets = packetList.toList()
+        // A failed transcript must not replay partially applied state on the next tick.
+        packetList.clear()
+        executeRunner(runner.preprocess(packets))
     }
 
     public fun shutdown() {
-        this.running = false
         synchronized(lock) {
+            this.running = false
             lock.notifyAll()
         }
     }
 
+    private sealed interface PendingEvent
+
+    private class Flush(val afterFlush: () -> Unit) : PendingEvent
+
     private class UnidentifiedPacket(
         val direction: StreamDirection,
         val payload: ByteBuf,
-    )
+    ) : PendingEvent
 
     private companion object {
         private val logger = InlineLogger()

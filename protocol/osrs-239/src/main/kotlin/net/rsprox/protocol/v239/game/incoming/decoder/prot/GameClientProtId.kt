@@ -55,7 +55,7 @@ internal object GameClientProtId {
     const val SEND_SNAPSHOT = 60
     const val MEMBERSHIP_PROMOTION_ELIGIBILITY = 61
     const val OPLOCT = 62
-    const val RESUME_P_COUNTDIALOG_LONG = 63
+    const val RESUME_P_LONGDIALOG = 63
     const val RESUME_P_STRINGDIALOG = 64
     const val FRIENDLIST_DEL = 65
     const val EVENT_MOUSE_CLICK_V1 = 66
