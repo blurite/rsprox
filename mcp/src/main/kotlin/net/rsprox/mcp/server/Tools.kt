@@ -18,22 +18,24 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
             name = "session_start",
             description =
                 "Launch a RuneLite client through rsprox, or relaunch a stopped session. " +
-                    "Returns once the client's launcher has started. With no arguments it starts a new session " +
-                    "on the first custom target. Pass `session` to relaunch a stopped session on fresh ports; " +
-                    "its packet log and cursor continue. Calling it for a session that is already running " +
-                    "launches nothing.",
+                    "Blocks until the in-client bridge connects and then reports `state` as `connected`, " +
+                    "after which the client_* tools work. If `wait_ms` elapses first, `state` is `launching`; " +
+                    "call it again with the same `session` to keep waiting. With no arguments it starts a new " +
+                    "session on the first custom target. Pass `session` to relaunch a stopped session on fresh " +
+                    "ports; its packet log and cursor continue. Calling it for a session that is already " +
+                    "running launches nothing.",
             inputSchema =
                 schema(
                     "target" to string("Proxy target name, as listed by session_list. Example: \"My Server\"."),
                     "session" to string("Existing session id, such as \"s1\"."),
-                    "wait_ms" to integer("How long to wait for the session to connect. Default 0.", 0, 600_000),
+                    "wait_ms" to integer("How long to wait for the session to connect. Default 180000.", 0, 600_000),
                 ),
         ) { args ->
             ToolResult.Json(
                 sessions().start(
                     target = args.text("target"),
                     session = args.text("session"),
-                    waitMs = args.long("wait_ms") ?: 0,
+                    waitMs = args.long("wait_ms") ?: SessionManager.DEFAULT_WAIT_MS,
                 ),
             )
         },

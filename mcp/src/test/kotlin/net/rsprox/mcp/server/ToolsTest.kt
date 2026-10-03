@@ -1,10 +1,12 @@
 package net.rsprox.mcp.server
 
 import com.fasterxml.jackson.databind.JsonNode
+import net.rsprox.mcp.bridge.TestHub
 import net.rsprox.mcp.packets.Origin
 import net.rsprox.mcp.packets.TapSettingSetStore
 import net.rsprox.mcp.session.FakeLauncher
 import net.rsprox.mcp.session.SessionManager
+import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -12,8 +14,14 @@ import kotlin.test.assertTrue
 
 class ToolsTest {
     private val mapper = McpDispatcher.MAPPER
-    private val manager = SessionManager(FakeLauncher(), TapSettingSetStore)
+    private val fixture = TestHub()
+    private val manager = SessionManager(FakeLauncher(), TapSettingSetStore, fixture.hub)
     private val dispatcher = McpDispatcher(tools { manager }, "test")
+
+    @AfterTest
+    fun cleanUp() {
+        fixture.close()
+    }
 
     private fun call(
         name: String,
@@ -44,7 +52,7 @@ class ToolsTest {
         assertEquals(
             """{"session":"s1","target":"My Server","state":"launching","generation":1,"proxyPort":43751,""" +
                 """"httpPort":43650,"cursor":1}""",
-            text("session_start", """{"target":"My Server"}"""),
+            text("session_start", """{"target":"My Server","wait_ms":0}"""),
         )
         val list = mapper.readTree(text("session_list"))
         assertEquals("s1", list.get("sessions").single().get("session").asText())
@@ -57,7 +65,7 @@ class ToolsTest {
 
     @Test
     fun `packets read prints a meta line and one line per packet`() {
-        text("session_start")
+        text("session_start", """{"wait_ms":0}""")
         val log = manager.resolve("s1").packets
         log.append(1, 48, Origin.CLIENT, "RESUME_P_STRINGDIALOG", "[resume_p_stringdialog] string=\"McpProto\"")
         log.append(1, 49, Origin.SERVER, "PLAYER_INFO", "[player_info]\n    [localplayer] index=1\n        - move")
@@ -77,7 +85,7 @@ class ToolsTest {
 
     @Test
     fun `packets read applies its filters and cursor`() {
-        text("session_start")
+        text("session_start", """{"wait_ms":0}""")
         val log = manager.resolve("s1").packets
         log.append(1, 1, Origin.CLIENT, "IF_BUTTON", "[if_button] com=558:7")
         log.append(1, 2, Origin.SERVER, "IF_SETTEXT", "[if_settext] text=\"McpProto is available\"")
@@ -104,7 +112,7 @@ class ToolsTest {
 
     @Test
     fun `an origin outside the allowed set is refused`() {
-        text("session_start")
+        text("session_start", """{"wait_ms":0}""")
         assertTrue(call("packets_read", """{"origin":"sideways"}""").get("isError").asBoolean())
     }
 }

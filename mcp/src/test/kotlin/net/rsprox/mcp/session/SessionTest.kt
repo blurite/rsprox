@@ -2,6 +2,7 @@ package net.rsprox.mcp.session
 
 import net.rsprox.mcp.bridge.idleLink
 import net.rsprox.mcp.packets.PacketQuery
+import net.rsprox.mcp.server.ToolError
 import net.rsprox.mcp.session.ClientState.Connected
 import net.rsprox.mcp.session.ClientState.Launching
 import net.rsprox.mcp.session.ClientState.Stopped
@@ -14,7 +15,9 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
+import kotlin.test.assertSame
 
 internal fun target(
     id: Int,
@@ -123,6 +126,27 @@ class SessionTest {
         assertEquals("connected", connected.state)
         assertEquals(7, connected.pid)
         assertEquals("My Server", connected.target)
+    }
+
+    @Test
+    fun `the link is available only while a client is connected`() {
+        val session = Session(SessionId("s1"), target(1, "My Server"))
+        assertEquals(
+            "session s1 has no connected client: not started",
+            assertFailsWith<ToolError> { session.requireLink() }.message,
+        )
+        session.apply(Launched(first))
+        assertEquals(
+            "session s1 is still launching; call session_start with this session to wait for it",
+            assertFailsWith<ToolError> { session.requireLink() }.message,
+        )
+        session.apply(Hello(first.httpPort, link, pid = 7))
+        assertSame(link, session.requireLink())
+        session.apply(LinkClosed(link))
+        assertEquals(
+            "session s1 has no connected client: client exited",
+            assertFailsWith<ToolError> { session.requireLink() }.message,
+        )
     }
 
     @Test

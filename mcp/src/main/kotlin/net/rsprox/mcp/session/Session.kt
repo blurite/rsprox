@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import net.rsprox.mcp.bridge.BridgeLink
 import net.rsprox.mcp.packets.Origin
 import net.rsprox.mcp.packets.PacketLog
+import net.rsprox.mcp.server.ToolError
 import net.rsprox.proxy.target.ProxyTargetConfig
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
@@ -188,6 +189,16 @@ public class Session internal constructor(
                 remaining = changed.awaitNanos(remaining)
             }
             client
+        }
+
+    /** The link of the connected client, or a [ToolError] that says what to do about its absence. */
+    internal fun requireLink(): BridgeLink =
+        when (val state = client) {
+            is ClientState.Connected -> state.link
+            is ClientState.Launching ->
+                throw ToolError("session $id is still launching; call session_start with this session to wait for it")
+            is ClientState.Stopped ->
+                throw ToolError("session $id has no connected client: ${state.reason}")
         }
 
     public fun snapshot(): SessionSnapshot {

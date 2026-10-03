@@ -1,5 +1,8 @@
 package net.rsprox.mcp.session
 
+import net.rsprox.mcp.bridge.BridgeHub
+import net.rsprox.mcp.bridge.BridgeLink
+import net.rsprox.mcp.bridge.BridgeListener
 import net.rsprox.mcp.packets.PacketTap
 import net.rsprox.mcp.server.ToolError
 import net.rsprox.proxy.binary.BinaryHeader
@@ -30,6 +33,7 @@ internal class Reservation(
 public class SessionManager internal constructor(
     private val launcher: ClientLauncher,
     private val settings: SettingSetStore,
+    private val bridge: BridgeHub,
     private val launchTimeoutMs: Long = DEFAULT_LAUNCH_TIMEOUT_MS,
 ) {
     private val sessions = CopyOnWriteArrayList<Session>()
@@ -65,7 +69,10 @@ public class SessionManager internal constructor(
     public fun stop(session: String?): SessionSnapshot {
         val resolved = resolve(session)
         synchronized(launchLock) {
-            when (val state = resolved.client) {
+            val state = resolved.client
+            // Stopped first, so the close of the link below is not mistaken for the client exiting.
+            resolved.apply(SessionEvent.Stop("stopped by caller"))
+            when (state) {
                 is ClientState.Stopped -> {}
                 is ClientState.Launching -> launcher.kill(state.launch.proxyPort)
                 is ClientState.Connected -> {
@@ -73,7 +80,6 @@ public class SessionManager internal constructor(
                     launcher.kill(state.launch.proxyPort)
                 }
             }
-            resolved.apply(SessionEvent.Stop("stopped by caller"))
         }
         return resolved.snapshot()
     }
@@ -123,6 +129,8 @@ public class SessionManager internal constructor(
         val launch =
             Launch(session.nextGeneration(), reservation.proxyPort, reservation.httpPort, System.currentTimeMillis())
         sessions.addIfAbsent(session)
+        // Registered before the client is forked: its hello can arrive before the launch call returns.
+        bridge.expect(launch.httpPort, listener(session, launch))
         session.apply(SessionEvent.Launched(launch))
 
         // The proxy waits for the launcher's handshake with no timeout, so the wait is bounded from outside.
@@ -150,12 +158,39 @@ public class SessionManager internal constructor(
         throw ToolError("session ${session.id} failed to launch: $reason")
     }
 
+    private fun listener(
+        session: Session,
+        launch: Launch,
+    ): BridgeListener =
+        object : BridgeListener {
+            override val session: String = session.id.value
+
+            override fun onHello(
+                link: BridgeLink,
+                pid: Long,
+            ): Boolean {
+                val state = session.apply(SessionEvent.Hello(launch.httpPort, link, pid))
+                return state is ClientState.Connected && state.link === link
+            }
+
+            override fun onClosed(link: BridgeLink) {
+                val before = session.client
+                if (session.apply(SessionEvent.LinkClosed(link)) === before) return
+                // The client is gone, or cannot be driven any more. Either way the proxy still holds
+                // its process handle and session monitor for the port.
+                synchronized(launchLock) { launcher.kill(launch.proxyPort) }
+            }
+        }
+
     private fun rootMessage(throwable: Throwable): String {
         val root = generateSequence(throwable) { it.cause }.last()
         return root.message ?: root.toString()
     }
 
-    private companion object {
+    public companion object {
+        /** How long a start waits for the in-client bridge to connect, unless the caller says otherwise. */
+        public const val DEFAULT_WAIT_MS: Long = 180_000L
+
         // Covers a first run, where the launcher downloads the client before it handshakes.
         private const val DEFAULT_LAUNCH_TIMEOUT_MS = 180_000L
     }

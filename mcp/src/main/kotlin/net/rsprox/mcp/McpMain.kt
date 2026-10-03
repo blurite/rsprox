@@ -4,8 +4,11 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.int
+import com.github.ajalt.clikt.parameters.types.path
 import com.github.michaelbull.logging.InlineLogger
 import io.netty.buffer.ByteBufAllocator
+import net.rsprox.mcp.bridge.BridgeHub
+import net.rsprox.mcp.bridge.BridgeJar
 import net.rsprox.mcp.packets.TapSettingSetStore
 import net.rsprox.mcp.packets.UnfilteredFilterSetStore
 import net.rsprox.mcp.server.McpHttpServer
@@ -14,6 +17,7 @@ import net.rsprox.mcp.server.tools
 import net.rsprox.mcp.session.ProxyServiceLauncher
 import net.rsprox.mcp.session.SessionManager
 import net.rsprox.proxy.ProxyService
+import java.nio.file.Path
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicReference
 
@@ -24,6 +28,10 @@ public class McpCommand : CliktCommand(name = "mcp") {
         "--port-skip",
         help = "Proxy ports to leave unused at the start of the range, for a GUI running at the same time",
     ).int().default(50)
+    private val sideloadDir by option(
+        "--sideload-dir",
+        help = "Directory the client sideloads plugins from, when it is not the default of the target",
+    ).path()
     private val autostart by option("--start", help = "Target name to launch immediately")
 
     override fun run() {
@@ -45,14 +53,18 @@ public class McpCommand : CliktCommand(name = "mcp") {
         }
         service.filterSetStore = UnfilteredFilterSetStore
         service.settingsStore = TapSettingSetStore
-        val launcher = ProxyServiceLauncher(service, portSkip.coerceAtLeast(1))
-        val manager = SessionManager(launcher, service.settingsStore)
+        val launcher = ProxyServiceLauncher(service, portSkip.coerceAtLeast(1), BridgeJar(sideloadDir))
+        val hub = BridgeHub(Path.of(System.getProperty("user.home"), ".rsprox", "mcp", "bridge.json"))
+        hub.start()
+        // The proxy's own hook kills the clients; this one removes the rendezvous file they dial through.
+        Runtime.getRuntime().addShutdownHook(Thread(hub::close, "mcp-bridge-shutdown"))
+        val manager = SessionManager(launcher, service.settingsStore, hub)
         sessions.set(manager)
         logger.info { "Ready. Targets: ${manager.targets().joinToString(", ")}" }
 
         autostart?.let { target ->
             try {
-                manager.start(target, null, 0)
+                manager.start(target, null, SessionManager.DEFAULT_WAIT_MS)
             } catch (e: ToolError) {
                 logger.error { "Unable to start '$target': ${e.message}" }
             }

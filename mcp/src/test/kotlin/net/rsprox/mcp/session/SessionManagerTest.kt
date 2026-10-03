@@ -1,20 +1,30 @@
 package net.rsprox.mcp.session
 
+import net.rsprox.mcp.bridge.FakePlugin
+import net.rsprox.mcp.bridge.TestHub
+import net.rsprox.mcp.bridge.awaitTrue
 import net.rsprox.mcp.packets.PacketQuery
 import net.rsprox.mcp.packets.TapSettingSetStore
 import net.rsprox.mcp.server.ToolError
 import net.rsprox.proxy.target.ProxyTargetConfig
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 internal class FakeLauncher(
     private val targets: List<ProxyTargetConfig> = listOf(target(0, "Old School RuneScape"), target(1, "My Server")),
 ) : ClientLauncher {
     val reserved = ArrayList<ProxyTargetConfig>()
-    val killed = ArrayList<Int>()
+
+    // A client that goes away is killed from the bridge's reader thread.
+    val killed = CopyOnWriteArrayList<Int>()
     var reserve: (ProxyTargetConfig) -> Unit = {}
     var launch: () -> Unit = {}
 
@@ -33,7 +43,37 @@ internal class FakeLauncher(
 
 class SessionManagerTest {
     private val launcher = FakeLauncher()
-    private val manager = SessionManager(launcher, TapSettingSetStore, launchTimeoutMs = 200)
+    private val fixture = TestHub()
+    private val manager = SessionManager(launcher, TapSettingSetStore, fixture.hub, launchTimeoutMs = 200)
+    private val plugins = ArrayList<FakePlugin>()
+
+    @AfterTest
+    fun cleanUp() {
+        plugins.forEach { it.close() }
+        fixture.close()
+    }
+
+    private fun dial(
+        httpPort: Int,
+        pid: Long = 4242,
+    ): FakePlugin = FakePlugin.dial(fixture.rendezvous, httpPort, pid = pid).also { plugins += it }
+
+    /** A session whose client has said hello, and that client. */
+    private fun connect(): FakePlugin {
+        manager.start(null, null, 0)
+        val plugin = dial(43650)
+        assertEquals("s1", plugin.read()?.get("session")?.asText())
+        assertEquals("connected", manager.start(null, "s1", 10_000).state)
+        return plugin
+    }
+
+    private fun markers(): List<String> =
+        manager
+            .resolve("s1")
+            .packets
+            .read(PacketQuery())
+            .packets
+            .map { it.prot }
 
     @Test
     fun `a first start launches the first custom target and stays launching`() {
@@ -145,6 +185,73 @@ class SessionManagerTest {
         } finally {
             release.countDown()
         }
+    }
+
+    @Test
+    fun `start returns connected, with the client pid, once the plugin says hello`() {
+        launcher.launch = { dial(43650, pid = 7) }
+
+        val snapshot = manager.start(null, null, 10_000)
+
+        assertEquals("connected", snapshot.state)
+        assertEquals(7, snapshot.pid)
+        assertEquals(listOf("CLIENT_LAUNCHED", "CLIENT_CONNECTED"), markers())
+    }
+
+    @Test
+    fun `a start whose wait elapsed is extended by starting the session again`() {
+        assertEquals("launching", manager.start(null, null, 30).state)
+        val waiting = CompletableFuture.supplyAsync { manager.start(null, "s1", 10_000) }
+
+        dial(43650)
+
+        assertEquals("connected", waiting.get(10, TimeUnit.SECONDS).state)
+        assertEquals(1, launcher.reserved.size)
+    }
+
+    @Test
+    fun `a client that goes away stops the session and releases its proxy port`() {
+        val plugin = connect()
+
+        plugin.close()
+
+        awaitTrue("the session is stopped") { manager.list().single().state == "stopped" }
+        assertEquals("client exited", manager.list().single().reason)
+        awaitTrue("the proxy port is released") { launcher.killed == listOf(43751) }
+        assertEquals(listOf("CLIENT_LAUNCHED", "CLIENT_CONNECTED", "CLIENT_EXITED"), markers())
+
+        assertEquals(2, manager.start(null, "s1", 0).generation)
+    }
+
+    @Test
+    fun `stopping a connected session drops its client and keeps the caller's reason`() {
+        val plugin = connect()
+
+        val stopped = manager.stop(null)
+
+        assertEquals("stopped by caller", stopped.reason)
+        assertNull(plugin.read())
+        assertEquals("stopped by caller", manager.list().single().reason)
+        assertEquals(listOf(43751), launcher.killed)
+        assertEquals(listOf("CLIENT_LAUNCHED", "CLIENT_CONNECTED", "CLIENT_EXITED"), markers())
+    }
+
+    @Test
+    fun `a client of an earlier launch does not connect the relaunched session`() {
+        manager.start(null, null, 0)
+        manager.stop(null)
+        manager.start(null, "s1", 0)
+
+        val late = dial(43650)
+        late.read()
+        assertNull(late.read())
+        assertEquals("launching", manager.list().single().state)
+
+        dial(43651, pid = 9)
+        val relaunched = manager.start(null, "s1", 10_000)
+        assertEquals("connected", relaunched.state)
+        assertEquals(9, relaunched.pid)
+        assertEquals(2, relaunched.generation)
     }
 
     @Test

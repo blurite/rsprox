@@ -1,5 +1,6 @@
 package net.rsprox.mcp.session
 
+import net.rsprox.mcp.bridge.BridgeJar
 import net.rsprox.proxy.ProxyService
 import net.rsprox.proxy.connection.ClientTypeDictionary
 import net.rsprox.proxy.target.ProxyTargetConfig
@@ -10,6 +11,7 @@ import java.net.ServerSocket
 internal class ProxyServiceLauncher(
     private val service: ProxyService,
     portSkip: Int,
+    private val bridgeJar: BridgeJar,
 ) : ClientLauncher {
     // The proxy keeps its first proxy port private, and its HTTP ports are offsets from it.
     // The first allocation after start() returns that port.
@@ -23,6 +25,7 @@ internal class ProxyServiceLauncher(
     override fun targets(): List<ProxyTargetConfig> = service.proxyTargets
 
     override fun reserve(target: ProxyTargetConfig): Reservation {
+        bridgeJar.installFor(target)
         // The proxy logs and returns when it cannot bind a proxy port, and a GUI may own any port in the range.
         var port: Int
         do {
