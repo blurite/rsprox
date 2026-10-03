@@ -140,6 +140,54 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
                 ),
             sessions = sessions,
         ),
+        clientTool(
+            name = "client_login",
+            description =
+                "Log in from the login screen with the given credentials and wait until the client is in " +
+                    "the game. Returns `gameState` LOGGED_IN. Fails with `wrong_state` when the client is " +
+                    "not on the login screen or the login is refused, and with `timeout` when `wait_ms` " +
+                    "elapses first.",
+            schema =
+                schema(
+                    "session" to SESSION,
+                    "username" to string("Account name to log in with."),
+                    "password" to string("Password. Default: empty, for servers that accept any."),
+                    "wait_ms" to integer("How long to wait for the login to complete. Default 15000.", 0, 120_000),
+                    required = listOf("username"),
+                ),
+            sessions = sessions,
+            timeoutMs = { args -> (args.long("wait_ms") ?: LOGIN_WAIT_MS) + CLIENT_CALL_TIMEOUT_MS },
+        ),
+        clientTool(
+            name = "client_click",
+            description =
+                "Click on the game canvas, either at `x`,`y` in canvas units (the pixels of a " +
+                    "client_screenshot) or at the centre of `widget`. Returns the `x`,`y` that was clicked. " +
+                    "Fails with `not_found` when the widget does not exist or is not visible.",
+            schema =
+                schema(
+                    "session" to SESSION,
+                    "x" to integer("Horizontal canvas position. Requires `y`.", 0),
+                    "y" to integer("Vertical canvas position. Requires `x`.", 0),
+                    "widget" to string("Widget id as listed by client_widgets, such as \"558:7\" or \"558:7[3]\"."),
+                    "button" to string("Mouse button. Default left.", "left", "right"),
+                ),
+            sessions = sessions,
+        ),
+        clientTool(
+            name = "client_type",
+            description =
+                "Type text into the client as key presses, as if on the keyboard. Returns `typed`, the " +
+                    "number of characters sent.",
+            schema =
+                schema(
+                    "session" to SESSION,
+                    "text" to string("The characters to type."),
+                    "enter" to boolean("Press Enter after the text. Default false."),
+                    required = listOf("text"),
+                ),
+            sessions = sessions,
+        ),
     )
 
 /**
@@ -164,6 +212,9 @@ private fun clientTool(
     }
 
 private const val CLIENT_CALL_TIMEOUT_MS = 10_000L
+
+// Mirrors the default the plugin applies when `wait_ms` is absent.
+private const val LOGIN_WAIT_MS = 15_000L
 
 private const val CURSOR_NOTE =
     "The result carries `cursor`, the packet cursor taken just before the call: pass it as `after` to " +

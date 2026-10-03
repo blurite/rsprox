@@ -67,6 +67,9 @@ class ToolsTest {
                 "client_screenshot",
                 "client_widgets",
                 "client_vars",
+                "client_login",
+                "client_click",
+                "client_type",
             ),
             names,
         )
@@ -234,5 +237,62 @@ class ToolsTest {
         assertTrue(call("client_vars", """{"varps":["1055"]}""").get("isError").asBoolean())
         assertTrue(call("client_widgets", """{"hidden":"yes"}""").get("isError").asBoolean())
         assertEquals(emptyList(), calls)
+    }
+
+    @Test
+    fun `the input tools forward their arguments and return the client's answer`() {
+        val forwarded = ArrayList<Pair<String, JsonNode>>()
+        connect { op, args ->
+            forwarded += op to args
+            when (op) {
+                "login" -> """"ok":{"gameState":"LOGGED_IN"}"""
+                "click" -> """"ok":{"x":380,"y":215}"""
+                else -> """"ok":{"typed":8}"""
+            }
+        }
+        val cursor = manager.resolve("s1").packets.head().seq
+
+        assertEquals(
+            """{"gameState":"LOGGED_IN","cursor":$cursor}""",
+            text("client_login", """{"username":"mcp","wait_ms":2000}"""),
+        )
+        assertEquals("""{"x":380,"y":215,"cursor":$cursor}""", text("client_click", """{"widget":"558:7"}"""))
+        text("client_click", """{"session":"s1","x":380,"y":215,"button":"right"}""")
+        assertEquals("""{"typed":8,"cursor":$cursor}""", text("client_type", """{"text":"McpProto","enter":true}"""))
+
+        assertEquals(
+            listOf(
+                "login" to mapper.readTree("""{"username":"mcp","wait_ms":2000}"""),
+                "click" to mapper.readTree("""{"widget":"558:7"}"""),
+                "click" to mapper.readTree("""{"x":380,"y":215,"button":"right"}"""),
+                "type" to mapper.readTree("""{"text":"McpProto","enter":true}"""),
+            ),
+            forwarded,
+        )
+    }
+
+    @Test
+    fun `a login needs a username and accepts a missing password`() {
+        val calls = ArrayList<JsonNode>()
+        connect { _, args ->
+            calls.add(args)
+            """"ok":{"gameState":"LOGGED_IN"}"""
+        }
+
+        val missing = call("client_login", """{"password":"secret"}""")
+        assertTrue(missing.get("isError").asBoolean())
+        assertEquals(
+            "client_login: missing required argument 'username'",
+            missing.get("content")[0].get("text").asText(),
+        )
+
+        text("client_login", """{"username":"mcp"}""")
+        assertEquals(listOf(mapper.readTree("""{"username":"mcp"}""")), calls)
+    }
+
+    @Test
+    fun `a button other than left or right is refused`() {
+        connect { _, _ -> """"ok":{}""" }
+        assertTrue(call("client_click", """{"x":1,"y":1,"button":"middle"}""").get("isError").asBoolean())
     }
 }
