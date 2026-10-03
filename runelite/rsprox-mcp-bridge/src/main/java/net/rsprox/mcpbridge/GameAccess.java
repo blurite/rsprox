@@ -7,12 +7,12 @@ import java.awt.image.BufferedImage;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import javax.swing.SwingUtilities;
 import net.runelite.api.Client;
-import net.runelite.client.callback.ClientThread;
 import net.runelite.client.ui.DrawManager;
 
 /**
@@ -23,10 +23,10 @@ final class GameAccess {
     private static final long TIMEOUT_MS = 5_000;
 
     private final Client client;
-    private final ClientThread clientThread;
+    private final Executor clientThread;
     private final DrawManager drawManager;
 
-    GameAccess(Client client, ClientThread clientThread, DrawManager drawManager) {
+    GameAccess(Client client, Executor clientThread, DrawManager drawManager) {
         this.client = client;
         this.clientThread = clientThread;
         this.drawManager = drawManager;
@@ -37,9 +37,9 @@ final class GameAccess {
     }
 
     /** Runs {@code body} on the client thread and waits for its result. */
-    <T> T read(ClientCall<T> body) throws BridgeException {
+    <T> T onClientThread(ClientCall<T> body) throws BridgeException {
         CompletableFuture<T> result = new CompletableFuture<>();
-        clientThread.invoke(() -> {
+        clientThread.execute(() -> {
             try {
                 result.complete(body.call(client));
             } catch (Throwable t) {

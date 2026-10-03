@@ -93,7 +93,7 @@ class BridgeHubTest {
 
     @Test
     fun `a hub set to software rendering tells each client it welcomes`() {
-        TestHub(softwareRendering = true).use { other ->
+        TestHub(Rendering.SOFTWARE).use { other ->
             other.hub.expect(43650, RecordingListener())
             val plugin = FakePlugin.dial(other.rendezvous, 43650, null, 1).also { plugins += it }
 
@@ -150,7 +150,7 @@ class BridgeHubTest {
     @Test
     fun `a call sends the op and its args and returns the ok value`() {
         val (plugin, link) = connect()
-        val call = async { link.call("click", args("""{"x":380,"y":215}""")) }
+        val call = async { link.call("click", args("""{"x":380,"y":215}"""), TIMEOUT_MS) }
 
         val request = plugin.read()!!
         assertEquals("click", request.get("op").asText())
@@ -163,9 +163,9 @@ class BridgeHubTest {
     @Test
     fun `overlapping calls each receive their own reply, whatever the order of the answers`() {
         val (plugin, link) = connect()
-        val slow = async { link.call("screenshot", args()) }
+        val slow = async { link.call("screenshot", args(), TIMEOUT_MS) }
         val first = plugin.read()!!
-        val fast = async { link.call("state", args()) }
+        val fast = async { link.call("state", args(), TIMEOUT_MS) }
         val second = plugin.read()!!
         assertEquals(listOf("screenshot", "state"), listOf(first.get("op").asText(), second.get("op").asText()))
 
@@ -182,7 +182,7 @@ class BridgeHubTest {
         val (plugin, link) = connect()
         plugin.serve { _, _ -> """"err":{"code":"not_found","message":"widget 558:7 is not visible"}""" }
 
-        val error = assertFailsWith<BridgeError> { link.call("click", args("""{"widget":"558:7"}""")) }
+        val error = assertFailsWith<BridgeError> { link.call("click", args("""{"widget":"558:7"}"""), TIMEOUT_MS) }
         assertEquals("not_found", error.code)
         assertEquals("widget 558:7 is not visible", error.message)
     }
@@ -197,21 +197,21 @@ class BridgeHubTest {
         val late = plugin.read()!!
         plugin.send("""{"id":${late.get("id")},"ok":{}}""")
         plugin.serve { _, _ -> """"ok":{"tick":7}""" }
-        assertEquals(7, link.call("state", args()).get("tick").asInt())
+        assertEquals(7, link.call("state", args(), TIMEOUT_MS).get("tick").asInt())
     }
 
     @Test
     fun `a closed connection fails the pending calls, reports the close and refuses new calls`() {
         val listener = RecordingListener()
         val (plugin, link) = connect(listener)
-        val pending = async { link.call("screenshot", args()) }
+        val pending = async { link.call("screenshot", args(), TIMEOUT_MS) }
         plugin.read()
 
         plugin.close()
 
         assertEquals("closed", bridgeError(pending).code)
         assertSame(link, listener.closed.get(10, TimeUnit.SECONDS))
-        assertEquals("closed", assertFailsWith<BridgeError> { link.call("state", args()) }.code)
+        assertEquals("closed", assertFailsWith<BridgeError> { link.call("state", args(), TIMEOUT_MS) }.code)
     }
 
     @Test
@@ -223,5 +223,9 @@ class BridgeHubTest {
 
         assertNull(plugin.read())
         assertSame(link, listener.closed.get(10, TimeUnit.SECONDS))
+    }
+
+    private companion object {
+        private const val TIMEOUT_MS = 10_000L
     }
 }

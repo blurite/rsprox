@@ -29,7 +29,12 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
                 schema(
                     "target" to string("Proxy target name, as listed by session_list. Example: \"My Server\"."),
                     "session" to string("Existing session id, such as \"s1\"."),
-                    "wait_ms" to integer("How long to wait for the session to connect. Default 180000.", 0, 600_000),
+                    "wait_ms" to
+                        integer(
+                            "How long to wait for the session to connect. Default ${SessionManager.DEFAULT_WAIT_MS}.",
+                            0,
+                            600_000,
+                        ),
                 ),
         ) { args ->
             ToolResult.Json(
@@ -59,7 +64,7 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
             name = "packets_read",
             description =
                 "Read decoded packets of a session after a cursor, unfiltered, in both directions. " +
-                    "With `wait_ms` it blocks until the first match, which makes it the way to wait for a packet. " +
+                    "To wait for a packet, pass `wait_ms`. The call then blocks until the first match. " +
                     "Line 1 of the result is JSON: pass `next` as `after` on the following call; `dropped` counts " +
                     "records that were evicted before they could be read; `timedOut` is true when a wait " +
                     "elapsed with no match. Each further line is one packet: " +
@@ -74,7 +79,8 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
                     "origin" to string("Keep only one origin.", "client", "server", "proxy"),
                     "contains" to string("Case-insensitive substring the packet text must contain."),
                     "wait_ms" to integer("How long to block for a first match. Default 0.", 0, 120_000),
-                    "limit" to integer("Maximum number of packets to return. Default 200.", 1, 1000),
+                    "limit" to
+                        integer("Maximum number of packets to return. Default ${PacketQuery.DEFAULT_LIMIT}.", 1, 1000),
                 ),
         ) { args ->
             val query =
@@ -83,7 +89,7 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
                     prots = args.get("prots")?.map { it.asText().uppercase() }?.toSet().orEmpty(),
                     origin = args.text("origin")?.let { Origin.valueOf(it.uppercase()) },
                     contains = args.text("contains"),
-                    limit = args.long("limit")?.toInt() ?: 200,
+                    limit = args.long("limit")?.toInt() ?: PacketQuery.DEFAULT_LIMIT,
                 )
 
             val page = sessions().resolve(args.text("session")).packets.read(query, args.long("wait_ms") ?: 0)
@@ -122,9 +128,10 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
                     "group" to integer("Keep only widgets of this interface group, such as 558.", 0),
                     "text" to string("Case-insensitive substring to find in the text, name or actions."),
                     "hidden" to boolean("Also list hidden widgets. Default false."),
-                    "limit" to integer("Maximum number of widgets to return. Default 200.", 1, 2000),
+                    "limit" to integer("Maximum number of widgets to return. Default $WIDGET_LIMIT.", 1, 2000),
                 ),
             sessions = sessions,
+            defaults = mapOf("limit" to WIDGET_LIMIT),
         ),
         clientTool(
             name = "client_vars",
@@ -153,12 +160,14 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
                 schema(
                     "session" to SESSION,
                     "username" to string("Account name to log in with."),
-                    "password" to string("Password. An empty one is refused, so pass any value to a server that ignores it."),
-                    "wait_ms" to integer("How long to wait for the login to complete. Default 15000.", 0, 120_000),
+                    "password" to string("Password. It must not be empty. A server that ignores passwords accepts any value."),
+                    "wait_ms" to
+                        integer("How long to wait for the login to complete. Default $LOGIN_WAIT_MS.", 0, 120_000),
                     required = listOf("username", "password"),
                 ),
             sessions = sessions,
-            timeoutMs = { args -> (args.long("wait_ms") ?: LOGIN_WAIT_MS) + CLIENT_CALL_TIMEOUT_MS },
+            defaults = mapOf("wait_ms" to LOGIN_WAIT_MS),
+            timeoutMs = { forwarded -> forwarded.get("wait_ms").asLong() + CLIENT_CALL_TIMEOUT_MS },
         ),
         clientTool(
             name = "client_click",
@@ -195,12 +204,15 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
 /**
  * The shape every client_* tool shares. The plugin's answer is the tool result, plus the packet cursor
  * taken before the call, so everything the action caused has a sequence number above it.
+ *
+ * The plugin has no defaults of its own: each of [defaults] is forwarded when the caller left it out.
  */
 private fun clientTool(
     name: String,
     description: String,
     schema: ObjectNode,
     sessions: () -> SessionManager,
+    defaults: Map<String, Long> = emptyMap(),
     timeoutMs: (ObjectNode) -> Long = { CLIENT_CALL_TIMEOUT_MS },
     result: (ObjectNode) -> ToolResult = ToolResult::Json,
 ): Tool =
@@ -208,16 +220,22 @@ private fun clientTool(
         val session = sessions().resolve(args.text("session"))
         val cursor = session.packets.head().seq
         val forwarded = args.deepCopy().without<ObjectNode>("session")
-        val ok = session.requireLink().call(name.removePrefix("client_"), forwarded, timeoutMs(args))
 
+        for ((argument, value) in defaults) {
+            if (!forwarded.hasNonNull(argument)) forwarded.put(argument, value)
+        }
+
+        val ok = session.requireLink().call(name.removePrefix("client_"), forwarded, timeoutMs(forwarded))
         if (ok !is ObjectNode) throw BridgeError("internal", "the client answered $name with $ok")
+
         result(ok.put("cursor", cursor))
     }
 
 private const val CLIENT_CALL_TIMEOUT_MS = 10_000L
 
-// Mirrors the default the plugin applies when `wait_ms` is absent.
 private const val LOGIN_WAIT_MS = 15_000L
+
+private const val WIDGET_LIMIT = 200L
 
 private const val CURSOR_NOTE =
     "The result carries `cursor`, the packet cursor taken just before the call: pass it as `after` to " +

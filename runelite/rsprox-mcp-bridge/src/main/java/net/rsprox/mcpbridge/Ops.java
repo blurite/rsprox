@@ -36,8 +36,6 @@ import net.runelite.api.widgets.Widget;
 final class Ops {
     private static final Pattern WIDGET_REF = Pattern.compile("(\\d+):(\\d+)(?:\\[(\\d+)])?");
     private static final int WIDGET_DEPTH_LIMIT = 12;
-    private static final int DEFAULT_WIDGET_LIMIT = 200;
-    private static final int DEFAULT_LOGIN_WAIT_MS = 15_000;
     private static final int LOGIN_POLL_MS = 100;
 
     interface Op {
@@ -68,7 +66,7 @@ final class Ops {
     }
 
     private JsonElement state(JsonObject args) throws BridgeException {
-        return game.read(client -> {
+        return game.onClientThread(client -> {
             JsonObject out = new JsonObject();
             out.addProperty("gameState", client.getGameState().name());
             out.addProperty("tick", client.getTickCount());
@@ -115,19 +113,17 @@ final class Ops {
         String text = optionalString(args, "text");
         String needle = text == null ? null : text.toLowerCase(Locale.ROOT);
         boolean includeHidden = optionalBoolean(args, "hidden");
-        Integer limit = optionalInt(args, "limit");
+        int limit = args.get("limit").getAsInt();
 
-        return game.read(client -> {
-            WidgetWalk walk =
-                new WidgetWalk(group, needle, includeHidden, limit == null ? DEFAULT_WIDGET_LIMIT : limit);
-
+        return game.onClientThread(client -> {
+            WidgetWalk walk = new WidgetWalk(group, needle, includeHidden, limit);
             Set<Integer> roots = new LinkedHashSet<>();
 
             for (Widget root : client.getWidgetRoots()) {
-                if (root != null) {
-                    roots.add(root.getId() >>> 16);
-                    walk.visit(root, 0);
-                }
+                if (root == null) continue;
+
+                roots.add(root.getId() >>> 16);
+                walk.visit(root, 0);
             }
 
             JsonObject out = new JsonObject();
@@ -171,29 +167,32 @@ final class Ops {
                 return;
             }
 
-            if (group == null || widget.getId() >>> 16 == group) {
-                JsonObject described = describe(widget, hidden);
-                if (described != null) {
-                    if (found.size() >= limit) {
-                        truncated = true;
-
-                        return;
-                    }
-
-                    found.add(described);
-                }
-            }
-
+            collect(widget, hidden);
             visitAll(widget.getStaticChildren(), depth);
             visitAll(widget.getDynamicChildren(), depth);
             visitAll(widget.getNestedChildren(), depth);
         }
 
+        private void collect(Widget widget, boolean hidden) {
+            if (group != null && widget.getId() >>> 16 != group) return;
+
+            JsonObject described = describe(widget, hidden);
+            if (described == null) return;
+
+            if (found.size() >= limit) {
+                truncated = true;
+
+                return;
+            }
+
+            found.add(described);
+        }
+
         private void visitAll(Widget[] children, int depth) {
-            if (children != null) {
-                for (Widget child : children) {
-                    visit(child, depth + 1);
-                }
+            if (children == null) return;
+
+            for (Widget child : children) {
+                visit(child, depth + 1);
             }
         }
 
@@ -203,12 +202,10 @@ final class Ops {
             JsonArray actions = new JsonArray();
             String[] raw = widget.getActions();
 
-            if (raw != null) {
-                for (String action : raw) {
-                    if (action != null && !action.isEmpty()) {
-                        actions.add(action);
-                    }
-                }
+            for (String action : raw == null ? new String[0] : raw) {
+                if (action == null || action.isEmpty()) continue;
+
+                actions.add(action);
             }
 
             if (text.isEmpty() && name.isEmpty() && actions.size() == 0) {
@@ -244,7 +241,7 @@ final class Ops {
         int[] varcInts = optionalInts(args, "varcInts");
         int[] varcStrs = optionalInts(args, "varcStrs");
 
-        return game.read(client -> {
+        return game.onClientThread(client -> {
             JsonObject out = new JsonObject();
             out.add("varps", readVars("varp", varps, id -> number(client.getVarpValue(id))));
             out.add("varbits", readVars("varbit", varbits, id -> number(client.getVarbitValue(id))));
@@ -276,7 +273,7 @@ final class Ops {
 
     private JsonElement screenshot(JsonObject args) throws BridgeException {
         BufferedImage frame = game.frame();
-        int[] canvas = game.read(client -> new int[] {client.getCanvas().getWidth(), client.getCanvas().getHeight()});
+        int[] canvas = game.onClientThread(client -> new int[] {client.getCanvas().getWidth(), client.getCanvas().getHeight()});
         int width = canvas[0];
         int height = canvas[1];
 
@@ -313,20 +310,14 @@ final class Ops {
     }
 
     private JsonElement click(JsonObject args) throws BridgeException {
-        String button = optionalString(args, "button");
-        boolean right = "right".equals(button);
-
-        if (button != null && !right && !"left".equals(button)) {
-            throw new BridgeException("bad_args", "button must be \"left\" or \"right\"");
-        }
-
+        boolean right = "right".equals(optionalString(args, "button"));
         String widget = optionalString(args, "widget");
         Integer x = optionalInt(args, "x");
         Integer y = optionalInt(args, "y");
         Point point;
 
         if (widget != null) {
-            point = game.read(client -> centre(visibleBounds(client, widget)));
+            point = game.onClientThread(client -> centre(visibleBounds(client, widget)));
         } else if (x != null && y != null) {
             point = new Point(x, y);
         } else {
@@ -381,11 +372,7 @@ final class Ops {
     }
 
     private JsonElement type(JsonObject args) throws BridgeException {
-        String text = optionalString(args, "text");
-        if (text == null) {
-            throw new BridgeException("bad_args", "text is required");
-        }
-
+        String text = args.get("text").getAsString();
         boolean enter = optionalBoolean(args, "enter");
         game.input(canvas -> {
             for (char ch : text.toCharArray()) {
@@ -411,20 +398,38 @@ final class Ops {
     }
 
     private JsonElement login(JsonObject args) throws BridgeException {
-        String username = optionalString(args, "username");
-        if (username == null) {
-            throw new BridgeException("bad_args", "username is required");
-        }
-
+        String username = args.get("username").getAsString();
         String password = optionalString(args, "password");
         if (password == null || password.isEmpty()) {
             throw new BridgeException("bad_args", "password is required and must not be empty");
         }
 
-        Integer wait = optionalInt(args, "wait_ms");
-        long deadline = System.currentTimeMillis() + (wait == null ? DEFAULT_LOGIN_WAIT_MS : wait);
-        awaitLoginScreen(deadline);
-        game.read(client -> {
+        long deadline = System.currentTimeMillis() + args.get("wait_ms").getAsInt();
+        awaitLoaded(deadline);
+        submitCredentials(username, password);
+
+        return awaitLoggedIn(deadline);
+    }
+
+    /** The bridge connects while the client is still loading, and a login set before the login screen is lost. */
+    private void awaitLoaded(long deadline) throws BridgeException {
+        while (true) {
+            GameState state = game.onClientThread(Client::getGameState);
+            if (state != GameState.STARTING && state != GameState.UNKNOWN) return;
+
+            if (System.currentTimeMillis() >= deadline) {
+                throw new BridgeException(
+                    "timeout",
+                    "the client did not reach the login screen; gameState is " + state
+                        + ". A client that cannot reach the game server stays in this state.");
+            }
+
+            pollAgain("the login screen");
+        }
+    }
+
+    private void submitCredentials(String username, String password) throws BridgeException {
+        game.onClientThread(client -> {
             GameState state = client.getGameState();
             if (state != GameState.LOGIN_SCREEN) {
                 throw new BridgeException("wrong_state", "the client is not on the login screen: " + state);
@@ -436,9 +441,11 @@ final class Ops {
 
             return null;
         });
+    }
 
+    private JsonElement awaitLoggedIn(long deadline) throws BridgeException {
         while (true) {
-            GameState state = game.read(Client::getGameState);
+            GameState state = game.onClientThread(Client::getGameState);
             if (state == GameState.LOGGED_IN) {
                 JsonObject out = new JsonObject();
                 out.addProperty("gameState", state.name());
@@ -454,36 +461,16 @@ final class Ops {
                 throw new BridgeException("timeout", "not logged in before the wait elapsed; gameState is " + state);
             }
 
-            try {
-                Thread.sleep(LOGIN_POLL_MS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new BridgeException("internal", "interrupted while waiting for the login");
-            }
+            pollAgain("the login");
         }
     }
 
-    /** The bridge connects while the client is still loading, and a login set before the login screen is lost. */
-    private void awaitLoginScreen(long deadline) throws BridgeException {
-        while (true) {
-            GameState state = game.read(Client::getGameState);
-            if (state != GameState.STARTING && state != GameState.UNKNOWN) {
-                return;
-            }
-
-            if (System.currentTimeMillis() >= deadline) {
-                throw new BridgeException(
-                    "timeout",
-                    "the client did not reach the login screen; gameState is " + state
-                        + ". A client that cannot reach the game server stays in this state.");
-            }
-
-            try {
-                Thread.sleep(LOGIN_POLL_MS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new BridgeException("internal", "interrupted while waiting for the login screen");
-            }
+    private static void pollAgain(String awaited) throws BridgeException {
+        try {
+            Thread.sleep(LOGIN_POLL_MS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new BridgeException("internal", "interrupted while waiting for " + awaited);
         }
     }
 

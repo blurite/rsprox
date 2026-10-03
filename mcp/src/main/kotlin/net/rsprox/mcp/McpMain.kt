@@ -10,6 +10,7 @@ import com.github.michaelbull.logging.InlineLogger
 import io.netty.buffer.ByteBufAllocator
 import net.rsprox.mcp.bridge.BridgeHub
 import net.rsprox.mcp.bridge.BridgeJar
+import net.rsprox.mcp.bridge.Rendering
 import net.rsprox.mcp.packets.TapSettingSetStore
 import net.rsprox.mcp.packets.UnfilteredFilterSetStore
 import net.rsprox.mcp.server.McpHttpServer
@@ -61,8 +62,10 @@ public class McpCommand : CliktCommand(name = "mcp") {
         service.filterSetStore = UnfilteredFilterSetStore
         service.settingsStore = TapSettingSetStore
         val launcher = ProxyServiceLauncher(service, portSkip.coerceAtLeast(1), BridgeJar(sideloadDir))
-        val hub =
-            BridgeHub(Path.of(System.getProperty("user.home"), ".rsprox", "mcp", "bridge.json"), softwareRendering)
+
+        // The plugin reads the same path in McpBridgePlugin.java.
+        val rendezvous = Path.of(System.getProperty("user.home"), ".rsprox", "mcp", "bridge.json")
+        val hub = BridgeHub(rendezvous, if (softwareRendering) Rendering.SOFTWARE else Rendering.GPU)
 
         hub.start()
 

@@ -58,7 +58,7 @@ public class BridgeLink internal constructor(
     public fun call(
         op: String,
         args: ObjectNode,
-        timeoutMs: Long = DEFAULT_TIMEOUT_MS,
+        timeoutMs: Long,
     ): JsonNode {
         val id = ids.incrementAndGet()
         val reply = CompletableFuture<JsonNode>()
@@ -139,6 +139,5 @@ public class BridgeLink internal constructor(
 
     private companion object {
         private val MAPPER: ObjectMapper = jacksonObjectMapper()
-        private const val DEFAULT_TIMEOUT_MS = 10_000L
     }
 }

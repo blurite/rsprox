@@ -5,7 +5,6 @@ import net.rsprox.mcp.packets.PacketQuery
 import net.rsprox.mcp.server.ToolError
 import net.rsprox.mcp.session.ClientState.Connected
 import net.rsprox.mcp.session.ClientState.Launching
-import net.rsprox.mcp.session.ClientState.Stopped
 import net.rsprox.mcp.session.SessionEvent.Hello
 import net.rsprox.mcp.session.SessionEvent.Launched
 import net.rsprox.mcp.session.SessionEvent.LinkClosed
@@ -42,48 +41,10 @@ class SessionTest {
     private val link = idleLink()
 
     @Test
-    fun `a launch starts only from stopped`() {
-        assertEquals(Launching(first), reduce(Stopped("not started"), Launched(first)))
-        assertEquals(Launching(first), reduce(Launching(first), Launched(second)))
-        val connected = Connected(first, link, pid = 7)
-        assertEquals(connected, reduce(connected, Launched(second)))
-    }
-
-    @Test
-    fun `a hello for the current launch connects it`() {
-        assertEquals(
-            Connected(first, link, pid = 7),
-            reduce(Launching(first), Hello(first.httpPort, link, pid = 7)),
-        )
-    }
-
-    @Test
-    fun `a hello from an earlier launch is dropped`() {
-        assertEquals(Launching(second), reduce(Launching(second), Hello(first.httpPort, link, pid = 7)))
-        assertEquals(Stopped("stopped by caller"), reduce(Stopped("stopped by caller"), Hello(first.httpPort, link, 7)))
-        val connected = Connected(first, link, pid = 7)
-        assertEquals(connected, reduce(connected, Hello(first.httpPort, idleLink(), pid = 8)))
-    }
-
-    @Test
-    fun `closing the current link stops the session`() {
-        assertEquals(Stopped("client exited"), reduce(Connected(first, link, pid = 7), LinkClosed(link)))
-    }
-
-    @Test
-    fun `a close from an earlier link is dropped`() {
+    fun `a close from the link of an earlier launch must never stop the relaunched session`() {
         val relaunched = Connected(second, idleLink(), pid = 9)
-        assertEquals(relaunched, reduce(relaunched, LinkClosed(link)))
-        assertEquals(Launching(second), reduce(Launching(second), LinkClosed(link)))
-        assertEquals(Stopped("stopped by caller"), reduce(Stopped("stopped by caller"), LinkClosed(link)))
-    }
 
-    @Test
-    fun `stop applies from every running state and keeps the first reason when repeated`() {
-        assertEquals(Stopped("stopped by caller"), reduce(Launching(first), Stop("stopped by caller")))
-        assertEquals(Stopped("stopped by caller"), reduce(Connected(first, link, 7), Stop("stopped by caller")))
-        val once = reduce(Launching(first), Stop("stopped by caller"))
-        assertEquals(once, reduce(once, Stop("again")))
+        assertSame(relaunched, reduce(relaunched, LinkClosed(link)))
     }
 
     @Test

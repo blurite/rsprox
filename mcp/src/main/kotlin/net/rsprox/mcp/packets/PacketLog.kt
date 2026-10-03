@@ -41,8 +41,12 @@ public data class PacketQuery(
     val origin: Origin? = null,
     /** Case-insensitive substring of the record text. */
     val contains: String? = null,
-    val limit: Int = 200,
-)
+    val limit: Int = DEFAULT_LIMIT,
+) {
+    public companion object {
+        public const val DEFAULT_LIMIT: Int = 200
+    }
+}
 
 public data class PacketPage(
     val packets: List<PacketRecord>,

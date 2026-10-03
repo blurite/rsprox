@@ -7,6 +7,7 @@ import net.rsprox.mcp.packets.Origin
 import net.rsprox.mcp.packets.TapSettingSetStore
 import net.rsprox.mcp.session.FakeLauncher
 import net.rsprox.mcp.session.SessionManager
+import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -56,25 +57,50 @@ class ToolsTest {
     }
 
     @Test
-    fun `the tools are listed`() {
+    fun `every tool is listed with a description and an object schema`() {
         val body = dispatcher.handle("POST", null, """{"jsonrpc":"2.0","id":1,"method":"tools/list"}""").body
-        val names = mapper.readTree(body).get("result").get("tools").map { it.get("name").asText() }
-        assertEquals(
-            listOf(
-                "session_start",
-                "session_stop",
-                "session_list",
-                "packets_read",
-                "client_state",
-                "client_screenshot",
-                "client_widgets",
-                "client_vars",
-                "client_login",
-                "client_click",
-                "client_type",
-            ),
-            names,
-        )
+        val listed = mapper.readTree(body).get("result").get("tools")
+        assertTrue(listed.size() > 0)
+
+        for (tool in listed) {
+            val name = tool.get("name").asText()
+            assertTrue(tool.get("description").asText().isNotBlank(), name)
+            assertEquals("object", tool.get("inputSchema").get("type").asText(), name)
+            assertTrue(tool.get("inputSchema").get("properties").isObject, name)
+        }
+    }
+
+    @Test
+    fun `every client tool calls the op its name ends in, strips the session and adds the cursor from before`() {
+        val forwarded = CopyOnWriteArrayList<Pair<String, JsonNode>>()
+        connect { op, args ->
+            forwarded += op to args
+
+            // What the action causes arrives while the call is in flight.
+            manager.resolve("s1").packets.append(1, 5, Origin.SERVER, "IF_SETTEXT", "[if_settext] text=\"hello\"")
+            """"ok":{}"""
+        }
+
+        val log = manager.resolve("s1").packets
+        val clientTools = tools { manager }.filter { it.name.startsWith("client_") }
+        assertTrue(clientTools.isNotEmpty())
+
+        for (tool in clientTools) {
+            forwarded.clear()
+            val before = log.head().seq
+            val arguments = minimalArguments(tool)
+
+            val result = call(tool.name, arguments.deepCopy().put("session", "s1").toString())
+
+            assertFalse(result.get("isError").asBoolean(), "${tool.name}: $result")
+            val (op, sent) = forwarded.single()
+            assertEquals(tool.name.removePrefix("client_"), op)
+            assertFalse(sent.has("session"), tool.name)
+            arguments.fields().forEach { (name, value) -> assertEquals(value, sent.get(name), "${tool.name} $name") }
+            val answer = mapper.readTree(result.get("content").last().get("text").asText())
+            assertEquals(before, answer.get("cursor").asLong(), tool.name)
+            assertEquals(before + 1, log.head().seq, tool.name)
+        }
     }
 
     @Test
@@ -185,6 +211,19 @@ class ToolsTest {
             ),
             forwarded,
         )
+    }
+
+    @Test
+    fun `a widget listing without a limit forwards the default one`() {
+        val forwarded = ArrayList<JsonNode>()
+        connect { _, args ->
+            forwarded.add(args)
+            """"ok":{"roots":[548],"widgets":[],"truncated":false}"""
+        }
+
+        text("client_widgets", """{"group":558}""")
+
+        assertEquals(listOf(mapper.readTree("""{"group":558,"limit":200}""")), forwarded)
     }
 
     @Test
@@ -300,7 +339,7 @@ class ToolsTest {
         )
 
         text("client_login", """{"username":"mcp","password":"secret"}""")
-        assertEquals(listOf(mapper.readTree("""{"username":"mcp","password":"secret"}""")), calls)
+        assertEquals(listOf(mapper.readTree("""{"username":"mcp","password":"secret","wait_ms":15000}""")), calls)
     }
 
     @Test

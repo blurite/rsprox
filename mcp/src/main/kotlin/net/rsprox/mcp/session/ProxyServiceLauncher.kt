@@ -28,12 +28,7 @@ internal class ProxyServiceLauncher(
         bridgeJar.installFor(target)
 
         // The proxy logs and returns when it cannot bind a proxy port, and a GUI may own any port in the range.
-        var port: Int
-
-        do {
-            port = service.allocatePort()
-        } while (!isFree(port) || !isFree(HTTP_PORT_BASE + (port - basePort)))
-
+        val port = firstFreePort(service::allocatePort, { HTTP_PORT_BASE + (it - basePort) }, ::canBind)
         val proxyTarget = service.initializeHttpServer(port, target)
 
         return Reservation(port, proxyTarget.httpPort) { monitor ->
@@ -41,7 +36,7 @@ internal class ProxyServiceLauncher(
 
             // Probing leaves a window in which another process can take the port. The proxy registers
             // a client type for a port only after it has bound it.
-            check(isBound(port)) { "proxy port $port could not be bound" }
+            check(hasClientType(port)) { "proxy port $port could not be bound" }
         }
     }
 
@@ -49,19 +44,11 @@ internal class ProxyServiceLauncher(
         service.killAliveProcess(proxyPort)
     }
 
-    private fun isBound(port: Int): Boolean =
+    private fun hasClientType(port: Int): Boolean =
         try {
             ClientTypeDictionary[port]
             true
         } catch (e: IllegalArgumentException) {
-            false
-        }
-
-    private fun isFree(port: Int): Boolean =
-        try {
-            ServerSocket(port).close()
-            true
-        } catch (e: IOException) {
             false
         }
 
@@ -70,3 +57,18 @@ internal class ProxyServiceLauncher(
         private const val HTTP_PORT_BASE = 43600
     }
 }
+
+/** The first port from [allocate] that is free together with the HTTP port that belongs to it. */
+internal fun firstFreePort(
+    allocate: () -> Int,
+    httpPortOf: (Int) -> Int,
+    isFree: (Int) -> Boolean,
+): Int = generateSequence(allocate).first { isFree(it) && isFree(httpPortOf(it)) }
+
+internal fun canBind(port: Int): Boolean =
+    try {
+        ServerSocket(port).close()
+        true
+    } catch (e: IOException) {
+        false
+    }

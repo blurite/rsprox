@@ -260,6 +260,31 @@ class SessionManagerTest {
     }
 
     @Test
+    fun `a client that says hello after its session was stopped is dropped`() {
+        manager.start(null, null, 0)
+        manager.stop(null)
+
+        val late = dial(43650)
+
+        assertEquals("s1", late.read()?.get("session")?.asText())
+        assertNull(late.read())
+        assertEquals("stopped by caller", manager.list().single().reason)
+        assertEquals(listOf("CLIENT_LAUNCHED", "CLIENT_EXITED"), markers())
+    }
+
+    @Test
+    fun `starting a connected session again launches nothing and keeps its client`() {
+        connect()
+
+        val again = manager.start(null, "s1", 0)
+
+        assertEquals("connected", again.state)
+        assertEquals(1, again.generation)
+        assertEquals(1, launcher.reserved.size)
+        assertEquals(emptyList(), launcher.killed)
+    }
+
+    @Test
     fun `an omitted session resolves only when exactly one exists`() {
         val none = assertFailsWith<ToolError> { manager.resolve(null) }
         assertEquals("no session exists yet; call session_start first", none.message)

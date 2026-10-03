@@ -32,6 +32,12 @@ internal interface BridgeListener {
     fun onClosed(link: BridgeLink)
 }
 
+/** How a launched client draws its frames. [SOFTWARE] has the plugin stop the client's GPU plugin. */
+public enum class Rendering {
+    GPU,
+    SOFTWARE,
+}
+
 /**
  * Where in-client bridge plugins connect. The plugin dials in: it finds the port and a token in the
  * rendezvous file and names the HTTP port of its launch, which routes it to the session that expects it.
@@ -39,7 +45,7 @@ internal interface BridgeListener {
  */
 public class BridgeHub(
     private val rendezvous: Path,
-    private val softwareRendering: Boolean = false,
+    private val rendering: Rendering = Rendering.GPU,
 ) : AutoCloseable {
     private val expected = ConcurrentHashMap<Int, BridgeListener>()
     private val links = ConcurrentHashMap.newKeySet<BridgeLink>()
@@ -128,13 +134,10 @@ public class BridgeHub(
                 else -> null
             }
 
-        val listener = if (refusal == null) expected.remove(httpPort) else null
-        if (listener == null) {
-            writer.line(MAPPER.createObjectNode().put("reject", refusal ?: "no session expects httpPort $httpPort"))
-            socket.close()
+        if (refusal != null) return reject(socket, writer, refusal)
 
-            return
-        }
+        val listener = expected.remove(httpPort)
+        if (listener == null) return reject(socket, writer, "no session expects httpPort $httpPort")
 
         socket.soTimeout = 0
         val link =
@@ -149,7 +152,7 @@ public class BridgeHub(
                 .createObjectNode()
                 .put("welcome", PROTOCOL)
                 .put("session", listener.session)
-                .put("softwareRendering", softwareRendering),
+                .put("softwareRendering", rendering == Rendering.SOFTWARE),
         )
 
         if (!listener.onHello(link, hello.get("pid")?.asLong() ?: -1)) {
@@ -163,10 +166,17 @@ public class BridgeHub(
         logger.info { "Bridge connected for session ${listener.session} (httpPort $httpPort)" }
     }
 
+    private fun reject(
+        socket: Socket,
+        writer: Writer,
+        reason: String,
+    ) {
+        writer.line(MAPPER.createObjectNode().put("reject", reason))
+        socket.close()
+    }
+
     private fun tokenMatches(candidate: JsonNode?): Boolean {
-        if (candidate == null || !candidate.isTextual) {
-            return false
-        }
+        if (candidate == null || !candidate.isTextual) return false
 
         return MessageDigest.isEqual(candidate.asText().toByteArray(), token.toByteArray())
     }

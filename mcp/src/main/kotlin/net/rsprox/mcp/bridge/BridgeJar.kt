@@ -5,7 +5,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 
-/** Puts the bridge plugin jar that this build embeds where the client of a target sideloads plugins from. */
+/** Installs the embedded bridge plugin jar into the sideload directory of a target's client. */
 public class BridgeJar internal constructor(
     private val overrideDir: Path?,
     private val home: Path,

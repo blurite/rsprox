@@ -40,16 +40,16 @@ public class McpBridgePlugin extends Plugin {
 
     @Override
     protected void startUp() {
+        // The server writes this path in McpMain.kt.
         Path rendezvous = Paths.get(System.getProperty("user.home"), ".rsprox", "mcp", "bridge.json");
-        Ops ops = new Ops(new GameAccess(client, clientThread, drawManager));
+        Ops ops = new Ops(new GameAccess(client, clientThread::invoke, drawManager));
 
-        // The protocol spells out an absent player as null, which the client's Gson would drop.
-        connection = BridgeConnection.dial(rendezvous, gson.newBuilder().serializeNulls().create(), ops);
-        if (connection != null && connection.softwareRendering()) {
-            Thread thread = new Thread(this::stopGpuPlugin, "mcp-bridge-gpu-off");
-            thread.setDaemon(true);
-            thread.start();
-        }
+        connection = BridgeConnection.dial(rendezvous, BridgeConnection.httpPortFromCommandLine(), gson, ops);
+        if (connection == null || connection.rendering() != Rendering.SOFTWARE) return;
+
+        Thread thread = new Thread(this::stopGpuPlugin, "mcp-bridge-gpu-off");
+        thread.setDaemon(true);
+        thread.start();
     }
 
     /**
@@ -95,9 +95,9 @@ public class McpBridgePlugin extends Plugin {
 
     @Override
     protected void shutDown() {
-        if (connection != null) {
-            connection.close();
-            connection = null;
-        }
+        if (connection == null) return;
+
+        connection.close();
+        connection = null;
     }
 }

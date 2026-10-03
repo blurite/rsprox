@@ -39,13 +39,13 @@ final class BridgeConnection implements AutoCloseable {
     private final BufferedWriter writer;
     private final Gson gson;
     private final Ops ops;
-    private final boolean softwareRendering;
+    private final Rendering rendering;
     private final AtomicBoolean closed = new AtomicBoolean();
     private ExecutorService workers;
 
     private BridgeConnection(
-        Socket socket, BufferedReader reader, BufferedWriter writer, Gson gson, Ops ops, boolean softwareRendering) {
-        this.softwareRendering = softwareRendering;
+        Socket socket, BufferedReader reader, BufferedWriter writer, Gson gson, Ops ops, Rendering rendering) {
+        this.rendering = rendering;
         this.socket = socket;
         this.reader = reader;
         this.writer = writer;
@@ -55,18 +55,16 @@ final class BridgeConnection implements AutoCloseable {
 
     /**
      * Connects to the rsprox that launched this client. Returns null, having started no thread, when
-     * there is no rsprox to talk to or it does not expect this client.
+     * there is no rsprox to talk to or it does not expect this client. A negative {@code httpPort}
+     * means rsprox did not launch this client.
      */
-    static BridgeConnection dial(Path rendezvous, Gson gson, Ops ops) {
-        if (!Files.isRegularFile(rendezvous)) {
+    static BridgeConnection dial(Path rendezvous, int httpPort, Gson clientGson, Ops ops) {
+        if (httpPort < 0 || !Files.isRegularFile(rendezvous)) {
             return null;
         }
 
-        int httpPort = httpPortFromCommandLine();
-        if (httpPort < 0) {
-            return null;
-        }
-
+        // The protocol spells out an absent player as null, which the client's Gson would drop.
+        Gson gson = clientGson.newBuilder().serializeNulls().create();
         Socket socket = new Socket();
 
         try {
@@ -104,10 +102,9 @@ final class BridgeConnection implements AutoCloseable {
             }
 
             socket.setSoTimeout(0);
-            boolean softwareRendering =
-                answer.has("softwareRendering") && answer.get("softwareRendering").getAsBoolean();
-
-            BridgeConnection connection = new BridgeConnection(socket, reader, writer, gson, ops, softwareRendering);
+            boolean software = answer.has("softwareRendering") && answer.get("softwareRendering").getAsBoolean();
+            Rendering rendering = software ? Rendering.SOFTWARE : Rendering.GPU;
+            BridgeConnection connection = new BridgeConnection(socket, reader, writer, gson, ops, rendering);
             connection.start();
             log.info("rsprox MCP bridge connected as session {}", answer.get("session"));
 
@@ -125,13 +122,13 @@ final class BridgeConnection implements AutoCloseable {
         }
     }
 
-    /** Whether rsprox asked for a client that renders without the GPU plugin. */
-    boolean softwareRendering() {
-        return softwareRendering;
+    /** {@link Rendering#SOFTWARE} when rsprox asked for a client that renders without the GPU plugin. */
+    Rendering rendering() {
+        return rendering;
     }
 
     /** The port in the client's jav_config argument, which is how rsprox tells its clients apart. */
-    private static int httpPortFromCommandLine() {
+    static int httpPortFromCommandLine() {
         String command = System.getProperty("sun.java.command", "");
         int start = command.indexOf(JAV_CONFIG_PREFIX);
 

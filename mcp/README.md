@@ -7,7 +7,8 @@ checking a private server end to end with a real client.
 
 The server has two halves. The proxy half runs in this process and records every packet. The client
 half is a small RuneLite plugin that the server installs into the client's sideload directory before
-each launch. The plugin connects back to the server over loopback.
+each launch. The plugin connects back to the server over loopback. The proxy only observes, so it
+cannot inject or change packets. All input goes through the client as mouse and key events.
 
 ## Run it
 
@@ -16,7 +17,11 @@ each launch. The plugin connects back to the server over loopback.
 ```
 
 The server listens on `http://127.0.0.1:43580/mcp`. It uses the proxy targets that the rsprox GUI
-uses, from `~/.rsprox/proxy-targets.yaml`. The GUI may run at the same time.
+uses, from `~/.rsprox/proxy-targets.yaml`. The GUI may run at the same time. A session records to the
+usual folder of its target, as it does when launched from the GUI.
+
+Each client opens a window, so the machine needs a display. A machine without one can use a virtual
+display, as described under "Run it without a display".
 
 Options go in `--args`:
 
@@ -34,12 +39,15 @@ Options go in `--args`:
 
 The plugin is installed as `rsprox-mcp-bridge.jar` in `~/.rlcustom/sideloaded-plugins` for a custom
 target and in `~/.runelite/sideloaded-plugins` for the official one. A client that the MCP server did
-not launch loads the plugin too, and the plugin then does nothing.
+not launch loads the plugin too, and the plugin then does nothing. The plugin finds the server through
+the rendezvous file `~/.rsprox/mcp/bridge.json`. Every server of one user account writes that same
+file, so run one MCP server per user account.
 
 ## Run it without a display
 
-RuneLite always opens a window, so on a machine with no screen give it a virtual one. On Linux, run
-the server under Xvfb and pass `--software-rendering`:
+RuneLite always opens a window, so on a machine with no screen give it a virtual one. macOS and
+Windows have no virtual display, so there the client needs a real screen. On Linux, run the server
+under Xvfb and pass `--software-rendering`:
 
 ```
 xvfb-run -s "-screen 0 1280x800x24" ./gradlew :mcp:run --args="--software-rendering"
@@ -57,12 +65,9 @@ or Ubuntu:
 apt-get install xvfb libxrender1 libxtst6 libxi6 libxext6 libfontconfig1 libfreetype6 fonts-dejavu-core
 ```
 
-The client reports that audio is unavailable when the machine has no sound device. That is harmless.
-
-A custom target reaches each world through a loopback address such as `127.0.1.3`. Linux routes all
-of `127.0.0.0/8` to loopback, so it needs no alias.
-
-There is no virtual display on macOS or Windows, so there the client needs a real screen.
+The machine needs no sound device. Without one the client reports that audio is unavailable and
+carries on. It needs no loopback alias either. A custom target reaches each world through a loopback
+address such as `127.0.1.3`, and Linux routes all of `127.0.0.0/8` to loopback.
 
 ## Register it with an MCP client
 
@@ -83,32 +88,35 @@ it runs, whatever the clients do.
 
 ## Tools
 
-`session` is optional on every tool while only one session exists.
+The tools come in three groups. The `session_*` tools launch a client for a target, stop it and list
+the sessions. `packets_read` reads the decoded packets of a session after a cursor, and can wait for
+the first packet that matches. The `client_*` tools look at the client and drive it: they read its
+state, widgets and variables, take a screenshot, log in, click and type.
 
-| Tool | What it does |
-|---|---|
-| `session_start` | Launches a client for a target, or relaunches a stopped session. Waits until the client plugin has connected. |
-| `session_stop` | Kills the client of a session. The session and its packets stay readable. |
-| `session_list` | Lists the sessions with their state, ports, login and packet cursor, and the target names. |
-| `packets_read` | Reads decoded packets after a cursor, unfiltered, in both directions. With `wait_ms` it waits for the first match. |
-| `client_state` | Reads the game state, tick, canvas size, world, local player and right-click menu. |
-| `client_screenshot` | Returns the game canvas as a PNG. Image pixels are click coordinates. |
-| `client_widgets` | Lists the interface widgets that have text, a name or actions, each with its bounds and click point. |
-| `client_vars` | Reads varps, varbits and client variables by id. |
-| `client_login` | Logs in from the login screen and waits until the client is in the game. |
-| `client_click` | Clicks at canvas coordinates or at the centre of a widget. |
-| `client_type` | Types text as key presses, with an optional Enter. |
+The server describes each tool itself. `tools/list` returns every tool with its description and the
+schema of its arguments:
+
+```
+curl -s http://127.0.0.1:43580/mcp -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+```
+
+`session` is optional on every tool while only one session exists.
 
 Every `client_*` result carries `cursor`, the packet cursor taken just before the call. Pass it as
 `after` to `packets_read` to see only what the action caused.
 
 Each packet is one line: `<seq> L<login> T<tick> <C|S|P> <PROT> <text>`. `C` is client to server, `S`
 is server to client, and `P` is a marker that rsprox adds (`CLIENT_LAUNCHED`, `CLIENT_CONNECTED`,
-`CLIENT_EXITED`, `LOGIN`, `LOGOUT`).
+`CLIENT_EXITED`, `LOGIN`, `LOGOUT`). The key codes of typed text are zeroed in the recorded packets, as
+in every rsprox recording. Read what was typed from the packet that carries the text, such as
+`RESUME_P_STRINGDIALOG`.
+
+`session_start` gives the launcher of a client 180 seconds to complete its handshake before it
+abandons the launch.
 
 ## Example: check that setting a display name works
 
-The widget ids and packet contents below are illustrative. They depend on the server.
+The display-name interface is group 558. Its name field is widget `558:12`.
 
 ```
 1. session_start {"target":"My Server"}
@@ -118,53 +126,43 @@ The widget ids and packet contents below are illustrative. They depend on the se
 2. client_login {"username":"mcptest","password":"any"}
    -> {"gameState":"LOGGED_IN","cursor":2}
 
-3. client_widgets {"text":"look up name"}
-   -> {"roots":[548],"widgets":[{"id":"558:7","text":"Look up name","name":"","actions":["Look up name"],
-       "bounds":[315,200,130,30],"click":[380,215],"type":4,"hidden":false}],"truncated":false,"cursor":604}
+3. client_widgets {"group":558}
+   -> {"roots":[...],"widgets":[..., {"id":"558:12","text":"*","bounds":[467,350,332,22],
+       "click":[633,361], ...}, ...],"truncated":false,"cursor":470}
 
-4. client_click {"widget":"558:7"}
-   -> {"x":380,"y":215,"cursor":640}
+4. client_click {"widget":"558:12"}
+   -> {"x":633,"y":361,"cursor":471}
 
-5. packets_read {"after":640,"prots":["IF_BUTTONX"],"wait_ms":3000}
-   -> {"next":647,"head":647,"dropped":0,"timedOut":false,"count":1}
-      645 L1 T46 C IF_BUTTONX [if_buttonx] com=558:7, sub=-1, obj=-1, button=1
+5. packets_read {"after":471,"prots":["IF_BUTTONX"],"wait_ms":3000}
+   -> {"next":473,"head":473,"dropped":0,"timedOut":false,"count":1}
+      473 L1 T5 C IF_BUTTONX [if_buttonx] com=tutorial_displayname:name (558:7), op=1
 
 6. client_type {"text":"McpProto","enter":true}
-   -> {"typed":8,"cursor":655}
+   -> {"typed":8,"cursor":484}
 
-7. packets_read {"after":655,"prots":["RESUME_P_STRINGDIALOG","IF_SETTEXT"],"contains":"McpProto","wait_ms":5000}
-   -> {"next":671,"head":671,"dropped":0,"timedOut":false,"count":2}
-      662 L1 T48 C RESUME_P_STRINGDIALOG [resume_p_stringdialog] string="McpProto"
-      669 L1 T49 S IF_SETTEXT [if_settext] com=558:13, text="<col=00ff00>McpProto</col> is available"
+7. packets_read {"after":484,"prots":["IF_SETTEXT"],"contains":"McpProto","wait_ms":5000}
+   -> {"next":519,"head":519,"dropped":0,"timedOut":false,"count":1}
+      519 L1 T8 S IF_SETTEXT [if_settext] com=tutorial_displayname:status (558:13), text="Great! The display name <col=ffffff>McpProto</col> is <col=00ff00>available</col>!<br>You may set this name now, or enter another to look up."
 
-8. client_widgets {"group":558,"text":"is available"}
-   -> {"roots":[548],"widgets":[{"id":"558:13","text":"<col=00ff00>McpProto</col> is available", ...}],
-       "truncated":false,"cursor":671}
+8. client_widgets {"group":558,"text":"available"}
+   -> {"roots":[...],"widgets":[{"id":"558:13","text":"Great! The display name <col=ffffff>McpProto</col>
+       is <col=00ff00>available</col>!<br>You may set this name now, or enter another to look up.", ...}],
+       "truncated":false,"cursor":520}
 
 9. session_stop {}
    -> {"session":"s1","target":"My Server","state":"stopped","reason":"stopped by caller", ...}
 ```
 
-Steps 5, 7 and 8 are three separate proofs. The client sent the click. The client sent the name and
-the server answered. The client rendered the answer.
+Steps 5, 7 and 8 are three separate proofs. The client sent the click. The server answered the name
+the client sent. The client rendered the answer.
 
-Two more patterns are useful:
+A wait returns as soon as one packet matches. The name itself left the client two ticks earlier, as
+`RESUME_P_STRINGDIALOG [resume_p_stringdialog] string="McpProto"`, and
+`packets_read {"after":484,"origin":"client"}` shows it.
 
-- To assert that nothing happened, wait for the packet and expect a timeout.
-  `packets_read {"after":655,"prots":["IF_SETTEXT"],"wait_ms":1800}` returning `"timedOut":true` means
-  the server sent no such packet for three ticks.
-- After a server restart, call `session_start {"session":"s1"}`. The session keeps its id and its
-  packet log. The client comes back on new ports, and new packets are marked with the next login
-  number.
+The same wait proves that nothing happened. Wait for the packet and expect a timeout:
+`packets_read {"after":520,"prots":["IF_SETTEXT"],"wait_ms":1800}` returning `"timedOut":true` means
+the server sent no such packet for three ticks.
 
-## Known limits
-
-- The client needs a display, real or virtual. See "Run it without a display".
-- The proxy only observes. It cannot inject or change packets. All input goes through the client as
-  mouse and key events.
-- A launch whose launcher never completes its handshake is abandoned after 180 seconds. After that,
-  the server refuses further launches until it is restarted.
-- Sessions record to the usual folder of the target, as they do when launched from the GUI.
-- The rendezvous file `~/.rsprox/mcp/bridge.json` is shared, so run one MCP server per user account.
-- Key codes of typed text are zeroed in the recorded packets, as in every rsprox recording. Read what
-  was typed from the packet that carries the text, such as `RESUME_P_STRINGDIALOG`.
+After a server restart, call `session_start {"session":"s1"}`. The session keeps its id and its packet
+log. The client comes back on new ports, and new packets are marked with the next login number.

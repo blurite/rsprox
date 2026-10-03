@@ -317,6 +317,10 @@ public class McpHttpServer(
     private val dispatcher = McpDispatcher(tools, version)
     private var server: HttpServer? = null
 
+    /** The port the server listens on, which differs from the requested one when that was 0. */
+    internal val localPort: Int
+        get() = checkNotNull(server) { "the server has not been started" }.address.port
+
     /** Throws [java.net.BindException] when the port is taken, which is how a second instance is refused. */
     public fun start() {
         val server = HttpServer.create(InetSocketAddress(InetAddress.getLoopbackAddress(), port), 0)

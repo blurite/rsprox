@@ -102,14 +102,9 @@ public class SessionManager internal constructor(
                 ?: throw ToolError("no session '$ref'. Sessions: ${sessionIds()}")
         }
 
-        return sessions.singleOrNull()
-            ?: throw ToolError(
-                if (sessions.isEmpty()) {
-                    "no session exists yet; call session_start first"
-                } else {
-                    "several sessions exist; pass one of: ${sessionIds()}"
-                },
-            )
+        if (sessions.isEmpty()) throw ToolError("no session exists yet; call session_start first")
+
+        return sessions.singleOrNull() ?: throw ToolError("several sessions exist; pass one of: ${sessionIds()}")
     }
 
     public fun targets(): List<String> = launcher.targets().map { it.name }
@@ -163,13 +158,12 @@ public class SessionManager internal constructor(
         thread.isDaemon = true
         thread.start()
         thread.join(launchTimeoutMs)
-        val reason =
-            if (thread.isAlive) {
-                hungLaunch = true
-                "launcher never completed its handshake"
-            } else {
-                failure.get()?.let(::rootMessage) ?: return
-            }
+
+        val hung = thread.isAlive
+        val reason = if (hung) "launcher never completed its handshake" else failure.get()?.let(::rootMessage)
+        if (reason == null) return
+
+        if (hung) hungLaunch = true
 
         launcher.kill(launch.proxyPort)
         session.apply(SessionEvent.Stop(reason))
