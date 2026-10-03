@@ -258,11 +258,11 @@ log. The client comes back on new ports, and new packets are marked with the nex
 ## Check it against a live client
 
 The automated tests cover the packet log, the endpoint's HTTP and JSON-RPC handling, the tool calls
-as an MCP client makes them, the session failure paths and the bridge handshake. They do not run a game client, so what the client does is
-checked by hand. Run this after a RuneLite update, a game revision change, or a change to the plugin.
-Each step names what proves it, so a step that fails names what changed. A tool that reports a
-dropped action, or lists what the client offered instead, is working as intended. Read its message
-before suspecting the tool.
+as an MCP client makes them, the session failure paths and the bridge handshake. They do not run a
+game client, so what the client does is checked by hand. Run this after a RuneLite update, a game
+revision change, or a change to the plugin. Each step names what proves it, so a step that fails
+names what changed. A tool that reports a dropped action, or lists what the client offered instead,
+is working as intended. Read its message before suspecting the tool.
 
 Start the server and a session against a target you can log in to, with a new account:
 
