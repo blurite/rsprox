@@ -127,9 +127,7 @@ public class ProxyService(
     public lateinit var jagexAccountStore: JagexAccountStore
         private set
     public lateinit var filterSetStore: PropertyFilterSetStore
-        private set
     public lateinit var settingsStore: SettingSetStore
-        private set
     private var properties: ProxyProperties by Delegates.notNull()
     private var availablePort: Int = -1
     private var initialPort: Int = -1
@@ -860,12 +858,15 @@ public class ProxyService(
         return port - this.initialPort
     }
 
-    public fun initializeHttpServer(port: Int): ProxyTarget {
+    public fun initializeHttpServer(
+        port: Int,
+        config: ProxyTargetConfig = currentProxyTarget,
+    ): ProxyTarget {
         val sessionId = portOffset(port)
         val target =
             ProxyTarget(
-                currentProxyTarget,
-                GamePackProvider(currentProxyTarget.runeliteGamepackUrl),
+                config,
+                GamePackProvider(config.runeliteGamepackUrl),
                 sessionId,
             )
         target.load(properties, bootstrapFactory)
