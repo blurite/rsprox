@@ -366,15 +366,19 @@ final class Ops {
             throw new BridgeException("bad_args", "username is required");
         }
         String password = optionalString(args, "password");
+        if (password == null || password.isEmpty()) {
+            throw new BridgeException("bad_args", "password is required and must not be empty");
+        }
         Integer wait = optionalInt(args, "wait_ms");
         long deadline = System.currentTimeMillis() + (wait == null ? DEFAULT_LOGIN_WAIT_MS : wait);
+        awaitLoginScreen(deadline);
         game.read(client -> {
             GameState state = client.getGameState();
             if (state != GameState.LOGIN_SCREEN) {
                 throw new BridgeException("wrong_state", "the client is not on the login screen: " + state);
             }
             client.setUsername(username);
-            client.setPassword(password == null ? "" : password);
+            client.setPassword(password);
             client.setGameState(GameState.LOGGING_IN);
             return null;
         });
@@ -396,6 +400,28 @@ final class Ops {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new BridgeException("internal", "interrupted while waiting for the login");
+            }
+        }
+    }
+
+    /** The bridge connects while the client is still loading, and a login set before the login screen is lost. */
+    private void awaitLoginScreen(long deadline) throws BridgeException {
+        while (true) {
+            GameState state = game.read(Client::getGameState);
+            if (state != GameState.STARTING && state != GameState.UNKNOWN) {
+                return;
+            }
+            if (System.currentTimeMillis() >= deadline) {
+                throw new BridgeException(
+                    "timeout",
+                    "the client did not reach the login screen; gameState is " + state
+                        + ". A client that cannot reach the game server stays in this state.");
+            }
+            try {
+                Thread.sleep(LOGIN_POLL_MS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new BridgeException("internal", "interrupted while waiting for the login screen");
             }
         }
     }

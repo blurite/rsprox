@@ -254,7 +254,7 @@ class ToolsTest {
 
         assertEquals(
             """{"gameState":"LOGGED_IN","cursor":$cursor}""",
-            text("client_login", """{"username":"mcp","wait_ms":2000}"""),
+            text("client_login", """{"username":"mcp","password":"secret","wait_ms":2000}"""),
         )
         assertEquals("""{"x":380,"y":215,"cursor":$cursor}""", text("client_click", """{"widget":"558:7"}"""))
         text("client_click", """{"session":"s1","x":380,"y":215,"button":"right"}""")
@@ -262,7 +262,7 @@ class ToolsTest {
 
         assertEquals(
             listOf(
-                "login" to mapper.readTree("""{"username":"mcp","wait_ms":2000}"""),
+                "login" to mapper.readTree("""{"username":"mcp","password":"secret","wait_ms":2000}"""),
                 "click" to mapper.readTree("""{"widget":"558:7"}"""),
                 "click" to mapper.readTree("""{"x":380,"y":215,"button":"right"}"""),
                 "type" to mapper.readTree("""{"text":"McpProto","enter":true}"""),
@@ -272,7 +272,7 @@ class ToolsTest {
     }
 
     @Test
-    fun `a login needs a username and accepts a missing password`() {
+    fun `a login needs a username and a password`() {
         val calls = ArrayList<JsonNode>()
         connect { _, args ->
             calls.add(args)
@@ -286,8 +286,15 @@ class ToolsTest {
             missing.get("content")[0].get("text").asText(),
         )
 
-        text("client_login", """{"username":"mcp"}""")
-        assertEquals(listOf(mapper.readTree("""{"username":"mcp"}""")), calls)
+        val noPassword = call("client_login", """{"username":"mcp"}""")
+        assertTrue(noPassword.get("isError").asBoolean())
+        assertEquals(
+            "client_login: missing required argument 'password'",
+            noPassword.get("content")[0].get("text").asText(),
+        )
+
+        text("client_login", """{"username":"mcp","password":"secret"}""")
+        assertEquals(listOf(mapper.readTree("""{"username":"mcp","password":"secret"}""")), calls)
     }
 
     @Test

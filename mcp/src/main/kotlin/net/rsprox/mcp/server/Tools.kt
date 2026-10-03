@@ -143,17 +143,18 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
         clientTool(
             name = "client_login",
             description =
-                "Log in from the login screen with the given credentials and wait until the client is in " +
-                    "the game. Returns `gameState` LOGGED_IN. Fails with `wrong_state` when the client is " +
-                    "not on the login screen or the login is refused, and with `timeout` when `wait_ms` " +
+                "Log in with the given credentials and wait until the client is in the game. A client that is " +
+                    "still starting is given until `wait_ms` to reach the login screen first. " +
+                    "Returns `gameState` LOGGED_IN. Fails with `wrong_state` when the client is already past " +
+                    "the login screen or the login is refused, and with `timeout` when `wait_ms` " +
                     "elapses first.",
             schema =
                 schema(
                     "session" to SESSION,
                     "username" to string("Account name to log in with."),
-                    "password" to string("Password. Default: empty, for servers that accept any."),
+                    "password" to string("Password. An empty one is refused, so pass any value to a server that ignores it."),
                     "wait_ms" to integer("How long to wait for the login to complete. Default 15000.", 0, 120_000),
-                    required = listOf("username"),
+                    required = listOf("username", "password"),
                 ),
             sessions = sessions,
             timeoutMs = { args -> (args.long("wait_ms") ?: LOGIN_WAIT_MS) + CLIENT_CALL_TIMEOUT_MS },

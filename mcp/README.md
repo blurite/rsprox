@@ -86,7 +86,7 @@ The widget ids and packet contents below are illustrative. They depend on the se
    -> {"session":"s1","target":"My Server","state":"connected","generation":1,"proxyPort":43751,
        "httpPort":43650,"pid":40388,"cursor":2}
 
-2. client_login {"username":"mcptest"}
+2. client_login {"username":"mcptest","password":"any"}
    -> {"gameState":"LOGGED_IN","cursor":2}
 
 3. client_widgets {"text":"look up name"}
