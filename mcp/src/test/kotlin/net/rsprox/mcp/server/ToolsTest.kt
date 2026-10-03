@@ -1,6 +1,7 @@
 package net.rsprox.mcp.server
 
 import com.fasterxml.jackson.databind.JsonNode
+import net.rsprox.mcp.bridge.FakePlugin
 import net.rsprox.mcp.bridge.TestHub
 import net.rsprox.mcp.packets.Origin
 import net.rsprox.mcp.packets.TapSettingSetStore
@@ -18,9 +19,21 @@ class ToolsTest {
     private val manager = SessionManager(FakeLauncher(), TapSettingSetStore, fixture.hub)
     private val dispatcher = McpDispatcher(tools { manager }, "test")
 
+    private val plugins = ArrayList<FakePlugin>()
+
     @AfterTest
     fun cleanUp() {
+        plugins.forEach { it.close() }
         fixture.close()
+    }
+
+    /** Session s1 with a connected client that answers every op through [answer]. */
+    private fun connect(answer: (op: String, args: JsonNode) -> String) {
+        manager.start(null, null, 0)
+        val plugin = FakePlugin.dial(fixture.rendezvous, 43650).also { plugins += it }
+        plugin.read()
+        assertEquals("connected", manager.start(null, "s1", 10_000).state)
+        plugin.serve(answer)
     }
 
     private fun call(
@@ -41,10 +54,22 @@ class ToolsTest {
     }
 
     @Test
-    fun `the four tools are listed`() {
+    fun `the tools are listed`() {
         val body = dispatcher.handle("POST", null, """{"jsonrpc":"2.0","id":1,"method":"tools/list"}""").body
         val names = mapper.readTree(body).get("result").get("tools").map { it.get("name").asText() }
-        assertEquals(listOf("session_start", "session_stop", "session_list", "packets_read"), names)
+        assertEquals(
+            listOf(
+                "session_start",
+                "session_stop",
+                "session_list",
+                "packets_read",
+                "client_state",
+                "client_screenshot",
+                "client_widgets",
+                "client_vars",
+            ),
+            names,
+        )
     }
 
     @Test
@@ -114,5 +139,100 @@ class ToolsTest {
     fun `an origin outside the allowed set is refused`() {
         text("session_start", """{"wait_ms":0}""")
         assertTrue(call("packets_read", """{"origin":"sideways"}""").get("isError").asBoolean())
+    }
+
+    @Test
+    fun `a client tool returns the plugin's answer with the cursor taken before the call`() {
+        val forwarded = ArrayList<Pair<String, JsonNode>>()
+        connect { op, args ->
+            forwarded += op to args
+            // What the action causes arrives while the call is in flight.
+            manager.resolve("s1").packets.append(1, 5, Origin.SERVER, "IF_SETTEXT", "[if_settext] text=\"hello\"")
+            """"ok":{"gameState":"LOGIN_SCREEN","tick":0}"""
+        }
+        val log = manager.resolve("s1").packets
+        val before = log.head().seq
+
+        val result = text("client_state", """{"session":"s1"}""")
+
+        assertEquals("""{"gameState":"LOGIN_SCREEN","tick":0,"cursor":$before}""", result)
+        assertEquals(before + 1, log.head().seq)
+        assertEquals(listOf("state" to mapper.readTree("{}")), forwarded)
+    }
+
+    @Test
+    fun `a client tool forwards its arguments without the session`() {
+        val forwarded = ArrayList<Pair<String, JsonNode>>()
+        connect { op, args ->
+            forwarded += op to args
+            """"ok":{"roots":[548],"widgets":[],"truncated":false}"""
+        }
+
+        text("client_widgets", """{"session":"s1","group":558,"text":"name","hidden":true,"limit":5}""")
+        text("client_vars", """{"varps":[1055],"varbits":[8119]}""")
+
+        assertEquals(
+            listOf(
+                "widgets" to mapper.readTree("""{"group":558,"text":"name","hidden":true,"limit":5}"""),
+                "vars" to mapper.readTree("""{"varps":[1055],"varbits":[8119]}"""),
+            ),
+            forwarded,
+        )
+    }
+
+    @Test
+    fun `a screenshot is an image block followed by its size and the cursor`() {
+        connect { _, _ -> """"ok":{"png":"iVBORw0KGgo=","width":976,"height":558}""" }
+        val cursor = manager.resolve("s1").packets.head().seq
+
+        val content = call("client_screenshot").get("content")
+
+        assertEquals(
+            mapper.readTree(
+                """[{"type":"image","data":"iVBORw0KGgo=","mimeType":"image/png"},
+                {"type":"text","text":"{\"width\":976,\"height\":558,\"cursor\":$cursor}"}]""",
+            ),
+            content,
+        )
+    }
+
+    @Test
+    fun `a failure reported by the client becomes a tool error with its code`() {
+        connect { _, _ -> """"err":{"code":"not_found","message":"varbit 99999 could not be read"}""" }
+
+        val result = call("client_vars", """{"varbits":[99999]}""")
+
+        assertTrue(result.get("isError").asBoolean())
+        assertEquals("not_found: varbit 99999 could not be read", result.get("content")[0].get("text").asText())
+    }
+
+    @Test
+    fun `a client tool on a session without a connected client says how to get one`() {
+        text("session_start", """{"wait_ms":0}""")
+        val launching = call("client_state")
+        assertTrue(launching.get("isError").asBoolean())
+        assertEquals(
+            "session s1 is still launching; call session_start with this session to wait for it",
+            launching.get("content")[0].get("text").asText(),
+        )
+
+        text("session_stop")
+        assertEquals(
+            "session s1 has no connected client: stopped by caller",
+            call("client_state").get("content")[0].get("text").asText(),
+        )
+    }
+
+    @Test
+    fun `a client tool refuses arguments of the wrong type before calling the client`() {
+        val calls = ArrayList<String>()
+        connect { op, _ ->
+            calls += op
+            """"ok":{}"""
+        }
+
+        assertTrue(call("client_vars", """{"varps":["1055"]}""").get("isError").asBoolean())
+        assertTrue(call("client_widgets", """{"hidden":"yes"}""").get("isError").asBoolean())
+        assertEquals(emptyList(), calls)
     }
 }

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.michaelbull.logging.InlineLogger
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpServer
+import net.rsprox.mcp.bridge.BridgeError
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.URI
@@ -28,6 +29,12 @@ public sealed interface ToolResult {
     /** One text block holding [text] as is. */
     public data class Text(
         val text: String,
+    ) : ToolResult
+
+    /** A PNG image block followed by one text block holding [meta] as compact JSON. */
+    public data class Image(
+        val pngBase64: String,
+        val meta: Any,
     ) : ToolResult
 }
 
@@ -139,33 +146,47 @@ internal class McpDispatcher(
         val arguments = params.get("arguments")?.takeUnless { it.isNull } ?: MAPPER.createObjectNode()
         if (arguments !is ObjectNode) throw RpcError(INVALID_PARAMS, "params.arguments must be an object")
         val result = MAPPER.createObjectNode()
-        val text =
+        val content =
             try {
                 checkArguments(tool, arguments)
-                val text = render(tool.run(arguments))
+                val content = render(tool.run(arguments))
                 result.put("isError", false)
-                text
+                content
             } catch (e: ToolError) {
                 result.put("isError", true)
-                e.message.orEmpty()
+                listOf(textBlock(e.message.orEmpty()))
+            } catch (e: BridgeError) {
+                result.put("isError", true)
+                listOf(textBlock("${e.code}: ${e.message}"))
             } catch (t: Throwable) {
                 logger.error(t) { "Tool $name failed" }
                 result.put("isError", true)
-                "internal: $t"
+                listOf(textBlock("internal: $t"))
             }
-        result
-            .putArray("content")
-            .addObject()
-            .put("type", "text")
-            .put("text", text)
+        result.putArray("content").addAll(content)
         return result
     }
 
-    private fun render(result: ToolResult): String =
+    private fun render(result: ToolResult): List<ObjectNode> =
         when (result) {
-            is ToolResult.Json -> MAPPER.writeValueAsString(result.value)
-            is ToolResult.Text -> result.text
+            is ToolResult.Json -> listOf(textBlock(MAPPER.writeValueAsString(result.value)))
+            is ToolResult.Text -> listOf(textBlock(result.text))
+            is ToolResult.Image ->
+                listOf(
+                    MAPPER
+                        .createObjectNode()
+                        .put("type", "image")
+                        .put("data", result.pngBase64)
+                        .put("mimeType", "image/png"),
+                    textBlock(MAPPER.writeValueAsString(result.meta)),
+                )
         }
+
+    private fun textBlock(text: String): ObjectNode =
+        MAPPER
+            .createObjectNode()
+            .put("type", "text")
+            .put("text", text)
 
     /**
      * Checks the subset of JSON Schema the tool table uses: `required`, per-property `type`, `enum`,

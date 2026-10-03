@@ -2,6 +2,7 @@ package net.rsprox.mcp.server
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import net.rsprox.mcp.bridge.BridgeError
 import net.rsprox.mcp.packets.Cursor
 import net.rsprox.mcp.packets.Origin
 import net.rsprox.mcp.packets.PacketPage
@@ -87,7 +88,86 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
             val page = sessions().resolve(args.text("session")).packets.read(query, args.long("wait_ms") ?: 0)
             ToolResult.Text(render(page))
         },
+        clientTool(
+            name = "client_state",
+            description =
+                "Read what the client is doing: `gameState` (such as LOGIN_SCREEN or LOGGED_IN), `tick`, " +
+                    "`canvas` as [width, height], `world`, `player` with its name and tile (null unless logged " +
+                    "in), and `menu` with the entries a right-click would show at the current mouse position.",
+            schema = schema("session" to SESSION),
+            sessions = sessions,
+        ),
+        clientTool(
+            name = "client_screenshot",
+            description =
+                "Capture the game canvas as a PNG. The image has the size of the canvas, so a pixel " +
+                    "position in it is the `x`,`y` to pass to client_click. The text block holds `width` " +
+                    "and `height`.",
+            schema = schema("session" to SESSION),
+            sessions = sessions,
+            result = { ok -> ToolResult.Image(ok.remove("png")?.asText().orEmpty(), ok) },
+        ),
+        clientTool(
+            name = "client_widgets",
+            description =
+                "List the interface widgets that have text, a name or actions. Each has `id` " +
+                    "(\"<group>:<child>\", or \"<group>:<child>[<index>]\" for a dynamic child), `text`, `name`, " +
+                    "`actions`, `bounds` as [x, y, width, height], `click` as the [x, y] at its centre, `type` " +
+                    "and `hidden`. `roots` lists the groups of the top-level interfaces. `truncated` is true " +
+                    "when `limit` cut the list short; narrow it with `group` or `text`.",
+            schema =
+                schema(
+                    "session" to SESSION,
+                    "group" to integer("Keep only widgets of this interface group, such as 558.", 0),
+                    "text" to string("Case-insensitive substring to find in the text, name or actions."),
+                    "hidden" to boolean("Also list hidden widgets. Default false."),
+                    "limit" to integer("Maximum number of widgets to return. Default 200.", 1, 2000),
+                ),
+            sessions = sessions,
+        ),
+        clientTool(
+            name = "client_vars",
+            description =
+                "Read client variables by id. The result maps each requested id to its value under " +
+                    "`varps`, `varbits`, `varcInts` and `varcStrs`.",
+            schema =
+                schema(
+                    "session" to SESSION,
+                    "varps" to integerArray("Player variable ids, such as [1055]."),
+                    "varbits" to integerArray("Varbit ids, such as [8119]."),
+                    "varcInts" to integerArray("Client integer variable ids."),
+                    "varcStrs" to integerArray("Client string variable ids."),
+                ),
+            sessions = sessions,
+        ),
     )
+
+/**
+ * The shape every client_* tool shares. The plugin's answer is the tool result, plus the packet cursor
+ * taken before the call, so everything the action caused has a sequence number above it.
+ */
+private fun clientTool(
+    name: String,
+    description: String,
+    schema: ObjectNode,
+    sessions: () -> SessionManager,
+    timeoutMs: (ObjectNode) -> Long = { CLIENT_CALL_TIMEOUT_MS },
+    result: (ObjectNode) -> ToolResult = ToolResult::Json,
+): Tool =
+    Tool(name, "$description $CURSOR_NOTE", schema) { args ->
+        val session = sessions().resolve(args.text("session"))
+        val cursor = session.packets.head().seq
+        val forwarded = args.deepCopy().without<ObjectNode>("session")
+        val ok = session.requireLink().call(name.removePrefix("client_"), forwarded, timeoutMs(args))
+        if (ok !is ObjectNode) throw BridgeError("internal", "the client answered $name with $ok")
+        result(ok.put("cursor", cursor))
+    }
+
+private const val CLIENT_CALL_TIMEOUT_MS = 10_000L
+
+private const val CURSOR_NOTE =
+    "The result carries `cursor`, the packet cursor taken just before the call: pass it as `after` to " +
+        "packets_read to see only the packets from this call onwards."
 
 private val SESSION: ObjectNode = string("Session id, such as \"s1\". May be omitted while only one session exists.")
 
@@ -119,14 +199,29 @@ private fun render(page: PacketPage): String {
     return out.toString()
 }
 
-private fun schema(vararg properties: Pair<String, ObjectNode>): ObjectNode {
+private fun schema(
+    vararg properties: Pair<String, ObjectNode>,
+    required: List<String> = emptyList(),
+): ObjectNode {
     val schema = McpDispatcher.MAPPER.createObjectNode()
     schema.put("type", "object")
     val node = schema.putObject("properties")
     for ((name, property) in properties) {
         node.set<JsonNode>(name, property)
     }
+    if (required.isNotEmpty()) {
+        val names = schema.putArray("required")
+        required.forEach(names::add)
+    }
     return schema
+}
+
+private fun boolean(description: String): ObjectNode = property("boolean", description)
+
+private fun integerArray(description: String): ObjectNode {
+    val node = property("array", description)
+    node.putObject("items").put("type", "integer")
+    return node
 }
 
 private fun string(
