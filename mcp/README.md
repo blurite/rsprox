@@ -30,10 +30,39 @@ Options go in `--args`:
 | `--start <target>` | Launch a client for this target at startup. |
 | `--sideload-dir <dir>` | Where to install the client plugin, when the client does not use the default directory. |
 | `--port-skip <n>` | Proxy ports to leave free at the start of the range for a GUI. Default 50. |
+| `--software-rendering` | Stop the GPU plugin in launched clients. Needed on a virtual display. |
 
 The plugin is installed as `rsprox-mcp-bridge.jar` in `~/.rlcustom/sideloaded-plugins` for a custom
 target and in `~/.runelite/sideloaded-plugins` for the official one. A client that the MCP server did
 not launch loads the plugin too, and the plugin then does nothing.
+
+## Run it without a display
+
+RuneLite always opens a window, so on a machine with no screen give it a virtual one. On Linux, run
+the server under Xvfb and pass `--software-rendering`:
+
+```
+xvfb-run -s "-screen 0 1280x800x24" ./gradlew :mcp:run --args="--software-rendering"
+```
+
+Without `--software-rendering` everything works except `client_screenshot`, which returns a black
+image. The GPU plugin renders with a software OpenGL driver on a virtual display, and the frames read
+back from it are empty. The option stops the GPU plugin in each client the server launches. It does
+not change the RuneLite profile, so clients started any other way keep their GPU setting.
+
+Besides a JDK, the machine needs Xvfb and the X11 and font libraries that Java's AWT loads. On Debian
+or Ubuntu:
+
+```
+apt-get install xvfb libxrender1 libxtst6 libxi6 libxext6 libfontconfig1 libfreetype6 fonts-dejavu-core
+```
+
+The client reports that audio is unavailable when the machine has no sound device. That is harmless.
+
+A custom target reaches each world through a loopback address such as `127.0.1.3`. Linux routes all
+of `127.0.0.0/8` to loopback, so it needs no alias.
+
+There is no virtual display on macOS or Windows, so there the client needs a real screen.
 
 ## Register it with an MCP client
 
@@ -130,7 +159,7 @@ Two more patterns are useful:
 
 ## Known limits
 
-- The client needs a display. The server has no GUI of its own, but RuneLite opens a window.
+- The client needs a display, real or virtual. See "Run it without a display".
 - The proxy only observes. It cannot inject or change packets. All input goes through the client as
   mouse and key events.
 - A launch whose launcher never completes its handshake is abandoned after 180 seconds. After that,

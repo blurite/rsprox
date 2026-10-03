@@ -32,9 +32,11 @@ internal fun awaitTrue(
 }
 
 /** A started hub whose rendezvous file lives in a temporary directory. */
-internal class TestHub : AutoCloseable {
+internal class TestHub(
+    softwareRendering: Boolean = false,
+) : AutoCloseable {
     val rendezvous: Path = Files.createTempDirectory("mcp-bridge-test").resolve("mcp").resolve("bridge.json")
-    val hub = BridgeHub(rendezvous).also { it.start() }
+    val hub = BridgeHub(rendezvous, softwareRendering).also { it.start() }
 
     override fun close() {
         hub.close()

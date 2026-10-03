@@ -39,6 +39,7 @@ internal interface BridgeListener {
  */
 public class BridgeHub(
     private val rendezvous: Path,
+    private val softwareRendering: Boolean = false,
 ) : AutoCloseable {
     private val expected = ConcurrentHashMap<Int, BridgeListener>()
     private val links = ConcurrentHashMap.newKeySet<BridgeLink>()
@@ -133,7 +134,13 @@ public class BridgeHub(
                 listener.onClosed(closed)
             }
         // The welcome goes out before the session can see the link, so no request can overtake it.
-        writer.line(MAPPER.createObjectNode().put("welcome", PROTOCOL).put("session", listener.session))
+        writer.line(
+            MAPPER
+                .createObjectNode()
+                .put("welcome", PROTOCOL)
+                .put("session", listener.session)
+                .put("softwareRendering", softwareRendering),
+        )
         if (!listener.onHello(link, hello.get("pid")?.asLong() ?: -1)) {
             socket.close()
             return

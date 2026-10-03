@@ -39,10 +39,13 @@ final class BridgeConnection implements AutoCloseable {
     private final BufferedWriter writer;
     private final Gson gson;
     private final Ops ops;
+    private final boolean softwareRendering;
     private final AtomicBoolean closed = new AtomicBoolean();
     private ExecutorService workers;
 
-    private BridgeConnection(Socket socket, BufferedReader reader, BufferedWriter writer, Gson gson, Ops ops) {
+    private BridgeConnection(
+        Socket socket, BufferedReader reader, BufferedWriter writer, Gson gson, Ops ops, boolean softwareRendering) {
+        this.softwareRendering = softwareRendering;
         this.socket = socket;
         this.reader = reader;
         this.writer = writer;
@@ -93,7 +96,9 @@ final class BridgeConnection implements AutoCloseable {
                 return null;
             }
             socket.setSoTimeout(0);
-            BridgeConnection connection = new BridgeConnection(socket, reader, writer, gson, ops);
+            boolean softwareRendering =
+                answer.has("softwareRendering") && answer.get("softwareRendering").getAsBoolean();
+            BridgeConnection connection = new BridgeConnection(socket, reader, writer, gson, ops, softwareRendering);
             connection.start();
             log.info("rsprox MCP bridge connected as session {}", answer.get("session"));
             return connection;
@@ -106,6 +111,11 @@ final class BridgeConnection implements AutoCloseable {
             }
             return null;
         }
+    }
+
+    /** Whether rsprox asked for a client that renders without the GPU plugin. */
+    boolean softwareRendering() {
+        return softwareRendering;
     }
 
     /** The port in the client's jav_config argument, which is how rsprox tells its clients apart. */

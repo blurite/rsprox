@@ -84,7 +84,18 @@ class BridgeHubTest {
         val welcome = plugin.read()!!
         assertEquals(1, welcome.get("welcome").asInt())
         assertEquals("s3", welcome.get("session").asText())
+        assertFalse(welcome.get("softwareRendering").asBoolean())
         assertEquals(4242, listener.hello.get(10, TimeUnit.SECONDS).second)
+    }
+
+    @Test
+    fun `a hub set to software rendering tells each client it welcomes`() {
+        TestHub(softwareRendering = true).use { other ->
+            other.hub.expect(43650, RecordingListener())
+            val plugin = FakePlugin.dial(other.rendezvous, 43650, null, 1).also { plugins += it }
+
+            assertTrue(plugin.read()!!.get("softwareRendering").asBoolean())
+        }
     }
 
     @Test

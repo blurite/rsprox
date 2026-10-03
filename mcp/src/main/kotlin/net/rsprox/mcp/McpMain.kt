@@ -2,6 +2,7 @@ package net.rsprox.mcp
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.path
@@ -32,6 +33,10 @@ public class McpCommand : CliktCommand(name = "mcp") {
         "--sideload-dir",
         help = "Directory the client sideloads plugins from, when it is not the default of the target",
     ).path()
+    private val softwareRendering by option(
+        "--software-rendering",
+        help = "Stop the GPU plugin in launched clients, for a virtual display such as Xvfb",
+    ).flag()
     private val autostart by option("--start", help = "Target name to launch immediately")
 
     override fun run() {
@@ -54,7 +59,8 @@ public class McpCommand : CliktCommand(name = "mcp") {
         service.filterSetStore = UnfilteredFilterSetStore
         service.settingsStore = TapSettingSetStore
         val launcher = ProxyServiceLauncher(service, portSkip.coerceAtLeast(1), BridgeJar(sideloadDir))
-        val hub = BridgeHub(Path.of(System.getProperty("user.home"), ".rsprox", "mcp", "bridge.json"))
+        val hub =
+            BridgeHub(Path.of(System.getProperty("user.home"), ".rsprox", "mcp", "bridge.json"), softwareRendering)
         hub.start()
         // The proxy's own hook kills the clients; this one removes the rendezvous file they dial through.
         Runtime.getRuntime().addShutdownHook(Thread(hub::close, "mcp-bridge-shutdown"))
