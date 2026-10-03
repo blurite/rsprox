@@ -26,14 +26,19 @@ internal class ProxyServiceLauncher(
 
     override fun reserve(target: ProxyTargetConfig): Reservation {
         bridgeJar.installFor(target)
+
         // The proxy logs and returns when it cannot bind a proxy port, and a GUI may own any port in the range.
         var port: Int
+
         do {
             port = service.allocatePort()
         } while (!isFree(port) || !isFree(HTTP_PORT_BASE + (port - basePort)))
+
         val proxyTarget = service.initializeHttpServer(port, target)
+
         return Reservation(port, proxyTarget.httpPort) { monitor ->
             service.launchRuneLiteClient(monitor, null, port, proxyTarget)
+
             // Probing leaves a window in which another process can take the port. The proxy registers
             // a client type for a port only after it has bound it.
             check(isBound(port)) { "proxy port $port could not be bound" }

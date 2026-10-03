@@ -18,6 +18,7 @@ public class BridgeJar internal constructor(
             val resource =
                 BridgeJar::class.java.getResourceAsStream("/$FILE_NAME")
                     ?: error("The bridge plugin jar is missing from this build")
+
             resource.use { it.readAllBytes() }
         },
     )
@@ -31,12 +32,15 @@ public class BridgeJar internal constructor(
         val dir = overrideDir ?: home.resolve(if (target.id == 0) ".runelite" else ".rlcustom").resolve(SIDELOAD_DIR)
         val installed = dir.resolve(FILE_NAME)
         val wanted = embedded()
+
         if (Files.isRegularFile(installed) && Files.readAllBytes(installed).contentEquals(wanted)) return installed
         Files.createDirectories(dir)
+
         // The client loads every `.jar` in the directory, so the partial file must not look like one.
         val temp = Files.createTempFile(dir, FILE_NAME, ".tmp")
         Files.write(temp, wanted)
         Files.move(temp, installed, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
+
         return installed
     }
 

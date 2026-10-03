@@ -110,6 +110,7 @@ class PacketLogTest {
             CompletableFuture.supplyAsync {
                 log.read(PacketQuery(after = Cursor(1), prots = setOf("WANTED")), waitMs = 30_000)
             }
+
         log.add("NOISE")
         assertFalse(read.isDone)
         log.add("WANTED")

@@ -52,7 +52,9 @@ public class BridgeHub(
     public fun start() {
         val server = ServerSocket(0, BACKLOG, InetAddress.getLoopbackAddress())
         this.server = server
+
         writeRendezvous(server.localPort)
+
         val thread = Thread({ acceptLoop(server) }, "mcp-bridge-accept")
         thread.isDaemon = true
         thread.start()
@@ -80,13 +82,16 @@ public class BridgeHub(
                 .put("port", port)
                 .put("token", token)
                 .put("pid", ProcessHandle.current().pid())
+
         Files.createDirectories(rendezvous.parent)
+
         // Written beside the target and moved into place, so a plugin never reads a partial file
         // and the token is never in a file that others may read.
         val temp = Files.createTempFile(rendezvous.parent, "bridge", ".tmp")
         if (Files.getFileStore(temp).supportsFileAttributeView("posix")) {
             Files.setPosixFilePermissions(temp, PosixFilePermissions.fromString("rw-------"))
         }
+
         Files.write(temp, MAPPER.writeValueAsBytes(content))
         Files.move(temp, rendezvous, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
     }
@@ -99,6 +104,7 @@ public class BridgeHub(
                 } catch (e: IOException) {
                     return
                 }
+
             try {
                 greet(socket)
             } catch (e: Exception) {
@@ -121,18 +127,22 @@ public class BridgeHub(
                     "bridge protocol ${hello.get("hello")} is not supported; the installed plugin jar is stale"
                 else -> null
             }
+
         val listener = if (refusal == null) expected.remove(httpPort) else null
         if (listener == null) {
             writer.line(MAPPER.createObjectNode().put("reject", refusal ?: "no session expects httpPort $httpPort"))
             socket.close()
+
             return
         }
+
         socket.soTimeout = 0
         val link =
             BridgeLink(socket, reader, writer) { closed ->
                 links.remove(closed)
                 listener.onClosed(closed)
             }
+
         // The welcome goes out before the session can see the link, so no request can overtake it.
         writer.line(
             MAPPER
@@ -141,19 +151,25 @@ public class BridgeHub(
                 .put("session", listener.session)
                 .put("softwareRendering", softwareRendering),
         )
+
         if (!listener.onHello(link, hello.get("pid")?.asLong() ?: -1)) {
             socket.close()
+
             return
         }
+
         links += link
         link.start()
         logger.info { "Bridge connected for session ${listener.session} (httpPort $httpPort)" }
     }
 
-    private fun tokenMatches(candidate: JsonNode?): Boolean =
-        candidate != null &&
-            candidate.isTextual &&
-            MessageDigest.isEqual(candidate.asText().toByteArray(), token.toByteArray())
+    private fun tokenMatches(candidate: JsonNode?): Boolean {
+        if (candidate == null || !candidate.isTextual) {
+            return false
+        }
+
+        return MessageDigest.isEqual(candidate.asText().toByteArray(), token.toByteArray())
+    }
 
     private fun Writer.line(message: JsonNode) {
         write(MAPPER.writeValueAsString(message))
@@ -171,6 +187,7 @@ public class BridgeHub(
         private fun newToken(): String {
             val bytes = ByteArray(16)
             SecureRandom().nextBytes(bytes)
+
             return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
         }
     }

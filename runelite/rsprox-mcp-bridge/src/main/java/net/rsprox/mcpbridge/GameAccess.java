@@ -46,6 +46,7 @@ final class GameAccess {
                 result.completeExceptionally(t);
             }
         });
+
         return await(result, "the client thread");
     }
 
@@ -72,15 +73,18 @@ final class GameAccess {
                 result.completeExceptionally(t);
             }
         });
+
         return await(result, "a rendered frame");
     }
 
     private static BufferedImage copy(Image image) {
         BufferedImage copy =
             new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_RGB);
+
         Graphics2D graphics = copy.createGraphics();
         graphics.drawImage(image, 0, 0, null);
         graphics.dispose();
+
         return copy;
     }
 
@@ -97,6 +101,7 @@ final class GameAccess {
             if (cause instanceof BridgeException) {
                 throw (BridgeException) cause;
             }
+
             throw new BridgeException("internal", String.valueOf(cause));
         }
     }

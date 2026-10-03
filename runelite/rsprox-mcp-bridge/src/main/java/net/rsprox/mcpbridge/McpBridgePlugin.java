@@ -42,6 +42,7 @@ public class McpBridgePlugin extends Plugin {
     protected void startUp() {
         Path rendezvous = Paths.get(System.getProperty("user.home"), ".rsprox", "mcp", "bridge.json");
         Ops ops = new Ops(new GameAccess(client, clientThread, drawManager));
+
         // The protocol spells out an absent player as null, which the client's Gson would drop.
         connection = BridgeConnection.dial(rendezvous, gson.newBuilder().serializeNulls().create(), ops);
         if (connection != null && connection.softwareRendering()) {
@@ -57,25 +58,32 @@ public class McpBridgePlugin extends Plugin {
      */
     private void stopGpuPlugin() {
         Plugin gpu = null;
+
         for (Plugin plugin : pluginManager.getPlugins()) {
             if (plugin.getClass().getSimpleName().equals(GPU_PLUGIN)) {
                 gpu = plugin;
             }
         }
+
         if (gpu == null || !pluginManager.isPluginEnabled(gpu)) {
             return;
         }
+
         // The GPU plugin finishes starting on the client thread, some time after it is marked active.
         // Stopping it before then lets that late start win, so wait until the client renders through it.
         long deadline = System.currentTimeMillis() + GPU_START_WAIT_MS;
+
         try {
             while (!(pluginManager.isPluginActive(gpu) && client.isGpu())) {
                 if (System.currentTimeMillis() >= deadline) {
                     log.info("The GPU plugin did not take over rendering, so there is nothing to stop");
+
                     return;
                 }
+
                 Thread.sleep(GPU_POLL_MS);
             }
+
             pluginManager.stopPlugin(gpu);
             log.info("Stopped the GPU plugin for software rendering");
         } catch (InterruptedException e) {

@@ -77,10 +77,12 @@ public class PacketLog(
         lock.withLock {
             val seq = firstSeq + records.size
             records.addLast(PacketRecord(seq, login, cycle, origin, prot, System.currentTimeMillis(), text))
+
             if (records.size > capacity) {
                 records.removeFirst()
                 firstSeq++
             }
+
             appended.signalAll()
             seq
         }
@@ -96,28 +98,34 @@ public class PacketLog(
         lock.withLock {
             val deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(waitMs)
             val matches = ArrayList<PacketRecord>()
+
             // A cursor past the head can only come from another log; reading from the head keeps it usable.
             var scanned = query.after.seq.coerceIn(0, headSeq())
             var dropped = 0L
             var timedOut = false
+
             while (true) {
                 if (scanned + 1 < firstSeq) {
                     dropped += firstSeq - (scanned + 1)
                     scanned = firstSeq - 1
                 }
+
                 while (scanned < headSeq() && matches.size < query.limit) {
                     scanned++
                     val record = records[(scanned - firstSeq).toInt()]
                     if (query.matches(record)) matches += record
                 }
+
                 if (matches.isNotEmpty() || waitMs <= 0) break
                 val remaining = deadline - System.nanoTime()
                 if (remaining <= 0) {
                     timedOut = true
                     break
                 }
+
                 appended.awaitNanos(remaining)
             }
+
             PacketPage(matches, Cursor(scanned), Cursor(headSeq()), dropped, timedOut)
         }
 

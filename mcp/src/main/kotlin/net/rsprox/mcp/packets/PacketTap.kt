@@ -24,27 +24,43 @@ internal class PacketTap(
     override fun forSession(header: BinaryHeader): SessionMonitor<BinaryHeader> =
         LoginTap(log, logins, settings, logins.nextEpoch())
 
-    override fun onLogin(header: BinaryHeader) {}
+    override fun onLogin(header: BinaryHeader) {
+        //
+    }
 
-    override fun onLogout(header: BinaryHeader) {}
+    override fun onLogout(header: BinaryHeader) {
+        //
+    }
 
-    override fun onCacheUpdate(cacheProvider: CacheProvider) {}
+    override fun onCacheUpdate(cacheProvider: CacheProvider) {
+        //
+    }
 
-    override fun onIncomingBytesPerSecondUpdate(bytesPerLastSecond: Long) {}
+    override fun onIncomingBytesPerSecondUpdate(bytesPerLastSecond: Long) {
+        //
+    }
 
-    override fun onOutgoingBytesPerSecondUpdate(bytesPerLastSecond: Long) {}
+    override fun onOutgoingBytesPerSecondUpdate(bytesPerLastSecond: Long) {
+        //
+    }
 
-    override fun onNameUpdate(name: String) {}
+    override fun onNameUpdate(name: String) {
+        //
+    }
 
     override fun onUserInformationUpdate(
         userId: Long,
         userHash: Long,
-    ) {}
+    ) {
+        //
+    }
 
     override fun onTranscribe(
         cycle: Int,
         property: RootProperty,
-    ) {}
+    ) {
+        //
+    }
 }
 
 internal class LoginTap(
@@ -74,6 +90,7 @@ internal class LoginTap(
 
     override fun onPacketDirection(direction: StreamDirection) {
         this.direction = direction
+
         // The cache update arrives before the proxy knows whether a decoder exists for the revision,
         // so the first decoded packet is the earliest proof that a transcriber is hooked.
         if (!transcribing) {
@@ -95,6 +112,7 @@ internal class LoginTap(
                 // An exception here would unwind into the proxy's transcriber worker.
                 "[${property.prot.lowercase()}] <unformattable: $e>"
             }
+
         log.append(epoch, cycle, origin, property.prot.uppercase(), text)
     }
 
@@ -115,9 +133,15 @@ internal class LoginTap(
     override fun onUserInformationUpdate(
         userId: Long,
         userHash: Long,
-    ) {}
+    ) {
+        //
+    }
 
-    override fun onIncomingBytesPerSecondUpdate(bytesPerLastSecond: Long) {}
+    override fun onIncomingBytesPerSecondUpdate(bytesPerLastSecond: Long) {
+        //
+    }
 
-    override fun onOutgoingBytesPerSecondUpdate(bytesPerLastSecond: Long) {}
+    override fun onOutgoingBytesPerSecondUpdate(bytesPerLastSecond: Long) {
+        //
+    }
 }

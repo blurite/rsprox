@@ -53,6 +53,7 @@ class McpDispatcherTest {
         val node = mapper.readTree(reply.body)
         assertEquals("2.0", node.get("jsonrpc").asText())
         assertNull(node.get("error"), "unexpected error: ${reply.body}")
+
         return node.get("result")
     }
 
@@ -68,6 +69,7 @@ class McpDispatcherTest {
     fun `initialize echoes a supported protocol version and names the server`() {
         val result =
             result("""{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18"}}""")
+
         assertEquals("2025-06-18", result.get("protocolVersion").asText())
         assertTrue(result.get("capabilities").has("tools"))
         assertEquals("rsprox", result.get("serverInfo").get("name").asText())
@@ -78,6 +80,7 @@ class McpDispatcherTest {
     fun `initialize answers an unknown protocol version with the newest supported one`() {
         val result =
             result("""{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"1999-01-01"}}""")
+
         assertEquals("2025-11-25", result.get("protocolVersion").asText())
     }
 
@@ -136,6 +139,7 @@ class McpDispatcherTest {
                 """{"text":"a","mode":"c"}""" to "'mode' must be one of a, b",
                 """{"text":"a","tags":["x",1]}""" to "every item of 'tags' must be of type string",
             )
+
         for ((arguments, expected) in cases) {
             val result = callTool("echo", arguments)
             assertTrue(result.get("isError").asBoolean(), arguments)

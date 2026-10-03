@@ -41,6 +41,7 @@ class ToolsTest {
         arguments: String = "{}",
     ): JsonNode {
         val body = """{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"$name","arguments":$arguments}}"""
+
         return mapper.readTree(dispatcher.handle("POST", null, body).body).get("result")
     }
 
@@ -50,6 +51,7 @@ class ToolsTest {
     ): String {
         val result = call(name, arguments)
         assertFalse(result.get("isError").asBoolean(), result.toString())
+
         return result.get("content")[0].get("text").asText()
     }
 
@@ -149,10 +151,12 @@ class ToolsTest {
         val forwarded = ArrayList<Pair<String, JsonNode>>()
         connect { op, args ->
             forwarded += op to args
+
             // What the action causes arrives while the call is in flight.
             manager.resolve("s1").packets.append(1, 5, Origin.SERVER, "IF_SETTEXT", "[if_settext] text=\"hello\"")
             """"ok":{"gameState":"LOGIN_SCREEN","tick":0}"""
         }
+
         val log = manager.resolve("s1").packets
         val before = log.head().seq
 
@@ -244,12 +248,14 @@ class ToolsTest {
         val forwarded = ArrayList<Pair<String, JsonNode>>()
         connect { op, args ->
             forwarded += op to args
+
             when (op) {
                 "login" -> """"ok":{"gameState":"LOGGED_IN"}"""
                 "click" -> """"ok":{"x":380,"y":215}"""
                 else -> """"ok":{"typed":8}"""
             }
         }
+
         val cursor = manager.resolve("s1").packets.head().seq
 
         assertEquals(

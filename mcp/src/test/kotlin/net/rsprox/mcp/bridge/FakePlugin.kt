@@ -25,6 +25,7 @@ internal fun awaitTrue(
     condition: () -> Boolean,
 ) {
     val deadline = System.nanoTime() + 10_000_000_000
+
     while (!condition()) {
         check(System.nanoTime() < deadline) { "timed out waiting until $what" }
         Thread.sleep(5)
@@ -58,6 +59,7 @@ internal class RecordingListener(
         pid: Long,
     ): Boolean {
         hello.complete(link to pid)
+
         return accept
     }
 
@@ -121,7 +123,9 @@ internal class FakePlugin private constructor(
                     .put("httpPort", httpPort)
                     .put("token", token ?: file.get("token").asText())
                     .put("pid", pid)
+
             plugin.send(mapper.writeValueAsString(hello))
+
             return plugin
         }
     }

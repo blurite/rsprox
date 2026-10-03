@@ -57,23 +57,31 @@ public class SessionManager internal constructor(
                 if (existing != null && target != null && !existing.target.name.equals(target, ignoreCase = true)) {
                     throw ToolError("session ${existing.id} belongs to target '${existing.target.name}'")
                 }
+
                 val current = existing ?: Session(SessionId("s${sessions.size + 1}"), resolveTarget(target))
                 if (current.client is ClientState.Stopped) launch(current)
                 current
             }
+
         started.awaitConnected(waitMs)
+
         return started.snapshot()
     }
 
     /** Kills the client. The session and its packets stay listed and readable. Idempotent. */
     public fun stop(session: String?): SessionSnapshot {
         val resolved = resolve(session)
+
         synchronized(launchLock) {
             val state = resolved.client
+
             // Stopped first, so the close of the link below is not mistaken for the client exiting.
             resolved.apply(SessionEvent.Stop("stopped by caller"))
+
             when (state) {
-                is ClientState.Stopped -> {}
+                is ClientState.Stopped -> {
+                    //
+                }
                 is ClientState.Launching -> launcher.kill(state.launch.proxyPort)
                 is ClientState.Connected -> {
                     state.link.close()
@@ -81,6 +89,7 @@ public class SessionManager internal constructor(
                 }
             }
         }
+
         return resolved.snapshot()
     }
 
@@ -92,6 +101,7 @@ public class SessionManager internal constructor(
             return sessions.firstOrNull { it.id.value == ref }
                 ?: throw ToolError("no session '$ref'. Sessions: ${sessionIds()}")
         }
+
         return sessions.singleOrNull()
             ?: throw ToolError(
                 if (sessions.isEmpty()) {
@@ -108,10 +118,12 @@ public class SessionManager internal constructor(
 
     private fun resolveTarget(name: String?): ProxyTargetConfig {
         val targets = launcher.targets()
+
         if (name == null) {
             // Target 0 is the official game; a custom target is what a headless caller is here to test.
             return targets.firstOrNull { it.id != 0 } ?: targets.first()
         }
+
         return targets.firstOrNull { it.name.equals(name, ignoreCase = true) }
             ?: throw ToolError("no target '$name'. Targets: ${targets.joinToString(", ") { it.name }}")
     }
@@ -120,15 +132,19 @@ public class SessionManager internal constructor(
         if (hungLaunch) {
             throw ToolError("an earlier launch never completed its handshake; restart the rsprox MCP process")
         }
+
         val reservation =
             try {
                 launcher.reserve(session.target)
             } catch (e: Exception) {
                 throw ToolError("could not prepare target '${session.target.name}': ${rootMessage(e)}")
             }
+
         val launch =
             Launch(session.nextGeneration(), reservation.proxyPort, reservation.httpPort, System.currentTimeMillis())
+
         sessions.addIfAbsent(session)
+
         // Registered before the client is forked: its hello can arrive before the launch call returns.
         bridge.expect(launch.httpPort, listener(session, launch))
         session.apply(SessionEvent.Launched(launch))
@@ -143,6 +159,7 @@ public class SessionManager internal constructor(
                     failure.set(t)
                 }
             }, "mcp-launch-${session.id}")
+
         thread.isDaemon = true
         thread.start()
         thread.join(launchTimeoutMs)
@@ -153,6 +170,7 @@ public class SessionManager internal constructor(
             } else {
                 failure.get()?.let(::rootMessage) ?: return
             }
+
         launcher.kill(launch.proxyPort)
         session.apply(SessionEvent.Stop(reason))
         throw ToolError("session ${session.id} failed to launch: $reason")
@@ -170,12 +188,14 @@ public class SessionManager internal constructor(
                 pid: Long,
             ): Boolean {
                 val state = session.apply(SessionEvent.Hello(launch.httpPort, link, pid))
+
                 return state is ClientState.Connected && state.link === link
             }
 
             override fun onClosed(link: BridgeLink) {
                 val before = session.client
                 if (session.apply(SessionEvent.LinkClosed(link)) === before) return
+
                 // The client is gone, or cannot be driven any more. Either way the proxy still holds
                 // its process handle and session monitor for the port.
                 synchronized(launchLock) { launcher.kill(launch.proxyPort) }
@@ -184,6 +204,7 @@ public class SessionManager internal constructor(
 
     private fun rootMessage(throwable: Throwable): String {
         val root = generateSequence(throwable) { it.cause }.last()
+
         return root.message ?: root.toString()
     }
 

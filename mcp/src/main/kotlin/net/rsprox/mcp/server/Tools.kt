@@ -85,6 +85,7 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
                     contains = args.text("contains"),
                     limit = args.long("limit")?.toInt() ?: 200,
                 )
+
             val page = sessions().resolve(args.text("session")).packets.read(query, args.long("wait_ms") ?: 0)
             ToolResult.Text(render(page))
         },
@@ -208,6 +209,7 @@ private fun clientTool(
         val cursor = session.packets.head().seq
         val forwarded = args.deepCopy().without<ObjectNode>("session")
         val ok = session.requireLink().call(name.removePrefix("client_"), forwarded, timeoutMs(args))
+
         if (ok !is ObjectNode) throw BridgeError("internal", "the client answered $name with $ok")
         result(ok.put("cursor", cursor))
     }
@@ -232,7 +234,9 @@ private fun render(page: PacketPage): String {
             "timedOut" to page.timedOut,
             "count" to page.packets.size,
         )
+
     val out = StringBuilder(McpDispatcher.MAPPER.writeValueAsString(meta))
+
     for (packet in page.packets) {
         out
             .append('\n')
@@ -248,6 +252,7 @@ private fun render(page: PacketPage): String {
             .append(' ')
             .append(packet.text.replace("\n", "\n    "))
     }
+
     return out.toString()
 }
 
@@ -258,13 +263,16 @@ private fun schema(
     val schema = McpDispatcher.MAPPER.createObjectNode()
     schema.put("type", "object")
     val node = schema.putObject("properties")
+
     for ((name, property) in properties) {
         node.set<JsonNode>(name, property)
     }
+
     if (required.isNotEmpty()) {
         val names = schema.putArray("required")
         required.forEach(names::add)
     }
+
     return schema
 }
 
@@ -273,6 +281,7 @@ private fun boolean(description: String): ObjectNode = property("boolean", descr
 private fun integerArray(description: String): ObjectNode {
     val node = property("array", description)
     node.putObject("items").put("type", "integer")
+
     return node
 }
 
@@ -281,10 +290,12 @@ private fun string(
     vararg allowed: String,
 ): ObjectNode {
     val node = property("string", description)
+
     if (allowed.isNotEmpty()) {
         val values = node.putArray("enum")
         allowed.forEach(values::add)
     }
+
     return node
 }
 
@@ -295,13 +306,16 @@ private fun integer(
 ): ObjectNode {
     val node = property("integer", description)
     node.put("minimum", minimum)
+
     if (maximum != null) node.put("maximum", maximum)
+
     return node
 }
 
 private fun stringArray(description: String): ObjectNode {
     val node = property("array", description)
     node.putObject("items").put("type", "string")
+
     return node
 }
 

@@ -41,6 +41,7 @@ class BridgeHubTest {
         hub.expect(43650, listener)
         val plugin = dial(43650)
         assertEquals(1, plugin.read()?.get("welcome")?.asInt())
+
         return plugin to listener.hello.get(10, TimeUnit.SECONDS).first
     }
 
@@ -48,6 +49,7 @@ class BridgeHubTest {
 
     private fun bridgeError(call: CompletableFuture<*>): BridgeError {
         val failure = assertFailsWith<ExecutionException> { call.get(10, TimeUnit.SECONDS) }
+
         return failure.cause as BridgeError
     }
 
@@ -58,6 +60,7 @@ class BridgeHubTest {
         assertTrue(file.get("port").asInt() > 0)
         assertEquals(22, file.get("token").asText().length)
         assertEquals(ProcessHandle.current().pid(), file.get("pid").asLong())
+
         if (Files.getFileStore(fixture.rendezvous).supportsFileAttributeView("posix")) {
             assertEquals("rw-------", PosixFilePermissions.toString(Files.getPosixFilePermissions(fixture.rendezvous)))
         }

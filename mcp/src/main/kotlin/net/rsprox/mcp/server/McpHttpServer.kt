@@ -70,6 +70,7 @@ internal class McpDispatcher(
     ): HttpReply {
         // A browser page on another site could otherwise reach this loopback server through DNS rebinding.
         if (origin != null && !isLocalOrigin(origin)) return HttpReply(403, null)
+
         if (httpMethod != "POST") return HttpReply(405, null)
         val root =
             try {
@@ -77,16 +78,21 @@ internal class McpDispatcher(
             } catch (e: JsonProcessingException) {
                 return HttpReply(400, error(null, PARSE_ERROR, "Parse error"))
             }
+
         if (root == null || !root.isObject) {
             return HttpReply(400, error(null, INVALID_REQUEST, "Expected one JSON-RPC object; batching is unsupported"))
         }
+
         val id = root.get("id")?.takeUnless { it.isNull }
         val method = root.get("method")?.takeIf { it.isTextual }?.asText()
+
         if (method == null) {
             val isResponse = root.has("result") || root.has("error")
             if (isResponse) return HttpReply(202, null)
+
             return HttpReply(400, error(id, INVALID_REQUEST, "Missing method"))
         }
+
         if (id == null) return HttpReply(202, null)
         val result =
             try {
@@ -94,10 +100,12 @@ internal class McpDispatcher(
             } catch (e: RpcError) {
                 return HttpReply(200, error(id, e.code, e.message.orEmpty()))
             }
+
         val reply = MAPPER.createObjectNode()
         reply.put("jsonrpc", "2.0")
         reply.set<JsonNode>("id", id)
         reply.set<JsonNode>("result", result)
+
         return HttpReply(200, MAPPER.writeValueAsString(reply))
     }
 
@@ -122,12 +130,14 @@ internal class McpDispatcher(
             .putObject("serverInfo")
             .put("name", "rsprox")
             .put("version", version)
+
         return result
     }
 
     private fun listTools(): JsonNode {
         val result = MAPPER.createObjectNode()
         val list = result.putArray("tools")
+
         for (tool in tools.values) {
             list
                 .addObject()
@@ -135,6 +145,7 @@ internal class McpDispatcher(
                 .put("description", tool.description)
                 .set<JsonNode>("inputSchema", tool.inputSchema)
         }
+
         return result
     }
 
@@ -142,8 +153,10 @@ internal class McpDispatcher(
         val name =
             params?.get("name")?.takeIf { it.isTextual }?.asText()
                 ?: throw RpcError(INVALID_PARAMS, "tools/call requires params.name")
+
         val tool = tools[name] ?: throw RpcError(INVALID_PARAMS, "Unknown tool: $name")
         val arguments = params.get("arguments")?.takeUnless { it.isNull } ?: MAPPER.createObjectNode()
+
         if (arguments !is ObjectNode) throw RpcError(INVALID_PARAMS, "params.arguments must be an object")
         val result = MAPPER.createObjectNode()
         val content =
@@ -163,7 +176,9 @@ internal class McpDispatcher(
                 result.put("isError", true)
                 listOf(textBlock("internal: $t"))
             }
+
         result.putArray("content").addAll(content)
+
         return result
     }
 
@@ -198,34 +213,41 @@ internal class McpDispatcher(
         arguments: ObjectNode,
     ) {
         val properties = tool.inputSchema.get("properties") ?: MAPPER.createObjectNode()
+
         for (key in arguments.fieldNames()) {
             if (!properties.has(key)) {
                 val allowed = properties.fieldNames().asSequence().joinToString(", ")
                 throw ToolError("${tool.name}: unknown argument '$key'. Allowed: $allowed")
             }
         }
+
         for (required in tool.inputSchema.get("required") ?: emptyList<JsonNode>()) {
             if (!arguments.hasNonNull(required.asText())) {
                 throw ToolError("${tool.name}: missing required argument '${required.asText()}'")
             }
         }
+
         for ((key, value) in arguments.fields()) {
             val schema = properties.get(key)
             val type = schema.get("type").asText()
+
             if (!value.hasType(type)) throw ToolError("${tool.name}: argument '$key' must be of type $type")
             val itemType = schema.get("items")?.get("type")?.asText()
             if (itemType != null && value.any { !it.hasType(itemType) }) {
                 throw ToolError("${tool.name}: every item of '$key' must be of type $itemType")
             }
+
             val allowed = schema.get("enum")
             if (allowed != null && allowed.none { it == value }) {
                 val values = allowed.joinToString(", ") { it.asText() }
                 throw ToolError("${tool.name}: argument '$key' must be one of $values")
             }
+
             val minimum = schema.get("minimum")?.asLong()
             if (minimum != null && value.asLong() < minimum) {
                 throw ToolError("${tool.name}: argument '$key' must be at least $minimum")
             }
+
             val maximum = schema.get("maximum")?.asLong()
             if (maximum != null && value.asLong() > maximum) {
                 throw ToolError("${tool.name}: argument '$key' must be at most $maximum")
@@ -251,6 +273,7 @@ internal class McpDispatcher(
             } catch (e: URISyntaxException) {
                 null
             }
+
         return host in LOCAL_HOSTS
     }
 
@@ -266,6 +289,7 @@ internal class McpDispatcher(
             .putObject("error")
             .put("code", code)
             .put("message", message)
+
         return MAPPER.writeValueAsString(reply)
     }
 
@@ -300,6 +324,7 @@ public class McpHttpServer(
             Executors.newCachedThreadPool { runnable ->
                 Thread(runnable, "mcp-http").apply { isDaemon = true }
             }
+
         server.createContext(PATH, ::handle)
         server.start()
         this.server = server
@@ -309,8 +334,10 @@ public class McpHttpServer(
         try {
             if (exchange.requestURI.path != PATH) {
                 exchange.sendResponseHeaders(404, -1)
+
                 return
             }
+
             val body = exchange.requestBody.readAllBytes().toString(Charsets.UTF_8)
             val reply =
                 dispatcher.handle(
@@ -318,11 +345,15 @@ public class McpHttpServer(
                     exchange.requestHeaders.getFirst("Origin"),
                     body,
                 )
+
             if (reply.status == 405) exchange.responseHeaders.add("Allow", "POST")
+
             if (reply.body == null) {
                 exchange.sendResponseHeaders(reply.status, -1)
+
                 return
             }
+
             val bytes = reply.body.toByteArray(Charsets.UTF_8)
             exchange.responseHeaders.add("Content-Type", "application/json")
             exchange.sendResponseHeaders(reply.status, bytes.size.toLong())

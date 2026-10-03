@@ -27,50 +27,74 @@ internal object UnfilteredFilterSetStore : PropertyFilterSetStore {
 
     override fun getActive(): PropertyFilterSet = AllEnabled
 
-    override fun setActive(index: Int) {}
+    override fun setActive(index: Int) {
+        //
+    }
 
     private object AllEnabled : PropertyFilterSet {
         override fun getCreationTime(): Long = 0
 
         override fun getName(): String = "unfiltered"
 
-        override fun setName(name: String) {}
+        override fun setName(name: String) {
+            //
+        }
 
-        override fun deleteBackingFile() {}
+        override fun deleteBackingFile() {
+            //
+        }
 
         override fun get(filter: PropertyFilter): Boolean = true
 
         override fun set(
             filter: PropertyFilter,
             enabled: Boolean,
-        ) {}
+        ) {
+            //
+        }
 
         override fun set(
             category: ProtCategory,
             enabled: Boolean,
-        ) {}
+        ) {
+            //
+        }
 
         override fun set(
             streamDirection: StreamDirection,
             enabled: Boolean,
-        ) {}
+        ) {
+            //
+        }
 
-        override fun setAll(enabled: Boolean) {}
+        override fun setAll(enabled: Boolean) {
+            //
+        }
 
-        override fun setDefaults() {}
+        override fun setDefaults() {
+            //
+        }
 
         override fun getRegexFilters(): List<RegexFilter> = emptyList()
 
-        override fun addRegexFilter(regexFilter: RegexFilter) {}
+        override fun addRegexFilter(regexFilter: RegexFilter) {
+            //
+        }
 
-        override fun removeRegexFilter(regexFilter: RegexFilter) {}
+        override fun removeRegexFilter(regexFilter: RegexFilter) {
+            //
+        }
 
         override fun replaceRegexFilter(
             oldRegexFilter: RegexFilter,
             newRegexFilter: RegexFilter,
-        ) {}
+        ) {
+            //
+        }
 
-        override fun clearRegexFilters() {}
+        override fun clearRegexFilters() {
+            //
+        }
     }
 }
 
@@ -110,36 +134,52 @@ internal object TapSettingSetStore : SettingSetStore {
 
     override fun getActive(): SettingSet = Fixed
 
-    override fun setActive(index: Int) {}
+    override fun setActive(index: Int) {
+        //
+    }
 
     private object Fixed : SettingSet {
         override fun getCreationTime(): Long = 0
 
         override fun getName(): String = "mcp"
 
-        override fun setName(name: String) {}
+        override fun setName(name: String) {
+            //
+        }
 
-        override fun deleteBackingFile() {}
+        override fun deleteBackingFile() {
+            //
+        }
 
         override fun get(setting: Setting): Boolean = setting.enabled && setting !in off
 
         override fun set(
             setting: Setting,
             enabled: Boolean,
-        ) {}
+        ) {
+            //
+        }
 
         override fun set(
             category: SettingCategory,
             enabled: Boolean,
-        ) {}
+        ) {
+            //
+        }
 
         override fun set(
             group: SettingGroup,
             enabled: Boolean,
-        ) {}
+        ) {
+            //
+        }
 
-        override fun setAll(enabled: Boolean) {}
+        override fun setAll(enabled: Boolean) {
+            //
+        }
 
-        override fun setDefaults() {}
+        override fun setDefaults() {
+            //
+        }
     }
 }

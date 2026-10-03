@@ -173,11 +173,13 @@ public class Session internal constructor(
         lock.withLock {
             val before = client
             val after = reduce(before, event)
+
             if (after !== before) {
                 client = after
                 mark(after)
                 changed.signalAll()
             }
+
             after
         }
 
@@ -188,6 +190,7 @@ public class Session internal constructor(
             while (client is ClientState.Launching && remaining > 0) {
                 remaining = changed.awaitNanos(remaining)
             }
+
             client
         }
 
@@ -209,6 +212,7 @@ public class Session internal constructor(
                 is ClientState.Launching -> state.launch
                 is ClientState.Connected -> state.launch
             }
+
         return SessionSnapshot(
             session = id.value,
             target = target.name,
@@ -238,6 +242,7 @@ public class Session internal constructor(
                 is ClientState.Connected -> "CLIENT_CONNECTED" to "pid=${state.pid}"
                 is ClientState.Stopped -> "CLIENT_EXITED" to state.reason
             }
+
         packets.append(logins.current()?.epoch ?: 0, 0, Origin.PROXY, prot, text)
     }
 }

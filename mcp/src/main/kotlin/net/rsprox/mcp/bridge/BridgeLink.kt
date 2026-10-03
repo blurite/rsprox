@@ -63,17 +63,20 @@ public class BridgeLink internal constructor(
         val id = ids.incrementAndGet()
         val reply = CompletableFuture<JsonNode>()
         pending[id] = reply
+
         try {
             // Checked after registering: a close that happens from here on fails this call through `pending`.
             if (closed.get()) throw closedError()
             val request = MAPPER.createObjectNode().put("id", id).put("op", op)
             request.set<JsonNode>("args", args)
+
             try {
                 send(MAPPER.writeValueAsString(request))
             } catch (e: IOException) {
                 close()
                 throw closedError()
             }
+
             return reply.get(timeoutMs, TimeUnit.MILLISECONDS)
         } catch (e: TimeoutException) {
             throw BridgeError("timeout", "the client did not answer '$op' within $timeoutMs ms")
@@ -108,6 +111,7 @@ public class BridgeLink internal constructor(
                 val id = message?.get("id")?.asLong() ?: continue
                 val reply = pending[id] ?: continue
                 val err = message.get("err")
+
                 if (err != null) {
                     val code = err.get("code")?.asText() ?: "internal"
                     reply.completeExceptionally(BridgeError(code, err.get("message")?.asText().orEmpty()))
@@ -122,9 +126,11 @@ public class BridgeLink internal constructor(
         } finally {
             closed.set(true)
             close()
+
             for (reply in pending.values) {
                 reply.completeExceptionally(closedError())
             }
+
             onClosed(this)
         }
     }

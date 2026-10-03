@@ -61,19 +61,24 @@ final class BridgeConnection implements AutoCloseable {
         if (!Files.isRegularFile(rendezvous)) {
             return null;
         }
+
         int httpPort = httpPortFromCommandLine();
         if (httpPort < 0) {
             return null;
         }
+
         Socket socket = new Socket();
+
         try {
             JsonObject file = gson.fromJson(Files.readString(rendezvous), JsonObject.class);
             socket.connect(
                 new InetSocketAddress(InetAddress.getLoopbackAddress(), file.get("port").getAsInt()),
                 CONNECT_TIMEOUT_MS);
+
             socket.setSoTimeout(HELLO_TIMEOUT_MS);
             BufferedReader reader =
                 new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+
             BufferedWriter writer =
                 new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
 
@@ -90,25 +95,32 @@ final class BridgeConnection implements AutoCloseable {
 
             String line = reader.readLine();
             JsonObject answer = line == null ? null : gson.fromJson(line, JsonObject.class);
+
             if (answer == null || !answer.has("welcome")) {
                 log.info("rsprox MCP bridge stays dormant: {}", answer == null ? "no answer" : answer.get("reject"));
                 socket.close();
+
                 return null;
             }
+
             socket.setSoTimeout(0);
             boolean softwareRendering =
                 answer.has("softwareRendering") && answer.get("softwareRendering").getAsBoolean();
+
             BridgeConnection connection = new BridgeConnection(socket, reader, writer, gson, ops, softwareRendering);
             connection.start();
             log.info("rsprox MCP bridge connected as session {}", answer.get("session"));
+
             return connection;
         } catch (IOException | RuntimeException e) {
             log.info("rsprox MCP bridge stays dormant: {}", e.toString());
+
             try {
                 socket.close();
             } catch (IOException ignored) {
                 // Nothing was established, so there is nothing to report.
             }
+
             return null;
         }
     }
@@ -122,14 +134,17 @@ final class BridgeConnection implements AutoCloseable {
     private static int httpPortFromCommandLine() {
         String command = System.getProperty("sun.java.command", "");
         int start = command.indexOf(JAV_CONFIG_PREFIX);
+
         if (start < 0) {
             return -1;
         }
+
         start += JAV_CONFIG_PREFIX.length();
         int end = start;
         while (end < command.length() && Character.isDigit(command.charAt(end))) {
             end++;
         }
+
         try {
             return Integer.parseInt(command.substring(start, end));
         } catch (NumberFormatException e) {
@@ -145,12 +160,14 @@ final class BridgeConnection implements AutoCloseable {
     private static Thread daemon(Runnable runnable, String name) {
         Thread thread = new Thread(runnable, name);
         thread.setDaemon(true);
+
         return thread;
     }
 
     private void readLoop() {
         try {
             String line;
+
             while ((line = reader.readLine()) != null) {
                 JsonObject request = gson.fromJson(line, JsonObject.class);
                 long id = request.get("id").getAsLong();
@@ -170,6 +187,7 @@ final class BridgeConnection implements AutoCloseable {
     private void answer(long id, String op, JsonObject args) {
         JsonObject reply = new JsonObject();
         reply.addProperty("id", id);
+
         try {
             reply.add("ok", ops.run(op, args));
         } catch (BridgeException e) {
@@ -178,6 +196,7 @@ final class BridgeConnection implements AutoCloseable {
             log.warn("rsprox MCP bridge op {} failed", op, t);
             reply.add("err", error("internal", t.toString()));
         }
+
         try {
             synchronized (writer) {
                 writer.write(gson.toJson(reply));
@@ -193,6 +212,7 @@ final class BridgeConnection implements AutoCloseable {
         JsonObject error = new JsonObject();
         error.addProperty("code", code);
         error.addProperty("message", message);
+
         return error;
     }
 
@@ -201,11 +221,13 @@ final class BridgeConnection implements AutoCloseable {
         if (!closed.compareAndSet(false, true)) {
             return;
         }
+
         try {
             socket.close();
         } catch (IOException ignored) {
             // The connection is being dropped either way.
         }
+
         workers.shutdownNow();
     }
 }

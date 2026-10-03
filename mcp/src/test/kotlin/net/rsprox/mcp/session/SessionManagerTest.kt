@@ -33,6 +33,7 @@ internal class FakeLauncher(
     override fun reserve(target: ProxyTargetConfig): Reservation {
         reserve.invoke(target)
         reserved += target
+
         return Reservation(43750 + reserved.size, 43649 + reserved.size) { launch() }
     }
 
@@ -64,6 +65,7 @@ class SessionManagerTest {
         val plugin = dial(43650)
         assertEquals("s1", plugin.read()?.get("session")?.asText())
         assertEquals("connected", manager.start(null, "s1", 10_000).state)
+
         return plugin
     }
 
@@ -170,6 +172,7 @@ class SessionManagerTest {
     fun `a launch that never returns is abandoned and blocks further launches`() {
         val release = CountDownLatch(1)
         launcher.launch = { release.await() }
+
         try {
             val error = assertFailsWith<ToolError> { manager.start(null, null, 0) }
             assertEquals("session s1 failed to launch: launcher never completed its handshake", error.message)
@@ -177,10 +180,12 @@ class SessionManagerTest {
             assertEquals(listOf(43751), launcher.killed)
 
             launcher.launch = {}
+
             for (session in listOf("s1", null)) {
                 val refused = assertFailsWith<ToolError> { manager.start(null, session, 0) }
                 assertTrue(refused.message!!.contains("restart the rsprox MCP process"), refused.message)
             }
+
             assertEquals(1, launcher.reserved.size)
         } finally {
             release.countDown()
