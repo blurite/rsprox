@@ -53,6 +53,7 @@ internal class RecordingListener(
 ) : BridgeListener {
     val hello = CompletableFuture<Pair<BridgeLink, Long>>()
     val closed = CompletableFuture<BridgeLink>()
+    val rejected = CompletableFuture<String>()
 
     override fun onHello(
         link: BridgeLink,
@@ -65,6 +66,10 @@ internal class RecordingListener(
 
     override fun onClosed(link: BridgeLink) {
         closed.complete(link)
+    }
+
+    override fun onRejected(reason: String) {
+        rejected.complete(reason)
     }
 }
 

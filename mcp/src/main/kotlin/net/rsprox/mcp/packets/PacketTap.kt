@@ -17,37 +17,48 @@ import net.rsprox.shared.symbols.SymbolDictionaryProvider
  * [forSession] returns, so the callbacks of this class itself do nothing.
  */
 internal class PacketTap(
+    /** The log that the packets of every login go to. */
     private val log: PacketLog,
+    /** The registry of the session's logins. */
     private val logins: LoginRegistry,
+    /** The settings that the packets are formatted with. */
     private val settings: SettingSetStore,
 ) : SessionMonitor<BinaryHeader> {
+    /** Create the tap of one login, under the next login epoch. */
     override fun forSession(header: BinaryHeader): SessionMonitor<BinaryHeader> =
         LoginTap(log, logins, settings, logins.nextEpoch())
 
+    /** Ignore the login, which the proxy reports to the tap of that login. */
     override fun onLogin(header: BinaryHeader) {
         //
     }
 
+    /** Ignore the logout, which the proxy reports to the tap of that login. */
     override fun onLogout(header: BinaryHeader) {
         //
     }
 
+    /** Ignore the cache, which the proxy hands to the tap of each login. */
     override fun onCacheUpdate(cacheProvider: CacheProvider) {
         //
     }
 
+    /** Ignore the incoming byte rate, which no tool reports. */
     override fun onIncomingBytesPerSecondUpdate(bytesPerLastSecond: Long) {
         //
     }
 
+    /** Ignore the outgoing byte rate, which no tool reports. */
     override fun onOutgoingBytesPerSecondUpdate(bytesPerLastSecond: Long) {
         //
     }
 
+    /** Ignore the name, which the proxy reports to the tap of that login. */
     override fun onNameUpdate(name: String) {
         //
     }
 
+    /** Ignore the user ids, which no tool reports. */
     override fun onUserInformationUpdate(
         userId: Long,
         userHash: Long,
@@ -55,6 +66,7 @@ internal class PacketTap(
         //
     }
 
+    /** Ignore the packet, which the proxy reports to the tap of its login. */
     override fun onTranscribe(
         cycle: Int,
         property: RootProperty,
@@ -64,19 +76,28 @@ internal class PacketTap(
 }
 
 internal class LoginTap(
+    /** The log that the packets of this login go to. */
     private val log: PacketLog,
+    /** The registry that hears what happens to this login. */
     private val logins: LoginRegistry,
     settings: SettingSetStore,
+    /** The login epoch that every record of this tap carries. */
     private val epoch: Int,
 ) : SessionMonitor<BinaryHeader> {
-    // Written on a Netty thread when the transcriber is hooked, read on the transcriber worker.
+    /**
+     * The game cache that the formatter looks names up in, or null before the proxy has handed it over.
+     * Written on a Netty thread when the transcriber is hooked, read on the transcriber worker.
+     */
     @Volatile
     private var cache: CacheProvider? = null
 
-    // The two fields below are only touched on the transcriber worker.
+    /** The direction of the packet being transcribed. Only touched on the transcriber worker. */
     private var direction = StreamDirection.SERVER_TO_CLIENT
+
+    /** Whether a packet of this login has been decoded. Only touched on the transcriber worker. */
     private var transcribing = false
 
+    /** The formatter that turns a decoded packet into text. */
     private val formatter: PropertyTreeFormatter =
         OmitFilteredPropertyTreeFormatter(
             PropertyFormatterCollection.default(SymbolDictionaryProvider.get(), settings) {
@@ -84,10 +105,12 @@ internal class LoginTap(
             },
         )
 
+    /** Keep the cache for the formatter. */
     override fun onCacheUpdate(cacheProvider: CacheProvider) {
         cache = cacheProvider
     }
 
+    /** Note the direction of the next packet, and on the first one that a transcriber is hooked for this login. */
     override fun onPacketDirection(direction: StreamDirection) {
         this.direction = direction
 
@@ -99,7 +122,10 @@ internal class LoginTap(
         }
     }
 
-    /** Formats on the worker, while the transcriber's session state still matches the packet. */
+    /**
+     * Append the packet to the log as text.
+     * Formats on the worker, while the transcriber's session state still matches the packet.
+     */
     override fun onTranscribe(
         cycle: Int,
         property: RootProperty,
@@ -116,20 +142,24 @@ internal class LoginTap(
         log.append(epoch, cycle, origin, property.prot.uppercase(), text)
     }
 
+    /** Register the login and mark it in the log. */
     override fun onLogin(header: BinaryHeader) {
         logins.login(epoch, header.revision, header.worldId)
         log.append(epoch, 0, Origin.PROXY, "LOGIN", "revision=${header.revision} world=${header.worldId}")
     }
 
+    /** Register the logout and mark it in the log. */
     override fun onLogout(header: BinaryHeader) {
         logins.update(epoch) { it.copy(online = false) }
         log.append(epoch, 0, Origin.PROXY, "LOGOUT", "world=${header.worldId}")
     }
 
+    /** Register the name of the player that logged in. */
     override fun onNameUpdate(name: String) {
         logins.update(epoch) { it.copy(name = name) }
     }
 
+    /** Ignore the user ids, which no tool reports. */
     override fun onUserInformationUpdate(
         userId: Long,
         userHash: Long,
@@ -137,10 +167,12 @@ internal class LoginTap(
         //
     }
 
+    /** Ignore the incoming byte rate, which no tool reports. */
     override fun onIncomingBytesPerSecondUpdate(bytesPerLastSecond: Long) {
         //
     }
 
+    /** Ignore the outgoing byte rate, which no tool reports. */
     override fun onOutgoingBytesPerSecondUpdate(bytesPerLastSecond: Long) {
         //
     }

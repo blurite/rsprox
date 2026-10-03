@@ -10,40 +10,65 @@ import net.rsprox.proxy.target.ProxyTargetConfig
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.settings.SettingSetStore
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 
 /** The part of the proxy a session needs. Narrow so the lifecycle can be exercised without a real client. */
 internal interface ClientLauncher {
+    /** Get the proxy targets a client can be launched for. */
     fun targets(): List<ProxyTargetConfig>
 
-    /** Picks free ports and binds the HTTP server of [target]. Throws when the target cannot be prepared. */
+    /** Pick free ports and bind the HTTP server of [target]. Throws when the target cannot be prepared. */
     fun reserve(target: ProxyTargetConfig): Reservation
 
-    /** Kills the client on [proxyPort], if any, and releases the proxy state held for it. Idempotent. */
+    /** Kill the client on [proxyPort], if any, and release the proxy state held for it. Idempotent. */
     fun kill(proxyPort: Int)
 }
 
 internal class Reservation(
+    /** The port the client reaches the proxy on. */
     val proxyPort: Int,
+    /** The port the client fetches its configuration from. */
     val httpPort: Int,
-    /** Starts the client and blocks until its launcher has completed the handshake. Throws on failure. */
+    /** The call that starts the client and blocks until its launcher has completed the handshake. Throws on failure. */
     val launch: (monitor: SessionMonitor<BinaryHeader>) -> Unit,
+    /**
+     * The check of whether every process that [launch] forked has exited. False until one has been seen.
+     * Asked again and again while [launch] blocks, always by the same thread.
+     */
+    val launcherExited: () -> Boolean,
 )
 
 public class SessionManager internal constructor(
+    /** The part of the proxy that launches and kills clients. */
     private val launcher: ClientLauncher,
+    /** The settings that the packets of every session are formatted with. */
     private val settings: SettingSetStore,
+    /** The hub that the launched clients dial. */
     private val bridge: BridgeHub,
+    /** The longest wait for a launcher to complete its handshake. */
     private val launchTimeoutMs: Long = DEFAULT_LAUNCH_TIMEOUT_MS,
+    /** The longest wait for the plugin of a launched client to say hello. */
+    private val helloTimeoutMs: Long = DEFAULT_HELLO_TIMEOUT_MS,
 ) {
+    /** The sessions in the order they were first launched. */
     private val sessions = CopyOnWriteArrayList<Session>()
 
-    // The proxy's launch path is not re-entrant, so launches and stops take turns.
+    /** The lock that makes launches and stops take turns, since the proxy's launch path is not re-entrant. */
     private val launchLock = Any()
+
+    /** Whether a launch never returned, after which the proxy cannot launch again. Guarded by [launchLock]. */
     private var hungLaunch = false
 
+    /** The timer that stops each launch whose plugin never says hello. */
+    private val deadlines =
+        Executors.newSingleThreadScheduledExecutor { task ->
+            Thread(task, "mcp-hello-deadline").apply { isDaemon = true }
+        }
+
     /**
-     * Creates a session, or relaunches a stopped one. Calling it again for a session that is launching
+     * Create a session, or relaunch a stopped one. Calling it again for a session that is launching
      * or connected launches nothing and only waits, so a caller can extend a wait that elapsed.
      */
     public fun start(
@@ -54,12 +79,11 @@ public class SessionManager internal constructor(
         val started =
             synchronized(launchLock) {
                 val existing = session?.let { resolve(it) }
-                if (existing != null && target != null && !existing.target.name.equals(target, ignoreCase = true)) {
-                    throw ToolError("session ${existing.id} belongs to target '${existing.target.name}'")
-                }
+                if (existing != null) requireTarget(existing, target)
 
                 val current = existing ?: Session(SessionId("s${sessions.size + 1}"), resolveTarget(target))
                 if (current.client is ClientState.Stopped) launch(current)
+
                 current
             }
 
@@ -68,7 +92,7 @@ public class SessionManager internal constructor(
         return started.snapshot()
     }
 
-    /** Kills the client. The session and its packets stay listed and readable. Idempotent. */
+    /** Kill the client. The session and its packets stay listed and readable. Idempotent. */
     public fun stop(session: String?): SessionSnapshot {
         val resolved = resolve(session)
 
@@ -82,7 +106,7 @@ public class SessionManager internal constructor(
                 is ClientState.Stopped -> {
                     //
                 }
-                is ClientState.Launching -> launcher.kill(state.launch.proxyPort)
+                is ClientState.Launching -> release(state.launch)
                 is ClientState.Connected -> {
                     state.link.close()
                     launcher.kill(state.launch.proxyPort)
@@ -93,9 +117,13 @@ public class SessionManager internal constructor(
         return resolved.snapshot()
     }
 
+    /** Get a snapshot of every session. */
     public fun list(): List<SessionSnapshot> = sessions.map { it.snapshot() }
 
-    /** A null [ref] means the only session. */
+    /**
+     * Get the session with the given id. A null [ref] means the only session.
+     * Throws [ToolError] when no session matches, or when [ref] is null and several exist.
+     */
     public fun resolve(ref: String?): Session {
         if (ref != null) {
             return sessions.firstOrNull { it.id.value == ref }
@@ -107,10 +135,23 @@ public class SessionManager internal constructor(
         return sessions.singleOrNull() ?: throw ToolError("several sessions exist; pass one of: ${sessionIds()}")
     }
 
+    /** Get the names of the proxy targets. */
     public fun targets(): List<String> = launcher.targets().map { it.name }
 
+    /** List the session ids for an error message. */
     private fun sessionIds(): String = sessions.joinToString(", ") { it.id.value }.ifEmpty { "none" }
 
+    /** Throw a [ToolError] when the caller names a target other than the one the session belongs to. */
+    private fun requireTarget(
+        session: Session,
+        target: String?,
+    ) {
+        if (target == null || session.target.name.equals(target, ignoreCase = true)) return
+
+        throw ToolError("session ${session.id} belongs to target '${session.target.name}'")
+    }
+
+    /** Get the target with the given name, or the first custom target for null. Throws [ToolError] for no match. */
     private fun resolveTarget(name: String?): ProxyTargetConfig {
         val targets = launcher.targets()
 
@@ -123,10 +164,12 @@ public class SessionManager internal constructor(
             ?: throw ToolError("no target '$name'. Targets: ${targets.joinToString(", ") { it.name }}")
     }
 
+    /**
+     * Launch a client for the session and wait until its launcher has completed the handshake.
+     * Throws [ToolError] when the launch fails or hangs. Must be called with [launchLock] held.
+     */
     private fun launch(session: Session) {
-        if (hungLaunch) {
-            throw ToolError("an earlier launch never completed its handshake; restart the rsprox MCP process")
-        }
+        if (hungLaunch) throw ToolError(HUNG_LAUNCH)
 
         val reservation =
             try {
@@ -157,26 +200,88 @@ public class SessionManager internal constructor(
 
         thread.isDaemon = true
         thread.start()
-        thread.join(launchTimeoutMs)
+        val exited = awaitLaunch(thread, reservation.launcherExited)
 
-        val hung = thread.isAlive
-        val reason = if (hung) "launcher never completed its handshake" else failure.get()?.let(::rootMessage)
-        if (reason == null) return
+        hungLaunch = thread.isAlive
 
-        if (hung) hungLaunch = true
+        val reason =
+            when {
+                !hungLaunch -> failure.get()?.let(::rootMessage)
+                exited -> "the launcher exited before completing its handshake"
+                else -> "launcher never completed its handshake"
+            }
 
-        launcher.kill(launch.proxyPort)
+        if (reason == null) return expectHello(session, launch)
+
+        release(launch)
         session.apply(SessionEvent.Stop(reason))
         throw ToolError("session ${session.id} failed to launch: $reason")
     }
 
+    /**
+     * Wait for the launch thread to end, and determine if the wait was cut short because the launcher exited.
+     * The wait also ends, with false, when the launch timeout passes.
+     */
+    private fun awaitLaunch(
+        thread: Thread,
+        launcherExited: () -> Boolean,
+    ): Boolean {
+        val deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(launchTimeoutMs)
+
+        while (thread.isAlive) {
+            val remainingMs = TimeUnit.NANOSECONDS.toMillis(deadline - System.nanoTime())
+            if (remainingMs <= 0) return false
+
+            if (launcherExited()) {
+                // A launcher that exits right after its handshake leaves the launch a moment from returning.
+                thread.join(LAUNCHER_EXIT_GRACE_MS)
+
+                return true
+            }
+
+            thread.join(minOf(remainingMs, LAUNCH_POLL_MS))
+        }
+
+        return false
+    }
+
+    /** Give the plugin of the launched client a bounded time to say hello. */
+    private fun expectHello(
+        session: Session,
+        launch: Launch,
+    ) {
+        val overdue = Runnable { abandon(session, launch, NEVER_CONNECTED) }
+
+        deadlines.schedule(overdue, helloTimeoutMs, TimeUnit.MILLISECONDS)
+    }
+
+    /** Stop the session for [reason] and kill its client, unless the session has moved on from waiting for it. */
+    private fun abandon(
+        session: Session,
+        launch: Launch,
+        reason: String,
+    ) {
+        if (!session.changes(SessionEvent.NeverConnected(launch, reason))) return
+
+        synchronized(launchLock) { release(launch) }
+    }
+
+    /** Stop expecting the hello of the launch and kill its client, if any. Must be called with [launchLock] held. */
+    private fun release(launch: Launch) {
+        bridge.forget(launch.httpPort)
+        launcher.kill(launch.proxyPort)
+    }
+
+    /** Build the listener that feeds the hello and the close of one launch into its session. */
     private fun listener(
         session: Session,
         launch: Launch,
     ): BridgeListener =
         object : BridgeListener {
+            /** The id of the session that waits for the client. */
             override val session: String = session.id.value
 
+            /** Connect the session to the link, unless the session has moved on from this launch. */
             override fun onHello(
                 link: BridgeLink,
                 pid: Long,
@@ -186,6 +291,7 @@ public class SessionManager internal constructor(
                 return state is ClientState.Connected && state.link === link
             }
 
+            /** Stop the session when the link of its connected client closes, and release the proxy state. */
             override fun onClosed(link: BridgeLink) {
                 val before = session.client
                 if (session.apply(SessionEvent.LinkClosed(link)) === before) return
@@ -194,8 +300,14 @@ public class SessionManager internal constructor(
                 // its process handle and session monitor for the port.
                 synchronized(launchLock) { launcher.kill(launch.proxyPort) }
             }
+
+            /** Stop the session with the reason, since the client that was refused dials only once. */
+            override fun onRejected(reason: String) {
+                abandon(session, launch, "the client started, but its bridge plugin was rejected: $reason")
+            }
         }
 
+    /** Get the message of the innermost cause. */
     private fun rootMessage(throwable: Throwable): String {
         val root = generateSequence(throwable) { it.cause }.last()
 
@@ -203,10 +315,29 @@ public class SessionManager internal constructor(
     }
 
     public companion object {
-        /** How long a start waits for the in-client bridge to connect, unless the caller says otherwise. */
+        /** The time a start waits for the in-client bridge to connect, unless the caller says otherwise. */
         public const val DEFAULT_WAIT_MS: Long = 180_000L
 
-        // Covers a first run, where the launcher downloads the client before it handshakes.
+        /**
+         * The default of the longest wait for a launcher to complete its handshake.
+         * Covers a first run, where the launcher downloads the client before it handshakes.
+         */
         private const val DEFAULT_LAUNCH_TIMEOUT_MS = 180_000L
+
+        /** The default of the longest wait for the plugin of a launched client to say hello. */
+        private const val DEFAULT_HELLO_TIMEOUT_MS = 60_000L
+
+        /** The pause between two checks of whether the launcher of a blocked launch has exited. */
+        private const val LAUNCH_POLL_MS = 100L
+
+        /** The time a launch gets to return after its launcher has exited. */
+        private const val LAUNCHER_EXIT_GRACE_MS = 1_000L
+
+        /** The reason of a session whose client never said hello. */
+        private const val NEVER_CONNECTED = "the client started, but its bridge plugin never connected"
+
+        /** The refusal of every launch that follows one whose launcher never returned. */
+        private const val HUNG_LAUNCH =
+            "an earlier launch never completed its handshake; restart the rsprox MCP process"
     }
 }

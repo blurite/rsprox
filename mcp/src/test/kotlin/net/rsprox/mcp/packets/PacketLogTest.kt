@@ -154,4 +154,21 @@ class PacketLogTest {
         log.add("B")
         assertEquals(listOf(2L), log.read(PacketQuery(after = page.next)).seqs())
     }
+
+    @Test
+    fun `a prot prefix keeps every prot that starts with it and combines with the other filters`() {
+        val log = PacketLog()
+        log.add("OPNPC1_V2", Origin.CLIENT)
+        log.add("OPNPC_FAKE", Origin.SERVER)
+        log.add("IF_BUTTONX", Origin.CLIENT)
+        log.add("XOPNPC1", Origin.CLIENT)
+        log.add("OPNPC6", Origin.CLIENT)
+
+        val npcOps = setOf("OPNPC")
+
+        assertEquals(listOf(1L, 2L, 5L), log.read(PacketQuery(protPrefixes = npcOps)).seqs())
+        assertEquals(listOf(1L, 5L), log.read(PacketQuery(protPrefixes = npcOps, origin = Origin.CLIENT)).seqs())
+        assertEquals(listOf(1L, 3L, 5L), log.read(PacketQuery(protPrefixes = setOf("OPNPC1", "IF_", "OPNPC6"))).seqs())
+        assertEquals(listOf(5L), log.read(PacketQuery(protPrefixes = npcOps, prots = setOf("OPNPC6"))).seqs())
+    }
 }

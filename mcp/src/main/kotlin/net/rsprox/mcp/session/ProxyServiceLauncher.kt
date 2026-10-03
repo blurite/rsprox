@@ -3,47 +3,73 @@ package net.rsprox.mcp.session
 import net.rsprox.mcp.bridge.BridgeJar
 import net.rsprox.proxy.ProxyService
 import net.rsprox.proxy.connection.ClientTypeDictionary
+import net.rsprox.proxy.target.ProxyTarget
 import net.rsprox.proxy.target.ProxyTargetConfig
 import java.io.IOException
+import java.net.BindException
 import java.net.ServerSocket
+import java.util.concurrent.CompletionException
+import java.util.stream.Collectors
 
-/** Must be created right after [ProxyService.start], before anything else allocates a port. */
+/** Launches clients through a started [ProxyService]. */
 internal class ProxyServiceLauncher(
+    /** The proxy that launches the clients. */
     private val service: ProxyService,
     portSkip: Int,
+    /** The installer of the bridge plugin. */
     private val bridgeJar: BridgeJar,
 ) : ClientLauncher {
-    // The proxy keeps its first proxy port private, and its HTTP ports are offsets from it.
-    // The first allocation after start() returns that port.
-    private val basePort = service.allocatePort()
-
     init {
         // Leaves the low ports to a GUI that shares the same configured range.
-        repeat(portSkip - 1) { service.allocatePort() }
+        repeat(portSkip) { service.allocatePort() }
     }
 
+    /** Get the proxy targets the proxy is configured with. */
     override fun targets(): List<ProxyTargetConfig> = service.proxyTargets
 
+    /** Install the bridge plugin, pick a free proxy port and bind the HTTP server of the target. */
     override fun reserve(target: ProxyTargetConfig): Reservation {
         bridgeJar.installFor(target)
 
         // The proxy logs and returns when it cannot bind a proxy port, and a GUI may own any port in the range.
-        val port = firstFreePort(service::allocatePort, { HTTP_PORT_BASE + (it - basePort) }, ::canBind)
-        val proxyTarget = service.initializeHttpServer(port, target)
+        val (port, proxyTarget) = firstBound(service::allocatePort, ::canBind) { bindHttpServer(it, target) }
+        val forks = ForkWatch()
 
-        return Reservation(port, proxyTarget.httpPort) { monitor ->
-            service.launchRuneLiteClient(monitor, null, port, proxyTarget)
+        return Reservation(
+            port,
+            proxyTarget.httpPort,
+            launch = { monitor ->
+                service.launchRuneLiteClient(monitor, null, port, proxyTarget)
 
-            // Probing leaves a window in which another process can take the port. The proxy registers
-            // a client type for a port only after it has bound it.
-            check(hasClientType(port)) { "proxy port $port could not be bound" }
-        }
+                // Probing leaves a window in which another process can take the port. The proxy registers
+                // a client type for a port only after it has bound it.
+                check(hasClientType(port)) { "proxy port $port could not be bound" }
+            },
+            launcherExited = forks::allExited,
+        )
     }
 
+    /** Kill the client on the proxy port, if any, and release the proxy state held for it. */
     override fun kill(proxyPort: Int) {
         service.killAliveProcess(proxyPort)
     }
 
+    /** Bind the HTTP server that belongs to the proxy port, or return null when its port is taken. */
+    private fun bindHttpServer(
+        port: Int,
+        target: ProxyTargetConfig,
+    ): ProxyTarget? =
+        try {
+            service.initializeHttpServer(port, target)
+        } catch (e: CompletionException) {
+            // ProxyTarget.launchHttpServer joins the bind, which fails with the cause wrapped. Nothing
+            // of the target is kept by the proxy at that point, so the next port starts clean.
+            if (e.cause !is BindException) throw e
+
+            null
+        }
+
+    /** Determine if the proxy registered a client type for the port, which it does once it has bound it. */
     private fun hasClientType(port: Int): Boolean =
         try {
             ClientTypeDictionary[port]
@@ -52,23 +78,65 @@ internal class ProxyServiceLauncher(
             false
         }
 
-    private companion object {
-        // Mirrors net.rsprox.proxy.config.HTTP_SERVER_PORT, which is internal to the proxy module.
-        private const val HTTP_PORT_BASE = 43600
-    }
+    /** Determine if the port can be bound right now, which it cannot while a process holds it. */
+    private fun canBind(port: Int): Boolean =
+        try {
+            ServerSocket(port).close()
+            true
+        } catch (e: IOException) {
+            false
+        }
 }
 
-/** The first port from [allocate] that is free together with the HTTP port that belongs to it. */
-internal fun firstFreePort(
-    allocate: () -> Int,
-    httpPortOf: (Int) -> Int,
-    isFree: (Int) -> Boolean,
-): Int = generateSequence(allocate).first { isFree(it) && isFree(httpPortOf(it)) }
+/** The most proxy ports that one reservation tries. */
+private const val BIND_ATTEMPTS = 64
 
-internal fun canBind(port: Int): Boolean =
-    try {
-        ServerSocket(port).close()
-        true
-    } catch (e: IOException) {
-        false
+/**
+ * Get the first port from [allocate] that is free and that [bind] accepts, with what [bind] made for it.
+ * [bind] returns null for a port whose companion port is taken. Throws when no port in [attempts] works.
+ */
+internal fun <T : Any> firstBound(
+    allocate: () -> Int,
+    isFree: (Int) -> Boolean,
+    attempts: Int = BIND_ATTEMPTS,
+    bind: (Int) -> T?,
+): Pair<Int, T> {
+    repeat(attempts) {
+        val port = allocate()
+        val bound = if (isFree(port)) bind(port) else null
+
+        if (bound != null) return port to bound
     }
+
+    throw IllegalStateException("none of $attempts proxy ports in a row could be bound with its HTTP port")
+}
+
+/**
+ * The processes this JVM forks from the moment the watch is made. Launches take turns, so the forks that
+ * follow a reservation are those of its launch.
+ */
+internal class ForkWatch {
+    /** The children that were running before the launch. */
+    private val before = children()
+
+    /** The processes of the launch seen so far. An exited child is no longer listed, so they are remembered. */
+    private val seen = HashSet<ProcessHandle>()
+
+    /**
+     * Determine if every process forked since the watch was made has exited. False until one has been seen.
+     * A process that starts and exits between two calls is never seen.
+     */
+    fun allExited(): Boolean {
+        for (child in children() - before) {
+            seen += child
+
+            // A launcher may hand over to a client of its own and exit, which is not the launch dying.
+            child.descendants().forEach { seen += it }
+        }
+
+        return seen.isNotEmpty() && seen.none { it.isAlive }
+    }
+
+    /** Get the direct children of this JVM that are running. */
+    private fun children(): Set<ProcessHandle> = ProcessHandle.current().children().collect(Collectors.toSet())
+}

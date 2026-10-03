@@ -23,19 +23,33 @@ internal interface BridgeListener {
     /** The session id, told to the plugin for its log. */
     val session: String
 
-    /** Returns false when the session no longer waits for this client; the hub then drops the link. */
+    /**
+     * Take the link of the client that said hello for this session.
+     * Returns false when the session no longer waits for this client; the hub then drops the link.
+     */
     fun onHello(
         link: BridgeLink,
         pid: Long,
     ): Boolean
 
+    /** Hear that the link, which this listener accepted earlier, has closed. */
     fun onClosed(link: BridgeLink)
+
+    /** Hear that a hello for this session was rejected for [reason]. The hub keeps expecting the client. */
+    fun onRejected(reason: String)
 }
 
 /** How a launched client draws its frames. [SOFTWARE] has the plugin stop the client's GPU plugin. */
 public enum class Rendering {
+    /** Frames drawn by the GPU plugin, when the client's profile enables it. */
     GPU,
+
+    /** Frames drawn without the GPU plugin, which the bridge plugin stops. */
     SOFTWARE,
+    ;
+
+    /** Get the `softwareRendering` flag that tells the plugin of this rendering in a welcome. */
+    internal fun toWire(): Boolean = this == SOFTWARE
 }
 
 /**
@@ -44,17 +58,25 @@ public enum class Rendering {
  * A client this process did not launch is rejected and stays dormant.
  */
 public class BridgeHub(
+    /** The file through which a plugin finds this hub. */
     private val rendezvous: Path,
+    /** The rendering that every welcomed client is told to use. */
     private val rendering: Rendering = Rendering.GPU,
 ) : AutoCloseable {
+    /** The listeners that wait for a client, by the HTTP port of its launch. */
     private val expected = ConcurrentHashMap<Int, BridgeListener>()
+
+    /** The links to the connected clients. */
     private val links = ConcurrentHashMap.newKeySet<BridgeLink>()
+
+    /** The secret that a plugin must repeat from the rendezvous file. */
     private val token = newToken()
 
+    /** The socket that plugins dial, or null before [start]. */
     @Volatile
     private var server: ServerSocket? = null
 
-    /** Binds an ephemeral loopback port and publishes it, with the token, in the rendezvous file. */
+    /** Bind an ephemeral loopback port and publish it, with the token, in the rendezvous file. */
     public fun start() {
         val server = ServerSocket(0, BACKLOG, InetAddress.getLoopbackAddress())
         this.server = server
@@ -66,7 +88,7 @@ public class BridgeHub(
         thread.start()
     }
 
-    /** Routes the hello that names [httpPort] to [listener]. Must be called before the client is forked. */
+    /** Route the hello that names [httpPort] to [listener]. Must be called before the client is forked. */
     internal fun expect(
         httpPort: Int,
         listener: BridgeListener,
@@ -74,12 +96,19 @@ public class BridgeHub(
         expected[httpPort] = listener
     }
 
+    /** Stop expecting the hello that names [httpPort], so a client that says it later is rejected. Idempotent. */
+    internal fun forget(httpPort: Int) {
+        expected.remove(httpPort)
+    }
+
+    /** Delete the rendezvous file, stop accepting plugins and drop every link. */
     override fun close() {
         Files.deleteIfExists(rendezvous)
         server?.close()
         links.forEach { it.close() }
     }
 
+    /** Publish the port and the token in the rendezvous file, readable only by its owner. */
     private fun writeRendezvous(port: Int) {
         val content =
             MAPPER
@@ -102,6 +131,7 @@ public class BridgeHub(
         Files.move(temp, rendezvous, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
     }
 
+    /** Hand each plugin that dials in to a thread of its own, until the server socket closes. */
     private fun acceptLoop(server: ServerSocket) {
         while (true) {
             val socket =
@@ -111,30 +141,45 @@ public class BridgeHub(
                     return
                 }
 
-            try {
-                greet(socket)
-            } catch (e: Exception) {
-                logger.debug(e) { "Dropped a bridge connection that did not complete its hello" }
-                socket.close()
-            }
+            // A plugin dials once and gives up after a few seconds, so one silent peer must not hold up the next.
+            val thread = Thread({ greetOrDrop(socket) }, "mcp-bridge-hello")
+            thread.isDaemon = true
+            thread.start()
         }
     }
 
+    /** Greet the plugin, and drop its connection when it does not complete its hello. */
+    private fun greetOrDrop(socket: Socket) {
+        try {
+            greet(socket)
+        } catch (e: Exception) {
+            logger.debug(e) { "Dropped a bridge connection that did not complete its hello" }
+            socket.close()
+        }
+    }
+
+    /**
+     * Read the hello of a plugin, then welcome it and hand its link to the session that expects it, or reject it.
+     *
+     * @throws IOException when the plugin closes the connection or stays silent before its hello
+     */
     private fun greet(socket: Socket) {
         socket.soTimeout = HELLO_TIMEOUT_MS
         val reader = socket.getInputStream().bufferedReader(Charsets.UTF_8)
         val writer = socket.getOutputStream().bufferedWriter(Charsets.UTF_8)
         val hello = MAPPER.readTree(reader.readLine() ?: throw IOException("closed before hello"))
         val httpPort = hello.get("httpPort")?.asInt() ?: -1
-        val refusal =
-            when {
-                !tokenMatches(hello.get("token")) -> "bad token"
-                hello.get("hello")?.asInt() != PROTOCOL ->
-                    "bridge protocol ${hello.get("hello")} is not supported; the installed plugin jar is stale"
-                else -> null
-            }
 
-        if (refusal != null) return reject(socket, writer, refusal)
+        // Only a caller that holds the token may end a launch, so a stray local connection cannot stop a session.
+        if (!tokenMatches(hello.get("token"))) return reject(socket, writer, "bad token")
+
+        if (hello.get("hello")?.asInt() != PROTOCOL) {
+            val refusal = "bridge protocol ${hello.get("hello")} is not supported; the installed plugin jar is stale"
+            reject(socket, writer, refusal)
+            expected[httpPort]?.onRejected(refusal)
+
+            return
+        }
 
         val listener = expected.remove(httpPort)
         if (listener == null) return reject(socket, writer, "no session expects httpPort $httpPort")
@@ -152,7 +197,7 @@ public class BridgeHub(
                 .createObjectNode()
                 .put("welcome", PROTOCOL)
                 .put("session", listener.session)
-                .put("softwareRendering", rendering == Rendering.SOFTWARE),
+                .put("softwareRendering", rendering.toWire()),
         )
 
         if (!listener.onHello(link, hello.get("pid")?.asLong() ?: -1)) {
@@ -166,6 +211,7 @@ public class BridgeHub(
         logger.info { "Bridge connected for session ${listener.session} (httpPort $httpPort)" }
     }
 
+    /** Tell the plugin why it is not welcome and close its connection. */
     private fun reject(
         socket: Socket,
         writer: Writer,
@@ -175,12 +221,14 @@ public class BridgeHub(
         socket.close()
     }
 
+    /** Determine if the candidate carries this hub's token, in constant time. */
     private fun tokenMatches(candidate: JsonNode?): Boolean {
         if (candidate == null || !candidate.isTextual) return false
 
         return MessageDigest.isEqual(candidate.asText().toByteArray(), token.toByteArray())
     }
 
+    /** Write the message as one line. */
     private fun Writer.line(message: JsonNode) {
         write(MAPPER.writeValueAsString(message))
         write("\n")
@@ -188,12 +236,22 @@ public class BridgeHub(
     }
 
     private companion object {
+        /** The logger of the hub. */
         private val logger = InlineLogger()
+
+        /** The JSON mapper of the wire and the rendezvous file. */
         private val MAPPER: ObjectMapper = jacksonObjectMapper()
+
+        /** The version of the wire protocol that this hub speaks. */
         private const val PROTOCOL = 1
+
+        /** The number of plugins that may wait to be accepted. */
         private const val BACKLOG = 16
+
+        /** The longest wait for a plugin to send its hello. */
         private const val HELLO_TIMEOUT_MS = 5_000
 
+        /** Generate a random token of 22 URL-safe characters. */
         private fun newToken(): String {
             val bytes = ByteArray(16)
             SecureRandom().nextBytes(bytes)

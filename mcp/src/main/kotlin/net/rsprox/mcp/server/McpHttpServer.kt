@@ -23,35 +23,45 @@ public class ToolError(
 public sealed interface ToolResult {
     /** One text block holding [value] as compact JSON. */
     public data class Json(
+        /** The value to serialize. */
         val value: Any,
     ) : ToolResult
 
     /** One text block holding [text] as is. */
     public data class Text(
+        /** The text of the block. */
         val text: String,
     ) : ToolResult
 
     /** A PNG image block followed by one text block holding [meta] as compact JSON. */
     public data class Image(
+        /** The PNG, encoded as Base64. */
         val pngBase64: String,
+        /** The value that describes the image. */
         val meta: Any,
     ) : ToolResult
 }
 
 public class Tool(
+    /** The name an MCP client calls the tool by. */
     public val name: String,
+    /** The description that tells an agent what the tool does and returns. */
     public val description: String,
+    /** The JSON Schema of the arguments. */
     public val inputSchema: ObjectNode,
-    /** Receives arguments that already satisfy [inputSchema]. */
+    /** The handler, which receives arguments that already satisfy [inputSchema]. */
     public val run: (args: ObjectNode) -> ToolResult,
 )
 
 internal class HttpReply(
+    /** The HTTP status code. */
     val status: Int,
+    /** The JSON body, or null for a reply without one. */
     val body: String?,
 )
 
 private class RpcError(
+    /** The JSON-RPC error code. */
     val code: Int,
     message: String,
 ) : Exception(message)
@@ -59,10 +69,13 @@ private class RpcError(
 /** The MCP protocol without the socket: one HTTP request in, one reply out. */
 internal class McpDispatcher(
     tools: List<Tool>,
+    /** The version that the server reports of itself. */
     private val version: String,
 ) {
+    /** The tools by name, in the order they are listed. */
     private val tools = tools.associateBy { it.name }
 
+    /** Answer one HTTP request with the reply to its JSON-RPC message. */
     fun handle(
         httpMethod: String,
         origin: String?,
@@ -72,6 +85,7 @@ internal class McpDispatcher(
         if (origin != null && !isLocalOrigin(origin)) return HttpReply(403, null)
 
         if (httpMethod != "POST") return HttpReply(405, null)
+
         val root =
             try {
                 MAPPER.readTree(body)
@@ -79,9 +93,7 @@ internal class McpDispatcher(
                 return HttpReply(400, error(null, PARSE_ERROR, "Parse error"))
             }
 
-        if (root == null || !root.isObject) {
-            return HttpReply(400, error(null, INVALID_REQUEST, "Expected one JSON-RPC object; batching is unsupported"))
-        }
+        if (root !is ObjectNode) return invalidRequest(null, "Expected one JSON-RPC object; batching is unsupported")
 
         val id = root.get("id")?.takeUnless { it.isNull }
         val method = root.get("method")?.takeIf { it.isTextual }?.asText()
@@ -90,10 +102,11 @@ internal class McpDispatcher(
             val isResponse = root.has("result") || root.has("error")
             if (isResponse) return HttpReply(202, null)
 
-            return HttpReply(400, error(id, INVALID_REQUEST, "Missing method"))
+            return invalidRequest(id, "Missing method")
         }
 
         if (id == null) return HttpReply(202, null)
+
         val result =
             try {
                 call(method, root.get("params"))
@@ -109,6 +122,7 @@ internal class McpDispatcher(
         return HttpReply(200, MAPPER.writeValueAsString(reply))
     }
 
+    /** Run the JSON-RPC method. Throws [RpcError] for a method this server does not have. */
     private fun call(
         method: String,
         params: JsonNode?,
@@ -121,6 +135,7 @@ internal class McpDispatcher(
             else -> throw RpcError(METHOD_NOT_FOUND, "Method not found: $method")
         }
 
+    /** Answer the handshake with the protocol version to speak and what the server offers. */
     private fun initialize(params: JsonNode?): JsonNode {
         val requested = params?.get("protocolVersion")?.asText()
         val result = MAPPER.createObjectNode()
@@ -134,6 +149,7 @@ internal class McpDispatcher(
         return result
     }
 
+    /** List every tool with its description and the schema of its arguments. */
     private fun listTools(): JsonNode {
         val result = MAPPER.createObjectNode()
         val list = result.putArray("tools")
@@ -149,6 +165,10 @@ internal class McpDispatcher(
         return result
     }
 
+    /**
+     * Run the named tool and render its result, or its failure as a result with `isError`.
+     * Throws [RpcError] when the call names no known tool or its arguments are not an object.
+     */
     private fun callTool(params: JsonNode?): JsonNode {
         val name =
             params?.get("name")?.takeIf { it.isTextual }?.asText()
@@ -158,6 +178,10 @@ internal class McpDispatcher(
         val arguments = params.get("arguments")?.takeUnless { it.isNull } ?: MAPPER.createObjectNode()
 
         if (arguments !is ObjectNode) throw RpcError(INVALID_PARAMS, "params.arguments must be an object")
+
+        // An explicit null means the argument is absent, for the checks, the tool and the plugin alike.
+        arguments.retain(arguments.fieldNames().asSequence().filter { arguments.hasNonNull(it) }.toList())
+
         val result = MAPPER.createObjectNode()
         val content =
             try {
@@ -182,6 +206,7 @@ internal class McpDispatcher(
         return result
     }
 
+    /** Turn a tool result into the content blocks of an MCP reply. */
     private fun render(result: ToolResult): List<ObjectNode> =
         when (result) {
             is ToolResult.Json -> listOf(textBlock(MAPPER.writeValueAsString(result.value)))
@@ -197,6 +222,7 @@ internal class McpDispatcher(
                 )
         }
 
+    /** Build a text content block. */
     private fun textBlock(text: String): ObjectNode =
         MAPPER
             .createObjectNode()
@@ -204,6 +230,7 @@ internal class McpDispatcher(
             .put("text", text)
 
     /**
+     * Check the arguments against the schema of the tool. Throws [ToolError] for the first mismatch.
      * Checks the subset of JSON Schema the tool table uses: `required`, per-property `type`, `enum`,
      * `minimum`, `maximum`, and `items.type` for arrays. Unknown keys are rejected so a misspelt
      * argument fails loudly instead of being ignored.
@@ -221,40 +248,37 @@ internal class McpDispatcher(
             }
         }
 
-        for (required in tool.inputSchema.get("required") ?: emptyList<JsonNode>()) {
-            if (!arguments.hasNonNull(required.asText())) {
-                throw ToolError("${tool.name}: missing required argument '${required.asText()}'")
-            }
+        for (required in tool.inputSchema.get("required")?.map { it.asText() }.orEmpty()) {
+            if (!arguments.hasNonNull(required)) throw ToolError("${tool.name}: missing required argument '$required'")
         }
 
         for ((key, value) in arguments.fields()) {
             val schema = properties.get(key)
+            val argument = "${tool.name}: argument '$key'"
             val type = schema.get("type").asText()
 
-            if (!value.hasType(type)) throw ToolError("${tool.name}: argument '$key' must be of type $type")
+            if (!value.hasType(type)) throw ToolError("$argument must be of type $type")
+
             val itemType = schema.get("items")?.get("type")?.asText()
-            if (itemType != null && value.any { !it.hasType(itemType) }) {
-                throw ToolError("${tool.name}: every item of '$key' must be of type $itemType")
-            }
+            val mistyped = itemType != null && value.any { !it.hasType(itemType) }
+
+            if (mistyped) throw ToolError("${tool.name}: every item of '$key' must be of type $itemType")
 
             val allowed = schema.get("enum")
             if (allowed != null && allowed.none { it == value }) {
                 val values = allowed.joinToString(", ") { it.asText() }
-                throw ToolError("${tool.name}: argument '$key' must be one of $values")
+                throw ToolError("$argument must be one of $values")
             }
 
             val minimum = schema.get("minimum")?.asLong()
-            if (minimum != null && value.asLong() < minimum) {
-                throw ToolError("${tool.name}: argument '$key' must be at least $minimum")
-            }
+            if (minimum != null && value.asLong() < minimum) throw ToolError("$argument must be at least $minimum")
 
             val maximum = schema.get("maximum")?.asLong()
-            if (maximum != null && value.asLong() > maximum) {
-                throw ToolError("${tool.name}: argument '$key' must be at most $maximum")
-            }
+            if (maximum != null && value.asLong() > maximum) throw ToolError("$argument must be at most $maximum")
         }
     }
 
+    /** Determine if the node has the JSON Schema type. */
     private fun JsonNode.hasType(type: String): Boolean =
         when (type) {
             "string" -> isTextual
@@ -266,6 +290,7 @@ internal class McpDispatcher(
             else -> error("Unsupported schema type: $type")
         }
 
+    /** Determine if the Origin header names this machine. */
     private fun isLocalOrigin(origin: String): Boolean {
         val host =
             try {
@@ -277,6 +302,13 @@ internal class McpDispatcher(
         return host in LOCAL_HOSTS
     }
 
+    /** Build the reply to a message that is not a valid JSON-RPC request. */
+    private fun invalidRequest(
+        id: JsonNode?,
+        message: String,
+    ): HttpReply = HttpReply(400, error(id, INVALID_REQUEST, message))
+
+    /** Build the body of a JSON-RPC error. */
     private fun error(
         id: JsonNode?,
         code: Int,
@@ -294,13 +326,28 @@ internal class McpDispatcher(
     }
 
     internal companion object {
+        /** The JSON mapper of the MCP endpoint. */
         internal val MAPPER: ObjectMapper = jacksonObjectMapper()
+
+        /** The logger of the dispatcher. */
         private val logger = InlineLogger()
+
+        /** The MCP protocol versions this server speaks, oldest first. */
         private val SUPPORTED = listOf("2025-03-26", "2025-06-18", "2025-11-25")
+
+        /** The hosts an Origin header may name. */
         private val LOCAL_HOSTS = setOf("localhost", "127.0.0.1", "[::1]")
+
+        /** The JSON-RPC code for a body that is not JSON. */
         private const val PARSE_ERROR = -32700
+
+        /** The JSON-RPC code for a message that is not a request. */
         private const val INVALID_REQUEST = -32600
+
+        /** The JSON-RPC code for a method this server does not have. */
         private const val METHOD_NOT_FOUND = -32601
+
+        /** The JSON-RPC code for parameters a method cannot use. */
         private const val INVALID_PARAMS = -32602
     }
 }
@@ -310,18 +357,25 @@ internal class McpDispatcher(
  * so a tool may block for as long as it needs.
  */
 public class McpHttpServer(
+    /** The loopback port to bind, or 0 for an ephemeral one. */
     private val port: Int,
     tools: List<Tool>,
     version: String,
 ) : AutoCloseable {
+    /** The protocol handler that every request goes through. */
     private val dispatcher = McpDispatcher(tools, version)
+
+    /** The HTTP server, or null before [start]. */
     private var server: HttpServer? = null
 
     /** The port the server listens on, which differs from the requested one when that was 0. */
     internal val localPort: Int
         get() = checkNotNull(server) { "the server has not been started" }.address.port
 
-    /** Throws [java.net.BindException] when the port is taken, which is how a second instance is refused. */
+    /**
+     * Bind the port and start serving.
+     * Throws [java.net.BindException] when the port is taken, which is how a second instance is refused.
+     */
     public fun start() {
         val server = HttpServer.create(InetSocketAddress(InetAddress.getLoopbackAddress(), port), 0)
         server.executor =
@@ -334,6 +388,7 @@ public class McpHttpServer(
         this.server = server
     }
 
+    /** Answer one HTTP exchange through the dispatcher, with 404 for any path but the endpoint. */
     private fun handle(exchange: HttpExchange) {
         try {
             if (exchange.requestURI.path != PATH) {
@@ -367,11 +422,13 @@ public class McpHttpServer(
         }
     }
 
+    /** Stop serving at once, if the server was started. */
     override fun close() {
         server?.stop(0)
     }
 
     private companion object {
+        /** The path of the MCP endpoint. */
         private const val PATH = "/mcp"
     }
 }

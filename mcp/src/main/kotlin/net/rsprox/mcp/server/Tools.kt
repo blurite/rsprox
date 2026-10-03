@@ -5,12 +5,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import net.rsprox.mcp.bridge.BridgeError
 import net.rsprox.mcp.packets.Cursor
 import net.rsprox.mcp.packets.Origin
+import net.rsprox.mcp.packets.PacketLog
 import net.rsprox.mcp.packets.PacketPage
 import net.rsprox.mcp.packets.PacketQuery
+import net.rsprox.mcp.packets.PacketRecord
 import net.rsprox.mcp.session.SessionManager
 
 /**
- * The tool table. [sessions] is resolved on every call and may throw a [ToolError] while the proxy
+ * Build the tool table. [sessions] is resolved on every call and may throw a [ToolError] while the proxy
  * is still starting.
  */
 public fun tools(sessions: () -> SessionManager): List<Tool> =
@@ -112,7 +114,7 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
                     "and `height`.",
             schema = schema("session" to SESSION),
             sessions = sessions,
-            result = { ok -> ToolResult.Image(ok.remove("png")?.asText().orEmpty(), ok) },
+            result = { ok, _ -> ToolResult.Image(ok.remove("png")?.asText().orEmpty(), ok) },
         ),
         clientTool(
             name = "client_widgets",
@@ -160,7 +162,8 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
                 schema(
                     "session" to SESSION,
                     "username" to string("Account name to log in with."),
-                    "password" to string("Password. It must not be empty. A server that ignores passwords accepts any value."),
+                    "password" to
+                        string("Password. It must not be empty. A server that ignores passwords accepts any value."),
                     "wait_ms" to
                         integer("How long to wait for the login to complete. Default $LOGIN_WAIT_MS.", 0, 120_000),
                     required = listOf("username", "password"),
@@ -173,8 +176,11 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
             name = "client_click",
             description =
                 "Click on the game canvas, either at `x`,`y` in canvas units (the pixels of a " +
-                    "client_screenshot) or at the centre of `widget`. Returns the `x`,`y` that was clicked. " +
-                    "Fails with `not_found` when the widget does not exist or is not visible.",
+                    "client_screenshot) or at the centre of `widget`. This is the low-level fallback: prefer " +
+                    "client_interact, which aims by identity and cancels a click that would hit the wrong " +
+                    "thing. A raw click is not guarded; the client performs whatever is under the mouse. " +
+                    "Returns the `x`,`y` that was clicked. Fails with `not_found` when the widget does not " +
+                    "exist or is not visible.",
             schema =
                 schema(
                     "session" to SESSION,
@@ -199,10 +205,96 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
                 ),
             sessions = sessions,
         ),
+        clientTool(
+            name = "client_entities",
+            description =
+                "List what is near the local player on its plane, nearest first: `npcs`, `objects`, " +
+                    "`ground_items` and `players`, each with `name`, its tile `x`,`y` in world coordinates and " +
+                    "`options`, the names that client_interact accepts as `option`. An NPC and a player also " +
+                    "have `index`; an NPC, an object and a ground item have `id`. An object is listed once, at " +
+                    "its tile of origin, and only when it has options. `origin` is the tile of the local " +
+                    "player. `truncated` is true when `limit` cut off the farthest entities; narrow the " +
+                    "list with `kinds`, `radius` or `name`.",
+            schema =
+                schema(
+                    "session" to SESSION,
+                    "kinds" to
+                        stringArray("Kinds to list. Default: all.", "npc", "object", "ground_item", "player"),
+                    "radius" to
+                        integer("Greatest distance from the local player in tiles. Default $ENTITY_RADIUS.", 0, 52),
+                    "name" to string("Case-insensitive substring the name must contain."),
+                    "limit" to integer("Maximum number of entities to return. Default $ENTITY_LIMIT.", 1, 2000),
+                ),
+            sessions = sessions,
+            defaults = mapOf("radius" to ENTITY_RADIUS, "limit" to ENTITY_LIMIT),
+        ),
+        clientTool(
+            name = "client_interact",
+            description =
+                "Perform one option on one thing in the game as a player does, and wait for the packet " +
+                    "that proves the client sent it. The plugin moves the real mouse onto the target, lets " +
+                    "the client build its menu, and clicks, through the right-click menu when the option is " +
+                    "not the default; it retries within the game tick when the target moved, cancels a " +
+                    "click that would hit anything else before the client sends it, and turns the camera " +
+                    "when the target is out of view. The server receives exactly what a player's click sends, " +
+                    "mouse packets included. Pick the target from client_entities: `npc` or `player` by " +
+                    "`index`; `object` or `ground_item` by `id` and its tile `x`,`y`; `widget` by its " +
+                    "client_widgets id; `dialog` with `option` \"continue\", or the text or 1-based number " +
+                    "of a dialog choice; `tile` by `x`,`y`, which walks there and takes no `option`. " +
+                    "`option` is one of the target's own options, in any case; an NPC, an object and a ground " +
+                    "item also accept \"Examine\", and a widget \"Continue\". Returns what was resolved, " +
+                    "`attempts`, `tick` (the client's tick count when it performed the action), `tried` " +
+                    "(the last attempts in words), `camera` when it was turned, and `packet`, the line of " +
+                    "the packet the client sent as packets_read prints it. Fails with `not_found` when the " +
+                    "client does not have the target or the target does not offer the option, with " +
+                    "`wrong_state` when the client never offered the option within the deadline (about " +
+                    "three ticks, or six seconds after a camera turn), saying what it offered instead, and " +
+                    "with an error that names the likely cause when the client sent no packet.",
+            schema =
+                schema(
+                    "session" to SESSION,
+                    "target" to string("Kind of thing to act on.", *TARGET_KINDS, "widget", "dialog"),
+                    "option" to string("Option to perform, such as \"Talk-to\". Required unless `target` is tile."),
+                    "index" to integer("Index of the NPC or player, as listed by client_entities.", 0),
+                    "id" to integer("Id of the object or ground item, as listed by client_entities.", 0),
+                    "x" to integer("World x of the tile of the object, ground item or tile.", 0),
+                    "y" to integer("World y of the tile of the object, ground item or tile.", 0),
+                    "widget" to string("Widget id as listed by client_widgets, such as \"558:7\" or \"558:7[3]\"."),
+                    required = listOf("target"),
+                ),
+            sessions = sessions,
+            timeoutMs = { INTERACTION_TIMEOUT_MS },
+            result = { ok, packets -> ToolResult.Json(confirmSent(packets, ok, SENT_WAIT_MS)) },
+        ),
+        clientTool(
+            name = "client_camera",
+            description =
+                "Read or turn the camera. With no arguments it returns the current `yaw` and `pitch`. " +
+                    "Pass `yaw` and/or `pitch`, or `look_at` with the same target fields as client_interact, " +
+                    "to turn it; the call then waits until the camera has settled and returns the resulting " +
+                    "`yaw` and `pitch`, plus `onScreen` for a looked-at target. Angles are in the client's " +
+                    "units: 16384 to a full turn of yaw, where 0 has north up; pitch from 1024 (lowest) to " +
+                    "3064 (highest). client_interact turns the camera itself when it needs to.",
+            schema =
+                schema(
+                    "session" to SESSION,
+                    "yaw" to integer("Yaw to turn to.", 0, 16383),
+                    "pitch" to integer("Pitch to turn to.", 1024, 3064),
+                    "look_at" to
+                        string("Kind of target to face, named by the fields of client_interact.", *TARGET_KINDS),
+                    "index" to integer("Index of the NPC or player, as listed by client_entities.", 0),
+                    "id" to integer("Id of the object or ground item, as listed by client_entities.", 0),
+                    "x" to integer("World x of the tile of the object, ground item or tile.", 0),
+                    "y" to integer("World y of the tile of the object, ground item or tile.", 0),
+                ),
+            sessions = sessions,
+            timeoutMs = { INTERACTION_TIMEOUT_MS },
+        ),
     )
 
 /**
- * The shape every client_* tool shares. The plugin's answer is the tool result, plus the packet cursor
+ * Build a client_* tool, which forwards its arguments to the op of the same name in the plugin.
+ * The plugin's answer is the tool result, plus the packet cursor
  * taken before the call, so everything the action caused has a sequence number above it.
  *
  * The plugin has no defaults of its own: each of [defaults] is forwarded when the caller left it out.
@@ -214,7 +306,7 @@ private fun clientTool(
     sessions: () -> SessionManager,
     defaults: Map<String, Long> = emptyMap(),
     timeoutMs: (ObjectNode) -> Long = { CLIENT_CALL_TIMEOUT_MS },
-    result: (ObjectNode) -> ToolResult = ToolResult::Json,
+    result: (ok: ObjectNode, packets: PacketLog) -> ToolResult = { ok, _ -> ToolResult.Json(ok) },
 ): Tool =
     Tool(name, "$description $CURSOR_NOTE", schema) { args ->
         val session = sessions().resolve(args.text("session"))
@@ -228,21 +320,48 @@ private fun clientTool(
         val ok = session.requireLink().call(name.removePrefix("client_"), forwarded, timeoutMs(forwarded))
         if (ok !is ObjectNode) throw BridgeError("internal", "the client answered $name with $ok")
 
-        result(ok.put("cursor", cursor))
+        result(ok.put("cursor", cursor), session.packets)
     }
 
+/** The longest wait for the plugin to answer a call, on top of any wait the call itself asks for. */
 private const val CLIENT_CALL_TIMEOUT_MS = 10_000L
 
+/**
+ * The longest wait for an interaction or a camera turn. It exceeds the plugin's longest deadline, six
+ * seconds after a camera turn, plus the wait for a tick and for the camera to settle.
+ */
+private const val INTERACTION_TIMEOUT_MS = 15_000L
+
+/** The kinds of target that are in the game world, which both client_interact and client_camera accept. */
+private val TARGET_KINDS = arrayOf("npc", "object", "ground_item", "player", "tile")
+
+/** The wait for a login to complete, unless the caller says otherwise. */
 private const val LOGIN_WAIT_MS = 15_000L
 
+/** The most widgets that client_widgets returns, unless the caller says otherwise. */
 private const val WIDGET_LIMIT = 200L
 
+/** The greatest distance from the local player that client_entities lists, unless the caller says otherwise. */
+private const val ENTITY_RADIUS = 15L
+
+/** The most entities that client_entities returns, unless the caller says otherwise. */
+private const val ENTITY_LIMIT = 100L
+
+/**
+ * The wait for the packet of an interaction. Packets reach the log in batches at the end of each server
+ * tick, so the wait spans several ticks.
+ */
+private const val SENT_WAIT_MS = 3_000L
+
+/** The sentence that ends the description of every client_* tool. */
 private const val CURSOR_NOTE =
     "The result carries `cursor`, the packet cursor taken just before the call: pass it as `after` to " +
         "packets_read to see only the packets from this call onwards."
 
+/** The schema of the `session` argument that every tool but session_start and session_list takes. */
 private val SESSION: ObjectNode = string("Session id, such as \"s1\". May be omitted while only one session exists.")
 
+/** Render a page as one line of JSON meta followed by one line per packet. */
 private fun render(page: PacketPage): String {
     val meta =
         linkedMapOf(
@@ -256,24 +375,20 @@ private fun render(page: PacketPage): String {
     val out = StringBuilder(McpDispatcher.MAPPER.writeValueAsString(meta))
 
     for (packet in page.packets) {
-        out
-            .append('\n')
-            .append(packet.seq)
-            .append(" L")
-            .append(packet.login)
-            .append(" T")
-            .append(packet.cycle)
-            .append(' ')
-            .append(packet.origin.letter)
-            .append(' ')
-            .append(packet.prot)
-            .append(' ')
-            .append(packet.text.replace("\n", "\n    "))
+        out.append('\n').append(line(packet))
     }
 
     return out.toString()
 }
 
+/** Render a packet as its line, with the continuation lines of its text indented. */
+internal fun line(packet: PacketRecord): String {
+    val text = packet.text.replace("\n", "\n    ")
+
+    return "${packet.seq} L${packet.login} T${packet.cycle} ${packet.origin.letter} ${packet.prot} $text"
+}
+
+/** Build the schema of an object with the given properties. */
 private fun schema(
     vararg properties: Pair<String, ObjectNode>,
     required: List<String> = emptyList(),
@@ -294,8 +409,10 @@ private fun schema(
     return schema
 }
 
+/** Build the schema of a boolean argument. */
 private fun boolean(description: String): ObjectNode = property("boolean", description)
 
+/** Build the schema of an argument that is an array of integers. */
 private fun integerArray(description: String): ObjectNode {
     val node = property("array", description)
     node.putObject("items").put("type", "integer")
@@ -303,6 +420,7 @@ private fun integerArray(description: String): ObjectNode {
     return node
 }
 
+/** Build the schema of a string argument, limited to the allowed values when any are given. */
 private fun string(
     description: String,
     vararg allowed: String,
@@ -317,6 +435,7 @@ private fun string(
     return node
 }
 
+/** Build the schema of an integer argument within the given bounds. */
 private fun integer(
     description: String,
     minimum: Long,
@@ -330,13 +449,23 @@ private fun integer(
     return node
 }
 
-private fun stringArray(description: String): ObjectNode {
+/** Build the schema of an argument that is an array of strings, limited to the allowed values when any are given. */
+private fun stringArray(
+    description: String,
+    vararg allowed: String,
+): ObjectNode {
     val node = property("array", description)
-    node.putObject("items").put("type", "string")
+    val items = node.putObject("items").put("type", "string")
+
+    if (allowed.isNotEmpty()) {
+        val values = items.putArray("enum")
+        allowed.forEach(values::add)
+    }
 
     return node
 }
 
+/** Build the schema of an argument with the given type and description. */
 private fun property(
     type: String,
     description: String,
@@ -346,6 +475,8 @@ private fun property(
         .put("type", type)
         .put("description", description)
 
+/** Get the named argument as text, or null when it is absent. */
 private fun ObjectNode.text(name: String): String? = get(name)?.asText()
 
+/** Get the named argument as a long, or null when it is absent. */
 private fun ObjectNode.long(name: String): Long? = get(name)?.asLong()

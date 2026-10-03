@@ -14,6 +14,7 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.OptionalInt;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
@@ -27,22 +28,49 @@ import org.slf4j.LoggerFactory;
  * to a small worker pool, so a request that waits on the game never holds up the next one.
  */
 final class BridgeConnection implements AutoCloseable {
+    /** The logger of the connection. */
     private static final Logger log = LoggerFactory.getLogger(BridgeConnection.class);
+
+    /** The version of the wire protocol that this plugin speaks. */
     private static final int PROTOCOL = 1;
+
+    /** The longest wait for rsprox to accept the socket. */
     private static final int CONNECT_TIMEOUT_MS = 2_000;
+
+    /** The longest wait for rsprox to answer the hello. */
     private static final int HELLO_TIMEOUT_MS = 5_000;
+
+    /** The number of requests that can run at the same time. */
     private static final int WORKERS = 4;
+
+    /** The start of the argument in which rsprox hands a client its jav_config, up to the port. */
     private static final String JAV_CONFIG_PREFIX = "--jav_config=http://127.0.0.1:";
 
+    /** The socket to rsprox. */
     private final Socket socket;
+
+    /** The source of the requests from rsprox. */
     private final BufferedReader reader;
+
+    /** The sink of the replies, which each writer locks for the length of one line. */
     private final BufferedWriter writer;
+
+    /** The JSON serializer, which writes nulls. */
     private final Gson gson;
+
+    /** The ops that requests run. */
     private final Ops ops;
+
+    /** The rendering that rsprox asked for in its welcome. */
     private final Rendering rendering;
+
+    /** Whether the connection has been closed. */
     private final AtomicBoolean closed = new AtomicBoolean();
+
+    /** The pool that runs the requests. */
     private ExecutorService workers;
 
+    /** Create a connection over a socket that rsprox has welcomed. */
     private BridgeConnection(
         Socket socket, BufferedReader reader, BufferedWriter writer, Gson gson, Ops ops, Rendering rendering) {
         this.rendering = rendering;
@@ -54,14 +82,11 @@ final class BridgeConnection implements AutoCloseable {
     }
 
     /**
-     * Connects to the rsprox that launched this client. Returns null, having started no thread, when
-     * there is no rsprox to talk to or it does not expect this client. A negative {@code httpPort}
-     * means rsprox did not launch this client.
+     * Connect to the rsprox that launched this client on {@code httpPort}. Returns null, having started
+     * no thread, when there is no rsprox to talk to or it does not expect this client.
      */
     static BridgeConnection dial(Path rendezvous, int httpPort, Gson clientGson, Ops ops) {
-        if (httpPort < 0 || !Files.isRegularFile(rendezvous)) {
-            return null;
-        }
+        if (!Files.isRegularFile(rendezvous)) return null;
 
         // The protocol spells out an absent player as null, which the client's Gson would drop.
         Gson gson = clientGson.newBuilder().serializeNulls().create();
@@ -103,7 +128,7 @@ final class BridgeConnection implements AutoCloseable {
 
             socket.setSoTimeout(0);
             boolean software = answer.has("softwareRendering") && answer.get("softwareRendering").getAsBoolean();
-            Rendering rendering = software ? Rendering.SOFTWARE : Rendering.GPU;
+            Rendering rendering = Rendering.fromWire(software);
             BridgeConnection connection = new BridgeConnection(socket, reader, writer, gson, ops, rendering);
             connection.start();
             log.info("rsprox MCP bridge connected as session {}", answer.get("session"));
@@ -122,38 +147,40 @@ final class BridgeConnection implements AutoCloseable {
         }
     }
 
-    /** {@link Rendering#SOFTWARE} when rsprox asked for a client that renders without the GPU plugin. */
+    /** Get the rendering, which is {@link Rendering#SOFTWARE} when rsprox asked for a client without the GPU plugin. */
     Rendering rendering() {
         return rendering;
     }
 
-    /** The port in the client's jav_config argument, which is how rsprox tells its clients apart. */
-    static int httpPortFromCommandLine() {
-        String command = System.getProperty("sun.java.command", "");
-        int start = command.indexOf(JAV_CONFIG_PREFIX);
-
-        if (start < 0) {
-            return -1;
-        }
+    /**
+     * Get the port in the jav_config argument of a client's command line, which is how rsprox tells its
+     * clients apart. Empty when rsprox did not launch the client.
+     */
+    static OptionalInt httpPort(String commandLine) {
+        int start = commandLine.indexOf(JAV_CONFIG_PREFIX);
+        if (start < 0) return OptionalInt.empty();
 
         start += JAV_CONFIG_PREFIX.length();
+
         int end = start;
-        while (end < command.length() && Character.isDigit(command.charAt(end))) {
+        while (end < commandLine.length() && Character.isDigit(commandLine.charAt(end))) {
             end++;
         }
 
         try {
-            return Integer.parseInt(command.substring(start, end));
+            return OptionalInt.of(Integer.parseInt(commandLine.substring(start, end)));
         } catch (NumberFormatException e) {
-            return -1;
+            return OptionalInt.empty();
         }
     }
 
+    /** Start the worker pool and the thread that reads requests. */
     private void start() {
         workers = Executors.newFixedThreadPool(WORKERS, runnable -> daemon(runnable, "rsprox-mcp-bridge-worker"));
         daemon(this::readLoop, "rsprox-mcp-bridge-reader").start();
     }
 
+    /** Create a daemon thread, which never keeps the client alive. */
     private static Thread daemon(Runnable runnable, String name) {
         Thread thread = new Thread(runnable, name);
         thread.setDaemon(true);
@@ -161,6 +188,7 @@ final class BridgeConnection implements AutoCloseable {
         return thread;
     }
 
+    /** Hand each request to the workers until the connection ends, then close it. */
     private void readLoop() {
         try {
             String line;
@@ -181,6 +209,7 @@ final class BridgeConnection implements AutoCloseable {
         }
     }
 
+    /** Run one request and write its reply, which carries {@code err} when the op failed. */
     private void answer(long id, String op, JsonObject args) {
         JsonObject reply = new JsonObject();
         reply.addProperty("id", id);
@@ -205,6 +234,7 @@ final class BridgeConnection implements AutoCloseable {
         }
     }
 
+    /** Build the {@code err} member of a reply. */
     private static JsonObject error(String code, String message) {
         JsonObject error = new JsonObject();
         error.addProperty("code", code);
@@ -213,11 +243,10 @@ final class BridgeConnection implements AutoCloseable {
         return error;
     }
 
+    /** Close the socket and stop the workers. Idempotent. */
     @Override
     public void close() {
-        if (!closed.compareAndSet(false, true)) {
-            return;
-        }
+        if (!closed.compareAndSet(false, true)) return;
 
         try {
             socket.close();

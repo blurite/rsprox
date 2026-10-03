@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicLong
  * `timeout`, `internal`) or `closed` when the client went away.
  */
 public class BridgeError(
+    /** The code that says what kind of failure this is. */
     public val code: String,
     message: String,
 ) : Exception(message)
@@ -33,15 +34,25 @@ public class BridgeError(
  * matched to its caller by id.
  */
 public class BridgeLink internal constructor(
+    /** The connection to the plugin. */
     private val socket: Closeable,
+    /** The source of the plugin's replies. */
     private val reader: BufferedReader,
+    /** The sink of the requests. */
     private val writer: Writer,
+    /** The callback that hears, once, that the link has closed. */
     private val onClosed: (BridgeLink) -> Unit,
 ) {
+    /** The calls that wait for a reply, by request id. */
     private val pending = ConcurrentHashMap<Long, CompletableFuture<JsonNode>>()
+
+    /** The source of request ids. */
     private val ids = AtomicLong()
+
+    /** Whether the reader has stopped, after which no reply can arrive. */
     private val closed = AtomicBoolean()
 
+    /** Start the thread that reads the plugin's replies. */
     internal fun start() {
         val thread = Thread(::readLoop, "mcp-bridge-reader")
         thread.isDaemon = true
@@ -49,7 +60,7 @@ public class BridgeLink internal constructor(
     }
 
     /**
-     * Sends one request and blocks the calling thread for its reply.
+     * Send one request and block the calling thread for its reply.
      *
      * @return the `ok` value of the reply
      * @throws BridgeError when the plugin answers `err`, when no reply arrives within [timeoutMs]
@@ -67,6 +78,7 @@ public class BridgeLink internal constructor(
         try {
             // Checked after registering: a close that happens from here on fails this call through `pending`.
             if (closed.get()) throw closedError()
+
             val request = MAPPER.createObjectNode().put("id", id).put("op", op)
             request.set<JsonNode>("args", args)
 
@@ -87,7 +99,7 @@ public class BridgeLink internal constructor(
         }
     }
 
-    /** Drops the connection. The reader then fails the pending calls and reports the close. */
+    /** Drop the connection. The reader then fails the pending calls and reports the close. */
     internal fun close() {
         try {
             socket.close()
@@ -96,6 +108,7 @@ public class BridgeLink internal constructor(
         }
     }
 
+    /** Write one line to the plugin. */
     @Synchronized
     private fun send(line: String) {
         writer.write(line)
@@ -103,6 +116,7 @@ public class BridgeLink internal constructor(
         writer.flush()
     }
 
+    /** Complete each pending call with its reply until the connection ends, then fail the rest and report the close. */
     private fun readLoop() {
         try {
             while (true) {
@@ -135,9 +149,11 @@ public class BridgeLink internal constructor(
         }
     }
 
+    /** Build the error for a call on a link whose client has gone away. */
     private fun closedError(): BridgeError = BridgeError("closed", "the client is no longer connected")
 
     private companion object {
+        /** The JSON mapper of the wire. */
         private val MAPPER: ObjectMapper = jacksonObjectMapper()
     }
 }

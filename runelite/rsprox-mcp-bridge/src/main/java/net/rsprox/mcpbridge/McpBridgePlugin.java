@@ -3,9 +3,11 @@ package net.rsprox.mcpbridge;
 import com.google.gson.Gson;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.OptionalInt;
 import javax.inject.Inject;
 import net.runelite.api.Client;
 import net.runelite.client.callback.ClientThread;
+import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.PluginInstantiationException;
@@ -25,34 +27,69 @@ import org.slf4j.LoggerFactory;
     hidden = true
 )
 public class McpBridgePlugin extends Plugin {
+    /** The logger of the plugin. */
     private static final Logger log = LoggerFactory.getLogger(McpBridgePlugin.class);
+
+    /** The class name of the client's GPU plugin. */
     private static final String GPU_PLUGIN = "GpuPlugin";
+
+    /** The longest wait for the GPU plugin to take over rendering. */
     private static final long GPU_START_WAIT_MS = 60_000;
+
+    /** The pause between two checks of whether the GPU plugin renders. */
     private static final long GPU_POLL_MS = 100;
 
+    /** The game client. */
     @Inject private Client client;
+
+    /** The runner of tasks on the client thread. */
     @Inject private ClientThread clientThread;
+
+    /** The source of rendered frames. */
     @Inject private DrawManager drawManager;
+
+    /** The bus that the client posts its events on. */
+    @Inject private EventBus eventBus;
+
+    /** The client's JSON serializer. */
     @Inject private Gson gson;
+
+    /** The manager that starts and stops the client's plugins. */
     @Inject private PluginManager pluginManager;
 
-    private BridgeConnection connection;
+    /** The access to the game that the ops share, or null while the plugin is dormant. */
+    private GameAccess game;
 
+    /** The dial to rsprox and the connection it made, or null while the plugin is dormant. */
+    private BridgeDial dial;
+
+    /**
+     * Connect to the rsprox that launched this client, and stay dormant when there is none.
+     * The client calls this on its UI thread, so the dial runs on a thread of its own.
+     */
     @Override
     protected void startUp() {
+        OptionalInt httpPort = BridgeConnection.httpPort(System.getProperty("sun.java.command", ""));
+        if (httpPort.isEmpty()) return;
+
         // The server writes this path in McpMain.kt.
         Path rendezvous = Paths.get(System.getProperty("user.home"), ".rsprox", "mcp", "bridge.json");
-        Ops ops = new Ops(new GameAccess(client, clientThread::invoke, drawManager));
+        game = new GameAccess(client, clientThread::invoke, drawManager, eventBus);
+        Ops ops = new Ops(game);
+        int port = httpPort.getAsInt();
 
-        connection = BridgeConnection.dial(rendezvous, BridgeConnection.httpPortFromCommandLine(), gson, ops);
-        if (connection == null || connection.rendering() != Rendering.SOFTWARE) return;
+        dial = BridgeDial.start(() -> BridgeConnection.dial(rendezvous, port, gson, ops), this::onConnected);
+    }
 
-        Thread thread = new Thread(this::stopGpuPlugin, "mcp-bridge-gpu-off");
-        thread.setDaemon(true);
-        thread.start();
+    /** Stop the GPU plugin when rsprox asked for software rendering. Runs on the thread of the dial. */
+    private void onConnected(BridgeConnection connection) {
+        if (connection.rendering() != Rendering.SOFTWARE) return;
+
+        stopGpuPlugin();
     }
 
     /**
+     * Stop the GPU plugin once it renders, so that screenshots show the game.
      * Frames read back from the GPU plugin are black on a virtual display. Stopping the plugin, instead
      * of disabling it, leaves the profile untouched for clients that share it.
      */
@@ -65,9 +102,7 @@ public class McpBridgePlugin extends Plugin {
             }
         }
 
-        if (gpu == null || !pluginManager.isPluginEnabled(gpu)) {
-            return;
-        }
+        if (gpu == null || !pluginManager.isPluginEnabled(gpu)) return;
 
         // The GPU plugin finishes starting on the client thread, some time after it is marked active.
         // Stopping it before then lets that late start win, so wait until the client renders through it.
@@ -93,11 +128,14 @@ public class McpBridgePlugin extends Plugin {
         }
     }
 
+    /** Close the connection to rsprox, if there is one or the dial still makes one, and let go of the game. */
     @Override
     protected void shutDown() {
-        if (connection == null) return;
+        if (dial == null) return;
 
-        connection.close();
-        connection = null;
+        dial.close();
+        dial = null;
+        game.close();
+        game = null;
     }
 }

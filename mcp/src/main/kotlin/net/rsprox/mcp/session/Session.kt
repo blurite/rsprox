@@ -13,32 +13,42 @@ import kotlin.concurrent.withLock
 /** Stable for the life of the MCP process. Survives client restarts. Never a port. */
 @JvmInline
 public value class SessionId(
+    /** The id as callers write it, such as `s1`. */
     public val value: String,
 ) {
+    /** Get the id as callers write it. */
     override fun toString(): String = value
 }
 
 /** One client process generation of a session. A restart makes a new launch on new ports. */
 public data class Launch(
+    /** The number of this launch within its session, starting at 1. */
     val generation: Int,
+    /** The port the client reaches the proxy on. */
     val proxyPort: Int,
     /** The identity the in-client bridge reports when it connects. */
     val httpPort: Int,
+    /** The wall clock at which the launch began. */
     val startedAtMs: Long,
 )
 
 public sealed interface ClientState {
     public data class Stopped(
+        /** The reason the session has no client. */
         val reason: String,
     ) : ClientState
 
     public data class Launching(
+        /** The launch whose client has not connected yet. */
         val launch: Launch,
     ) : ClientState
 
     public data class Connected(
+        /** The launch that the client belongs to. */
         val launch: Launch,
+        /** The link to the plugin in the client. */
         val link: BridgeLink,
+        /** The process id of the client. */
         val pid: Long,
     ) : ClientState
 }
@@ -46,25 +56,38 @@ public sealed interface ClientState {
 /** Everything that can change a session's [ClientState]. Several threads raise these; [reduce] decides. */
 public sealed interface SessionEvent {
     public data class Launched(
+        /** The launch that began. */
         val launch: Launch,
     ) : SessionEvent
 
     public data class Hello(
+        /** The HTTP port of the launch that the client says it belongs to. */
         val httpPort: Int,
+        /** The link to the plugin that said hello. */
         val link: BridgeLink,
+        /** The process id of the client. */
         val pid: Long,
     ) : SessionEvent
 
     public data class LinkClosed(
+        /** The link that closed. */
         val link: BridgeLink,
     ) : SessionEvent
 
     public data class Stop(
+        /** The reason the client is stopped. */
+        val reason: String,
+    ) : SessionEvent
+
+    public data class NeverConnected(
+        /** The launch whose client will not connect any more. */
+        val launch: Launch,
+        /** The reason the client will not connect. */
         val reason: String,
     ) : SessionEvent
 }
 
-/** Returns [state] itself when the event is stale or does not apply. */
+/** Get the state that follows [state]. Returns [state] itself when the event is stale or does not apply. */
 internal fun reduce(
     state: ClientState,
     event: SessionEvent,
@@ -86,29 +109,49 @@ internal fun reduce(
             }
         is SessionEvent.Stop ->
             if (state is ClientState.Stopped) state else ClientState.Stopped(event.reason)
+        is SessionEvent.NeverConnected ->
+            if (state is ClientState.Launching && state.launch == event.launch) {
+                ClientState.Stopped(event.reason)
+            } else {
+                state
+            }
     }
 
 public data class LoginInfo(
+    /** The number of this login within its session, starting at 1. */
     val epoch: Int,
+    /** The game revision of the client. */
     val revision: Int,
+    /** The world that was logged in to. */
     val world: Int,
+    /** The name of the player, or null until the proxy reports it. */
     val name: String?,
+    /** Whether the login is still in the game. */
     val online: Boolean,
-    /** False while online means no decoder was hooked for this login, so its packets never reach the log. */
+    /**
+     * Whether a packet of this login has been decoded.
+     * False while online means no decoder was hooked for this login, so its packets never reach the log.
+     */
     val transcribing: Boolean,
 )
 
 /** The newest login of a session. Updates from an older login are ignored. */
 internal class LoginRegistry {
+    /** The epoch handed to the newest login. */
     private var epoch = 0
+
+    /** The newest login, or null before the first one. */
     private var info: LoginInfo? = null
 
+    /** Get the epoch for a login that is about to begin. */
     @Synchronized
     fun nextEpoch(): Int = ++epoch
 
+    /** Get the newest login, or null before the first one. */
     @Synchronized
     fun current(): LoginInfo? = info
 
+    /** Register that the login of the given epoch is in the game, unless a newer login is known. */
     @Synchronized
     fun login(
         epoch: Int,
@@ -117,6 +160,7 @@ internal class LoginRegistry {
     ) {
         val current = info
         if (current != null && current.epoch > epoch) return
+
         info =
             if (current != null && current.epoch == epoch) {
                 current.copy(online = true)
@@ -125,6 +169,7 @@ internal class LoginRegistry {
             }
     }
 
+    /** Apply the change to the newest login when it is the one of the given epoch. */
     @Synchronized
     fun update(
         epoch: Int,
@@ -138,37 +183,61 @@ internal class LoginRegistry {
 /** What the session tools return. */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public data class SessionSnapshot(
+    /** The id of the session. */
     val session: String,
+    /** The name of the proxy target the session belongs to. */
     val target: String,
-    /** `stopped`, `launching` or `connected`. */
+    /** The state of the client: `stopped`, `launching` or `connected`. */
     val state: String,
+    /** The reason the session has no client, or null while it has one. */
     val reason: String?,
+    /** The number of the current launch, or null while stopped. */
     val generation: Int?,
+    /** The proxy port of the current launch, or null while stopped. */
     val proxyPort: Int?,
+    /** The HTTP port of the current launch, or null while stopped. */
     val httpPort: Int?,
+    /** The process id of the client, or null unless connected. */
     val pid: Long?,
+    /** The newest login, or null before the first one. */
     val login: LoginInfo?,
+    /** The packet cursor of the newest record in the session's log. */
     val cursor: Long,
 )
 
 public class Session internal constructor(
+    /** The id that callers name the session by. */
     public val id: SessionId,
+    /** The proxy target that every launch of the session is for. */
     public val target: ProxyTargetConfig,
 ) {
-    /** Owned by the session rather than a launch, so a restart keeps the records and the cursor space. */
+    /** The packet log. Owned by the session, not a launch, so a restart keeps the records and the cursor space. */
     public val packets: PacketLog = PacketLog()
+
+    /** The logins of the session. */
     internal val logins = LoginRegistry()
+
+    /** The lock that makes each state transition and its marker one step. */
     private val lock = ReentrantLock()
+
+    /** The condition that wakes the callers that wait for the client to connect. */
     private val changed = lock.newCondition()
+
+    /** The number of launches so far. */
     private var generations = 0
 
+    /** The state of the client, which only [apply] changes. */
     @Volatile
     public var client: ClientState = ClientState.Stopped("not started")
         private set
 
+    /** Get the generation number for a launch that is about to begin. */
     internal fun nextGeneration(): Int = lock.withLock { ++generations }
 
-    /** The only writer of [client]. Every real transition leaves a marker in the packet log. */
+    /**
+     * Apply the event and return the state that follows.
+     * The only writer of [client]. Every real transition leaves a marker in the packet log.
+     */
     internal fun apply(event: SessionEvent): ClientState =
         lock.withLock {
             val before = client
@@ -183,7 +252,15 @@ public class Session internal constructor(
             after
         }
 
-    /** Blocks while the client is launching, for at most [waitMs]. Never throws on timeout. */
+    /** Apply the event and determine if it changed the state. */
+    internal fun changes(event: SessionEvent): Boolean =
+        lock.withLock {
+            val before = client
+
+            apply(event) !== before
+        }
+
+    /** Block while the client is launching, for at most [waitMs]. Never throws on timeout. */
     internal fun awaitConnected(waitMs: Long): ClientState =
         lock.withLock {
             var remaining = TimeUnit.MILLISECONDS.toNanos(waitMs)
@@ -194,7 +271,7 @@ public class Session internal constructor(
             client
         }
 
-    /** The link of the connected client, or a [ToolError] that says what to do about its absence. */
+    /** Get the link of the connected client. Throws a [ToolError] that says what to do about its absence. */
     internal fun requireLink(): BridgeLink =
         when (val state = client) {
             is ClientState.Connected -> state.link
@@ -204,6 +281,7 @@ public class Session internal constructor(
                 throw ToolError("session $id has no connected client: ${state.reason}")
         }
 
+    /** Get what the session tools report of the session at this moment. */
     public fun snapshot(): SessionSnapshot {
         val state = client
         val launch =
@@ -232,6 +310,7 @@ public class Session internal constructor(
         )
     }
 
+    /** Append the lifecycle marker of the state to the packet log. */
     private fun mark(state: ClientState) {
         val (prot, text) =
             when (state) {
