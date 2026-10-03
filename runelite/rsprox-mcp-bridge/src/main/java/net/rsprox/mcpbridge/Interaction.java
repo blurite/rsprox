@@ -48,8 +48,11 @@ final class Interaction {
     /** The number of last attempts whose words are reported. */
     private static final int KEPT = 5;
 
-    /** The message when an interface blocks the game view. */
-    private static final String BLOCKED = "the client offers only Cancel; an open interface is blocking the game view";
+    /** The message when the client offers nothing at the aim, which an interface over that point causes. */
+    private static final String BLOCKED = "the client offers only Cancel; an interface covers the game view there";
+
+    /** The number of covered aims in a row after which the camera is turned to move the target clear. */
+    private static final int COVERED_BEFORE_TURN = 3;
 
     /** The words added to an attempt whose left click the client turned into another entry. */
     private static final String MENU_FROM_NOW = "; a left click performs another option here, so the menu is used next";
@@ -89,6 +92,9 @@ final class Interaction {
 
     /** Whether the client has shown that a left click on the target performs another entry than the intended one. */
     private boolean anotherPreferred;
+
+    /** The number of aims in a row at which the client offered only Cancel. */
+    private int covered;
 
     /** The canvas point of the press that the guard let through, or null until it let one through. */
     private Point pressed;
@@ -160,7 +166,11 @@ final class Interaction {
 
         String at = " at " + Scenes.words(aim.x, aim.y);
 
+        if (offer.match < 0 && offer.onlyCancel) return covered(offer, at);
+
         if (offer.match < 0) return missed(offer, offerWords(offer) + at);
+
+        covered = 0;
 
         if (!offer.underMouse) return missed(offer, target.label() + " moved out from under the mouse" + at);
 
@@ -291,7 +301,28 @@ final class Interaction {
         return offer.onlyCancel ? BLOCKED : "the client offered " + offer.words();
     }
 
-    /** Turn the camera toward the target, which is not on screen, and extend the deadline for the turn. */
+    /**
+     * Miss an aim at which the client offers only Cancel. After several such aims in a row, turn the
+     * camera toward a world target, since an interface such as the chatbox covers where it is drawn.
+     */
+    private Verdict covered(Offer offer, String at) throws BridgeException {
+        Verdict verdict = missed(offer, BLOCKED + at);
+        covered++;
+
+        if (covered < COVERED_BEFORE_TURN) return verdict;
+
+        WorldPoint tile = game.onClientThread(target::tile);
+        if (tile == null) return verdict;
+
+        deadline = Math.max(deadline, began + CAMERA_CYCLES);
+
+        return Verdict.missed(BLOCKED + at + "; " + game.onClientThread(client -> camera.toward(client, tile)));
+    }
+
+    /**
+     * Turn the camera toward a target that has no clickable shape on screen, and allow the longer
+     * deadline that turning needs.
+     */
     private Verdict bringIntoView() throws BridgeException {
         WorldPoint tile = game.onClientThread(target::tile);
         String words = "no part of " + target.label() + " is on screen";

@@ -183,12 +183,18 @@ number or its text. Both are proven by `RESUME_PAUSEBUTTON`. A button of an inte
 `IF_BUTTON` packet, and a close button by `CLOSE_MODAL`.
 
 When the client never offers the option within the deadline, about three ticks, the call fails with
-`wrong_state` and says what the client offered at the last attempt instead, such as
-`the client offered [Walk here, Examine Tree]`. An interface that blocks the game view, such as the
-bank, gives `the client offers only Cancel; an open interface is blocking the game view`; close it
-first. A target that is hidden from every angle, behind a wall for instance, cannot be clicked, and
-neither can anything in a secondary world view such as a boat: both tools read only the top-level
-world view, on the plane of the local player.
+`wrong_state` and says what the client offered at the last attempt instead, such as `the client
+offered [Walk here, Examine Tree]`.
+
+The client offers only Cancel at a point that an interface covers, such as the chatbox, the minimap
+or the inventory. The tool never clicks there. After a few such points it turns the camera, which
+moves the target to another part of the screen. If that does not help, the call fails with `the
+client offers only Cancel; an interface covers the game view there`. An interface that blocks the
+whole game view, such as the bank, gives the same message; close it first.
+
+A target that is hidden from every angle, behind a wall for instance, cannot be clicked, and neither
+can anything in a secondary world view such as a boat: both tools read only the top-level world
+view, on the plane of the local player.
 
 `client_camera` turns the camera on purpose: pass `yaw` and `pitch` in the client's units, or
 `look_at` with the target fields of `client_interact`, and it returns the settled `yaw` and `pitch`
