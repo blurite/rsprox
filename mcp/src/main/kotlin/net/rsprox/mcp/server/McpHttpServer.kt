@@ -71,13 +71,14 @@ internal class McpDispatcher(
                 return HttpReply(400, error(null, PARSE_ERROR, "Parse error"))
             }
         if (root == null || !root.isObject) {
-            return HttpReply(400, error(null, INVALID_REQUEST, "Expected one JSON-RPC object; batching is not supported"))
+            return HttpReply(400, error(null, INVALID_REQUEST, "Expected one JSON-RPC object; batching is unsupported"))
         }
         val id = root.get("id")?.takeUnless { it.isNull }
         val method = root.get("method")?.takeIf { it.isTextual }?.asText()
         if (method == null) {
             val isResponse = root.has("result") || root.has("error")
-            return if (isResponse) HttpReply(202, null) else HttpReply(400, error(id, INVALID_REQUEST, "Missing method"))
+            if (isResponse) return HttpReply(202, null)
+            return HttpReply(400, error(id, INVALID_REQUEST, "Missing method"))
         }
         if (id == null) return HttpReply(202, null)
         val result =
@@ -197,7 +198,8 @@ internal class McpDispatcher(
             }
             val allowed = schema.get("enum")
             if (allowed != null && allowed.none { it == value }) {
-                throw ToolError("${tool.name}: argument '$key' must be one of ${allowed.joinToString(", ") { it.asText() }}")
+                val values = allowed.joinToString(", ") { it.asText() }
+                throw ToolError("${tool.name}: argument '$key' must be one of $values")
             }
             val minimum = schema.get("minimum")?.asLong()
             if (minimum != null && value.asLong() < minimum) {
