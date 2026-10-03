@@ -1,6 +1,6 @@
 package net.rsprox.mcp.session
 
-import net.rsprox.mcp.bridge.BridgeLink
+import net.rsprox.mcp.bridge.idleLink
 import net.rsprox.mcp.packets.PacketQuery
 import net.rsprox.mcp.session.ClientState.Connected
 import net.rsprox.mcp.session.ClientState.Launching
@@ -36,7 +36,7 @@ internal fun target(
 class SessionTest {
     private val first = Launch(generation = 1, proxyPort = 43751, httpPort = 43650, startedAtMs = 0)
     private val second = Launch(generation = 2, proxyPort = 43752, httpPort = 43651, startedAtMs = 0)
-    private val link = BridgeLink()
+    private val link = idleLink()
 
     @Test
     fun `a launch starts only from stopped`() {
@@ -59,7 +59,7 @@ class SessionTest {
         assertEquals(Launching(second), reduce(Launching(second), Hello(first.httpPort, link, pid = 7)))
         assertEquals(Stopped("stopped by caller"), reduce(Stopped("stopped by caller"), Hello(first.httpPort, link, 7)))
         val connected = Connected(first, link, pid = 7)
-        assertEquals(connected, reduce(connected, Hello(first.httpPort, BridgeLink(), pid = 8)))
+        assertEquals(connected, reduce(connected, Hello(first.httpPort, idleLink(), pid = 8)))
     }
 
     @Test
@@ -69,7 +69,7 @@ class SessionTest {
 
     @Test
     fun `a close from an earlier link is dropped`() {
-        val relaunched = Connected(second, BridgeLink(), pid = 9)
+        val relaunched = Connected(second, idleLink(), pid = 9)
         assertEquals(relaunched, reduce(relaunched, LinkClosed(link)))
         assertEquals(Launching(second), reduce(Launching(second), LinkClosed(link)))
         assertEquals(Stopped("stopped by caller"), reduce(Stopped("stopped by caller"), LinkClosed(link)))
