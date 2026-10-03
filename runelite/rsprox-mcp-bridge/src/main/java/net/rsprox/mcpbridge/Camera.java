@@ -12,11 +12,11 @@ import net.runelite.api.coords.WorldPoint;
  * client moves the camera toward its target over several ticks.
  */
 final class Camera implements Ops.Op {
-    /** The number of frames over which the camera must not move to count as settled. */
-    private static final int SETTLED_FRAMES = 3;
+    /** The cycles over which neither the yaw nor the pitch may change for the camera to count as settled. */
+    private static final int SETTLED_CYCLES = 10;
 
-    /** The most frames a turn is given to settle. */
-    private static final int TURN_FRAMES = 300;
+    /** The most cycles a turn is given to settle, which is six seconds. */
+    private static final int TURN_CYCLES = 300;
 
     /** The gateway to the client and the threads it must be used on. */
     private final GameAccess game;
@@ -26,33 +26,26 @@ final class Camera implements Ops.Op {
         this.game = game;
     }
 
+    /** Determine if the arguments ask for a turn of the camera, and not only for a read of it. */
+    static boolean turns(JsonObject args) {
+        return args.has("yaw") || args.has("pitch") || args.has("look_at");
+    }
+
     /**
      * Turn the camera as asked, or read it, and report its yaw and pitch, with whether the looked-at
      * target is on screen.
      */
     @Override
     public JsonElement run(JsonObject args) throws BridgeException {
-        Integer yaw = Ops.optionalInt(args, "yaw");
-        Integer pitch = Ops.optionalInt(args, "pitch");
         String lookAt = Ops.optionalString(args, "look_at");
-        requireRanges(yaw, pitch);
         Target target = lookAt == null ? null : locate(lookAt, args);
-        boolean turned = game.onClientThread(client -> turn(client, yaw, pitch, target));
 
-        if (turned) settle();
+        if (turns(args)) {
+            turn(args, target);
+            settle();
+        }
 
         return game.onClientThread(client -> describe(client, target));
-    }
-
-    /** Check that the angles are within the client's ranges. Throws {@code bad_args} when one is not. */
-    private static void requireRanges(Integer yaw, Integer pitch) throws BridgeException {
-        boolean badYaw = yaw != null && (yaw < 0 || yaw >= CameraTurn.FULL_TURN);
-        if (badYaw) throw new BridgeException("bad_args", "yaw must be from 0 to " + (CameraTurn.FULL_TURN - 1));
-
-        boolean badPitch = pitch != null && (pitch < CameraTurn.PITCH_MIN || pitch > CameraTurn.PITCH_MAX);
-        String range = "pitch must be from " + CameraTurn.PITCH_MIN + " to " + CameraTurn.PITCH_MAX;
-
-        if (badPitch) throw new BridgeException("bad_args", range);
     }
 
     /** Find the target of the kind that look_at names, from the same fields as an interaction takes. */
@@ -64,26 +57,20 @@ final class Camera implements Ops.Op {
         return game.onClientThread(client -> Targets.locate(client, named));
     }
 
-    /** Set the camera's targets from the arguments, and report whether any was set. */
-    private static boolean turn(Client client, Integer yaw, Integer pitch, Target target) throws BridgeException {
-        boolean turned = false;
+    /** Set the camera's targets: the yaw that faces the target, then the yaw and the pitch that are given. */
+    private void turn(JsonObject args, Target target) throws BridgeException {
+        Integer yaw = Ops.optionalInt(args, "yaw");
+        Integer pitch = Ops.optionalInt(args, "pitch");
 
-        if (target != null) {
-            client.setCameraYawTarget(yawToward(client, target));
-            turned = true;
-        }
+        game.onClientThread(client -> {
+            if (target != null) client.setCameraYawTarget(yawToward(client, target));
 
-        if (yaw != null) {
-            client.setCameraYawTarget(yaw);
-            turned = true;
-        }
+            if (yaw != null) client.setCameraYawTarget(yaw);
 
-        if (pitch != null) {
-            client.setCameraPitchTarget(pitch);
-            turned = true;
-        }
+            if (pitch != null) client.setCameraPitchTarget(pitch);
 
-        return turned;
+            return null;
+        });
     }
 
     /** Get the yaw that faces the target from the local player. Throws {@code wrong_state} while there is no player. */
@@ -92,9 +79,7 @@ final class Camera implements Ops.Op {
         if (local == null) throw new BridgeException("wrong_state", "the client is not in the game");
 
         WorldPoint tile = target.tile(client);
-        String refusal = target.label() + " is not in the world, so the camera cannot look at it";
-
-        if (tile == null) throw new BridgeException("not_found", refusal);
+        if (tile == null) throw new BridgeException("not_found", target.label() + " is not in the world");
 
         LocalPoint there = LocalPoint.fromWorld(client.getTopLevelWorldView(), tile);
         if (there == null) throw new BridgeException("not_found", target.label() + " is outside the loaded scene");
@@ -102,16 +87,21 @@ final class Camera implements Ops.Op {
         return CameraTurn.yawToward(local.getLocalLocation(), there);
     }
 
-    /** Wait until the yaw and the pitch have stopped changing for a few frames, within the bound. */
+    /** Wait until the yaw and the pitch have not changed for the settled number of cycles, within the bound. */
     private void settle() throws BridgeException {
-        long last = -1;
-        int still = 0;
+        int start = game.cycle();
+        int stillSince = start;
+        int now = start;
+        long last = game.onClientThread(Camera::angles);
 
-        for (int frame = 0; frame < TURN_FRAMES && still < SETTLED_FRAMES; frame++) {
+        while (now - stillSince < SETTLED_CYCLES && now - start < TURN_CYCLES) {
             game.nextFrame();
-            long now = game.onClientThread(Camera::angles);
-            still = now == last ? still + 1 : 0;
-            last = now;
+            now = game.cycle();
+            long angles = game.onClientThread(Camera::angles);
+
+            if (angles != last) stillSince = now;
+
+            last = angles;
         }
     }
 

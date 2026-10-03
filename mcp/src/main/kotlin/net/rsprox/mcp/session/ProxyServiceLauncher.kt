@@ -93,29 +93,28 @@ private const val BIND_ATTEMPTS = 64
 
 /**
  * Get the first port from [allocate] that is free and that [bind] accepts, with what [bind] made for it.
- * [bind] returns null for a port whose companion port is taken. Throws when no port in [attempts] works.
+ * [bind] returns null for a port whose companion port is taken. Throws when none of [BIND_ATTEMPTS] ports works.
  */
-internal fun <T : Any> firstBound(
+private fun <T : Any> firstBound(
     allocate: () -> Int,
     isFree: (Int) -> Boolean,
-    attempts: Int = BIND_ATTEMPTS,
     bind: (Int) -> T?,
 ): Pair<Int, T> {
-    repeat(attempts) {
+    repeat(BIND_ATTEMPTS) {
         val port = allocate()
         val bound = if (isFree(port)) bind(port) else null
 
         if (bound != null) return port to bound
     }
 
-    throw IllegalStateException("none of $attempts proxy ports in a row could be bound with its HTTP port")
+    throw IllegalStateException("none of $BIND_ATTEMPTS proxy ports in a row could be bound with its HTTP port")
 }
 
 /**
  * The processes this JVM forks from the moment the watch is made. Launches take turns, so the forks that
  * follow a reservation are those of its launch.
  */
-internal class ForkWatch {
+private class ForkWatch {
     /** The children that were running before the launch. */
     private val before = children()
 

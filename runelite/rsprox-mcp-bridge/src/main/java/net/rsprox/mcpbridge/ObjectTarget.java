@@ -3,7 +3,6 @@ package net.rsprox.mcpbridge;
 import com.google.gson.JsonObject;
 import java.awt.Shape;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Set;
 import net.runelite.api.Client;
 import net.runelite.api.GameObject;
@@ -22,12 +21,12 @@ import net.runelite.api.coords.WorldPoint;
 final class ObjectTarget extends Target {
     /** The menu actions that perform an option on an object. */
     private static final Set<MenuAction> FAMILY = EnumSet.of(
-            MenuAction.GAME_OBJECT_FIRST_OPTION,
-            MenuAction.GAME_OBJECT_SECOND_OPTION,
-            MenuAction.GAME_OBJECT_THIRD_OPTION,
-            MenuAction.GAME_OBJECT_FOURTH_OPTION,
-            MenuAction.GAME_OBJECT_FIFTH_OPTION,
-            MenuAction.EXAMINE_OBJECT);
+        MenuAction.GAME_OBJECT_FIRST_OPTION,
+        MenuAction.GAME_OBJECT_SECOND_OPTION,
+        MenuAction.GAME_OBJECT_THIRD_OPTION,
+        MenuAction.GAME_OBJECT_FOURTH_OPTION,
+        MenuAction.GAME_OBJECT_FIFTH_OPTION,
+        MenuAction.EXAMINE_OBJECT);
 
     /** The object's own id. */
     private final int id;
@@ -102,9 +101,11 @@ final class ObjectTarget extends Target {
     /** Find the object on its tile of origin, or null while it is not there. */
     private TileObject find(Client client) {
         Tile tile = Scenes.tile(client.getTopLevelWorldView(), origin.getX(), origin.getY());
-        Point at = tile == null ? null : tile.getSceneLocation();
+        if (tile == null) return null;
 
-        for (TileObject object : tile == null ? List.<TileObject>of() : Scenes.objects(tile)) {
+        Point at = tile.getSceneLocation();
+
+        for (TileObject object : Scenes.objects(tile)) {
             if (object.getId() == id && Scenes.origin(object, tile).equals(at)) return object;
         }
 

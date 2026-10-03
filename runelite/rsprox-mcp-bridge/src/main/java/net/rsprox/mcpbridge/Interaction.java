@@ -5,45 +5,54 @@ import com.google.gson.JsonObject;
 import java.awt.Point;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import net.rsprox.mcpbridge.ClickGuard.Outcome;
 import net.rsprox.mcpbridge.ClickGuard.Verdict;
 import net.rsprox.mcpbridge.GameAccess.Subscription;
-import net.runelite.api.Client;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.MenuOptionClicked;
 
 /**
  * One interaction with a target, performed as a player performs it: the mouse is moved onto the
- * target, the client builds its menu, and the entry is clicked, through the right-click menu when it
- * is not the default. Each attempt is judged by the {@link ClickGuard} and repeated until the client
- * performs the intended action or the deadline passes. The loop runs on the worker thread of the op.
+ * target, the client builds its menu, and the entry is clicked. The click is a left click when the
+ * entry looks like the default one, and goes through the right-click menu otherwise, or once the
+ * client has shown that a left click performs another entry. Each attempt is judged by the
+ * {@link ClickGuard} and repeated until the client performs the intended action or the deadline
+ * passes. The loop runs on the worker thread of the op. Every wait is counted in client cycles of
+ * 20 ms, which pass at the same rate whatever the frame rate is.
  */
 final class Interaction {
-    /** The time the client gives a game cycle. */
-    private static final int CYCLE_MS = 20;
+    /** The cycles an interaction with a target that is on screen may take: about three game ticks. */
+    private static final int ON_SCREEN_CYCLES = 90;
 
-    /** The deadline for a target that is on screen: about three game ticks. */
-    private static final int ON_SCREEN_DEADLINE_MS = 1_800;
+    /** The cycles an interaction may take once the camera had to be turned, which takes several ticks. */
+    private static final int CAMERA_CYCLES = 300;
 
-    /** The deadline once the camera had to be turned, which takes the camera several ticks. */
-    private static final int CAMERA_DEADLINE_MS = 6_000;
+    /** The longest wait for a game tick to start, in cycles: a little over one tick. */
+    private static final int TICK_WAIT_CYCLES = 40;
 
-    /** The longest wait for a game tick to start, which is a little over one tick. */
-    private static final int TICK_WAIT_MS = 800;
+    /** The cycles since the start of a game tick within which the wait for the next one is skipped. */
+    private static final int RECENT_TICK_CYCLES = 5;
 
-    /** How recently a game tick must have started for the wait for one to be skipped. */
-    private static final int RECENT_TICK_MS = 100;
+    /** The least cycles the client is given to report a click, which it handles on the cycle after the press. */
+    private static final int CLICK_CYCLES = 5;
 
-    /** The number of frames the client is given to report a click. */
-    private static final int CLICK_FRAMES = 3;
+    /** The least cycles the right-click menu is given to open after the press. */
+    private static final int MENU_OPEN_CYCLES = 8;
 
-    /** The frames to wait for the right-click menu to open after the press. */
-    private static final int MENU_OPEN_FRAMES = 8;
+    /** The cycles an opened menu is given to fill with its entries. */
+    private static final int MENU_FILL_CYCLES = 1;
 
-    /** The number of attempts that the result and the failure keep the words of. */
+    /** The cycles a menu that lacks the entry is given to catch up with the pointer before it is read again. */
+    private static final int MENU_LAG_CYCLES = 1;
+
+    /** The number of last attempts whose words are reported. */
     private static final int KEPT = 5;
 
     /** The message when an interface blocks the game view. */
     private static final String BLOCKED = "the client offers only Cancel; an open interface is blocking the game view";
+
+    /** The words added to an attempt whose left click the client turned into another entry. */
+    private static final String MENU_FROM_NOW = "; a left click performs another option here, so the menu is used next";
 
     /** The gateway to the client and the threads it must be used on. */
     private final GameAccess game;
@@ -72,11 +81,17 @@ final class Interaction {
     /** The number of reads at which the client offered more than Cancel. */
     private int offeredMore;
 
-    /** The game cycle at which the interaction began. */
+    /** The client cycle at which the interaction began. */
     private int began;
 
-    /** The game cycle after which no further attempt is made. */
+    /** The client cycle after which no further attempt is made. */
     private int deadline;
+
+    /** Whether the client has shown that a left click on the target performs another entry than the intended one. */
+    private boolean anotherPreferred;
+
+    /** The canvas point of the press that the guard let through, or null until it let one through. */
+    private Point pressed;
 
     /** Create the interaction that performs the target's option through the given mouse. */
     Interaction(GameAccess game, Mouse mouse, Target target) {
@@ -88,8 +103,8 @@ final class Interaction {
 
     /**
      * Perform the interaction and describe it: the target, the number of attempts, the tick on which
-     * the client performed the action, the words of the last attempts and any turn of the camera.
-     * Throws {@code wrong_state} when the deadline passes first.
+     * the client performed the action, the canvas point that was pressed, the words of the last
+     * attempts and any turn of the camera. Throws {@code wrong_state} when the deadline passes first.
      */
     JsonObject run() throws BridgeException {
         try (Subscription clicks = game.subscribe(MenuOptionClicked.class, guard::on)) {
@@ -100,8 +115,8 @@ final class Interaction {
             });
 
             awaitTick();
-            began = cycle();
-            deadline = began + ON_SCREEN_DEADLINE_MS / CYCLE_MS;
+            began = game.cycle();
+            deadline = began + ON_SCREEN_CYCLES;
 
             while (true) {
                 attempts++;
@@ -109,9 +124,9 @@ final class Interaction {
                 Verdict verdict = aim == null ? bringIntoView() : attempt(aim);
                 remember(verdict.words);
 
-                if (verdict.passed) return result(verdict);
+                if (verdict.isPerformed()) return result(verdict);
 
-                if (cycle() >= deadline) throw expired();
+                if (game.cycle() >= deadline) throw expired();
             }
         }
     }
@@ -122,40 +137,52 @@ final class Interaction {
      * has no ticks.
      */
     private void awaitTick() throws BridgeException {
-        int start = cycle();
-        if (game.tickCycle() >= start - RECENT_TICK_MS / CYCLE_MS) return;
+        int start = game.cycle();
+        if (game.tickCycle() >= start - RECENT_TICK_CYCLES) return;
 
-        for (int i = 0; i < TICK_WAIT_MS / CYCLE_MS && game.tickCycle() < start; i++) {
+        while (game.tickCycle() < start && game.cycle() < start + TICK_WAIT_CYCLES) {
             game.nextFrame();
         }
     }
 
-    /** Get the client's game cycle. */
-    private int cycle() throws BridgeException {
-        return game.onClientThread(Client::getGameCycle);
-    }
-
     /**
      * Move the mouse onto the aim point, read the menu and click the intended entry. The menu may lag
-     * the pointer by a frame, so a missing entry is read once more before the attempt counts as missed.
+     * the pointer, so a missing entry is read once more before the attempt counts as missed.
      */
     private Verdict attempt(Point aim) throws BridgeException {
         mouse.hover(aim.x, aim.y);
         Offer offer = read(aim);
 
         if (offer.match < 0) {
-            game.nextFrame();
+            game.awaitCycles(MENU_LAG_CYCLES);
             offer = read(aim);
         }
 
         String at = " at " + Scenes.words(aim.x, aim.y);
+
         if (offer.match < 0) return missed(offer, offerWords(offer) + at);
 
         if (!offer.underMouse) return missed(offer, target.label() + " moved out from under the mouse" + at);
 
-        if (offer.isDefault() && !offer.open) return click(aim, "left-clicked " + offer.offered.get(offer.match) + at);
+        if (offer.isLast() && !offer.open && !anotherPreferred) return leftClick(aim, offer.offered.get(offer.match));
 
         return throughMenu(aim, offer);
+    }
+
+    /**
+     * Left-click the aim point, where the entry looks like the default one. Only the client's report
+     * says what a left click performs: the client sorts its entries after the menu is read, and a
+     * plugin may swap them. When it performs another entry while it offers the intended one, the
+     * following attempts go through the right-click menu.
+     */
+    private Verdict leftClick(Point aim, String entry) throws BridgeException {
+        Verdict verdict = click(aim, "left-clicked " + entry + " at " + Scenes.words(aim.x, aim.y));
+
+        if (verdict.outcome != Outcome.ANOTHER_PREFERRED) return verdict;
+
+        anotherPreferred = true;
+
+        return verdict.worded(verdict.words + MENU_FROM_NOW);
     }
 
     /**
@@ -186,40 +213,57 @@ final class Interaction {
     }
 
     /**
-     * Wait for the right-click menu to open and read it once it has settled. The client opens the menu
-     * on its next game cycle, which can be several frames after the press, and fills it a frame later.
+     * Wait for the right-click menu to open and read it once it has filled. The client opens the menu
+     * on a cycle after the press and fills it on the one after that.
      */
     private Offer awaitOpenMenu() throws BridgeException {
+        int until = game.cycle() + MENU_OPEN_CYCLES;
         Offer offer = read(null);
 
-        for (int i = 0; i < MENU_OPEN_FRAMES && !offer.open; i++) {
+        while (!offer.open && game.cycle() < until) {
             game.nextFrame();
             offer = read(null);
         }
 
         if (!offer.open) return offer;
 
-        game.nextFrame();
+        game.awaitCycles(MENU_FILL_CYCLES);
 
         return read(null);
     }
 
-    /** Left-click the point under the guard, and wait a few frames for the client to report the click. */
+    /**
+     * Left-click the point under the guard, and give the client its cycles to report the click. The
+     * guard stays armed for all of them, so a click that the client handles late is still judged.
+     */
     private Verdict click(Point at, String words) throws BridgeException {
         guard.arm();
         mouse.click(at.x, at.y, Mouse.Button.LEFT);
 
-        for (int i = 0; i < CLICK_FRAMES && !guard.settled(); i++) {
+        int until = game.cycle() + CLICK_CYCLES;
+        while (!guard.isSettled() && game.cycle() < until) {
             game.nextFrame();
         }
 
-        Verdict verdict = guard.disarm("the client reported no click within " + CLICK_FRAMES + " frames");
-        String outcome = words + "; " + verdict.words;
+        Verdict verdict = game.onClientThread(client -> guard.disarm());
+        if (verdict == null) return unreported(words);
 
-        return verdict.passed ? Verdict.passed(outcome, verdict.tick) : Verdict.missed(outcome);
+        if (verdict.isPerformed()) pressed = at;
+
+        return verdict.worded(words + "; " + verdict.words);
     }
 
-    /** Record a missed attempt, closing the menu when it is open so that the next attempt starts afresh. */
+    /**
+     * Build the verdict of a click that the client did not report, once the cycle in which the guard
+     * was disarmed has passed, so that the next click is never made in that same cycle.
+     */
+    private Verdict unreported(String words) throws BridgeException {
+        game.awaitCycles(1);
+
+        return Verdict.missed(words + "; the client reported no click within " + CLICK_CYCLES + " cycles");
+    }
+
+    /** Build the verdict of a missed attempt, after moving the mouse off an open menu so that it closes. */
     private Verdict missed(Offer offer, String words) throws BridgeException {
         if (offer.open) {
             Point away = offer.away();
@@ -234,7 +278,7 @@ final class Interaction {
      * given, and count the reads and those that offered more than Cancel.
      */
     private Offer read(Point aim) throws BridgeException {
-        Offer offer = game.onClientThread(client -> new Offer(client, target, aim));
+        Offer offer = game.onClientThread(client -> Offer.read(client, target, aim));
         reads++;
 
         if (!offer.onlyCancel) offeredMore++;
@@ -251,11 +295,11 @@ final class Interaction {
     private Verdict bringIntoView() throws BridgeException {
         WorldPoint tile = game.onClientThread(target::tile);
         String words = "no part of " + target.label() + " is on screen";
-        game.nextFrame();
+        game.awaitCycles(1);
 
         if (tile == null) return Verdict.missed(words);
 
-        deadline = Math.max(deadline, began + CAMERA_DEADLINE_MS / CYCLE_MS);
+        deadline = Math.max(deadline, began + CAMERA_CYCLES);
 
         return Verdict.missed(words + "; " + game.onClientThread(client -> camera.toward(client, tile)));
     }
@@ -272,11 +316,21 @@ final class Interaction {
         JsonObject out = target.describe();
         out.addProperty("attempts", attempts);
         out.addProperty("tick", verdict.tick);
+        out.add("pressed", point(pressed));
         JsonArray words = new JsonArray();
         tried.forEach(words::add);
         out.add("tried", words);
 
         if (camera.describe() != null) out.add("camera", camera.describe());
+
+        return out;
+    }
+
+    /** Build the JSON array of the x and the y of the canvas point. */
+    private static JsonArray point(Point point) {
+        JsonArray out = new JsonArray();
+        out.add(point.x);
+        out.add(point.y);
 
         return out;
     }

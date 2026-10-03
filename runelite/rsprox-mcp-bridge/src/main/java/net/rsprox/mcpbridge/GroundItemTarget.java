@@ -20,12 +20,12 @@ import net.runelite.api.coords.WorldPoint;
 final class GroundItemTarget extends Target {
     /** The menu actions that perform an option on a ground item. */
     private static final Set<MenuAction> FAMILY = EnumSet.of(
-            MenuAction.GROUND_ITEM_FIRST_OPTION,
-            MenuAction.GROUND_ITEM_SECOND_OPTION,
-            MenuAction.GROUND_ITEM_THIRD_OPTION,
-            MenuAction.GROUND_ITEM_FOURTH_OPTION,
-            MenuAction.GROUND_ITEM_FIFTH_OPTION,
-            MenuAction.EXAMINE_ITEM_GROUND);
+        MenuAction.GROUND_ITEM_FIRST_OPTION,
+        MenuAction.GROUND_ITEM_SECOND_OPTION,
+        MenuAction.GROUND_ITEM_THIRD_OPTION,
+        MenuAction.GROUND_ITEM_FOURTH_OPTION,
+        MenuAction.GROUND_ITEM_FIFTH_OPTION,
+        MenuAction.EXAMINE_ITEM_GROUND);
 
     /** The id of the item. */
     private final int id;
@@ -68,8 +68,10 @@ final class GroundItemTarget extends Target {
     Shape shape(Client client) {
         WorldView view = client.getTopLevelWorldView();
         Tile tile = Scenes.tile(view, at.getX(), at.getY());
-        List<TileItem> items = tile == null ? null : tile.getGroundItems();
 
+        if (tile == null) return null;
+
+        List<TileItem> items = tile.getGroundItems();
         if (items == null || items.stream().noneMatch(item -> item.getId() == id)) return null;
 
         return Scenes.tilePolygon(client, view, at.getX() - view.getBaseX(), at.getY() - view.getBaseY());
@@ -79,8 +81,9 @@ final class GroundItemTarget extends Target {
     @Override
     boolean matches(MenuEntry entry, Client client) {
         WorldView view = client.getTopLevelWorldView();
-        boolean sameTile =
-            entry.getParam0() == at.getX() - view.getBaseX() && entry.getParam1() == at.getY() - view.getBaseY();
+        int sceneX = at.getX() - view.getBaseX();
+        int sceneY = at.getY() - view.getBaseY();
+        boolean sameTile = entry.getParam0() == sceneX && entry.getParam1() == sceneY;
 
         return FAMILY.contains(entry.getType()) && entry.getIdentifier() == id && sameTile && sameOption(entry);
     }

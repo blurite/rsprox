@@ -19,18 +19,18 @@ import net.runelite.api.widgets.Widget;
 final class WidgetTarget extends Target {
     /** The menu actions that perform an option on an interface component. */
     private static final Set<MenuAction> FAMILY = EnumSet.of(
-            MenuAction.CC_OP,
-            MenuAction.CC_OP_LOW_PRIORITY,
-            MenuAction.WIDGET_CONTINUE,
-            MenuAction.WIDGET_TYPE_1,
-            MenuAction.WIDGET_TYPE_4,
-            MenuAction.WIDGET_TYPE_5,
-            MenuAction.WIDGET_CLOSE,
-            MenuAction.WIDGET_FIRST_OPTION,
-            MenuAction.WIDGET_SECOND_OPTION,
-            MenuAction.WIDGET_THIRD_OPTION,
-            MenuAction.WIDGET_FOURTH_OPTION,
-            MenuAction.WIDGET_FIFTH_OPTION);
+        MenuAction.CC_OP,
+        MenuAction.CC_OP_LOW_PRIORITY,
+        MenuAction.WIDGET_CONTINUE,
+        MenuAction.WIDGET_TYPE_1,
+        MenuAction.WIDGET_TYPE_4,
+        MenuAction.WIDGET_TYPE_5,
+        MenuAction.WIDGET_CLOSE,
+        MenuAction.WIDGET_FIRST_OPTION,
+        MenuAction.WIDGET_SECOND_OPTION,
+        MenuAction.WIDGET_THIRD_OPTION,
+        MenuAction.WIDGET_FOURTH_OPTION,
+        MenuAction.WIDGET_FIFTH_OPTION);
 
     /** The reference as the caller wrote it, or as the dialog was resolved to. */
     private final String ref;

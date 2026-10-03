@@ -59,24 +59,19 @@ final class Entities implements Ops.Op {
         });
     }
 
-    /** Get the kinds to list. Throws {@code bad_args} for a kind that does not exist. */
-    private static Set<String> kinds(JsonObject args) throws BridgeException {
-        JsonElement asked = args.get("kinds");
-        if (asked == null || asked.isJsonNull()) return new LinkedHashSet<>(KINDS);
-
+    /** Get the kinds to list, which are all of them unless the arguments name some. */
+    private static Set<String> kinds(JsonObject args) {
         Set<String> kinds = new LinkedHashSet<>();
 
-        for (JsonElement kind : asked.getAsJsonArray()) {
-            if (!KINDS.contains(kind.getAsString())) throw new BridgeException("bad_args", "kinds must be of " + KINDS);
-
+        for (JsonElement kind : args.has("kinds") ? args.getAsJsonArray("kinds") : new JsonArray()) {
             kinds.add(kind.getAsString());
         }
 
-        return kinds;
+        return kinds.isEmpty() ? new LinkedHashSet<>(KINDS) : kinds;
     }
 
     /** One entity that passed the filters. */
-    private static final class Found implements Comparable<Found> {
+    private static final class Entry implements Comparable<Entry> {
         /** The kind of the entity. */
         final String kind;
 
@@ -96,7 +91,7 @@ final class Entities implements Ops.Op {
         final JsonObject described;
 
         /** Create the record of one entity. */
-        Found(String kind, int distance, int key, int x, int y, JsonObject described) {
+        Entry(String kind, int distance, int key, int x, int y, JsonObject described) {
             this.kind = kind;
             this.distance = distance;
             this.key = key;
@@ -107,7 +102,7 @@ final class Entities implements Ops.Op {
 
         /** Order the nearest first, then by index or id, then by tile, so a listing is stable. */
         @Override
-        public int compareTo(Found other) {
+        public int compareTo(Entry other) {
             if (distance != other.distance) return Integer.compare(distance, other.distance);
 
             if (key != other.key) return Integer.compare(key, other.key);
@@ -121,7 +116,7 @@ final class Entities implements Ops.Op {
     /** Collects the entities around the local player on its plane, in the top-level world view. */
     private static final class Survey {
         /** The entities collected so far. */
-        private final List<Found> found = new ArrayList<>();
+        private final List<Entry> found = new ArrayList<>();
 
         /** The game client. */
         private final Client client;
@@ -254,7 +249,7 @@ final class Entities implements Ops.Op {
             String name = described.get("name").getAsString().toLowerCase(Locale.ROOT);
             if (needle != null && !name.contains(needle)) return;
 
-            found.add(new Found(kind, distance, key, x, y, described));
+            found.add(new Entry(kind, distance, key, x, y, described));
         }
 
         /** Get the world x of the scene tile. */
@@ -281,7 +276,7 @@ final class Entities implements Ops.Op {
                 out.add(kind + "s", new JsonArray());
             }
 
-            for (Found entity : found.subList(0, Math.min(limit, found.size()))) {
+            for (Entry entity : found.subList(0, Math.min(limit, found.size()))) {
                 out.getAsJsonArray(entity.kind + "s").add(entity.described);
             }
 

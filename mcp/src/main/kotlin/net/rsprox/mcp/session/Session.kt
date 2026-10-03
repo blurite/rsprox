@@ -28,21 +28,23 @@ public data class Launch(
     val proxyPort: Int,
     /** The identity the in-client bridge reports when it connects. */
     val httpPort: Int,
-    /** The wall clock at which the launch began. */
-    val startedAtMs: Long,
 )
 
+/** Whether a session has a client, and how far that client has come. */
 public sealed interface ClientState {
+    /** The session has no client. */
     public data class Stopped(
         /** The reason the session has no client. */
         val reason: String,
     ) : ClientState
 
+    /** The client was launched and its plugin has not said hello yet. */
     public data class Launching(
         /** The launch whose client has not connected yet. */
         val launch: Launch,
     ) : ClientState
 
+    /** The plugin in the client is connected, so the client can be driven. */
     public data class Connected(
         /** The launch that the client belongs to. */
         val launch: Launch,
@@ -55,11 +57,13 @@ public sealed interface ClientState {
 
 /** Everything that can change a session's [ClientState]. Several threads raise these; [reduce] decides. */
 public sealed interface SessionEvent {
+    /** A launch of the client began. */
     public data class Launched(
         /** The launch that began. */
         val launch: Launch,
     ) : SessionEvent
 
+    /** The plugin of a launched client said hello. */
     public data class Hello(
         /** The HTTP port of the launch that the client says it belongs to. */
         val httpPort: Int,
@@ -69,16 +73,19 @@ public sealed interface SessionEvent {
         val pid: Long,
     ) : SessionEvent
 
+    /** The link to the plugin of the connected client closed. */
     public data class LinkClosed(
         /** The link that closed. */
         val link: BridgeLink,
     ) : SessionEvent
 
+    /** The caller, or a failed launch, stops the client. */
     public data class Stop(
         /** The reason the client is stopped. */
         val reason: String,
     ) : SessionEvent
 
+    /** The plugin of a launched client will not say hello any more. */
     public data class NeverConnected(
         /** The launch whose client will not connect any more. */
         val launch: Launch,
@@ -88,7 +95,7 @@ public sealed interface SessionEvent {
 }
 
 /** Get the state that follows [state]. Returns [state] itself when the event is stale or does not apply. */
-internal fun reduce(
+private fun reduce(
     state: ClientState,
     event: SessionEvent,
 ): ClientState =
@@ -117,6 +124,7 @@ internal fun reduce(
             }
     }
 
+/** One login of a session, as the proxy reports it. */
 public data class LoginInfo(
     /** The number of this login within its session, starting at 1. */
     val epoch: Int,
@@ -205,6 +213,7 @@ public data class SessionSnapshot(
     val cursor: Long,
 )
 
+/** One client of a proxy target, with its packet log and its logins, across every launch of that client. */
 public class Session internal constructor(
     /** The id that callers name the session by. */
     public val id: SessionId,
@@ -253,7 +262,7 @@ public class Session internal constructor(
         }
 
     /** Apply the event and determine if it changed the state. */
-    internal fun changes(event: SessionEvent): Boolean =
+    internal fun applied(event: SessionEvent): Boolean =
         lock.withLock {
             val before = client
 

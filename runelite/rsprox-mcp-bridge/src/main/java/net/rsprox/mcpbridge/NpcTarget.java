@@ -14,12 +14,12 @@ import net.runelite.api.coords.WorldPoint;
 final class NpcTarget extends Target {
     /** The menu actions that perform an option on an NPC. */
     private static final Set<MenuAction> FAMILY = EnumSet.of(
-            MenuAction.NPC_FIRST_OPTION,
-            MenuAction.NPC_SECOND_OPTION,
-            MenuAction.NPC_THIRD_OPTION,
-            MenuAction.NPC_FOURTH_OPTION,
-            MenuAction.NPC_FIFTH_OPTION,
-            MenuAction.EXAMINE_NPC);
+        MenuAction.NPC_FIRST_OPTION,
+        MenuAction.NPC_SECOND_OPTION,
+        MenuAction.NPC_THIRD_OPTION,
+        MenuAction.NPC_FOURTH_OPTION,
+        MenuAction.NPC_FIFTH_OPTION,
+        MenuAction.EXAMINE_NPC);
 
     /** The index of the NPC. */
     private final int index;

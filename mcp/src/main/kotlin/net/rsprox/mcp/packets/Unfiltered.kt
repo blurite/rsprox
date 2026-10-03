@@ -37,6 +37,7 @@ internal object UnfilteredFilterSetStore : PropertyFilterSetStore {
         //
     }
 
+    /** The one filter set of the store, in which every filter is on, so that no packet is omitted. */
     private object AllEnabled : PropertyFilterSet {
         /** Get a creation time of zero, since the set was never saved. */
         override fun getCreationTime(): Long = 0
@@ -166,6 +167,7 @@ internal object TapSettingSetStore : SettingSetStore {
         //
     }
 
+    /** The one setting set of the store, whose values cannot be changed. */
     private object Fixed : SettingSet {
         /** Get a creation time of zero, since the set was never saved. */
         override fun getCreationTime(): Long = 0

@@ -13,16 +13,10 @@ import net.runelite.api.coords.WorldPoint;
  */
 final class CameraTurn {
     /** The number of angle units in a full turn. */
-    static final int FULL_TURN = 16384;
-
-    /** The lowest pitch the client accepts. */
-    static final int PITCH_MIN = 1024;
-
-    /** The highest pitch the client accepts. */
-    static final int PITCH_MAX = 3064;
+    private static final int FULL_TURN = 16384;
 
     /** The pitch that shows a good stretch of ground in front of the player. */
-    static final int PITCH_MIDDLE = 2048;
+    private static final int PITCH_MIDDLE = 2048;
 
     /** The distance within which the yaw counts as having arrived at its target. */
     private static final int ARRIVED_WITHIN = 64;

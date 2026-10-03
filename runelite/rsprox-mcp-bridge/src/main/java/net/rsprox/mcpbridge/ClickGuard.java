@@ -5,14 +5,26 @@ import net.runelite.api.events.MenuOptionClicked;
 
 /**
  * Decides, on the click the client is about to perform, whether it is the intended one. It is armed
- * just before a click of ours and disarmed on the first click the client reports, so that a click
- * that is not ours is never judged.
+ * just before a click of ours and stays armed until the client reports a click or the interaction
+ * gives up on it, so that a click that is not ours is never judged.
  */
 final class ClickGuard {
     /** What became of one attempt. */
+    enum Outcome {
+        /** The client performed the intended action. */
+        PERFORMED,
+
+        /** The client performed nothing. */
+        MISSED,
+
+        /** The client was stopped from performing another entry at a point where it also offered the intended one. */
+        ANOTHER_PREFERRED,
+    }
+
+    /** The outcome of one attempt, with what happened in words. */
     static final class Verdict {
-        /** Whether the client performed the intended action. */
-        final boolean passed;
+        /** What became of the attempt. */
+        final Outcome outcome;
 
         /** What happened, in a few words. */
         final String words;
@@ -21,20 +33,30 @@ final class ClickGuard {
         final int tick;
 
         /** Create a verdict. */
-        private Verdict(boolean passed, String words, int tick) {
-            this.passed = passed;
+        private Verdict(Outcome outcome, String words, int tick) {
+            this.outcome = outcome;
             this.words = words;
             this.tick = tick;
         }
 
         /** Build the verdict of an attempt that the client performed on the given tick. */
-        static Verdict passed(String words, int tick) {
-            return new Verdict(true, words, tick);
+        private static Verdict performed(String words, int tick) {
+            return new Verdict(Outcome.PERFORMED, words, tick);
         }
 
         /** Build the verdict of an attempt that performed nothing. */
         static Verdict missed(String words) {
-            return new Verdict(false, words, -1);
+            return new Verdict(Outcome.MISSED, words, -1);
+        }
+
+        /** Determine if the client performed the intended action. */
+        boolean isPerformed() {
+            return outcome == Outcome.PERFORMED;
+        }
+
+        /** Get the same verdict with other words. */
+        Verdict worded(String words) {
+            return new Verdict(outcome, words, tick);
         }
     }
 
@@ -59,15 +81,18 @@ final class ClickGuard {
     }
 
     /** Determine if the client has reported the pending click. */
-    synchronized boolean settled() {
+    synchronized boolean isSettled() {
         return verdict != null;
     }
 
-    /** Stop expecting a click, and get the verdict, which is the given words when the client reported none. */
-    synchronized Verdict disarm(String whenNone) {
+    /**
+     * Stop expecting a click, and get the verdict, or null when the client reported none. Called on
+     * the client thread, where the client reports its clicks, so that no report can slip in between.
+     */
+    synchronized Verdict disarm() {
         armed = false;
 
-        return verdict != null ? verdict : Verdict.missed(whenNone);
+        return verdict;
     }
 
     /**
@@ -78,15 +103,35 @@ final class ClickGuard {
         if (!armed) return;
 
         armed = false;
+        verdict = judge(client, event);
+    }
+
+    /** Let the intended click through and consume any other, and say which it was. */
+    private Verdict judge(Client client, MenuOptionClicked event) {
         String words = Offer.words(event.getMenuEntry());
 
-        if (event.isConsumed()) {
-            verdict = Verdict.missed("another plugin consumed the click on " + words);
-        } else if (target.matches(event.getMenuEntry(), client)) {
-            verdict = Verdict.passed("the client performed " + words, client.getTickCount());
-        } else {
-            event.consume();
-            verdict = Verdict.missed("the click would have performed " + words + ", so it was cancelled");
-        }
+        if (event.isConsumed()) return Verdict.missed("another plugin consumed the click on " + words);
+
+        if (target.matches(event.getMenuEntry(), client)) return performed(client, words);
+
+        event.consume();
+
+        return cancelled(client, words);
+    }
+
+    /** Build the verdict of the intended click, which the client performs on its current tick. */
+    private static Verdict performed(Client client, String words) {
+        return Verdict.performed("the client performed " + words, client.getTickCount());
+    }
+
+    /**
+     * Build the verdict of a cancelled click. When the menu still holds the intended entry, the client
+     * preferred another entry to it at this point, which a click through the open menu gets around.
+     */
+    private Verdict cancelled(Client client, String words) {
+        boolean offered = Offer.read(client, target, null).match >= 0;
+        Outcome outcome = offered ? Outcome.ANOTHER_PREFERRED : Outcome.MISSED;
+
+        return new Verdict(outcome, "the click would have performed " + words + ", so it was cancelled", -1);
     }
 }

@@ -22,7 +22,7 @@ final class Scenes {
     /** The options of a ground item by position. The RuneLite API exposes none, and the client takes with the third. */
     static final String[] GROUND_ITEM_OPTIONS = {null, null, "Take", null, null};
 
-    /** Not for instances. */
+    /** Prevent the creation of instances. */
     private Scenes() {
         //
     }
@@ -75,12 +75,14 @@ final class Scenes {
         return composition.getImpostorIds() == null ? composition : composition.getImpostor();
     }
 
-    /** Get the names of the options that are offered, in order. */
+    /** Get the names of the options that are offered, in order and without their colour tags. */
     static List<String> offered(String[] options) {
         List<String> out = new ArrayList<>();
 
         for (String option : options == null ? new String[0] : options) {
-            if (option != null && !option.isEmpty()) out.add(option);
+            String name = Offer.untagged(option);
+
+            if (!name.isEmpty()) out.add(name);
         }
 
         return out;
@@ -100,7 +102,7 @@ final class Scenes {
         return Perspective.getCanvasTilePoly(client, LocalPoint.fromScene(sceneX, sceneY, view));
     }
 
-    /** Write the world tile as its coordinates in brackets. */
+    /** Write the two coordinates in brackets, whether they name a world tile or a canvas point. */
     static String words(int x, int y) {
         return "(" + x + ", " + y + ")";
     }

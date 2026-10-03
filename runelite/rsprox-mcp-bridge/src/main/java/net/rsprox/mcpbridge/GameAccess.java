@@ -44,7 +44,7 @@ final class GameAccess implements AutoCloseable {
     /** The subscription that keeps {@link #tickCycle} current, for as long as this access is open. */
     private final Subscription ticks;
 
-    /** The game cycle at which the last game tick started, or the lowest value before the first. */
+    /** The client cycle at which the last game tick started, or the lowest value before the first. */
     private volatile int tickCycle = Integer.MIN_VALUE;
 
     /** Create the access to the given client, its thread, its renderer and its event bus. */
@@ -56,16 +56,19 @@ final class GameAccess implements AutoCloseable {
         this.ticks = subscribe(GameTick.class, (game, tick) -> tickCycle = game.getGameCycle());
     }
 
+    /** A read of the client, or an act on it, that runs on the client thread. */
     interface ClientCall<T> {
         /** Read from or act on the client, on the client thread. */
         T call(Client client) throws BridgeException;
     }
 
+    /** A handler of one type of event that the client posts. */
     interface ClientEvent<T> {
         /** Handle an event that the client posted, on the thread it posted it from. */
         void on(Client client, T event);
     }
 
+    /** A registration for events, which lasts until it is closed. */
     interface Subscription extends AutoCloseable {
         /** Stop receiving the events. Idempotent. */
         @Override
@@ -105,7 +108,7 @@ final class GameAccess implements AutoCloseable {
         return () -> eventBus.unregister(subscriber);
     }
 
-    /** Get the game cycle at which the last game tick started, or the lowest value before the first. */
+    /** Get the client cycle at which the last game tick started, or the lowest value before the first. */
     int tickCycle() {
         return tickCycle;
     }
@@ -125,12 +128,43 @@ final class GameAccess implements AutoCloseable {
         return await(result, "a rendered frame");
     }
 
-    /** Wait until the client has drawn its next frame. The image is not kept. */
+    /**
+     * Wait until the client has drawn its next frame. The listener takes no image, so the GPU plugin
+     * does not read the framebuffer back for it.
+     */
     void nextFrame() throws BridgeException {
         CompletableFuture<Void> drawn = new CompletableFuture<>();
-        drawManager.requestNextFrameListener(image -> drawn.complete(null));
+        Runnable listener = () -> drawn.complete(null);
+        drawManager.registerEveryFrameListener(listener);
 
-        await(drawn, "a rendered frame");
+        try {
+            await(drawn, "a rendered frame");
+        } finally {
+            drawManager.unregisterEveryFrameListener(listener);
+        }
+    }
+
+    /**
+     * Get the client's own cycle counter. It advances once per client cycle of 20 ms, whatever the
+     * frame rate, and the client handles the input of a cycle within that cycle.
+     */
+    int cycle() throws BridgeException {
+        return onClientThread(Client::getGameCycle);
+    }
+
+    /**
+     * Wait until the client's cycle counter has advanced by the given number, looking once per frame,
+     * and then for the frame that the client draws next. A frame is not a unit of time: with an
+     * unlocked frame rate several frames pass within one cycle.
+     */
+    void awaitCycles(int cycles) throws BridgeException {
+        int until = cycle() + cycles;
+
+        while (cycle() < until) {
+            nextFrame();
+        }
+
+        nextFrame();
     }
 
     /** Stop following the game ticks. */

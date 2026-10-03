@@ -20,6 +20,7 @@ public class ToolError(
     message: String,
 ) : Exception(message)
 
+/** What a tool returns, as the content blocks of an MCP reply. */
 public sealed interface ToolResult {
     /** One text block holding [value] as compact JSON. */
     public data class Json(
@@ -42,6 +43,7 @@ public sealed interface ToolResult {
     ) : ToolResult
 }
 
+/** One tool of the MCP server: its name, its description, the schema of its arguments and its handler. */
 public class Tool(
     /** The name an MCP client calls the tool by. */
     public val name: String,
@@ -53,6 +55,7 @@ public class Tool(
     public val run: (args: ObjectNode) -> ToolResult,
 )
 
+/** The reply to one HTTP request. */
 internal class HttpReply(
     /** The HTTP status code. */
     val status: Int,
@@ -60,6 +63,7 @@ internal class HttpReply(
     val body: String?,
 )
 
+/** A failure of the JSON-RPC message itself, which becomes a JSON-RPC error and not a tool result. */
 private class RpcError(
     /** The JSON-RPC error code. */
     val code: Int,
@@ -232,7 +236,7 @@ internal class McpDispatcher(
     /**
      * Check the arguments against the schema of the tool. Throws [ToolError] for the first mismatch.
      * Checks the subset of JSON Schema the tool table uses: `required`, per-property `type`, `enum`,
-     * `minimum`, `maximum`, and `items.type` for arrays. Unknown keys are rejected so a misspelt
+     * `minimum`, `maximum`, and `items.type` and `items.enum` for arrays. Unknown keys are rejected so a misspelt
      * argument fails loudly instead of being ignored.
      */
     private fun checkArguments(
@@ -263,6 +267,12 @@ internal class McpDispatcher(
             val mistyped = itemType != null && value.any { !it.hasType(itemType) }
 
             if (mistyped) throw ToolError("${tool.name}: every item of '$key' must be of type $itemType")
+
+            val allowedItems = schema.get("items")?.get("enum")
+            if (allowedItems != null && value.any { it !in allowedItems }) {
+                val values = allowedItems.joinToString(", ") { it.asText() }
+                throw ToolError("${tool.name}: every item of '$key' must be one of $values")
+            }
 
             val allowed = schema.get("enum")
             if (allowed != null && allowed.none { it == value }) {

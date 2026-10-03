@@ -26,6 +26,7 @@ public enum class Origin(
     PROXY('P'),
 }
 
+/** One record of the log: a decoded packet, or a lifecycle marker that rsprox added. */
 public data class PacketRecord(
     /** The position in the log: 1-based, contiguous, never reused. */
     val seq: Long,
@@ -37,12 +38,11 @@ public data class PacketRecord(
     val origin: Origin,
     /** The upper-case prot name such as `IF_SETTEXT`, or a lifecycle marker such as `LOGIN`. */
     val prot: String,
-    /** The wall clock at append. Wire packets are flushed once per server tick, so this is tick-granular. */
-    val atMs: Long,
     /** The decoded packet as text, or the detail of a lifecycle marker. */
     val text: String,
 )
 
+/** What a read of the log asks for: where to start, which records to keep and how many. */
 public data class PacketQuery(
     /** The cursor to read after. */
     val after: Cursor = Cursor(0),
@@ -54,7 +54,7 @@ public data class PacketQuery(
     val contains: String? = null,
     /** The most records to return. */
     val limit: Int = DEFAULT_LIMIT,
-    /** The upper-case prefixes of which a prot name must start with one. Empty matches every prot. */
+    /** The upper-case prefixes to keep. A prot name must start with one of them. Empty matches every prot. */
     val protPrefixes: Set<String> = emptySet(),
 ) {
     public companion object {
@@ -63,6 +63,7 @@ public data class PacketQuery(
     }
 }
 
+/** What a read of the log returns: the records that matched and where the read ended. */
 public data class PacketPage(
     /** The records that matched, oldest first. */
     val packets: List<PacketRecord>,
@@ -106,7 +107,7 @@ public class PacketLog(
     ): Long =
         lock.withLock {
             val seq = firstSeq + records.size
-            records.addLast(PacketRecord(seq, login, cycle, origin, prot, System.currentTimeMillis(), text))
+            records.addLast(PacketRecord(seq, login, cycle, origin, prot, text))
 
             if (records.size > capacity) {
                 records.removeFirst()
@@ -127,44 +128,64 @@ public class PacketLog(
         waitMs: Long = 0,
     ): PacketPage {
         val deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(waitMs)
-        val matches = ArrayList<PacketRecord>()
+        var target = head().seq
 
         // A cursor past the head can only come from another log; reading from the head keeps it usable.
-        // The records are matched outside the lock, a slice at a time, so a broad query never holds up an append.
-        var slice = lock.withLock { sliceAfter(query.after.seq.coerceIn(0, headSeq()), headSeq()) }
-        var scanned = slice.first - 1
-        var dropped = slice.dropped
-        var timedOut = false
+        val scan = Scan(query, query.after.seq.coerceIn(0, target))
 
         while (true) {
-            for (record in slice.records) {
-                if (matches.size >= query.limit) break
+            scan.advance(target)
 
-                scanned++
-                if (query.matches(record)) matches += record
-            }
+            if (!scan.isAt(target)) continue
 
-            val full = matches.size >= query.limit
-            var target = slice.target
+            if (scan.matches.isNotEmpty() || waitMs <= 0) return scan.page()
 
-            if (full || scanned >= target) {
-                if (matches.isNotEmpty() || waitMs <= 0) break
+            target = awaitAppend(target, deadline) ?: return scan.timedOutPage()
+        }
+    }
 
-                val head = awaitAppend(target, deadline)
-                if (head == null) {
-                    timedOut = true
-                    break
-                }
+    /** One read in progress: the records matched so far and how far the log has been scanned. */
+    private inner class Scan(
+        /** The query that the read answers. */
+        private val query: PacketQuery,
+        /** The sequence number of the last record that was scanned or evicted. */
+        private var scanned: Long,
+    ) {
+        /** The records that matched so far, oldest first. */
+        val matches = ArrayList<PacketRecord>()
 
-                target = head
-            }
+        /** The number of records that were evicted before they could be scanned. */
+        private var dropped = 0L
 
-            slice = lock.withLock { sliceAfter(scanned, target) }
+        /**
+         * Scan the next slice of the records up to [target]. The records are matched outside the lock,
+         * a slice at a time, so a broad query never holds up an append.
+         */
+        fun advance(target: Long) {
+            val slice = lock.withLock { sliceAfter(scanned, target) }
             scanned = slice.first - 1
             dropped += slice.dropped
+
+            for (record in slice.records) {
+                if (isFull()) return
+
+                scanned++
+
+                if (query.matches(record)) matches += record
+            }
         }
 
-        return PacketPage(matches, Cursor(scanned), head(), dropped, timedOut)
+        /** Determine if the scan has nothing left to do up to [target]: it reached it or holds the limit. */
+        fun isAt(target: Long): Boolean = isFull() || scanned >= target
+
+        /** Build the page of a read that ended without a wait elapsing. */
+        fun page(): PacketPage = PacketPage(matches, Cursor(scanned), head(), dropped, timedOut = false)
+
+        /** Build the page of a read whose wait elapsed with no match. */
+        fun timedOutPage(): PacketPage = PacketPage(matches, Cursor(scanned), head(), dropped, timedOut = true)
+
+        /** Determine if the scan holds as many matches as the query asks for. */
+        private fun isFull(): Boolean = matches.size >= query.limit
     }
 
     /** Get the cursor of the newest record. */
@@ -185,7 +206,7 @@ public class PacketLog(
         val count = (target - first + 1).coerceIn(0, SLICE)
         val offset = (first - firstSeq).toInt()
 
-        return Slice(first, first - (scanned + 1), target, List(count.toInt()) { records[offset + it] })
+        return Slice(first, first - (scanned + 1), List(count.toInt()) { records[offset + it] })
     }
 
     /** Wait for a record after [head] and return the new head, or null when the deadline passes first. */
@@ -217,13 +238,12 @@ public class PacketLog(
         return true
     }
 
+    /** A run of consecutive records, copied out of the log under its lock. */
     private class Slice(
         /** The sequence number of the first record of the slice, or of the next record when the slice is empty. */
         val first: Long,
         /** The number of records before [first] that were evicted before they could be scanned. */
         val dropped: Long,
-        /** The sequence number that the scan runs up to before it looks at the head again. */
-        val target: Long,
         /** The records of the slice, oldest first. */
         val records: List<PacketRecord>,
     )

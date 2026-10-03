@@ -124,7 +124,7 @@ public class McpCommand : CliktCommand(name = "mcp") {
  * Run the startup steps in [body], and close what they added to the list, newest first, when one of them fails.
  * The failure is passed on.
  */
-internal fun <T> closingOnFailure(body: (opened: MutableList<AutoCloseable>) -> T): T {
+private fun <T> closingOnFailure(body: (opened: MutableList<AutoCloseable>) -> T): T {
     val opened = ArrayList<AutoCloseable>()
 
     try {

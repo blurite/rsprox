@@ -75,7 +75,8 @@ internal class PacketTap(
     }
 }
 
-internal class LoginTap(
+/** The session monitor of one login, which appends the packets of that login to the log as text. */
+private class LoginTap(
     /** The log that the packets of this login go to. */
     private val log: PacketLog,
     /** The registry that hears what happens to this login. */
@@ -110,7 +111,7 @@ internal class LoginTap(
         cache = cacheProvider
     }
 
-    /** Note the direction of the next packet, and on the first one that a transcriber is hooked for this login. */
+    /** Keep the direction of the next packet. The first packet also registers that this login is being transcribed. */
     override fun onPacketDirection(direction: StreamDirection) {
         this.direction = direction
 

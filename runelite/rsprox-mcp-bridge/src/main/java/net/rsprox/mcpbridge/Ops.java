@@ -21,6 +21,7 @@ import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
@@ -39,8 +40,8 @@ final class Ops {
     /** The message for a widget reference that does not have that shape. */
     private static final String WIDGET_REF_SHAPE = "widget must look like \"558:7\" or \"558:7[3]\"";
 
-    /** The deepest level of nested widgets that a walk descends to. */
-    private static final int WIDGET_DEPTH_LIMIT = 12;
+    /** The deepest level of nested widgets that a walk or a search descends to. */
+    static final int WIDGET_DEPTH_LIMIT = 12;
 
     /** The pause between two reads of the game state while a login is awaited. */
     private static final int LOGIN_POLL_MS = 100;
@@ -48,6 +49,7 @@ final class Ops {
     /** The message for a login that put the client back on the login screen. */
     private static final String LOGIN_REFUSED = "the login was refused; the client is back on the login screen";
 
+    /** One operation that rsprox can ask for. */
     interface Op {
         /** Run the op with the arguments that rsprox forwarded. */
         JsonElement run(JsonObject args) throws BridgeException;
@@ -62,20 +64,48 @@ final class Ops {
     /** The ops by the name rsprox calls them. */
     private final Map<String, Op> table = new HashMap<>();
 
+    /** The lock that an op holds for as long as it drives the one mouse and keyboard of the client. */
+    private final Object input = new Object();
+
     /** Create the op table for the given game. */
     Ops(GameAccess game) {
         this.game = game;
         this.mouse = new Mouse(game);
-        table.put("state", this::state);
-        table.put("widgets", this::widgets);
-        table.put("vars", this::vars);
-        table.put("screenshot", this::screenshot);
-        table.put("click", this::click);
-        table.put("type", this::type);
-        table.put("login", this::login);
-        table.put("entities", new Entities(game));
-        table.put("interact", new Interact(game, mouse));
-        table.put("camera", new Camera(game));
+        reading("state", this::state);
+        reading("widgets", this::widgets);
+        reading("vars", this::vars);
+        reading("screenshot", this::screenshot);
+        reading("login", this::login);
+        reading("entities", new Entities(game));
+        driving("click", this::click);
+        driving("type", this::type);
+        driving("interact", new Interact(game, mouse));
+        driving("camera", Camera::turns, new Camera(game));
+    }
+
+    /** Register an op that produces no input, which runs beside any other op. */
+    private void reading(String name, Op op) {
+        table.put(name, op);
+    }
+
+    /** Register an op that produces input, which runs alone among such ops from its start to its end. */
+    private void driving(String name, Op op) {
+        driving(name, args -> true, op);
+    }
+
+    /** Register an op that produces input for the arguments that pass the test, and only reads for the others. */
+    private void driving(String name, Predicate<JsonObject> drives, Op op) {
+        table.put(name, args -> drives.test(args) ? alone(op, args) : op.run(args));
+    }
+
+    /**
+     * Run the op while no other op produces input. Two ops that move the pointer at once would each
+     * click where the other left it, and the click guard of one would judge the click of the other.
+     */
+    private JsonElement alone(Op op, JsonObject args) throws BridgeException {
+        synchronized (input) {
+            return op.run(args);
+        }
     }
 
     /** Run the named op. Throws {@code bad_args} for a name that is not in the table. */
@@ -286,6 +316,7 @@ final class Ops {
         });
     }
 
+    /** A read of one kind of client variable. */
     private interface VarReader {
         /** Read the variable with the given id. */
         JsonElement read(int id);
@@ -347,19 +378,7 @@ final class Ops {
     /** Click the canvas at the given coordinates, or at the centre of the given widget. */
     private JsonElement click(JsonObject args) throws BridgeException {
         boolean right = "right".equals(optionalString(args, "button"));
-        String widget = optionalString(args, "widget");
-        Integer x = optionalInt(args, "x");
-        Integer y = optionalInt(args, "y");
-        Point point;
-
-        if (widget != null) {
-            point = game.onClientThread(client -> centre(visibleWidget(client, widget).getBounds()));
-        } else if (x != null && y != null) {
-            point = new Point(x, y);
-        } else {
-            throw new BridgeException("bad_args", "pass either x and y, or widget");
-        }
-
+        Point point = clickPoint(args);
         mouse.hover(point.x, point.y);
         mouse.click(point.x, point.y, right ? Mouse.Button.RIGHT : Mouse.Button.LEFT);
 
@@ -368,6 +387,22 @@ final class Ops {
         out.addProperty("y", point.y);
 
         return out;
+    }
+
+    /**
+     * Get the canvas point to click: the centre of the widget when one is named, and the x and y
+     * otherwise. Throws {@code bad_args} when neither is given.
+     */
+    private Point clickPoint(JsonObject args) throws BridgeException {
+        String widget = optionalString(args, "widget");
+        if (widget != null) return game.onClientThread(client -> centre(visibleWidget(client, widget).getBounds()));
+
+        Integer x = optionalInt(args, "x");
+        Integer y = optionalInt(args, "y");
+
+        if (x == null || y == null) throw new BridgeException("bad_args", "pass either x and y, or widget");
+
+        return new Point(x, y);
     }
 
     /**
@@ -471,9 +506,7 @@ final class Ops {
     private void submitCredentials(String username, String password) throws BridgeException {
         game.onClientThread(client -> {
             GameState state = client.getGameState();
-            String refusal = "the client is not on the login screen: " + state;
-
-            if (state != GameState.LOGIN_SCREEN) throw new BridgeException("wrong_state", refusal);
+            if (state != GameState.LOGIN_SCREEN) throw notOnLoginScreen(state);
 
             client.setUsername(username);
             client.setPassword(password);
@@ -481,6 +514,11 @@ final class Ops {
 
             return null;
         });
+    }
+
+    /** Build the refusal of a login for a client that is in the given state and not on the login screen. */
+    private static BridgeException notOnLoginScreen(GameState state) {
+        return new BridgeException("wrong_state", "the client is not on the login screen: " + state);
     }
 
     /**

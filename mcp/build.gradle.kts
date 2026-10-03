@@ -4,7 +4,6 @@ val bridgePlugin: Configuration by configurations.creating {
     isTransitive = false
 }
 
-// The same repository as in runelite/rsprox-mcp-bridge/build.gradle.kts, for the client the tests run against.
 dependencies {
     bridgePlugin(project(":runelite:rsprox-mcp-bridge"))
     implementation(projects.proxy)
@@ -15,11 +14,6 @@ dependencies {
     implementation(rootProject.libs.bundles.jackson)
     implementation(rootProject.libs.clikt)
     implementation(rootProject.libs.inline.logger)
-}
-
-tasks.test {
-    // Code under test resolves ~/.rsprox from this property, so no test reads or writes the real one.
-    systemProperty("user.home", temporaryDir.absolutePath)
 }
 
 tasks.processResources {

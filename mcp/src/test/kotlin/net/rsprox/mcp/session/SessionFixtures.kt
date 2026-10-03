@@ -1,6 +1,8 @@
 package net.rsprox.mcp.session
 
+import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.target.ProxyTargetConfig
+import net.rsprox.shared.SessionMonitor
 import java.util.concurrent.CopyOnWriteArrayList
 
 internal fun target(
@@ -20,25 +22,33 @@ internal fun target(
         binaryFolder = null,
     )
 
-internal class FakeLauncher(
-    private val targets: List<ProxyTargetConfig> = listOf(target(0, "Old School RuneScape"), target(1, "My Server")),
-) : ClientLauncher {
+internal class FakeLauncher : ClientLauncher {
+    private val targets = listOf(target(0, "Old School RuneScape"), target(1, "My Server"))
     val reserved = ArrayList<ProxyTargetConfig>()
 
     // A client that goes away is killed from the bridge's reader thread.
     val killed = CopyOnWriteArrayList<Int>()
-    var reserve: (ProxyTargetConfig) -> Unit = {}
     var launch: () -> Unit = {}
     var launcherExited: () -> Boolean = { false }
+
+    // The packet tap of the newest launch, which a test drives the way the proxy does.
+    lateinit var monitor: SessionMonitor<BinaryHeader>
 
     override fun targets(): List<ProxyTargetConfig> = targets
 
     override fun reserve(target: ProxyTargetConfig): Reservation {
-        reserve.invoke(target)
         reserved += target
         val earlier = reserved.size - 1
 
-        return Reservation(FIRST_PROXY_PORT + earlier, FIRST_HTTP_PORT + earlier, { launch() }, { launcherExited() })
+        return Reservation(
+            FIRST_PROXY_PORT + earlier,
+            FIRST_HTTP_PORT + earlier,
+            { tap ->
+                monitor = tap
+                launch()
+            },
+            { launcherExited() },
+        )
     }
 
     override fun kill(proxyPort: Int) {

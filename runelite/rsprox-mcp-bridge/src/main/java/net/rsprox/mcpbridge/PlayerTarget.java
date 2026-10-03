@@ -14,14 +14,14 @@ import net.runelite.api.coords.WorldPoint;
 final class PlayerTarget extends Target {
     /** The menu actions that perform an option on a player. */
     private static final Set<MenuAction> FAMILY = EnumSet.of(
-            MenuAction.PLAYER_FIRST_OPTION,
-            MenuAction.PLAYER_SECOND_OPTION,
-            MenuAction.PLAYER_THIRD_OPTION,
-            MenuAction.PLAYER_FOURTH_OPTION,
-            MenuAction.PLAYER_FIFTH_OPTION,
-            MenuAction.PLAYER_SIXTH_OPTION,
-            MenuAction.PLAYER_SEVENTH_OPTION,
-            MenuAction.PLAYER_EIGHTH_OPTION);
+        MenuAction.PLAYER_FIRST_OPTION,
+        MenuAction.PLAYER_SECOND_OPTION,
+        MenuAction.PLAYER_THIRD_OPTION,
+        MenuAction.PLAYER_FOURTH_OPTION,
+        MenuAction.PLAYER_FIFTH_OPTION,
+        MenuAction.PLAYER_SIXTH_OPTION,
+        MenuAction.PLAYER_SEVENTH_OPTION,
+        MenuAction.PLAYER_EIGHTH_OPTION);
 
     /** The index of the player. */
     private final int index;

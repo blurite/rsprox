@@ -2,11 +2,7 @@ package net.rsprox.mcp.bridge
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import java.io.BufferedReader
-import java.io.Closeable
 import java.io.IOException
-import java.io.StringReader
-import java.io.StringWriter
 import java.net.InetAddress
 import java.net.Socket
 import java.nio.file.Files
@@ -15,9 +11,6 @@ import java.util.concurrent.CompletableFuture
 import kotlin.concurrent.thread
 
 private val mapper = jacksonObjectMapper()
-
-/** A link that is connected to nothing, for tests that only need its identity. */
-internal fun idleLink(): BridgeLink = BridgeLink(Closeable {}, BufferedReader(StringReader("")), StringWriter()) {}
 
 /** Polls until [condition] holds, so a test fails with a message instead of hanging. */
 internal fun awaitTrue(
@@ -33,11 +26,9 @@ internal fun awaitTrue(
 }
 
 /** A started hub whose rendezvous file lives in a temporary directory. */
-internal class TestHub(
-    rendering: Rendering = Rendering.GPU,
-) : AutoCloseable {
+internal class TestHub : AutoCloseable {
     val rendezvous: Path = Files.createTempDirectory("mcp-bridge-test").resolve("mcp").resolve("bridge.json")
-    val hub = BridgeHub(rendezvous, rendering).also { it.start() }
+    val hub = BridgeHub(rendezvous, Rendering.GPU).also { it.start() }
 
     override fun close() {
         hub.close()
@@ -49,11 +40,9 @@ internal class TestHub(
 
 internal class RecordingListener(
     override val session: String = "s1",
-    private val accept: Boolean = true,
 ) : BridgeListener {
     val hello = CompletableFuture<Pair<BridgeLink, Long>>()
     val closed = CompletableFuture<BridgeLink>()
-    val rejected = CompletableFuture<String>()
 
     override fun onHello(
         link: BridgeLink,
@@ -61,7 +50,7 @@ internal class RecordingListener(
     ): Boolean {
         hello.complete(link to pid)
 
-        return accept
+        return true
     }
 
     override fun onClosed(link: BridgeLink) {
@@ -69,7 +58,7 @@ internal class RecordingListener(
     }
 
     override fun onRejected(reason: String) {
-        rejected.complete(reason)
+        //
     }
 }
 
@@ -115,7 +104,6 @@ internal class FakePlugin private constructor(
             httpPort: Int,
             token: String? = null,
             protocol: Int = 1,
-            pid: Long = 4242,
         ): FakePlugin {
             val file = mapper.readTree(Files.readAllBytes(rendezvous))
             val socket = Socket(InetAddress.getLoopbackAddress(), file.get("port").asInt())
@@ -127,7 +115,7 @@ internal class FakePlugin private constructor(
                     .put("hello", protocol)
                     .put("httpPort", httpPort)
                     .put("token", token ?: file.get("token").asText())
-                    .put("pid", pid)
+                    .put("pid", 4242)
 
             plugin.send(mapper.writeValueAsString(hello))
 

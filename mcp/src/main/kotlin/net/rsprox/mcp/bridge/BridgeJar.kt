@@ -6,34 +6,16 @@ import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 
 /** Installs the embedded bridge plugin jar into the sideload directory of a target's client. */
-public class BridgeJar internal constructor(
+public class BridgeJar(
     /** The sideload directory to use for every target, or null for the default of each target. */
     private val overrideDir: Path?,
-    /** The home directory that holds the client's files. */
-    private val home: Path,
-    /** The reader of the jar that this build embeds. */
-    private val embedded: () -> ByteArray,
 ) {
-    /** Create an installer of the jar that ships with this build, for the clients of the current user. */
-    public constructor(overrideDir: Path?) : this(
-        overrideDir,
-        Path.of(System.getProperty("user.home")),
-        {
-            val resource =
-                BridgeJar::class.java.getResourceAsStream("/$FILE_NAME")
-                    ?: error("The bridge plugin jar is missing from this build")
-
-            resource.use { it.readAllBytes() }
-        },
-    )
-
     /**
      * Install the jar unless the installed one already has the same content. A client that has the
      * old jar open keeps reading it, because the new one is moved into place rather than written over it.
      */
     public fun installFor(target: ProxyTargetConfig): Path {
-        // Custom targets run a client that keeps its files apart from those of the official one.
-        val dir = overrideDir ?: home.resolve(if (target.id == 0) ".runelite" else ".rlcustom").resolve(SIDELOAD_DIR)
+        val dir = overrideDir ?: defaultDir(target)
         val installed = dir.resolve(FILE_NAME)
         val wanted = embedded()
 
@@ -47,6 +29,23 @@ public class BridgeJar internal constructor(
         Files.move(temp, installed, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
 
         return installed
+    }
+
+    /** Get the sideload directory of the client of the target, in the home directory of the current user. */
+    private fun defaultDir(target: ProxyTargetConfig): Path {
+        // Custom targets run a client that keeps its files apart from those of the official one.
+        val client = if (target.id == 0) ".runelite" else ".rlcustom"
+
+        return Path.of(System.getProperty("user.home"), client, SIDELOAD_DIR)
+    }
+
+    /** Read the jar that this build embeds. */
+    private fun embedded(): ByteArray {
+        val resource =
+            BridgeJar::class.java.getResourceAsStream("/$FILE_NAME")
+                ?: error("The bridge plugin jar is missing from this build")
+
+        return resource.use { it.readAllBytes() }
     }
 
     private companion object {

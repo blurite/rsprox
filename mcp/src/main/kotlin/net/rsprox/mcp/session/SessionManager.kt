@@ -26,6 +26,7 @@ internal interface ClientLauncher {
     fun kill(proxyPort: Int)
 }
 
+/** The ports that were reserved for one launch, with the call that performs the launch. */
 internal class Reservation(
     /** The port the client reaches the proxy on. */
     val proxyPort: Int,
@@ -40,6 +41,7 @@ internal class Reservation(
     val launcherExited: () -> Boolean,
 )
 
+/** Creates the sessions, launches and stops their clients, and feeds what happens to a client into its session. */
 public class SessionManager internal constructor(
     /** The part of the proxy that launches and kills clients. */
     private val launcher: ClientLauncher,
@@ -171,15 +173,8 @@ public class SessionManager internal constructor(
     private fun launch(session: Session) {
         if (hungLaunch) throw ToolError(HUNG_LAUNCH)
 
-        val reservation =
-            try {
-                launcher.reserve(session.target)
-            } catch (e: Exception) {
-                throw ToolError("could not prepare target '${session.target.name}': ${rootMessage(e)}")
-            }
-
-        val launch =
-            Launch(session.nextGeneration(), reservation.proxyPort, reservation.httpPort, System.currentTimeMillis())
+        val reservation = reserve(session)
+        val launch = Launch(session.nextGeneration(), reservation.proxyPort, reservation.httpPort)
 
         sessions.addIfAbsent(session)
 
@@ -187,6 +182,30 @@ public class SessionManager internal constructor(
         bridge.expect(launch.httpPort, listener(session, launch))
         session.apply(SessionEvent.Launched(launch))
 
+        val reason = fork(session, reservation) ?: return expectHello(session, launch)
+
+        release(launch)
+        session.apply(SessionEvent.Stop(reason))
+        throw ToolError("session ${session.id} failed to launch: $reason")
+    }
+
+    /** Reserve the ports for a launch of the session. Throws [ToolError] when its target cannot be prepared. */
+    private fun reserve(session: Session): Reservation =
+        try {
+            launcher.reserve(session.target)
+        } catch (e: Exception) {
+            throw ToolError("could not prepare target '${session.target.name}': ${rootMessage(e)}")
+        }
+
+    /**
+     * Fork the client on a thread of its own and wait until its launcher has completed the handshake.
+     * Returns the reason when the launch failed or hung, and null when it succeeded.
+     * Must be called with [launchLock] held.
+     */
+    private fun fork(
+        session: Session,
+        reservation: Reservation,
+    ): String? {
         // The proxy waits for the launcher's handshake with no timeout, so the wait is bounded from outside.
         val failure = AtomicReference<Throwable?>()
         val thread =
@@ -204,18 +223,11 @@ public class SessionManager internal constructor(
 
         hungLaunch = thread.isAlive
 
-        val reason =
-            when {
-                !hungLaunch -> failure.get()?.let(::rootMessage)
-                exited -> "the launcher exited before completing its handshake"
-                else -> "launcher never completed its handshake"
-            }
-
-        if (reason == null) return expectHello(session, launch)
-
-        release(launch)
-        session.apply(SessionEvent.Stop(reason))
-        throw ToolError("session ${session.id} failed to launch: $reason")
+        return when {
+            !hungLaunch -> failure.get()?.let(::rootMessage)
+            exited -> "the launcher exited before completing its handshake"
+            else -> "launcher never completed its handshake"
+        }
     }
 
     /**
@@ -261,7 +273,7 @@ public class SessionManager internal constructor(
         launch: Launch,
         reason: String,
     ) {
-        if (!session.changes(SessionEvent.NeverConnected(launch, reason))) return
+        if (!session.applied(SessionEvent.NeverConnected(launch, reason))) return
 
         synchronized(launchLock) { release(launch) }
     }
@@ -293,8 +305,7 @@ public class SessionManager internal constructor(
 
             /** Stop the session when the link of its connected client closes, and release the proxy state. */
             override fun onClosed(link: BridgeLink) {
-                val before = session.client
-                if (session.apply(SessionEvent.LinkClosed(link)) === before) return
+                if (!session.applied(SessionEvent.LinkClosed(link))) return
 
                 // The client is gone, or cannot be driven any more. Either way the proxy still holds
                 // its process handle and session monitor for the port.

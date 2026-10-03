@@ -16,7 +16,7 @@ final class Aiming {
         {0.25, 0.25}, {0.75, 0.75}, {0.25, 0.75}, {0.75, 0.25},
     };
 
-    /** Not for instances. */
+    /** Prevent the creation of instances. */
     private Aiming() {
         //
     }

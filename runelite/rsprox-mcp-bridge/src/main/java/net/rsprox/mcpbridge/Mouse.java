@@ -7,9 +7,16 @@ import net.runelite.api.Point;
 
 /** The real mouse of the client: synthetic events on its canvas, which the client treats as a player's input. */
 final class Mouse {
-    /** The pause between the press and the release of a click, as a player's finger takes. */
+    /** The milliseconds by which the timestamp of a release follows that of its press. No time passes between them. */
     private static final int CLICK_HOLD_MS = 30;
 
+    /** The cycles the client is given to take a new pointer position and build its menu for it. */
+    private static final int FOLLOW_CYCLES = 2;
+
+    /** The refusal of input in stretched mode. */
+    private static final String STRETCHED = "stretched mode is on, in which a mouse position is not a canvas position";
+
+    /** A button of the mouse, with the names that AWT gives it. */
     enum Button {
         /** The left button. */
         LEFT(MouseEvent.BUTTON1, InputEvent.BUTTON1_DOWN_MASK),
@@ -42,7 +49,7 @@ final class Mouse {
      * Move the mouse to the canvas position. While the client tracks the pointer as off the canvas, it
      * is first brought onto it, as happens when a pointer enters a window.
      */
-    void move(int x, int y) throws BridgeException {
+    private void move(int x, int y) throws BridgeException {
         boolean outside = game.onClientThread(Mouse::pointerOutside);
         game.input(canvas -> {
             long now = System.currentTimeMillis();
@@ -54,12 +61,12 @@ final class Mouse {
     }
 
     /**
-     * Move the mouse to the canvas position and wait for the frame that the client draws with it there.
-     * The client builds the menu for the scene while it draws, from where the mouse is at that time.
+     * Move the mouse to the canvas position and wait until the client has built its menu for it. The
+     * client takes the position on its next cycle and builds the menu while it draws the frame after.
      */
     void hover(int x, int y) throws BridgeException {
         move(x, y);
-        game.nextFrame();
+        game.awaitCycles(FOLLOW_CYCLES);
     }
 
     /** Press and release the button at the canvas position, where the mouse must already be. */
@@ -83,9 +90,7 @@ final class Mouse {
      * in stretched mode, where the canvas is drawn at another size than its coordinates.
      */
     static void requireUnstretched(Client client) throws BridgeException {
-        String refusal = "the client is in stretched mode, where a mouse position is not a canvas position";
-
-        if (client.isStretchedEnabled()) throw new BridgeException("wrong_state", refusal);
+        if (client.isStretchedEnabled()) throw new BridgeException("wrong_state", STRETCHED);
     }
 
     /** Determine if the client tracks the pointer as off the canvas, which it reports as a negative position. */

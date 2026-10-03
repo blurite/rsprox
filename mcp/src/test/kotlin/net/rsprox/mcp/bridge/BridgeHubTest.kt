@@ -2,10 +2,6 @@ package net.rsprox.mcp.bridge
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import java.net.InetAddress
-import java.net.Socket
-import java.nio.file.Files
-import java.nio.file.attribute.PosixFilePermissions
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
@@ -16,7 +12,6 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertSame
-import kotlin.test.assertTrue
 
 class BridgeHubTest {
     private val mapper = jacksonObjectMapper()
@@ -33,8 +28,7 @@ class BridgeHubTest {
     private fun dial(
         httpPort: Int,
         token: String? = null,
-        protocol: Int = 1,
-    ): FakePlugin = FakePlugin.dial(fixture.rendezvous, httpPort, token, protocol).also { plugins += it }
+    ): FakePlugin = FakePlugin.dial(fixture.rendezvous, httpPort, token).also { plugins += it }
 
     private fun args(json: String = "{}"): ObjectNode = mapper.readTree(json) as ObjectNode
 

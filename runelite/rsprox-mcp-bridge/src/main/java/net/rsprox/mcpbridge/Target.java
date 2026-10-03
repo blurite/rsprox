@@ -51,10 +51,15 @@ abstract class Target {
 
     /** Determine if the entry's option is exactly the option, ignoring case and colour tags. */
     boolean sameOption(MenuEntry entry) {
-        return option.equalsIgnoreCase(Offer.untagged(entry.getOption()));
+        return isSameOption(option, entry.getOption());
     }
 
-    /** Start the description with the packet prefix, the kind and, for the result's order, nothing else yet. */
+    /** Determine if the two options or actions are the same, ignoring case and colour tags. */
+    static boolean isSameOption(String one, String other) {
+        return Offer.untagged(one).equalsIgnoreCase(Offer.untagged(other));
+    }
+
+    /** Start the description of a target with the prefix of the packet to expect and its kind. */
     static JsonObject described(String expect, String kind) {
         JsonObject out = new JsonObject();
         out.addProperty("expect", expect);

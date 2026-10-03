@@ -5,6 +5,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import net.runelite.api.Client;
 import net.runelite.api.Menu;
@@ -13,18 +14,20 @@ import net.runelite.api.MenuEntry;
 
 /**
  * What the client's menu offered at one moment, read on the client thread and kept as plain values:
- * the entries in the client's array order, where the last is the one a left click performs, whether
- * the aimed-at target was still under the mouse, and the row geometry of the menu when it is open.
+ * the entries in the client's array order, whether the aimed-at target was still under the mouse, and
+ * the row geometry of the menu when it is open. A left click usually performs the last entry, but the
+ * client sorts the entries after this read and a plugin may swap them, so only the client's own
+ * report of a click says what it performed.
  */
 final class Offer {
-    /**
-     * The client's menu layout: a header of this height above the rows, then one row per entry, drawn
-     * top to bottom in reverse array order. The row height is derived from the menu height and the
-     * number of entries, and this value is used when that derivation gives nonsense.
-     */
+    /** The height of the header that the client draws above the rows of its menu. */
     private static final int HEADER = 19;
 
-    /** The row height of the client's menu layout, as a fallback. */
+    /**
+     * The height of a row of the client's menu, one per entry, drawn top to bottom in reverse array
+     * order. It is used when the height derived from the menu's height and its number of entries is
+     * not a sane one.
+     */
     private static final int ROW = 15;
 
     /** The least row height that counts as a sane derivation. */
@@ -40,7 +43,7 @@ final class Offer {
     final boolean open;
 
     /** The entries as "option target" with the colour tags stripped, in the client's array order. */
-    final List<String> offered = new ArrayList<>();
+    final List<String> offered;
 
     /** The index of the entry that performs the intended action, or -1 when none does. */
     final int match;
@@ -60,48 +63,72 @@ final class Offer {
     /** The size of the canvas. */
     private final Rectangle canvas;
 
-    /**
-     * Read the menu the client has built, looking for the entry that performs the option on the
-     * target, and whether the target still lies under the aimed-at point, if one is given.
-     */
-    Offer(Client client, Target target, Point aim) {
+    /** Create the offer of the entries, of which the one at the index performs the intended action. */
+    private Offer(Client client, MenuEntry[] entries, int match, boolean underMouse) {
         Menu menu = client.getMenu();
-        MenuEntry[] entries = menu.getMenuEntries();
-        int found = -1;
-        boolean cancels = true;
-
-        for (int i = 0; i < entries.length; i++) {
-            offered.add(words(entries[i]));
-            cancels &= entries[i].getType() == MenuAction.CANCEL;
-
-            if (target.matches(entries[i], client)) found = i;
-        }
-
-        Shape shape = aim == null ? null : target.shape(client);
         Canvas surface = client.getCanvas();
         this.open = client.isMenuOpen();
-        this.match = found;
-        this.onlyCancel = cancels;
-        this.underMouse = aim == null || (shape != null && shape.contains(aim));
+        this.offered = words(entries);
+        this.match = match;
+        this.onlyCancel = Arrays.stream(entries).allMatch(entry -> entry.getType() == MenuAction.CANCEL);
+        this.underMouse = underMouse;
         this.bounds = new Rectangle(menu.getMenuX(), menu.getMenuY(), menu.getMenuWidth(), menu.getMenuHeight());
         this.scroll = client.getMenuScroll();
         this.canvas = new Rectangle(0, 0, surface.getWidth(), surface.getHeight());
     }
 
-    /** Determine if the matching entry is the one a left click performs with the menu closed. */
-    boolean isDefault() {
+    /**
+     * Read the menu the client has built, looking for the entry that performs the option on the
+     * target, and whether the target still lies under the aimed-at point, if one is given.
+     */
+    static Offer read(Client client, Target target, Point aim) {
+        MenuEntry[] entries = client.getMenu().getMenuEntries();
+
+        return new Offer(client, entries, lastMatch(entries, target, client), isUnder(client, target, aim));
+    }
+
+    /** Get the index of the last entry that performs the target's option on the target, or -1 when none does. */
+    private static int lastMatch(MenuEntry[] entries, Target target, Client client) {
+        for (int i = entries.length - 1; i >= 0; i--) {
+            if (target.matches(entries[i], client)) return i;
+        }
+
+        return -1;
+    }
+
+    /** Determine if the target's outline holds the aimed-at point, which a read without an aim takes as given. */
+    private static boolean isUnder(Client client, Target target, Point aim) {
+        if (aim == null) return true;
+
+        Shape shape = target.shape(client);
+
+        return shape != null && shape.contains(aim);
+    }
+
+    /** Write each entry as its option and its target with the colour tags stripped, in the given order. */
+    private static List<String> words(MenuEntry[] entries) {
+        List<String> out = new ArrayList<>();
+
+        for (MenuEntry entry : entries) {
+            out.add(words(entry));
+        }
+
+        return out;
+    }
+
+    /** Determine if the matching entry is the last of the array, which is the one a left click usually performs. */
+    boolean isLast() {
         return match >= 0 && match == offered.size() - 1;
     }
 
     /** Get the canvas point in the vertical middle of the matching entry's row of the open menu. */
     Point row() {
-        int row = offered.size() - 1 - match - scroll;
         int height = rowHeight();
 
-        return new Point(bounds.x + bounds.width / 2, bounds.y + HEADER + height * row + height / 2);
+        return new Point(bounds.x + bounds.width / 2, bounds.y + HEADER + height * rowNumber() + height / 2);
     }
 
-    /** Get the row number of the matching entry, counted from the top of the open menu. */
+    /** Get the row number of the matching entry, counted from the top of the open menu, where the first is 0. */
     int rowNumber() {
         return offered.size() - 1 - match - scroll;
     }

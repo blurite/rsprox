@@ -46,10 +46,6 @@ public enum class Rendering {
 
     /** Frames drawn without the GPU plugin, which the bridge plugin stops. */
     SOFTWARE,
-    ;
-
-    /** Get the `softwareRendering` flag that tells the plugin of this rendering in a welcome. */
-    internal fun toWire(): Boolean = this == SOFTWARE
 }
 
 /**
@@ -61,7 +57,7 @@ public class BridgeHub(
     /** The file through which a plugin finds this hub. */
     private val rendezvous: Path,
     /** The rendering that every welcomed client is told to use. */
-    private val rendering: Rendering = Rendering.GPU,
+    private val rendering: Rendering,
 ) : AutoCloseable {
     /** The listeners that wait for a client, by the HTTP port of its launch. */
     private val expected = ConcurrentHashMap<Int, BridgeListener>()
@@ -173,13 +169,7 @@ public class BridgeHub(
         // Only a caller that holds the token may end a launch, so a stray local connection cannot stop a session.
         if (!tokenMatches(hello.get("token"))) return reject(socket, writer, "bad token")
 
-        if (hello.get("hello")?.asInt() != PROTOCOL) {
-            val refusal = "bridge protocol ${hello.get("hello")} is not supported; the installed plugin jar is stale"
-            reject(socket, writer, refusal)
-            expected[httpPort]?.onRejected(refusal)
-
-            return
-        }
+        if (hello.get("hello")?.asInt() != PROTOCOL) return rejectStale(socket, writer, hello.get("hello"), httpPort)
 
         val listener = expected.remove(httpPort)
         if (listener == null) return reject(socket, writer, "no session expects httpPort $httpPort")
@@ -192,23 +182,36 @@ public class BridgeHub(
             }
 
         // The welcome goes out before the session can see the link, so no request can overtake it.
-        writer.line(
-            MAPPER
-                .createObjectNode()
-                .put("welcome", PROTOCOL)
-                .put("session", listener.session)
-                .put("softwareRendering", rendering.toWire()),
-        )
+        writer.line(welcome(listener))
 
-        if (!listener.onHello(link, hello.get("pid")?.asLong() ?: -1)) {
-            socket.close()
-
-            return
-        }
+        if (!listener.onHello(link, hello.get("pid")?.asLong() ?: -1)) return socket.close()
 
         links += link
         link.start()
         logger.info { "Bridge connected for session ${listener.session} (httpPort $httpPort)" }
+    }
+
+    /** Build the welcome that tells the plugin its session and the rendering to use. */
+    private fun welcome(listener: BridgeListener): JsonNode =
+        MAPPER
+            .createObjectNode()
+            .put("welcome", PROTOCOL)
+            .put("session", listener.session)
+            .put("softwareRendering", rendering == Rendering.SOFTWARE)
+
+    /**
+     * Reject a plugin that speaks another protocol than this hub, and tell the session that waits for
+     * its client, which will not dial again.
+     */
+    private fun rejectStale(
+        socket: Socket,
+        writer: Writer,
+        protocol: JsonNode?,
+        httpPort: Int,
+    ) {
+        val refusal = "bridge protocol $protocol is not supported; the installed plugin jar is stale"
+        reject(socket, writer, refusal)
+        expected[httpPort]?.onRejected(refusal)
     }
 
     /** Tell the plugin why it is not welcome and close its connection. */

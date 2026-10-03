@@ -90,14 +90,12 @@ it runs, whatever the clients do.
 ## Tools
 
 The tools come in three groups. The `session_*` tools launch a client for a target, stop it and list
-the sessions. `packets_read` reads the decoded packets of a session after a cursor, and can wait for
+the sessions. `session_start` gives the launcher of a client 180 seconds to complete its handshake.
+When the launcher takes longer, the server abandons the launch and refuses further launches until it
+is restarted. `packets_read` reads the decoded packets of a session after a cursor, and can wait for
 the first packet that matches. The `client_*` tools look at the client and drive it: they read its
 state, widgets and variables, take a screenshot, log in, click and type, list what is near the player
 and act on it.
-
-`session_start` gives the launcher of a client 180 seconds to complete its handshake. When the
-launcher takes longer, the server abandons the launch and refuses further launches until it is
-restarted.
 
 The server describes each tool itself. `tools/list` returns every tool with its description and the
 schema of its arguments:
@@ -105,11 +103,6 @@ schema of its arguments:
 ```
 curl -s http://127.0.0.1:43580/mcp -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 ```
-
-`session` is optional on every tool while only one session exists.
-
-Every `client_*` result carries `cursor`, the packet cursor taken just before the call. Pass it as
-`after` to `packets_read` to see only what the action caused.
 
 Each packet is one line: `<seq> L<login> T<tick> <C|S|P> <PROT> <text>`. `C` is client to server, `S`
 is server to client, and `P` is a marker that rsprox adds (`CLIENT_LAUNCHED`, `CLIENT_CONNECTED`,
@@ -128,18 +121,29 @@ tile.
 `client_interact` performs one of the listed options, or `Examine` on an NPC, an object or a ground
 item, the way a player does. It finds the target in the client's own lists, moves the real mouse onto
 it, lets the client build the menu for what is under the mouse, and clicks: a left click when the
-option is the default one, otherwise a right click and a click on the option's row. The server
-receives exactly what a player's interaction sends, mouse packets included. The client decides what a
-click means, so a target that moves after the mouse was aimed would get the wrong click. The plugin
-sees the click the client is about to perform, cancels it before anything is sent when it is not the
-intended one, and aims again, within the game tick. When no part of the target is on screen it turns
-the camera toward the target and keeps trying for up to six seconds.
+option looks like the default one, otherwise a right click and a click on the option's row. The
+server receives exactly what a player's interaction sends, mouse packets included. The client decides
+what a click means, so a target that moves after the mouse was aimed would get the wrong click. The
+plugin sees the click the client is about to perform, cancels it before anything is sent when it is
+not the intended one, and aims again, within the game tick. Only the client knows which option a left
+click performs, because it sorts its menu late and a plugin such as the menu entry swapper can
+reorder it. When a left click turns out to perform another option, the plugin uses the right-click
+menu for the rest of the call and says so in `tried`. When no part of the target is on screen it
+turns the camera toward the target and keeps trying for up to six seconds.
+
+Only one call drives the mouse and the keyboard at a time. `client_interact`, `client_click`,
+`client_type` and a `client_camera` call that turns the camera take turns, and the calls that only
+read run beside them.
 
 The call first checks that the client has the target and that the target offers the option, and
 fails with `not_found` when it does not. It then waits for the packet that the client sends and
 returns its line as `packet`, with `attempts`, the number of aims it took, `tick`, the client's tick
 count when the click went through, `tried`, the last attempts in words, and `camera` when it turned
-the camera.
+the camera. `proof` says how the packet was tied to this call. Packets reach the log up to a tick
+late, so a packet that an earlier action caused can arrive after the call began. The server therefore
+first finds the client's own `EVENT_MOUSE_CLICK` record of the press, by its canvas coordinates, and
+takes the first matching packet after it. `proof` is then `click`. When no such record arrives within
+three seconds, it takes the first matching packet after the cursor, and `proof` is `prefix`.
 
 ```
 1. session_start {"target":"My Server"}
@@ -154,24 +158,29 @@ the camera.
        "truncated":false,"cursor":612}
 
 4. client_interact {"target":"npc","index":0,"option":"Talk-to"}
-   -> {"expect":"OPNPC","target":"npc","index":0,"id":3308,"name":"Gielinor Guide","option":"Talk-to",
+   -> {"target":"npc","index":0,"id":3308,"name":"Gielinor Guide","option":"Talk-to",
        "attempts":1,"tick":41,"tried":["left-clicked Talk-to Gielinor Guide at (312, 171); the client
        performed Talk-to Gielinor Guide"],"cursor":613,
-       "packet":"617 L1 T41 C OPNPC1_V2 [opnpc1_v2] npc=(index=0, ...)"}
+       "packet":"617 L1 T41 C OPNPC1_V2 [opnpc1_v2] npc=(index=0, ...)","proof":"click"}
 ```
 
 The `packet` in step 4 is the proof that the client sent the action. The two packets before it are
 the mouse click and the mouse movement that the client sends for any click. When no such packet
-arrives within three seconds, the call fails, because the client dropped the action without a word.
-The error names the likely cause: an NPC or a player that left the client's view, or a widget op
-that the server has not enabled. What the server answered is in `packets_read {"after":613}`.
+arrives within three seconds for a target in the game world, the call fails, because the client
+dropped the action without a word. The error names the likely cause, such as an NPC or a player that
+left the client's view. A widget is different, because the client handles some widget options by
+itself and sends nothing for them. The call then succeeds with `"packet":null` and a `note` that says
+so. A login that the proxy has no decoder for has no packets in the log at all, so every interaction
+of that login returns `"packet":null` with a `note` that it could not be confirmed. What the server
+answered is in `packets_read {"after":613}`.
 
 Walking is the same interaction with the option `Walk here` on a tile:
 `client_interact {"target":"tile","x":3096,"y":3107}` clicks the tile and is proven by the
 `MOVE_GAMECLICK` packet for it. A dialog is driven through its widgets:
 `{"target":"dialog","option":"continue"}` clicks the widget that continues it, and
 `{"target":"dialog","option":"2"}` or `{"target":"dialog","option":"Yes"}` clicks a choice by its
-number or its text. Both are proven by `RESUME_PAUSEBUTTON`.
+number or its text. Both are proven by `RESUME_PAUSEBUTTON`. A button of an interface is proven by its
+`IF_BUTTON` packet, and a close button by `CLOSE_MODAL`.
 
 When the client never offers the option within the deadline, about three ticks, the call fails with
 `wrong_state` and says what the client offered at the last attempt instead, such as
@@ -248,9 +257,12 @@ log. The client comes back on new ports, and new packets are marked with the nex
 
 ## Check it against a live client
 
-The automated tests cover the packet log, the MCP endpoint and the session lifecycle. They do not run
-a game client, so what the client does is checked by hand. Run this after a RuneLite update, a game
-revision change, or a change to the plugin. Each step names what proves it.
+The automated tests cover the packet log, the endpoint's HTTP and JSON-RPC handling, the tool calls
+as an MCP client makes them, the session failure paths and the bridge handshake. They do not run a game client, so what the client does is
+checked by hand. Run this after a RuneLite update, a game revision change, or a change to the plugin.
+Each step names what proves it, so a step that fails names what changed. A tool that reports a
+dropped action, or lists what the client offered instead, is working as intended. Read its message
+before suspecting the tool.
 
 Start the server and a session against a target you can log in to, with a new account:
 
@@ -258,8 +270,9 @@ Start the server and a session against a target you can log in to, with a new ac
 2. `client_login` returns `"gameState":"LOGGED_IN"`, and `packets_read {"origin":"proxy"}` shows a
    `LOGIN` row. `packets_read {"limit":20}` shows packets of tick 0, with named values.
 3. `client_screenshot` returns an image whose width and height equal `canvas` in `client_state`.
-4. `client_interact` on an interface button returns a `packet` line. `packets_read` from the returned
-   cursor shows an `EVENT_MOUSE_CLICK` row before the button packet, so the click was a real one.
+4. `client_interact` on an interface button returns a `packet` line and `"proof":"click"`.
+   `packets_read` from the returned cursor shows an `EVENT_MOUSE_CLICK` row before the button packet,
+   so the click was a real one.
 5. `client_type` into a prompt is followed by a packet that carries the typed text.
 6. `client_entities` lists the NPCs and objects that the screenshot shows, with their options.
 7. `client_interact` with the default option of an NPC that walks around returns its `OPNPC` packet.
@@ -275,6 +288,3 @@ Start the server and a session against a target you can log in to, with a new ac
     shows the turned view.
 13. Killing the client process makes `session_list` show `stopped` with the reason `client exited`,
     and `session_start` with the same `session` brings it back with the earlier packets still readable.
-
-A step that fails names what changed. A tool that reports a dropped action or lists what the client
-offered instead is working as intended; read its message before suspecting the tool.
