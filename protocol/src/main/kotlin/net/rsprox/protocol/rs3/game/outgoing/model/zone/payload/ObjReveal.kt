@@ -9,9 +9,10 @@ public class ObjReveal(
     public val excludedPlayerIndex: Int,
     public val xInZone: Int,
     public val zInZone: Int,
+    public val version: Int = if (big) 2 else 1,
 ) : IncomingServerGameMessage {
     override fun toString(): String {
         return "ObjReveal(big=$big, objId=$objId, count=$count, excludedPlayerIndex=$excludedPlayerIndex, " +
-            "xInZone=$xInZone, zInZone=$zInZone)"
+            "xInZone=$xInZone, zInZone=$zInZone, version=$version)"
     }
 }

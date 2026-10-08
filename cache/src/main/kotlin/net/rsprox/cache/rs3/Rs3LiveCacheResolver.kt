@@ -4,6 +4,7 @@ import com.github.michaelbull.logging.InlineLogger
 import io.netty.buffer.Unpooled
 import net.rsprox.cache.CACHES_DIRECTORY
 import net.rsprox.cache.api.rs3.Rs3AppearanceItem
+import net.rsprox.cache.api.rs3.Rs3GameLogEventDefinition
 import net.rsprox.cache.api.rs3.Rs3NpcDefinition
 import net.rsprox.cache.api.rs3.Rs3PacketDefinitions
 import net.rsprox.cache.api.rs3.Rs3QuickChatPhrase
@@ -33,9 +34,7 @@ public class Rs3LiveCacheResolver(
     public var masterIndexSnapshot: ByteArray = ByteArray(0)
         private set
 
-    public fun loadPacketDefinitions(
-        onProgress: (String, Int, Int) -> Unit = { _, _, _ -> },
-    ): Rs3PacketDefinitions {
+    public fun loadPacketDefinitions(onProgress: (String, Int, Int) -> Unit = { _, _, _ -> }): Rs3PacketDefinitions {
         require(info.revision == 950) { "RS3 definition decoding is currently verified for revision 950 only" }
         Rs3Js5Connection(info).use { connection ->
             onProgress("Loading cache indexes", 0, 0)
@@ -43,7 +42,11 @@ public class Rs3LiveCacheResolver(
             var groups = 0
             var downloads = 0
             val prefetch: (Int, List<Js5Index.MutableGroup>) -> Unit = { archive, entries ->
-                val missing = entries.filter { readCachedGroup(directory, archive, it.id, it.version, it.checksum) == null }
+                val missing =
+                    entries.filter {
+                        readCachedGroup(directory, archive, it.id, it.version, it.checksum) ==
+                            null
+                    }
                 val byId = missing.associateBy { it.id }
                 connection.getAll(missing.map { Rs3Js5Connection.Request(archive, it.id) }) { request, bytes ->
                     val group = byId.getValue(request.group)
@@ -211,6 +214,7 @@ public class Rs3LiveCacheResolver(
                     .mapValues { (_, bytes) -> Rs3PacketDefinitionDecoder.phrase(bytes) }
             onProgress("Loading variable definitions", 0, 0)
             val configIndex = index(2)
+            val gameLogEvents = configIndex[70]?.let { files(2, it) }.orEmpty()
             val varbits =
                 files(2, checkNotNull(configIndex[69]) { "Missing varbit definitions" })
                     .mapValues { (_, bytes) -> Rs3PacketDefinitionDecoder.varbit(bytes) }
@@ -239,7 +243,7 @@ public class Rs3LiveCacheResolver(
                     "${npcs.size} NPCs, ${phrases.size} phrases, " +
                     "${(System.nanoTime() - started) / 1_000_000} ms"
             }
-            return Snapshot(slots, items, phrases, variables, npcs, varbits)
+            return Snapshot(slots, items, phrases, variables, npcs, varbits, gameLogEvents)
         }
 
         private class Snapshot(
@@ -249,8 +253,17 @@ public class Rs3LiveCacheResolver(
             private val variables: Map<Rs3VariableDomain, Map<Int, Rs3VariableDefinition>>,
             private val npcs: Map<Int, ByteArray>,
             private val varbits: Map<Int, Rs3VarbitDefinition>,
+            private val gameLogEvents: Map<Int, ByteArray>,
         ) : Rs3PacketDefinitions {
             private val decodedNpcs = ConcurrentHashMap<Int, Rs3NpcDefinition>()
+            private val decodedGameLogEvents = ConcurrentHashMap<Int, Rs3GameLogEventDefinition>()
+
+            override fun getGameLogEvent(id: Int): Rs3GameLogEventDefinition =
+                decodedGameLogEvents.computeIfAbsent(id) {
+                    Rs3PacketDefinitionDecoder.gameLogEvent(
+                        checkNotNull(gameLogEvents[id]) { "Missing RS3 game-log event definition $id" },
+                    )
+                }
 
             override fun getVarbit(id: Int): Rs3VarbitDefinition =
                 checkNotNull(varbits[id]) { "Missing RS3 varbit definition $id" }

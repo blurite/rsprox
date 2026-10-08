@@ -18,6 +18,7 @@ import net.rsprox.proxy.binary.BinaryStream
 import net.rsprox.proxy.cli.TranscribeCommand
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.rs3.Rs3DecoderLoader
+import net.rsprox.proxy.rs3.Rs3ProtocolRevision
 import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
 import net.rsprox.proxy.util.TranscribeCallback
 import net.rsprox.shared.StreamDirection
@@ -47,15 +48,18 @@ internal object Rs3BinaryTranscriber {
     ) {
         callback?.indeterminate("Resolving recorded RS3 cache definitions (local cache / OpenRS2)...")
         val header = binary.header
-        val definitions = Rs3LiveCacheResolver.loadRecordedPacketDefinitions(header.revision, header.js5MasterIndex)
-        val clientScripts =
-            RSProxArchiveClientScriptIndex
-                .forRuneScape(header.revision, header.js5MasterIndex)
-                .also { it.preload() }
-        if (callback?.isCancelled() == true) return
+        val protocolRevision = Rs3ProtocolRevision(header.revision)
+        // Reject unknown obfuscations before cache/network work; never fall back to live 950.
         HuffmanProvider.load()
         // ISAAC-dependent payload bytes were already normalized when the recording was written.
         val decoder = Rs3DecoderLoader.load(header.revision, HuffmanProvider.get()) { NopStreamCipher }
+        val definitions =
+            Rs3LiveCacheResolver.loadRecordedPacketDefinitions(protocolRevision.wireRevision, header.js5MasterIndex)
+        val clientScripts =
+            RSProxArchiveClientScriptIndex
+                .forRuneScape(protocolRevision.wireRevision, header.js5MasterIndex)
+                .also { it.preload() }
+        if (callback?.isCancelled() == true) return
         val textPath = binaryPath.resolveSibling(binaryPath.nameWithoutExtension + ".txt")
         val oldTime =
             if (Files.exists(textPath)) {
@@ -70,7 +74,7 @@ internal object Rs3BinaryTranscriber {
                 writer.appendLine("------------------")
                 writer.appendLine("Header information")
                 writer.appendLine("game: RuneScape 3")
-                writer.appendLine("version: ${header.revision}.${header.subRevision}")
+                writer.appendLine("version: ${protocolRevision.display(header.subRevision)}")
                 writer.appendLine("world: ${header.worldId}, host: ${header.worldHost}")
                 writer.appendLine("local player index: ${header.localPlayerIndex}")
                 writer.appendLine("-------------------")

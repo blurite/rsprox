@@ -10,4 +10,6 @@ public data class IfOpenSub(
     public val legacyWord1: Int? = null,
     public val legacyWord2: Int? = null,
     public val legacyWord3: Int? = null,
+    // Native-skipped bytes in revisions which no longer read the legacy words.
+    public val reserved: List<Int> = emptyList(),
 ) : IncomingServerGameMessage

@@ -79,10 +79,11 @@ public class SessionsPanel(
     public fun createSession(
         type: SessionType,
         character: JagexCharacter?,
+        rs3Beta: Boolean = false,
     ) {
         if (type.isRs3 && !rs3LaunchWarning.confirm(this)) return
 
-        val session = SessionPanel(type, this, character)
+        val session = SessionPanel(type, this, character, rs3Beta = type.isRs3 && rs3Beta)
         addTab("Session ${++counter}", type.icon, session, "")
         selectedComponent = session
         setTabCloseCallback(tabCount - 1) { tabbedPane, tabIndex ->

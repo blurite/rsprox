@@ -163,6 +163,12 @@ public class Rs3TranscriberPlugin(
                 pass(message, Rs3Transcriber::transmitVarVerifyId)
             name == "PING_STATISTICS" ->
                 pass(message, Rs3Transcriber::pingStatistics)
+            name == "GAMELOGEVENT" ->
+                pass(message, Rs3Transcriber::gameLogEvent)
+            name == "UNNAMED_BATCH_80" ->
+                pass(message, Rs3Transcriber::unnamedBatch80)
+            name == "UNNAMED_EVENT_92" ->
+                pass(message, Rs3Transcriber::unnamedEvent92)
             name == "SEND_EMAIL_VALIDATION_CODE" ->
                 pass(message, Rs3Transcriber::sendEmailValidationCode)
             name == "FRIENDLIST_DEL" ->
@@ -466,10 +472,10 @@ public class Rs3TranscriberPlugin(
             "LOC_ANIM" -> pass(message, Rs3Transcriber::locAnim)
             "LOC_ADD_CHANGE" -> pass(message, Rs3Transcriber::locAddChange)
             "LOC_DEL" -> pass(message, Rs3Transcriber::locDel)
-            "OBJ_ADD", "OBJ_ADD_V2" -> pass(message, Rs3Transcriber::objAdd)
+            "OBJ_ADD", "OBJ_ADD_V2", "OBJ_ADD_V3" -> pass(message, Rs3Transcriber::objAdd)
             "OBJ_DEL", "OBJ_DEL_V2" -> pass(message, Rs3Transcriber::objDel)
-            "OBJ_COUNT", "OBJ_COUNT_V2" -> pass(message, Rs3Transcriber::objCount)
-            "OBJ_REVEAL", "OBJ_REVEAL_V2" -> pass(message, Rs3Transcriber::objReveal)
+            "OBJ_COUNT", "OBJ_COUNT_V2", "OBJ_COUNT_V3" -> pass(message, Rs3Transcriber::objCount)
+            "OBJ_REVEAL", "OBJ_REVEAL_V2", "OBJ_REVEAL_V3" -> pass(message, Rs3Transcriber::objReveal)
             "MAP_ANIM" -> pass(message, Rs3Transcriber::mapAnim)
             "MAP_ANIM_V1" -> pass(message, Rs3Transcriber::mapAnimV1)
             "MAP_ANIM_V2" -> pass(message, Rs3Transcriber::mapAnimV2)

@@ -226,6 +226,12 @@ public sealed interface PlayerExtendedInfo {
         }
     }
 
+    /** Discarded fields without an established cross-revision identity. Bit is the wire mask index. */
+    public data class UnusedFields(
+        public val bit: Int,
+        public val fields: List<Int>,
+    ) : PlayerExtendedInfo
+
     public data class SayV2(
         public val text: String,
         public val chatbox: Boolean,

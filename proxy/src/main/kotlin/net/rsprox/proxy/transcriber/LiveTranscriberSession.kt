@@ -185,7 +185,9 @@ public class LiveTranscriberSession(
 
     private sealed interface PendingEvent
 
-    private class Flush(val afterFlush: () -> Unit) : PendingEvent
+    private class Flush(
+        val afterFlush: () -> Unit,
+    ) : PendingEvent
 
     private class UnidentifiedPacket(
         val direction: StreamDirection,

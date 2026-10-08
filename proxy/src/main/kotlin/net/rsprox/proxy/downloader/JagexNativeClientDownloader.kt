@@ -27,6 +27,13 @@ public data object JagexNativeClientDownloader {
     public const val VULKAN_RS3_JAV_CONFIG_URL: String =
         "https://world5.runescape.com/jav_config.ws?binaryType=10"
 
+    // Match the official rs-launch:// beta link. HTTPS changes the resource URL parameters,
+    // causing resource downloads to use TLS on a beta host whose certificate does not cover it.
+    public const val BETA_RS3_JAV_CONFIG_URL: String =
+        "http://world204.runescape.com/jav_config_beta.ws?binaryType=2"
+    public const val BETA_VULKAN_RS3_JAV_CONFIG_URL: String =
+        "http://world204.runescape.com/jav_config_beta.ws?binaryType=10"
+
     @OptIn(ExperimentalStdlibApi::class)
     public fun download(
         type: NativeClientType,
@@ -127,7 +134,7 @@ public data object JagexNativeClientDownloader {
                 ?: error("RS3 jav_config has no download_crc_0")
 
         // Both distributions advertise rs2client.exe; keep them isolated on disk.
-        val suffix = if (binaryType == 10) "-vulkan" else ""
+        val suffix = rs3CacheSuffix(upstreamJavConfigUrl)
         val clientPath = CLIENTS_DIRECTORY.resolve("rs2client$suffix.exe")
         val cacheCrcFile = CLIENTS_DIRECTORY.resolve("rs3-win$suffix-cached-crc.txt")
 
@@ -189,7 +196,10 @@ public data object JagexNativeClientDownloader {
 
     internal fun rs3BinaryType(javConfigUrl: String): Int {
         val values =
-            URI(javConfigUrl).query.orEmpty().split('&')
+            URI(javConfigUrl)
+                .query
+                .orEmpty()
+                .split('&')
                 .filter { it.substringBefore('=') == "binaryType" }
                 .map { it.substringAfter('=', "").toIntOrNull() }
         val binaryType = values.singleOrNull()
@@ -197,6 +207,11 @@ public data object JagexNativeClientDownloader {
             "RS3 javconfig must specify one binaryType: 2 (Windows OpenGL) or 10 (Windows Vulkan)"
         }
         return binaryType
+    }
+
+    internal fun rs3CacheSuffix(javConfigUrl: String): String {
+        val beta = URI(javConfigUrl).path.endsWith("/jav_config_beta.ws")
+        return (if (beta) "-beta" else "") + (if (rs3BinaryType(javConfigUrl) == 10) "-vulkan" else "")
     }
 
     private fun buildRepositoryInfo(systemShortName: String): Repository {

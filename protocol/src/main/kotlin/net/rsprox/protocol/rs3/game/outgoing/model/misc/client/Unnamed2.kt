@@ -5,7 +5,8 @@ import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 public data class Unnamed2(
     public val count: Int,
     public val records: List<Record>,
-    public val discardedFooter: Int,
+    public val discardedFooter: Int?,
+    public val reservedFooter: List<Int> = emptyList(),
 ) : IncomingServerGameMessage {
     public data class Record(
         public val unused0: Int,

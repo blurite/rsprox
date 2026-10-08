@@ -7,6 +7,7 @@ import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.extendedinfo.Ani
 import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.extendedinfo.NpcExtendedInfo
 import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.extendedinfo.NpcMask
 import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.extendedinfo.OpaqueExtendedInfo
+import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.extendedinfo.UnusedExtendedInfo
 import net.rsprox.protocol.rs3.game.outgoing.model.info.npcinfo.util.Rs3NpcUpdateMaskKey
 import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.filters.PropertyFilter
@@ -18,6 +19,7 @@ import net.rsprox.shared.property.RootProperty
 import net.rsprox.shared.property.any
 import net.rsprox.shared.property.filteredBoolean
 import net.rsprox.shared.property.group
+import net.rsprox.shared.property.int
 import net.rsprox.shared.property.namedEnum
 import net.rsprox.shared.property.regular.AnyProperty
 import net.rsprox.shared.property.regular.ScriptVarTypeProperty
@@ -66,6 +68,7 @@ public class TextRs3NpcInfoTranscriber(
             when (info) {
                 is AnimationExtendedInfo -> PropertyFilter.NPC_SEQUENCE
                 is OpaqueExtendedInfo -> PropertyFilter.NPC_UNKNOWN_EXT_INFO
+                is UnusedExtendedInfo -> PropertyFilter.NPC_UNUSED_FIELDS
                 is NpcMask ->
                     when (info.key) {
                         Rs3NpcUpdateMaskKey.SAY -> PropertyFilter.NPC_SAY
@@ -109,6 +112,10 @@ public class TextRs3NpcInfoTranscriber(
         baseCoord: CoordGrid,
     ) {
         when (info) {
+            is UnusedExtendedInfo ->
+                group("UNUSED_MASK_${info.bit}") {
+                    for ((index, value) in info.fields.withIndex()) int("field$index", value)
+                }
             is NpcMask ->
                 appendNpcMask(
                     info,

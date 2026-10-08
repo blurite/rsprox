@@ -35,6 +35,7 @@ import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
 import net.rsprox.proxy.filters.UnmodifiablePropertyFilterSet
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.rs3.Rs3DecoderLoader
+import net.rsprox.proxy.rs3.Rs3ProtocolRevision
 import net.rsprox.proxy.rs3.Rs3SessionMonitor
 import net.rsprox.proxy.rs3.binary.Rs3BinaryRecorder
 import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
@@ -112,6 +113,12 @@ public class Rs3RelayServer(
 ) {
     private val realServerPublicKey: RSAKeyParameters =
         RSAKeyParameters(false, BigInteger(realServerModulusHex, 16), Rsa.PUBLIC_EXPONENT)
+
+    init {
+        require(revision == Rs3ProtocolRevision.LIVE_950 || revision == Rs3ProtocolRevision.BETA_950_1) {
+            "Unsupported RS3 relay protocol revision key: $revision"
+        }
+    }
 
     private val bossGroup = NioEventLoopGroup(1)
 
@@ -308,10 +315,10 @@ public class Rs3RelayServer(
 
         val rs3Decoder =
             Rs3DecoderLoader.load(revision, huffman) {
-                if (revision == 950) NopStreamCipher else cipherHolder.pair?.decodeCipher
+                NopStreamCipher
             }
         val liveDecoder =
-            Rs3LivePacketDecoder(rs3Decoder, Rs3PacketSanitizer(huffman)) { cipherHolder.pair?.decodeCipher }
+            Rs3LivePacketDecoder(rs3Decoder, Rs3PacketSanitizer(huffman, revision)) { cipherHolder.pair?.decodeCipher }
         val initialRecording =
             Rs3ConnectionRecording(
                 recordings,
@@ -410,7 +417,6 @@ public class Rs3RelayServer(
         val transportAcknowledgement = if (mapped && isWorldConnection) Rs3WorldContinueAckSkipper() else null
         val transportDecoder =
             if (mapped) {
-                check(revision == 950) { "Mapped routing is currently verified only for revision 950" }
                 Rs3DecoderLoader.load(revision, huffman) { transportCiphers?.decodeCipher }
             } else {
                 null
@@ -579,7 +585,7 @@ public class Rs3RelayServer(
                         { resuming ->
                             reconnect = resuming
                             if (resuming) {
-                                check(isWorldConnection && revision == 950) { "Unsupported reconnect target" }
+                                check(isWorldConnection) { "Unsupported reconnect target" }
                                 val previous = checkNotNull(gameSession) { "Reconnect has no previous game session" }
                                 check(
                                     !previous.ended &&

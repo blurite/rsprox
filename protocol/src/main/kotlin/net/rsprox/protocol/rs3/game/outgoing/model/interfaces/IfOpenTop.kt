@@ -9,4 +9,6 @@ public data class IfOpenTop(
     public val legacyWord2: Int? = null,
     public val unused: Int? = null,
     public val legacyWord3: Int? = null,
+    // Native-skipped bytes in revisions which no longer read the legacy words.
+    public val reserved: List<Int> = emptyList(),
 ) : IncomingServerGameMessage

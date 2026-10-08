@@ -26,14 +26,14 @@ internal class Rs3LivePacketDecoder(
         val safePayload =
             try {
                 // Note(revision): Add the new revision's verified privacy policy here; otherwise GUI payloads bypass it.
-                if (decoder.revision == 950) {
+                if (sanitizer.revision == decoder.revision) {
                     val normalized = payload.copyOf()
                     if (server) {
                         sanitizer.normalizeServerPayload(name, normalized) { checkNotNull(serverCipher()) }
                     }
                     sanitizer.sanitize(server, name, normalized) ?: return null
                 } else {
-                    payload
+                    error("No privacy policy for RS3 protocol revision key")
                 }
             } catch (_: Exception) {
                 // Never retain original bytes or a nested exception from failed sanitization.

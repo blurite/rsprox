@@ -532,6 +532,9 @@ public class TextRs3ServerPacketTranscriber(
         root.scriptVarType("id", ScriptVarType.INTERFACE, message.childId)
         root.ifType(message.layer)
         root.xteas(message.legacyWord0, message.legacyWord1, message.legacyWord2, message.legacyWord3)
+        if (message.reserved.isNotEmpty()) {
+            root.filteredAny("reserved", message.reserved, List(message.reserved.size) { 0 })
+        }
     }
 
     override fun ifOpenSubActiveNpc(message: IfOpenSubActiveNpc) {
@@ -541,6 +544,9 @@ public class TextRs3ServerPacketTranscriber(
         root.scriptVarType("id", ScriptVarType.INTERFACE, message.childId)
         root.ifType(message.layer)
         root.xteas(message.legacyWord0, message.legacyWord1, message.legacyWord2, message.legacyWord3)
+        if (message.reserved.isNotEmpty()) {
+            root.filteredAny("reserved", message.reserved, List(message.reserved.size) { 0 })
+        }
     }
 
     override fun ifOpenTop(message: IfOpenTop) {
@@ -550,6 +556,9 @@ public class TextRs3ServerPacketTranscriber(
         root.scriptVarType("id", ScriptVarType.INTERFACE, message.interfaceId)
         message.unused?.let { root.filteredInt("unused", it, 128) }
         root.xteas(message.legacyWord0, message.legacyWord1, message.legacyWord2, message.legacyWord3)
+        if (message.reserved.isNotEmpty()) {
+            root.filteredAny("reserved", message.reserved, List(message.reserved.size) { 0 })
+        }
     }
 
     override fun ifOpenSub(message: IfOpenSub) {
@@ -558,6 +567,9 @@ public class TextRs3ServerPacketTranscriber(
         root.scriptVarType("id", ScriptVarType.INTERFACE, message.childId)
         root.ifType(message.layer)
         root.xteas(message.legacyWord0, message.legacyWord1, message.legacyWord2, message.legacyWord3)
+        if (message.reserved.isNotEmpty()) {
+            root.filteredAny("reserved", message.reserved, List(message.reserved.size) { 0 })
+        }
     }
 
     override fun ifCloseSub(message: IfCloseSub) {
@@ -969,6 +981,7 @@ public class TextRs3ServerPacketTranscriber(
         scriptVarType("id", ScriptVarType.OBJ, event.objId)
         formattedInt("count", event.count)
         zoneCoord(event.xInZone, event.zInZone)
+        event.coordinateFlags?.let { filteredInt("coordflags", it, 0) }
     }
 
     override fun objAdd(message: ObjAdd) {
@@ -979,6 +992,7 @@ public class TextRs3ServerPacketTranscriber(
     private fun Property.buildObjDel(event: ObjDel) {
         scriptVarType("id", ScriptVarType.OBJ, event.objId)
         zoneCoord(event.xInZone, event.zInZone)
+        event.coordinateFlags?.let { filteredInt("coordflags", it, 0) }
     }
 
     override fun objDel(message: ObjDel) {
@@ -991,6 +1005,7 @@ public class TextRs3ServerPacketTranscriber(
         formattedInt("oldcount", event.oldQuantity)
         formattedInt("newcount", event.newQuantity)
         zoneCoord(event.xInZone, event.zInZone)
+        event.coordinateFlags?.let { filteredInt("coordflags", it, 0) }
     }
 
     override fun objCount(message: ObjCount) {
@@ -1312,7 +1327,7 @@ public class TextRs3ServerPacketTranscriber(
                 }
                 is ObjAdd -> {
                     if (!filters[PropertyFilter.OBJ_ADD]) continue
-                    root.group(if (event.big) "OBJ_ADD_V2" else "OBJ_ADD") { buildObjAdd(event) }
+                    root.group(if (event.version > 1) "OBJ_ADD_V${event.version}" else "OBJ_ADD") { buildObjAdd(event) }
                 }
                 is ObjDel -> {
                     if (!filters[PropertyFilter.OBJ_DEL]) continue
@@ -1320,11 +1335,27 @@ public class TextRs3ServerPacketTranscriber(
                 }
                 is ObjCount -> {
                     if (!filters[PropertyFilter.OBJ_COUNT]) continue
-                    root.group(if (event.big) "OBJ_COUNT_V2" else "OBJ_COUNT") { buildObjCount(event) }
+                    root.group(
+                        if (event.version >
+                            1
+                        ) {
+                            "OBJ_COUNT_V${event.version}"
+                        } else {
+                            "OBJ_COUNT"
+                        },
+                    ) { buildObjCount(event) }
                 }
                 is ObjReveal -> {
                     if (!filters[PropertyFilter.OBJ_ADD]) continue
-                    root.group(if (event.big) "OBJ_REVEAL_V2" else "OBJ_REVEAL") { buildObjReveal(event) }
+                    root.group(
+                        if (event.version >
+                            1
+                        ) {
+                            "OBJ_REVEAL_V${event.version}"
+                        } else {
+                            "OBJ_REVEAL"
+                        },
+                    ) { buildObjReveal(event) }
                 }
                 is MapAnim -> {
                     if (!filters[PropertyFilter.MAP_ANIM]) continue
@@ -1396,7 +1427,9 @@ public class TextRs3ServerPacketTranscriber(
                 }
                 is ObjAdd -> {
                     if (!filters[PropertyFilter.OBJ_ADD]) continue
-                    sessionState.createFakeServerRoot(if (event.big) "OBJ_ADD_V2" else "OBJ_ADD").buildObjAdd(event)
+                    sessionState
+                        .createFakeServerRoot(if (event.version > 1) "OBJ_ADD_V${event.version}" else "OBJ_ADD")
+                        .buildObjAdd(event)
                 }
                 is ObjDel -> {
                     if (!filters[PropertyFilter.OBJ_DEL]) continue
@@ -1406,13 +1439,13 @@ public class TextRs3ServerPacketTranscriber(
                     if (!filters[PropertyFilter.OBJ_COUNT]) continue
                     sessionState
                         .createFakeServerRoot(
-                            if (event.big) "OBJ_COUNT_V2" else "OBJ_COUNT",
+                            if (event.version > 1) "OBJ_COUNT_V${event.version}" else "OBJ_COUNT",
                         ).buildObjCount(event)
                 }
                 is ObjReveal -> {
                     if (!filters[PropertyFilter.OBJ_ADD]) continue
                     sessionState
-                        .createFakeServerRoot(if (event.big) "OBJ_REVEAL_V2" else "OBJ_REVEAL")
+                        .createFakeServerRoot(if (event.version > 1) "OBJ_REVEAL_V${event.version}" else "OBJ_REVEAL")
                         .buildObjReveal(event)
                 }
                 is MapAnim -> {
@@ -1498,6 +1531,9 @@ public class TextRs3ServerPacketTranscriber(
         root.ifType(message.layer)
         root.int("coordinate", message.coord)
         root.xteas(message.extra1, message.extra2, message.extra3, message.extra4)
+        if (message.reserved.isNotEmpty()) {
+            root.filteredAny("reserved", message.reserved, List(message.reserved.size) { 0 })
+        }
     }
 
     override fun ifOpenSubActiveLoc(message: IfOpenSubActiveLoc) {
@@ -1510,6 +1546,9 @@ public class TextRs3ServerPacketTranscriber(
         root.ifType(message.layer)
         root.int("coordinate", message.coord)
         root.xteas(message.extra1, message.extra2, message.extra3, message.extra4)
+        if (message.reserved.isNotEmpty()) {
+            root.filteredAny("reserved", message.reserved, List(message.reserved.size) { 0 })
+        }
     }
 
     override fun ifSetModel(message: IfSetModel) {
@@ -2429,7 +2468,8 @@ public class TextRs3ServerPacketTranscriber(
         if (!filters[PropertyFilter.UNNAMED_SERVER_RECORDS]) return omit()
         root.int("count", message.count)
         root.children += AnyProperty("records", message.records, List::class.java)
-        root.int("discardedfooter", message.discardedFooter)
+        message.discardedFooter?.let { root.int("discardedfooter", it) }
+        if (message.reservedFooter.isNotEmpty()) root.any("reservedfooter", message.reservedFooter)
     }
 
     override fun updateFriendlist(message: UpdateFriendlist) {

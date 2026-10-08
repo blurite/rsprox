@@ -35,7 +35,10 @@ internal class Rs3LaunchProgressPanel : JPanel(BorderLayout(0, 6)) {
         }
     }
 
-    fun finish(success: Boolean) {
+    fun finish(
+        success: Boolean,
+        failure: String? = null,
+    ) {
         SwingUtilities.invokeLater {
             if (finished) return@invokeLater
             finished = true
@@ -46,6 +49,7 @@ internal class Rs3LaunchProgressPanel : JPanel(BorderLayout(0, 6)) {
             } else {
                 bar.isVisible = false
                 status.text = "Launch failed during: ${progress.stage}. See the application log for details."
+                status.toolTipText = failure
             }
             revalidate()
             repaint()

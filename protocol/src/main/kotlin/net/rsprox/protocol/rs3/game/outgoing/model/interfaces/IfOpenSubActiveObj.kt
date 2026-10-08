@@ -8,10 +8,12 @@ public class IfOpenSubActiveObj(
     public val objId: Int,
     public val layer: Int,
     public val coord: Int,
-    public val extra1: Int,
-    public val extra2: Int,
-    public val extra3: Int,
-    public val extra4: Int,
+    public val extra1: Int?,
+    public val extra2: Int?,
+    public val extra3: Int?,
+    public val extra4: Int?,
+    // Native-skipped bytes in revisions which no longer read the legacy words.
+    public val reserved: List<Int> = emptyList(),
 ) : IncomingServerGameMessage {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -29,6 +31,8 @@ public class IfOpenSubActiveObj(
         if (extra3 != other.extra3) return false
         if (extra4 != other.extra4) return false
 
+        if (reserved != other.reserved) return false
+
         return true
     }
 
@@ -38,15 +42,16 @@ public class IfOpenSubActiveObj(
         result = 31 * result + objId
         result = 31 * result + layer
         result = 31 * result + coord
-        result = 31 * result + extra1
-        result = 31 * result + extra2
-        result = 31 * result + extra3
-        result = 31 * result + extra4
+        result = 31 * result + (extra1 ?: 0)
+        result = 31 * result + (extra2 ?: 0)
+        result = 31 * result + (extra3 ?: 0)
+        result = 31 * result + (extra4 ?: 0)
+        result = 31 * result + reserved.hashCode()
         return result
     }
 
     override fun toString(): String {
         return "IfOpenSubActiveObj(componentHash=$componentHash, childId=$childId, objId=$objId, " +
-            "layer=$layer, coord=$coord, extra1=$extra1, extra2=$extra2, extra3=$extra3, extra4=$extra4)"
+            "layer=$layer, coord=$coord, extra1=$extra1, extra2=$extra2, extra3=$extra3, extra4=$extra4, reserved=$reserved)"
     }
 }

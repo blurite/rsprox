@@ -2,6 +2,7 @@ package net.rsprox.proxy.rs3.relay
 
 import net.rsprot.compression.HuffmanCodec
 import net.rsprot.crypto.cipher.StreamCipherPair
+import net.rsprox.proxy.rs3.Rs3ProtocolRevision
 import net.rsprox.proxy.rs3.binary.Rs3BinaryRecorder
 import net.rsprox.proxy.rs3.login.Rs3LoginSuccessFramer
 import net.rsprox.proxy.rs3.login.Rs3WorldLoginResponseFramer
@@ -17,7 +18,7 @@ internal class Rs3ConnectionRecording(
     private val clients: Map<Int, ProtEntry>,
     huffman: HuffmanCodec,
 ) {
-    private val sanitizer = Rs3PacketSanitizer(huffman)
+    private val sanitizer = Rs3PacketSanitizer(huffman, revision)
     private var ciphers: StreamCipherPair? = null
     private var serverStream: Rs3PacketStream? = null
     private var clientStream: Rs3PacketStream? = null
@@ -32,7 +33,7 @@ internal class Rs3ConnectionRecording(
         minor: Int,
     ) = safely {
         // Note(revision): Verify/update Rs3PacketSanitizer and the live GUI policy before enabling another revision.
-        require(major == revision && major == 950) { "Unsupported RS3 recording revision" }
+        require(major == Rs3ProtocolRevision(revision).wireRevision) { "Unsupported RS3 recording revision" }
         require(servers.keys.none { it in 0xFC..0xFF }) { "Recording opcode collision" }
         this.minor = minor
         serverStream?.close()

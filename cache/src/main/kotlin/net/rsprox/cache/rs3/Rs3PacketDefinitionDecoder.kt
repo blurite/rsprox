@@ -1,6 +1,7 @@
 package net.rsprox.cache.rs3
 
 import net.rsprox.cache.api.rs3.Rs3BaseVarType
+import net.rsprox.cache.api.rs3.Rs3GameLogEventDefinition
 import net.rsprox.cache.api.rs3.Rs3QuickChatCommand
 import net.rsprox.cache.api.rs3.Rs3QuickChatPhrase
 import net.rsprox.cache.api.rs3.Rs3VarbitDefinition
@@ -9,6 +10,27 @@ import java.nio.ByteBuffer
 
 /** Revision-950 definition grammars; unsupported opcodes/types fail rather than guess a wire width. */
 internal object Rs3PacketDefinitionDecoder {
+    // Note(revision): 950 beta, config 2:70, native 0x9ddaa0: repeated opcode 103 + gSmart1or2 type ID.
+    fun gameLogEvent(bytes: ByteArray): Rs3GameLogEventDefinition {
+        val input = ByteBuffer.wrap(bytes)
+        val parameters = mutableListOf<Rs3VariableDefinition>()
+        while (true) {
+            when (val opcode = input.byte()) {
+                0 -> {
+                    require(!input.hasRemaining()) { "Trailing game-log definition bytes" }
+                    return Rs3GameLogEventDefinition(parameters)
+                }
+                103 -> {
+                    val id = if (input.get(input.position()) < 0) input.word() - 32768 else input.byte()
+                    val type = baseType(id)
+                    require(type != Rs3BaseVarType.COORDINATE) { "Unsupported game-log parameter type $id" }
+                    parameters += Rs3VariableDefinition(id, type)
+                }
+                else -> error("Unsupported game-log definition opcode $opcode")
+            }
+        }
+    }
+
     fun varbit(bytes: ByteArray): Rs3VarbitDefinition {
         val input = ByteBuffer.wrap(bytes)
         var domain = -1
@@ -32,6 +54,7 @@ internal object Rs3PacketDefinitionDecoder {
                     end = input.byte()
                 }
                 16 -> Unit
+                17 -> Unit // luaexcluded: no payload or effect on packet decoding.
                 else -> error("Unknown RS3 varbit opcode $opcode")
             }
         }
@@ -51,6 +74,7 @@ internal object Rs3PacketDefinitionDecoder {
                 4, 5 -> input.byte()
                 110 -> input.short
                 7, 8 -> Unit
+                9 -> Unit // luaexcluded: no payload or effect on packet decoding.
                 else -> error("Unsupported variable definition opcode $opcode")
             }
         }

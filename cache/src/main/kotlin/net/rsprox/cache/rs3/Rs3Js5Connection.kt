@@ -123,7 +123,11 @@ internal class Rs3Js5Connection(
             val batch = ByteBuffer.allocate(MAX_IN_FLIGHT * 10)
             while (queued.hasNext() && pending.size < MAX_IN_FLIGHT) {
                 val request = queued.next()
-                batch.put(1).put(request.archive.toByte()).putInt(request.group).putInt(0)
+                batch
+                    .put(1)
+                    .put(request.archive.toByte())
+                    .putInt(request.group)
+                    .putInt(0)
                 pending[request] = Response()
             }
             if (batch.position() != 0) {

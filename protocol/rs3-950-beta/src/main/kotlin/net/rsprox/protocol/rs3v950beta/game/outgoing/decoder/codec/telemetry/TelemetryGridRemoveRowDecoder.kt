@@ -1,0 +1,24 @@
+package net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.codec.telemetry
+
+import net.rsprot.buffer.JagByteBuf
+import net.rsprot.protocol.ClientProt
+import net.rsprox.protocol.ProxyMessageDecoder
+import net.rsprox.protocol.rs3.game.outgoing.model.telemetry.TelemetryGridRemoveRow
+import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.prot.GameServerProt
+import net.rsprox.protocol.session.Session
+
+internal class TelemetryGridRemoveRowDecoder : ProxyMessageDecoder<TelemetryGridRemoveRow> {
+    override val prot: ClientProt = GameServerProt.TELEMETRY_GRID_REMOVE_ROW
+
+    override fun decode(
+        buffer: JagByteBuf,
+        session: Session,
+    ): TelemetryGridRemoveRow {
+        val row = buffer.g1()
+        val group = buffer.g1Alt2()
+        return TelemetryGridRemoveRow(
+            group,
+            row,
+        )
+    }
+}
