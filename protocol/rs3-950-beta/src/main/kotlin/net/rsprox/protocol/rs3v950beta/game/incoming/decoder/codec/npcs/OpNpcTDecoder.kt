@@ -15,9 +15,9 @@ internal class OpNpcTDecoder(
     ): OpNpcT {
         val index = buffer.g2()
         val selectedObj = buffer.g3Alt1()
-        val controlKey = buffer.g1Alt2()
-        val selectedSub = buffer.g2Alt1()
-        val selectedCombinedId = buffer.g4()
+        val selectedCombinedId = buffer.g4Alt3()
+        val controlKey = buffer.g1Alt3()
+        val selectedSub = buffer.g2Alt2()
         return OpNpcT(
             index,
             selectedObj,

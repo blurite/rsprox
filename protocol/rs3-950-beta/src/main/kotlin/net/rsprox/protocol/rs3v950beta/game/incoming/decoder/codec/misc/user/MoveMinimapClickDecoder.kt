@@ -13,9 +13,9 @@ internal class MoveMinimapClickDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): MoveMinimapClick {
-        val z = buffer.g2()
-        val controlKey = buffer.g1Alt1()
         val x = buffer.g2Alt3()
+        val controlKey = buffer.g1Alt2()
+        val z = buffer.g2Alt1()
         // The normal sender emits ff ff 00 00 39 00 00 59. Preserve it instead of discarding it.
         val reservedMinimapMetadata = List(8) { buffer.g1() }
         val playerX = buffer.g2()

@@ -10,10 +10,11 @@ public class IfOpenSubActiveLoc(
     public val shape: Int,
     public val rotation: Int,
     public val coord: Int,
-    public val extra1: Int,
-    public val extra2: Int,
-    public val extra3: Int,
-    public val extra4: Int,
+    public val extra1: Int?,
+    public val extra2: Int?,
+    public val extra3: Int?,
+    public val extra4: Int?,
+    public val reserved: List<Int> = emptyList(),
 ) : IncomingServerGameMessage {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -33,6 +34,8 @@ public class IfOpenSubActiveLoc(
         if (extra3 != other.extra3) return false
         if (extra4 != other.extra4) return false
 
+        if (reserved != other.reserved) return false
+
         return true
     }
 
@@ -44,16 +47,17 @@ public class IfOpenSubActiveLoc(
         result = 31 * result + shape
         result = 31 * result + rotation
         result = 31 * result + coord
-        result = 31 * result + extra1
-        result = 31 * result + extra2
-        result = 31 * result + extra3
-        result = 31 * result + extra4
+        result = 31 * result + (extra1 ?: 0)
+        result = 31 * result + (extra2 ?: 0)
+        result = 31 * result + (extra3 ?: 0)
+        result = 31 * result + (extra4 ?: 0)
+        result = 31 * result + reserved.hashCode()
         return result
     }
 
     override fun toString(): String {
         return "IfOpenSubActiveLoc(componentHash=$componentHash, locId=$locId, childId=$childId, " +
             "layer=$layer, shape=$shape, rotation=$rotation, coord=$coord, " +
-            "extra1=$extra1, extra2=$extra2, extra3=$extra3, extra4=$extra4)"
+            "extra1=$extra1, extra2=$extra2, extra3=$extra3, extra4=$extra4, reserved=$reserved)"
     }
 }

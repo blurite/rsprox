@@ -14,8 +14,8 @@ internal class TelemetryGridAddGroupDecoder : ProxyMessageDecoder<TelemetryGridA
         buffer: JagByteBuf,
         session: Session,
     ): TelemetryGridAddGroup {
-        val id = buffer.g4Alt2()
-        val index = buffer.g1Alt1()
+        val index = buffer.g1()
+        val id = buffer.g4Alt1()
         return TelemetryGridAddGroup(
             id,
             index,

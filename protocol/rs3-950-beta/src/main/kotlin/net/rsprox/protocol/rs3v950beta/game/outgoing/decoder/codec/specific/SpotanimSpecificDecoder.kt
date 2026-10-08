@@ -14,12 +14,12 @@ internal class SpotanimSpecificDecoder : ProxyMessageDecoder<SpotanimSpecific> {
         buffer: JagByteBuf,
         session: Session,
     ): SpotanimSpecific {
-        val height = buffer.g2Alt3().toShort().toInt()
-        val packedDelay = buffer.g2Alt1()
-        val rotationFlags = buffer.g1Alt2()
+        val packedDelay = buffer.g2Alt2()
+        val id = buffer.g2().let { if (it == 65535) -1 else it }
         val target = buffer.g4()
-        val id = buffer.g2Alt3().let { if (it == 65535) -1 else it }
-        val slot = buffer.g1Alt1()
+        val height = buffer.g2s()
+        val rotationFlags = buffer.g1()
+        val slot = buffer.g1Alt3()
         return SpotanimSpecific(
             height,
             packedDelay,

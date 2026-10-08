@@ -27,7 +27,7 @@ internal class HintArrowDecoder : ProxyMessageDecoder<HintArrow> {
                         List(4) { buffer.g1() },
                         buffer.g4(),
                     )
-                in 2..6 ->
+                in 2..7 ->
                     HintArrow.Location(
                         buffer.g1(),
                         buffer.g1(),

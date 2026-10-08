@@ -8,8 +8,11 @@ public class ObjAdd(
     public val count: Int,
     public val xInZone: Int,
     public val zInZone: Int,
+    public val version: Int = if (big) 2 else 1,
+    public val coordinateFlags: Int? = null,
 ) : IncomingServerGameMessage {
     override fun toString(): String {
-        return "ObjAdd(big=$big, objId=$objId, count=$count, xInZone=$xInZone, zInZone=$zInZone)"
+        return "ObjAdd(big=$big, objId=$objId, count=$count, xInZone=$xInZone, zInZone=$zInZone, " +
+            "version=$version, coordinateFlags=$coordinateFlags)"
     }
 }

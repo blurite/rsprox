@@ -14,14 +14,8 @@ internal class PointLightShadowDecoder : ProxyMessageDecoder<PointLightShadow> {
         buffer: JagByteBuf,
         session: Session,
     ): PointLightShadow {
-        val id = buffer.g2Alt3().toShort().toInt()
         val encodedControl = buffer.g1()
-        // Only these control bits have native semantic evidence; preserve the wire byte as well.
-        val mode = -encodedControl and 0xF
-        return PointLightShadow(
-            id,
-            encodedControl,
-            mode,
-        )
+        val id = buffer.g2().toShort().toInt()
+        return PointLightShadow(id, encodedControl, encodedControl and 0xF)
     }
 }

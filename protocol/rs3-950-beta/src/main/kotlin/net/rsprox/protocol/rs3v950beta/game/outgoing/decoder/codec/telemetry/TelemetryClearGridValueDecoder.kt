@@ -14,9 +14,9 @@ internal class TelemetryClearGridValueDecoder : ProxyMessageDecoder<TelemetryCle
         buffer: JagByteBuf,
         session: Session,
     ): TelemetryClearGridValue {
-        val group = buffer.g1()
+        val group = buffer.g1Alt2()
         val column = buffer.g1Alt2()
-        val row = buffer.g1()
+        val row = buffer.g1Alt2()
         return TelemetryClearGridValue(
             group,
             column,

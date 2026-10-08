@@ -9,8 +9,11 @@ public class ObjCount(
     public val newQuantity: Int,
     public val xInZone: Int,
     public val zInZone: Int,
+    public val version: Int = if (big) 2 else 1,
+    public val coordinateFlags: Int? = null,
 ) : IncomingServerGameMessage {
     override fun toString(): String {
-        return "ObjCount(big=$big, objId=$objId, oldQuantity=$oldQuantity, newQuantity=$newQuantity, xInZone=$xInZone, zInZone=$zInZone)"
+        return "ObjCount(big=$big, objId=$objId, oldQuantity=$oldQuantity, newQuantity=$newQuantity, " +
+            "xInZone=$xInZone, zInZone=$zInZone, version=$version, coordinateFlags=$coordinateFlags)"
     }
 }

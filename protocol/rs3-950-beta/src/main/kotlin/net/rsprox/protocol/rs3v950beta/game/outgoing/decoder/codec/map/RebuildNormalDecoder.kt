@@ -18,13 +18,20 @@ internal class RebuildNormalDecoder : ProxyMessageDecoder<RebuildNormal> {
         session: Session,
     ): RebuildNormal {
         val init = session.readPlayerInfoInit(buffer)
+        val npcCoordinateBits = buffer.g1()
+        val unused0 = buffer.g1()
+        val baseChunkZ = buffer.g2Alt2()
+        val unused1 = buffer.g1()
+        val baseChunkX = buffer.g2Alt2()
+        val format = buffer.g1()
         val message =
             RebuildNormal(
-                baseChunkZ = buffer.g2Alt2(),
-                format = buffer.g1(),
-                npcCoordinateBits = buffer.g1Alt1(),
-                unused = buffer.g2(),
-                baseChunkX = buffer.g2(),
+                baseChunkZ = baseChunkZ,
+                format = format,
+                npcCoordinateBits = npcCoordinateBits,
+                // The two skipped bytes are separated by baseChunkZ in beta.
+                unused = (unused0 shl 8) or unused1,
+                baseChunkX = baseChunkX,
                 worldAreaId = buffer.g2(),
                 minimumCoordinate = buffer.g4(),
                 maximumCoordinate = buffer.g4(),

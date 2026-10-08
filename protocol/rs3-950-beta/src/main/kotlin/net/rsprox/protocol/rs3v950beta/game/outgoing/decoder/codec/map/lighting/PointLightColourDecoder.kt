@@ -14,13 +14,9 @@ internal class PointLightColourDecoder : ProxyMessageDecoder<PointLightColour> {
         buffer: JagByteBuf,
         session: Session,
     ): PointLightColour {
-        val colour = buffer.g4()
-        val duration = buffer.g2Alt3()
-        val id = buffer.g2Alt1().toShort().toInt()
-        return PointLightColour(
-            colour,
-            duration,
-            id,
-        )
+        val id = buffer.g2().toShort().toInt()
+        val duration = buffer.g2Alt1()
+        val colour = buffer.g4Alt2()
+        return PointLightColour(colour, duration, id)
     }
 }

@@ -14,7 +14,9 @@ internal class IfSetPlayerHeadDecoder : ProxyMessageDecoder<IfSetPlayerHead> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetPlayerHead {
-        val componentHash = buffer.g4().toLong() and 0xFFFFFFFFL
-        return IfSetPlayerHead(componentHash)
+        val componentHash = buffer.g4Alt1().toLong() and 0xFFFF_FFFFL
+        return IfSetPlayerHead(
+            componentHash,
+        )
     }
 }

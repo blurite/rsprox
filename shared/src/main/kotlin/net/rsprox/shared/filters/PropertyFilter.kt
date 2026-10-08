@@ -1740,6 +1740,13 @@ public enum class PropertyFilter(
         true,
         searchTerms = "rs3,npc,unknown,opaque,extended,info",
     ),
+    PLAYER_UNUSED_FIELDS(
+        SERVER_TO_CLIENT,
+        PLAYER_EXTENDED_INFO,
+        "Unused Fields",
+        false,
+        searchTerms = "rs3,player,unused,beta,mask",
+    ),
     PLAYER_UNUSED_MASK_2(
         SERVER_TO_CLIENT,
         PLAYER_EXTENDED_INFO,
@@ -1788,6 +1795,13 @@ public enum class PropertyFilter(
         "Unused Mask 24",
         true,
         searchTerms = "rs3,player,unused,mask,24",
+    ),
+    NPC_UNUSED_FIELDS(
+        SERVER_TO_CLIENT,
+        NPC_EXTENDED_INFO,
+        "Unused Fields",
+        false,
+        searchTerms = "rs3,npc,unused,beta,mask",
     ),
     NPC_UNUSED_MASK_0(
         SERVER_TO_CLIENT,
@@ -2154,6 +2168,20 @@ public enum class PropertyFilter(
         "Transmit Var Verify Id",
         false,
         searchTerms = "rs3,transmitvar_verifyid",
+    ),
+    GAMELOGEVENT(
+        CLIENT_TO_SERVER,
+        OTHER,
+        "Game Log Event",
+        false,
+        searchTerms = "rs3,gamelogevent",
+    ),
+    PLUGIN_REPORTS(
+        CLIENT_TO_SERVER,
+        OTHER,
+        "Plugin Reports",
+        false,
+        searchTerms = "rs3,plugin,unnamed_batch_80,unnamed_event_92",
     ),
     PING_STATISTICS(
         CLIENT_TO_SERVER,

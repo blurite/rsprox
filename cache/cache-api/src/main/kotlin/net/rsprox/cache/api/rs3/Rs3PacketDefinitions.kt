@@ -8,6 +8,8 @@ public interface Rs3PacketDefinitions : Rs3AppearanceDefinitions {
 
     public fun getQuickChatPhrase(id: Int): Rs3QuickChatPhrase
 
+    public fun getGameLogEvent(id: Int): Rs3GameLogEventDefinition = error("RS3 game-log definitions are unavailable")
+
     public fun getVariable(
         domain: Rs3VariableDomain,
         id: Int,
@@ -61,6 +63,10 @@ public data class Rs3VariableDefinition(
 public data class Rs3QuickChatPhrase(
     public val template: String,
     public val commands: List<Rs3QuickChatCommand>,
+)
+
+public data class Rs3GameLogEventDefinition(
+    public val parameters: List<Rs3VariableDefinition>,
 )
 
 public data class Rs3QuickChatCommand(

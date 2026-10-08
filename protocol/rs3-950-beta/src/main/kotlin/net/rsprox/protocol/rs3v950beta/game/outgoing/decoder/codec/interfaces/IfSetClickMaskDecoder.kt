@@ -14,7 +14,7 @@ internal class IfSetClickMaskDecoder : ProxyMessageDecoder<IfSetClickMask> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetClickMask {
-        val enabled = buffer.g1() == 1
+        val enabled = buffer.g1Alt3() == 1
         val componentHash = buffer.g4().toLong() and 0xFFFF_FFFFL
         return IfSetClickMask(
             enabled,

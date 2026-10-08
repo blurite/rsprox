@@ -48,8 +48,12 @@ internal fun JagByteBuf.readTypedVariable(
                     if (fromClient) readNativeString2() else readNativeString(),
                 )
             Rs3BaseVarType.COORDINATE -> {
-                require(!fromClient) { "Coordinate varc uploads are not proven for revision 950" }
-                TypedVariable.Coordinate(g1(), g4(), g4(), g4())
+                require(!fromClient) { "Coordinate varc uploads are not proven for revision 950 beta" }
+                val level = g1()
+                val x = g4()
+                val y = g4()
+                val z = g4()
+                TypedVariable.Coordinate(level, x, y, z)
             }
         }
     return TypedVariable(id, definition.scriptType, value)

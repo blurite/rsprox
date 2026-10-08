@@ -14,11 +14,11 @@ internal class PlayerAnimSpecificDecoder : ProxyMessageDecoder<PlayerAnimSpecifi
         buffer: JagByteBuf,
         session: Session,
     ): PlayerAnimSpecific {
-        val delay = buffer.g1Alt2()
         val animation0 = buffer.g4Alt1()
         val animation1 = buffer.g4Alt1()
         val animation2 = buffer.g4Alt1()
         val animation3 = buffer.g4Alt1()
+        val delay = buffer.g1Alt3()
         return PlayerAnimSpecific(
             delay,
             animation0,

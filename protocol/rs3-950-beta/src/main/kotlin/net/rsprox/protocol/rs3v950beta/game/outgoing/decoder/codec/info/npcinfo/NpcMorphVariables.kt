@@ -14,7 +14,7 @@ internal fun Session.npcMorphVariables(): NpcMorphVariables =
 
 /**
  * Server-visible player variables, not NPC-local config parameters.
- * Native actor+0x1068 points at client+0x19b60. Client-script overrides/timed
+ * Beta variable handlers update client+0x19b80. Client-script overrides/timed
  * synchronization are not observable from packets and are not simulated here.
  */
 internal class NpcMorphVariables {
@@ -43,7 +43,7 @@ internal class NpcMorphVariables {
         if (definitions.getVariable(Rs3VariableDomain.PLAYER, bit.base).scriptType != 0) return
         require(bit.endBit < 32) { "NPC morph variable requires an integer player varbit: $id" }
         val mask = (1 shl (bit.endBit - bit.startBit + 1)) - 1
-        // Native 0x78c460 leaves the old value unchanged for an out-of-range update.
+        // Native 0xa52d10 leaves the old value unchanged for an out-of-range update.
         if (value < 0 || value.toLong() > (mask.toLong() and 0xffffffffL)) return
         val old = get(bit.base, definitions)
         values[bit.base] = (old and (mask shl bit.startBit).inv()) or (value shl bit.startBit)
@@ -78,7 +78,7 @@ internal class NpcMorphVariables {
                 else -> -1
             }
         val selected = if (selector in 0 until morph.types.lastIndex) morph.types[selector] else morph.types.last()
-        // Native 0x77f690 performs one lookup, not recursive morph resolution.
+        // One lookup, not recursive morph resolution. Beta NPC-info integration is pending.
         return if (selected == -1) Rs3NpcDefinition(0, 0) else definitions.getNpc(selected)
     }
 }

@@ -14,8 +14,8 @@ internal class IfMoveSubDecoder : ProxyMessageDecoder<IfMoveSub> {
         buffer: JagByteBuf,
         session: Session,
     ): IfMoveSub {
-        val destination = buffer.g4Alt1().toLong() and 0xFFFF_FFFFL
         val source = buffer.g4Alt1().toLong() and 0xFFFF_FFFFL
+        val destination = buffer.g4Alt1().toLong() and 0xFFFF_FFFFL
         return IfMoveSub(
             destination,
             source,

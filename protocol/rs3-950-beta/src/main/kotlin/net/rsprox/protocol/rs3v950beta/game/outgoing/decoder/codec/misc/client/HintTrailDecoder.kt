@@ -20,7 +20,12 @@ internal class HintTrailDecoder : ProxyMessageDecoder<HintTrail> {
         val count = buffer.gSmart1or2s()
         val baseX = buffer.g2()
         val baseZ = buffer.g2()
-        val points = List(count.coerceAtLeast(0)) { HintTrail.Point(buffer.g1s(), buffer.g1s()) }
+        val points =
+            List(count.coerceAtLeast(0)) {
+                val deltaX = buffer.g1s()
+                val deltaZ = buffer.g1s()
+                HintTrail.Point(deltaX, deltaZ)
+            }
         return HintTrail(slot, modelId, HintTrail.Trail(count, baseX, baseZ, points))
     }
 }

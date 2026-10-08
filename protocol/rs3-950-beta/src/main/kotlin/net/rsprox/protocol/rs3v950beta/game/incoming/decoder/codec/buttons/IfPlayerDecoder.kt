@@ -15,10 +15,10 @@ internal class IfPlayerDecoder(
         session: Session,
     ): IfPlayer {
         val crmName = buffer.readNativeString()
-        val combinedId = buffer.g4Alt2()
-        val operation = buffer.g1Alt1()
-        val sub = buffer.g2Alt2()
         val crmType = buffer.g1Alt2()
+        val operation = buffer.g1Alt2()
+        val combinedId = buffer.g4Alt2()
+        val sub = buffer.g2Alt1()
         return IfPlayer(
             crmName,
             combinedId,

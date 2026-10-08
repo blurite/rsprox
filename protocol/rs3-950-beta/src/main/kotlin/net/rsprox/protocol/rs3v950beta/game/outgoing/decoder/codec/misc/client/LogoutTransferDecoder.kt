@@ -4,7 +4,6 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.rs3.game.outgoing.model.misc.client.LogoutTransfer
-import net.rsprox.protocol.rs3v950beta.buffer.readNativeString
 import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.session.Session
 
@@ -16,7 +15,7 @@ internal class LogoutTransferDecoder : ProxyMessageDecoder<LogoutTransfer> {
         session: Session,
     ): LogoutTransfer {
         val world = buffer.g2()
-        val host = buffer.readNativeString()
+        val host = buffer.gjstr()
         val port = buffer.g2()
         val alternatePort = buffer.g2()
         val transferFlag = buffer.g1()

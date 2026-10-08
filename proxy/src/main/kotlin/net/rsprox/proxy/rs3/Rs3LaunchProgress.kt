@@ -44,7 +44,7 @@ internal class Rs3LaunchTracker(
     private fun logDuration() {
         val name = stage ?: return
         val elapsed = (System.nanoTime() - started) / 1_000_000
-        logger.info { "RS3 launch $launchId: $name finished after ${elapsed} ms" }
+        logger.info { "RS3 launch $launchId: $name finished after $elapsed ms" }
     }
 
     private companion object {

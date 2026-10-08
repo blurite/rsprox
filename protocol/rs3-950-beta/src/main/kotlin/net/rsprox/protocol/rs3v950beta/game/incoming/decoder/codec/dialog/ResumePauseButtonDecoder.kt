@@ -14,7 +14,7 @@ internal class ResumePauseButtonDecoder(
         session: Session,
     ): ResumePauseButton {
         val combinedId = buffer.g4()
-        val sub = buffer.g2Alt2()
+        val sub = buffer.g2Alt1()
         return ResumePauseButton(
             combinedId,
             sub,

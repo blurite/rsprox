@@ -15,8 +15,9 @@ internal class VarpSmallDecoder : ProxyMessageDecoder<VarpSmall> {
         buffer: JagByteBuf,
         session: Session,
     ): VarpSmall {
-        val value = buffer.g1s()
-        val id = buffer.g2Alt2()
+        // Native sign-extends after the byte negation, including 0x80 -> -128.
+        val value = buffer.g1Alt2().toByte().toInt()
+        val id = buffer.g2Alt1()
         session.npcMorphVariables().set(id, value)
         return VarpSmall(
             id,

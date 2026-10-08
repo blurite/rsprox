@@ -14,10 +14,11 @@ internal class Rs3LauncherSlot private constructor(
     val directory: Path,
     private val channel: FileChannel,
     private val lock: FileLock,
+    private val cacheVariantSuffix: String,
 ) : AutoCloseable {
     private val closed = AtomicBoolean()
     val name: String get() = directory.fileName.toString()
-    val client: Path get() = directory.resolve("rs2client.exe")
+    val client: Path get() = directory.resolve(cacheVariantSuffix).resolve("rs2client.exe")
     val launcher: Path get() = directory.resolve("RuneScape-rsprox.exe")
 
     override fun close() {
@@ -33,7 +34,9 @@ internal class Rs3LauncherSlot private constructor(
         fun acquire(
             configuration: Path,
             cacheRoot: Path,
+            cacheVariantSuffix: String = "",
         ): Rs3LauncherSlot {
+            require(cacheVariantSuffix.isEmpty() || cacheVariantSuffix.matches(Regex("[A-Za-z0-9_-]{1,32}")))
             val owner = configuration.toAbsolutePath().normalize().toString()
             val namespace = Rs3LauncherDistribution.sha256(owner.toByteArray()).take(5)
             Files.createDirectories(cacheRoot)
@@ -50,7 +53,7 @@ internal class Rs3LauncherSlot private constructor(
                             null
                         }
                     if (lock != null) {
-                        val lease = Rs3LauncherSlot(directory, channel, lock)
+                        val lease = Rs3LauncherSlot(directory, channel, lock, cacheVariantSuffix)
                         try {
                             val ownerFile = directory.resolve("rsprox-owner.txt")
                             if (Files.exists(ownerFile)) {
@@ -66,6 +69,7 @@ internal class Rs3LauncherSlot private constructor(
                                 Files.writeString(ownerFile, owner)
                             }
                             val userRoot = configuration.resolve("slots/$slot/user").toAbsolutePath()
+                            Files.createDirectories(lease.client.parent)
                             Files.createDirectories(userRoot)
                             val preferences = directory.resolve("preferences.cfg")
                             if (!Files.exists(preferences)) {

@@ -4,7 +4,6 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.rs3.game.outgoing.model.specific.NpcSaySpecific
-import net.rsprox.protocol.rs3v950beta.buffer.readNativeString
 import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.session.Session
 
@@ -15,10 +14,10 @@ internal class NpcSaySpecificDecoder : ProxyMessageDecoder<NpcSaySpecific> {
         buffer: JagByteBuf,
         session: Session,
     ): NpcSaySpecific {
-        val text = buffer.readNativeString()
-        val colour = buffer.g1()
-        val npcIndex = buffer.g2Alt2()
-        val effect = buffer.g1Alt2()
+        val colour = buffer.g1Alt1()
+        val effect = buffer.g1Alt3()
+        val npcIndex = buffer.g2Alt1()
+        val text = buffer.gjstr()
         return NpcSaySpecific(text, colour, npcIndex, effect)
     }
 }

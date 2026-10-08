@@ -45,27 +45,30 @@ public data class NativePatchCriteria(
             return this
         }
 
-        /** Revision-950 Windows live lobby/world endpoint construction; never patch arbitrary HTTPS constants. */
+        /** Revision-950 Windows lobby/world endpoint construction; never patch arbitrary HTTPS constants. */
         public fun rs3LoginPorts(
             primary: Int,
             alternate: Int,
+            beta: Boolean = false,
         ): Builder {
             require(type == NativeClientType.RS3_WIN)
             require(primary in 1024..65535 && alternate in 1024..65535 && primary != alternate)
             require(primary != DEFAULT_PORT && alternate != DEFAULT_PORT)
             val first = intToHexStringLE(primary)
             val second = intToHexStringLE(alternate)
-            // Note: verified for revision 950 Windows OpenGL (binaryType=2) and Vulkan (binaryType=10).
+            val modeOffset = if (beta) "909A0100" else "709A0100"
+            // Note: live 950 OpenGL/Vulkan use 0x19A70; the verified beta-1 builds use 0x19A90.
+            // Beta callers must identify the supported executable before choosing these instruction windows.
             // Each guarded instruction window must occur exactly once. Only the two mov immediates change.
             // Later lobby selection, world selection, and the second world selection entry point respectively.
             val sites =
                 listOf(
-                    "483986709A0100750E41BE4AAA000041BCBB010000EB1AB8C0630000" to
-                        "483986709A0100750E41BE${first}41BC${second}EB1AB8C0630000",
-                    "493980709A0100750CBF4AAA0000BEBB010000EB18B8C0630000" to
-                        "493980709A0100750CBF${first}BE${second}EB18B8C0630000",
-                    "483982709A0100750E41BE4AAA000041BFBB010000EB1BB8C0630000" to
-                        "483982709A0100750E41BE${first}41BF${second}EB1BB8C0630000",
+                    "483986${modeOffset}750E41BE4AAA000041BCBB010000EB1AB8C0630000" to
+                        "483986${modeOffset}750E41BE${first}41BC${second}EB1AB8C0630000",
+                    "493980${modeOffset}750CBF4AAA0000BEBB010000EB18B8C0630000" to
+                        "493980${modeOffset}750CBF${first}BE${second}EB18B8C0630000",
+                    "483982${modeOffset}750E41BE4AAA000041BFBB010000EB1BB8C0630000" to
+                        "483982${modeOffset}750E41BE${first}41BF${second}EB1BB8C0630000",
                 )
             for ((old, new) in sites) {
                 wildcardByteSequence(

@@ -23,6 +23,7 @@ import java.net.URL
 import javax.swing.BoxLayout
 import javax.swing.DefaultComboBoxModel
 import javax.swing.DefaultListCellRenderer
+import javax.swing.JCheckBox
 import javax.swing.JLabel
 import javax.swing.JList
 import javax.swing.JMenuItem
@@ -63,6 +64,13 @@ public class LaunchBar(
     private val jagexAuthenticator = JagexAuthenticator()
     private val sessionTypesModel = DefaultComboBoxModel(sessionTypes)
     private val charactersModel = DefaultComboBoxModel<JagexCharacter>()
+    private val rs3BetaToggle =
+        JCheckBox("Beta").apply {
+            isOpaque = false
+            isSelected = App.service.getSelectedRs3Beta()
+            toolTipText = "Use the RuneScape 3 beta client and servers"
+            addActionListener { App.service.setSelectedRs3Beta(isSelected) }
+        }
 
     public lateinit var clientTypeDropdown: FlatComboBox<SessionType>
         private set
@@ -165,6 +173,7 @@ public class LaunchBar(
 
         fun updateProxyTargetRowState() {
             val isRs3 = (clientTypeDropdown.selectedItem as? SessionType)?.isRs3 == true
+            rs3BetaToggle.isVisible = isRs3
             val disabledReason =
                 if (isRs3) "Proxy target selection is currently only supported for Old School RuneScape." else null
             proxyTargetLabel.isEnabled = !isRs3
@@ -174,6 +183,8 @@ public class LaunchBar(
             proxyTargetLabel.toolTipText = disabledReason
             proxyTargetDropdown.toolTipText = disabledReason
             importTargetsButton.toolTipText = disabledReason ?: "Import Proxy Targets"
+            revalidate()
+            repaint()
         }
 
         clientTypeDropdown.addActionListener {
@@ -192,6 +203,7 @@ public class LaunchBar(
         add(createFieldLabel("Client Type"), "wrap")
         add(characterDropdown, "growx, h $CONTROL_HEIGHT!")
         add(clientTypeDropdown, "growx, h $CONTROL_HEIGHT!, wrap")
+        add(rs3BetaToggle, "spanx 2, hidemode 3, wrap")
         add(proxyTargetLabel, "spanx 2, growx, gaptop 4, wrap")
         add(proxyTargetDropdown, "growx, h $CONTROL_HEIGHT!, spanx 2, split 2")
         add(importTargetsButton, "w $CONTROL_HEIGHT!, h $CONTROL_HEIGHT!, wrap")
@@ -231,7 +243,7 @@ public class LaunchBar(
                 DEFAULT_CHARACTER -> null
                 else -> character as JagexCharacter
             }
-        sessionsPanel.createSession(sessionType, character)
+        sessionsPanel.createSession(sessionType, character, rs3Beta = sessionType.isRs3 && rs3BetaToggle.isSelected)
     }
 
     private fun importProxyTargets() {

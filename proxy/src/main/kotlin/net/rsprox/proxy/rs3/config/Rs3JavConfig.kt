@@ -33,6 +33,16 @@ public value class Rs3JavConfig(
             ?.substring(prefix.length)
     }
 
+    public fun getCacheVariantSuffix(): String {
+        val values = text.lineSequence().filter { it.startsWith("cache_variant_suffix=") }.toList()
+        require(values.size <= 1) { "Duplicate RS3 cache variant suffix" }
+        val suffix = values.singleOrNull()?.substringAfter('=') ?: ""
+        require(suffix.isEmpty() || suffix.matches(Regex("[A-Za-z0-9_-]{1,32}"))) {
+            "Invalid RS3 cache variant suffix"
+        }
+        return suffix
+    }
+
     public fun getDownloadCrc(id: Int): Long? {
         val prefix = "download_crc_$id="
         return text

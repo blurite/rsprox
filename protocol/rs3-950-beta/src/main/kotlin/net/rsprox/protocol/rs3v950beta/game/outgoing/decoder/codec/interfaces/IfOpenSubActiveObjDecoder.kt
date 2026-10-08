@@ -14,26 +14,25 @@ internal class IfOpenSubActiveObjDecoder : ProxyMessageDecoder<IfOpenSubActiveOb
         buffer: JagByteBuf,
         session: Session,
     ): IfOpenSubActiveObj {
-        val childId = buffer.g2Alt2()
-        val extra1 = buffer.g4Alt3()
-        val objId = buffer.g3Alt3()
-        val layer = buffer.g1()
-        val componentHash = buffer.g4Alt2().toLong() and 0xFFFFFFFFL
-        val extra2 = buffer.g4()
+        // The native handler skips these fixed spans; preserve bytes without inventing XTEA transforms.
+        val objId = buffer.g3Alt1()
+        val layer = buffer.g1Alt3()
+        val componentHash = buffer.g4Alt3().toLong() and 0xFFFF_FFFFL
+        val reserved0 = List(12) { buffer.g1() }
         val coord = buffer.g4Alt2()
-        val extra3 = buffer.g4Alt1()
-        val extra4 = buffer.g4Alt1()
-
+        val reserved1 = List(4) { buffer.g1() }
+        val childId = buffer.g2Alt3()
         return IfOpenSubActiveObj(
             componentHash = componentHash,
             childId = childId,
             objId = objId,
             layer = layer,
             coord = coord,
-            extra1 = extra1,
-            extra2 = extra2,
-            extra3 = extra3,
-            extra4 = extra4,
+            extra1 = null,
+            extra2 = null,
+            extra3 = null,
+            extra4 = null,
+            reserved = reserved0 + reserved1,
         )
     }
 }

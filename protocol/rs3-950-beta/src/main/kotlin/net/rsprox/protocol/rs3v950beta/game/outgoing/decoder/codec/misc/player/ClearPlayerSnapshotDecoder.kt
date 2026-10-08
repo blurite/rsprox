@@ -15,8 +15,6 @@ internal class ClearPlayerSnapshotDecoder : ProxyMessageDecoder<ClearPlayerSnaps
         session: Session,
     ): ClearPlayerSnapshot {
         val index = buffer.g1()
-        return ClearPlayerSnapshot(
-            index,
-        )
+        return ClearPlayerSnapshot(index)
     }
 }

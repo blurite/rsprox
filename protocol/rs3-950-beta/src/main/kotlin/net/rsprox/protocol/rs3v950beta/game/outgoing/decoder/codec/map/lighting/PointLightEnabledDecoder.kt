@@ -16,14 +16,6 @@ internal class PointLightEnabledDecoder : ProxyMessageDecoder<PointLightEnabled>
     ): PointLightEnabled {
         val encodedControl = buffer.g1()
         val id = buffer.g2Alt2().toShort().toInt()
-        // Only these control bits have native semantic evidence; preserve the wire byte as well.
-        val mode = -encodedControl and 0xF
-        val preserveIntensity = -encodedControl and 0x10 != 0
-        return PointLightEnabled(
-            encodedControl,
-            id,
-            mode,
-            preserveIntensity,
-        )
+        return PointLightEnabled(encodedControl, id, encodedControl and 0xF, encodedControl and 0x10 != 0)
     }
 }

@@ -14,13 +14,9 @@ internal class PointLightIntensityScaleDecoder : ProxyMessageDecoder<PointLightI
         buffer: JagByteBuf,
         session: Session,
     ): PointLightIntensityScale {
-        val intensity = buffer.g1Alt2()
+        val intensity = buffer.g1Alt3()
         val duration = buffer.g2()
         val id = buffer.g2Alt3().toShort().toInt()
-        return PointLightIntensityScale(
-            intensity,
-            duration,
-            id,
-        )
+        return PointLightIntensityScale(intensity, duration, id)
     }
 }

@@ -14,20 +14,18 @@ internal class IfOpenSubActiveLocDecoder : ProxyMessageDecoder<IfOpenSubActiveLo
         buffer: JagByteBuf,
         session: Session,
     ): IfOpenSubActiveLoc {
-        val rawShapeRot = buffer.g1()
+        val reserved0 = List(4) { buffer.g1() }
+        val coord = buffer.g4Alt1()
+        val reserved1 = List(8) { buffer.g1() }
+        val layer = buffer.g1Alt2()
+        val locId = buffer.g4Alt1()
+        val componentHash = buffer.g4Alt1().toLong() and 0xFFFF_FFFFL
+        val rawShapeRot = buffer.g1Alt3()
+        require(rawShapeRot and 0x80 == 0) { "Extended location transforms do not fit the fixed beta packet" }
         val shape = (rawShapeRot ushr 2) and 0x1F
         val rotation = rawShapeRot and 0x3
-
-        val componentHash = buffer.g4Alt3().toLong() and 0xFFFFFFFFL
-        val extra1 = buffer.g4Alt2()
-        val layer = buffer.g1Alt1()
-        val coord = buffer.g4Alt2()
-        val locId = buffer.g4()
-        val extra2 = buffer.g4Alt2()
-        val childId = buffer.g2Alt2()
-        val extra3 = buffer.g4Alt3()
-        val extra4 = buffer.g4Alt1()
-
+        val reserved2 = List(4) { buffer.g1() }
+        val childId = buffer.g2()
         return IfOpenSubActiveLoc(
             componentHash = componentHash,
             locId = locId,
@@ -36,10 +34,11 @@ internal class IfOpenSubActiveLocDecoder : ProxyMessageDecoder<IfOpenSubActiveLo
             shape = shape,
             rotation = rotation,
             coord = coord,
-            extra1 = extra1,
-            extra2 = extra2,
-            extra3 = extra3,
-            extra4 = extra4,
+            extra1 = null,
+            extra2 = null,
+            extra3 = null,
+            extra4 = null,
+            reserved = reserved0 + reserved1 + reserved2,
         )
     }
 }

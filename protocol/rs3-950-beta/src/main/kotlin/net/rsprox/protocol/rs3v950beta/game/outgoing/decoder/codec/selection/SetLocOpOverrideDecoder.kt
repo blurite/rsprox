@@ -4,7 +4,6 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.rs3.game.outgoing.model.selection.SetLocOpOverride
-import net.rsprox.protocol.rs3v950beta.buffer.readNativeString
 import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.session.Session
 
@@ -15,11 +14,12 @@ internal class SetLocOpOverrideDecoder : ProxyMessageDecoder<SetLocOpOverride> {
         buffer: JagByteBuf,
         session: Session,
     ): SetLocOpOverride {
-        val overrideStart = buffer.g4Alt2()
-        val operation = buffer.g1Alt2()
-        val label = buffer.readNativeString()
-        val cursor = buffer.g2().let { if (it == 65535) -1 else it }
-        val overrideEnd = buffer.g4Alt3()
+        val operation = buffer.g1Alt3()
+        val rawCursor = buffer.g2Alt3()
+        val cursor = if (rawCursor == 65535) -1 else rawCursor
+        val label = buffer.gjstr()
+        val overrideStart = buffer.g4Alt3()
+        val overrideEnd = buffer.g4()
         return SetLocOpOverride(overrideStart, operation, label, cursor, overrideEnd)
     }
 }

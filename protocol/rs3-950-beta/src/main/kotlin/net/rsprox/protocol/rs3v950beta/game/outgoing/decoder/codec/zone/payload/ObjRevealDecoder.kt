@@ -8,17 +8,16 @@ import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.prot.GameZoneProt
 import net.rsprox.protocol.session.Session
 
 internal class ObjRevealDecoder : ProxyMessageDecoder<ObjReveal> {
-    override val prot: ClientProt = GameZoneProt.OBJ_REVEAL_V2
+    override val prot: ClientProt = GameZoneProt.OBJ_REVEAL
 
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
     ): ObjReveal {
-        val objId = buffer.g3Alt3()
+        val packedCoord = buffer.g1()
         val excludedPlayerIndex = buffer.g2Alt1()
-        val count = buffer.g2()
-        val packedCoord = buffer.g1Alt1()
-
+        val count = buffer.g2Alt2()
+        val objId = buffer.g3()
         val xInZone = (packedCoord ushr 4) and 0x7
         val zInZone = packedCoord and 0x7
         return ObjReveal(true, objId, count, excludedPlayerIndex, xInZone, zInZone)

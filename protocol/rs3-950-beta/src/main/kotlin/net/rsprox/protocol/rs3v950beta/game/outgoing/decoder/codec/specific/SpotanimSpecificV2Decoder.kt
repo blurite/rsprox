@@ -15,13 +15,13 @@ internal class SpotanimSpecificV2Decoder : ProxyMessageDecoder<SpotanimSpecificV
         buffer: JagByteBuf,
         session: Session,
     ): SpotanimSpecificV2 {
-        val target = buffer.g4Alt2()
-        val rotationFlags = buffer.g1()
-        val offset = ProjectileOffset(buffer.g3Alt3())
-        val slot = buffer.g1Alt1()
-        val height = buffer.g2Alt2().toShort().toInt()
-        val id = buffer.g2Alt3().let { if (it == 65535) -1 else it }
-        val packedDelay = buffer.g2Alt3()
+        val packedDelay = buffer.g2Alt2()
+        val id = buffer.g2Alt1().let { if (it == 65535) -1 else it }
+        val offset = ProjectileOffset(buffer.g3())
+        val height = buffer.g2sAlt2()
+        val target = buffer.g4Alt1()
+        val slot = buffer.g1Alt3()
+        val rotationFlags = buffer.g1Alt1()
         return SpotanimSpecificV2(
             target,
             rotationFlags,

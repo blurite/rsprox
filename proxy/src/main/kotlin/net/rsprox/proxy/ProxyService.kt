@@ -38,6 +38,7 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
 import net.rsprox.proxy.config.ProxyProperty.Companion.RUNELITE_RSPROX_CONNECTION
 import net.rsprox.proxy.config.ProxyProperty.Companion.SELECTED_CLIENT
 import net.rsprox.proxy.config.ProxyProperty.Companion.SELECTED_PROXY_TARGET
+import net.rsprox.proxy.config.ProxyProperty.Companion.SELECTED_RS3_BETA
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.connection.ClientTypeDictionary
 import net.rsprox.proxy.connection.ProxyConnectionContainer
@@ -55,9 +56,11 @@ import net.rsprox.proxy.replay.ReplaySession
 import net.rsprox.proxy.replay.ReplayTimeline
 import net.rsprox.proxy.replay.ReplayTranscriber
 import net.rsprox.proxy.replay.ReplayTranscript
+import net.rsprox.proxy.rs3.Rs3BetaClientBuild
 import net.rsprox.proxy.rs3.Rs3ClientHandle
 import net.rsprox.proxy.rs3.Rs3LaunchProgress
 import net.rsprox.proxy.rs3.Rs3LaunchTracker
+import net.rsprox.proxy.rs3.Rs3ProtocolRevision
 import net.rsprox.proxy.rs3.Rs3SessionMonitor
 import net.rsprox.proxy.rs3.config.Rs3JavConfig
 import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
@@ -96,6 +99,7 @@ import org.newsclub.net.unix.AFUNIXSocketAddress
 import java.io.File
 import java.io.IOException
 import java.math.BigInteger
+import java.net.URI
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.LinkOption
@@ -510,6 +514,15 @@ public class ProxyService(
 
     public fun getSelectedClient(): Int {
         return properties.getPropertyOrNull(SELECTED_CLIENT) ?: 0
+    }
+
+    public fun setSelectedRs3Beta(selected: Boolean) {
+        properties.setProperty(SELECTED_RS3_BETA, selected)
+        properties.saveProperties(PROPERTIES_FILE)
+    }
+
+    public fun getSelectedRs3Beta(): Boolean {
+        return properties.getPropertyOrNull(SELECTED_RS3_BETA) ?: false
     }
 
     public fun getSelectedProxyTarget(): Int {
@@ -966,7 +979,13 @@ public class ProxyService(
         character: JagexCharacter?,
         upstreamJavConfigUrl: String = JagexNativeClientDownloader.DEFAULT_RS3_JAV_CONFIG_URL,
         onProgress: (Rs3LaunchProgress) -> Unit = {},
+        beta: Boolean = false,
     ): Rs3ClientHandle {
+        require(URI(upstreamJavConfigUrl).path.endsWith("/jav_config_beta.ws") == beta) {
+            "RS3 client channel and javconfig must match"
+        }
+        val protocolRevision =
+            Rs3ProtocolRevision.of(950, if (beta) 1 else 0)
         val renderer =
             when (JagexNativeClientDownloader.rs3BinaryType(upstreamJavConfigUrl)) {
                 2 -> "OpenGL"
@@ -990,6 +1009,15 @@ public class ProxyService(
                         upstreamJavConfigUrl,
                         progress::update,
                     )
+                if (beta) {
+                    progress.update(Rs3LaunchProgress("Verifying beta client build"))
+                    check(
+                        Rs3BetaClientBuild.verify(
+                            downloaded,
+                            JagexNativeClientDownloader.rs3BinaryType(upstreamJavConfigUrl),
+                        ) == protocolRevision,
+                    )
+                }
                 val extension = if (downloaded.extension.isNotEmpty()) ".${downloaded.extension}" else ""
                 val stamp = System.currentTimeMillis()
                 val path =
@@ -1006,7 +1034,7 @@ public class ProxyService(
             NativePatchCriteria
                 .Builder(NativeClientType.RS3_WIN)
                 .rsaModulus(modulusHex)
-                .rs3LoginPorts(localPorts.primary, localPorts.alternate)
+                .rs3LoginPorts(localPorts.primary, localPorts.alternate, beta)
                 .rs3WindowTitle()
                 .build()
         val gameClientPatchResult = patcher.patch(patchedGameBinaryPath, gameCriteria)
@@ -1021,8 +1049,8 @@ public class ProxyService(
         progress.update(Rs3LaunchProgress("Loading server configuration"))
         val upstreamConfig = Rs3JavConfig(URL(upstreamJavConfigUrl))
         val targets = upstreamConfig.captureUpstreamTargets()
-        require(targets.revision == 950) {
-            "Mapped RS3 routing is currently verified only for the live revision-950 profile"
+        require(targets.revision == protocolRevision.wireRevision) {
+            "RS3 configuration revision does not match the selected protocol"
         }
         // Bootstrap on the launch worker, before relay event loops see any game packets.
         val cacheResolver = Rs3LiveCacheResolver(upstreamConfig.captureJs5ConnectionInfo())
@@ -1044,7 +1072,7 @@ public class ProxyService(
                 proxyPrivateKey = proxyKey,
                 sessionMonitor = sessionMonitor,
                 realServerModulusHex = originalModulusHex,
-                revision = targets.revision,
+                revision = protocolRevision.value,
                 packetDefinitions = packetDefinitions,
                 clientScripts = clientScripts,
                 masterIndex = cacheResolver.masterIndexSnapshot,

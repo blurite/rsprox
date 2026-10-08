@@ -14,21 +14,13 @@ internal class IfOpenSubDecoder : ProxyMessageDecoder<IfOpenSub> {
         buffer: JagByteBuf,
         session: Session,
     ): IfOpenSub {
-        val componentHash = buffer.g4().toLong() and 0xFFFFFFFFL
-        val legacyWord0 = buffer.g4Alt2()
-        val legacyWord1 = buffer.g4Alt3()
-        val legacyWord2 = buffer.g4Alt3()
-        val childId = buffer.g2Alt3()
-        val layer = buffer.g1Alt3()
-        val legacyWord3 = buffer.g4Alt2()
-        return IfOpenSub(
-            componentHash = componentHash,
-            childId = childId,
-            layer = layer,
-            legacyWord0 = legacyWord0,
-            legacyWord1 = legacyWord1,
-            legacyWord2 = legacyWord2,
-            legacyWord3 = legacyWord3,
-        )
+        // The native handler skips these fixed spans; preserve bytes without inventing XTEA transforms.
+        val reserved0 = List(4) { buffer.g1() }
+        val layer = buffer.g1Alt1()
+        val childId = buffer.g2()
+        val reserved1 = List(8) { buffer.g1() }
+        val componentHash = buffer.g4Alt2().toLong() and 0xFFFF_FFFFL
+        val reserved2 = List(4) { buffer.g1() }
+        return IfOpenSub(componentHash, childId, layer, reserved = reserved0 + reserved1 + reserved2)
     }
 }

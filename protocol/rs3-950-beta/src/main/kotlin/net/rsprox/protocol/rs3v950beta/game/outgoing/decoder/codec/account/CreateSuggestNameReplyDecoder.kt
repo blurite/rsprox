@@ -4,7 +4,6 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.rs3.game.outgoing.model.account.CreateSuggestNameReply
-import net.rsprox.protocol.rs3v950beta.buffer.readNativeString
 import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.session.Session
 
@@ -15,7 +14,7 @@ internal class CreateSuggestNameReplyDecoder : ProxyMessageDecoder<CreateSuggest
         buffer: JagByteBuf,
         session: Session,
     ): CreateSuggestNameReply {
-        val name = buffer.readNativeString()
+        val name = buffer.gjstr()
         return CreateSuggestNameReply(name)
     }
 }

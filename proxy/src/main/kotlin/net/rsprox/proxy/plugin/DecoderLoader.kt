@@ -73,12 +73,12 @@ import net.rsprox.protocol.v239.GameClientProtProviderV239
 import net.rsprox.protocol.v239.GameServerProtProviderV239
 import net.rsprox.protocol.v239.ServerPacketDecoderServiceV239
 import net.rsprox.protocol.v240.ClientPacketDecoderServiceV240
-import net.rsprox.protocol.v241.ClientPacketDecoderServiceV241
 import net.rsprox.protocol.v240.GameClientProtProviderV240
-import net.rsprox.protocol.v241.GameClientProtProviderV241
 import net.rsprox.protocol.v240.GameServerProtProviderV240
-import net.rsprox.protocol.v241.GameServerProtProviderV241
 import net.rsprox.protocol.v240.ServerPacketDecoderServiceV240
+import net.rsprox.protocol.v241.ClientPacketDecoderServiceV241
+import net.rsprox.protocol.v241.GameClientProtProviderV241
+import net.rsprox.protocol.v241.GameServerProtProviderV241
 import net.rsprox.protocol.v241.ServerPacketDecoderServiceV241
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.transcriber.legacy.LegacyClientProt

@@ -14,7 +14,7 @@ internal class ShowFaceHereDecoder : ProxyMessageDecoder<ShowFaceHere> {
         buffer: JagByteBuf,
         session: Session,
     ): ShowFaceHere {
-        val enabled = buffer.g1() == 1
+        val enabled = buffer.g1Alt3() == 1
         return ShowFaceHere(
             enabled,
         )

@@ -14,10 +14,10 @@ internal class IfSetEventsDecoder : ProxyMessageDecoder<IfSetEvents> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetEvents {
-        val settings = buffer.g4Alt2()
-        val toSlot = buffer.g2()
-        val fromSlot = buffer.g2Alt2()
-        val componentHash = buffer.g4Alt1().toLong() and 0xFFFFFFFFL
+        val componentHash = buffer.g4Alt3().toLong() and 0xFFFF_FFFFL
+        val settings = buffer.g4()
+        val toSlot = buffer.g2Alt2().let { if (it == 65535) -1 else it }
+        val fromSlot = buffer.g2Alt2().let { if (it == 65535) -1 else it }
         return IfSetEvents(
             componentHash,
             fromSlot,

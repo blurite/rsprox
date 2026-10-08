@@ -19,9 +19,9 @@ internal class Unnamed2Decoder : ProxyMessageDecoder<Unnamed2> {
         require(buffer.readableBytes() >= 4 && recordCount <= (buffer.readableBytes() - 4) / 4) {
             "Truncated counted ignored-word block"
         }
-        // The native reader skips these fixed-width records, but does read the final word.
+        // Beta skips both the records and footer; retain their bytes without assigning an integer encoding.
         val records = List(recordCount) { Unnamed2.Record(buffer.g1(), buffer.g1(), buffer.g1(), buffer.g1()) }
-        val discardedFooter = buffer.g4()
-        return Unnamed2(count, records, discardedFooter)
+        val reservedFooter = List(4) { buffer.g1() }
+        return Unnamed2(count, records, null, reservedFooter)
     }
 }

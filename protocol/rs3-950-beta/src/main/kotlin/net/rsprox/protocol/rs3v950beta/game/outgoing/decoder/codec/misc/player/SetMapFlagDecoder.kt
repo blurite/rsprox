@@ -14,13 +14,13 @@ internal class SetMapFlagDecoder : ProxyMessageDecoder<SetMapFlag> {
         buffer: JagByteBuf,
         session: Session,
     ): SetMapFlag {
-        val targetX = buffer.g1Alt3()
-        val type = buffer.g1Alt1().toByte().toInt()
-        val flags = buffer.g1()
-        val sourceZ = buffer.g1Alt2()
         val id = buffer.g4Alt2()
-        val sourceX = buffer.g1Alt3()
-        val targetZ = buffer.g1Alt3()
+        val type = buffer.g1Alt3().toByte().toInt()
+        val sourceZ = buffer.g1Alt3()
+        val targetZ = buffer.g1Alt1()
+        val sourceX = buffer.g1Alt1()
+        val targetX = buffer.g1()
+        val flags = buffer.g1Alt2()
         return SetMapFlag(
             targetX,
             type,

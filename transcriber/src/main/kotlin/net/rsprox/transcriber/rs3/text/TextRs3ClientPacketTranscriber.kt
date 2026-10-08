@@ -39,11 +39,14 @@ import net.rsprox.protocol.rs3.game.incoming.model.events.EventMouseClick
 import net.rsprox.protocol.rs3.game.incoming.model.events.EventMouseMove
 import net.rsprox.protocol.rs3.game.incoming.model.events.EventNativeMouseClick
 import net.rsprox.protocol.rs3.game.incoming.model.events.EventNativeMouseMove
+import net.rsprox.protocol.rs3.game.incoming.model.events.GameLogEvent
 import net.rsprox.protocol.rs3.game.incoming.model.events.MidiSongStop
 import net.rsprox.protocol.rs3.game.incoming.model.events.MouseMovement
 import net.rsprox.protocol.rs3.game.incoming.model.events.PingStatistics
 import net.rsprox.protocol.rs3.game.incoming.model.events.SendPingReply
 import net.rsprox.protocol.rs3.game.incoming.model.events.TransmitVarVerifyId
+import net.rsprox.protocol.rs3.game.incoming.model.events.UnnamedBatch80
+import net.rsprox.protocol.rs3.game.incoming.model.events.UnnamedEvent92
 import net.rsprox.protocol.rs3.game.incoming.model.events.WindowStatus
 import net.rsprox.protocol.rs3.game.incoming.model.locs.OpLoc
 import net.rsprox.protocol.rs3.game.incoming.model.locs.OpLocT
@@ -101,6 +104,7 @@ import net.rsprox.shared.property.int
 import net.rsprox.shared.property.long
 import net.rsprox.shared.property.regular.AnyProperty
 import net.rsprox.shared.property.regular.ScriptVarTypeProperty
+import net.rsprox.shared.property.script
 import net.rsprox.shared.property.scriptVarType
 import net.rsprox.shared.property.shortNpc
 import net.rsprox.shared.property.shortPlayer
@@ -485,6 +489,45 @@ public class TextRs3ClientPacketTranscriber(
         root.int("latency", message.latency)
         root.int("reserved", message.reserved)
         root.int("fps", message.fps)
+    }
+
+    override fun gameLogEvent(message: GameLogEvent) {
+        if (!filters[PropertyFilter.GAMELOGEVENT]) return omit()
+        root.int("id", message.id)
+        root.script("script", message.script)
+        root.int("value16", message.value16)
+        root.group("arguments") {
+            for (argument in message.arguments) {
+                group {
+                    int("scripttype", argument.scriptType)
+                    appendVariableValue(argument.value)
+                }
+            }
+        }
+    }
+
+    override fun unnamedBatch80(message: UnnamedBatch80) {
+        if (!filters[PropertyFilter.PLUGIN_REPORTS]) return omit()
+        root.boolean("complete", message.complete)
+        root.group("entries") {
+            for (entry in message.entries) {
+                group {
+                    int("field0", entry.field0)
+                    int("field1", entry.field1)
+                    int("field2", entry.field2)
+                    int("field3", entry.field3)
+                }
+            }
+        }
+    }
+
+    override fun unnamedEvent92(message: UnnamedEvent92) {
+        if (!filters[PropertyFilter.PLUGIN_REPORTS]) return omit()
+        root.int("field0", message.field0)
+        root.int("field1", message.field1)
+        root.int("field2", message.field2)
+        root.int("field3", message.field3)
+        root.int("field4", message.field4)
     }
 
     override fun sendEmailValidationCode(message: SendEmailValidationCode) {

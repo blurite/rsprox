@@ -10,7 +10,7 @@ import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.session.Session
 
 internal class MessageClanchannelSystemDecoder(
-    private val huffmanCodec: HuffmanCodec,
+    private val huffmanCodec: HuffmanCodec?,
 ) : ProxyMessageDecoder<MessageClanchannelSystem> {
     override val prot: ClientProt = GameServerProt.MESSAGE_CLANCHANNEL_SYSTEM
 

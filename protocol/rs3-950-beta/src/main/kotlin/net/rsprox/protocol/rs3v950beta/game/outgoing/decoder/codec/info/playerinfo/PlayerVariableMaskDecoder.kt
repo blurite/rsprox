@@ -13,7 +13,7 @@ internal object PlayerVariableMaskDecoder {
         buffer.g2() // Native discarded prefix, not a trusted length.
         val entries =
             List(buffer.g1()) {
-                val tag = if (full) buffer.g1Alt1() else buffer.g1Alt2()
+                val tag = if (full) buffer.g1() else buffer.g1Alt3()
                 val id = buffer.g2()
                 // Unlike VARCLAN, these masks send their strategy tag on the wire.
                 // Rs3InfoVariableProof.Registry checks the client's four real vtable bindings.

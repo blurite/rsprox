@@ -15,7 +15,7 @@ internal class MidiJingleDecoder : ProxyMessageDecoder<MidiJingle> {
         session: Session,
     ): MidiJingle {
         val song = buffer.g4Alt2()
-        val volume = buffer.g1Alt1()
+        val volume = buffer.g1()
         return MidiJingle(
             song = song,
             volume = volume,

@@ -14,8 +14,8 @@ internal class IgnoreSetNotesDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): IgnoreSetNotes {
-        val note = buffer.readNativeString()
         val name = buffer.readNativeString()
+        val note = buffer.readNativeString()
         return IgnoreSetNotes(
             note,
             name,

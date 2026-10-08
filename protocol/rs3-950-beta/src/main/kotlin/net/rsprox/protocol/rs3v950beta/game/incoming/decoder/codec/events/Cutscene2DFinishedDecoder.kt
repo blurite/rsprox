@@ -13,8 +13,8 @@ internal class Cutscene2DFinishedDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): Cutscene2DFinished {
-        val status = buffer.g1Alt3()
-        val id = buffer.g2Alt1()
+        val id = buffer.g2Alt3()
+        val status = buffer.g1Alt1()
         return Cutscene2DFinished(
             status,
             id,

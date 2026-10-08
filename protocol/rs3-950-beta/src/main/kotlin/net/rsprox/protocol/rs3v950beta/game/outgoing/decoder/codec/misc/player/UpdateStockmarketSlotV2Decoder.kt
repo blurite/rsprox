@@ -18,9 +18,8 @@ internal class UpdateStockmarketSlotV2Decoder : ProxyMessageDecoder<UpdateStockm
         val slot = buffer.g1()
         require(slot < 8) { "Invalid stock-market slot $slot" }
         val state = buffer.g1()
-        if (state == 0) return UpdateStockmarketSlotV2(group, slot, state, null, List(33) { buffer.g1() })
         val version = if (state and 7 == 7) buffer.g1() else null
-        val updatedState = if (version != null) buffer.g1() else null
+        val updatedState = buffer.g1()
         val objectId = if (version != null && version >= 3) buffer.g3() else buffer.g2()
         val wide = version != null && version >= 2
         val price = if (wide) buffer.g8() else buffer.g4().toLong() and 0xFFFF_FFFFL
@@ -35,7 +34,7 @@ internal class UpdateStockmarketSlotV2Decoder : ProxyMessageDecoder<UpdateStockm
         val extension = List(extensionLength ?: 0) { buffer.g1() }
         val reservedCount =
             when {
-                version == null -> 15
+                version == null -> 14
                 version < 2 -> 13
                 version == 2 -> 1 - requireNotNull(extensionLength)
                 else -> 0

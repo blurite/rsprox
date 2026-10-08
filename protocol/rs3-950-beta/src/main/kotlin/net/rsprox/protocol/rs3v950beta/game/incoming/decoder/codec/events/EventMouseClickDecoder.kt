@@ -13,8 +13,8 @@ internal class EventMouseClickDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): EventMouseClick {
+        val buttonAndDelta = buffer.g2Alt1()
         val packedPosition = buffer.g4()
-        val buttonAndDelta = buffer.g2()
         return EventMouseClick(
             packedPosition,
             buttonAndDelta,

@@ -13,13 +13,13 @@ internal class OpLocTDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): OpLocT {
-        val controlKey = buffer.g1Alt2()
-        val x = buffer.g2Alt2()
-        val selectedSub = buffer.g2()
-        val z = buffer.g2Alt3()
-        val selectedObj = buffer.g3Alt1()
+        val x = buffer.g2Alt3()
+        val controlKey = buffer.g1Alt1()
+        val selectedSub = buffer.g2Alt3()
+        val selectedCombinedId = buffer.g4Alt3()
+        val z = buffer.g2()
+        val selectedObj = buffer.g3Alt2()
         val id = buffer.g4Alt1()
-        val selectedCombinedId = buffer.g4Alt2()
         return OpLocT(
             controlKey,
             x,

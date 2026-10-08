@@ -5,7 +5,26 @@ import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 import net.rsprox.protocol.rs3.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
-import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.codec.zone.payload.*
+import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.codec.zone.payload.LocAddChangeDecoder
+import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.codec.zone.payload.LocAnimDecoder
+import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.codec.zone.payload.LocCustomiseDecoder
+import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.codec.zone.payload.LocDelDecoder
+import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.codec.zone.payload.LocPrefetchDecoder
+import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.codec.zone.payload.MapAnimV1Decoder
+import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.codec.zone.payload.MapAnimV2Decoder
+import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.codec.zone.payload.MapProjAnimDecoder
+import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.codec.zone.payload.MapProjAnimHalfsqDecoder
+import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.codec.zone.payload.MapProjAnimHalfsqV2Decoder
+import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.codec.zone.payload.MapProjAnimV2Decoder
+import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.codec.zone.payload.ObjAddV2Decoder
+import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.codec.zone.payload.ObjAddV3Decoder
+import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.codec.zone.payload.ObjCountV2Decoder
+import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.codec.zone.payload.ObjCountV3Decoder
+import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.codec.zone.payload.ObjDelDecoder
+import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.codec.zone.payload.ObjRevealDecoder
+import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.codec.zone.payload.ObjRevealV3Decoder
+import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.codec.zone.payload.SoundAreaV1Decoder
+import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.codec.zone.payload.SoundAreaV2Decoder
 import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.session.Session
 
@@ -16,51 +35,48 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
         buffer: JagByteBuf,
         session: Session,
     ): UpdateZonePartialEnclosed {
-        val level = buffer.g1Alt3()
         val zoneX = buffer.g1Alt2().toByte().toInt()
-        val zoneZ = buffer.g1s()
+        val zoneZ = buffer.g1Alt1().toByte().toInt()
+        val level = buffer.g1Alt1()
         val packets =
             buildList {
                 while (buffer.isReadable) {
-                    val index = buffer.g1()
+                    val selector = buffer.g1()
                     val decoder =
-                        requireNotNull(IndexedZoneProtDecoder.byIndexOrNull(index)) {
-                            "Unknown revision 950 zone selector $index at byte ${buffer.buffer.readerIndex() - 1}"
+                        requireNotNull(decoders[selector]) {
+                            "Unverified or invalid revision 950-beta zone selector $selector at byte ${buffer.buffer.readerIndex() - 1}"
                         }
-                    add(decoder.decoder.decode(buffer, session) as IncomingServerGameMessage)
+                    add(decoder.decode(buffer, session) as IncomingServerGameMessage)
                 }
             }
         return UpdateZonePartialEnclosed(level, zoneX, zoneZ, packets)
     }
 
-    private enum class IndexedZoneProtDecoder(
-        val index: Int,
-        val decoder: ProxyMessageDecoder<*>,
-    ) {
-        OBJ_ADD_V2(0, ObjAddDecoder()),
-        SOUND_AREA_V2(1, SoundAreaV2Decoder()),
-        MAP_ANIM_V2(2, MapAnimV2Decoder()),
-        LOC_PREFETCH(3, LocPrefetchDecoder()),
-        SOUND_AREA_V1(4, SoundAreaV1Decoder()),
-        MAP_PROJANIM_HALFSQ(5, MapProjAnimHalfsqDecoder()),
-        OBJ_COUNT_V2(6, ObjCountDecoder()),
-        LOC_CUSTOMISE(7, LocCustomiseDecoder()),
-        LOC_ADD_CHANGE(8, LocAddChangeDecoder()),
-        OBJ_REVEAL_V2(9, ObjRevealDecoder()), // zone only
-        OBJ_DEL_V2(10, ObjDelDecoder()),
-        MAP_ANIM_V1(11, MapAnimV1Decoder()),
-        LOC_DEL(12, LocDelDecoder()),
-        LOC_ANIM(13, LocAnimDecoder()),
-        LOC_PREFETCH_VARIABLE(14, LocPrefetchDecoder()),
-        MAP_PROJANIM(15, MapProjAnimDecoder()),
-        MAP_PROJANIM_V2(16, MapProjAnimV2Decoder()),
-        MAP_PROJANIM_HALFSQ_V2(17, MapProjAnimHalfsqV2Decoder()),
-        ;
-
-        companion object {
-            private val VALUES = entries.toTypedArray()
-
-            fun byIndexOrNull(index: Int): IndexedZoneProtDecoder? = VALUES.getOrNull(index)
-        }
+    private companion object {
+        // Add only beta-verified routes; never fall back to live-950 selector ordering.
+        val decoders: Map<Int, ProxyMessageDecoder<*>> =
+            mapOf(
+                0 to LocAnimDecoder(),
+                1 to MapProjAnimV2Decoder(),
+                2 to MapProjAnimDecoder(),
+                3 to LocPrefetchDecoder(),
+                4 to ObjDelDecoder(),
+                5 to ObjAddV3Decoder(),
+                6 to MapProjAnimHalfsqV2Decoder(),
+                7 to MapAnimV1Decoder(),
+                8 to SoundAreaV1Decoder(),
+                9 to SoundAreaV2Decoder(),
+                10 to LocCustomiseDecoder(),
+                11 to ObjCountV2Decoder(),
+                12 to ObjCountV3Decoder(),
+                13 to LocDelDecoder(),
+                14 to ObjRevealDecoder(),
+                15 to LocPrefetchDecoder(),
+                16 to ObjRevealV3Decoder(),
+                17 to LocAddChangeDecoder(),
+                18 to MapProjAnimHalfsqDecoder(),
+                19 to MapAnimV2Decoder(),
+                20 to ObjAddV2Decoder(),
+            )
     }
 }

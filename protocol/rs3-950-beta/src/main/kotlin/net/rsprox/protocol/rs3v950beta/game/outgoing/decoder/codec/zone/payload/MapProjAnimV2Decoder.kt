@@ -29,8 +29,8 @@ internal class MapProjAnimV2Decoder : ProxyMessageDecoder<MapProjAnimV2> {
         val unused0 = buffer.g1()
         val unused1 = buffer.g1()
         val unused2 = buffer.g1()
-        val startOffset = ProjectileOffset(buffer.g3())
-        val endOffset = ProjectileOffset(buffer.g3())
+        val startOffset = buffer.g3()
+        val endOffset = buffer.g3()
         return MapProjAnimV2(
             coordinate = coordinate,
             deltaX = deltaX,
@@ -46,8 +46,8 @@ internal class MapProjAnimV2Decoder : ProxyMessageDecoder<MapProjAnimV2> {
             unused0 = unused0,
             unused1 = unused1,
             unused2 = unused2,
-            startOffset = startOffset,
-            endOffset = endOffset,
+            startOffset = ProjectileOffset(startOffset),
+            endOffset = ProjectileOffset(endOffset),
         )
     }
 }

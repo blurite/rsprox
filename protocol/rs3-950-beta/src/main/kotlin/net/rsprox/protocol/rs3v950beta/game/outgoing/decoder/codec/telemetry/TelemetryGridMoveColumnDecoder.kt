@@ -14,9 +14,9 @@ internal class TelemetryGridMoveColumnDecoder : ProxyMessageDecoder<TelemetryGri
         buffer: JagByteBuf,
         session: Session,
     ): TelemetryGridMoveColumn {
+        val group = buffer.g1Alt3()
         val source = buffer.g1Alt3()
-        val group = buffer.g1()
-        val destination = buffer.g1Alt2()
+        val destination = buffer.g1()
         return TelemetryGridMoveColumn(
             source,
             group,

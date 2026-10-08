@@ -36,7 +36,8 @@ internal class TelemetryGridFullDecoder : ProxyMessageDecoder<TelemetryGridFull>
                         val cells =
                             List(columnCount) {
                                 val present = buffer.g1()
-                                TelemetryGridFull.Cell(present, if (present != 0) buffer.g4() else null)
+                                val value = if (present != 0) buffer.g4() else null
+                                TelemetryGridFull.Cell(present, value)
                             }
                         TelemetryGridFull.Row(pin, cells)
                     }

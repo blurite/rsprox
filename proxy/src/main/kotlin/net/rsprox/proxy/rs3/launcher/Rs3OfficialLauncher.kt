@@ -129,7 +129,7 @@ internal class Rs3OfficialLauncher private constructor(
         ): Rs3OfficialLauncher {
             val source = Rs3LauncherDistribution.load(directory, onProgress)
             val cacheRoot = Path.of(Shell32Util.getFolderPath(ShlObj.CSIDL_COMMON_APPDATA), "Jagex")
-            val slot = Rs3LauncherSlot.acquire(directory, cacheRoot)
+            val slot = Rs3LauncherSlot.acquire(directory, cacheRoot, javConfig.getCacheVariantSuffix())
             var server: Rs3LauncherConfigServer? = null
             try {
                 onProgress(Rs3LaunchProgress("Preparing RuneScape launcher"))

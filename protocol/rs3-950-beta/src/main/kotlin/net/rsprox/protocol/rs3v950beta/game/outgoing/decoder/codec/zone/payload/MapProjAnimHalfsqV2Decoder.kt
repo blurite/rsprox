@@ -28,8 +28,8 @@ internal class MapProjAnimHalfsqV2Decoder : ProxyMessageDecoder<MapProjAnimHalfs
         val endTime = buffer.g2()
         val angle = buffer.g1().let { if (it == 255) -1 else it }
         val progress = buffer.g2()
-        val startOffset = ProjectileOffset(buffer.g3())
-        val endOffset = ProjectileOffset(buffer.g3())
+        val startOffset = buffer.g3()
+        val endOffset = buffer.g3()
         return MapProjAnimHalfsqV2(
             coordinate = coordinate,
             flags = flags,
@@ -44,8 +44,8 @@ internal class MapProjAnimHalfsqV2Decoder : ProxyMessageDecoder<MapProjAnimHalfs
             endTime = endTime,
             angle = angle,
             progress = progress,
-            startOffset = startOffset,
-            endOffset = endOffset,
+            startOffset = ProjectileOffset(startOffset),
+            endOffset = ProjectileOffset(endOffset),
         )
     }
 }

@@ -5,7 +5,6 @@ import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.rs3.game.outgoing.model.appearance.PlayerSnapshot
 import net.rsprox.protocol.rs3.game.outgoing.model.info.playerinfo.rs3AppearanceDefinitions
-import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.codec.info.playerinfo.PlayerAppearanceDecoder
 import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.session.Session
 
@@ -21,7 +20,7 @@ internal class PlayerSnapshotDecoder : ProxyMessageDecoder<PlayerSnapshot> {
         return PlayerSnapshot(
             snapshotIndex,
             appearanceFlags,
-            PlayerAppearanceDecoder.decodeBody(
+            AppearanceBodyDecoder.decodeBody(
                 buffer,
                 checkNotNull(session.rs3AppearanceDefinitions) {
                     "RS3 appearance cache is not initialized"

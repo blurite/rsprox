@@ -14,7 +14,7 @@ internal class CamRemoveRoofDecoder : ProxyMessageDecoder<CamRemoveRoof> {
         buffer: JagByteBuf,
         session: Session,
     ): CamRemoveRoof {
-        val coordinate = buffer.g4Alt3()
+        val coordinate = buffer.g4Alt2()
         return CamRemoveRoof(
             coordinate,
         )

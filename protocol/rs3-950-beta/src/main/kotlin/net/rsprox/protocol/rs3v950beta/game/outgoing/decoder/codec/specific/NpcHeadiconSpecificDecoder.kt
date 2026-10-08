@@ -14,10 +14,10 @@ internal class NpcHeadiconSpecificDecoder : ProxyMessageDecoder<NpcHeadiconSpeci
         buffer: JagByteBuf,
         session: Session,
     ): NpcHeadiconSpecific {
-        val slot = buffer.g1Alt2()
-        val id = buffer.g4Alt3()
-        val npcIndex = buffer.g2Alt1()
-        val spriteIndex = buffer.g2Alt2().toShort().toInt()
+        val id = buffer.g4()
+        val slot = buffer.g1Alt3()
+        val spriteIndex = buffer.g2().toShort().toInt()
+        val npcIndex = buffer.g2Alt3()
         return NpcHeadiconSpecific(
             slot,
             id,

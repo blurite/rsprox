@@ -4,6 +4,7 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.outgoing.model.misc.player.RunClientScript
+import net.rsprox.protocol.rs3v950beta.buffer.readNativeString
 import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.prot.GameServerProt
 import net.rsprox.protocol.session.Session
 
@@ -14,11 +15,11 @@ internal class RunClientScriptDecoder : ProxyMessageDecoder<RunClientScript> {
         buffer: JagByteBuf,
         session: Session,
     ): RunClientScript {
-        val types = buffer.gjstr()
+        val types = buffer.readNativeString()
         val values = ArrayDeque<Any>(types.length)
         for (char in types.reversed()) {
             when (char) {
-                's' -> values.addFirst(buffer.gjstr())
+                's' -> values.addFirst(buffer.readNativeString())
                 'l' -> values.addFirst(buffer.g8())
                 else -> values.addFirst(buffer.g4())
             }

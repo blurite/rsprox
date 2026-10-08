@@ -14,8 +14,8 @@ internal class FriendSetRankDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): FriendSetRank {
+        val rank = buffer.g1Alt3()
         val name = buffer.readNativeString()
-        val rank = buffer.g1()
         return FriendSetRank(
             name,
             rank,

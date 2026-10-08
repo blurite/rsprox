@@ -14,8 +14,8 @@ internal class IfSetModelDecoder : ProxyMessageDecoder<IfSetModel> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetModel {
-        val componentHash = buffer.g4().toLong() and 0xFFFFFFFFL
-        val modelId = buffer.g4()
+        val modelId = buffer.g4Alt1()
+        val componentHash = buffer.g4Alt1().toLong() and 0xFFFF_FFFFL
         return IfSetModel(
             componentHash,
             modelId,

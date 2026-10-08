@@ -14,11 +14,12 @@ internal class IfSetObjectLongV2Decoder : ProxyMessageDecoder<IfSetObjectLongV2>
         buffer: JagByteBuf,
         session: Session,
     ): IfSetObjectLongV2 {
+        val rawObjId = buffer.g3Alt1()
+        val objId = if (rawObjId == 0xFFFFFF) -1 else rawObjId
         val quantityHigh = buffer.g4Alt2().toLong()
         val quantityLow = buffer.g4Alt2().toLong() and 0xFFFF_FFFFL
         val quantity = (quantityHigh shl 32) or quantityLow
         val componentHash = buffer.g4Alt1().toLong() and 0xFFFF_FFFFL
-        val objId = buffer.g3().let { if (it == 0xFFFFFF) -1 else it }
         return IfSetObjectLongV2(
             quantity,
             componentHash,

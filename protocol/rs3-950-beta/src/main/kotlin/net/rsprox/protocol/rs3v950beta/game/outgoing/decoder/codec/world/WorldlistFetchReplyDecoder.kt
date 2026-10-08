@@ -41,6 +41,7 @@ internal class WorldlistFetchReplyDecoder : ProxyMessageDecoder<WorldlistFetchRe
         val input = Unpooled.wrappedBuffer(accumulated)
         try {
             val data = input.toJagByteBuf()
+            // TODO(beta): Native chunk envelope is verified; audit the reused live-950 nested list parser separately.
             val version = data.g1()
             require(version == 2) { "Unsupported world-list version $version" }
             val definitionsFlag = data.g1()

@@ -82,6 +82,7 @@ public class TextRs3PlayerInfoTranscriber(
                         is PlayerExtendedInfo.PlayerStatus -> filters[PropertyFilter.PLAYER_STATUS]
                         is PlayerExtendedInfo.HeadIcons -> filters[PropertyFilter.PLAYER_HEAD_ICONS]
                         is PlayerExtendedInfo.UnusedMask16 -> filters[PropertyFilter.PLAYER_UNUSED_MASK_16]
+                        is PlayerExtendedInfo.UnusedFields -> filters[PropertyFilter.PLAYER_UNUSED_FIELDS]
                         is PlayerExtendedInfo.Unused ->
                             filters[
                                 when (it.kind) {
@@ -265,6 +266,10 @@ public class TextRs3PlayerInfoTranscriber(
                     boolean("enabled", info.enabled)
                 }
             is PlayerExtendedInfo.FaceEntity -> group("FACE_ENTITY") { entities.entity(this, info.target) }
+            is PlayerExtendedInfo.UnusedFields ->
+                group("UNUSED_MASK_${info.bit}") {
+                    for ((index, value) in info.fields.withIndex()) int("field$index", value)
+                }
             is PlayerExtendedInfo.Unused ->
                 group(info.kind.name) {
                     int("field0", info.field0)

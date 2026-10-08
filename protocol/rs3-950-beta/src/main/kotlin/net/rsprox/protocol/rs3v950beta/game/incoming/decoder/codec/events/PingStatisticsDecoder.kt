@@ -13,9 +13,9 @@ internal class PingStatisticsDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): PingStatistics {
-        val latency = buffer.g2Alt3()
         val reserved = buffer.g1()
-        val fps = buffer.g1Alt1()
+        val latency = buffer.g2Alt1()
+        val fps = buffer.g1Alt2()
         return PingStatistics(
             latency,
             reserved,

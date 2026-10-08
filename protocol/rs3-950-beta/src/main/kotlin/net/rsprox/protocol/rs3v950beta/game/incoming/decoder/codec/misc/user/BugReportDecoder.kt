@@ -14,9 +14,9 @@ internal class BugReportDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): BugReport {
-        val reportCategory = buffer.g1Alt1()
-        val details = buffer.readNativeString2()
         val summary = buffer.readNativeString2()
+        val details = buffer.readNativeString2()
+        val reportCategory = buffer.g1Alt2()
         return BugReport(
             reportCategory,
             details,

@@ -14,14 +14,12 @@ internal class LocAnimDecoder : ProxyMessageDecoder<LocAnim> {
         buffer: JagByteBuf,
         session: Session,
     ): LocAnim {
-        val shapeRot = buffer.g1Alt2()
+        val id = buffer.g4()
+        val delay = buffer.g1Alt2()
+        val packedCoord = buffer.g1()
+        val shapeRot = buffer.g1Alt3()
         val shape = (shapeRot ushr 2) and 0x1F
         val rotation = shapeRot and 0x3
-
-        val id = buffer.g4Alt2()
-        val delay = buffer.g1Alt2()
-
-        val packedCoord = buffer.g1Alt2()
         val zInZone = packedCoord and 0x7
         val xInZone = (packedCoord ushr 4) and 0x7
 

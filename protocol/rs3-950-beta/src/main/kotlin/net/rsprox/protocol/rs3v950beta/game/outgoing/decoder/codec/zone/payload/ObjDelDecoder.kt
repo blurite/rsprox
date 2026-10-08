@@ -14,10 +14,10 @@ internal class ObjDelDecoder : ProxyMessageDecoder<ObjDel> {
         buffer: JagByteBuf,
         session: Session,
     ): ObjDel {
-        val packedCoord = buffer.g1Alt3()
-        val objId = buffer.g3Alt1()
+        val packedCoord = buffer.g1Alt1()
+        val objId = buffer.g3Alt3()
         val xInZone = (packedCoord ushr 4) and 0x7
         val zInZone = packedCoord and 0x7
-        return ObjDel(true, objId, xInZone, zInZone)
+        return ObjDel(true, objId, xInZone, zInZone, coordinateFlags = packedCoord ushr 7)
     }
 }

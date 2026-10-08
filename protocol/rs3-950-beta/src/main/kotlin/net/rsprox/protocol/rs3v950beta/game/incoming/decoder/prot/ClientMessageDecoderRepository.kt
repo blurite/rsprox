@@ -40,10 +40,13 @@ import net.rsprox.protocol.rs3v950beta.game.incoming.decoder.codec.events.EventM
 import net.rsprox.protocol.rs3v950beta.game.incoming.decoder.codec.events.EventMouseMoveDecoder
 import net.rsprox.protocol.rs3v950beta.game.incoming.decoder.codec.events.EventNativeMouseClickDecoder
 import net.rsprox.protocol.rs3v950beta.game.incoming.decoder.codec.events.EventNativeMouseMoveDecoder
+import net.rsprox.protocol.rs3v950beta.game.incoming.decoder.codec.events.GameLogEventDecoder
 import net.rsprox.protocol.rs3v950beta.game.incoming.decoder.codec.events.MidiSongStopDecoder
 import net.rsprox.protocol.rs3v950beta.game.incoming.decoder.codec.events.PingStatisticsDecoder
 import net.rsprox.protocol.rs3v950beta.game.incoming.decoder.codec.events.SendPingReplyDecoder
 import net.rsprox.protocol.rs3v950beta.game.incoming.decoder.codec.events.TransmitVarVerifyIdDecoder
+import net.rsprox.protocol.rs3v950beta.game.incoming.decoder.codec.events.UnnamedBatch80Decoder
+import net.rsprox.protocol.rs3v950beta.game.incoming.decoder.codec.events.UnnamedEvent92Decoder
 import net.rsprox.protocol.rs3v950beta.game.incoming.decoder.codec.events.WindowStatusDecoder
 import net.rsprox.protocol.rs3v950beta.game.incoming.decoder.codec.locs.OpLocDecoder
 import net.rsprox.protocol.rs3v950beta.game.incoming.decoder.codec.locs.OpLocTDecoder
@@ -145,6 +148,9 @@ internal object ClientMessageDecoderRepository {
                 bind(Cutscene2DFinishedDecoder(GameClientProt.CUTSCENE2D_FINISHED))
                 bind(TransmitVarVerifyIdDecoder(GameClientProt.TRANSMITVAR_VERIFYID))
                 bind(PingStatisticsDecoder(GameClientProt.PING_STATISTICS))
+                bind(GameLogEventDecoder(GameClientProt.GAMELOGEVENT))
+                bind(UnnamedBatch80Decoder(GameClientProt.UNNAMED_BATCH_80))
+                bind(UnnamedEvent92Decoder(GameClientProt.UNNAMED_EVENT_92))
                 bind(SendEmailValidationCodeDecoder(GameClientProt.SEND_EMAIL_VALIDATION_CODE))
                 bind(FriendListDelDecoder(GameClientProt.FRIENDLIST_DEL))
                 bind(ClanKickUserDecoder(GameClientProt.CLAN_KICKUSER))

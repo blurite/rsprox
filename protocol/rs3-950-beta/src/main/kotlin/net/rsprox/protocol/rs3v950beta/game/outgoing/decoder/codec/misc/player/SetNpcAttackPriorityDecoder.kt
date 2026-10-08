@@ -14,7 +14,7 @@ internal class SetNpcAttackPriorityDecoder : ProxyMessageDecoder<SetNpcAttackPri
         buffer: JagByteBuf,
         session: Session,
     ): SetNpcAttackPriority {
-        val priority = buffer.g1Alt1()
+        val priority = buffer.g1()
         return SetNpcAttackPriority(
             priority,
         )

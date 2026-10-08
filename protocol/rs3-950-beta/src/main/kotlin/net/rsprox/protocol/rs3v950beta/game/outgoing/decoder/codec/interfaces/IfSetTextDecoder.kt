@@ -14,8 +14,8 @@ internal class IfSetTextDecoder : ProxyMessageDecoder<IfSetText> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetText {
-        val componentHash = buffer.g4().toLong() and 0xFFFFFFFFL
         val text = buffer.gjstr()
+        val componentHash = buffer.g4Alt3().toLong() and 0xFFFFFFFFL
         return IfSetText(
             componentHash,
             text,

@@ -45,6 +45,7 @@ public class SessionPanel(
     public val type: SessionType,
     private val sessionsPanel: SessionsPanel,
     character: JagexCharacter?,
+    private val rs3Beta: Boolean = false,
 ) : JPanel() {
     private val treeTable = JXTreeTable()
     private val tableModel = DefaultTreeTableModel()
@@ -278,12 +279,19 @@ public class SessionPanel(
                                         rs3SessionMonitor,
                                         character,
                                         upstreamJavConfigUrl =
-                                            if (type == SessionType.RS3_VULKAN) {
+                                            if (rs3Beta) {
+                                                if (type == SessionType.RS3_VULKAN) {
+                                                    JagexNativeClientDownloader.BETA_VULKAN_RS3_JAV_CONFIG_URL
+                                                } else {
+                                                    JagexNativeClientDownloader.BETA_RS3_JAV_CONFIG_URL
+                                                }
+                                            } else if (type == SessionType.RS3_VULKAN) {
                                                 JagexNativeClientDownloader.VULKAN_RS3_JAV_CONFIG_URL
                                             } else {
                                                 JagexNativeClientDownloader.DEFAULT_RS3_JAV_CONFIG_URL
                                             },
                                         onProgress = { launchProgress?.update(it) },
+                                        beta = rs3Beta,
                                     )
                                 portNumber = handle.port
                             }
@@ -292,7 +300,7 @@ public class SessionPanel(
                         logger.error(e) {
                             "Unable to launch $type client"
                         }
-                        launchProgress?.finish(success = false)
+                        launchProgress?.finish(success = false, failure = e.message)
                         return@submit
                     }
                 }

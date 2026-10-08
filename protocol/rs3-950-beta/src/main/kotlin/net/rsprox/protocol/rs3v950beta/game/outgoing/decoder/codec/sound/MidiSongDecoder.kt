@@ -14,8 +14,8 @@ internal class MidiSongDecoder : ProxyMessageDecoder<MidiSong> {
         buffer: JagByteBuf,
         session: Session,
     ): MidiSong {
-        val id = buffer.g4()
         val volume = buffer.g1Alt3()
+        val id = buffer.g4Alt2()
         return MidiSong(
             id = id,
             volume = volume,

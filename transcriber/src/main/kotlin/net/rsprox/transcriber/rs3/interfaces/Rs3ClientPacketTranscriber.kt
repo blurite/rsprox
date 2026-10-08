@@ -37,10 +37,13 @@ import net.rsprox.protocol.rs3.game.incoming.model.events.EventMouseClick
 import net.rsprox.protocol.rs3.game.incoming.model.events.EventMouseMove
 import net.rsprox.protocol.rs3.game.incoming.model.events.EventNativeMouseClick
 import net.rsprox.protocol.rs3.game.incoming.model.events.EventNativeMouseMove
+import net.rsprox.protocol.rs3.game.incoming.model.events.GameLogEvent
 import net.rsprox.protocol.rs3.game.incoming.model.events.MidiSongStop
 import net.rsprox.protocol.rs3.game.incoming.model.events.PingStatistics
 import net.rsprox.protocol.rs3.game.incoming.model.events.SendPingReply
 import net.rsprox.protocol.rs3.game.incoming.model.events.TransmitVarVerifyId
+import net.rsprox.protocol.rs3.game.incoming.model.events.UnnamedBatch80
+import net.rsprox.protocol.rs3.game.incoming.model.events.UnnamedEvent92
 import net.rsprox.protocol.rs3.game.incoming.model.events.WindowStatus
 import net.rsprox.protocol.rs3.game.incoming.model.locs.OpLoc
 import net.rsprox.protocol.rs3.game.incoming.model.locs.OpLocT
@@ -174,6 +177,12 @@ public interface Rs3ClientPacketTranscriber {
     public fun transmitVarVerifyId(message: TransmitVarVerifyId)
 
     public fun pingStatistics(message: PingStatistics)
+
+    public fun gameLogEvent(message: GameLogEvent)
+
+    public fun unnamedBatch80(message: UnnamedBatch80)
+
+    public fun unnamedEvent92(message: UnnamedEvent92)
 
     public fun sendEmailValidationCode(message: SendEmailValidationCode)
 

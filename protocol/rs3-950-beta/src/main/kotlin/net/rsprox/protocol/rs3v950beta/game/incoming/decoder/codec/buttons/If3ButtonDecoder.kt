@@ -15,7 +15,7 @@ internal class If3ButtonDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): If3Button {
-        val obj = buffer.g3()
+        val obj = buffer.g3Alt1()
         val combinedId = buffer.gCombinedIdAlt3()
         val slot = buffer.g2()
         return If3Button(

@@ -9,7 +9,7 @@ internal object PlayerHitMaskDecoder {
         buffer: JagByteBuf,
         wide: Boolean,
     ): PlayerExtendedInfo.Hits {
-        val hitCount = if (wide) buffer.g1Alt2() else buffer.g1Alt1()
+        val hitCount = buffer.g1Alt3()
         val hits =
             List(hitCount) {
                 var type = buffer.gSmart1or2()
@@ -21,17 +21,17 @@ internal object PlayerHitMaskDecoder {
                         type = buffer.gSmart1or2()
                         value = if (wide) buffer.g4Alt3() else buffer.gSmart1or2()
                         secondaryType = buffer.gSmart1or2()
-                        secondaryValue = if (wide) buffer.g4Alt1() else buffer.gSmart1or2()
+                        secondaryValue = if (wide) buffer.g4Alt3() else buffer.gSmart1or2()
                     }
                     32766 -> {
                         type = -1
-                        value = if (wide) buffer.g1Alt3() else buffer.g1()
+                        value = buffer.g1Alt3()
                     }
                     else -> value = if (wide) buffer.g4Alt3() else buffer.gSmart1or2()
                 }
                 PlayerExtendedInfo.Hit(type, value, secondaryType, secondaryValue, buffer.gSmart1or2())
             }
-        val headbarCount = if (wide) buffer.g1Alt1() else buffer.g1Alt2()
+        val headbarCount = if (wide) buffer.g1Alt3() else buffer.g1Alt2()
         val headbars = List(headbarCount) { readHeadbar(buffer, wide) }
         return PlayerExtendedInfo.Hits(wide, hits, headbars)
     }
@@ -44,28 +44,26 @@ internal object PlayerHitMaskDecoder {
         val duration = buffer.gSmart1or2()
         if (duration == 32767) return Headbar.Remove(type)
         val delay = buffer.gSmart1or2()
-        val startFill = if (wide) buffer.g1Alt1() else buffer.g1Alt2()
+        val startFill = if (wide) buffer.g1Alt2() else buffer.g1()
         val endFill =
             if (duration == 0) {
                 startFill
-            } else if (wide) {
-                buffer.g1Alt1()
             } else {
-                buffer.g1Alt3()
+                buffer.g1Alt1()
             }
         val secondaryId = buffer.gSmart1or2() - 1
         val secondary =
             if (secondaryId == -1) {
                 null
             } else {
-                val secondaryStartFill = if (wide) buffer.g1() else buffer.g1Alt1()
+                val secondaryStartFill = if (wide) buffer.g1Alt2() else buffer.g1Alt1()
                 val secondaryEndFill =
                     if (duration == 0) {
                         secondaryStartFill
                     } else if (wide) {
-                        buffer.g1()
-                    } else {
                         buffer.g1Alt1()
+                    } else {
+                        buffer.g1()
                     }
                 PlayerExtendedInfo.SecondaryHeadbar(secondaryId, secondaryStartFill, secondaryEndFill)
             }

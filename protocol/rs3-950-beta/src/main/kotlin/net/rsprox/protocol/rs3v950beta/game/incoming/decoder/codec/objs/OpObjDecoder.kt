@@ -15,11 +15,11 @@ internal class OpObjDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): OpObj {
-        val flags = buffer.g1Alt3()
+        val flags = buffer.g1()
         val run = (flags and 1) != 0
-        val x = buffer.g2()
-        val y = buffer.g2()
-        val objId = buffer.g3()
+        val x = buffer.g2Alt2()
+        val y = buffer.g2Alt2()
+        val objId = buffer.g3Alt3()
         return OpObj(objId, x, y, op, run, flags)
     }
 

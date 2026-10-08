@@ -14,10 +14,10 @@ internal class IfSetTargetParamDecoder : ProxyMessageDecoder<IfSetTargetParam> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetTargetParam {
-        val fromSlot = buffer.g2Alt2()
-        val componentHash = buffer.g4Alt1().toLong() and 0xFFFFFFFFL
-        val targetParam = buffer.g2()
-        val toSlot = buffer.g2Alt2()
+        val fromSlot = buffer.g2Alt3().let { if (it == 65535) -1 else it }
+        val toSlot = buffer.g2Alt3().let { if (it == 65535) -1 else it }
+        val componentHash = buffer.g4Alt3().toLong() and 0xFFFF_FFFFL
+        val targetParam = buffer.g2Alt3()
         return IfSetTargetParam(
             componentHash,
             targetParam,

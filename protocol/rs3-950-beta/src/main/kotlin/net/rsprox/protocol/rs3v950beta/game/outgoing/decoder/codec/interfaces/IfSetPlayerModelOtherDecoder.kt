@@ -15,8 +15,8 @@ internal class IfSetPlayerModelOtherDecoder : ProxyMessageDecoder<IfSetPlayerMod
         session: Session,
     ): IfSetPlayerModelOther {
         val appearanceHash = buffer.g4Alt2()
-        val playerIndex = buffer.g2Alt1()
-        val componentHash = buffer.g4().toLong() and 0xFFFF_FFFFL
+        val playerIndex = buffer.g2Alt2()
+        val componentHash = buffer.g4Alt3().toLong() and 0xFFFF_FFFFL
         return IfSetPlayerModelOther(
             appearanceHash,
             playerIndex,

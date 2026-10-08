@@ -4,12 +4,21 @@ import io.netty.buffer.Unpooled
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.compression.HuffmanCodec
 import net.rsprot.crypto.cipher.StreamCipher
+import net.rsprox.proxy.rs3.Rs3ProtocolRevision
 import java.util.zip.CRC32
 
 /** Revision-950 privacy policy for recording and GUI copies, after payload ISAAC normalization. */
 internal class Rs3PacketSanitizer(
     private val huffman: HuffmanCodec,
+    val revision: Int = Rs3ProtocolRevision.LIVE_950,
 ) {
+    private val beta =
+        when (revision) {
+            Rs3ProtocolRevision.LIVE_950 -> false
+            Rs3ProtocolRevision.BETA_950_1 -> true
+            else -> error("No RS3 privacy policy for protocol revision key: $revision")
+        }
+
     /** Mutates an observation-owned copy only; consumes the original payload's cipher draws. */
     fun normalizeServerPayload(
         name: String,
@@ -36,6 +45,8 @@ internal class Rs3PacketSanitizer(
         payload: ByteArray,
     ): ByteArray? {
         if (!server && name in OMITTED_CLIENT_PACKETS) return null
+        // Beta's name check is also encrypted with the account-flow keys, not a cleartext name.
+        if (!server && beta && name == "CREATE_CHECK_NAME") return null
         if (name !in (if (server) SERVER_PACKETS else CLIENT_PACKETS)) return payload
 
         // Never mutate transport buffers, live-decoder inputs, or the caller's original packet.
@@ -129,8 +140,8 @@ internal class Rs3PacketSanitizer(
                         input.string(mask = true)
                     }
                     "IGNORE_SETNOTES" -> {
-                        input.string(mask = true)
-                        input.string()
+                        input.string(mask = !beta)
+                        input.string(mask = beta)
                     }
                 }
             }
@@ -154,10 +165,12 @@ internal class Rs3PacketSanitizer(
             val combinedId =
                 if (name == "RESUME_PAUSEBUTTON") {
                     require(payload.size == 6)
-                    input.g4().also { input.g2Alt2() }
+                    val combinedId = input.g4()
+                    if (beta) input.g2Alt1() else input.g2Alt2()
+                    combinedId
                 } else {
                     require(payload.size == 9)
-                    input.g3() // Object id.
+                    if (beta) input.g3Alt1() else input.g3() // Object id.
                     input.g4Alt3().also { input.g2() } // Component id and slot.
                 }
             // Digits are encoded by component identity. Cover every component/op, including

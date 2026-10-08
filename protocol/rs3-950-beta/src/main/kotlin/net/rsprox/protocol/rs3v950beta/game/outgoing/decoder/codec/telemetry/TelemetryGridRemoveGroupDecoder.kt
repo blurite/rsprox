@@ -14,7 +14,7 @@ internal class TelemetryGridRemoveGroupDecoder : ProxyMessageDecoder<TelemetryGr
         buffer: JagByteBuf,
         session: Session,
     ): TelemetryGridRemoveGroup {
-        val group = buffer.g1Alt2()
+        val group = buffer.g1Alt3()
         return TelemetryGridRemoveGroup(
             group,
         )
