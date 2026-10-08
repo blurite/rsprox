@@ -2,22 +2,33 @@ package net.rsprox.gui
 
 internal const val MCP_ENDPOINT_TOOLTIP: String =
     "No password: any program on this computer can read every session's packets, chat included. " +
-        "Applies after a restart."
+        "While off, nothing is served; sessions of clients launched in this run are kept in memory and " +
+        "listed again when it is turned back on."
+
+internal data class McpEndpointSwitch(
+    val served: Boolean,
+    val failure: String?,
+)
 
 /**
- * The endpoint starts and stops only with RSProx, so a switch away from what this run started with
- * takes effect at the next start. Returns what to tell the user then, and null when nothing is pending.
+ * Turns the endpoint on or off at once, and saves the choice once it holds. An endpoint that cannot be
+ * served stays off with nothing saved, and the result says why.
  */
-internal fun mcpRestartNotice(
-    enabledAtStart: Boolean,
+internal fun switchMcpEndpoint(
     enabled: Boolean,
-    port: Int,
-): String? =
-    when {
-        enabled == enabledAtStart -> null
-        enabled ->
-            "RSProx serves the MCP endpoint on http://127.0.0.1:$port/mcp after a restart.\n\n" +
-                "The endpoint has no password. Any program on this computer can read the packets of every " +
-                "session through it, chat included."
-        else -> "RSProx keeps serving the MCP endpoint until it is restarted."
+    serve: () -> String?,
+    stopServing: () -> Unit,
+    save: (Boolean) -> Unit,
+): McpEndpointSwitch {
+    if (!enabled) {
+        stopServing()
+        save(false)
+        return McpEndpointSwitch(served = false, failure = null)
     }
+    val refusal = serve()
+    if (refusal != null) {
+        return McpEndpointSwitch(served = false, failure = refusal.replace(". ", ".\n"))
+    }
+    save(true)
+    return McpEndpointSwitch(served = true, failure = null)
+}

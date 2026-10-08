@@ -11,6 +11,7 @@ import net.rsprox.gui.dialogs.AboutDialog
 import net.rsprox.gui.sessions.SessionsPanel
 import net.rsprox.gui.sidebar.SideBar
 import net.rsprox.proxy.ProxyService
+import net.rsprox.proxy.StartedExtensions
 import net.rsprox.proxy.config.BINARY_PATH
 import net.rsprox.proxy.config.ERROR_LOGS_PATH
 import java.awt.CardLayout
@@ -34,7 +35,9 @@ import javax.swing.KeyStroke
 import javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE
 import kotlin.system.exitProcess
 
-public class App {
+public class App(
+    private val extensions: StartedExtensions,
+) {
     private val frame: JFrame = JFrame()
     private val sessionsPanel: SessionsPanel = SessionsPanel(this)
     private val launchBar: LaunchBar = LaunchBar(sessionsPanel)
@@ -45,7 +48,6 @@ public class App {
     public val statusBar: StatusBar = StatusBar(transcriptionManager)
     private lateinit var sideBar: SideBar
     private lateinit var homePanel: HomePanel
-    private val mcpEnabledAtStart: Boolean = service.getMcpEnabled()
 
     public fun init() {
         installFileChooserStateStore()
@@ -171,11 +173,11 @@ public class App {
 
                 addSeparator()
 
-                val serveMcpEndpoint = JCheckBoxMenuItem("Serve MCP Endpoint", mcpEnabledAtStart)
+                val serveMcpEndpoint = JCheckBoxMenuItem("Serve MCP Endpoint", service.getMcpEnabled())
                 serveMcpEndpoint.mnemonic = 'M'.code
                 serveMcpEndpoint.toolTipText = MCP_ENDPOINT_TOOLTIP
                 serveMcpEndpoint.addActionListener {
-                    this@App.setMcpEnabled(serveMcpEndpoint.isSelected)
+                    this@App.switchMcpEndpoint(serveMcpEndpoint)
                 }
                 add(serveMcpEndpoint)
 
@@ -295,14 +297,16 @@ public class App {
         homePanel.refreshRecentDumps()
     }
 
-    private fun setMcpEnabled(enabled: Boolean) {
-        service.setMcpEnabled(enabled)
-        val notice = mcpRestartNotice(mcpEnabledAtStart, enabled, service.getMcpPort()) ?: return
+    private fun switchMcpEndpoint(item: JCheckBoxMenuItem) {
+        val switch =
+            switchMcpEndpoint(item.isSelected, extensions::serve, extensions::stopServing, service::setMcpEnabled)
+        item.isSelected = switch.served
+        val failure = switch.failure ?: return
         JOptionPane.showMessageDialog(
             frame,
-            notice,
+            failure,
             "MCP Endpoint",
-            JOptionPane.INFORMATION_MESSAGE,
+            JOptionPane.ERROR_MESSAGE,
         )
     }
 
