@@ -83,7 +83,7 @@ public class McpBridgePlugin extends Plugin {
 
     /** Stop the GPU plugin when rsprox asked for software rendering. Runs on the thread of the dial. */
     private void onConnected(BridgeConnection connection) {
-        if (connection.rendering() != Rendering.SOFTWARE) return;
+        if (!connection.softwareRendering) return;
 
         stopGpuPlugin();
     }

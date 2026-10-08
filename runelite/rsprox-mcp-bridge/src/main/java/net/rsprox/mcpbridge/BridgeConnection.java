@@ -61,8 +61,8 @@ final class BridgeConnection implements AutoCloseable {
     /** The ops that requests run. */
     private final Ops ops;
 
-    /** The rendering that rsprox asked for in its welcome. */
-    private final Rendering rendering;
+    /** Whether rsprox asked in its welcome for a client without the GPU plugin. */
+    final boolean softwareRendering;
 
     /** Whether the connection has been closed. */
     private final AtomicBoolean closed = new AtomicBoolean();
@@ -72,8 +72,8 @@ final class BridgeConnection implements AutoCloseable {
 
     /** Create a connection over a socket that rsprox has welcomed. */
     private BridgeConnection(
-        Socket socket, BufferedReader reader, BufferedWriter writer, Gson gson, Ops ops, Rendering rendering) {
-        this.rendering = rendering;
+        Socket socket, BufferedReader reader, BufferedWriter writer, Gson gson, Ops ops, boolean softwareRendering) {
+        this.softwareRendering = softwareRendering;
         this.socket = socket;
         this.reader = reader;
         this.writer = writer;
@@ -128,8 +128,7 @@ final class BridgeConnection implements AutoCloseable {
 
             socket.setSoTimeout(0);
             boolean software = answer.has("softwareRendering") && answer.get("softwareRendering").getAsBoolean();
-            Rendering rendering = Rendering.fromWire(software);
-            BridgeConnection connection = new BridgeConnection(socket, reader, writer, gson, ops, rendering);
+            BridgeConnection connection = new BridgeConnection(socket, reader, writer, gson, ops, software);
             connection.start();
             log.info("rsprox MCP bridge connected as session {}", answer.get("session"));
 
@@ -145,11 +144,6 @@ final class BridgeConnection implements AutoCloseable {
 
             return null;
         }
-    }
-
-    /** Get the rendering, which is {@link Rendering#SOFTWARE} when rsprox asked for a client without the GPU plugin. */
-    Rendering rendering() {
-        return rendering;
     }
 
     /**
