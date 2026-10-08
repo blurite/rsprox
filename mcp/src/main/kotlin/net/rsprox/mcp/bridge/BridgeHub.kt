@@ -23,6 +23,9 @@ internal interface BridgeListener {
     /** The session id, told to the plugin for its log. */
     val session: String
 
+    /** The most the session may do with the client, told to the plugin and bound into its link. */
+    val access: Access
+
     /**
      * Take the link of the client that said hello for this session.
      * Returns false when the session no longer waits for this client; the hub then drops the link.
@@ -174,7 +177,7 @@ public class BridgeHub(
 
         socket.soTimeout = 0
         val link =
-            BridgeLink(socket, reader, writer) { closed ->
+            BridgeLink(listener.access, socket, reader, writer) { closed ->
                 links.remove(closed)
                 listener.onClosed(closed)
             }

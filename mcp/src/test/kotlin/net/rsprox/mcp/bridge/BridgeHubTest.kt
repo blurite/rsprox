@@ -80,7 +80,7 @@ class BridgeHubTest {
     @Test
     fun `a call sends the op and its args and returns the ok value`() {
         val (plugin, link) = connect()
-        val call = async { link.call("click", args("""{"x":380,"y":215}"""), TIMEOUT_MS) }
+        val call = async { link.call("click", args("""{"x":380,"y":215}"""), Access.DRIVE, TIMEOUT_MS) }
 
         val request = plugin.read()!!
         assertEquals("click", request.get("op").asText())
@@ -91,11 +91,26 @@ class BridgeHubTest {
     }
 
     @Test
+    fun `a link made for reading refuses an op that sends input and forwards the next op that reads`() {
+        val (plugin, link) = connect(RecordingListener(access = Access.READ))
+
+        val refused =
+            assertFailsWith<BridgeError> { link.call("click", args("""{"x":1,"y":2}"""), Access.DRIVE, TIMEOUT_MS) }
+        assertEquals("read_only", refused.code)
+
+        val call = async { link.call("state", args(), Access.READ, TIMEOUT_MS) }
+        val request = plugin.read()!!
+        assertEquals("state", request.get("op").asText())
+        plugin.send("""{"id":${request.get("id")},"ok":{}}""")
+        call.get(10, TimeUnit.SECONDS)
+    }
+
+    @Test
     fun `an err reply becomes a bridge error with its code and message`() {
         val (plugin, link) = connect()
         plugin.serve { _, _ -> """"err":{"code":"not_found","message":"widget 558:7 is not visible"}""" }
 
-        val error = assertFailsWith<BridgeError> { link.call("click", args("""{"widget":"558:7"}"""), TIMEOUT_MS) }
+        val error = assertFailsWith<BridgeError> { link.call("click", args("""{"widget":"558:7"}"""), Access.DRIVE, TIMEOUT_MS) }
         assertEquals("not_found", error.code)
         assertEquals("widget 558:7 is not visible", error.message)
     }
@@ -104,14 +119,14 @@ class BridgeHubTest {
     fun `a closed connection fails the pending calls, reports the close and refuses new calls`() {
         val listener = RecordingListener()
         val (plugin, link) = connect(listener)
-        val pending = async { link.call("screenshot", args(), TIMEOUT_MS) }
+        val pending = async { link.call("screenshot", args(), Access.READ, TIMEOUT_MS) }
         plugin.read()
 
         plugin.close()
 
         assertEquals("closed", bridgeError(pending).code)
         assertSame(link, listener.closed.get(10, TimeUnit.SECONDS))
-        assertEquals("closed", assertFailsWith<BridgeError> { link.call("state", args(), TIMEOUT_MS) }.code)
+        assertEquals("closed", assertFailsWith<BridgeError> { link.call("state", args(), Access.READ, TIMEOUT_MS) }.code)
     }
 
     private companion object {

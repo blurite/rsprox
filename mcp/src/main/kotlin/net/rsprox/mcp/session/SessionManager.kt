@@ -1,5 +1,6 @@
 package net.rsprox.mcp.session
 
+import net.rsprox.mcp.bridge.Access
 import net.rsprox.mcp.bridge.BridgeHub
 import net.rsprox.mcp.bridge.BridgeLink
 import net.rsprox.mcp.bridge.BridgeListener
@@ -222,8 +223,8 @@ public class SessionManager internal constructor(
         val targets = launcher.targets()
 
         if (name == null) {
-            // Target 0 is the official game; a custom target is what a headless caller is here to test.
-            return targets.firstOrNull { it.id != 0 } ?: targets.first()
+            // A custom target, whose client can be driven, is what a headless caller is here to test.
+            return targets.firstOrNull { it.access == Access.DRIVE } ?: targets.first()
         }
 
         return targets.firstOrNull { it.name.equals(name, ignoreCase = true) }
@@ -365,6 +366,9 @@ public class SessionManager internal constructor(
         object : BridgeListener {
             /** The id of the session that waits for the client. */
             override val session: String = session.id.value
+
+            /** What the session may do with the client, which its target decides. */
+            override val access: Access = session.access
 
             /** Connect the session to the link, unless the session has moved on from this launch. */
             override fun onHello(

@@ -31,9 +31,12 @@ public class BridgeError(
  * One connected in-client bridge. Compared by identity, so a late event from an old link cannot match a new one.
  *
  * The wire carries one JSON object per line in each direction. Requests may overlap; each reply is
- * matched to its caller by id.
+ * matched to its caller by id. A link made for reading never forwards a request that sends input,
+ * whatever the caller asks.
  */
 public class BridgeLink internal constructor(
+    /** The most that the plugin behind the link was told it may do, which bounds every call. */
+    public val access: Access,
     /** The connection to the plugin. */
     private val socket: Closeable,
     /** The source of the plugin's replies. */
@@ -60,17 +63,23 @@ public class BridgeLink internal constructor(
     }
 
     /**
-     * Send one request and block the calling thread for its reply.
+     * Send one request, which needs [access], and block the calling thread for its reply.
      *
      * @return the `ok` value of the reply
-     * @throws BridgeError when the plugin answers `err`, when no reply arrives within [timeoutMs]
-     * (code `timeout`), or when the link is or becomes closed (code `closed`)
+     * @throws BridgeError when the request needs more than this link's access (code `read_only`), when
+     * the plugin answers `err`, when no reply arrives within [timeoutMs] (code `timeout`), or when the
+     * link is or becomes closed (code `closed`)
      */
     public fun call(
         op: String,
         args: ObjectNode,
+        access: Access,
         timeoutMs: Long,
     ): JsonNode {
+        if (access > this.access) {
+            throw BridgeError("read_only", "'$op' sends input, which a link made for reading never forwards")
+        }
+
         val id = ids.incrementAndGet()
         val reply = CompletableFuture<JsonNode>()
         pending[id] = reply

@@ -2,6 +2,7 @@ package net.rsprox.mcp.server
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import net.rsprox.mcp.bridge.Access
 import net.rsprox.mcp.bridge.BridgeError
 import net.rsprox.mcp.packets.Cursor
 import net.rsprox.mcp.packets.Origin
@@ -24,7 +25,9 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
                     "Blocks until the in-client bridge connects and then reports `state` as `connected`, " +
                     "after which the client_* tools work. If `wait_ms` elapses first, `state` is `launching`; " +
                     "call it again with the same `session` to keep waiting. With no arguments it starts a new " +
-                    "session on the first custom target. Pass `session` to relaunch a stopped session on fresh " +
+                    "session on the first custom target. A session of the official game launches too, but is " +
+                    "read-only: the server never sends input to the live game, so the person at the keyboard " +
+                    "logs in. Pass `session` to relaunch a stopped session on fresh " +
                     "ports; its packet log and cursor continue. Calling it for a session that is already " +
                     "running launches nothing. An attached session cannot be started.",
             inputSchema =
@@ -63,7 +66,10 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
                 "List every session, plus the target names. `kind` is `launched` for a client that " +
                     "session_start launched, and `attached` for a client that was launched by hand from the " +
                     "rsprox GUI, which only packets_read works on. Each session has `session`, `target`, " +
-                    "`state`, `proxyPort` and `cursor`, the newest packet cursor. A launched session with a " +
+                    "`access`, `state`, `proxyPort` and `cursor`, the newest packet cursor. `access` is `drive` " +
+                    "when the client_* tools that send input may be used on the session, and `read` when only " +
+                    "the tools that read may: a session of the official game is read-only, and so is an " +
+                    "attached one. A launched session with a " +
                     "client also has `generation`, the number of its launch, and `httpPort`, and `pid` once " +
                     "connected. `state` is `stopped`, " +
                     "`launching` or `connected` when launched, and `attached` or `ended` when attached; " +
@@ -119,6 +125,7 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
         },
         clientTool(
             name = "client_state",
+            access = Access.READ,
             description =
                 "Read what the client is doing: `gameState` (such as LOGIN_SCREEN or LOGGED_IN), `tick`, " +
                     "`canvas` as [width, height], `world`, `player` with its name and tile (null unless logged " +
@@ -128,6 +135,7 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
         ),
         clientTool(
             name = "client_screenshot",
+            access = Access.READ,
             description =
                 "Capture the game canvas as a PNG. The image has the size of the canvas, so a pixel " +
                     "position in it is the `x`,`y` to pass to client_click. The text block holds `width` " +
@@ -138,6 +146,7 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
         ),
         clientTool(
             name = "client_widgets",
+            access = Access.READ,
             description =
                 "List the interface widgets that have text, a name or options. Each has `id` " +
                     "(\"<group>:<child>\", or \"<group>:<child>[<index>]\" for a dynamic child), `text`, `name`, " +
@@ -158,6 +167,7 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
         ),
         clientTool(
             name = "client_vars",
+            access = Access.READ,
             description =
                 "Read client variables by id. The result maps each requested id to its value under " +
                     "`varps`, `varbits`, `varcInts` and `varcStrs`.",
@@ -173,6 +183,7 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
         ),
         clientTool(
             name = "client_login",
+            access = Access.DRIVE,
             description =
                 "Log in with the given credentials and wait until the client is in the game. A client that is " +
                     "still starting is given until `wait_ms` to reach the login screen first. " +
@@ -195,6 +206,7 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
         ),
         clientTool(
             name = "client_click",
+            access = Access.DRIVE,
             description =
                 "Click on the game canvas, either at `x`,`y` in canvas units (the pixels of a " +
                     "client_screenshot) or at the centre of `widget`. This is the low-level fallback: prefer " +
@@ -214,6 +226,7 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
         ),
         clientTool(
             name = "client_type",
+            access = Access.DRIVE,
             description =
                 "Type text into the client as key presses, as if on the keyboard. Returns `typed`, the " +
                     "number of characters sent.",
@@ -228,6 +241,7 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
         ),
         clientTool(
             name = "client_entities",
+            access = Access.READ,
             description =
                 "List what is near the local player on its plane, nearest first: `npcs`, `objects`, " +
                     "`ground_items` and `players`, each with `name`, its tile `x`,`y` in world coordinates and " +
@@ -251,6 +265,7 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
         ),
         clientTool(
             name = "client_interact",
+            access = Access.DRIVE,
             description =
                 "Perform one option on one thing in the game with a real mouse click, and confirm it in " +
                     "the packet log. It aims by identity, cancels a click that the client resolves to " +
@@ -289,6 +304,7 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
         ),
         clientTool(
             name = "client_camera",
+            request = ::cameraRequest,
             description =
                 "Read or turn the camera. With no arguments it returns the current `yaw` and `pitch`. " +
                     "Pass `yaw` and/or `pitch`, or `look_at` with the same target fields as client_interact, " +
@@ -313,11 +329,39 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
         ),
     )
 
+/** One request to the plugin: the op to run, and the access that running it needs. */
+private class Request(
+    /** The name of the op in the plugin. */
+    val op: String,
+    /** [Access.DRIVE] when the op sends the client input, [Access.READ] when it only reads. */
+    val access: Access,
+)
+
 /**
- * Build a client_* tool, which forwards its arguments to the op of the same name in the plugin.
- * The plugin's answer is the tool result, plus the packet cursor
- * taken before the call, so everything the action caused has a sequence number above it.
- * The session decides whether the tool may reach its client, and refuses it for an attached session.
+ * Build a client_* tool with one fixed [access], which forwards its arguments to the op of the same
+ * name in the plugin. The description says whether the tool sends input, and so is refused on a read-only session.
+ */
+private fun clientTool(
+    name: String,
+    description: String,
+    schema: ObjectNode,
+    sessions: () -> SessionManager,
+    access: Access,
+    defaults: Map<String, Long> = emptyMap(),
+    timeoutMs: (ObjectNode) -> Long = { CLIENT_CALL_TIMEOUT_MS },
+    result: (ok: ObjectNode, session: Session) -> ToolResult = { ok, _ -> ToolResult.Json(ok) },
+): Tool {
+    val note = if (access == Access.DRIVE) DRIVE_NOTE else READ_NOTE
+    val request = Request(name.removePrefix("client_"), access)
+
+    return clientTool(name, "$description $note", schema, sessions, { request }, defaults, timeoutMs, result)
+}
+
+/**
+ * Build a client_* tool, which forwards its arguments to the plugin as the [request] that the arguments
+ * call for. The plugin's answer is the tool result, plus the packet cursor taken before the call, so
+ * everything the action caused has a sequence number above it. The session decides whether a request
+ * with that access may reach its client, and refuses every request for an attached session.
  *
  * The plugin has no defaults of its own: each of [defaults] is forwarded when the caller left it out.
  */
@@ -326,13 +370,15 @@ private fun clientTool(
     description: String,
     schema: ObjectNode,
     sessions: () -> SessionManager,
+    request: (ObjectNode) -> Request,
     defaults: Map<String, Long> = emptyMap(),
     timeoutMs: (ObjectNode) -> Long = { CLIENT_CALL_TIMEOUT_MS },
     result: (ok: ObjectNode, session: Session) -> ToolResult = { ok, _ -> ToolResult.Json(ok) },
 ): Tool =
-    Tool(name, "$description $CLIENT_TOOL_NOTE", schema) { args ->
+    Tool(name, "$description $CURSOR_NOTE", schema) { args ->
         val session = sessions().resolve(args.text("session"))
-        val link = session.link(name)
+        val requested = request(args)
+        val link = session.link(name, requested.access)
         val cursor = session.packets.head().seq
         val forwarded = args.deepCopy().without<ObjectNode>("session")
 
@@ -340,11 +386,18 @@ private fun clientTool(
             if (!forwarded.hasNonNull(argument)) forwarded.put(argument, value)
         }
 
-        val ok = link.call(name.removePrefix("client_"), forwarded, timeoutMs(forwarded))
+        val ok = link.call(requested.op, forwarded, requested.access, timeoutMs(forwarded))
         if (ok !is ObjectNode) throw BridgeError("internal", "the client answered $name with $ok")
 
         result(ok.put("cursor", cursor), session)
     }
+
+/** The camera request the arguments call for: a turn, which sends input, when any turn argument is given. */
+private fun cameraRequest(args: ObjectNode): Request =
+    if (CAMERA_TURN_ARGUMENTS.any(args::hasNonNull)) Request("camera_turn", Access.DRIVE) else Request("camera", Access.READ)
+
+/** The arguments of client_camera that ask for a turn. */
+private val CAMERA_TURN_ARGUMENTS = listOf("yaw", "pitch", "look_at")
 
 /** The longest wait for the plugin to answer a call, on top of any wait the call itself asks for. */
 private const val CLIENT_CALL_TIMEOUT_MS = 10_000L
@@ -374,9 +427,17 @@ private const val ENTITY_LIMIT = 100L
 private const val SENT_WAIT_MS = 3_000L
 
 /** The sentences that end the description of every client_* tool. */
-private const val CLIENT_TOOL_NOTE =
+private const val CURSOR_NOTE =
     "The result carries `cursor`, the packet cursor taken just before the call: pass it as `after` to " +
         "packets_read to see only the packets from this call onwards. Not available for an attached session."
+
+/** The sentence in the description of a client_* tool that only reads. */
+private const val READ_NOTE = "Reads only, so it works on a read-only session."
+
+/** The sentence in the description of a client_* tool that sends input. */
+private const val DRIVE_NOTE =
+    "Sends input to the client, so it is refused on a read-only session: one whose target is the official " +
+        "game, which the server never drives."
 
 /** The schema of the `session` argument that every tool but session_start and session_list takes. */
 private val SESSION: ObjectNode = string("Session id, such as \"s1\". May be omitted while only one session exists.")

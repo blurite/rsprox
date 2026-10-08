@@ -50,6 +50,7 @@ internal class TestHub : AutoCloseable {
 
 internal class RecordingListener(
     override val session: String = "s1",
+    override val access: Access = Access.DRIVE,
 ) : BridgeListener {
     val hello = CompletableFuture<Pair<BridgeLink, Long>>()
     val closed = CompletableFuture<BridgeLink>()

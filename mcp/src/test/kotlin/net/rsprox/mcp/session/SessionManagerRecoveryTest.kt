@@ -1,5 +1,6 @@
 package net.rsprox.mcp.session
 
+import net.rsprox.mcp.bridge.Access
 import net.rsprox.mcp.bridge.TestHub
 import net.rsprox.mcp.bridge.awaitTrue
 import net.rsprox.mcp.packets.PacketQuery
@@ -158,8 +159,9 @@ class SessionManagerRecoveryTest {
 
             assertEquals(listOf("connected", "stopped"), manager.list().map { it.state })
             assertEquals("connected", manager.start(null, "s1", 0).state)
-            val link = manager.resolve("s1").link("client_state")
-            assertEquals(7, link.call("state", McpDispatcher.MAPPER.createObjectNode(), 10_000).get("tick").asInt())
+            val link = manager.resolve("s1").link("client_state", Access.READ)
+            val state = link.call("state", McpDispatcher.MAPPER.createObjectNode(), Access.READ, 10_000)
+            assertEquals(7, state.get("tick").asInt())
             assertEquals(listOf("CLIENT_LAUNCHED", "CLIENT_EXITED"), manager.markers("s2"))
             assertEquals("stopped by caller", manager.stop("s1").reason)
         } finally {

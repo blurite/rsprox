@@ -43,7 +43,7 @@ internal val loginHeader =
     )
 
 internal class FakeLauncher : ClientLauncher {
-    private val targets = listOf(target(0, "Old School RuneScape"), target(1, "My Server"))
+    var targets = listOf(target(0, "Old School RuneScape"), target(1, "My Server"))
     val reserved = ArrayList<ProxyTargetConfig>()
 
     // A client that goes away is killed from the bridge's reader thread.

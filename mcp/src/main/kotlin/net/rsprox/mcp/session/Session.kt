@@ -1,16 +1,48 @@
 package net.rsprox.mcp.session
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import net.rsprox.mcp.bridge.Access
 import net.rsprox.mcp.bridge.BridgeLink
 import net.rsprox.mcp.packets.Origin
 import net.rsprox.mcp.packets.PacketLog
 import net.rsprox.mcp.server.ToolError
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.target.ProxyTargetConfig
+import java.net.URI
+import java.net.URISyntaxException
 import java.time.Instant
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
+
+/**
+ * What the MCP server may do with a client of the target. A client of the official game is only read.
+ * That is target 0, and also any target that takes its jav_config from Jagex, since such a client plays
+ * the live game whatever its id. Target 0 with an overridden jav_config is read-only too, which errs on
+ * the safe side.
+ */
+internal val ProxyTargetConfig.access: Access
+    get() = if (id == 0 || isJagexHost(javConfigUrl)) Access.READ else Access.DRIVE
+
+/** Determine if the URL is served from a domain of Jagex, which only the official game is configured from. */
+private fun isJagexHost(url: String): Boolean {
+    val host =
+        try {
+            URI(url).host?.lowercase() ?: return false
+        } catch (e: URISyntaxException) {
+            return false
+        }
+
+    return JAGEX_DOMAINS.any { host == it || host.endsWith(".$it") }
+}
+
+/** The domains that the official game's jav_config is served from. */
+private val JAGEX_DOMAINS = setOf("runescape.com", "jagex.com")
+
+/** The sentence that tells an agent what works on a read-only session, for the refusal of a tool that does not. */
+internal const val READ_TOOLS: String =
+    "Use the tools that read: client_state, client_screenshot, client_widgets, client_vars, client_entities, " +
+        "client_camera without yaw, pitch or look_at, and packets_read."
 
 /** Stable for the life of the MCP process. Survives client restarts. Never a port. */
 @JvmInline
@@ -166,6 +198,8 @@ public data class SessionSnapshot(
     val kind: String,
     /** The name of the proxy target the session belongs to. */
     val target: String,
+    /** `drive` when the client tools that send input may be used on the session, `read` when only those that read may. */
+    val access: String,
     /** The state: `stopped`, `launching` or `connected` when launched, `attached` or `ended` when attached. */
     val state: String,
     /** The reason the session has no client, or null while it has one. */
@@ -201,11 +235,17 @@ public sealed class Session(
     /** The logins of the session. */
     internal val logins = LoginRegistry()
 
+    /** The most that the client tools may do with the client of the session. */
+    public abstract val access: Access
+
     /**
-     * Get the link to the plugin in the client, for the client tool named [tool].
-     * Throws a [ToolError] that says why the tool cannot reach the client.
+     * Get the link to the plugin in the client, for the client tool named [tool], which needs [access].
+     * Throws a [ToolError] that says why the tool may not, or cannot, reach the client.
      */
-    internal abstract fun link(tool: String): BridgeLink
+    internal abstract fun link(
+        tool: String,
+        access: Access,
+    ): BridgeLink
 
     /** Get what the session tools report of the session at this moment. */
     public abstract fun snapshot(): SessionSnapshot
@@ -232,6 +272,9 @@ public class LaunchedSession internal constructor(
 
     /** The number of launches so far. */
     private var generations = 0
+
+    /** What the target allows: a client of the official game is only read. */
+    override val access: Access = target.access
 
     /** The state of the client, which only [transition] changes. */
     @Volatile
@@ -315,15 +358,29 @@ public class LaunchedSession internal constructor(
         }
     }
 
-    /** Get the link of the connected client. Throws a [ToolError] that says what to do about its absence. */
-    override fun link(tool: String): BridgeLink =
-        when (val state = client) {
+    /**
+     * Get the link of the connected client. Throws a [ToolError] that says why a tool that sends input
+     * is refused on the official game, or else what to do about the absence of a client.
+     */
+    override fun link(
+        tool: String,
+        access: Access,
+    ): BridgeLink {
+        if (access > this.access) {
+            throw ToolError(
+                "$tool sends input to the client, which is refused for session $id: its target '${target.name}' " +
+                    "is the official game, so the session is read-only. $READ_TOOLS",
+            )
+        }
+
+        return when (val state = client) {
             is ClientState.Connected -> state.link
             is ClientState.Launching ->
                 throw ToolError("session $id is still launching; call session_start with this session to wait for it")
             is ClientState.Stopped ->
                 throw ToolError("session $id has no connected client: ${state.reason}")
         }
+    }
 
     /** Get what the session tools report of the session at this moment. */
     override fun snapshot(): SessionSnapshot {
@@ -334,6 +391,7 @@ public class LaunchedSession internal constructor(
             session = id.value,
             kind = "launched",
             target = target.name,
+            access = access.wire,
             state =
                 when (state) {
                     is ClientState.Stopped -> "stopped"
@@ -379,6 +437,9 @@ public class AttachedSession internal constructor(
     @Volatile
     private var ended: String? = null
 
+    /** Read only, since the client belongs to the person at the keyboard. */
+    override val access: Access = Access.READ
+
     init {
         mark("CLIENT_ATTACHED", "proxyPort=$proxyPort")
     }
@@ -392,8 +453,11 @@ public class AttachedSession internal constructor(
         mark("CLIENT_EXITED", reason)
     }
 
-    /** Refuse the tool, since no client tool reaches the client of an attached session. */
-    override fun link(tool: String): BridgeLink = throw ToolError(notAvailable(tool))
+    /** Refuse the tool, since no client tool reaches the client of an attached session yet. */
+    override fun link(
+        tool: String,
+        access: Access,
+    ): BridgeLink = throw ToolError(notAvailable(tool))
 
     /** Build the refusal of a tool that acts on the client, for the error of that tool. */
     internal fun notAvailable(tool: String): String =
@@ -408,6 +472,7 @@ public class AttachedSession internal constructor(
             session = id.value,
             kind = "attached",
             target = target.name,
+            access = access.wire,
             state = if (reason == null) "attached" else "ended",
             reason = reason,
             generation = null,
