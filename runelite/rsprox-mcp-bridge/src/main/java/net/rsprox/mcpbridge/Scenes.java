@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import net.runelite.api.Client;
 import net.runelite.api.GameObject;
+import net.runelite.api.MenuEntry;
 import net.runelite.api.ObjectComposition;
 import net.runelite.api.Perspective;
 import net.runelite.api.Point;
@@ -15,6 +16,7 @@ import net.runelite.api.Tile;
 import net.runelite.api.TileObject;
 import net.runelite.api.WorldView;
 import net.runelite.api.coords.LocalPoint;
+import net.runelite.api.coords.WorldPoint;
 
 /**
  * Reads of the top-level world view that the entity listing and the interactions share. World
@@ -83,6 +85,13 @@ final class Scenes {
             .map(Offer::untagged)
             .filter(name -> !name.isEmpty())
             .collect(Collectors.toList());
+    }
+
+    /** Determine if the parameters of the menu entry name the scene tile of the world tile, as an object's do. */
+    static boolean isOnTile(MenuEntry entry, Client client, WorldPoint at) {
+        WorldView view = client.getTopLevelWorldView();
+
+        return entry.getParam0() == at.getX() - view.getBaseX() && entry.getParam1() == at.getY() - view.getBaseY();
     }
 
     /** Get the part of the canvas that shows the 3D scene. */

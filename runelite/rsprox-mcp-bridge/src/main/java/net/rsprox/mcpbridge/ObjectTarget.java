@@ -11,7 +11,6 @@ import net.runelite.api.MenuEntry;
 import net.runelite.api.Point;
 import net.runelite.api.Tile;
 import net.runelite.api.TileObject;
-import net.runelite.api.WorldView;
 import net.runelite.api.coords.WorldPoint;
 
 /**
@@ -84,10 +83,7 @@ final class ObjectTarget extends Target {
     /** Determine if the entry is this option on the object with this id at this tile. */
     @Override
     boolean matches(MenuEntry entry, Client client) {
-        WorldView view = client.getTopLevelWorldView();
-        int sceneX = origin.getX() - view.getBaseX();
-        int sceneY = origin.getY() - view.getBaseY();
-        boolean sameTile = entry.getParam0() == sceneX && entry.getParam1() == sceneY;
+        boolean sameTile = Scenes.isOnTile(entry, client, origin);
 
         return FAMILY.contains(entry.getType()) && entry.getIdentifier() == id && sameTile && sameOption(entry);
     }

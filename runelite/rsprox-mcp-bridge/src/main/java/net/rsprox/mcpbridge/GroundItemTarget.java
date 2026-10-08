@@ -80,10 +80,7 @@ final class GroundItemTarget extends Target {
     /** Determine if the entry is this option on the item with this id on this tile. */
     @Override
     boolean matches(MenuEntry entry, Client client) {
-        WorldView view = client.getTopLevelWorldView();
-        int sceneX = at.getX() - view.getBaseX();
-        int sceneY = at.getY() - view.getBaseY();
-        boolean sameTile = entry.getParam0() == sceneX && entry.getParam1() == sceneY;
+        boolean sameTile = Scenes.isOnTile(entry, client, at);
 
         return FAMILY.contains(entry.getType()) && entry.getIdentifier() == id && sameTile && sameOption(entry);
     }
