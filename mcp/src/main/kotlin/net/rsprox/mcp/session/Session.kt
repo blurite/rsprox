@@ -204,7 +204,7 @@ public data class SessionSnapshot(
     val kind: String,
     /** The name of the proxy target the session belongs to. */
     val target: String,
-    /** `drive` when the client tools that send input may be used on the session, `read` when only those that read may. */
+    /** `drive` when the client tools that send input may be used on the session, `read` when only those that read. */
     val access: String,
     /** The state: `stopped`, `launching` or `connected` when launched, `attached` or `ended` when attached. */
     val state: String,
@@ -394,7 +394,8 @@ public class LaunchedSession internal constructor(
             is ClientState.Unbridged ->
                 throw ToolError(
                     "$tool is not available for session $id: its client was launched without the bridge plugin, " +
-                        "which mcp.plugin in proxy.properties, or --no-plugin, turns off, so only its packets can be read",
+                        "which mcp.plugin in proxy.properties, or --no-plugin, turns off, so only its packets " +
+                        "can be read",
                 )
             is ClientState.Stopped ->
                 throw ToolError("session $id has no connected client: ${state.reason}")

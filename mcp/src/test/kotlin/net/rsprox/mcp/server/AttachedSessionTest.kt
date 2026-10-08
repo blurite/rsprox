@@ -60,8 +60,8 @@ class AttachedSessionTest {
 
         assertEquals(
             listOf(
-                """{"session":"s1","kind":"launched","target":"My Server","access":"drive","state":"launching","generation":1,""" +
-                    """"proxyPort":43751,"httpPort":43650,"cursor":1}""",
+                """{"session":"s1","kind":"launched","target":"My Server","access":"drive","state":"launching",""" +
+                    """"generation":1,"proxyPort":43751,"httpPort":43650,"cursor":1}""",
                 """{"session":"s2","kind":"attached","target":"Local","access":"read","state":"attached",""" +
                     """"proxyPort":43701,"cursor":1}""",
             ),
@@ -81,7 +81,8 @@ class AttachedSessionTest {
     @Test
     fun `the session list reports each fact of a login from the moment the proxy knows it`() {
         val client = attach()
-        val attached = """{"session":"s1","kind":"attached","target":"Local","access":"read","state":"attached","proxyPort":43701"""
+        val attached =
+            """{"session":"s1","kind":"attached","target":"Local","access":"read","state":"attached","proxyPort":43701"""
         val accepted =
             """"login":{"epoch":1,"revision":235,"world":301,"host":"127.0.1.3","localPlayerIndex":7,""" +
                 """"connectedAt":"2023-11-14T22:13:20Z""""
@@ -124,8 +125,8 @@ class AttachedSessionTest {
 
         assertEquals(
             listOf(
-                """{"session":"s1","kind":"attached","target":"Local","access":"read","state":"attached","proxyPort":43701,""" +
-                    """"login":{"epoch":1,"revision":235,"world":301,"host":"127.0.1.3","localPlayerIndex":7,""" +
+                """{"session":"s1","kind":"attached","target":"Local","access":"read","state":"attached",""" +
+                    """"proxyPort":43701,"login":{"epoch":1,"revision":235,"world":301,"host":"127.0.1.3","localPlayerIndex":7,""" +
                     """"connectedAt":"2023-11-14T22:13:20Z","online":true,"transcribing":false},"cursor":2}""",
             ),
             sessions(),

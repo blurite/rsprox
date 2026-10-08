@@ -15,7 +15,7 @@ class UnbridgedSessionTest {
     }
 
     @Test
-    fun `a client launched without the plugin is unbridged at once, is not expected by the hub and keeps its packets`() {
+    fun `a client launched without the plugin is unbridged at once, unexpected by the hub, and keeps its packets`() {
         server.launcher.bridged = false
 
         val started = server.callJson("session_start", """{"target":"My Server","wait_ms":10000}""")

@@ -115,7 +115,10 @@ class BridgeHubTest {
         val (plugin, link) = connect()
         plugin.serve { _, _ -> """"err":{"code":"not_found","message":"widget 558:7 is not visible"}""" }
 
-        val error = assertFailsWith<BridgeError> { link.call("click", args("""{"widget":"558:7"}"""), Access.DRIVE, TIMEOUT_MS) }
+        val error =
+            assertFailsWith<BridgeError> {
+                link.call("click", args("""{"widget":"558:7"}"""), Access.DRIVE, TIMEOUT_MS)
+            }
         assertEquals("not_found", error.code)
         assertEquals("widget 558:7 is not visible", error.message)
     }
@@ -131,7 +134,8 @@ class BridgeHubTest {
 
         assertEquals("closed", bridgeError(pending).code)
         assertSame(link, listener.closed.get(10, TimeUnit.SECONDS))
-        assertEquals("closed", assertFailsWith<BridgeError> { link.call("state", args(), Access.READ, TIMEOUT_MS) }.code)
+        val refused = assertFailsWith<BridgeError> { link.call("state", args(), Access.READ, TIMEOUT_MS) }
+        assertEquals("closed", refused.code)
     }
 
     private companion object {

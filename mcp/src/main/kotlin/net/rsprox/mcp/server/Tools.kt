@@ -394,7 +394,11 @@ private fun clientTool(
 
 /** The camera request the arguments call for: a turn, which sends input, when any turn argument is given. */
 private fun cameraRequest(args: ObjectNode): Request =
-    if (CAMERA_TURN_ARGUMENTS.any(args::hasNonNull)) Request("camera_turn", Access.DRIVE) else Request("camera", Access.READ)
+    if (CAMERA_TURN_ARGUMENTS.any(args::hasNonNull)) {
+        Request("camera_turn", Access.DRIVE)
+    } else {
+        Request("camera", Access.READ)
+    }
 
 /** The arguments of client_camera that ask for a turn. */
 private val CAMERA_TURN_ARGUMENTS = listOf("yaw", "pitch", "look_at")
