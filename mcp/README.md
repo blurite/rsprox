@@ -67,10 +67,21 @@ enough. To run this server next to a GUI, leave the GUI's endpoint off.
 ./gradlew proxy
 ```
 
-The GUI serves the endpoint only after you turn it on. Tick File > Serve MCP Endpoint and restart the
-GUI. From then on it serves `http://127.0.0.1:43580/mcp` at every start, from the moment the proxy has
-started. Unticking the item also takes effect at the next start, so the GUI keeps serving until it is
-closed.
+The GUI serves the endpoint only while it is turned on. Tick File > Serve MCP Endpoint and the GUI
+serves `http://127.0.0.1:43580/mcp` at once, without a restart. It then also serves at every start,
+from the moment the proxy has started.
+
+Untick the item and the GUI stops serving at once. The port is closed and no request is answered. A
+request that still runs can no longer launch a client, stop one or send one input, and a client that
+such a request was launching is closed when its launch completes.
+
+While off, nothing is served; sessions of clients launched in this run are kept in memory and listed
+again when it is turned back on. Their packets are recorded in the meantime, so the logs and cursors
+continue without a gap. The clients that `session_start` launched stay open. All of it is gone when
+the GUI exits.
+
+A client that was already open when you first turned the endpoint on in a run is not attached. Clients
+that you launch from then on are. Close such a client and launch it again to attach it.
 
 The item saves `mcp.enabled` in `~/.rsprox/proxy.properties`. Edit that file only while the GUI is
 closed, because the GUI writes it again when it saves its own settings.
@@ -81,10 +92,12 @@ closed, because the GUI writes it again when it saves its own settings.
 | `mcp.port` | Loopback port of the endpoint. Default 43580. The GUI has no control for it. |
 | `mcp.plugin` | Whether clients that `session_start` launches get the plugin. Default `true`. |
 
-When the port is taken, by a second rsprox or by the standalone server, the GUI logs one line that
-says so and runs without the endpoint.
+When the port is taken, by a second rsprox or by the standalone server, the item goes back to unticked
+and a dialog says so. At start-up the GUI logs one line instead, runs without the endpoint and shows
+the item unticked. Tick it to try again.
 
-Every RuneLite or native client that you launch from the GUI appears in `session_list` as a session
+Every RuneLite or native client that you launch from the GUI, once the endpoint has been turned on in
+the run, appears in `session_list` as a session
 with `"kind":"attached"`, numbered together with the sessions that `session_start` launches. An agent
 picks the client you mean by the `target`, the `proxyPort` and, once you are logged in, the values
 under `login`, such as the `world` and the display `name`. The proxy never sees a login name or a
@@ -102,7 +115,7 @@ see its packets. The standalone server has no such filters and logs every packet
 
 The endpoint has no password. Any program that runs under your user account, and any other user
 of the machine, can reach it on loopback and read everything the log holds, including public and
-private chat, for as long as the GUI runs. That is why it is off until you turn it on.
+private chat, for as long as the endpoint is on. That is why it is off until you turn it on.
 
 ## Run it without a display
 
