@@ -13,9 +13,7 @@ import net.rsprox.mcp.bridge.BridgeJar
 import net.rsprox.mcp.bridge.Rendering
 import net.rsprox.mcp.packets.TapSettingSetStore
 import net.rsprox.mcp.packets.UnfilteredFilterSetStore
-import net.rsprox.mcp.server.McpHttpServer
 import net.rsprox.mcp.server.ToolError
-import net.rsprox.mcp.server.tools
 import net.rsprox.mcp.session.ProxyServiceLauncher
 import net.rsprox.mcp.session.SessionManager
 import net.rsprox.proxy.ProxyService
@@ -54,12 +52,7 @@ public class McpCommand : CliktCommand(name = "mcp") {
     override fun run() {
         Locale.setDefault(Locale.US)
         val sessions = AtomicReference<SessionManager?>()
-        val http =
-            McpHttpServer(
-                port,
-                tools { sessions.get() ?: throw ToolError("rsprox is still starting; try again shortly") },
-                System.getenv("APP_VERSION") ?: "dev",
-            )
+        val http = endpoint(port, sessions)
 
         // Binding first makes a second instance exit here, before it touches the shared configuration.
         http.start()

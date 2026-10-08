@@ -71,12 +71,7 @@ internal fun serveOrNull(
     sessions: (opened: MutableList<AutoCloseable>) -> SessionManager,
 ): McpHttpServer? {
     val built = AtomicReference<SessionManager?>()
-    val http =
-        McpHttpServer(
-            port,
-            tools { built.get() ?: throw ToolError("rsprox is still starting; try again shortly") },
-            System.getenv("APP_VERSION") ?: "dev",
-        )
+    val http = endpoint(port, built)
 
     try {
         http.start()
@@ -106,6 +101,17 @@ internal fun serveOrNull(
 
     return http
 }
+
+/** Build the endpoint on [port], whose tools refuse every call until [sessions] holds the sessions. */
+internal fun endpoint(
+    port: Int,
+    sessions: AtomicReference<SessionManager?>,
+): McpHttpServer =
+    McpHttpServer(
+        port,
+        tools { sessions.get() ?: throw ToolError("rsprox is still starting; try again shortly") },
+        System.getenv("APP_VERSION") ?: "dev",
+    )
 
 /** The logger of the endpoint. */
 private val endpointLogger = InlineLogger()
