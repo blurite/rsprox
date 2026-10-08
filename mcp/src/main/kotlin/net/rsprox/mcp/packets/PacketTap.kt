@@ -4,6 +4,7 @@ import net.rsprox.cache.api.CacheProvider
 import net.rsprox.mcp.session.LoginInfo
 import net.rsprox.mcp.session.LoginRegistry
 import net.rsprox.proxy.binary.BinaryHeader
+import net.rsprox.proxy.util.NopSessionMonitor
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.property.OmitFilteredPropertyTreeFormatter
@@ -26,56 +27,10 @@ internal class PacketTap(
     private val settings: SettingSetStore,
     /** The folder the proxy records the logins to, under its `binary` directory, or null when it records none. */
     private val captureFolder: String?,
-) : SessionMonitor<BinaryHeader> {
+) : SessionMonitor<BinaryHeader> by NopSessionMonitor {
     /** Create the tap of one login, under the next login epoch. */
     override fun forSession(header: BinaryHeader): SessionMonitor<BinaryHeader> =
         LoginTap(log, logins, settings, logins.nextEpoch(), captureFolder?.let { "$it/${header.fileName()}" })
-
-    /** Ignore the login, which the proxy reports to the tap of that login. */
-    override fun onLogin(header: BinaryHeader) {
-        //
-    }
-
-    /** Ignore the logout, which the proxy reports to the tap of that login. */
-    override fun onLogout(header: BinaryHeader) {
-        //
-    }
-
-    /** Ignore the cache, which the proxy hands to the tap of each login. */
-    override fun onCacheUpdate(cacheProvider: CacheProvider) {
-        //
-    }
-
-    /** Ignore the incoming byte rate, which no tool reports. */
-    override fun onIncomingBytesPerSecondUpdate(bytesPerLastSecond: Long) {
-        //
-    }
-
-    /** Ignore the outgoing byte rate, which no tool reports. */
-    override fun onOutgoingBytesPerSecondUpdate(bytesPerLastSecond: Long) {
-        //
-    }
-
-    /** Ignore the name, which the proxy reports to the tap of that login. */
-    override fun onNameUpdate(name: String) {
-        //
-    }
-
-    /** Ignore the user ids, which no tool reports. */
-    override fun onUserInformationUpdate(
-        userId: Long,
-        userHash: Long,
-    ) {
-        //
-    }
-
-    /** Ignore the packet, which the proxy reports to the tap of its login. */
-    override fun onTranscribe(
-        cycle: Int,
-        property: RootProperty,
-    ) {
-        //
-    }
 }
 
 /** The session monitor of one login, which appends the packets of that login to the log as text. */
@@ -89,7 +44,7 @@ private class LoginTap(
     private val epoch: Int,
     /** The file the proxy records this login to, or null when it records none. */
     private val captureFile: String?,
-) : SessionMonitor<BinaryHeader> {
+) : SessionMonitor<BinaryHeader> by NopSessionMonitor {
     /**
      * The game cache that the formatter looks names up in, or null before the proxy has handed it over.
      * Written on a Netty thread when the transcriber is hooked, read on the transcriber worker.
@@ -113,6 +68,9 @@ private class LoginTap(
                 cache?.get() ?: error("Cache unavailable")
             },
         )
+
+    /** Get this tap, which is the monitor of its one login already. */
+    override fun forSession(header: BinaryHeader): SessionMonitor<BinaryHeader> = this
 
     /** Keep the cache for the formatter, and register the file that the login is recorded to. */
     override fun onCacheUpdate(cacheProvider: CacheProvider) {
@@ -173,23 +131,5 @@ private class LoginTap(
     /** Register the name of the player that logged in. */
     override fun onNameUpdate(name: String) {
         logins.update(epoch) { it.copy(name = name) }
-    }
-
-    /** Ignore the user ids, which no tool reports. */
-    override fun onUserInformationUpdate(
-        userId: Long,
-        userHash: Long,
-    ) {
-        //
-    }
-
-    /** Ignore the incoming byte rate, which no tool reports. */
-    override fun onIncomingBytesPerSecondUpdate(bytesPerLastSecond: Long) {
-        //
-    }
-
-    /** Ignore the outgoing byte rate, which no tool reports. */
-    override fun onOutgoingBytesPerSecondUpdate(bytesPerLastSecond: Long) {
-        //
     }
 }
