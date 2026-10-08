@@ -17,23 +17,33 @@ import java.util.concurrent.atomic.AtomicReference
  * setting stores of the GUI, so the packet logs hold what the GUI shows.
  */
 public class McpExtension : ProxyExtension {
-    /** Serve the endpoint on the configured port, unless it is turned off or the port is taken. */
+    /** Serve the endpoint on the configured port, if the user turned it on and the port is free. */
     override fun start(service: ProxyService) {
-        if (!service.getMcpEnabled()) {
-            logger.info { "The MCP endpoint is turned off by mcp.enabled in proxy.properties" }
-
-            return
-        }
-
-        serveOrNull(service.getMcpPort()) { opened ->
+        serveIfEnabled(service.getMcpEnabled(), service.getMcpPort()) { opened ->
             sessionManager(service, sideloadDir = null, Rendering.GPU, service.getMcpPluginEnabled(), opened)
         }
     }
+}
 
-    private companion object {
-        /** The logger of the extension. */
-        private val logger = InlineLogger()
+/**
+ * Serve the endpoint on [port] as [serveOrNull] does when [enabled] says the user turned it on. Otherwise
+ * bind nothing, build no sessions and return null, since the endpoint has no password.
+ */
+internal fun serveIfEnabled(
+    enabled: Boolean,
+    port: Int,
+    sessions: (opened: MutableList<AutoCloseable>) -> SessionManager,
+): McpHttpServer? {
+    if (!enabled) {
+        endpointLogger.info {
+            "The MCP endpoint is off. Turn it on with File > Serve MCP Endpoint, or with mcp.enabled in " +
+                "proxy.properties, and restart rsprox."
+        }
+
+        return null
     }
+
+    return serveOrNull(port, sessions)
 }
 
 /**

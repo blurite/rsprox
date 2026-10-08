@@ -7,6 +7,7 @@ import java.net.ServerSocket
 import java.util.ServiceLoader
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 
 class McpExtensionTest {
@@ -17,6 +18,33 @@ class McpExtensionTest {
         val found = ServiceLoader.load(ProxyExtension::class.java).map { it.javaClass }
 
         assertEquals(listOf<Class<*>>(McpExtension::class.java), found)
+    }
+
+    @Test
+    fun `an endpoint that is turned off is not served and builds no sessions`() {
+        var built = false
+
+        val served =
+            serveIfEnabled(enabled = false, freePort()) {
+                built = true
+                error("no session is built for an endpoint that is off")
+            }
+
+        assertNull(served)
+        assertFalse(built)
+    }
+
+    @Test
+    fun `an endpoint that is turned on serves the tools on its port`() {
+        var port = 0
+
+        val served =
+            ToolServer { sessions ->
+                port = freePort()
+                checkNotNull(serveIfEnabled(enabled = true, port) { sessions })
+            }
+
+        served.use { server -> assertEquals(port, server.port) }
     }
 
     @Test
