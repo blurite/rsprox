@@ -13,7 +13,6 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-/** Runs until its input ends, so a test decides when it exits. */
 object WaitsForInput {
     @JvmStatic
     fun main(args: Array<String>) {

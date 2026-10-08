@@ -71,7 +71,6 @@ subprojects {
 dependencies {
     runtimeOnly(projects.gui.proxyTool)
     runtimeOnly(projects.proxy)
-    // Found by the GUI through ServiceLoader, which is how the `proxy` task serves the MCP endpoint.
     runtimeOnly(projects.mcp)
 }
 

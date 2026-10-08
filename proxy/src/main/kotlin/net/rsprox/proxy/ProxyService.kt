@@ -782,7 +782,6 @@ public class ProxyService(
             notifyClientClosed(port)
             throw t
         }
-        // A launcher that handed its client over and exited before this point leaves nothing to watch.
         whenAllExit(processes[port].orEmpty()) { notifyClientClosed(port) }
     }
 

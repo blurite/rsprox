@@ -430,7 +430,7 @@ public class AttachedSession internal constructor(
         mark("CLIENT_EXITED", reason)
     }
 
-    /** Refuse the tool, since no client tool reaches the client of an attached session yet. */
+    /** Refuse the tool, since no client tool reaches the client of an attached session. */
     override fun link(tool: String): BridgeLink = throw ToolError(notAvailable(tool))
 
     /** Build the refusal of a tool that acts on the client, for the error of that tool. */

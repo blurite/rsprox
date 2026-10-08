@@ -98,7 +98,6 @@ public class McpCommand : CliktCommand(name = "mcp") {
             logger.debug { "Starting proxy service: $subActionText (${(percentage * 100).toInt()}%)" }
         }
 
-        // This process has no GUI to filter in, so its log holds every packet.
         service.filterSetStore = UnfilteredFilterSetStore
         service.settingsStore = TapSettingSetStore
 

@@ -98,14 +98,12 @@ class AttachedSessionTest {
             .get("sessions")
             .map { it.toString() }
 
-    /** Attaches the way the proxy does when the GUI launches a client on the port. */
     private fun attach(
         proxyPort: Int = 43701,
         captureFolder: String? = "Local",
     ): SessionMonitor<BinaryHeader> =
         checkNotNull(manager.attach(proxyPort, target(1, "Local").copy(binaryFolder = captureFolder)))
 
-    /** Reports a login the way the proxy does, up to the point where the recording is set up. */
     private fun SessionMonitor<BinaryHeader>.logIn(): SessionMonitor<BinaryHeader> {
         val login = forSession(header)
         login.onLogin(header)
@@ -223,7 +221,6 @@ class AttachedSessionTest {
         first.onLogout(header)
         client.logIn().packet(tick = 1, StreamDirection.SERVER_TO_CLIENT, "REBUILD_NORMAL")
 
-        // The formatter ends the name of a packet without properties with a space.
         assertEquals(
             listOf(
                 """{"next":7,"head":7,"dropped":0,"timedOut":false,"count":7}""",

@@ -4,7 +4,7 @@ import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.target.ProxyTargetConfig
 import net.rsprox.shared.SessionMonitor
 
-/** Hears of every client that is launched with a session monitor, whoever launched it. */
+/** Hears of every RuneLite and native client that is launched with a session monitor, whoever launched it. */
 public interface ClientListener {
     /**
      * Called before the client on [port] is started. A monitor that is returned hears every callback

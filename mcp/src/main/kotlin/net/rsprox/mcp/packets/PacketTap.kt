@@ -118,7 +118,6 @@ private class LoginTap(
     override fun onCacheUpdate(cacheProvider: CacheProvider) {
         cache = cacheProvider
 
-        // The proxy hands the cache over right after it has set the recording of the login up.
         logins.update(epoch) { it.copy(captureFile = captureFile) }
     }
 

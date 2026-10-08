@@ -30,7 +30,6 @@ public class McpExtension : ProxyExtension {
         }
 
         serveOrNull(service.getMcpPort()) { opened ->
-            // The GUI shares the proxy's port range with this endpoint, so no port is left unused for it.
             val manager = sessionManager(service, portSkip = 0, sideloadDir = null, Rendering.GPU, opened)
 
             service.addClientListener(AttachingListener(manager))
@@ -79,7 +78,6 @@ internal fun serveOrNull(
             System.getenv("APP_VERSION") ?: "dev",
         )
 
-    // Binding first keeps a second instance from touching the rendezvous file of the one that serves.
     try {
         http.start()
     } catch (e: IOException) {

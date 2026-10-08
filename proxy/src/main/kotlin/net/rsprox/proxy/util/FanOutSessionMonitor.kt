@@ -9,8 +9,9 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Passes every callback to [primary] and then to each of [observers].
- * [primary] behaves as if it were the only monitor: what it throws is passed on. An observer that
- * throws is logged once and otherwise ignored, so it can never keep a callback from another monitor.
+ * [primary] behaves as if it were the only monitor: what it throws is passed on. What an observer
+ * throws is ignored, so it can never keep a callback from another monitor. Each fan-out, the one of
+ * the client and the one of each login, logs only the first such failure.
  */
 public class FanOutSessionMonitor<T>(
     private val primary: SessionMonitor<T>,
