@@ -484,25 +484,24 @@ final class Ops {
             GameState state = game.onClientThread(Client::getGameState);
             if (state != GameState.STARTING && state != GameState.UNKNOWN) return;
 
-            if (System.currentTimeMillis() >= deadline) throw neverLoaded(state);
+            if (System.currentTimeMillis() >= deadline) {
+                String reached = "the client did not reach the login screen; gameState is " + state + ". ";
+                String hint = "A client that cannot reach the game server stays in this state.";
+
+                throw new BridgeException("timeout", reached + hint);
+            }
 
             pollAgain("the login screen");
         }
-    }
-
-    /** Build the timeout for a client that is still in the given state when the wait for the login screen ends. */
-    private static BridgeException neverLoaded(GameState state) {
-        String reached = "the client did not reach the login screen; gameState is " + state + ". ";
-        String hint = "A client that cannot reach the game server stays in this state.";
-
-        return new BridgeException("timeout", reached + hint);
     }
 
     /** Set the credentials and start the login. Throws {@code wrong_state} unless the client is on the login screen. */
     private void submitCredentials(String username, String password) throws BridgeException {
         game.onClientThread(client -> {
             GameState state = client.getGameState();
-            if (state != GameState.LOGIN_SCREEN) throw notOnLoginScreen(state);
+            if (state != GameState.LOGIN_SCREEN) {
+                throw new BridgeException("wrong_state", "the client is not on the login screen: " + state);
+            }
 
             client.setUsername(username);
             client.setPassword(password);
@@ -510,11 +509,6 @@ final class Ops {
 
             return null;
         });
-    }
-
-    /** Build the refusal of a login for a client that is in the given state and not on the login screen. */
-    private static BridgeException notOnLoginScreen(GameState state) {
-        return new BridgeException("wrong_state", "the client is not on the login screen: " + state);
     }
 
     /**
@@ -533,15 +527,12 @@ final class Ops {
 
             if (state == GameState.LOGIN_SCREEN) throw new BridgeException("wrong_state", LOGIN_REFUSED);
 
-            if (System.currentTimeMillis() >= deadline) throw neverLoggedIn(state);
+            if (System.currentTimeMillis() >= deadline) {
+                throw new BridgeException("timeout", "not logged in before the wait elapsed; gameState is " + state);
+            }
 
             pollAgain("the login");
         }
-    }
-
-    /** Build the timeout for a login that is still in the given state when the wait ends. */
-    private static BridgeException neverLoggedIn(GameState state) {
-        return new BridgeException("timeout", "not logged in before the wait elapsed; gameState is " + state);
     }
 
     /** Sleep until the next read of the game state is due. */
