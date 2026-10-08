@@ -9,6 +9,23 @@ GUI, where it attaches to the clients that you launch by hand.
 The proxy only observes, so it cannot inject or change packets. All input goes through the client as
 mouse and key events, from a small RuneLite plugin that the server installs before each launch.
 
+## Never input on the official game
+
+The tool is for testing a private server that you run. On the official game, which is target 0 and
+any target whose jav_config comes from a Jagex domain, it only reads: `client_state`,
+`client_screenshot`, `client_widgets`, `client_vars`, `client_entities`, `client_camera` without a
+turn, and `packets_read`. `client_login`, `client_click`, `client_type`, `client_interact` and a
+`client_camera` turn are refused there before anything reaches the client, and `session_list` shows
+such a session with `"access":"read"`. Two more layers hold if the server is wrong: the link it makes
+for a read-only session forwards no input op, and the plugin builds its input ops only when the
+server's welcome grants input and the client is not the stock RuneLite one, whose home directory
+`.runelite` is what the official game is launched with. A welcome without the grant is read-only.
+
+To go further, disable the plugin. Switch "rsprox MCP bridge" off in RuneLite's plugin list, which
+closes its connection. Or set `mcp.plugin=false` in `~/.rsprox/proxy.properties` for the GUI, or pass
+`--no-plugin` to the standalone server: launched clients then get no plugin, their sessions are
+`"state":"unbridged"`, and only `packets_read` works on them.
+
 ## Run it
 
 ```
@@ -33,10 +50,12 @@ Options go in `--args`:
 | `--sideload-dir <dir>` | Where to install the client plugin, when the client does not use the default directory. |
 | `--port-skip <n>` | Proxy ports to leave free at the start of the range for a GUI. Default 50. |
 | `--software-rendering` | Stop the GPU plugin in launched clients. Needed on a virtual display. |
+| `--no-plugin` | Launch clients without the plugin. Only their packets can then be read. |
 
 The plugin is installed as `rsprox-mcp-bridge.jar` in `~/.rlcustom/sideloaded-plugins` for a custom
 target and in `~/.runelite/sideloaded-plugins` for the official one. A client that the MCP server did
-not launch loads the plugin too, and the plugin then does nothing.
+not launch loads the plugin too, and the plugin then does nothing. An installed jar from before a
+change to the wire protocol is rejected at its hello and replaced at the next launch.
 
 Run one MCP endpoint per user account. The plugin finds its server through the file
 `~/.rsprox/mcp/bridge.json`, which every endpoint of the account writes, so another `--port` is not
@@ -48,14 +67,15 @@ enough. To run this server next to a GUI, turn the GUI's endpoint off first.
 ./gradlew proxy
 ```
 
-The GUI serves the endpoint on `http://127.0.0.1:43580/mcp` from the moment the proxy has started. Two
-lines in `~/.rsprox/proxy.properties` change that. Edit the file while the GUI is closed, because the
-GUI writes the file again when it saves its own settings.
+The GUI serves the endpoint on `http://127.0.0.1:43580/mcp` from the moment the proxy has started.
+Three lines in `~/.rsprox/proxy.properties` change that. Edit the file while the GUI is closed, because
+the GUI writes the file again when it saves its own settings.
 
 | Property | Meaning |
 |---|---|
 | `mcp.enabled` | Whether the GUI serves the endpoint. Default `true`. Set it to `false` to turn the endpoint off. |
 | `mcp.port` | Loopback port of the endpoint. Default 43580. |
+| `mcp.plugin` | Whether clients that `session_start` launches get the plugin. Default `true`. |
 
 When the port is taken, by a second rsprox or by the standalone server, the GUI logs one line that
 says so and runs without the endpoint.
@@ -66,14 +86,10 @@ picks the client you mean by the `target`, the `proxyPort` and, once you are log
 under `login`, such as the `world` and the display `name`. The proxy never sees a login name or a
 password, so neither is listed. RuneScape 3 clients are not attached.
 
-An attached session is read-only:
-
-- `packets_read` works on it as on any session.
-- `session_stop`, `session_start` and every `client_*` tool refuse it with `not available for an
-  attached session`. The client is yours, so the server never stops it, clicks in it or reads its
-  screen.
-- When you close the session's tab in the GUI, or the client exits, the session becomes
-  `"state":"ended"`. It stays listed and its packets stay readable.
+An attached session is read-only, and its client is yours: `packets_read` works on it, while
+`session_stop`, `session_start` and every `client_*` tool refuse it with `not available for an
+attached session`. When you close the session's tab in the GUI, or the client exits, the session
+becomes `"state":"ended"`. It stays listed and its packets stay readable.
 
 Inside the GUI the packet log holds the GUI's view, for attached sessions and for sessions that
 `session_start` launches alike. The GUI's filters and settings decide which packets are transcribed
@@ -93,8 +109,7 @@ xvfb-run -s "-screen 0 1280x800x24" ./gradlew :mcp:run --args="--software-render
 ```
 
 Without `--software-rendering` everything works except `client_screenshot`, which returns a black
-image. Besides a JDK, the machine needs Xvfb and the X11 and font libraries that Java's AWT loads. On
-Debian or Ubuntu:
+image. Besides a JDK, the machine needs Xvfb and the X11 and font libraries that Java's AWT loads:
 
 ```
 apt-get install xvfb libxrender1 libxtst6 libxi6 libxext6 libfontconfig1 libfreetype6 fonts-dejavu-core
@@ -109,8 +124,7 @@ claude mcp add --transport http rsprox http://127.0.0.1:43580/mcp
 ```
 
 Any other client takes the same URL in its configuration for an HTTP server. Start the server before
-the client connects. The server keeps its sessions and packets for as long as it runs, whatever the
-clients do.
+the client connects. The server keeps its sessions and packets for as long as it runs.
 
 ## Tools
 
