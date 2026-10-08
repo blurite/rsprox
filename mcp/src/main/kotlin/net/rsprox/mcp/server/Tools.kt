@@ -376,7 +376,8 @@ private fun clientTool(
     result: (ok: ObjectNode, session: Session) -> ToolResult = { ok, _ -> ToolResult.Json(ok) },
 ): Tool =
     Tool(name, "$description $CURSOR_NOTE", schema) { args ->
-        val session = sessions().resolve(args.text("session"))
+        val manager = sessions()
+        val session = manager.resolve(args.text("session"))
         val requested = request(args)
         val link = session.link(name, requested.access)
         val cursor = session.packets.head().seq
@@ -386,7 +387,7 @@ private fun clientTool(
             if (!forwarded.hasNonNull(argument)) forwarded.put(argument, value)
         }
 
-        val ok = link.call(requested.op, forwarded, requested.access, timeoutMs(forwarded))
+        val ok = link.call(requested.op, forwarded, requested.access, timeoutMs(forwarded), manager.gate)
         if (ok !is ObjectNode) throw BridgeError("internal", "the client answered $name with $ok")
 
         result(ok.put("cursor", cursor), session)

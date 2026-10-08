@@ -63,18 +63,20 @@ public class BridgeLink internal constructor(
     }
 
     /**
-     * Send one request, which needs [access], and block the calling thread for its reply.
+     * Send one request, which needs [access], and block the calling thread for its reply. The request
+     * is sent only through the open [gate].
      *
      * @return the `ok` value of the reply
      * @throws BridgeError when the request needs more than this link's access (code `read_only`), when
      * the plugin answers `err`, when no reply arrives within [timeoutMs] (code `timeout`), or when the
-     * link is or becomes closed (code `closed`)
+     * link is or becomes closed or the gate is closed (code `closed`)
      */
     public fun call(
         op: String,
         args: ObjectNode,
         access: Access,
         timeoutMs: Long,
+        gate: Gate = Gate(),
     ): JsonNode {
         if (access > this.access) {
             throw BridgeError("read_only", "'$op' sends input, which a link made for reading never forwards")
@@ -91,12 +93,15 @@ public class BridgeLink internal constructor(
             val request = MAPPER.createObjectNode().put("id", id).put("op", op)
             request.set<JsonNode>("args", args)
 
-            try {
-                send(MAPPER.writeValueAsString(request))
-            } catch (e: IOException) {
-                close()
-                throw closedError()
-            }
+            val sent =
+                try {
+                    gate.ifOpen { send(MAPPER.writeValueAsString(request)) }
+                } catch (e: IOException) {
+                    close()
+                    throw closedError()
+                }
+
+            if (!sent) throw BridgeError("closed", "the MCP endpoint was turned off")
 
             return reply.get(timeoutMs, TimeUnit.MILLISECONDS)
         } catch (e: TimeoutException) {

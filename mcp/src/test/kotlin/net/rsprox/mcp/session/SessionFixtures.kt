@@ -49,6 +49,9 @@ internal class FakeLauncher : ClientLauncher {
     // A client that goes away is killed from the bridge's reader thread.
     val killed = CopyOnWriteArrayList<Int>()
     var launch: () -> Unit = {}
+
+    // Runs when the ports of a launch are reserved, before its client is forked.
+    var onReserve: () -> Unit = {}
     var launcherExited: () -> Boolean = { false }
     var bridged = true
 
@@ -60,6 +63,7 @@ internal class FakeLauncher : ClientLauncher {
     override fun reserve(target: ProxyTargetConfig): Reservation {
         reserved += target
         val earlier = reserved.size - 1
+        onReserve()
 
         return Reservation(
             FIRST_PROXY_PORT + earlier,

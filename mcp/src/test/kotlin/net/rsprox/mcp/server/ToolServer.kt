@@ -1,6 +1,7 @@
 package net.rsprox.mcp.server
 
 import com.fasterxml.jackson.databind.JsonNode
+import net.rsprox.mcp.bridge.Gate
 import net.rsprox.mcp.bridge.TestHub
 import net.rsprox.mcp.packets.TapSettingSetStore
 import net.rsprox.mcp.session.FakeLauncher
@@ -14,20 +15,24 @@ import kotlin.test.assertTrue
 
 /**
  * The tools over a fake launcher and a started bridge hub, called over HTTP the way an MCP client calls them.
- * [serve] starts the endpoint over the sessions, on a free port unless a test says otherwise.
+ * [serve] starts the endpoint over the sessions and returns its port with what stops it. The port is a
+ * free one unless a test says otherwise. The sessions act on clients through [gate].
  */
 internal class ToolServer(
-    serve: (SessionManager) -> McpHttpServer = { sessions ->
-        McpHttpServer(0, tools { sessions }, "1.2.3").also { it.start() }
+    val gate: Gate = Gate(),
+    serve: (SessionManager) -> Pair<Int, AutoCloseable> = { sessions ->
+        val server = McpHttpServer(0, tools { sessions }, "1.2.3").also { it.start() }
+
+        server.localPort to server
     },
 ) : AutoCloseable {
     val launcher = FakeLauncher()
     val hub = TestHub()
-    val manager = SessionManager(launcher, TapSettingSetStore, hub.hub)
-    private val server = serve(manager)
+    val manager = SessionManager(launcher, TapSettingSetStore, hub.hub, gate = gate)
+    private val served = serve(manager)
     private val http = HttpClient.newHttpClient()
 
-    val port: Int get() = server.localPort
+    val port: Int get() = served.first
 
     /** Sends one JSON-RPC request and returns its `result`. */
     fun rpc(
@@ -78,7 +83,7 @@ internal class ToolServer(
     fun rows(arguments: String): List<String> = call("packets_read", arguments).lines().drop(1)
 
     override fun close() {
-        server.close()
+        served.second.close()
         hub.close()
     }
 

@@ -4,6 +4,7 @@ import net.rsprox.mcp.bridge.Access
 import net.rsprox.mcp.bridge.BridgeHub
 import net.rsprox.mcp.bridge.BridgeLink
 import net.rsprox.mcp.bridge.BridgeListener
+import net.rsprox.mcp.bridge.Gate
 import net.rsprox.mcp.packets.PacketTap
 import net.rsprox.mcp.server.ToolError
 import net.rsprox.proxy.binary.BinaryHeader
@@ -59,6 +60,8 @@ public class SessionManager internal constructor(
     private val launchTimeoutMs: Long = DEFAULT_LAUNCH_TIMEOUT_MS,
     /** The longest wait for the plugin of a launched client to say hello. */
     private val helloTimeoutMs: Long = DEFAULT_HELLO_TIMEOUT_MS,
+    /** The gate that a request passes to fork a client, to kill one or to send one a request. */
+    internal val gate: Gate = Gate(),
 ) {
     /** The sessions in the order they were first launched or attached. Added to under its own monitor. */
     private val sessions = CopyOnWriteArrayList<Session>()
@@ -103,28 +106,34 @@ public class SessionManager internal constructor(
 
     /**
      * Kill the client of a launched session. The session and its packets stay listed and readable. Idempotent.
-     * Throws [ToolError] for an attached session, whose client is not the MCP server's to kill.
+     * Throws [ToolError] for an attached session, whose client is not the MCP server's to kill, and when
+     * the gate is closed.
      */
     public fun stop(session: String?): SessionSnapshot {
         val resolved = launched(resolve(session), "session_stop")
 
         synchronized(launchLock) {
-            val state = resolved.client
+            val stopped =
+                gate.ifOpen {
+                    val state = resolved.client
 
-            // Stopped first, so the close of the link below is not mistaken for the client exiting.
-            resolved.stop("stopped by caller")
+                    // Stopped first, so the close of the link below is not mistaken for the client exiting.
+                    resolved.stop("stopped by caller")
 
-            when (state) {
-                is ClientState.Stopped -> {
-                    //
+                    when (state) {
+                        is ClientState.Stopped -> {
+                            //
+                        }
+                        is ClientState.Launching -> release(state.launch)
+                        is ClientState.Unbridged -> launcher.kill(state.launch.proxyPort)
+                        is ClientState.Connected -> {
+                            state.link.close()
+                            launcher.kill(state.launch.proxyPort)
+                        }
+                    }
                 }
-                is ClientState.Launching -> release(state.launch)
-                is ClientState.Unbridged -> launcher.kill(state.launch.proxyPort)
-                is ClientState.Connected -> {
-                    state.link.close()
-                    launcher.kill(state.launch.proxyPort)
-                }
-            }
+
+            if (!stopped) throw ToolError(ENDPOINT_OFF)
         }
 
         return resolved.snapshot()
@@ -250,13 +259,17 @@ public class SessionManager internal constructor(
     /**
      * Launch a client of the target for [stopped], or for a new session when it is null, and wait until its
      * launcher has completed the handshake. A new session is listed once the ports of its launch are reserved.
-     * Throws [ToolError] when the launch fails or hangs. Must be called with [launchLock] held.
+     * Throws [ToolError] when the launch fails or hangs, and when the gate is closed. Must be called with
+     * [launchLock] held.
      */
     private fun launch(
         stopped: LaunchedSession?,
         target: ProxyTargetConfig,
     ): LaunchedSession {
         if (hungLaunch) throw ToolError(HUNG_LAUNCH)
+
+        // Refused before anything is reserved or listed. The gate decides again where the client is forked.
+        if (!gate.isOpen) throw ToolError(ENDPOINT_OFF)
 
         val reservation = reserve(target)
         val session = stopped ?: register { id -> LaunchedSession(id, target) }
@@ -290,7 +303,9 @@ public class SessionManager internal constructor(
 
     /**
      * Fork the client on a thread of its own and wait until its launcher has completed the handshake.
-     * Returns the reason when the launch failed or hung, and null when it succeeded.
+     * Returns the reason when the launch failed or hung, and null when it succeeded. The launch is handed
+     * to the proxy only through the open gate. The proxy cannot be told to give a launch up, so a launch
+     * that returns after the gate closed counts as failed, which has its client killed.
      * Must be called with [launchLock] held.
      */
     private fun fork(
@@ -309,13 +324,14 @@ public class SessionManager internal constructor(
             }, "mcp-launch-${session.id}")
 
         thread.isDaemon = true
-        thread.start()
+        if (!gate.ifOpen { thread.start() }) return ENDPOINT_OFF
+
         val exited = awaitLaunch(thread, reservation.launcherExited)
 
         hungLaunch = thread.isAlive
 
         return when {
-            !hungLaunch -> failure.get()?.let(::rootMessage)
+            !hungLaunch -> failure.get()?.let(::rootMessage) ?: ENDPOINT_OFF.takeUnless { gate.isOpen }
             exited -> "the launcher exited before completing its handshake"
             else -> "launcher never completed its handshake"
         }
@@ -439,6 +455,9 @@ public class SessionManager internal constructor(
 
         /** The reason of a session whose client the proxy reported gone. */
         private const val CLIENT_CLOSED = "the client was closed"
+
+        /** The refusal of a request that would act on a client through a closed gate. */
+        private const val ENDPOINT_OFF = "the MCP endpoint was turned off"
 
         /** The refusal of every launch that follows one whose launcher never returned. */
         private const val HUNG_LAUNCH =

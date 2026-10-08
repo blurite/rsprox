@@ -41,7 +41,7 @@ class McpExtensionTest {
         val served =
             ToolServer { sessions ->
                 port = freePort()
-                checkNotNull(serveIfEnabled(enabled = true, port) { sessions })
+                port to checkNotNull(serveIfEnabled(enabled = true, port) { sessions })
             }
 
         served.use { server -> assertEquals(port, server.port) }
@@ -75,7 +75,7 @@ class McpExtensionTest {
         val served =
             ToolServer { sessions ->
                 port = freePort()
-                checkNotNull(serveOrNull(port) { sessions })
+                port to checkNotNull(serveOrNull(port) { sessions })
             }
 
         served.use { server ->
