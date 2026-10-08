@@ -135,7 +135,7 @@ public class SessionManager internal constructor(
         proxyPort: Int,
         target: ProxyTargetConfig,
     ): SessionMonitor<BinaryHeader>? {
-        if (launchedSessions().any { it.client.proxyPort() == proxyPort }) return null
+        if (launchedSessions().any { it.client.launch?.proxyPort == proxyPort }) return null
 
         val session = register { id -> AttachedSession(id, target, proxyPort) }
 

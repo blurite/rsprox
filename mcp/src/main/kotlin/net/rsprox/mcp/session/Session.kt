@@ -34,36 +34,34 @@ public data class Launch(
 
 /** Whether a launched session has a client, and how far that client has come. */
 public sealed interface ClientState {
+    /** The launch of the client, or null when the state has no client. */
+    public val launch: Launch?
+
     /** The session has no client. */
     public data class Stopped(
         /** The reason the session has no client. */
         val reason: String,
-    ) : ClientState
+    ) : ClientState {
+        /** Null, since the session has no client. */
+        override val launch: Launch? get() = null
+    }
 
     /** The client was launched and its plugin has not said hello yet. */
     public data class Launching(
         /** The launch whose client has not connected yet. */
-        val launch: Launch,
+        override val launch: Launch,
     ) : ClientState
 
     /** The plugin in the client is connected, so the client can be driven. */
     public data class Connected(
         /** The launch that the client belongs to. */
-        val launch: Launch,
+        override val launch: Launch,
         /** The link to the plugin in the client. */
         val link: BridgeLink,
         /** The process id of the client. */
         val pid: Long,
     ) : ClientState
 }
-
-/** Get the proxy port of the client, or null when the state has no client. */
-internal fun ClientState.proxyPort(): Int? =
-    when (this) {
-        is ClientState.Stopped -> null
-        is ClientState.Launching -> launch.proxyPort
-        is ClientState.Connected -> launch.proxyPort
-    }
 
 /** What can change the [ClientState] of a launched session. Several threads raise these. [reduce] decides. */
 public sealed interface SessionEvent {
@@ -361,12 +359,7 @@ public class LaunchedSession internal constructor(
     /** Get what the session tools report of the session at this moment. */
     override fun snapshot(): SessionSnapshot {
         val state = client
-        val launch =
-            when (state) {
-                is ClientState.Stopped -> null
-                is ClientState.Launching -> state.launch
-                is ClientState.Connected -> state.launch
-            }
+        val launch = state.launch
 
         return SessionSnapshot(
             session = id.value,
