@@ -174,7 +174,7 @@ final class Targets {
 
         String name = Ops.nullToEmpty(composition.getName());
 
-        return new Candidate(new NpcTarget(index, npc.getId(), name, option), withExamine(composition.getActions()));
+        return new Candidate(ActorTarget.npc(index, npc.getId(), name, option), withExamine(composition.getActions()));
     }
 
     /** Find the player with the index in the client's list of players. */
@@ -185,7 +185,7 @@ final class Targets {
         if (player == null) throw notFound("no player with index " + index + " is in the client's view");
 
         String[] options = Arrays.copyOf(client.getPlayerOptions(), PLAYER_OPTIONS);
-        PlayerTarget target = new PlayerTarget(index, Ops.nullToEmpty(player.getName()), option);
+        ActorTarget target = ActorTarget.player(index, Ops.nullToEmpty(player.getName()), option);
 
         return new Candidate(target, Scenes.offered(options));
     }
