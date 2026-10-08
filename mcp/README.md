@@ -3,8 +3,8 @@
 This module runs rsprox without its GUI and serves it to a coding agent as an
 [MCP](https://modelcontextprotocol.io) server. The agent launches a RuneLite client through the proxy,
 reads the decoded packets in both directions, and looks at and drives the client. It is meant for
-checking a private server end to end with a real client. The same endpoint also runs inside the rsprox
-GUI, where it attaches to the clients that you launch by hand.
+checking a private server end to end with a real client. The rsprox GUI serves the same endpoint once
+you turn it on, and attaches it to the clients that you launch by hand.
 
 The proxy only observes, so it cannot inject or change packets. All input goes through the client as
 mouse and key events, from a small RuneLite plugin that the server installs before each launch.
@@ -59,7 +59,7 @@ change to the wire protocol is rejected at its hello and replaced at the next la
 
 Run one MCP endpoint per user account. The plugin finds its server through the file
 `~/.rsprox/mcp/bridge.json`, which every endpoint of the account writes, so another `--port` is not
-enough. To run this server next to a GUI, turn the GUI's endpoint off first.
+enough. To run this server next to a GUI, leave the GUI's endpoint off.
 
 ## Run it inside the GUI
 
@@ -67,14 +67,18 @@ enough. To run this server next to a GUI, turn the GUI's endpoint off first.
 ./gradlew proxy
 ```
 
-The GUI serves the endpoint on `http://127.0.0.1:43580/mcp` from the moment the proxy has started.
-Three lines in `~/.rsprox/proxy.properties` change that. Edit the file while the GUI is closed, because
-the GUI writes the file again when it saves its own settings.
+The GUI serves the endpoint only after you turn it on. Tick File > Serve MCP Endpoint and restart the
+GUI. From then on it serves `http://127.0.0.1:43580/mcp` at every start, from the moment the proxy has
+started. Unticking the item also takes effect at the next start, so the GUI keeps serving until it is
+closed.
+
+The item saves `mcp.enabled` in `~/.rsprox/proxy.properties`. Edit that file only while the GUI is
+closed, because the GUI writes it again when it saves its own settings.
 
 | Property | Meaning |
 |---|---|
-| `mcp.enabled` | Whether the GUI serves the endpoint. Default `true`. Set it to `false` to turn the endpoint off. |
-| `mcp.port` | Loopback port of the endpoint. Default 43580. |
+| `mcp.enabled` | Whether the GUI serves the endpoint. Default `false`. |
+| `mcp.port` | Loopback port of the endpoint. Default 43580. The GUI has no control for it. |
 | `mcp.plugin` | Whether clients that `session_start` launches get the plugin. Default `true`. |
 
 When the port is taken, by a second rsprox or by the standalone server, the GUI logs one line that
@@ -98,7 +102,7 @@ see its packets. The standalone server has no such filters and logs every packet
 
 The endpoint has no password. Any program that runs under your user account, and any other user
 of the machine, can reach it on loopback and read everything the log holds, including public and
-private chat, for as long as the GUI runs. Turn `mcp.enabled` off when that is not acceptable.
+private chat, for as long as the GUI runs. That is why it is off until you turn it on.
 
 ## Run it without a display
 
