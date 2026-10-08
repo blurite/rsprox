@@ -97,7 +97,7 @@ public value class ProxyProperties private constructor(
             properties.setValue(APP_WIDTH, 800)
             properties.setValue(APP_HEIGHT, 600)
             // mcp
-            properties.setValue(MCP_ENABLED, true)
+            properties.setValue(MCP_ENABLED, false)
             properties.setValue(MCP_PORT, DEFAULT_MCP_PORT)
             properties.setValue(MCP_PLUGIN, true)
             // other
