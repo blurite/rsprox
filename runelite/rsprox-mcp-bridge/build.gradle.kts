@@ -24,12 +24,6 @@ tasks.withType<JavaCompile>().configureEach {
     options.release.set(11)
 }
 
-tasks.jar {
-    manifest {
-        attributes("Implementation-Version" to project.version)
-    }
-}
-
 // The root build applies the Kotlin plugin to every subproject. A sideloaded plugin gets its own class
 // loader, so anything that leaks into this jar would shadow or duplicate what the client already has.
 val verifyJarContents by tasks.registering {

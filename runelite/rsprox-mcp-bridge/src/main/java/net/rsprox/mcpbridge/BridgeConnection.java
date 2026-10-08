@@ -19,7 +19,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import net.runelite.client.RuneLiteProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,8 +109,6 @@ final class BridgeConnection implements AutoCloseable {
             hello.addProperty("httpPort", httpPort);
             hello.add("token", file.get("token"));
             hello.addProperty("pid", ProcessHandle.current().pid());
-            hello.addProperty("runelite", RuneLiteProperties.getVersion());
-            hello.addProperty("plugin", BridgeConnection.class.getPackage().getImplementationVersion());
             writer.write(gson.toJson(hello));
             writer.write('\n');
             writer.flush();
