@@ -63,7 +63,9 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
                 "List every session, plus the target names. `kind` is `launched` for a client that " +
                     "session_start launched, and `attached` for a client that was launched by hand from the " +
                     "rsprox GUI, which only packets_read works on. Each session has `session`, `target`, " +
-                    "`state`, `proxyPort` and `cursor`, the newest packet cursor. `state` is `stopped`, " +
+                    "`state`, `proxyPort` and `cursor`, the newest packet cursor. A launched session with a " +
+                    "client also has `generation`, the number of its launch, and `httpPort`, and `pid` once " +
+                    "connected. `state` is `stopped`, " +
                     "`launching` or `connected` when launched, and `attached` or `ended` when attached; " +
                     "`reason` says why a session has no client. Once the client has logged in, `login` holds " +
                     "`epoch` (the L number of its packets), `revision`, `world`, `host`, `localPlayerIndex`, " +
@@ -84,7 +86,8 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
                     "To wait for a packet, pass `wait_ms`. The call then blocks until the first match. " +
                     "Line 1 of the result is JSON: pass `next` as `after` on the following call; `dropped` counts " +
                     "records that were evicted before they could be read; `timedOut` is true when a wait " +
-                    "elapsed with no match. Each further line is one packet: " +
+                    "elapsed with no match; `head` is the newest cursor of the log and `count` the number of " +
+                    "packets that follow. Each further line is one packet: " +
                     "`<seq> L<login> T<tick> <C|S|P> <PROT> <text>`, where C is client to server, S is server " +
                     "to client and P is an rsprox marker (CLIENT_LAUNCHED, CLIENT_CONNECTED, CLIENT_ATTACHED, " +
                     "CLIENT_EXITED, LOGIN, LOGOUT). Continuation lines of one packet are indented.",
@@ -202,7 +205,7 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
                     "session" to SESSION,
                     "x" to integer("Horizontal canvas position. Requires `y`.", 0),
                     "y" to integer("Vertical canvas position. Requires `x`.", 0),
-                    "widget" to string("Widget id as listed by client_widgets, such as \"558:7\" or \"558:7[3]\"."),
+                    "widget" to WIDGET,
                     "button" to string("Mouse button. Default left.", "left", "right"),
                 ),
             sessions = sessions,
@@ -247,14 +250,10 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
         clientTool(
             name = "client_interact",
             description =
-                "Perform one option on one thing in the game as a player does, and confirm it in the " +
-                    "packet log. The plugin moves the real mouse onto the target and lets the client build " +
-                    "its menu. It left-clicks when the option looks like the default one. Otherwise, or when " +
-                    "the client shows that a left click performs another option there, it opens the " +
-                    "right-click menu and clicks the row. It cancels a click that the client resolves to " +
-                    "anything else before the client sends it, and aims again. It turns the camera when the " +
-                    "target is out of view. The server receives exactly what a player's click sends, mouse " +
-                    "packets included. " +
+                "Perform one option on one thing in the game with a real mouse click, and confirm it in " +
+                    "the packet log. It aims by identity, cancels a click that the client resolves to " +
+                    "anything else and aims again, and turns the camera when the target is out of view. " +
+                    "The server receives exactly what a player's click sends, mouse packets included. " +
                     "Pick the target from client_entities. Name an `npc` or a `player` by `index`. Name an " +
                     "`object` or a `ground_item` by `id` and its tile `x`,`y`. Name a `widget` by its " +
                     "client_widgets id. For `dialog`, `option` is \"continue\", or the text or the 1-based " +
@@ -278,11 +277,8 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
                     "session" to SESSION,
                     "target" to string("Kind of thing to act on.", *TargetKind.names()),
                     "option" to string("Option to perform, such as \"Talk-to\". Required unless `target` is tile."),
-                    "index" to integer("Index of the NPC or player, as listed by client_entities.", 0),
-                    "id" to integer("Id of the object or ground item, as listed by client_entities.", 0),
-                    "x" to integer("World x of the tile of the object, ground item or tile.", 0),
-                    "y" to integer("World y of the tile of the object, ground item or tile.", 0),
-                    "widget" to string("Widget id as listed by client_widgets, such as \"558:7\" or \"558:7[3]\"."),
+                    *TARGET_FIELDS,
+                    "widget" to WIDGET,
                     required = listOf("target"),
                 ),
             sessions = sessions,
@@ -308,10 +304,7 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
                             "Kind of target to face, named by the fields of client_interact.",
                             *TargetKind.names { it.inWorld },
                         ),
-                    "index" to integer("Index of the NPC or player, as listed by client_entities.", 0),
-                    "id" to integer("Id of the object or ground item, as listed by client_entities.", 0),
-                    "x" to integer("World x of the tile of the object, ground item or tile.", 0),
-                    "y" to integer("World y of the tile of the object, ground item or tile.", 0),
+                    *TARGET_FIELDS,
                 ),
             sessions = sessions,
             timeoutMs = { INTERACTION_TIMEOUT_MS },
@@ -386,6 +379,18 @@ private const val CLIENT_TOOL_NOTE =
 /** The schema of the `session` argument that every tool but session_start and session_list takes. */
 private val SESSION: ObjectNode = string("Session id, such as \"s1\". May be omitted while only one session exists.")
 
+/** The schema of the `widget` argument of the tools that take a widget. */
+private val WIDGET: ObjectNode = string("Widget id as listed by client_widgets, such as \"558:7\" or \"558:7[3]\".")
+
+/** The arguments that name a target in the game world, for the tools that act on one. */
+private val TARGET_FIELDS: Array<Pair<String, ObjectNode>> =
+    arrayOf(
+        "index" to integer("Index of the NPC or player, as listed by client_entities.", 0),
+        "id" to integer("Id of the object or ground item, as listed by client_entities.", 0),
+        "x" to integer("World x of the tile of the object, ground item or tile.", 0),
+        "y" to integer("World y of the tile of the object, ground item or tile.", 0),
+    )
+
 /** Render a page as one line of JSON meta followed by one line per packet. */
 private fun render(page: PacketPage): String {
     val meta =
@@ -449,16 +454,7 @@ private fun integerArray(description: String): ObjectNode {
 private fun string(
     description: String,
     vararg allowed: String,
-): ObjectNode {
-    val node = property("string", description)
-
-    if (allowed.isNotEmpty()) {
-        val values = node.putArray("enum")
-        allowed.forEach(values::add)
-    }
-
-    return node
-}
+): ObjectNode = property("string", description).limitedTo(allowed)
 
 /** Build the schema of an integer argument within the given bounds. */
 private fun integer(
@@ -480,14 +476,19 @@ private fun stringArray(
     vararg allowed: String,
 ): ObjectNode {
     val node = property("array", description)
-    val items = node.putObject("items").put("type", "string")
+    node.putObject("items").put("type", "string").limitedTo(allowed)
 
+    return node
+}
+
+/** Limit the schema to the allowed values when any are given. */
+private fun ObjectNode.limitedTo(allowed: Array<out String>): ObjectNode {
     if (allowed.isNotEmpty()) {
-        val values = items.putArray("enum")
+        val values = putArray("enum")
         allowed.forEach(values::add)
     }
 
-    return node
+    return this
 }
 
 /** Build the schema of an argument with the given type and description. */
