@@ -5,6 +5,10 @@ This module runs rsprox without its GUI and serves it to a coding agent as an
 reads the decoded packets in both directions, and looks at and drives the client. It is meant for
 checking a private server end to end with a real client.
 
+The same endpoint also runs inside the rsprox GUI. There it attaches to the clients that you launch
+by hand, so an agent can read the packets of your own session while you play. See "Run it inside the
+GUI".
+
 The server has two halves. The proxy half runs in this process and records every packet. The client
 half is a small RuneLite plugin that the server installs into the client's sideload directory before
 each launch. The plugin connects back to the server over loopback. The proxy only observes, so it
@@ -18,8 +22,13 @@ server receives what it receives from a player.
 ```
 
 The server listens on `http://127.0.0.1:43580/mcp`. It uses the proxy targets that the rsprox GUI
-uses, from `~/.rsprox/proxy-targets.yaml`. The GUI may run at the same time. A session records to the
-usual folder of its target, as it does when launched from the GUI.
+uses, from `~/.rsprox/proxy-targets.yaml`. A session records to the usual folder of its target, as it
+does when launched from the GUI.
+
+The GUI serves the same endpoint on the same port, so only one of the two can hold it. To run this
+server next to a GUI, turn the GUI's endpoint off first, as described under "Run it inside the GUI".
+Giving this server another port with `--port` is not enough, because both would write the same
+rendezvous file.
 
 Each client opens a window, so the machine needs a display. A machine without one can use a virtual
 display, as described under "Run it without a display".
@@ -43,6 +52,50 @@ target and in `~/.runelite/sideloaded-plugins` for the official one. A client th
 not launch loads the plugin too, and the plugin then does nothing. The plugin finds the server through
 the rendezvous file `~/.rsprox/mcp/bridge.json`. Every server of one user account writes that same
 file, so run one MCP server per user account.
+
+## Run it inside the GUI
+
+```
+./gradlew proxy
+```
+
+The GUI serves the endpoint on `http://127.0.0.1:43580/mcp` from the moment the proxy has started. Two
+lines in `~/.rsprox/proxy.properties` change that. Edit the file while the GUI is closed, because the
+GUI writes the file again when it saves its own settings.
+
+| Property | Meaning |
+|---|---|
+| `mcp.enabled` | Whether the GUI serves the endpoint. Default `true`. Set it to `false` to turn the endpoint off. |
+| `mcp.port` | Loopback port of the endpoint. Default 43580. |
+
+When the port is taken, by a second rsprox or by the standalone server, the GUI logs one line that
+says so and runs without the endpoint.
+
+Every RuneLite or native client that you launch from the GUI appears in `session_list` as a session
+with `"kind":"attached"`. Sessions are numbered in the order they appear, `s1`, `s2` and so on,
+together with the sessions that `session_start` launches. An agent picks the client you mean by the
+`target`, the `proxyPort` and, once you are logged in, the `world`, the display `name` and the other
+values under `login`. The proxy never sees a login name or a password, so neither is listed.
+RuneScape 3 clients are not attached.
+
+An attached session is read-only:
+
+- `packets_read` works on it as on any session, with the same cursors and the same `L<login>` number
+  for each login.
+- `session_stop`, `session_start` and every `client_*` tool refuse it with `not available for an
+  attached session`. The client is yours, so the server never stops it, clicks in it or reads its
+  screen.
+- When you close the session's tab in the GUI, or the client exits, the session becomes
+  `"state":"ended"`. It stays listed and its packets stay readable.
+
+Inside the GUI the packet log holds the GUI's view, for attached sessions and for sessions that
+`session_start` launches alike. The GUI's filters and settings decide which packets are transcribed
+at all, so a packet that they hide is missing from `packets_read` too. Enable a filter in the GUI to
+see its packets. The standalone server has no such filters and logs every packet.
+
+The endpoint has no password. Any program that runs under your user account, and any other user
+of the machine, can reach it on loopback and read everything the log holds, including public and
+private chat, for as long as the GUI runs. Turn `mcp.enabled` off when that is not acceptable.
 
 ## Run it without a display
 
@@ -90,7 +143,11 @@ it runs, whatever the clients do.
 ## Tools
 
 The tools come in three groups. The `session_*` tools launch a client for a target, stop it and list
-the sessions. `session_start` gives the launcher of a client 180 seconds to complete its handshake.
+the sessions. `session_list` tells the sessions apart: each has its id, its `kind` (`launched` or
+`attached`), its target, its state and its proxy port. Once the client has logged in, `login` holds
+the login number, the revision, the world and its host, the index of the local player, the time of
+the login and whether the client is still logged in. The capture file, the display name and the
+newest tick are added when the proxy learns them. `session_start` gives the launcher of a client 180 seconds to complete its handshake.
 When the launcher takes longer, the server abandons the launch and refuses further launches until it
 is restarted. `packets_read` reads the decoded packets of a session after a cursor, and can wait for
 the first packet that matches. The `client_*` tools look at the client and drive it: they read its
@@ -106,7 +163,7 @@ curl -s http://127.0.0.1:43580/mcp -d '{"jsonrpc":"2.0","id":1,"method":"tools/l
 
 Each packet is one line: `<seq> L<login> T<tick> <C|S|P> <PROT> <text>`. `C` is client to server, `S`
 is server to client, and `P` is a marker that rsprox adds (`CLIENT_LAUNCHED`, `CLIENT_CONNECTED`,
-`CLIENT_EXITED`, `LOGIN`, `LOGOUT`). The key codes of typed text are zeroed in the recorded packets, as
+`CLIENT_ATTACHED`, `CLIENT_EXITED`, `LOGIN`, `LOGOUT`). The key codes of typed text are zeroed in the recorded packets, as
 in every rsprox recording. Read what was typed from the packet that carries the text, such as
 `RESUME_P_STRINGDIALOG`.
 
@@ -147,7 +204,7 @@ three seconds, it takes the first matching packet after the cursor, and `proof` 
 
 ```
 1. session_start {"target":"My Server"}
-   -> {"session":"s1","target":"My Server","state":"connected", ...}
+   -> {"session":"s1","kind":"launched","target":"My Server","state":"connected", ...}
 
 2. client_login {"username":"mcptest","password":"any"}
    -> {"gameState":"LOGGED_IN","cursor":2}
@@ -212,8 +269,8 @@ packet in step 5 reports `558:7`.
 
 ```
 1. session_start {"target":"My Server"}
-   -> {"session":"s1","target":"My Server","state":"connected","generation":1,"proxyPort":43751,
-       "httpPort":43650,"pid":40388,"cursor":2}
+   -> {"session":"s1","kind":"launched","target":"My Server","state":"connected","generation":1,
+       "proxyPort":43751,"httpPort":43650,"pid":40388,"cursor":2}
 
 2. client_login {"username":"mcptest","password":"any"}
    -> {"gameState":"LOGGED_IN","cursor":2}
@@ -244,7 +301,8 @@ packet in step 5 reports `558:7`.
        "truncated":false,"cursor":520}
 
 9. session_stop {}
-   -> {"session":"s1","target":"My Server","state":"stopped","reason":"stopped by caller", ...}
+   -> {"session":"s1","kind":"launched","target":"My Server","state":"stopped",
+       "reason":"stopped by caller", ...}
 ```
 
 Steps 5, 7 and 8 are three separate proofs. The client sent the click. The server answered the name
@@ -264,7 +322,7 @@ log. The client comes back on new ports, and new packets are marked with the nex
 ## Check it against a live client
 
 The automated tests cover the packet log, the endpoint's HTTP and JSON-RPC handling, the tool calls
-as an MCP client makes them, the session failure paths and the bridge handshake. They do not run a
+as an MCP client makes them, the session failure paths, the attached sessions and the bridge handshake. They do not run a
 game client, so what the client does is checked by hand. Run this after a RuneLite update, a game
 revision change, or a change to the plugin. Each step names what proves it, so a step that fails
 names what changed. A tool that reports a dropped action, or lists what the client offered instead,
@@ -294,3 +352,19 @@ Start the server and a session against a target you can log in to, with a new ac
     shows the turned view.
 13. Killing the client process makes `session_list` show `stopped` with the reason `client exited`,
     and `session_start` with the same `session` brings it back with the earlier packets still readable.
+
+Then check the attached sessions. Stop the standalone server, start the GUI with `./gradlew proxy`
+and launch a client from it by hand:
+
+1. `session_list` shows a session with `"kind":"attached"`, the target and the proxy port of the
+   client, and no `login`.
+2. After you log in, `session_list` shows `login` with the world, the capture file and, a tick or two
+   later, your display name and a `tick` that advances. `packets_read` on the session returns the
+   packets that the GUI's own panel shows.
+3. The GUI's panel shows the same packets as it does with `mcp.enabled=false`.
+4. `session_stop` and `client_state` on the session fail with `not available for an attached
+   session`, and the client keeps running.
+5. Closing the client window makes `session_list` show `"state":"ended"`. So does closing the tab of
+   a second client. Both sessions stay listed with their packets.
+6. With the standalone server running first, the GUI starts as usual and logs that the endpoint is
+   not served.
