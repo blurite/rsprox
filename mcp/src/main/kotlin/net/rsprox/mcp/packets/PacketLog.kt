@@ -138,9 +138,9 @@ public class PacketLog(
 
             if (!scan.isAt(target)) continue
 
-            if (scan.matches.isNotEmpty() || waitMs <= 0) return scan.page()
+            if (scan.matches.isNotEmpty() || waitMs <= 0) return scan.page(timedOut = false)
 
-            target = awaitAppend(target, deadline) ?: return scan.timedOutPage()
+            target = awaitAppend(target, deadline) ?: return scan.page(timedOut = true)
         }
     }
 
@@ -178,11 +178,8 @@ public class PacketLog(
         /** Determine if the scan has nothing left to do up to [target]: it reached it or holds the limit. */
         fun isAt(target: Long): Boolean = isFull() || scanned >= target
 
-        /** Build the page of a read that ended without a wait elapsing. */
-        fun page(): PacketPage = PacketPage(matches, Cursor(scanned), head(), dropped, timedOut = false)
-
-        /** Build the page of a read whose wait elapsed with no match. */
-        fun timedOutPage(): PacketPage = PacketPage(matches, Cursor(scanned), head(), dropped, timedOut = true)
+        /** Build the page of the read, whose wait elapsed with no match when [timedOut]. */
+        fun page(timedOut: Boolean): PacketPage = PacketPage(matches, Cursor(scanned), head(), dropped, timedOut)
 
         /** Determine if the scan holds as many matches as the query asks for. */
         private fun isFull(): Boolean = matches.size >= query.limit
