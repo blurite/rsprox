@@ -63,75 +63,6 @@ public sealed interface ClientState {
     ) : ClientState
 }
 
-/** What can change the [ClientState] of a launched session. Several threads raise these. [reduce] decides. */
-public sealed interface SessionEvent {
-    /** A launch of the client began. */
-    public data class Launched(
-        /** The launch that began. */
-        val launch: Launch,
-    ) : SessionEvent
-
-    /** The plugin of a launched client said hello. */
-    public data class Hello(
-        /** The HTTP port of the launch that the client says it belongs to. */
-        val httpPort: Int,
-        /** The link to the plugin that said hello. */
-        val link: BridgeLink,
-        /** The process id of the client. */
-        val pid: Long,
-    ) : SessionEvent
-
-    /** The link to the plugin of the connected client closed. */
-    public data class LinkClosed(
-        /** The link that closed. */
-        val link: BridgeLink,
-    ) : SessionEvent
-
-    /** The caller, or a failed launch, stops the client. */
-    public data class Stop(
-        /** The reason the client is stopped. */
-        val reason: String,
-    ) : SessionEvent
-
-    /** The plugin of a launched client will not say hello any more. */
-    public data class NeverConnected(
-        /** The launch whose client will not connect any more. */
-        val launch: Launch,
-        /** The reason the client will not connect. */
-        val reason: String,
-    ) : SessionEvent
-}
-
-/** Get the state that follows [state]. Returns [state] itself when the event is stale or does not apply. */
-private fun reduce(
-    state: ClientState,
-    event: SessionEvent,
-): ClientState =
-    when (event) {
-        is SessionEvent.Launched ->
-            if (state is ClientState.Stopped) ClientState.Launching(event.launch) else state
-        is SessionEvent.Hello ->
-            if (state is ClientState.Launching && state.launch.httpPort == event.httpPort) {
-                ClientState.Connected(state.launch, event.link, event.pid)
-            } else {
-                state
-            }
-        is SessionEvent.LinkClosed ->
-            if (state is ClientState.Connected && state.link === event.link) {
-                ClientState.Stopped("client exited")
-            } else {
-                state
-            }
-        is SessionEvent.Stop ->
-            if (state is ClientState.Stopped) state else ClientState.Stopped(event.reason)
-        is SessionEvent.NeverConnected ->
-            if (state is ClientState.Launching && state.launch == event.launch) {
-                ClientState.Stopped(event.reason)
-            } else {
-                state
-            }
-    }
-
 /** One login of a session, as the proxy reports it. A value that is not known yet is left out of the JSON. */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public data class LoginInfo(
@@ -301,7 +232,7 @@ public class LaunchedSession internal constructor(
     /** The number of launches so far. */
     private var generations = 0
 
-    /** The state of the client, which only [apply] changes. */
+    /** The state of the client, which only [transition] changes. */
     @Volatile
     public var client: ClientState = ClientState.Stopped("not started")
         private set
@@ -310,13 +241,14 @@ public class LaunchedSession internal constructor(
     internal fun nextGeneration(): Int = lock.withLock { ++generations }
 
     /**
-     * Apply the event and return the state that follows.
+     * Move to the state that [next] makes of the current one, and determine if that changed it.
+     * [next] returns the state it is given when what happened is stale or does not apply.
      * The only writer of [client]. Every real transition leaves a marker in the packet log.
      */
-    internal fun apply(event: SessionEvent): ClientState =
+    private fun transition(next: (ClientState) -> ClientState): Boolean =
         lock.withLock {
             val before = client
-            val after = reduce(before, event)
+            val after = next(before)
 
             if (after !== before) {
                 client = after
@@ -324,16 +256,53 @@ public class LaunchedSession internal constructor(
                 changed.signalAll()
             }
 
-            after
+            after !== before
         }
 
-    /** Apply the event and determine if it changed the state. */
-    internal fun applied(event: SessionEvent): Boolean =
+    /** Register that [launch] of the client began, unless the session has a client already. */
+    internal fun launched(launch: Launch) {
+        transition { if (it is ClientState.Stopped) ClientState.Launching(launch) else it }
+    }
+
+    /**
+     * Connect the session to the plugin that said hello, when the session is launching and [httpPort] is
+     * the one of its launch. Determines if the session is connected through [link] afterwards.
+     */
+    internal fun hello(
+        httpPort: Int,
+        link: BridgeLink,
+        pid: Long,
+    ): Boolean =
         lock.withLock {
-            val before = client
+            transition {
+                if (it is ClientState.Launching && it.launch.httpPort == httpPort) {
+                    ClientState.Connected(it.launch, link, pid)
+                } else {
+                    it
+                }
+            }
 
-            apply(event) !== before
+            (client as? ClientState.Connected)?.link === link
         }
+
+    /** Stop the session when [link] is the link of its connected client, and determine if that stopped it. */
+    internal fun linkClosed(link: BridgeLink): Boolean =
+        transition { if (it is ClientState.Connected && it.link === link) ClientState.Stopped("client exited") else it }
+
+    /** Stop the session for [reason], unless it is stopped already. */
+    internal fun stop(reason: String) {
+        transition { if (it is ClientState.Stopped) it else ClientState.Stopped(reason) }
+    }
+
+    /**
+     * Stop the session for [reason] when it still waits for the client of [launch], and determine if
+     * that stopped it.
+     */
+    internal fun neverConnected(
+        launch: Launch,
+        reason: String,
+    ): Boolean =
+        transition { if (it is ClientState.Launching && it.launch == launch) ClientState.Stopped(reason) else it }
 
     /** Block while the client is launching, for at most [waitMs]. Never throws on timeout. */
     internal fun awaitConnected(waitMs: Long): ClientState =

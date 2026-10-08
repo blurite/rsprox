@@ -109,7 +109,7 @@ public class SessionManager internal constructor(
             val state = resolved.client
 
             // Stopped first, so the close of the link below is not mistaken for the client exiting.
-            resolved.apply(SessionEvent.Stop("stopped by caller"))
+            resolved.stop("stopped by caller")
 
             when (state) {
                 is ClientState.Stopped -> {
@@ -247,7 +247,7 @@ public class SessionManager internal constructor(
 
         // Registered before the client is forked: its hello can arrive before the launch call returns.
         bridge.expect(launch.httpPort, listener(session, launch))
-        session.apply(SessionEvent.Launched(launch))
+        session.launched(launch)
 
         val reason = fork(session, reservation)
 
@@ -258,7 +258,7 @@ public class SessionManager internal constructor(
         }
 
         release(launch)
-        session.apply(SessionEvent.Stop(reason))
+        session.stop(reason)
         throw ToolError("session ${session.id} failed to launch: $reason")
     }
 
@@ -346,7 +346,7 @@ public class SessionManager internal constructor(
         launch: Launch,
         reason: String,
     ) {
-        if (!session.applied(SessionEvent.NeverConnected(launch, reason))) return
+        if (!session.neverConnected(launch, reason)) return
 
         synchronized(launchLock) { release(launch) }
     }
@@ -370,15 +370,11 @@ public class SessionManager internal constructor(
             override fun onHello(
                 link: BridgeLink,
                 pid: Long,
-            ): Boolean {
-                val state = session.apply(SessionEvent.Hello(launch.httpPort, link, pid))
-
-                return state is ClientState.Connected && state.link === link
-            }
+            ): Boolean = session.hello(launch.httpPort, link, pid)
 
             /** Stop the session when the link of its connected client closes, and release the proxy state. */
             override fun onClosed(link: BridgeLink) {
-                if (!session.applied(SessionEvent.LinkClosed(link))) return
+                if (!session.linkClosed(link)) return
 
                 // The client is gone, or cannot be driven any more. Either way the proxy still holds
                 // its process handle and session monitor for the port.
