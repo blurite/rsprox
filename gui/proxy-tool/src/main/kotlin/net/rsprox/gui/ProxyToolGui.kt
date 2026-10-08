@@ -1,5 +1,6 @@
 package net.rsprox.gui
 
+import net.rsprox.proxy.ProxyExtension
 import java.util.Locale
 import javax.swing.ImageIcon
 import javax.swing.SwingUtilities
@@ -28,6 +29,7 @@ public fun main(args: Array<String>) {
     App.service.start(rspsJavConfigUrl, rspsModulus) { percentage, actionText, subActionText, progressText ->
         SplashScreen.stage(percentage, actionText, subActionText, progressText)
     }
+    ProxyExtension.startAll(App.service)
     SplashScreen.stop()
     SwingUtilities.invokeLater {
         // Disable icons in all trees.

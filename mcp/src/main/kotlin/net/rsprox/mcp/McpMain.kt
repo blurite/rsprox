@@ -19,6 +19,7 @@ import net.rsprox.mcp.server.tools
 import net.rsprox.mcp.session.ProxyServiceLauncher
 import net.rsprox.mcp.session.SessionManager
 import net.rsprox.proxy.ProxyService
+import net.rsprox.proxy.config.DEFAULT_MCP_PORT
 import java.nio.file.Path
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicReference
@@ -27,7 +28,7 @@ import kotlin.system.exitProcess
 /** Runs rsprox without its GUI and serves it to an agent as an MCP server on loopback. */
 public class McpCommand : CliktCommand(name = "mcp") {
     /** The loopback port of the MCP endpoint. */
-    private val port by option("--port", help = "Loopback port of the MCP endpoint").int().default(43580)
+    private val port by option("--port", help = "Loopback port of the MCP endpoint").int().default(DEFAULT_MCP_PORT)
 
     /** The number of proxy ports left unused at the start of the range. */
     private val portSkip by option(
@@ -97,21 +98,11 @@ public class McpCommand : CliktCommand(name = "mcp") {
             logger.debug { "Starting proxy service: $subActionText (${(percentage * 100).toInt()}%)" }
         }
 
+        // This process has no GUI to filter in, so its log holds every packet.
         service.filterSetStore = UnfilteredFilterSetStore
         service.settingsStore = TapSettingSetStore
-        val launcher = ProxyServiceLauncher(service, portSkip.coerceAtLeast(1), BridgeJar(sideloadDir))
 
-        // The plugin reads the same path in McpBridgePlugin.java.
-        val rendezvous = Path.of(System.getProperty("user.home"), ".rsprox", "mcp", "bridge.json")
-        val hub = BridgeHub(rendezvous, rendering)
-
-        opened += hub
-        hub.start()
-
-        // The proxy's own hook kills the clients; this one removes the rendezvous file they dial through.
-        Runtime.getRuntime().addShutdownHook(Thread(hub::close, "mcp-bridge-shutdown"))
-
-        return SessionManager(launcher, service.settingsStore, hub)
+        return sessionManager(service, portSkip.coerceAtLeast(1), sideloadDir, rendering, opened)
     }
 
     private companion object {
@@ -121,10 +112,36 @@ public class McpCommand : CliktCommand(name = "mcp") {
 }
 
 /**
+ * Start the bridge hub and build the sessions of a started proxy, with the stores the proxy holds at
+ * this moment. Adds what must be closed when a later step fails to [opened].
+ */
+internal fun sessionManager(
+    service: ProxyService,
+    portSkip: Int,
+    sideloadDir: Path?,
+    rendering: Rendering,
+    opened: MutableList<AutoCloseable>,
+): SessionManager {
+    val launcher = ProxyServiceLauncher(service, portSkip, BridgeJar(sideloadDir))
+
+    // The plugin reads the same path in McpBridgePlugin.java.
+    val rendezvous = Path.of(System.getProperty("user.home"), ".rsprox", "mcp", "bridge.json")
+    val hub = BridgeHub(rendezvous, rendering)
+
+    opened += hub
+    hub.start()
+
+    // The proxy's own hook kills the clients; this one removes the rendezvous file they dial through.
+    Runtime.getRuntime().addShutdownHook(Thread(hub::close, "mcp-bridge-shutdown"))
+
+    return SessionManager(launcher, service.settingsStore, hub)
+}
+
+/**
  * Run the startup steps in [body], and close what they added to the list, newest first, when one of them fails.
  * The failure is passed on.
  */
-private fun <T> closingOnFailure(body: (opened: MutableList<AutoCloseable>) -> T): T {
+internal fun <T> closingOnFailure(body: (opened: MutableList<AutoCloseable>) -> T): T {
     val opened = ArrayList<AutoCloseable>()
 
     try {
