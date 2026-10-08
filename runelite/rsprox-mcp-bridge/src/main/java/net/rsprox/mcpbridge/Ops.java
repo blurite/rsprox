@@ -15,6 +15,7 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -42,7 +43,7 @@ final class Ops {
     private static final String WIDGET_REF_SHAPE = "widget must look like \"558:7\" or \"558:7[3]\"";
 
     /** The deepest level of nested widgets that a walk or a search descends to. */
-    static final int WIDGET_DEPTH_LIMIT = 12;
+    private static final int WIDGET_DEPTH_LIMIT = 12;
 
     /** The pause between two reads of the game state while a login is awaited. */
     private static final int LOGIN_POLL_MS = 100;
@@ -171,14 +172,15 @@ final class Ops {
         int limit = args.get("limit").getAsInt();
 
         return game.onClientThread(client -> {
-            WidgetWalk walk = new WidgetWalk(group, needle, includeHidden, limit);
+            WidgetWalk walk = new WidgetWalk(group, needle, limit);
             Set<Integer> roots = new LinkedHashSet<>();
 
             for (Widget root : client.getWidgetRoots()) {
                 if (root == null) continue;
 
                 roots.add(root.getId() >>> 16);
-                walk.visit(root, 0);
+
+                if (!walk.truncated) firstWidget(root, includeHidden, walk::collect, 0);
             }
 
             JsonObject out = new JsonObject();
@@ -210,56 +212,31 @@ final class Ops {
         /** The lower-case text to look for, or null to keep every widget. */
         private final String needle;
 
-        /** Whether hidden widgets are walked too. */
-        private final boolean includeHidden;
-
         /** The most widgets to collect. */
         private final int limit;
 
         /** Create a walk with the given filters. */
-        WidgetWalk(Integer group, String needle, boolean includeHidden, int limit) {
+        WidgetWalk(Integer group, String needle, int limit) {
             this.group = group;
             this.needle = needle;
-            this.includeHidden = includeHidden;
             this.limit = limit;
         }
 
-        /** Collect the widget and walk its children, unless it is hidden from this walk or too deep. */
-        void visit(Widget widget, int depth) {
-            if (widget == null || truncated || depth > WIDGET_DEPTH_LIMIT) return;
+        /**
+         * Add the widget when it passes the filters, or mark the walk truncated once the limit is
+         * reached. Returns whether the walk is truncated, which ends it.
+         */
+        boolean collect(Widget widget) {
+            if (group != null && widget.getId() >>> 16 != group) return false;
 
-            boolean hidden = widget.isHidden();
-            if (hidden && !includeHidden) return;
+            JsonObject described = describe(widget, widget.isHidden());
+            if (described == null) return false;
 
-            collect(widget, hidden);
-            visitAll(widget.getStaticChildren(), depth);
-            visitAll(widget.getDynamicChildren(), depth);
-            visitAll(widget.getNestedChildren(), depth);
-        }
+            truncated = found.size() >= limit;
 
-        /** Add the widget when it passes the filters, or mark the walk truncated once the limit is reached. */
-        private void collect(Widget widget, boolean hidden) {
-            if (group != null && widget.getId() >>> 16 != group) return;
+            if (!truncated) found.add(described);
 
-            JsonObject described = describe(widget, hidden);
-            if (described == null) return;
-
-            if (found.size() >= limit) {
-                truncated = true;
-
-                return;
-            }
-
-            found.add(described);
-        }
-
-        /** Visit each of the children, one level deeper. */
-        private void visitAll(Widget[] children, int depth) {
-            if (children == null) return;
-
-            for (Widget child : children) {
-                visit(child, depth + 1);
-            }
+            return truncated;
         }
 
         /** Describe the widget. Returns null when it has nothing to read or click, or does not hold the needle. */
@@ -297,6 +274,28 @@ final class Ops {
         private boolean contains(String haystack) {
             return haystack.toLowerCase(Locale.ROOT).contains(needle);
         }
+    }
+
+    /**
+     * Find the first widget under the root, itself included, that passes the test. A widget is tested
+     * before its static, its dynamic and its nested children, down to the depth limit, and a hidden
+     * widget is skipped with all under it unless hidden ones are included. Null when none passes.
+     */
+    static Widget firstWidget(Widget root, boolean includeHidden, Predicate<Widget> test, int depth) {
+        if (root == null || (root.isHidden() && !includeHidden) || depth > WIDGET_DEPTH_LIMIT) return null;
+
+        if (test.test(root)) return root;
+
+        Widget[] nested = root.getNestedChildren();
+
+        for (Widget[] children : Arrays.asList(root.getStaticChildren(), root.getDynamicChildren(), nested)) {
+            for (Widget child : children == null ? new Widget[0] : children) {
+                Widget found = firstWidget(child, includeHidden, test, depth + 1);
+                if (found != null) return found;
+            }
+        }
+
+        return null;
     }
 
     /** Read the requested player variables, varbits and client variables. */

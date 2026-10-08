@@ -250,7 +250,7 @@ final class Targets {
     /** Find the visible widget that continues a dialog. Throws {@code not_found} while no dialog waits. */
     private static Candidate continueWidget(Client client) throws BridgeException {
         for (Widget root : client.getWidgetRoots()) {
-            Widget widget = firstVisible(root, Targets::continues, 0);
+            Widget widget = Ops.firstWidget(root, false, Targets::continues, 0);
             if (widget != null) return found(widget);
         }
 
@@ -267,24 +267,6 @@ final class Targets {
         WidgetTarget target = new WidgetTarget(Ops.ref(widget), widget.getId(), widget.getIndex(), CONTINUE);
 
         return new Candidate(target, List.of(CONTINUE));
-    }
-
-    /** Find the first visible widget under the root, itself included, that passes the test. */
-    private static Widget firstVisible(Widget root, Predicate<Widget> test, int depth) {
-        if (root == null || root.isHidden() || depth > Ops.WIDGET_DEPTH_LIMIT) return null;
-
-        if (test.test(root)) return root;
-
-        Widget[] nested = root.getNestedChildren();
-
-        for (Widget[] children : Arrays.asList(root.getStaticChildren(), root.getDynamicChildren(), nested)) {
-            for (Widget child : children == null ? new Widget[0] : children) {
-                Widget found = firstVisible(child, test, depth + 1);
-                if (found != null) return found;
-            }
-        }
-
-        return null;
     }
 
     /** Find the object that has the id, or shows as it, on the world tile. */
