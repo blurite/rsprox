@@ -103,7 +103,9 @@ import java.nio.file.Path
 import java.time.Instant
 import java.util.*
 import java.util.concurrent.Callable
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
@@ -133,6 +135,7 @@ public class ProxyService(
     private var initialPort: Int = -1
     private val processes = ConcurrentHashMap<Int, List<ProcessHandle>>()
     private val connections: ProxyConnectionContainer = ProxyConnectionContainer()
+    private val clientListeners = CopyOnWriteArrayList<ClientListener>()
     private lateinit var credentials: BinaryCredentialsStore
     private var rspsModulus: String? = null
     public lateinit var proxyTargets: List<ProxyTargetConfig>
@@ -597,6 +600,7 @@ public class ProxyService(
 
     public fun killAliveProcess(port: Int) {
         removeSessionMonitor(port)
+        notifyClientClosed(port)
         val processList = processes.remove(port) ?: return
         for (process in processList) {
             try {
@@ -724,14 +728,62 @@ public class ProxyService(
             logger.error(t) { "Unable to bind network port $port for native client." }
             return
         }
-        this.connections.addSessionMonitor(port, sessionMonitor)
-        ClientTypeDictionary[port] = "RuneLite (${operatingSystem.shortName})"
-        launchJavaProcess(
-            port,
-            operatingSystem,
-            character,
-            target,
-        )
+        launchObserved(port) {
+            this.connections.addSessionMonitor(port, observed(sessionMonitor, port, target))
+            ClientTypeDictionary[port] = "RuneLite (${operatingSystem.shortName})"
+            launchJavaProcess(
+                port,
+                operatingSystem,
+                character,
+                target,
+            )
+        }
+    }
+
+    public fun addClientListener(listener: ClientListener) {
+        clientListeners += listener
+    }
+
+    private fun observed(
+        sessionMonitor: SessionMonitor<BinaryHeader>,
+        port: Int,
+        target: ProxyTarget,
+    ): SessionMonitor<BinaryHeader> {
+        val observers =
+            clientListeners.mapNotNull { listener ->
+                try {
+                    listener.onClientLaunch(port, target.config)
+                } catch (t: Throwable) {
+                    logger.error(t) { "Client listener failed for the launch on port $port" }
+                    null
+                }
+            }
+        if (observers.isEmpty()) return sessionMonitor
+        return FanOutSessionMonitor(sessionMonitor, observers)
+    }
+
+    private inline fun launchObserved(
+        port: Int,
+        launch: () -> Unit,
+    ) {
+        try {
+            launch()
+        } catch (t: Throwable) {
+            notifyClientClosed(port)
+            throw t
+        }
+        // A launcher that handed its client over and exited before this point leaves nothing to watch.
+        whenAllExit(processes[port].orEmpty()) { notifyClientClosed(port) }
+    }
+
+    private fun notifyClientClosed(port: Int) {
+        for (listener in clientListeners) {
+            try {
+                listener.onClientClosed(port)
+            } catch (t: Throwable) {
+                logger.error(t) { "Client listener failed for the close on port $port" }
+            }
+        }
     }
 
     public fun loadReplaySession(path: Path): ReplaySession =
@@ -950,16 +1002,18 @@ public class ProxyService(
             logger.error(t) { "Unable to bind network port $port for native client." }
             return
         }
-        launchNativeClientProcess(
-            os = os,
-            rsa = rsa,
-            character = character,
-            port = port,
-            target = target,
-            clientTypeLabel = "Native (${os.shortName})",
-            registerConnectionInfo = true,
-            sessionMonitor = sessionMonitor,
-        )
+        launchObserved(port) {
+            launchNativeClientProcess(
+                os = os,
+                rsa = rsa,
+                character = character,
+                port = port,
+                target = target,
+                clientTypeLabel = "Native (${os.shortName})",
+                registerConnectionInfo = true,
+                sessionMonitor = observed(sessionMonitor, port, target),
+            )
+        }
     }
 
     public fun launchRs3Client(
@@ -1647,4 +1701,24 @@ public class ProxyService(
             }
         }
     }
+}
+
+/**
+ * Run [action] once every process of [processes] that is alive now, and every descendant of it, has exited.
+ * Returns false, and never runs [action], when none of them is alive.
+ */
+internal fun whenAllExit(
+    processes: List<ProcessHandle>,
+    action: () -> Unit,
+): Boolean {
+    val alive =
+        processes
+            .flatMap { process -> process.descendants().collect(Collectors.toList()) + process }
+            .distinct()
+            .filter { it.isAlive }
+    if (alive.isEmpty()) return false
+    CompletableFuture
+        .allOf(*alive.map { it.onExit() }.toTypedArray())
+        .thenRun(action)
+    return true
 }
