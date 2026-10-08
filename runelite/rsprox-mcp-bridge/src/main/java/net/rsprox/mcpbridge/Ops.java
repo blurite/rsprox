@@ -583,40 +583,26 @@ final class Ops {
         return value == null ? "" : value;
     }
 
-    /** Get the named argument, or null when it is absent or JSON null. */
-    private static JsonElement present(JsonObject args, String name) {
-        JsonElement value = args.get(name);
-
-        return value == null || value.isJsonNull() ? null : value;
-    }
-
     /** Get the named integer argument, or null when it is absent. */
     static Integer optionalInt(JsonObject args, String name) {
-        JsonElement value = present(args, name);
-
-        return value == null ? null : value.getAsInt();
+        return args.has(name) ? args.get(name).getAsInt() : null;
     }
 
     /** Get the named string argument, or null when it is absent. */
     static String optionalString(JsonObject args, String name) {
-        JsonElement value = present(args, name);
-
-        return value == null ? null : value.getAsString();
+        return args.has(name) ? args.get(name).getAsString() : null;
     }
 
     /** Get the named boolean argument, or false when it is absent. */
     private static boolean optionalBoolean(JsonObject args, String name) {
-        JsonElement value = present(args, name);
-
-        return value != null && value.getAsBoolean();
+        return args.has(name) && args.get(name).getAsBoolean();
     }
 
     /** Get the named array of integers, or an empty array when it is absent. */
     private static int[] optionalInts(JsonObject args, String name) {
-        JsonElement value = present(args, name);
-        if (value == null) return new int[0];
+        if (!args.has(name)) return new int[0];
 
-        JsonArray array = value.getAsJsonArray();
+        JsonArray array = args.getAsJsonArray(name);
         int[] out = new int[array.size()];
 
         for (int i = 0; i < out.length; i++) {
