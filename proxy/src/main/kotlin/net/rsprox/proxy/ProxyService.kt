@@ -507,6 +507,11 @@ public class ProxyService(
         return properties.getPropertyOrNull(FILTERS_STATUS) ?: 0
     }
 
+    public fun setMcpEnabled(enabled: Boolean) {
+        properties.setProperty(MCP_ENABLED, enabled)
+        properties.saveProperties(PROPERTIES_FILE)
+    }
+
     public fun getMcpEnabled(): Boolean {
         return properties.getProperty(MCP_ENABLED)
     }

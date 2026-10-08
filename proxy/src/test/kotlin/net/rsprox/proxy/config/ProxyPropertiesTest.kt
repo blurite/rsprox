@@ -37,6 +37,18 @@ class ProxyPropertiesTest {
     }
 
     @Test
+    fun `an MCP endpoint that was turned on and saved is on when the file is read again`() {
+        val file = Files.createTempFile("proxy", ".properties")
+        Files.writeString(file, "app.theme=RuneLite\n")
+        val properties = ProxyProperties(file)
+
+        properties.setProperty(ProxyProperty.MCP_ENABLED, true)
+        properties.saveProperties(file)
+
+        assertEquals(true, ProxyProperties(file).getProperty(ProxyProperty.MCP_ENABLED))
+    }
+
+    @Test
     fun `the bridge plugin is installed unless the file turns it off`() {
         val file = Files.createTempFile("proxy", ".properties")
         Files.writeString(file, "app.theme=RuneLite\n")
