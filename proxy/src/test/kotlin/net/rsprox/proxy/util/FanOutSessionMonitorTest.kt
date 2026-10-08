@@ -86,49 +86,29 @@ class FanOutSessionMonitorTest {
         )
 
     @Test
-    fun `every callback reaches the primary monitor and each observer`() {
+    fun `every callback reaches the primary monitor and each observer, past an observer that throws`() {
         val primary = Recorder()
-        val first = Recorder()
-        val second = Recorder()
-
-        everyCallback(FanOutSessionMonitor(primary, listOf(first, second)))
-
-        assertEquals(everyCall, primary.calls)
-        assertEquals(everyCall, first.calls)
-        assertEquals(everyCall, second.calls)
-    }
-
-    @Test
-    fun `the callbacks of a login reach the login monitor of the primary and of each observer`() {
-        val primary = Recorder()
-        val observer = Recorder()
-
-        everyCallback(FanOutSessionMonitor(primary, listOf(observer)).forSession("a"))
-
-        assertEquals(listOf("forSession a"), primary.calls)
-        assertEquals(listOf("forSession a"), observer.calls)
-        assertEquals(everyCall.map { "a:$it" }, primary.logins.single().calls)
-        assertEquals(everyCall.map { "a:$it" }, observer.logins.single().calls)
-    }
-
-    @Test
-    fun `an observer that throws keeps no callback from the primary monitor or from a later observer`() {
-        val primary = Recorder()
+        val failing = Recorder(failing = true)
         val later = Recorder()
 
-        everyCallback(FanOutSessionMonitor(primary, listOf(Recorder(failing = true), later)))
+        everyCallback(FanOutSessionMonitor(primary, listOf(failing, later)))
 
         assertEquals(everyCall, primary.calls)
+        assertEquals(everyCall, failing.calls)
         assertEquals(everyCall, later.calls)
     }
 
     @Test
-    fun `an observer that fails to make its login monitor is left out of that login`() {
+    fun `the callbacks of a login reach the login monitors, less that of an observer that fails to make one`() {
         val primary = Recorder()
+        val failing = Recorder(failing = true)
         val later = Recorder()
 
-        everyCallback(FanOutSessionMonitor(primary, listOf(Recorder(failing = true), later)).forSession("a"))
+        everyCallback(FanOutSessionMonitor(primary, listOf(failing, later)).forSession("a"))
 
+        assertEquals(listOf("forSession a"), primary.calls)
+        assertEquals(listOf("forSession a"), failing.calls)
+        assertEquals(listOf("forSession a"), later.calls)
         assertEquals(everyCall.map { "a:$it" }, primary.logins.single().calls)
         assertEquals(everyCall.map { "a:$it" }, later.logins.single().calls)
     }
