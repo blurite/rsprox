@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import javax.swing.SwingUtilities;
 import net.runelite.api.Client;
@@ -62,12 +63,6 @@ final class GameAccess implements AutoCloseable {
         T call(Client client) throws BridgeException;
     }
 
-    /** A handler of one type of event that the client posts. */
-    interface ClientEvent<T> {
-        /** Handle an event that the client posted, on the thread it posted it from. */
-        void on(Client client, T event);
-    }
-
     /** A registration for events, which lasts until it is closed. */
     interface Subscription extends AutoCloseable {
         /** Stop receiving the events. Idempotent. */
@@ -101,9 +96,9 @@ final class GameAccess implements AutoCloseable {
         }
     }
 
-    /** Receive every event of the type until the subscription is closed. */
-    <T> Subscription subscribe(Class<T> type, ClientEvent<T> handler) {
-        EventBus.Subscriber subscriber = eventBus.register(type, event -> handler.on(client, event), PRIORITY);
+    /** Receive every event of the type, on the thread the client posts it from, until the subscription is closed. */
+    <T> Subscription subscribe(Class<T> type, BiConsumer<Client, T> handler) {
+        EventBus.Subscriber subscriber = eventBus.register(type, event -> handler.accept(client, event), PRIORITY);
 
         return () -> eventBus.unregister(subscriber);
     }

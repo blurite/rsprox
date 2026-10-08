@@ -21,6 +21,7 @@ import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -316,19 +317,14 @@ final class Ops {
         });
     }
 
-    /** A read of one kind of client variable. */
-    private interface VarReader {
-        /** Read the variable with the given id. */
-        JsonElement read(int id);
-    }
-
     /** Read each id through the reader, keyed by id. Throws {@code not_found} for an id the client does not have. */
-    private static JsonObject readVars(String kind, int[] ids, VarReader reader) throws BridgeException {
+    private static JsonObject readVars(String kind, int[] ids, IntFunction<JsonElement> reader)
+        throws BridgeException {
         JsonObject out = new JsonObject();
 
         for (int id : ids) {
             try {
-                out.add(Integer.toString(id), reader.read(id));
+                out.add(Integer.toString(id), reader.apply(id));
             } catch (RuntimeException e) {
                 // The client indexes its tables with the id and throws for one that does not exist.
                 throw new BridgeException("not_found", kind + " " + id + " could not be read: " + e);
