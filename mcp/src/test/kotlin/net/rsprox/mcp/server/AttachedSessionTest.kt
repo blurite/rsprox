@@ -82,7 +82,8 @@ class AttachedSessionTest {
     fun `the session list reports each fact of a login from the moment the proxy knows it`() {
         val client = attach()
         val attached =
-            """{"session":"s1","kind":"attached","target":"Local","access":"read","state":"attached","proxyPort":43701"""
+            """{"session":"s1","kind":"attached","target":"Local","access":"read","state":"attached",""" +
+                """"proxyPort":43701"""
         val accepted =
             """"login":{"epoch":1,"revision":235,"world":301,"host":"127.0.1.3","localPlayerIndex":7,""" +
                 """"connectedAt":"2023-11-14T22:13:20Z""""
@@ -126,8 +127,9 @@ class AttachedSessionTest {
         assertEquals(
             listOf(
                 """{"session":"s1","kind":"attached","target":"Local","access":"read","state":"attached",""" +
-                    """"proxyPort":43701,"login":{"epoch":1,"revision":235,"world":301,"host":"127.0.1.3","localPlayerIndex":7,""" +
-                    """"connectedAt":"2023-11-14T22:13:20Z","online":true,"transcribing":false},"cursor":2}""",
+                    """"proxyPort":43701,"login":{"epoch":1,"revision":235,"world":301,"host":"127.0.1.3",""" +
+                    """"localPlayerIndex":7,"connectedAt":"2023-11-14T22:13:20Z","online":true,""" +
+                    """"transcribing":false},"cursor":2}""",
             ),
             sessions(),
         )
