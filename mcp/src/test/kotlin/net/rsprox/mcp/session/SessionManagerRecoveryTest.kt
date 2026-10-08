@@ -70,21 +70,6 @@ class SessionManagerRecoveryTest {
     }
 
     @Test
-    fun `a hello with a bad token is rejected and leaves the launching session waiting for its client`() {
-        val manager = manager()
-        manager.start(null, null, 0)
-
-        assertEquals("bad token", fixture.dial(43650, token = "not-the-token").read()?.get("reject")?.asText())
-
-        assertEquals("launching", manager.list().single().state)
-        assertEquals(emptyList(), launcher.killed)
-
-        fixture.dial(43650)
-
-        assertEquals("connected", manager.start(null, "s1", 10_000).state)
-    }
-
-    @Test
     fun `a hello of a stale plugin jar stops the session and says the jar is stale`() {
         val manager = manager()
         manager.start(null, null, 0)

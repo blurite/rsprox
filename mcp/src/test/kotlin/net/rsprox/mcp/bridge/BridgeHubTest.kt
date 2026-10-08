@@ -66,6 +66,7 @@ class BridgeHubTest {
         assertFalse(listener.hello.isDone)
 
         assertEquals(1, fixture.dial(43650).read()?.get("welcome")?.asInt())
+        assertEquals(emptyList(), listener.rejected)
     }
 
     @Test

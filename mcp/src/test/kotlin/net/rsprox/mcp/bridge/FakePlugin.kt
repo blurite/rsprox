@@ -8,6 +8,7 @@ import java.net.Socket
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.concurrent.thread
 
 private val mapper = jacksonObjectMapper()
@@ -52,6 +53,7 @@ internal class RecordingListener(
 ) : BridgeListener {
     val hello = CompletableFuture<Pair<BridgeLink, Long>>()
     val closed = CompletableFuture<BridgeLink>()
+    val rejected = CopyOnWriteArrayList<String>()
 
     override fun onHello(
         link: BridgeLink,
@@ -67,7 +69,7 @@ internal class RecordingListener(
     }
 
     override fun onRejected(reason: String) {
-        //
+        rejected += reason
     }
 }
 
