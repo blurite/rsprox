@@ -76,11 +76,11 @@ public class McpBridgePlugin extends Plugin {
 
         // The server writes this path in McpMain.kt.
         Path rendezvous = Paths.get(System.getProperty("user.home"), ".rsprox", "mcp", "bridge.json");
-        game = new GameAccess(client, clientThread::invoke, drawManager, eventBus);
-        GameAccess dialed = game;
+        GameAccess game = new GameAccess(client, clientThread::invoke, drawManager, eventBus);
+        this.game = game;
         int port = httpPort.getAsInt();
 
-        dial = BridgeDial.start(() -> BridgeConnection.dial(rendezvous, port, gson, dialed), this::onConnected);
+        dial = BridgeDial.start(() -> BridgeConnection.dial(rendezvous, port, gson, game), this::onConnected);
     }
 
     /** Stop the GPU plugin when rsprox asked for software rendering. Runs on the thread of the dial. */
