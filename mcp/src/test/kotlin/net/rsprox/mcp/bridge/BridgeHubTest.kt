@@ -17,25 +17,18 @@ class BridgeHubTest {
     private val mapper = jacksonObjectMapper()
     private val fixture = TestHub()
     private val hub = fixture.hub
-    private val plugins = ArrayList<FakePlugin>()
 
     @AfterTest
     fun cleanUp() {
-        plugins.forEach { it.close() }
         fixture.close()
     }
-
-    private fun dial(
-        httpPort: Int,
-        token: String? = null,
-    ): FakePlugin = FakePlugin.dial(fixture.rendezvous, httpPort, token).also { plugins += it }
 
     private fun args(json: String = "{}"): ObjectNode = mapper.readTree(json) as ObjectNode
 
     /** A welcomed plugin and the link the hub made for it. */
     private fun connect(listener: RecordingListener = RecordingListener()): Pair<FakePlugin, BridgeLink> {
         hub.expect(43650, listener)
-        val plugin = dial(43650)
+        val plugin = fixture.dial(43650)
         assertEquals(1, plugin.read()?.get("welcome")?.asInt())
 
         return plugin to listener.hello.get(10, TimeUnit.SECONDS).first
@@ -53,7 +46,7 @@ class BridgeHubTest {
     fun `a hello for an expected port is welcomed and handed to its listener`() {
         val listener = RecordingListener(session = "s3")
         hub.expect(43650, listener)
-        val plugin = dial(43650)
+        val plugin = fixture.dial(43650)
 
         val welcome = plugin.read()!!
         assertEquals(1, welcome.get("welcome").asInt())
@@ -67,18 +60,18 @@ class BridgeHubTest {
         val listener = RecordingListener()
         hub.expect(43650, listener)
 
-        val intruder = dial(43650, token = "not-the-token")
+        val intruder = fixture.dial(43650, token = "not-the-token")
         assertEquals("bad token", intruder.read()?.get("reject")?.asText())
         assertNull(intruder.read())
         assertFalse(listener.hello.isDone)
 
-        assertEquals(1, dial(43650).read()?.get("welcome")?.asInt())
+        assertEquals(1, fixture.dial(43650).read()?.get("welcome")?.asInt())
     }
 
     @Test
     fun `a port that no session expects is rejected`() {
         hub.expect(43650, RecordingListener())
-        val stranger = dial(43600)
+        val stranger = fixture.dial(43600)
         assertEquals("no session expects httpPort 43600", stranger.read()?.get("reject")?.asText())
         assertNull(stranger.read())
     }

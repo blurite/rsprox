@@ -27,10 +27,19 @@ internal fun awaitTrue(
 
 /** A started hub whose rendezvous file lives in a temporary directory. */
 internal class TestHub : AutoCloseable {
-    val rendezvous: Path = Files.createTempDirectory("mcp-bridge-test").resolve("mcp").resolve("bridge.json")
+    private val rendezvous = Files.createTempDirectory("mcp-bridge-test").resolve("mcp").resolve("bridge.json")
+    private val plugins = ArrayList<FakePlugin>()
     val hub = BridgeHub(rendezvous, Rendering.GPU).also { it.start() }
 
+    /** Connects a plugin that says hello for [httpPort]. The hub's answer is its next [FakePlugin.read]. */
+    fun dial(
+        httpPort: Int,
+        token: String? = null,
+        protocol: Int = 1,
+    ): FakePlugin = FakePlugin.dial(rendezvous, httpPort, token, protocol).also { plugins += it }
+
     override fun close() {
+        plugins.forEach { it.close() }
         hub.close()
         rendezvous.parent.parent
             .toFile()
@@ -98,12 +107,12 @@ internal class FakePlugin private constructor(
     }
 
     companion object {
-        /** Connects and says hello the way the plugin does. The hub's answer is the next [read]. */
+        /** Connects and says hello the way the plugin does. */
         fun dial(
             rendezvous: Path,
             httpPort: Int,
-            token: String? = null,
-            protocol: Int = 1,
+            token: String?,
+            protocol: Int,
         ): FakePlugin {
             val file = mapper.readTree(Files.readAllBytes(rendezvous))
             val socket = Socket(InetAddress.getLoopbackAddress(), file.get("port").asInt())

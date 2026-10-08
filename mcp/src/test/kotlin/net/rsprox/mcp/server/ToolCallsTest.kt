@@ -1,7 +1,6 @@
 package net.rsprox.mcp.server
 
 import com.fasterxml.jackson.databind.JsonNode
-import net.rsprox.mcp.bridge.FakePlugin
 import net.rsprox.mcp.bridge.TestHub
 import net.rsprox.mcp.packets.Origin
 import net.rsprox.mcp.packets.TapSettingSetStore
@@ -29,7 +28,6 @@ class ToolCallsTest {
     private val manager = SessionManager(launcher, TapSettingSetStore, fixture.hub)
     private val server = McpHttpServer(0, tools { manager }, "1.2.3").also { it.start() }
     private val http = HttpClient.newHttpClient()
-    private val plugins = ArrayList<FakePlugin>()
     private val talkTo = """{"target":"npc","index":0,"option":"Talk-to"}"""
 
     // Every request the plugin received, as its op and its arguments.
@@ -61,7 +59,6 @@ class ToolCallsTest {
     @AfterTest
     fun cleanUp() {
         server.close()
-        plugins.forEach { it.close() }
         fixture.close()
     }
 
@@ -115,7 +112,7 @@ class ToolCallsTest {
 
     private fun connect() {
         call("session_start", """{"target":"My Server","wait_ms":0}""")
-        val plugin = FakePlugin.dial(fixture.rendezvous, FakeLauncher.FIRST_HTTP_PORT).also { plugins += it }
+        val plugin = fixture.dial(FakeLauncher.FIRST_HTTP_PORT)
         plugin.read()
         plugin.serve { op, args ->
             received += "$op $args"

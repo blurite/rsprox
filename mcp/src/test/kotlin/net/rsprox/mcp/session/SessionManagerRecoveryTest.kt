@@ -1,6 +1,5 @@
 package net.rsprox.mcp.session
 
-import net.rsprox.mcp.bridge.FakePlugin
 import net.rsprox.mcp.bridge.TestHub
 import net.rsprox.mcp.bridge.awaitTrue
 import net.rsprox.mcp.packets.PacketQuery
@@ -19,11 +18,9 @@ import kotlin.test.assertTrue
 class SessionManagerRecoveryTest {
     private val launcher = FakeLauncher()
     private val fixture = TestHub()
-    private val plugins = ArrayList<FakePlugin>()
 
     @AfterTest
     fun cleanUp() {
-        plugins.forEach { it.close() }
         fixture.close()
     }
 
@@ -31,12 +28,6 @@ class SessionManagerRecoveryTest {
         launchTimeoutMs: Long = 60_000,
         helloTimeoutMs: Long = 60_000,
     ) = SessionManager(launcher, TapSettingSetStore, fixture.hub, launchTimeoutMs, helloTimeoutMs)
-
-    private fun dial(
-        httpPort: Int,
-        token: String? = null,
-        protocol: Int = 1,
-    ): FakePlugin = FakePlugin.dial(fixture.rendezvous, httpPort, token, protocol).also { plugins += it }
 
     private fun SessionManager.awaitStopped(session: String): SessionSnapshot {
         awaitTrue("session $session is stopped") { list().single { it.session == session }.state == "stopped" }
@@ -47,7 +38,7 @@ class SessionManagerRecoveryTest {
     private fun SessionManager.markers(session: String): List<String> =
         resolve(session).packets.read(PacketQuery()).packets.map { it.prot }
 
-    private fun rejection(httpPort: Int): String? = dial(httpPort).read()?.get("reject")?.asText()
+    private fun rejection(httpPort: Int): String? = fixture.dial(httpPort).read()?.get("reject")?.asText()
 
     @Test
     fun `a client whose plugin never says hello is killed and its session stops with the reason`() {
@@ -67,7 +58,7 @@ class SessionManagerRecoveryTest {
     fun `a client whose plugin says hello in time stays connected after the deadline`() {
         val manager = manager(helloTimeoutMs = 1_000)
         manager.start(null, null, 0)
-        dial(FakeLauncher.FIRST_HTTP_PORT)
+        fixture.dial(FakeLauncher.FIRST_HTTP_PORT)
         assertEquals("connected", manager.start(null, "s1", 10_000).state)
 
         // The deadlines pass in the order of the launches, so that of s1 has passed once s2 is stopped.
@@ -83,12 +74,12 @@ class SessionManagerRecoveryTest {
         val manager = manager()
         manager.start(null, null, 0)
 
-        assertEquals("bad token", dial(43650, token = "not-the-token").read()?.get("reject")?.asText())
+        assertEquals("bad token", fixture.dial(43650, token = "not-the-token").read()?.get("reject")?.asText())
 
         assertEquals("launching", manager.list().single().state)
         assertEquals(emptyList(), launcher.killed)
 
-        dial(43650)
+        fixture.dial(43650)
 
         assertEquals("connected", manager.start(null, "s1", 10_000).state)
     }
@@ -98,7 +89,7 @@ class SessionManagerRecoveryTest {
         val manager = manager()
         manager.start(null, null, 0)
 
-        dial(43650, protocol = 2).read()
+        fixture.dial(43650, protocol = 2).read()
 
         assertEquals(
             "the client started, but its bridge plugin was rejected: " +
@@ -111,10 +102,10 @@ class SessionManagerRecoveryTest {
     fun `a rejected hello that names the port of a connected session leaves that session alone`() {
         val manager = manager()
         manager.start(null, null, 0)
-        dial(43650)
+        fixture.dial(43650)
         assertEquals("connected", manager.start(null, "s1", 10_000).state)
 
-        assertEquals("bad token", dial(43650, token = "not-the-token").read()?.get("reject")?.asText())
+        assertEquals("bad token", fixture.dial(43650, token = "not-the-token").read()?.get("reject")?.asText())
         assertEquals("no session expects httpPort 43650", rejection(43650))
 
         assertEquals("connected", manager.list().single().state)
@@ -152,7 +143,7 @@ class SessionManagerRecoveryTest {
     fun `a launch whose launcher exits fails at once and leaves the other sessions usable`() {
         val manager = manager()
         manager.start(null, null, 0)
-        val plugin = dial(43650)
+        val plugin = fixture.dial(43650)
         plugin.read()
         assertEquals("connected", manager.start(null, "s1", 10_000).state)
         plugin.serve { _, _ -> """"ok":{"tick":7}""" }
