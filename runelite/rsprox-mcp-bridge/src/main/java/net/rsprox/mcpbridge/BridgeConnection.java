@@ -19,19 +19,22 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import net.runelite.client.RuneLite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * The socket to rsprox: one JSON object per line in each direction. A reader thread hands each request
- * to a small worker pool, so a request that waits on the game never holds up the next one.
+ * to a small worker pool, so a request that waits on the game never holds up the next one. The ops a
+ * connection can run are built once, from the access that rsprox's welcome and the client's own home
+ * directory allow, so a connection made for reading has no op that sends input.
  */
 final class BridgeConnection implements AutoCloseable {
     /** The logger of the connection. */
     private static final Logger log = LoggerFactory.getLogger(BridgeConnection.class);
 
-    /** The version of the wire protocol that this plugin speaks. */
-    private static final int PROTOCOL = 1;
+    /** The version of the wire protocol that this plugin speaks. Version 2 has `access` in the welcome. */
+    private static final int PROTOCOL = 2;
 
     /** The longest wait for rsprox to accept the socket. */
     private static final int CONNECT_TIMEOUT_MS = 2_000;
@@ -81,10 +84,11 @@ final class BridgeConnection implements AutoCloseable {
     }
 
     /**
-     * Connect to the rsprox that launched this client on {@code httpPort}. Returns null, having started
-     * no thread, when there is no rsprox to talk to or it does not expect this client.
+     * Connect to the rsprox that launched this client on {@code httpPort}, and build the ops for the
+     * access its welcome allows. Returns null, having started no thread, when there is no rsprox to
+     * talk to or it does not expect this client.
      */
-    static BridgeConnection dial(Path rendezvous, int httpPort, Gson clientGson, Ops ops) {
+    static BridgeConnection dial(Path rendezvous, int httpPort, Gson clientGson, GameAccess game) {
         if (!Files.isRegularFile(rendezvous)) return null;
 
         // The protocol spells out an absent player as null, which the client's Gson would drop.
@@ -125,9 +129,11 @@ final class BridgeConnection implements AutoCloseable {
 
             socket.setSoTimeout(0);
             boolean software = answer.has("softwareRendering") && answer.get("softwareRendering").getAsBoolean();
+            Access access = Access.of(answer, RuneLite.RUNELITE_DIR);
+            Ops ops = access == Access.DRIVE ? Ops.driving(game) : Ops.readOnly(game);
             BridgeConnection connection = new BridgeConnection(socket, reader, writer, gson, ops, software);
             connection.start();
-            log.info("rsprox MCP bridge connected as session {}", answer.get("session"));
+            log.info("rsprox MCP bridge connected as session {} with {} access", answer.get("session"), access);
 
             return connection;
         } catch (IOException | RuntimeException e) {

@@ -8,8 +8,9 @@ import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
 
 /**
- * Reads and turns the camera. A turn waits until the camera has settled, within a bound, because the
- * client moves the camera toward its target over several ticks.
+ * Reads and turns the camera. Reading is the op {@code camera}; the turn, which is input, is the op
+ * {@code camera_turn}. A turn waits until the camera has settled, within a bound, because the client
+ * moves the camera toward its target over several ticks.
  */
 final class Camera implements Ops.Op {
     /** The cycles over which neither the yaw nor the pitch may change for the camera to count as settled. */
@@ -26,24 +27,21 @@ final class Camera implements Ops.Op {
         this.game = game;
     }
 
-    /** Determine if the arguments ask for a turn of the camera, and not only for a read of it. */
-    static boolean turns(JsonObject args) {
-        return args.has("yaw") || args.has("pitch") || args.has("look_at");
+    /** Report the camera's yaw and pitch without touching it. */
+    JsonElement read(JsonObject args) throws BridgeException {
+        return game.onClientThread(client -> describe(client, null));
     }
 
     /**
-     * Turn the camera as asked, or read it, and report its yaw and pitch, with whether the looked-at
-     * target is on screen.
+     * Turn the camera as asked, wait for it to settle, and report its yaw and pitch, with whether the
+     * looked-at target is on screen.
      */
     @Override
     public JsonElement run(JsonObject args) throws BridgeException {
         String lookAt = Ops.optionalString(args, "look_at");
         Target target = lookAt == null ? null : locate(lookAt, args);
-
-        if (turns(args)) {
-            turn(args, target);
-            settle();
-        }
+        turn(args, target);
+        settle();
 
         return game.onClientThread(client -> describe(client, target));
     }

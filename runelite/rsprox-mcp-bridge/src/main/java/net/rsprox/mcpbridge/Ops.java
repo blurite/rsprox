@@ -34,7 +34,11 @@ import net.runelite.api.Player;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.widgets.Widget;
 
-/** The operations rsprox can ask for, by name. Coordinates are canvas units everywhere. */
+/**
+ * The operations rsprox can ask for, by name. Coordinates are canvas units everywhere. The table is
+ * built once for the access of its connection: {@link #readOnly} holds only ops that read, and
+ * {@link #driving} adds the ops that send input, together with the one mouse they send it with.
+ */
 final class Ops {
     /** The shape of a widget reference: a group, a child and an optional dynamic child index. */
     private static final Pattern WIDGET_REF = Pattern.compile("(\\d+):(\\d+)(?:\\[(\\d+)])?");
@@ -60,8 +64,8 @@ final class Ops {
     /** The gateway to the client and the threads it must be used on. */
     private final GameAccess game;
 
-    /** The real mouse of the client. */
-    private final Mouse mouse;
+    /** The camera, which every connection reads and a driving one also turns. */
+    private final Camera camera;
 
     /** The ops by the name rsprox calls them. */
     private final Map<String, Op> table = new HashMap<>();
@@ -69,20 +73,37 @@ final class Ops {
     /** The lock that an op holds for as long as it drives the one mouse and keyboard of the client. */
     private final Object input = new Object();
 
-    /** Create the op table for the given game. */
-    Ops(GameAccess game) {
+    /** Create the table of the ops that only read the client. */
+    private Ops(GameAccess game) {
         this.game = game;
-        this.mouse = new Mouse(game);
+        this.camera = new Camera(game);
         reading("state", this::state);
         reading("widgets", this::widgets);
         reading("vars", this::vars);
         reading("screenshot", this::screenshot);
-        reading("login", this::login);
         reading("entities", new Entities(game));
-        driving("click", this::click);
-        driving("type", this::type);
-        driving("interact", new Interact(game, mouse));
-        driving("camera", Camera::turns, new Camera(game));
+        reading("camera", camera::read);
+    }
+
+    /** Create the ops of a connection that may only read the client. Nothing in this table sends input. */
+    static Ops readOnly(GameAccess game) {
+        return new Ops(game);
+    }
+
+    /**
+     * Create the ops of a connection that may drive the client: the reading ops, plus those that send
+     * input. The mouse they send it with exists only here.
+     */
+    static Ops driving(GameAccess game) {
+        Ops ops = new Ops(game);
+        Mouse mouse = new Mouse(game);
+        ops.driving("login", ops::login);
+        ops.driving("click", args -> ops.click(mouse, args));
+        ops.driving("type", ops::type);
+        ops.driving("interact", new Interact(game, mouse));
+        ops.driving("camera_turn", ops.camera);
+
+        return ops;
     }
 
     /** Register an op that produces no input, which runs beside any other op. */
@@ -92,12 +113,7 @@ final class Ops {
 
     /** Register an op that produces input, which runs alone among such ops from its start to its end. */
     private void driving(String name, Op op) {
-        driving(name, args -> true, op);
-    }
-
-    /** Register an op that produces input for the arguments that pass the test, and only reads for the others. */
-    private void driving(String name, Predicate<JsonObject> drives, Op op) {
-        table.put(name, args -> drives.test(args) ? alone(op, args) : op.run(args));
+        table.put(name, args -> alone(op, args));
     }
 
     /**
@@ -370,8 +386,8 @@ final class Ops {
         return out;
     }
 
-    /** Click the canvas at the given coordinates, or at the centre of the given widget. */
-    private JsonElement click(JsonObject args) throws BridgeException {
+    /** Click the canvas with the mouse at the given coordinates, or at the centre of the given widget. */
+    private JsonElement click(Mouse mouse, JsonObject args) throws BridgeException {
         boolean right = "right".equals(optionalString(args, "button"));
         Point point = clickPoint(args);
         mouse.hover(point.x, point.y);

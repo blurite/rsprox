@@ -192,12 +192,13 @@ public class BridgeHub(
         logger.info { "Bridge connected for session ${listener.session} (httpPort $httpPort)" }
     }
 
-    /** Build the welcome that tells the plugin its session and the rendering to use. */
+    /** Build the welcome that tells the plugin its session, what it may do with the client and the rendering to use. */
     private fun welcome(listener: BridgeListener): JsonNode =
         MAPPER
             .createObjectNode()
             .put("welcome", PROTOCOL)
             .put("session", listener.session)
+            .put("access", listener.access.wire)
             .put("softwareRendering", rendering == Rendering.SOFTWARE)
 
     /**
@@ -246,8 +247,11 @@ public class BridgeHub(
         /** The JSON mapper of the wire and the rendezvous file. */
         private val MAPPER: ObjectMapper = jacksonObjectMapper()
 
-        /** The version of the wire protocol that this hub speaks. */
-        private const val PROTOCOL = 1
+        /**
+         * The version of the wire protocol that this hub speaks. Version 2 added `access` to the welcome, and
+         * a plugin that does not read it would drive a client it was meant to read, so a version 1 jar is rejected.
+         */
+        private const val PROTOCOL = 2
 
         /** The number of plugins that may wait to be accepted. */
         private const val BACKLOG = 16

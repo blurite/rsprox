@@ -29,7 +29,7 @@ class BridgeHubTest {
     private fun connect(listener: RecordingListener = RecordingListener()): Pair<FakePlugin, BridgeLink> {
         hub.expect(43650, listener)
         val plugin = fixture.dial(43650)
-        assertEquals(1, plugin.read()?.get("welcome")?.asInt())
+        assertEquals(2, plugin.read()?.get("welcome")?.asInt())
 
         return plugin to listener.hello.get(10, TimeUnit.SECONDS).first
     }
@@ -49,8 +49,9 @@ class BridgeHubTest {
         val plugin = fixture.dial(43650)
 
         val welcome = plugin.read()!!
-        assertEquals(1, welcome.get("welcome").asInt())
+        assertEquals(2, welcome.get("welcome").asInt())
         assertEquals("s3", welcome.get("session").asText())
+        assertEquals("drive", welcome.get("access").asText())
         assertFalse(welcome.get("softwareRendering").asBoolean())
         assertEquals(4242, listener.hello.get(10, TimeUnit.SECONDS).second)
     }
@@ -65,7 +66,7 @@ class BridgeHubTest {
         assertNull(intruder.read())
         assertFalse(listener.hello.isDone)
 
-        assertEquals(1, fixture.dial(43650).read()?.get("welcome")?.asInt())
+        assertEquals(2, fixture.dial(43650).read()?.get("welcome")?.asInt())
         assertEquals(emptyList(), listener.rejected)
     }
 
@@ -91,8 +92,12 @@ class BridgeHubTest {
     }
 
     @Test
-    fun `a link made for reading refuses an op that sends input and forwards the next op that reads`() {
-        val (plugin, link) = connect(RecordingListener(access = Access.READ))
+    fun `a listener that reads is welcomed with read access, and its link refuses an op that sends input`() {
+        val listener = RecordingListener(access = Access.READ)
+        hub.expect(43650, listener)
+        val plugin = fixture.dial(43650)
+        assertEquals("read", plugin.read()?.get("access")?.asText())
+        val link = listener.hello.get(10, TimeUnit.SECONDS).first
 
         val refused =
             assertFailsWith<BridgeError> { link.call("click", args("""{"x":1,"y":2}"""), Access.DRIVE, TIMEOUT_MS) }

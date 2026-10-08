@@ -36,7 +36,7 @@ internal class TestHub : AutoCloseable {
     fun dial(
         httpPort: Int,
         token: String? = null,
-        protocol: Int = 1,
+        protocol: Int = 2,
     ): FakePlugin = FakePlugin.dial(rendezvous, httpPort, token, protocol).also { plugins += it }
 
     override fun close() {

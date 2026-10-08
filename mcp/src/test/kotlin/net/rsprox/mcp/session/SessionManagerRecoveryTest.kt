@@ -75,11 +75,11 @@ class SessionManagerRecoveryTest {
         val manager = manager()
         manager.start(null, null, 0)
 
-        fixture.dial(43650, protocol = 2).read()
+        fixture.dial(43650, protocol = 1).read()
 
         assertEquals(
             "the client started, but its bridge plugin was rejected: " +
-                "bridge protocol 2 is not supported; the installed plugin jar is stale",
+                "bridge protocol 1 is not supported; the installed plugin jar is stale",
             manager.awaitStopped("s1").reason,
         )
     }

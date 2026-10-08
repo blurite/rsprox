@@ -19,12 +19,14 @@ import org.slf4j.LoggerFactory;
 /**
  * The in-client half of the rsprox MCP server. The sideload directory is shared with clients that
  * rsprox did not launch for an agent, so the plugin does nothing unless a running MCP server left a
- * rendezvous file and welcomes this client.
+ * rendezvous file and welcomes this client. It is listed among the client's plugins, and turning it off
+ * there closes its connection.
  */
 @PluginDescriptor(
-    name = "RSProx MCP Bridge",
-    description = "Lets the rsprox MCP server observe and drive this client",
-    hidden = true
+    name = "rsprox MCP bridge",
+    description = "Lets the rsprox MCP server read this client, and drive it on a private server. "
+        + "On the official game it only reads and never sends input.",
+    tags = {"rsprox", "mcp"}
 )
 public class McpBridgePlugin extends Plugin {
     /** The logger of the plugin. */
@@ -75,10 +77,10 @@ public class McpBridgePlugin extends Plugin {
         // The server writes this path in McpMain.kt.
         Path rendezvous = Paths.get(System.getProperty("user.home"), ".rsprox", "mcp", "bridge.json");
         game = new GameAccess(client, clientThread::invoke, drawManager, eventBus);
-        Ops ops = new Ops(game);
+        GameAccess dialed = game;
         int port = httpPort.getAsInt();
 
-        dial = BridgeDial.start(() -> BridgeConnection.dial(rendezvous, port, gson, ops), this::onConnected);
+        dial = BridgeDial.start(() -> BridgeConnection.dial(rendezvous, port, gson, dialed), this::onConnected);
     }
 
     /** Stop the GPU plugin when rsprox asked for software rendering. Runs on the thread of the dial. */
