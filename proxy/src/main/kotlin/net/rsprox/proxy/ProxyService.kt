@@ -34,6 +34,9 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.BINARY_WRITE_INTERVAL_SEC
 import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.FILTERS_STATUS
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
+import net.rsprox.proxy.config.ProxyProperty.Companion.MCP_ENABLED
+import net.rsprox.proxy.config.ProxyProperty.Companion.MCP_PLUGIN
+import net.rsprox.proxy.config.ProxyProperty.Companion.MCP_PORT
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
 import net.rsprox.proxy.config.ProxyProperty.Companion.RUNELITE_RSPROX_CONNECTION
 import net.rsprox.proxy.config.ProxyProperty.Companion.SELECTED_CLIENT
@@ -103,7 +106,9 @@ import java.nio.file.Path
 import java.time.Instant
 import java.util.*
 import java.util.concurrent.Callable
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
@@ -127,14 +132,13 @@ public class ProxyService(
     public lateinit var jagexAccountStore: JagexAccountStore
         private set
     public lateinit var filterSetStore: PropertyFilterSetStore
-        private set
     public lateinit var settingsStore: SettingSetStore
-        private set
     private var properties: ProxyProperties by Delegates.notNull()
     private var availablePort: Int = -1
     private var initialPort: Int = -1
     private val processes = ConcurrentHashMap<Int, List<ProcessHandle>>()
     private val connections: ProxyConnectionContainer = ProxyConnectionContainer()
+    private val clientListeners = CopyOnWriteArrayList<ClientListener>()
     private lateinit var credentials: BinaryCredentialsStore
     private var rspsModulus: String? = null
     public lateinit var proxyTargets: List<ProxyTargetConfig>
@@ -503,6 +507,23 @@ public class ProxyService(
         return properties.getPropertyOrNull(FILTERS_STATUS) ?: 0
     }
 
+    public fun setMcpEnabled(enabled: Boolean) {
+        properties.setProperty(MCP_ENABLED, enabled)
+        properties.saveProperties(PROPERTIES_FILE)
+    }
+
+    public fun getMcpEnabled(): Boolean {
+        return properties.getProperty(MCP_ENABLED)
+    }
+
+    public fun getMcpPort(): Int {
+        return properties.getProperty(MCP_PORT)
+    }
+
+    public fun getMcpPluginEnabled(): Boolean {
+        return properties.getProperty(MCP_PLUGIN)
+    }
+
     public fun setSelectedClient(index: Int) {
         properties.setProperty(SELECTED_CLIENT, index)
         properties.saveProperties(PROPERTIES_FILE)
@@ -599,6 +620,7 @@ public class ProxyService(
 
     public fun killAliveProcess(port: Int) {
         removeSessionMonitor(port)
+        notifyClientClosed(port)
         val processList = processes.remove(port) ?: return
         for (process in processList) {
             try {
@@ -726,14 +748,61 @@ public class ProxyService(
             logger.error(t) { "Unable to bind network port $port for native client." }
             return
         }
-        this.connections.addSessionMonitor(port, sessionMonitor)
-        ClientTypeDictionary[port] = "RuneLite (${operatingSystem.shortName})"
-        launchJavaProcess(
-            port,
-            operatingSystem,
-            character,
-            target,
-        )
+        launchObserved(port) {
+            this.connections.addSessionMonitor(port, observed(sessionMonitor, port, target))
+            ClientTypeDictionary[port] = "RuneLite (${operatingSystem.shortName})"
+            launchJavaProcess(
+                port,
+                operatingSystem,
+                character,
+                target,
+            )
+        }
+    }
+
+    public fun addClientListener(listener: ClientListener) {
+        clientListeners += listener
+    }
+
+    private fun observed(
+        sessionMonitor: SessionMonitor<BinaryHeader>,
+        port: Int,
+        target: ProxyTarget,
+    ): SessionMonitor<BinaryHeader> {
+        val observers =
+            clientListeners.mapNotNull { listener ->
+                try {
+                    listener.onClientLaunch(port, target.config)
+                } catch (t: Throwable) {
+                    logger.error(t) { "Client listener failed for the launch on port $port" }
+                    null
+                }
+            }
+        if (observers.isEmpty()) return sessionMonitor
+        return FanOutSessionMonitor(sessionMonitor, observers)
+    }
+
+    private inline fun launchObserved(
+        port: Int,
+        launch: () -> Unit,
+    ) {
+        try {
+            launch()
+        } catch (t: Throwable) {
+            notifyClientClosed(port)
+            throw t
+        }
+        whenAllExit(processes[port].orEmpty()) { notifyClientClosed(port) }
+    }
+
+    private fun notifyClientClosed(port: Int) {
+        for (listener in clientListeners) {
+            try {
+                listener.onClientClosed(port)
+            } catch (t: Throwable) {
+                logger.error(t) { "Client listener failed for the close on port $port" }
+            }
+        }
     }
 
     public fun loadReplaySession(path: Path): ReplaySession =
@@ -860,12 +929,15 @@ public class ProxyService(
         return port - this.initialPort
     }
 
-    public fun initializeHttpServer(port: Int): ProxyTarget {
+    public fun initializeHttpServer(
+        port: Int,
+        config: ProxyTargetConfig = currentProxyTarget,
+    ): ProxyTarget {
         val sessionId = portOffset(port)
         val target =
             ProxyTarget(
-                currentProxyTarget,
-                GamePackProvider(currentProxyTarget.runeliteGamepackUrl),
+                config,
+                GamePackProvider(config.runeliteGamepackUrl),
                 sessionId,
             )
         target.load(properties, bootstrapFactory)
@@ -949,16 +1021,18 @@ public class ProxyService(
             logger.error(t) { "Unable to bind network port $port for native client." }
             return
         }
-        launchNativeClientProcess(
-            os = os,
-            rsa = rsa,
-            character = character,
-            port = port,
-            target = target,
-            clientTypeLabel = "Native (${os.shortName})",
-            registerConnectionInfo = true,
-            sessionMonitor = sessionMonitor,
-        )
+        launchObserved(port) {
+            launchNativeClientProcess(
+                os = os,
+                rsa = rsa,
+                character = character,
+                port = port,
+                target = target,
+                clientTypeLabel = "Native (${os.shortName})",
+                registerConnectionInfo = true,
+                sessionMonitor = observed(sessionMonitor, port, target),
+            )
+        }
     }
 
     public fun launchRs3Client(
@@ -1646,4 +1720,24 @@ public class ProxyService(
             }
         }
     }
+}
+
+/**
+ * Run [action] once every process of [processes] that is alive now, and every descendant of it, has exited.
+ * Returns false, and never runs [action], when none of them is alive.
+ */
+internal fun whenAllExit(
+    processes: List<ProcessHandle>,
+    action: () -> Unit,
+): Boolean {
+    val alive =
+        processes
+            .flatMap { process -> process.descendants().collect(Collectors.toList()) + process }
+            .distinct()
+            .filter { it.isAlive }
+    if (alive.isEmpty()) return false
+    CompletableFuture
+        .allOf(*alive.map { it.onExit() }.toTypedArray())
+        .thenRun(action)
+    return true
 }

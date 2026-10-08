@@ -25,7 +25,15 @@ public class ProxyProperty<T>(
         val SELECTED_CLIENT = ProxyProperty("app.client", IntProperty)
         val SELECTED_PROXY_TARGET = ProxyProperty("app.target", IntProperty)
 
+        // mcp
+        val MCP_ENABLED = ProxyProperty("mcp.enabled", BooleanProperty)
+        val MCP_PORT = ProxyProperty("mcp.port", IntProperty)
+        val MCP_PLUGIN = ProxyProperty("mcp.plugin", BooleanProperty)
+
         // other
         val RUNELITE_RSPROX_CONNECTION = ProxyProperty("runelite.rsprox.connection", BooleanProperty)
     }
 }
+
+/** The loopback port of the MCP endpoint, for the GUI and for the standalone MCP server alike. */
+public const val DEFAULT_MCP_PORT: Int = 43580

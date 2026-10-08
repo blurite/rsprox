@@ -1,5 +1,6 @@
 package net.rsprox.gui
 
+import net.rsprox.proxy.ProxyExtension
 import java.util.Locale
 import javax.swing.ImageIcon
 import javax.swing.SwingUtilities
@@ -28,6 +29,7 @@ public fun main(args: Array<String>) {
     App.service.start(rspsJavConfigUrl, rspsModulus) { percentage, actionText, subActionText, progressText ->
         SplashScreen.stage(percentage, actionText, subActionText, progressText)
     }
+    val extensions = ProxyExtension.startAll(App.service)
     SplashScreen.stop()
     SwingUtilities.invokeLater {
         // Disable icons in all trees.
@@ -42,7 +44,7 @@ public fun main(args: Array<String>) {
         // This ensures that the theme you see is the same on initial boot as well as swapping back and forth
         AppThemes.applyThemeEdt(App.service.getAppTheme())
 
-        val app = App()
+        val app = App(extensions)
         app.init()
         app.start()
     }
