@@ -173,7 +173,11 @@ public class App(
 
                 addSeparator()
 
-                val serveMcpEndpoint = JCheckBoxMenuItem("Serve MCP Endpoint", service.getMcpEnabled())
+                val serveMcpEndpoint =
+                    JCheckBoxMenuItem(
+                        "Serve MCP Endpoint",
+                        isMcpEndpointServed(service.getMcpEnabled(), extensions::serve),
+                    )
                 serveMcpEndpoint.mnemonic = 'M'.code
                 serveMcpEndpoint.toolTipText = MCP_ENDPOINT_TOOLTIP
                 serveMcpEndpoint.addActionListener {

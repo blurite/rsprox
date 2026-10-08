@@ -58,4 +58,11 @@ class McpEndpointNoticeTest {
         assertEquals(McpEndpointSwitch(served = false, failure = null), switch(enabled = false))
         assertEquals(listOf("serve", "save true", "stop serving", "save false"), calls)
     }
+
+    @Test
+    fun `the item starts ticked only for an endpoint that is on and served`() {
+        assertEquals(true, isMcpEndpointServed(enabled = true) { null })
+        assertEquals(false, isMcpEndpointServed(enabled = true) { "127.0.0.1:43999 cannot be bound" })
+        assertEquals(false, isMcpEndpointServed(enabled = false) { error("an endpoint that is off is not served") })
+    }
 }

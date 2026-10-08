@@ -11,6 +11,15 @@ internal data class McpEndpointSwitch(
 )
 
 /**
+ * Whether the item starts ticked. An endpoint that is on was served at start-up, unless its port was
+ * taken then, so it is asked once more. The saved choice is left alone, so the next start tries again.
+ */
+internal fun isMcpEndpointServed(
+    enabled: Boolean,
+    serve: () -> String?,
+): Boolean = enabled && serve() == null
+
+/**
  * Turns the endpoint on or off at once, and saves the choice once it holds. An endpoint that cannot be
  * served stays off with nothing saved, and the result says why.
  */
