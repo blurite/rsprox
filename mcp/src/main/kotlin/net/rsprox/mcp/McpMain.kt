@@ -11,6 +11,7 @@ import com.github.michaelbull.logging.InlineLogger
 import io.netty.buffer.ByteBufAllocator
 import net.rsprox.mcp.bridge.BridgeHub
 import net.rsprox.mcp.bridge.BridgeJar
+import net.rsprox.mcp.bridge.Gate
 import net.rsprox.mcp.bridge.Rendering
 import net.rsprox.mcp.packets.TapSettingSetStore
 import net.rsprox.mcp.packets.UnfilteredFilterSetStore
@@ -121,7 +122,8 @@ public class McpCommand : CliktCommand(name = "mcp") {
  * Start the bridge hub and build the sessions of a started proxy, with the stores the proxy holds at
  * this moment. The sessions hear of every client the proxy launches and closes. With [plugin] false,
  * launched clients get no bridge plugin, so only their packets can be read. Adds what must be closed
- * when a later step fails to [opened].
+ * when a later step fails to [opened]. A request acts on a client only through [gate], which nothing
+ * closes unless the caller does.
  */
 internal fun sessionManager(
     service: ProxyService,
@@ -129,6 +131,7 @@ internal fun sessionManager(
     rendering: Rendering,
     plugin: Boolean,
     opened: MutableList<AutoCloseable>,
+    gate: Gate = Gate(),
 ): SessionManager {
     val launcher = ProxyServiceLauncher(service, if (plugin) BridgeJar(sideloadDir) else null)
 
@@ -142,7 +145,7 @@ internal fun sessionManager(
     // The proxy's own hook kills the clients; this one removes the rendezvous file they dial through.
     Runtime.getRuntime().addShutdownHook(Thread(hub::close, "mcp-bridge-shutdown"))
 
-    val manager = SessionManager(launcher, service.settingsStore, hub)
+    val manager = SessionManager(launcher, service.settingsStore, hub, gate = gate)
     service.addClientListener(ClientWatch(manager))
 
     return manager
