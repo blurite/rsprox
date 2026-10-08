@@ -378,6 +378,12 @@ public class McpHttpServer(
     /** The HTTP server, or null before [start]. */
     private var server: HttpServer? = null
 
+    /** The pool whose threads run the requests. Its idle threads end when it is shut down. */
+    private val workers =
+        Executors.newCachedThreadPool { runnable ->
+            Thread(runnable, "mcp-http").apply { isDaemon = true }
+        }
+
     /** The port the server listens on, which differs from the requested one when that was 0. */
     internal val localPort: Int
         get() = checkNotNull(server) { "the server has not been started" }.address.port
@@ -388,11 +394,7 @@ public class McpHttpServer(
      */
     public fun start() {
         val server = HttpServer.create(InetSocketAddress(InetAddress.getLoopbackAddress(), port), 0)
-        server.executor =
-            Executors.newCachedThreadPool { runnable ->
-                Thread(runnable, "mcp-http").apply { isDaemon = true }
-            }
-
+        server.executor = workers
         server.createContext(PATH, ::handle)
         server.start()
         this.server = server
@@ -432,9 +434,14 @@ public class McpHttpServer(
         }
     }
 
-    /** Stop serving at once, if the server was started. */
+    /**
+     * Stop serving at once, if the server was started: the port is closed and so is every connection,
+     * so a request that still runs has nobody to answer. Its thread is not stopped and ends when its
+     * tool returns. A closed server is not started again.
+     */
     override fun close() {
         server?.stop(0)
+        workers.shutdown()
     }
 
     private companion object {

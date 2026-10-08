@@ -1,14 +1,22 @@
 package net.rsprox.mcp.server
 
+import net.rsprox.mcp.bridge.awaitTrue
+import java.io.IOException
 import java.net.BindException
+import java.net.ConnectException
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeUnit
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 
 class McpHttpServerTest {
     private val echo =
@@ -128,5 +136,45 @@ class McpHttpServerTest {
         val second = McpHttpServer(server.localPort, listOf(echo), "1.2.3")
 
         assertFailsWith<BindException> { second.start() }
+    }
+
+    @Test
+    fun `a closed server refuses a connection`() {
+        val ping = request().POST(HttpRequest.BodyPublishers.ofString("""{"jsonrpc":"2.0","id":1,"method":"ping"}"""))
+
+        server.close()
+
+        assertFailsWith<ConnectException> { send(ping) }
+    }
+
+    @Test
+    fun `a request that runs when the server closes is not answered and leaves no thread behind`() {
+        val running = CompletableFuture<Thread>()
+        val release = CountDownLatch(1)
+        val slow =
+            Tool("slow", "Returns once the test lets it", echo.inputSchema) {
+                running.complete(Thread.currentThread())
+                release.await()
+                ToolResult.Text("late")
+            }
+
+        val closing = McpHttpServer(0, listOf(slow), "1.2.3").also { it.start() }
+        val call =
+            HttpRequest
+                .newBuilder(URI("http://127.0.0.1:${closing.localPort}/mcp"))
+                .POST(
+                    HttpRequest.BodyPublishers.ofString(
+                        """{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"slow"}}""",
+                    ),
+                ).build()
+
+        val answer = client.sendAsync(call, HttpResponse.BodyHandlers.ofString())
+        val worker = running.get(10, TimeUnit.SECONDS)
+
+        closing.close()
+        release.countDown()
+
+        assertIs<IOException>(assertFailsWith<ExecutionException> { answer.get(10, TimeUnit.SECONDS) }.cause)
+        awaitTrue("the thread of the request has ended") { !worker.isAlive }
     }
 }
