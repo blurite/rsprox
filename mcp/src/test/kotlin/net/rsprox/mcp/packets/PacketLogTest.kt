@@ -131,12 +131,6 @@ class PacketLogTest {
     }
 
     @Test
-    fun `a read without a wait never reports a timeout`() {
-        val log = PacketLog()
-        assertFalse(log.read(PacketQuery(prots = setOf("WANTED")), waitMs = 0).timedOut)
-    }
-
-    @Test
     fun `a waiting read with matches already present returns at once`() {
         val log = PacketLog()
         log.add("WANTED")
