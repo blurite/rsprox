@@ -305,15 +305,14 @@ public class LaunchedSession internal constructor(
         transition { if (it is ClientState.Launching && it.launch == launch) ClientState.Stopped(reason) else it }
 
     /** Block while the client is launching, for at most [waitMs]. Never throws on timeout. */
-    internal fun awaitConnected(waitMs: Long): ClientState =
+    internal fun awaitConnected(waitMs: Long) {
         lock.withLock {
             var remaining = TimeUnit.MILLISECONDS.toNanos(waitMs)
             while (client is ClientState.Launching && remaining > 0) {
                 remaining = changed.awaitNanos(remaining)
             }
-
-            client
         }
+    }
 
     /** Get the link of the connected client. Throws a [ToolError] that says what to do about its absence. */
     override fun link(tool: String): BridgeLink =

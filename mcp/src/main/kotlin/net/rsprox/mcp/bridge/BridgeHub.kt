@@ -109,10 +109,8 @@ public class BridgeHub(
         val content =
             MAPPER
                 .createObjectNode()
-                .put("protocol", PROTOCOL)
                 .put("port", port)
                 .put("token", token)
-                .put("pid", ProcessHandle.current().pid())
 
         Files.createDirectories(rendezvous.parent)
 

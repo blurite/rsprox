@@ -14,12 +14,12 @@ public class BridgeJar(
      * Install the jar unless the installed one already has the same content. A client that has the
      * old jar open keeps reading it, because the new one is moved into place rather than written over it.
      */
-    public fun installFor(target: ProxyTargetConfig): Path {
+    public fun installFor(target: ProxyTargetConfig) {
         val dir = overrideDir ?: defaultDir(target)
         val installed = dir.resolve(FILE_NAME)
         val wanted = embedded()
 
-        if (Files.isRegularFile(installed) && Files.readAllBytes(installed).contentEquals(wanted)) return installed
+        if (Files.isRegularFile(installed) && Files.readAllBytes(installed).contentEquals(wanted)) return
 
         Files.createDirectories(dir)
 
@@ -27,8 +27,6 @@ public class BridgeJar(
         val temp = Files.createTempFile(dir, FILE_NAME, ".tmp")
         Files.write(temp, wanted)
         Files.move(temp, installed, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
-
-        return installed
     }
 
     /** Get the sideload directory of the client of the target, in the home directory of the current user. */
