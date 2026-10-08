@@ -3,7 +3,9 @@ package net.rsprox.mcpbridge;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import net.runelite.api.Client;
 import net.runelite.api.GameObject;
 import net.runelite.api.ObjectComposition;
@@ -77,15 +79,10 @@ final class Scenes {
 
     /** Get the names of the options that are offered, in order and without their colour tags. */
     static List<String> offered(String[] options) {
-        List<String> out = new ArrayList<>();
-
-        for (String option : options == null ? new String[0] : options) {
-            String name = Offer.untagged(option);
-
-            if (!name.isEmpty()) out.add(name);
-        }
-
-        return out;
+        return Arrays.stream(options == null ? new String[0] : options)
+            .map(Offer::untagged)
+            .filter(name -> !name.isEmpty())
+            .collect(Collectors.toList());
     }
 
     /** Get the part of the canvas that shows the 3D scene. */

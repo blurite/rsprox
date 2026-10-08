@@ -4,9 +4,9 @@ import java.awt.Canvas;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import net.runelite.api.Client;
 import net.runelite.api.Menu;
 import net.runelite.api.MenuAction;
@@ -107,13 +107,7 @@ final class Offer {
 
     /** Write each entry as its option and its target with the colour tags stripped, in the given order. */
     private static List<String> words(MenuEntry[] entries) {
-        List<String> out = new ArrayList<>();
-
-        for (MenuEntry entry : entries) {
-            out.add(words(entry));
-        }
-
-        return out;
+        return Arrays.stream(entries).map(entry -> words(entry)).collect(Collectors.toList());
     }
 
     /** Determine if the matching entry is the last of the array, which is the one a left click usually performs. */

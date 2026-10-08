@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -71,7 +71,13 @@ final class Entities implements Ops.Op {
     }
 
     /** One entity that passed the filters. */
-    private static final class Entry implements Comparable<Entry> {
+    private static final class Entry {
+        /** The order of a listing: the nearest first, then by index or id, then by tile, so that it is stable. */
+        static final Comparator<Entry> ORDER = Comparator.<Entry>comparingInt(entry -> entry.distance)
+            .thenComparingInt(entry -> entry.key)
+            .thenComparingInt(entry -> entry.x)
+            .thenComparingInt(entry -> entry.y);
+
         /** The kind of the entity. */
         final String kind;
 
@@ -98,18 +104,6 @@ final class Entities implements Ops.Op {
             this.x = x;
             this.y = y;
             this.described = described;
-        }
-
-        /** Order the nearest first, then by index or id, then by tile, so a listing is stable. */
-        @Override
-        public int compareTo(Entry other) {
-            if (distance != other.distance) return Integer.compare(distance, other.distance);
-
-            if (key != other.key) return Integer.compare(key, other.key);
-
-            if (x != other.x) return Integer.compare(x, other.x);
-
-            return Integer.compare(y, other.y);
         }
     }
 
@@ -264,7 +258,7 @@ final class Entities implements Ops.Op {
 
         /** Build the result from the nearest entities, up to the limit, with one list per kind. */
         JsonObject result(int limit) {
-            Collections.sort(found);
+            found.sort(Entry.ORDER);
             JsonObject out = new JsonObject();
             JsonObject at = new JsonObject();
             at.addProperty("x", origin.getX());

@@ -94,13 +94,10 @@ public class McpBridgePlugin extends Plugin {
      * of disabling it, leaves the profile untouched for clients that share it.
      */
     private void stopGpuPlugin() {
-        Plugin gpu = null;
-
-        for (Plugin plugin : pluginManager.getPlugins()) {
-            if (plugin.getClass().getSimpleName().equals(GPU_PLUGIN)) {
-                gpu = plugin;
-            }
-        }
+        Plugin gpu = pluginManager.getPlugins().stream()
+            .filter(plugin -> plugin.getClass().getSimpleName().equals(GPU_PLUGIN))
+            .reduce((first, last) -> last)
+            .orElse(null);
 
         if (gpu == null || !pluginManager.isPluginEnabled(gpu)) return;
 
