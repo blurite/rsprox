@@ -79,8 +79,8 @@ public data class LoginInfo(
     /** The moment the server accepted the login, in ISO-8601. */
     val connectedAt: String,
     /**
-     * The file the login is recorded to, relative to the `binary` directory of rsprox.
-     * Null for a target that is not recorded.
+     * The file the login is recorded to, relative to the `binary` directory of rsprox. The proxy first
+     * writes it at its write interval or at the logout. Null for a target that is not recorded.
      */
     val captureFile: String?,
     /** The display name of the player, or null until the proxy reports it. */

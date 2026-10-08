@@ -71,8 +71,9 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
                     "`epoch` (the L number of its packets), `revision`, `world`, `host`, `localPlayerIndex`, " +
                     "`connectedAt`, `online` (whether it is still logged in) and `transcribing` (whether its " +
                     "packets are decoded). `captureFile`, the recording under the rsprox binary directory, is " +
-                    "absent for a target that is not recorded. `name`, the display name, and `tick`, the " +
-                    "newest server tick seen, are absent until known.",
+                    "absent for a target that is not recorded; rsprox first writes the file some minutes " +
+                    "into the login, or at its logout. `name`, the display name, and `tick`, the newest " +
+                    "server tick seen, are absent until known.",
             inputSchema = schema(),
         ) {
             val manager = sessions()
