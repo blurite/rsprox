@@ -1,6 +1,7 @@
 package net.rsprox.mcp.packets
 
 import net.rsprox.cache.api.CacheProvider
+import net.rsprox.mcp.session.LoginInfo
 import net.rsprox.mcp.session.LoginRegistry
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.shared.SessionMonitor
@@ -13,7 +14,7 @@ import net.rsprox.shared.settings.SettingSetStore
 import net.rsprox.shared.symbols.SymbolDictionaryProvider
 
 /**
- * The session monitor of one launch. The proxy only delivers callbacks to the per-login instance that
+ * The session monitor of one client. The proxy only delivers callbacks to the per-login instance that
  * [forSession] returns, so the callbacks of this class itself do nothing.
  */
 internal class PacketTap(
@@ -23,10 +24,12 @@ internal class PacketTap(
     private val logins: LoginRegistry,
     /** The settings that the packets are formatted with. */
     private val settings: SettingSetStore,
+    /** The folder the proxy records the logins to, under its `binary` directory, or null when it records none. */
+    private val captureFolder: String?,
 ) : SessionMonitor<BinaryHeader> {
     /** Create the tap of one login, under the next login epoch. */
     override fun forSession(header: BinaryHeader): SessionMonitor<BinaryHeader> =
-        LoginTap(log, logins, settings, logins.nextEpoch())
+        LoginTap(log, logins, settings, logins.nextEpoch(), captureFolder?.let { "$it/${header.fileName()}" })
 
     /** Ignore the login, which the proxy reports to the tap of that login. */
     override fun onLogin(header: BinaryHeader) {
@@ -84,6 +87,8 @@ private class LoginTap(
     settings: SettingSetStore,
     /** The login epoch that every record of this tap carries. */
     private val epoch: Int,
+    /** The file the proxy records this login to, or null when it records none. */
+    private val captureFile: String?,
 ) : SessionMonitor<BinaryHeader> {
     /**
      * The game cache that the formatter looks names up in, or null before the proxy has handed it over.
@@ -98,6 +103,9 @@ private class LoginTap(
     /** Whether a packet of this login has been decoded. Only touched on the transcriber worker. */
     private var transcribing = false
 
+    /** The newest tick that was registered for this login. Only touched on the transcriber worker. */
+    private var tick = -1
+
     /** The formatter that turns a decoded packet into text. */
     private val formatter: PropertyTreeFormatter =
         OmitFilteredPropertyTreeFormatter(
@@ -106,9 +114,12 @@ private class LoginTap(
             },
         )
 
-    /** Keep the cache for the formatter. */
+    /** Keep the cache for the formatter, and register the file that the login is recorded to. */
     override fun onCacheUpdate(cacheProvider: CacheProvider) {
         cache = cacheProvider
+
+        // The proxy hands the cache over right after it has set the recording of the login up.
+        logins.update(epoch) { it.copy(captureFile = captureFile) }
     }
 
     /** Keep the direction of the next packet. The first packet also registers that this login is being transcribed. */
@@ -124,7 +135,7 @@ private class LoginTap(
     }
 
     /**
-     * Append the packet to the log as text.
+     * Append the packet to the log as text, and register its tick when it is a new one.
      * Formats on the worker, while the transcriber's session state still matches the packet.
      */
     override fun onTranscribe(
@@ -141,11 +152,16 @@ private class LoginTap(
             }
 
         log.append(epoch, cycle, origin, property.prot.uppercase(), text)
+
+        if (cycle != tick) {
+            tick = cycle
+            logins.update(epoch) { it.copy(tick = cycle) }
+        }
     }
 
     /** Register the login and mark it in the log. */
     override fun onLogin(header: BinaryHeader) {
-        logins.login(epoch, header.revision, header.worldId)
+        logins.login(LoginInfo.of(epoch, header))
         log.append(epoch, 0, Origin.PROXY, "LOGIN", "revision=${header.revision} world=${header.worldId}")
     }
 

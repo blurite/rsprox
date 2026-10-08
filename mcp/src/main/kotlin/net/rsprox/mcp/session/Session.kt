@@ -5,7 +5,9 @@ import net.rsprox.mcp.bridge.BridgeLink
 import net.rsprox.mcp.packets.Origin
 import net.rsprox.mcp.packets.PacketLog
 import net.rsprox.mcp.server.ToolError
+import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.target.ProxyTargetConfig
+import java.time.Instant
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
@@ -30,7 +32,7 @@ public data class Launch(
     val httpPort: Int,
 )
 
-/** Whether a session has a client, and how far that client has come. */
+/** Whether a launched session has a client, and how far that client has come. */
 public sealed interface ClientState {
     /** The session has no client. */
     public data class Stopped(
@@ -55,7 +57,15 @@ public sealed interface ClientState {
     ) : ClientState
 }
 
-/** Everything that can change a session's [ClientState]. Several threads raise these; [reduce] decides. */
+/** Get the proxy port of the client, or null when the state has no client. */
+internal fun ClientState.proxyPort(): Int? =
+    when (this) {
+        is ClientState.Stopped -> null
+        is ClientState.Launching -> launch.proxyPort
+        is ClientState.Connected -> launch.proxyPort
+    }
+
+/** What can change the [ClientState] of a launched session. Several threads raise these. [reduce] decides. */
 public sealed interface SessionEvent {
     /** A launch of the client began. */
     public data class Launched(
@@ -124,7 +134,8 @@ private fun reduce(
             }
     }
 
-/** One login of a session, as the proxy reports it. */
+/** One login of a session, as the proxy reports it. A value that is not known yet is left out of the JSON. */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public data class LoginInfo(
     /** The number of this login within its session, starting at 1. */
     val epoch: Int,
@@ -132,7 +143,18 @@ public data class LoginInfo(
     val revision: Int,
     /** The world that was logged in to. */
     val world: Int,
-    /** The name of the player, or null until the proxy reports it. */
+    /** The host of that world. */
+    val host: String,
+    /** The index of the local player in that world. */
+    val localPlayerIndex: Int,
+    /** The moment the server accepted the login, in ISO-8601. */
+    val connectedAt: String,
+    /**
+     * The file the login is recorded to, relative to the `binary` directory of rsprox.
+     * Null for a target that is not recorded, and until the proxy has set the recording up.
+     */
+    val captureFile: String?,
+    /** The display name of the player, or null until the proxy reports it. */
     val name: String?,
     /** Whether the login is still in the game. */
     val online: Boolean,
@@ -141,7 +163,30 @@ public data class LoginInfo(
      * False while online means no decoder was hooked for this login, so its packets never reach the log.
      */
     val transcribing: Boolean,
-)
+    /** The newest server tick that a packet was decoded in, or null before the first packet. */
+    val tick: Int?,
+) {
+    internal companion object {
+        /** Build the login of the given epoch from what the proxy knows the moment the server accepts it. */
+        internal fun of(
+            epoch: Int,
+            header: BinaryHeader,
+        ): LoginInfo =
+            LoginInfo(
+                epoch = epoch,
+                revision = header.revision,
+                world = header.worldId,
+                host = header.worldHost,
+                localPlayerIndex = header.localPlayerIndex,
+                connectedAt = Instant.ofEpochMilli(header.timestamp).toString(),
+                captureFile = null,
+                name = null,
+                online = true,
+                transcribing = false,
+                tick = null,
+            )
+    }
+}
 
 /** The newest login of a session. Updates from an older login are ignored. */
 internal class LoginRegistry {
@@ -159,22 +204,16 @@ internal class LoginRegistry {
     @Synchronized
     fun current(): LoginInfo? = info
 
-    /** Register that the login of the given epoch is in the game, unless a newer login is known. */
+    /**
+     * Register that the login is in the game, unless a newer login is known.
+     * A login that is known already, which the proxy reports again when it reconnects, only goes back online.
+     */
     @Synchronized
-    fun login(
-        epoch: Int,
-        revision: Int,
-        world: Int,
-    ) {
+    fun login(login: LoginInfo) {
         val current = info
-        if (current != null && current.epoch > epoch) return
+        if (current != null && current.epoch > login.epoch) return
 
-        info =
-            if (current != null && current.epoch == epoch) {
-                current.copy(online = true)
-            } else {
-                LoginInfo(epoch, revision, world, name = null, online = true, transcribing = false)
-            }
+        info = if (current != null && current.epoch == login.epoch) current.copy(online = true) else login
     }
 
     /** Apply the change to the newest login when it is the one of the given epoch. */
@@ -188,24 +227,26 @@ internal class LoginRegistry {
     }
 }
 
-/** What the session tools return. */
+/** What the session tools return. A value that does not apply, or is not known yet, is left out of the JSON. */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public data class SessionSnapshot(
     /** The id of the session. */
     val session: String,
+    /** Who owns the client: `launched` when the MCP server started it, `attached` when the rsprox GUI did. */
+    val kind: String,
     /** The name of the proxy target the session belongs to. */
     val target: String,
-    /** The state of the client: `stopped`, `launching` or `connected`. */
+    /** The state: `stopped`, `launching` or `connected` when launched, `attached` or `ended` when attached. */
     val state: String,
     /** The reason the session has no client, or null while it has one. */
     val reason: String?,
-    /** The number of the current launch, or null while stopped. */
+    /** The number of the current launch, or null while stopped and for an attached session. */
     val generation: Int?,
-    /** The proxy port of the current launch, or null while stopped. */
+    /** The proxy port of the client, or null while a launched session is stopped. */
     val proxyPort: Int?,
-    /** The HTTP port of the current launch, or null while stopped. */
+    /** The HTTP port of the current launch, or null while stopped and for an attached session. */
     val httpPort: Int?,
-    /** The process id of the client, or null unless connected. */
+    /** The process id of the client, or null unless a launched session is connected. */
     val pid: Long?,
     /** The newest login, or null before the first one. */
     val login: LoginInfo?,
@@ -213,11 +254,15 @@ public data class SessionSnapshot(
     val cursor: Long,
 )
 
-/** One client of a proxy target, with its packet log and its logins, across every launch of that client. */
-public class Session internal constructor(
+/**
+ * One client of a proxy target, with its packet log and its logins.
+ * A session is either launched, and its client is the MCP server's to drive and to stop, or attached
+ * to a client that the rsprox GUI launched, which the MCP server only reads the packets of.
+ */
+public sealed class Session(
     /** The id that callers name the session by. */
     public val id: SessionId,
-    /** The proxy target that every launch of the session is for. */
+    /** The proxy target that the client of the session is for. */
     public val target: ProxyTargetConfig,
 ) {
     /** The packet log. Owned by the session, not a launch, so a restart keeps the records and the cursor space. */
@@ -226,6 +271,29 @@ public class Session internal constructor(
     /** The logins of the session. */
     internal val logins = LoginRegistry()
 
+    /**
+     * Get the link to the plugin in the client, for the client tool named [tool].
+     * Throws a [ToolError] that says why the tool cannot reach the client.
+     */
+    internal abstract fun link(tool: String): BridgeLink
+
+    /** Get what the session tools report of the session at this moment. */
+    public abstract fun snapshot(): SessionSnapshot
+
+    /** Append a lifecycle marker to the packet log. */
+    protected fun mark(
+        prot: String,
+        text: String,
+    ) {
+        packets.append(logins.current()?.epoch ?: 0, 0, Origin.PROXY, prot, text)
+    }
+}
+
+/** A session whose client the MCP server launched, across every launch of that client. */
+public class LaunchedSession internal constructor(
+    id: SessionId,
+    target: ProxyTargetConfig,
+) : Session(id, target) {
     /** The lock that makes each state transition and its marker one step. */
     private val lock = ReentrantLock()
 
@@ -281,7 +349,7 @@ public class Session internal constructor(
         }
 
     /** Get the link of the connected client. Throws a [ToolError] that says what to do about its absence. */
-    internal fun requireLink(): BridgeLink =
+    override fun link(tool: String): BridgeLink =
         when (val state = client) {
             is ClientState.Connected -> state.link
             is ClientState.Launching ->
@@ -291,7 +359,7 @@ public class Session internal constructor(
         }
 
     /** Get what the session tools report of the session at this moment. */
-    public fun snapshot(): SessionSnapshot {
+    override fun snapshot(): SessionSnapshot {
         val state = client
         val launch =
             when (state) {
@@ -302,6 +370,7 @@ public class Session internal constructor(
 
         return SessionSnapshot(
             session = id.value,
+            kind = "launched",
             target = target.name,
             state =
                 when (state) {
@@ -321,16 +390,70 @@ public class Session internal constructor(
 
     /** Append the lifecycle marker of the state to the packet log. */
     private fun mark(state: ClientState) {
-        val (prot, text) =
-            when (state) {
-                is ClientState.Launching ->
-                    "CLIENT_LAUNCHED" to
-                        "generation=${state.launch.generation} proxyPort=${state.launch.proxyPort} " +
-                        "httpPort=${state.launch.httpPort}"
-                is ClientState.Connected -> "CLIENT_CONNECTED" to "pid=${state.pid}"
-                is ClientState.Stopped -> "CLIENT_EXITED" to state.reason
-            }
+        when (state) {
+            is ClientState.Launching ->
+                mark(
+                    "CLIENT_LAUNCHED",
+                    "generation=${state.launch.generation} proxyPort=${state.launch.proxyPort} " +
+                        "httpPort=${state.launch.httpPort}",
+                )
+            is ClientState.Connected -> mark("CLIENT_CONNECTED", "pid=${state.pid}")
+            is ClientState.Stopped -> mark("CLIENT_EXITED", state.reason)
+        }
+    }
+}
 
-        packets.append(logins.current()?.epoch ?: 0, 0, Origin.PROXY, prot, text)
+/**
+ * A session of a client that the rsprox GUI launched. The client belongs to whoever runs the GUI, so
+ * the MCP server reads its packets and never stops or drives it.
+ */
+public class AttachedSession internal constructor(
+    id: SessionId,
+    target: ProxyTargetConfig,
+    /** The port the client reaches the proxy on. */
+    public val proxyPort: Int,
+) : Session(id, target) {
+    /** The reason the session ended, or null while the client runs. */
+    @Volatile
+    private var ended: String? = null
+
+    init {
+        mark("CLIENT_ATTACHED", "proxyPort=$proxyPort")
+    }
+
+    /** End the session for [reason], since its client is gone. Its packets stay readable. Idempotent. */
+    @Synchronized
+    internal fun end(reason: String) {
+        if (ended != null) return
+
+        ended = reason
+        mark("CLIENT_EXITED", reason)
+    }
+
+    /** Refuse the tool, since no client tool reaches the client of an attached session yet. */
+    override fun link(tool: String): BridgeLink = throw ToolError(notAvailable(tool))
+
+    /** Build the refusal of a tool that acts on the client, for the error of that tool. */
+    internal fun notAvailable(tool: String): String =
+        "$tool is not available for an attached session: session $id belongs to a client that was " +
+            "launched from the rsprox GUI, so only its packets can be read"
+
+    /** Get what the session tools report of the session at this moment. */
+    override fun snapshot(): SessionSnapshot {
+        val reason = ended
+
+        return SessionSnapshot(
+            session = id.value,
+            kind = "attached",
+            target = target.name,
+            state = if (reason == null) "attached" else "ended",
+            reason = reason,
+            generation = null,
+            proxyPort = proxyPort,
+            httpPort = null,
+            pid = null,
+            login = logins.current(),
+            cursor = packets.head().seq,
+        )
     }
 }

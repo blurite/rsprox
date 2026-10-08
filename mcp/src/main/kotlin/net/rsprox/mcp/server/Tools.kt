@@ -26,7 +26,7 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
                     "call it again with the same `session` to keep waiting. With no arguments it starts a new " +
                     "session on the first custom target. Pass `session` to relaunch a stopped session on fresh " +
                     "ports; its packet log and cursor continue. Calling it for a session that is already " +
-                    "running launches nothing.",
+                    "running launches nothing. An attached session cannot be started.",
             inputSchema =
                 schema(
                     "target" to string("Proxy target name, as listed by session_list. Example: \"My Server\"."),
@@ -49,14 +49,27 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
         },
         Tool(
             name = "session_stop",
-            description = "Kill the client of a session. The session and its packets stay readable.",
+            description =
+                "Kill the client of a session that session_start launched. The session and its packets stay " +
+                    "readable. Not available for an attached session, whose client belongs to whoever runs " +
+                    "the rsprox GUI.",
             inputSchema = schema("session" to SESSION),
         ) { args ->
             ToolResult.Json(sessions().stop(args.text("session")))
         },
         Tool(
             name = "session_list",
-            description = "List every session with its state, ports, login and packet cursor, plus the target names.",
+            description =
+                "List every session, plus the target names. `kind` is `launched` for a client that " +
+                    "session_start launched, and `attached` for a client that was launched by hand from the " +
+                    "rsprox GUI, which only packets_read works on. Each session has `session`, `target`, " +
+                    "`state`, `proxyPort` and `cursor`, the newest packet cursor. `state` is `stopped`, " +
+                    "`launching` or `connected` when launched, and `attached` or `ended` when attached; " +
+                    "`reason` says why a session has no client. Once the client has logged in, `login` holds " +
+                    "`epoch` (the L number of its packets), `revision`, `world`, `host`, `localPlayerIndex`, " +
+                    "`connectedAt`, `online` (whether it is still logged in) and `transcribing` (whether its " +
+                    "packets are decoded). `captureFile`, the recording under the rsprox binary directory, " +
+                    "`name`, the display name, and `tick`, the newest server tick seen, are absent until known.",
             inputSchema = schema(),
         ) {
             val manager = sessions()
@@ -65,14 +78,16 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
         Tool(
             name = "packets_read",
             description =
-                "Read decoded packets of a session after a cursor, unfiltered, in both directions. " +
+                "Read decoded packets of a session after a cursor, in both directions. The standalone MCP " +
+                    "server logs every packet, unfiltered. Inside the rsprox GUI the log holds the GUI's view: " +
+                    "a packet that the GUI's filters or settings hide is missing from every session. " +
                     "To wait for a packet, pass `wait_ms`. The call then blocks until the first match. " +
                     "Line 1 of the result is JSON: pass `next` as `after` on the following call; `dropped` counts " +
                     "records that were evicted before they could be read; `timedOut` is true when a wait " +
                     "elapsed with no match. Each further line is one packet: " +
                     "`<seq> L<login> T<tick> <C|S|P> <PROT> <text>`, where C is client to server, S is server " +
-                    "to client and P is an rsprox marker (CLIENT_LAUNCHED, CLIENT_CONNECTED, CLIENT_EXITED, " +
-                    "LOGIN, LOGOUT). Continuation lines of one packet are indented.",
+                    "to client and P is an rsprox marker (CLIENT_LAUNCHED, CLIENT_CONNECTED, CLIENT_ATTACHED, " +
+                    "CLIENT_EXITED, LOGIN, LOGOUT). Continuation lines of one packet are indented.",
             inputSchema =
                 schema(
                     "session" to SESSION,
@@ -307,6 +322,7 @@ public fun tools(sessions: () -> SessionManager): List<Tool> =
  * Build a client_* tool, which forwards its arguments to the op of the same name in the plugin.
  * The plugin's answer is the tool result, plus the packet cursor
  * taken before the call, so everything the action caused has a sequence number above it.
+ * The session decides whether the tool may reach its client, and refuses it for an attached session.
  *
  * The plugin has no defaults of its own: each of [defaults] is forwarded when the caller left it out.
  */
@@ -319,8 +335,9 @@ private fun clientTool(
     timeoutMs: (ObjectNode) -> Long = { CLIENT_CALL_TIMEOUT_MS },
     result: (ok: ObjectNode, session: Session) -> ToolResult = { ok, _ -> ToolResult.Json(ok) },
 ): Tool =
-    Tool(name, "$description $CURSOR_NOTE", schema) { args ->
+    Tool(name, "$description $CLIENT_TOOL_NOTE", schema) { args ->
         val session = sessions().resolve(args.text("session"))
+        val link = session.link(name)
         val cursor = session.packets.head().seq
         val forwarded = args.deepCopy().without<ObjectNode>("session")
 
@@ -328,7 +345,7 @@ private fun clientTool(
             if (!forwarded.hasNonNull(argument)) forwarded.put(argument, value)
         }
 
-        val ok = session.requireLink().call(name.removePrefix("client_"), forwarded, timeoutMs(forwarded))
+        val ok = link.call(name.removePrefix("client_"), forwarded, timeoutMs(forwarded))
         if (ok !is ObjectNode) throw BridgeError("internal", "the client answered $name with $ok")
 
         result(ok.put("cursor", cursor), session)
@@ -361,10 +378,10 @@ private const val ENTITY_LIMIT = 100L
  */
 private const val SENT_WAIT_MS = 3_000L
 
-/** The sentence that ends the description of every client_* tool. */
-private const val CURSOR_NOTE =
+/** The sentences that end the description of every client_* tool. */
+private const val CLIENT_TOOL_NOTE =
     "The result carries `cursor`, the packet cursor taken just before the call: pass it as `after` to " +
-        "packets_read to see only the packets from this call onwards."
+        "packets_read to see only the packets from this call onwards. Not available for an attached session."
 
 /** The schema of the `session` argument that every tool but session_start and session_list takes. */
 private val SESSION: ObjectNode = string("Session id, such as \"s1\". May be omitted while only one session exists.")

@@ -182,7 +182,7 @@ class SessionManagerRecoveryTest {
 
             assertEquals(listOf("connected", "stopped"), manager.list().map { it.state })
             assertEquals("connected", manager.start(null, "s1", 0).state)
-            val link = manager.resolve("s1").requireLink()
+            val link = manager.resolve("s1").link("client_state")
             assertEquals(7, link.call("state", McpDispatcher.MAPPER.createObjectNode(), 10_000).get("tick").asInt())
             assertEquals(listOf("CLIENT_LAUNCHED", "CLIENT_EXITED"), manager.markers("s2"))
             assertEquals("stopped by caller", manager.stop("s1").reason)
