@@ -159,6 +159,15 @@ class AttachedSessionTest {
     }
 
     @Test
+    fun `the monitor of a login is its own monitor for that login`() {
+        val login = attach().logIn()
+
+        login.forSession(loginHeader).packet(tick = 4, StreamDirection.SERVER_TO_CLIENT, "REBUILD_NORMAL")
+
+        assertEquals(listOf("3 L1 T4 S REBUILD_NORMAL [rebuild_normal] "), server.rows("""{"after":2}"""))
+    }
+
+    @Test
     fun `session_stop and session_start refuse an attached session and leave its client alone`() {
         attach()
         val refusal =
