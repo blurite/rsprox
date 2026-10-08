@@ -94,7 +94,10 @@ public class McpCommand : CliktCommand(name = "mcp") {
         service.filterSetStore = UnfilteredFilterSetStore
         service.settingsStore = TapSettingSetStore
 
-        return sessionManager(service, portSkip.coerceAtLeast(1), sideloadDir, rendering, opened)
+        // Leaves the low ports to a GUI that shares the same configured range.
+        repeat(portSkip.coerceAtLeast(1)) { service.allocatePort() }
+
+        return sessionManager(service, sideloadDir, rendering, opened)
     }
 
     private companion object {
@@ -109,12 +112,11 @@ public class McpCommand : CliktCommand(name = "mcp") {
  */
 internal fun sessionManager(
     service: ProxyService,
-    portSkip: Int,
     sideloadDir: Path?,
     rendering: Rendering,
     opened: MutableList<AutoCloseable>,
 ): SessionManager {
-    val launcher = ProxyServiceLauncher(service, portSkip, BridgeJar(sideloadDir))
+    val launcher = ProxyServiceLauncher(service, BridgeJar(sideloadDir))
 
     // The plugin reads the same path in McpBridgePlugin.java.
     val rendezvous = Path.of(System.getProperty("user.home"), ".rsprox", "mcp", "bridge.json")

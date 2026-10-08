@@ -30,7 +30,7 @@ public class McpExtension : ProxyExtension {
         }
 
         serveOrNull(service.getMcpPort()) { opened ->
-            val manager = sessionManager(service, portSkip = 0, sideloadDir = null, Rendering.GPU, opened)
+            val manager = sessionManager(service, sideloadDir = null, Rendering.GPU, opened)
 
             service.addClientListener(AttachingListener(manager))
 

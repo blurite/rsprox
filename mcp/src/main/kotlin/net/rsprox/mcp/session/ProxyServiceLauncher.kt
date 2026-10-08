@@ -15,15 +15,9 @@ import java.util.stream.Collectors
 internal class ProxyServiceLauncher(
     /** The proxy that launches the clients. */
     private val service: ProxyService,
-    portSkip: Int,
     /** The installer of the bridge plugin. */
     private val bridgeJar: BridgeJar,
 ) : ClientLauncher {
-    init {
-        // Leaves the low ports to a GUI that shares the same configured range.
-        repeat(portSkip) { service.allocatePort() }
-    }
-
     /** Get the proxy targets the proxy is configured with. */
     override fun targets(): List<ProxyTargetConfig> = service.proxyTargets
 
