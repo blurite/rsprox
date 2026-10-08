@@ -22,6 +22,26 @@ internal fun target(
         binaryFolder = null,
     )
 
+/** The header of a login to world 301, which the proxy hands to a session monitor. */
+internal val loginHeader =
+    BinaryHeader(
+        headerVersion = 1,
+        revision = 235,
+        subRevision = 1,
+        clientType = 1,
+        platformType = 1,
+        timestamp = 1_700_000_000_000,
+        worldId = 301,
+        worldFlags = 0,
+        worldLocation = 0,
+        worldHost = "127.0.1.3",
+        worldActivity = "",
+        localPlayerIndex = 7,
+        accountHash = ByteArray(0),
+        clientName = "RuneLite",
+        js5MasterIndex = ByteArray(0),
+    )
+
 internal class FakeLauncher : ClientLauncher {
     private val targets = listOf(target(0, "Old School RuneScape"), target(1, "My Server"))
     val reserved = ArrayList<ProxyTargetConfig>()

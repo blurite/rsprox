@@ -1,17 +1,10 @@
 package net.rsprox.mcp.server
 
 import com.fasterxml.jackson.databind.JsonNode
-import net.rsprox.mcp.bridge.TestHub
 import net.rsprox.mcp.packets.Origin
-import net.rsprox.mcp.packets.TapSettingSetStore
 import net.rsprox.mcp.session.FakeLauncher
-import net.rsprox.mcp.session.SessionManager
-import net.rsprox.proxy.binary.BinaryHeader
+import net.rsprox.mcp.session.loginHeader
 import net.rsprox.shared.StreamDirection
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
@@ -23,11 +16,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ToolCallsTest {
-    private val launcher = FakeLauncher()
-    private val fixture = TestHub()
-    private val manager = SessionManager(launcher, TapSettingSetStore, fixture.hub)
-    private val server = McpHttpServer(0, tools { manager }, "1.2.3").also { it.start() }
-    private val http = HttpClient.newHttpClient()
+    private val server = ToolServer()
     private val talkTo = """{"target":"npc","index":0,"option":"Talk-to"}"""
 
     // Every request the plugin received, as its op and its arguments.
@@ -37,95 +26,27 @@ class ToolCallsTest {
     @Volatile
     private var answer: (args: JsonNode) -> String = { """"ok":{}""" }
 
-    private val header =
-        BinaryHeader(
-            headerVersion = 1,
-            revision = 235,
-            subRevision = 1,
-            clientType = 1,
-            platformType = 1,
-            timestamp = 0,
-            worldId = 301,
-            worldFlags = 0,
-            worldLocation = 0,
-            worldHost = "127.0.0.1",
-            worldActivity = "",
-            localPlayerIndex = 1,
-            accountHash = ByteArray(0),
-            clientName = "RuneLite",
-            js5MasterIndex = ByteArray(0),
-        )
-
     @AfterTest
     fun cleanUp() {
         server.close()
-        fixture.close()
-    }
-
-    private fun rpc(
-        method: String,
-        params: String,
-    ): JsonNode {
-        val body = """{"jsonrpc":"2.0","id":1,"method":"$method","params":$params}"""
-        val request =
-            HttpRequest
-                .newBuilder(URI("http://127.0.0.1:${server.localPort}/mcp"))
-                .POST(HttpRequest.BodyPublishers.ofString(body))
-                .build()
-
-        val response = http.send(request, HttpResponse.BodyHandlers.ofString())
-
-        return McpDispatcher.MAPPER.readTree(response.body()).get("result")
-    }
-
-    private fun toolResult(
-        tool: String,
-        arguments: String,
-    ): JsonNode = rpc("tools/call", """{"name":"$tool","arguments":$arguments}""")
-
-    private fun call(
-        tool: String,
-        arguments: String = "{}",
-    ): String {
-        val result = toolResult(tool, arguments)
-        val text = result.get("content").last().get("text").asText()
-        assertFalse(result.get("isError").asBoolean(), text)
-
-        return text
-    }
-
-    private fun callJson(
-        tool: String,
-        arguments: String = "{}",
-    ): JsonNode = McpDispatcher.MAPPER.readTree(call(tool, arguments))
-
-    private fun error(
-        tool: String,
-        arguments: String,
-    ): String {
-        val result = toolResult(tool, arguments)
-        val text = result.get("content").single().get("text").asText()
-        assertTrue(result.get("isError").asBoolean(), text)
-
-        return text
     }
 
     private fun connect() {
-        call("session_start", """{"target":"My Server","wait_ms":0}""")
-        val plugin = fixture.dial(FakeLauncher.FIRST_HTTP_PORT)
+        server.call("session_start", """{"target":"My Server","wait_ms":0}""")
+        val plugin = server.hub.dial(FakeLauncher.FIRST_HTTP_PORT)
         plugin.read()
         plugin.serve { op, args ->
             received += "$op $args"
             answer(args)
         }
 
-        val started = callJson("session_start", """{"session":"s1","wait_ms":10000}""")
+        val started = server.callJson("session_start", """{"session":"s1","wait_ms":10000}""")
         assertEquals("connected", started.get("state").asText())
     }
 
     private fun logIn(decoded: Boolean = true) {
-        val tap = launcher.monitor.forSession(header)
-        tap.onLogin(header)
+        val tap = server.launcher.monitor.forSession(loginHeader)
+        tap.onLogin(loginHeader)
 
         if (decoded) tap.onPacketDirection(StreamDirection.CLIENT_TO_SERVER)
     }
@@ -135,7 +56,7 @@ class ToolCallsTest {
         text: String,
         origin: Origin = Origin.CLIENT,
         tick: Int = 7,
-    ): Long = manager.resolve("s1").packets.append(1, tick, origin, prot, text)
+    ): Long = server.manager.resolve("s1").packets.append(1, tick, origin, prot, text)
 
     private fun clicked(
         x: Int,
@@ -153,11 +74,9 @@ class ToolCallsTest {
         """"ok":{"target":"$target","option":"Talk-to","attempts":1,"tick":41,""" +
             """"expect":"$expect","pressed":[312,171],"tried":[]}"""
 
-    private fun rows(arguments: String): List<String> = call("packets_read", arguments).lines().drop(1)
-
     @Test
     fun `the tool list names the fourteen tools, each with a description and an object schema`() {
-        val listed = rpc("tools/list", "{}").get("tools")
+        val listed = server.rpc("tools/list", "{}").get("tools")
 
         assertEquals(
             listOf(
@@ -193,7 +112,7 @@ class ToolCallsTest {
             """"ok":{"x":10,"y":20}"""
         }
 
-        val result = call("client_click", """{"session":"s1","x":10,"y":20,"widget":null}""")
+        val result = server.call("client_click", """{"session":"s1","x":10,"y":20,"widget":null}""")
 
         assertEquals("""{"x":10,"y":20,"cursor":2}""", result)
         assertEquals(listOf("""click {"x":10,"y":20}"""), received)
@@ -203,10 +122,10 @@ class ToolCallsTest {
     fun `invalid arguments are refused by name before anything reaches the plugin`() {
         connect()
 
-        assertContains(error("client_click", """{"x":"ten","y":20}"""), "'x' must be of type integer")
-        assertContains(error("client_click", """{"x":10,"y":20,"z":1}"""), "unknown argument 'z'")
+        assertContains(server.error("client_click", """{"x":"ten","y":20}"""), "'x' must be of type integer")
+        assertContains(server.error("client_click", """{"x":10,"y":20,"z":1}"""), "unknown argument 'z'")
         assertContains(
-            error("client_entities", """{"kinds":["npc","dragon"]}"""),
+            server.error("client_entities", """{"kinds":["npc","dragon"]}"""),
             "every item of 'kinds' must be one of npc, object",
         )
 
@@ -224,7 +143,7 @@ class ToolCallsTest {
             performed("npc", "OPNPC")
         }
 
-        val result = callJson("client_interact", talkTo)
+        val result = server.callJson("client_interact", talkTo)
 
         assertEquals("6 L1 T7 C OPNPC1_V2 [opnpc1_v2] npc=(index=0, id=3308)", result.get("packet").asText())
         assertEquals("click", result.get("proof").asText())
@@ -245,7 +164,7 @@ class ToolCallsTest {
             performed("npc", "OPNPC")
         }
 
-        val result = callJson("client_interact", talkTo)
+        val result = server.callJson("client_interact", talkTo)
 
         assertEquals("5 L1 T7 C OPNPC1_V2 [opnpc1_v2] npc=(index=0, id=3308)", result.get("packet").asText())
         assertEquals("prefix", result.get("proof").asText())
@@ -260,8 +179,8 @@ class ToolCallsTest {
         }
 
         // Each call waits three seconds for a packet, so the two wait side by side.
-        val npc = CompletableFuture.supplyAsync { error("client_interact", talkTo) }
-        val widget = callJson("client_interact", """{"target":"widget","widget":"558:7","option":"Toggle"}""")
+        val npc = CompletableFuture.supplyAsync { server.error("client_interact", talkTo) }
+        val widget = server.callJson("client_interact", """{"target":"widget","widget":"558:7","option":"Toggle"}""")
 
         assertContains(npc.get(10, TimeUnit.SECONDS), "no OPNPC packet")
         assertContains(npc.get(), "the action was dropped. Likely cause: the NPC left the client's view")
@@ -280,7 +199,7 @@ class ToolCallsTest {
             performed("widget", "IF_BUTTON")
         }
 
-        val option = callJson("client_interact", """{"target":"dialog","option":"2"}""")
+        val option = server.callJson("client_interact", """{"target":"dialog","option":"2"}""")
 
         assertEquals("5 L1 T7 C RESUME_PAUSEBUTTON [resume_pausebutton] com=219:1", option.get("packet").asText())
         assertEquals("click", option.get("proof").asText())
@@ -291,7 +210,7 @@ class ToolCallsTest {
             performed("widget", "IF_BUTTON")
         }
 
-        val close = callJson("client_interact", """{"target":"widget","widget":"12:2","option":"Close"}""")
+        val close = server.callJson("client_interact", """{"target":"widget","widget":"12:2","option":"Close"}""")
 
         assertEquals("7 L1 T7 C CLOSE_MODAL [close_modal]", close.get("packet").asText())
         assertEquals("click", close.get("proof").asText())
@@ -303,7 +222,7 @@ class ToolCallsTest {
         logIn(decoded = false)
         answer = { performed("npc", "OPNPC") }
 
-        val result = callJson("client_interact", talkTo)
+        val result = server.callJson("client_interact", talkTo)
 
         assertTrue(result.get("packet").isNull, result.toString())
         assertContains(result.get("note").asText(), "not decoded, so the action could not be confirmed")
@@ -326,13 +245,13 @@ class ToolCallsTest {
             5 L1 T8 S IF_SETTEXT [if_settext] com=558:7, text=Hello there
             6 L1 T8 C IF_BUTTONX [if_buttonx] com=558:7, op=1
             """.trimIndent(),
-            call("packets_read", """{"after":2}"""),
+            server.call("packets_read", """{"after":2}"""),
         )
 
-        assertEquals(listOf("5", "6"), rows("""{"after":4}""").map { it.substringBefore(' ') })
-        assertEquals(listOf("5"), rows("""{"prots":["if_settext"]}""").map { it.substringBefore(' ') })
-        assertEquals(listOf("4", "6"), rows("""{"origin":"client"}""").map { it.substringBefore(' ') })
-        assertEquals(listOf("5"), rows("""{"contains":"hello THERE"}""").map { it.substringBefore(' ') })
+        assertEquals(listOf("5", "6"), server.rows("""{"after":4}""").map { it.substringBefore(' ') })
+        assertEquals(listOf("5"), server.rows("""{"prots":["if_settext"]}""").map { it.substringBefore(' ') })
+        assertEquals(listOf("4", "6"), server.rows("""{"origin":"client"}""").map { it.substringBefore(' ') })
+        assertEquals(listOf("5"), server.rows("""{"contains":"hello THERE"}""").map { it.substringBefore(' ') })
     }
 
     @Test
@@ -340,7 +259,7 @@ class ToolCallsTest {
         connect()
         logIn()
         val read = """{"after":3,"contains":"farewell","wait_ms":60000}"""
-        val waiting = CompletableFuture.supplyAsync { call("packets_read", read) }
+        val waiting = CompletableFuture.supplyAsync { server.call("packets_read", read) }
 
         sent("IF_SETTEXT", "[if_settext] com=558:7, text=Hello there", Origin.SERVER)
         sent("IF_SETTEXT", "[if_settext] com=558:7, text=Farewell", Origin.SERVER)
@@ -355,7 +274,7 @@ class ToolCallsTest {
 
         assertEquals(
             """{"next":5,"head":5,"dropped":0,"timedOut":true,"count":0}""",
-            call("packets_read", """{"after":5,"wait_ms":50}"""),
+            server.call("packets_read", """{"after":5,"wait_ms":50}"""),
         )
     }
 }

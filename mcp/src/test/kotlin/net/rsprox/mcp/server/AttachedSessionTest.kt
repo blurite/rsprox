@@ -1,112 +1,37 @@
 package net.rsprox.mcp.server
 
-import com.fasterxml.jackson.databind.JsonNode
-import net.rsprox.mcp.bridge.TestHub
-import net.rsprox.mcp.packets.TapSettingSetStore
 import net.rsprox.mcp.session.FakeLauncher
-import net.rsprox.mcp.session.SessionManager
+import net.rsprox.mcp.session.loginHeader
 import net.rsprox.mcp.session.target
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.StreamDirection
 import net.rsprox.shared.property.ChildProperty
 import net.rsprox.shared.property.RootProperty
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class AttachedSessionTest {
-    private val launcher = FakeLauncher()
-    private val fixture = TestHub()
-    private val manager = SessionManager(launcher, TapSettingSetStore, fixture.hub)
-    private val server = McpHttpServer(0, tools { manager }, "1.2.3").also { it.start() }
-    private val http = HttpClient.newHttpClient()
-
-    private val header =
-        BinaryHeader(
-            headerVersion = 1,
-            revision = 235,
-            subRevision = 1,
-            clientType = 1,
-            platformType = 1,
-            timestamp = 1_700_000_000_000,
-            worldId = 301,
-            worldFlags = 0,
-            worldLocation = 0,
-            worldHost = "127.0.1.3",
-            worldActivity = "",
-            localPlayerIndex = 7,
-            accountHash = ByteArray(0),
-            clientName = "RuneLite",
-            js5MasterIndex = ByteArray(0),
-        )
+    private val server = ToolServer()
 
     @AfterTest
     fun cleanUp() {
         server.close()
-        fixture.close()
     }
 
-    private fun toolResult(
-        tool: String,
-        arguments: String,
-    ): JsonNode {
-        val body =
-            """{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"$tool","arguments":$arguments}}"""
-
-        val request =
-            HttpRequest
-                .newBuilder(URI("http://127.0.0.1:${server.localPort}/mcp"))
-                .POST(HttpRequest.BodyPublishers.ofString(body))
-                .build()
-
-        val response = http.send(request, HttpResponse.BodyHandlers.ofString())
-
-        return McpDispatcher.MAPPER.readTree(response.body()).get("result")
-    }
-
-    private fun call(
-        tool: String,
-        arguments: String = "{}",
-    ): String {
-        val result = toolResult(tool, arguments)
-        val text = result.get("content").single().get("text").asText()
-        assertEquals(false, result.get("isError").asBoolean(), text)
-
-        return text
-    }
-
-    private fun error(
-        tool: String,
-        arguments: String,
-    ): String {
-        val result = toolResult(tool, arguments)
-        val text = result.get("content").single().get("text").asText()
-        assertEquals(true, result.get("isError").asBoolean(), text)
-
-        return text
-    }
-
-    private fun sessions(): List<String> =
-        McpDispatcher.MAPPER
-            .readTree(call("session_list"))
-            .get("sessions")
-            .map { it.toString() }
+    private fun sessions(): List<String> = server.callJson("session_list").get("sessions").map { it.toString() }
 
     private fun attach(
         proxyPort: Int = 43701,
         captureFolder: String? = "Local",
     ): SessionMonitor<BinaryHeader> =
-        checkNotNull(manager.attach(proxyPort, target(1, "Local").copy(binaryFolder = captureFolder)))
+        checkNotNull(server.manager.attach(proxyPort, target(1, "Local").copy(binaryFolder = captureFolder)))
 
     private fun SessionMonitor<BinaryHeader>.logIn(): SessionMonitor<BinaryHeader> {
-        val login = forSession(header)
-        login.onLogin(header)
+        val login = forSession(loginHeader)
+        login.onLogin(loginHeader)
         login.onCacheUpdate { error("the test formats no packet that needs the cache") }
 
         return login
@@ -127,11 +52,9 @@ class AttachedSessionTest {
         )
     }
 
-    private fun rows(arguments: String): List<String> = call("packets_read", arguments).lines().drop(1)
-
     @Test
     fun `a client the GUI launches is listed as an attached session, numbered with the launched ones`() {
-        call("session_start", """{"target":"My Server","wait_ms":0}""")
+        server.call("session_start", """{"target":"My Server","wait_ms":0}""")
 
         attach(proxyPort = 43701)
 
@@ -148,11 +71,11 @@ class AttachedSessionTest {
 
     @Test
     fun `a client that the MCP server launched itself gets no attached session`() {
-        call("session_start", """{"target":"My Server","wait_ms":0}""")
+        server.call("session_start", """{"target":"My Server","wait_ms":0}""")
 
-        assertNull(manager.attach(FakeLauncher.FIRST_PROXY_PORT, target(1, "My Server")))
+        assertNull(server.manager.attach(FakeLauncher.FIRST_PROXY_PORT, target(1, "My Server")))
 
-        assertEquals(listOf("s1"), manager.list().map { it.session })
+        assertEquals(listOf("s1"), server.manager.list().map { it.session })
     }
 
     @Test
@@ -165,10 +88,10 @@ class AttachedSessionTest {
 
         assertEquals(listOf("""$attached,"cursor":1}"""), sessions())
 
-        val login = client.forSession(header)
-        login.onLogin(header)
+        val login = client.forSession(loginHeader)
+        login.onLogin(loginHeader)
 
-        val recorded = """$accepted,"captureFile":"Local/${header.fileName()}""""
+        val recorded = """$accepted,"captureFile":"Local/${loginHeader.fileName()}""""
 
         assertEquals(listOf("""$attached,$recorded,"online":true,"transcribing":false},"cursor":2}"""), sessions())
 
@@ -187,7 +110,7 @@ class AttachedSessionTest {
             sessions(),
         )
 
-        login.onLogout(header)
+        login.onLogout(loginHeader)
 
         assertEquals(
             listOf("""$attached,$recorded,"name":"Alice","online":false,"transcribing":true,"tick":5},"cursor":5}"""),
@@ -215,7 +138,7 @@ class AttachedSessionTest {
         val first = client.logIn()
         first.packet(tick = 4, StreamDirection.SERVER_TO_CLIENT, "REBUILD_NORMAL")
         first.packet(tick = 5, StreamDirection.CLIENT_TO_SERVER, "NO_TIMEOUT")
-        first.onLogout(header)
+        first.onLogout(loginHeader)
         client.logIn().packet(tick = 1, StreamDirection.SERVER_TO_CLIENT, "REBUILD_NORMAL")
 
         assertEquals(
@@ -229,10 +152,10 @@ class AttachedSessionTest {
                 "6 L2 T0 P LOGIN revision=235 world=301",
                 "7 L2 T1 S REBUILD_NORMAL [rebuild_normal] ",
             ),
-            call("packets_read", """{"session":"s1"}""").lines(),
+            server.call("packets_read", """{"session":"s1"}""").lines(),
         )
 
-        assertEquals(listOf("4 L1 T5 C NO_TIMEOUT [no_timeout] "), rows("""{"after":3,"origin":"client"}"""))
+        assertEquals(listOf("4 L1 T5 C NO_TIMEOUT [no_timeout] "), server.rows("""{"after":3,"origin":"client"}"""))
     }
 
     @Test
@@ -242,12 +165,12 @@ class AttachedSessionTest {
             "is not available for an attached session: session s1 belongs to a client that was launched " +
                 "from the rsprox GUI, so only its packets can be read"
 
-        assertEquals("session_stop $refusal", error("session_stop", """{"session":"s1"}"""))
-        assertEquals("session_start $refusal", error("session_start", """{"session":"s1","wait_ms":0}"""))
+        assertEquals("session_stop $refusal", server.error("session_stop", """{"session":"s1"}"""))
+        assertEquals("session_start $refusal", server.error("session_start", """{"session":"s1","wait_ms":0}"""))
 
-        assertEquals(emptyList(), launcher.killed)
-        assertEquals(emptyList(), launcher.reserved)
-        assertEquals("attached", manager.list().single().state)
+        assertEquals(emptyList(), server.launcher.killed)
+        assertEquals(emptyList(), server.launcher.reserved)
+        assertEquals("attached", server.manager.list().single().state)
     }
 
     @Test
@@ -260,7 +183,7 @@ class AttachedSessionTest {
                 "client_interact" to """{"target":"tile","x":3094,"y":3107}""",
             )
 
-        val clientTools = tools { manager }.map { it.name }.filter { it.startsWith("client_") }
+        val clientTools = tools { server.manager }.map { it.name }.filter { it.startsWith("client_") }
 
         assertEquals(10, clientTools.size)
 
@@ -268,7 +191,7 @@ class AttachedSessionTest {
             assertEquals(
                 "$tool is not available for an attached session: session s1 belongs to a client that was " +
                     "launched from the rsprox GUI, so only its packets can be read",
-                error(tool, required[tool] ?: "{}"),
+                server.error(tool, required[tool] ?: "{}"),
             )
         }
     }
@@ -278,13 +201,13 @@ class AttachedSessionTest {
         attach(proxyPort = 43701).logIn()
         attach(proxyPort = 43702)
 
-        manager.detach(43701)
-        manager.detach(43701)
-        manager.detach(43999)
+        server.manager.detach(43701)
+        server.manager.detach(43701)
+        server.manager.detach(43999)
 
         assertEquals(
             listOf("ended" to "the client was closed", "attached" to null),
-            manager.list().map { it.state to it.reason },
+            server.manager.list().map { it.state to it.reason },
         )
 
         assertEquals(
@@ -293,7 +216,7 @@ class AttachedSessionTest {
                 "2 L1 T0 P LOGIN revision=235 world=301",
                 "3 L1 T0 P CLIENT_EXITED the client was closed",
             ),
-            rows("""{"session":"s1"}"""),
+            server.rows("""{"session":"s1"}"""),
         )
     }
 }

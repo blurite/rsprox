@@ -1,19 +1,11 @@
 package net.rsprox.mcp
 
-import net.rsprox.mcp.bridge.TestHub
-import net.rsprox.mcp.packets.TapSettingSetStore
 import net.rsprox.mcp.server.McpHttpServer
-import net.rsprox.mcp.session.FakeLauncher
-import net.rsprox.mcp.session.SessionManager
+import net.rsprox.mcp.server.ToolServer
 import net.rsprox.proxy.ProxyExtension
 import java.net.ServerSocket
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 import java.util.ServiceLoader
 import kotlin.test.Test
-import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
@@ -49,26 +41,21 @@ class McpExtensionTest {
 
     @Test
     fun `a free port serves the tools over the sessions that were built`() {
-        val port = freePort()
-        val fixture = TestHub()
-        val endpoint = serveOrNull(port) { SessionManager(FakeLauncher(), TapSettingSetStore, fixture.hub) }
+        var port = 0
 
-        try {
-            val request =
-                HttpRequest
-                    .newBuilder(URI("http://127.0.0.1:$port/mcp"))
-                    .POST(
-                        HttpRequest.BodyPublishers.ofString(
-                            """{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"session_list"}}""",
-                        ),
-                    ).build()
+        // The port is picked once the test server holds its other ports, so that none of them takes it.
+        val served =
+            ToolServer { sessions ->
+                port = freePort()
+                checkNotNull(serveOrNull(port) { sessions })
+            }
 
-            val response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString())
-
-            assertContains(response.body(), """{\"sessions\":[],\"targets\":[\"Old School RuneScape\",\"My Server\"]}""")
-        } finally {
-            endpoint?.close()
-            fixture.close()
+        served.use { server ->
+            assertEquals(port, server.port)
+            assertEquals(
+                """{"sessions":[],"targets":["Old School RuneScape","My Server"]}""",
+                server.call("session_list"),
+            )
         }
     }
 }
