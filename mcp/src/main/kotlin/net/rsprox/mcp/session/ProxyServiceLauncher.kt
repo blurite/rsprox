@@ -32,7 +32,7 @@ internal class ProxyServiceLauncher(
         bridgeJar.installFor(target)
 
         // The proxy logs and returns when it cannot bind a proxy port, and a GUI may own any port in the range.
-        val (port, proxyTarget) = firstBound(service::allocatePort, ::canBind) { bindHttpServer(it, target) }
+        val (port, proxyTarget) = firstBound(target)
         val forks = ForkWatch()
 
         return Reservation(
@@ -47,6 +47,21 @@ internal class ProxyServiceLauncher(
             },
             launcherExited = forks::allExited,
         )
+    }
+
+    /**
+     * Get the first port of the proxy that is free and whose HTTP port can be bound, with the target that
+     * was bound for it. Throws when none of [BIND_ATTEMPTS] ports works.
+     */
+    private fun firstBound(target: ProxyTargetConfig): Pair<Int, ProxyTarget> {
+        repeat(BIND_ATTEMPTS) {
+            val port = service.allocatePort()
+            val bound = if (canBind(port)) bindHttpServer(port, target) else null
+
+            if (bound != null) return port to bound
+        }
+
+        throw IllegalStateException("none of $BIND_ATTEMPTS proxy ports in a row could be bound with its HTTP port")
     }
 
     /** Kill the client on the proxy port, if any, and release the proxy state held for it. */
@@ -90,25 +105,6 @@ internal class ProxyServiceLauncher(
 
 /** The most proxy ports that one reservation tries. */
 private const val BIND_ATTEMPTS = 64
-
-/**
- * Get the first port from [allocate] that is free and that [bind] accepts, with what [bind] made for it.
- * [bind] returns null for a port whose companion port is taken. Throws when none of [BIND_ATTEMPTS] ports works.
- */
-private fun <T : Any> firstBound(
-    allocate: () -> Int,
-    isFree: (Int) -> Boolean,
-    bind: (Int) -> T?,
-): Pair<Int, T> {
-    repeat(BIND_ATTEMPTS) {
-        val port = allocate()
-        val bound = if (isFree(port)) bind(port) else null
-
-        if (bound != null) return port to bound
-    }
-
-    throw IllegalStateException("none of $BIND_ATTEMPTS proxy ports in a row could be bound with its HTTP port")
-}
 
 /**
  * The processes this JVM forks from the moment the watch is made. Launches take turns, so the forks that
