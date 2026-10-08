@@ -24,6 +24,7 @@ import java.awt.event.WindowEvent
 import java.net.URI
 import java.util.prefs.Preferences
 import javax.swing.BorderFactory
+import javax.swing.JCheckBoxMenuItem
 import javax.swing.JFrame
 import javax.swing.JMenu
 import javax.swing.JMenuItem
@@ -44,6 +45,7 @@ public class App {
     public val statusBar: StatusBar = StatusBar(transcriptionManager)
     private lateinit var sideBar: SideBar
     private lateinit var homePanel: HomePanel
+    private val mcpEnabledAtStart: Boolean = service.getMcpEnabled()
 
     public fun init() {
         installFileChooserStateStore()
@@ -169,6 +171,16 @@ public class App {
 
                 addSeparator()
 
+                val serveMcpEndpoint = JCheckBoxMenuItem("Serve MCP Endpoint", mcpEnabledAtStart)
+                serveMcpEndpoint.mnemonic = 'M'.code
+                serveMcpEndpoint.toolTipText = MCP_ENDPOINT_TOOLTIP
+                serveMcpEndpoint.addActionListener {
+                    this@App.setMcpEnabled(serveMcpEndpoint.isSelected)
+                }
+                add(serveMcpEndpoint)
+
+                addSeparator()
+
                 val exitItem = JMenuItem("Exit")
                 exitItem.mnemonic = 'X'.code
                 exitItem.accelerator = KeyStroke.getKeyStroke("alt F4")
@@ -281,6 +293,17 @@ public class App {
     private fun recordRecentReplayDump(path: java.nio.file.Path) {
         RecentReplayDumps.record(path)
         homePanel.refreshRecentDumps()
+    }
+
+    private fun setMcpEnabled(enabled: Boolean) {
+        service.setMcpEnabled(enabled)
+        val notice = mcpRestartNotice(mcpEnabledAtStart, enabled, service.getMcpPort()) ?: return
+        JOptionPane.showMessageDialog(
+            frame,
+            notice,
+            "MCP Endpoint",
+            JOptionPane.INFORMATION_MESSAGE,
+        )
     }
 
     private fun openBinaryLogsFolder() {
