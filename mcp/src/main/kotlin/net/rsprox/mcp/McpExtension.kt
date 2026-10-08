@@ -6,12 +6,8 @@ import net.rsprox.mcp.server.McpHttpServer
 import net.rsprox.mcp.server.ToolError
 import net.rsprox.mcp.server.tools
 import net.rsprox.mcp.session.SessionManager
-import net.rsprox.proxy.ClientListener
 import net.rsprox.proxy.ProxyExtension
 import net.rsprox.proxy.ProxyService
-import net.rsprox.proxy.binary.BinaryHeader
-import net.rsprox.proxy.target.ProxyTargetConfig
-import net.rsprox.shared.SessionMonitor
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicReference
 
@@ -30,34 +26,13 @@ public class McpExtension : ProxyExtension {
         }
 
         serveOrNull(service.getMcpPort()) { opened ->
-            val manager = sessionManager(service, sideloadDir = null, Rendering.GPU, opened)
-
-            service.addClientListener(AttachingListener(manager))
-
-            manager
+            sessionManager(service, sideloadDir = null, Rendering.GPU, service.getMcpPluginEnabled(), opened)
         }
     }
 
     private companion object {
         /** The logger of the extension. */
         private val logger = InlineLogger()
-    }
-}
-
-/** Attaches a session to each client the proxy launches, and ends it when the client is gone. */
-private class AttachingListener(
-    /** The sessions that the clients are attached to. */
-    private val sessions: SessionManager,
-) : ClientListener {
-    /** Attach a session to the client, unless the session manager launched it itself. */
-    override fun onClientLaunch(
-        port: Int,
-        target: ProxyTargetConfig,
-    ): SessionMonitor<BinaryHeader>? = sessions.attach(port, target)
-
-    /** End the session that is attached to the client, if any. */
-    override fun onClientClosed(port: Int) {
-        sessions.detach(port)
     }
 }
 

@@ -40,6 +40,8 @@ internal class Reservation(
      * Asked again and again while [launch] blocks, always by the same thread.
      */
     val launcherExited: () -> Boolean,
+    /** Whether the bridge plugin was installed for the launch, so that the client's hello is to be expected. */
+    val bridged: Boolean,
 )
 
 /**
@@ -117,6 +119,7 @@ public class SessionManager internal constructor(
                     //
                 }
                 is ClientState.Launching -> release(state.launch)
+                is ClientState.Unbridged -> launcher.kill(state.launch.proxyPort)
                 is ClientState.Connected -> {
                     state.link.close()
                     launcher.kill(state.launch.proxyPort)
@@ -143,11 +146,24 @@ public class SessionManager internal constructor(
         return tap(session)
     }
 
-    /** End the session that is attached to the client on [proxyPort], if any. Idempotent. */
+    /**
+     * Register that the client on [proxyPort] is gone: end the session attached to it, or stop the
+     * launched session whose unbridged client it was, which nothing else tells about the exit. Idempotent.
+     */
     internal fun detach(proxyPort: Int) {
         val attached = sessions.filterIsInstance<AttachedSession>().firstOrNull { it.proxyPort == proxyPort }
+        attached?.end(CLIENT_CLOSED)
 
-        attached?.end("the client was closed")
+        val unbridged =
+            launchedSessions().firstOrNull {
+                val state = it.client
+                state is ClientState.Unbridged && state.launch.proxyPort == proxyPort
+            }
+
+        if (unbridged != null) {
+            unbridged.stop(CLIENT_CLOSED)
+            synchronized(launchLock) { launcher.kill(proxyPort) }
+        }
     }
 
     /** Get a snapshot of every session. */
@@ -247,13 +263,14 @@ public class SessionManager internal constructor(
         val launch = Launch(session.nextGeneration(), reservation.proxyPort, reservation.httpPort)
 
         // Registered before the client is forked: its hello can arrive before the launch call returns.
-        bridge.expect(launch.httpPort, listener(session, launch))
-        session.launched(launch)
+        if (reservation.bridged) bridge.expect(launch.httpPort, listener(session, launch))
+
+        session.launched(launch, reservation.bridged)
 
         val reason = fork(session, reservation)
 
         if (reason == null) {
-            expectHello(session, launch)
+            if (reservation.bridged) expectHello(session, launch)
 
             return session
         }
@@ -419,6 +436,9 @@ public class SessionManager internal constructor(
 
         /** The reason of a session whose client never said hello. */
         private const val NEVER_CONNECTED = "the client started, but its bridge plugin never connected"
+
+        /** The reason of a session whose client the proxy reported gone. */
+        private const val CLIENT_CLOSED = "the client was closed"
 
         /** The refusal of every launch that follows one whose launcher never returned. */
         private const val HUNG_LAUNCH =

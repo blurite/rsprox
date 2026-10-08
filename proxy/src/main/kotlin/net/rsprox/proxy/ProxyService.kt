@@ -35,6 +35,7 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.FILTERS_STATUS
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.MCP_ENABLED
+import net.rsprox.proxy.config.ProxyProperty.Companion.MCP_PLUGIN
 import net.rsprox.proxy.config.ProxyProperty.Companion.MCP_PORT
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
 import net.rsprox.proxy.config.ProxyProperty.Companion.RUNELITE_RSPROX_CONNECTION
@@ -512,6 +513,10 @@ public class ProxyService(
 
     public fun getMcpPort(): Int {
         return properties.getProperty(MCP_PORT)
+    }
+
+    public fun getMcpPluginEnabled(): Boolean {
+        return properties.getProperty(MCP_PLUGIN)
     }
 
     public fun setSelectedClient(index: Int) {

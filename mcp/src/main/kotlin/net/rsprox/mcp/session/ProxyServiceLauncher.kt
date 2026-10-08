@@ -15,15 +15,15 @@ import java.util.stream.Collectors
 internal class ProxyServiceLauncher(
     /** The proxy that launches the clients. */
     private val service: ProxyService,
-    /** The installer of the bridge plugin. */
-    private val bridgeJar: BridgeJar,
+    /** The installer of the bridge plugin, or null to launch clients without it. */
+    private val bridgeJar: BridgeJar?,
 ) : ClientLauncher {
     /** Get the proxy targets the proxy is configured with. */
     override fun targets(): List<ProxyTargetConfig> = service.proxyTargets
 
-    /** Install the bridge plugin, pick a free proxy port and bind the HTTP server of the target. */
+    /** Install the bridge plugin, if any, pick a free proxy port and bind the HTTP server of the target. */
     override fun reserve(target: ProxyTargetConfig): Reservation {
-        bridgeJar.installFor(target)
+        bridgeJar?.installFor(target)
 
         // The proxy logs and returns when it cannot bind a proxy port, and a GUI may own any port in the range.
         val (port, proxyTarget) = firstBound(target)
@@ -40,6 +40,7 @@ internal class ProxyServiceLauncher(
                 check(hasClientType(port)) { "proxy port $port could not be bound" }
             },
             launcherExited = forks::allExited,
+            bridged = bridgeJar != null,
         )
     }
 

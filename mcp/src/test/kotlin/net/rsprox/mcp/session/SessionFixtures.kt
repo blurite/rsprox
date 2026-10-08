@@ -50,6 +50,7 @@ internal class FakeLauncher : ClientLauncher {
     val killed = CopyOnWriteArrayList<Int>()
     var launch: () -> Unit = {}
     var launcherExited: () -> Boolean = { false }
+    var bridged = true
 
     // The packet tap of the newest launch, which a test drives the way the proxy does.
     lateinit var monitor: SessionMonitor<BinaryHeader>
@@ -68,6 +69,7 @@ internal class FakeLauncher : ClientLauncher {
                 launch()
             },
             { launcherExited() },
+            bridged,
         )
     }
 

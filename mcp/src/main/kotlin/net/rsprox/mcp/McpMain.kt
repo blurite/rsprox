@@ -2,6 +2,7 @@ package net.rsprox.mcp
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.switch
 import com.github.ajalt.clikt.parameters.types.int
@@ -16,8 +17,12 @@ import net.rsprox.mcp.packets.UnfilteredFilterSetStore
 import net.rsprox.mcp.server.ToolError
 import net.rsprox.mcp.session.ProxyServiceLauncher
 import net.rsprox.mcp.session.SessionManager
+import net.rsprox.proxy.ClientListener
 import net.rsprox.proxy.ProxyService
+import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.config.DEFAULT_MCP_PORT
+import net.rsprox.proxy.target.ProxyTargetConfig
+import net.rsprox.shared.SessionMonitor
 import java.nio.file.Path
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicReference
@@ -47,6 +52,12 @@ public class McpCommand : CliktCommand(name = "mcp") {
 
     /** The name of the target to launch at startup, or null to launch none. */
     private val autostart by option("--start", help = "Target name to launch immediately")
+
+    /** Whether launched clients go without the bridge plugin, so that only their packets are read. */
+    private val noPlugin by option(
+        "--no-plugin",
+        help = "Launch clients without the bridge plugin, so that only their packets can be read",
+    ).flag()
 
     /** Serve the MCP endpoint, start the proxy and the bridge hub, and run until the process is killed. */
     override fun run() {
@@ -97,7 +108,7 @@ public class McpCommand : CliktCommand(name = "mcp") {
         // Leaves the low ports to a GUI that shares the same configured range.
         repeat(portSkip.coerceAtLeast(1)) { service.allocatePort() }
 
-        return sessionManager(service, sideloadDir, rendering, opened)
+        return sessionManager(service, sideloadDir, rendering, plugin = !noPlugin, opened)
     }
 
     private companion object {
@@ -108,15 +119,18 @@ public class McpCommand : CliktCommand(name = "mcp") {
 
 /**
  * Start the bridge hub and build the sessions of a started proxy, with the stores the proxy holds at
- * this moment. Adds what must be closed when a later step fails to [opened].
+ * this moment. The sessions hear of every client the proxy launches and closes. With [plugin] false,
+ * launched clients get no bridge plugin, so only their packets can be read. Adds what must be closed
+ * when a later step fails to [opened].
  */
 internal fun sessionManager(
     service: ProxyService,
     sideloadDir: Path?,
     rendering: Rendering,
+    plugin: Boolean,
     opened: MutableList<AutoCloseable>,
 ): SessionManager {
-    val launcher = ProxyServiceLauncher(service, BridgeJar(sideloadDir))
+    val launcher = ProxyServiceLauncher(service, if (plugin) BridgeJar(sideloadDir) else null)
 
     // The plugin reads the same path in McpBridgePlugin.java.
     val rendezvous = Path.of(System.getProperty("user.home"), ".rsprox", "mcp", "bridge.json")
@@ -128,7 +142,30 @@ internal fun sessionManager(
     // The proxy's own hook kills the clients; this one removes the rendezvous file they dial through.
     Runtime.getRuntime().addShutdownHook(Thread(hub::close, "mcp-bridge-shutdown"))
 
-    return SessionManager(launcher, service.settingsStore, hub)
+    val manager = SessionManager(launcher, service.settingsStore, hub)
+    service.addClientListener(ClientWatch(manager))
+
+    return manager
+}
+
+/**
+ * Attaches a session to each client that something other than the manager launches through the proxy,
+ * and tells the manager when any client is gone.
+ */
+private class ClientWatch(
+    /** The sessions that hear of the clients. */
+    private val sessions: SessionManager,
+) : ClientListener {
+    /** Attach a session to the client, unless the session manager launched it itself. */
+    override fun onClientLaunch(
+        port: Int,
+        target: ProxyTargetConfig,
+    ): SessionMonitor<BinaryHeader>? = sessions.attach(port, target)
+
+    /** End or stop the session of the client, if any. */
+    override fun onClientClosed(port: Int) {
+        sessions.detach(port)
+    }
 }
 
 /**

@@ -84,6 +84,12 @@ public sealed interface ClientState {
         override val launch: Launch,
     ) : ClientState
 
+    /** The client was launched without the bridge plugin, so only its packets are read. */
+    public data class Unbridged(
+        /** The launch of the client. */
+        override val launch: Launch,
+    ) : ClientState
+
     /** The plugin in the client is connected, so the client can be driven. */
     public data class Connected(
         /** The launch that the client belongs to. */
@@ -303,9 +309,17 @@ public class LaunchedSession internal constructor(
             after !== before
         }
 
-    /** Register that [launch] of the client began, unless the session has a client already. */
-    internal fun launched(launch: Launch) {
-        transition { if (it is ClientState.Stopped) ClientState.Launching(launch) else it }
+    /**
+     * Register that [launch] of the client began, unless the session has a client already. A client
+     * launched with the plugin is launching until its hello; one launched without it is unbridged.
+     */
+    internal fun launched(
+        launch: Launch,
+        bridged: Boolean,
+    ) {
+        val next = if (bridged) ClientState.Launching(launch) else ClientState.Unbridged(launch)
+
+        transition { if (it is ClientState.Stopped) next else it }
     }
 
     /**
@@ -377,6 +391,11 @@ public class LaunchedSession internal constructor(
             is ClientState.Connected -> state.link
             is ClientState.Launching ->
                 throw ToolError("session $id is still launching; call session_start with this session to wait for it")
+            is ClientState.Unbridged ->
+                throw ToolError(
+                    "$tool is not available for session $id: its client was launched without the bridge plugin, " +
+                        "which mcp.plugin in proxy.properties, or --no-plugin, turns off, so only its packets can be read",
+                )
             is ClientState.Stopped ->
                 throw ToolError("session $id has no connected client: ${state.reason}")
         }
@@ -396,6 +415,7 @@ public class LaunchedSession internal constructor(
                 when (state) {
                     is ClientState.Stopped -> "stopped"
                     is ClientState.Launching -> "launching"
+                    is ClientState.Unbridged -> "unbridged"
                     is ClientState.Connected -> "connected"
                 },
             reason = (state as? ClientState.Stopped)?.reason,
@@ -411,16 +431,16 @@ public class LaunchedSession internal constructor(
     /** Append the lifecycle marker of the state to the packet log. */
     private fun mark(state: ClientState) {
         when (state) {
-            is ClientState.Launching ->
-                mark(
-                    "CLIENT_LAUNCHED",
-                    "generation=${state.launch.generation} proxyPort=${state.launch.proxyPort} " +
-                        "httpPort=${state.launch.httpPort}",
-                )
+            is ClientState.Launching -> mark("CLIENT_LAUNCHED", describe(state.launch))
+            is ClientState.Unbridged -> mark("CLIENT_LAUNCHED", "${describe(state.launch)} plugin=none")
             is ClientState.Connected -> mark("CLIENT_CONNECTED", "pid=${state.pid}")
             is ClientState.Stopped -> mark("CLIENT_EXITED", state.reason)
         }
     }
+
+    /** Describe the launch for its marker. */
+    private fun describe(launch: Launch): String =
+        "generation=${launch.generation} proxyPort=${launch.proxyPort} httpPort=${launch.httpPort}"
 }
 
 /**

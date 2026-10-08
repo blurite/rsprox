@@ -7,6 +7,7 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.BINARY_WRITE_INTERVAL_SEC
 import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.MCP_ENABLED
+import net.rsprox.proxy.config.ProxyProperty.Companion.MCP_PLUGIN
 import net.rsprox.proxy.config.ProxyProperty.Companion.MCP_PORT
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
 import net.rsprox.proxy.config.ProxyProperty.Companion.RUNELITE_RSPROX_CONNECTION
@@ -98,6 +99,7 @@ public value class ProxyProperties private constructor(
             // mcp
             properties.setValue(MCP_ENABLED, true)
             properties.setValue(MCP_PORT, DEFAULT_MCP_PORT)
+            properties.setValue(MCP_PLUGIN, true)
             // other
             properties.setValue(RUNELITE_RSPROX_CONNECTION, false)
             return properties
