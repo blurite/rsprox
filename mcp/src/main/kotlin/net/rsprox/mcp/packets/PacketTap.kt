@@ -72,11 +72,9 @@ private class LoginTap(
     /** Get this tap, which is the monitor of its one login already. */
     override fun forSession(header: BinaryHeader): SessionMonitor<BinaryHeader> = this
 
-    /** Keep the cache for the formatter, and register the file that the login is recorded to. */
+    /** Keep the cache for the formatter. */
     override fun onCacheUpdate(cacheProvider: CacheProvider) {
         cache = cacheProvider
-
-        logins.update(epoch) { it.copy(captureFile = captureFile) }
     }
 
     /** Keep the direction of the next packet. The first packet also registers that this login is being transcribed. */
@@ -118,7 +116,7 @@ private class LoginTap(
 
     /** Register the login and mark it in the log. */
     override fun onLogin(header: BinaryHeader) {
-        logins.login(LoginInfo.of(epoch, header))
+        logins.login(LoginInfo.of(epoch, header, captureFile))
         log.append(epoch, 0, Origin.PROXY, "LOGIN", "revision=${header.revision} world=${header.worldId}")
     }
 

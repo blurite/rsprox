@@ -168,9 +168,6 @@ class AttachedSessionTest {
         val login = client.forSession(header)
         login.onLogin(header)
 
-        assertEquals(listOf("""$attached,$accepted,"online":true,"transcribing":false},"cursor":2}"""), sessions())
-
-        login.onCacheUpdate { error("the test formats no packet that needs the cache") }
         val recorded = """$accepted,"captureFile":"Local/${header.fileName()}""""
 
         assertEquals(listOf("""$attached,$recorded,"online":true,"transcribing":false},"cursor":2}"""), sessions())

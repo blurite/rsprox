@@ -80,7 +80,7 @@ public data class LoginInfo(
     val connectedAt: String,
     /**
      * The file the login is recorded to, relative to the `binary` directory of rsprox.
-     * Null for a target that is not recorded, and until the proxy has set the recording up.
+     * Null for a target that is not recorded.
      */
     val captureFile: String?,
     /** The display name of the player, or null until the proxy reports it. */
@@ -100,6 +100,7 @@ public data class LoginInfo(
         internal fun of(
             epoch: Int,
             header: BinaryHeader,
+            captureFile: String?,
         ): LoginInfo =
             LoginInfo(
                 epoch = epoch,
@@ -108,7 +109,7 @@ public data class LoginInfo(
                 host = header.worldHost,
                 localPlayerIndex = header.localPlayerIndex,
                 connectedAt = Instant.ofEpochMilli(header.timestamp).toString(),
-                captureFile = null,
+                captureFile = captureFile,
                 name = null,
                 online = true,
                 transcribing = false,
