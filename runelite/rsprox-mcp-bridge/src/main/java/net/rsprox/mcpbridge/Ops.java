@@ -571,7 +571,7 @@ final class Ops {
     }
 
     /** Build a JSON array of the values. */
-    private static JsonArray ints(int... values) {
+    static JsonArray ints(int... values) {
         JsonArray out = new JsonArray();
 
         for (int value : values) {

@@ -311,23 +311,22 @@ final class Interaction {
 
         if (covered < COVERED_BEFORE_TURN) return verdict;
 
+        return turnToward(game.onClientThread(target::tile), BLOCKED + at);
+    }
+
+    /** Turn the camera toward a target that has no clickable shape on screen. */
+    private Verdict bringIntoView() throws BridgeException {
         WorldPoint tile = game.onClientThread(target::tile);
-        if (tile == null) return verdict;
+        game.awaitCycles(1);
 
-        deadline = Math.max(deadline, began + CAMERA_CYCLES);
-
-        return Verdict.missed(BLOCKED + at + "; " + game.onClientThread(client -> camera.toward(client, tile)));
+        return turnToward(tile, "no part of " + target.label() + " is on screen");
     }
 
     /**
-     * Turn the camera toward a target that has no clickable shape on screen, and allow the longer
-     * deadline that turning needs.
+     * Build the verdict of an attempt that missed with the words, after turning the camera toward the
+     * tile and allowing the longer deadline that turning needs, unless the target is not in the world.
      */
-    private Verdict bringIntoView() throws BridgeException {
-        WorldPoint tile = game.onClientThread(target::tile);
-        String words = "no part of " + target.label() + " is on screen";
-        game.awaitCycles(1);
-
+    private Verdict turnToward(WorldPoint tile, String words) throws BridgeException {
         if (tile == null) return Verdict.missed(words);
 
         deadline = Math.max(deadline, began + CAMERA_CYCLES);
@@ -347,21 +346,12 @@ final class Interaction {
         JsonObject out = target.describe();
         out.addProperty("attempts", attempts);
         out.addProperty("tick", verdict.tick);
-        out.add("pressed", point(pressed));
+        out.add("pressed", Ops.ints(pressed.x, pressed.y));
         JsonArray words = new JsonArray();
         tried.forEach(words::add);
         out.add("tried", words);
 
         if (camera.describe() != null) out.add("camera", camera.describe());
-
-        return out;
-    }
-
-    /** Build the JSON array of the x and the y of the canvas point. */
-    private static JsonArray point(Point point) {
-        JsonArray out = new JsonArray();
-        out.add(point.x);
-        out.add(point.y);
 
         return out;
     }

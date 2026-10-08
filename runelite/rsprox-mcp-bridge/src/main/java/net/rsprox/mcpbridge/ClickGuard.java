@@ -112,16 +112,13 @@ final class ClickGuard {
 
         if (event.isConsumed()) return Verdict.missed("another plugin consumed the click on " + words);
 
-        if (target.matches(event.getMenuEntry(), client)) return performed(client, words);
+        if (target.matches(event.getMenuEntry(), client)) {
+            return Verdict.performed("the client performed " + words, client.getTickCount());
+        }
 
         event.consume();
 
         return cancelled(client, words);
-    }
-
-    /** Build the verdict of the intended click, which the client performs on its current tick. */
-    private static Verdict performed(Client client, String words) {
-        return Verdict.performed("the client performed " + words, client.getTickCount());
     }
 
     /**
