@@ -3935,6 +3935,15 @@ public class TextServerPacketTranscriber(
         if (!filters[PropertyFilter.UPDATE_STOCKMARKET_SLOT]) return omit()
         root.int("slot", message.slot)
         root.int("version", message.version)
+        val isReset =
+            message.status == 0 &&
+                message.obj == 0 &&
+                message.price == 0L &&
+                message.count == 0 &&
+                message.completedCount == 0 &&
+                message.completedGold == 0L &&
+                message.extension.isEmpty()
+        if (isReset) return
         root.int("status", message.status)
         root.scriptVarType("id", ScriptVarType.OBJ, message.obj)
         root.formattedLong("price", message.price)

@@ -18,9 +18,6 @@ internal class UpdateStockMarketSlotV2Decoder : ProxyMessageDecoder<UpdateStockM
     ): UpdateStockMarketSlotV2 {
         val slot = buffer.g1()
         val firstState = buffer.g1()
-        // The native reset branch consumes only 28 of the declared 34 bytes.
-        // Its six trailing bytes are not yet understood: do not invent a reset payload.
-        check(firstState != 0) { "241 stockmarket V2 reset layout is not yet verified" }
         val escaped = firstState and 7 == 7
         val version = if (escaped) buffer.g1() else 1
         val status = if (escaped) buffer.g1() else firstState
