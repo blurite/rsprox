@@ -22,6 +22,7 @@ import io.netty.util.CharsetUtil
 import net.rsprox.proxy.config.JavConfig
 import net.rsprox.proxy.config.ProxyProperties
 import net.rsprox.proxy.config.ProxyProperty
+import net.rsprox.proxy.replay.ReplayAuthentication
 import net.rsprox.proxy.worlds.WorldListProvider
 import java.io.IOException
 
@@ -107,6 +108,7 @@ public class HttpServerHandler(
     private fun buildResponse(request: HttpRequest): StringBuilder {
         val uri = request.uri()
         val path = uri.substringBefore('?')
+        ReplayAuthentication.response(path)?.let { return StringBuilder(it) }
         return when (path) {
             "/${properties.getProperty(ProxyProperty.WORLDLIST_ENDPOINT)}",
             "/$REPLAY_WORLDLIST_ENDPOINT",
@@ -122,24 +124,6 @@ public class HttpServerHandler(
                 val mapper = jacksonObjectMapper()
                 val asString = mapper.writeValueAsString(runeLiteWorldList)
                 StringBuilder().append(asString)
-            }
-
-            "/shield/oauth/token" -> {
-                StringBuilder("""{"access_token":"REPLAY_ACCESS_TOKEN","refresh_token":"REPLAY_REFRESH_TOKEN"}""")
-            }
-
-            "/public/v1/games/YCfdbvr2pM1zUYMxJRexZY/play",
-            "/game-session/v1/tokens",
-            -> {
-                StringBuilder(REPLAY_LOGIN_TOKEN)
-            }
-
-            "/game-session/v1/sessions" -> {
-                StringBuilder("""{"sessionId":"REPLAY_SESSION"}""")
-            }
-
-            "/game-session/v1/accounts" -> {
-                StringBuilder("""[{"accountId":0,"displayName":"Replay Session","userHash":0}]""")
             }
 
             else -> {
@@ -167,6 +151,5 @@ public class HttpServerHandler(
 
     private companion object {
         private val logger = InlineLogger()
-        private const val REPLAY_LOGIN_TOKEN = "REPLAY_LOGIN_TOKEN"
     }
 }

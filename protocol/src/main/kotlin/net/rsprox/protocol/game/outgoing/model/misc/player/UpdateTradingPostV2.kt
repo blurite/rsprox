@@ -3,7 +3,9 @@ package net.rsprox.protocol.game.outgoing.model.misc.player
 import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
 
 /** Trading-post offers with 64-bit prices; the packet carries no version byte. */
-public data class UpdateTradingPostV2(public val update: OfferList?) : IncomingServerGameMessage {
+public data class UpdateTradingPostV2(
+    public val update: OfferList?,
+) : IncomingServerGameMessage {
     public data class OfferList(
         public val age: Long,
         public val obj: Int,

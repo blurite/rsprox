@@ -13,5 +13,8 @@ public data class ObjCustomiseSpecificV2(
     public val colour: Int?,
     public val coordGrid: CoordGrid,
 ) : IncomingServerGameMessage {
-    public data class Replacement(public val index: Int, public val value: Int)
+    public data class Replacement(
+        public val index: Int,
+        public val value: Int,
+    )
 }

@@ -15,12 +15,13 @@ internal class ObjUnlockUpdateDecoder : ProxyMessageDecoder<ObjUnlockUpdate> {
         session: Session,
     ): ObjUnlockUpdate {
         var wordIndex = 0
-        val entries = buildList {
-            while (buffer.isReadable) {
-                wordIndex = Math.addExact(wordIndex, buffer.gSmart1or2())
-                add(ObjUnlockUpdate.Entry(wordIndex, buffer.g8()))
+        val entries =
+            buildList {
+                while (buffer.isReadable) {
+                    wordIndex = Math.addExact(wordIndex, buffer.gSmart1or2())
+                    add(ObjUnlockUpdate.Entry(wordIndex, buffer.g8()))
+                }
             }
-        }
         return ObjUnlockUpdate(entries)
     }
 }

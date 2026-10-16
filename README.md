@@ -117,6 +117,7 @@ acknowledgement across restarts; cancelling or closing the dialog stops the laun
 - Lobby-to-game transitions, returning to the lobby, world hopping and reconnects.
 - Multiple client instances, each with its own local proxy ports.
 - Live GUI transcripts, binary recording and saved-file transcription.
+- Replay for supported recordings, with seeking and playback-speed controls.
 - Cache-definition loading and gameval/clientscript names for richer transcripts.
 
 RS3 currently connects to the official game. Custom proxy targets are OSRS-only.
@@ -126,9 +127,11 @@ running the installer or changing an existing RuneScape installation. Each runni
 instance has separate launcher preferences and local proxy ports; game-cache assets
 are shared. Launcher downloads are cached under `~/.rsprox/rs3-launcher/`.
 
-The launcher downloads the live client and checks the supported revision; it is not a general
-launcher for historical RS3 revisions. Later revisions require updated patching and decoders.
-**RS3 replay is not implemented**, even though recording and transcription are supported.
+RSProx downloads supported clients from the RSProx archive. Later revisions require updated
+patching and decoders. RS3 replays support OpenGL and Vulkan on Windows, streaming the recorded
+cache data on demand from OpenRS2 rather than downloading the full cache. Replays share one
+persistent cache and settings directory, separate from live play; only one replay client can
+run at a time. Recorded reconnects are supported, including when seeking across them.
 
 #### Recordings and Lobby Visibility
 
@@ -201,8 +204,7 @@ echo "Alias IPs added for worlds $MIN_WORLD_ID..$MAX_WORLD_ID (group $GROUP_ID).
 
 Besides live GUI transcripts, previously recorded `.bin` files can be transcribed into
 `.txt` files beside the originals, using the same base filename. Drag recordings onto the GUI
-to begin. A single OSRS recording offers a choice of replay or transcription; an RS3 recording
-goes directly to transcription because RS3 replay is not available.
+to begin. A single OSRS or RS3 recording offers a choice of replay or transcription.
 
 Transcription uses the currently active filters and settings, including the RS3 lobby/first-tick
 settings above. These output filters do not remove packet data from the underlying recording.
@@ -460,7 +462,7 @@ This describes the implementation in this branch, not necessarily the latest pub
 - [x] One-time experimental/privacy warning
 - [x] Known-field privacy scrubbing
 - [ ] Further live validation and privacy coverage review
-- [ ] Replay
+- [x] Replay for supported recordings (Windows)
 - [ ] Custom proxy targets
 - [ ] Verified non-Windows support
 

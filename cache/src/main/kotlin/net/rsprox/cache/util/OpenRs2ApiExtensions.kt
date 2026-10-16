@@ -67,7 +67,9 @@ public fun downloadOpenRs2Group(
     group: Int,
     version: Int,
     checksum: Int,
+    maximumBytes: Int = Int.MAX_VALUE,
 ): ByteArray {
+    require(maximumBytes > 0)
     val connection =
         ROOT_URI
             .resolve("caches/${scope.label}/archives/$archive/groups/$group/versions/$version/checksums/$checksum.dat")
@@ -76,6 +78,13 @@ public fun downloadOpenRs2Group(
     connection.connectTimeout = CONNECT_TIMEOUT_MS
     connection.readTimeout = 30_000
     return connection.getInputStream().use { stream ->
-        stream.readBytes()
+        if (maximumBytes == Int.MAX_VALUE) {
+            stream.readBytes()
+        } else {
+            require(connection.contentLengthLong <= maximumBytes) { "OpenRS2 group exceeds download limit" }
+            stream.readNBytes(maximumBytes + 1).also {
+                require(it.size <= maximumBytes) { "OpenRS2 group exceeds download limit" }
+            }
+        }
     }
 }

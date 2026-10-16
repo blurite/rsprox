@@ -75,6 +75,7 @@ internal object GameServerProtId {
     const val MAP_ANIM_V1: Int = 71
     const val IF_SETNPCHEAD: Int = 72
     const val FRIENDLIST_LOADED: Int = 73
+
     // Note: 74/103 have identical native handlers; names were identified by comparing packet dumps.
     const val VORBIS_SOUND: Int = 74
     const val CLANCHANNEL_FULL: Int = 75

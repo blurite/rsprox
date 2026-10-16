@@ -19,12 +19,6 @@ internal object Rs3BetaClientBuild {
         path: Path,
         binaryType: Int,
     ): Rs3ProtocolRevision {
-        val supportedBuilds =
-            when (binaryType) {
-                2 -> windowsOpenGl950Beta1
-                10 -> windowsVulkan950Beta1
-                else -> error("Unsupported RuneScape 3 beta binary type: $binaryType")
-            }
         val digest = MessageDigest.getInstance("SHA-256")
         Files.newInputStream(path).use { input ->
             val bytes = ByteArray(64 * 1024)
@@ -35,10 +29,20 @@ internal object Rs3BetaClientBuild {
             }
         }
         val hash = digest.digest().joinToString("") { "%02x".format(it.toInt() and 255) }
-        require(hash in supportedBuilds) {
+        require(supports(hash, binaryType)) {
             "Unverified RuneScape 3 beta build (SHA-256 $hash). " +
                 "Its protocol must be checked before capture; no client was launched."
         }
         return Rs3ProtocolRevision(Rs3ProtocolRevision.BETA_950_1)
     }
+
+    fun supports(
+        hash: String,
+        binaryType: Int,
+    ): Boolean =
+        when (binaryType) {
+            2 -> hash in windowsOpenGl950Beta1
+            10 -> hash in windowsVulkan950Beta1
+            else -> false
+        }
 }

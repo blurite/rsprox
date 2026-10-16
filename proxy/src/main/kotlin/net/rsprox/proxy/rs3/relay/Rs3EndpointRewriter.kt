@@ -11,6 +11,8 @@ internal class Rs3EndpointRewriter(
     private val localPorts: Rs3RelayPorts,
     private val register: (List<Rs3RelayRoute>) -> CompletableFuture<Unit>,
     private val onWorldDefinitions: (Map<Int, WorldMetadata>) -> Unit = {},
+    // Replay owns its listeners and must never construct an upstream route, even for recorded loopback hosts.
+    private val replayAddress: ((Rs3Endpoint) -> String)? = null,
 ) {
     private data class Host(
         val start: Int,
@@ -151,17 +153,21 @@ internal class Rs3EndpointRewriter(
             require(host.value.isNotEmpty()) { "Missing destination hostname" }
             output.write(rewrittenPorts, position, host.start - position)
             if (host.marked) output.write(0)
-            output.write(addresses.address(replacement.endpoint).hostAddress.toByteArray(Charsets.US_ASCII))
+            val address =
+                replayAddress?.invoke(replacement.endpoint) ?: addresses.address(replacement.endpoint).hostAddress
+            output.write(address.toByteArray(Charsets.US_ASCII))
             output.write(0)
             position = host.end
-            routes +=
-                localPorts.routes(
-                    addresses,
-                    replacement.endpoint,
-                    host.value,
-                    replacement.ports[0],
-                    replacement.ports[1],
-                )
+            if (replayAddress == null) {
+                routes +=
+                    localPorts.routes(
+                        addresses,
+                        replacement.endpoint,
+                        host.value,
+                        replacement.ports[0],
+                        replacement.ports[1],
+                    )
+            }
         }
         output.write(rewrittenPorts, position, rewrittenPorts.size - position)
         val result = output.toByteArray()

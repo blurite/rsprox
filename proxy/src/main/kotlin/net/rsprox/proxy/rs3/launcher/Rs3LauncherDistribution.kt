@@ -16,7 +16,8 @@ internal object Rs3LauncherDistribution {
     const val SUB_VERSION = 1
     const val LAUNCHER_SHA256 = "f91142aaa6396795da9df71ff9c8a84b51307fb0d6d9086c5e5a874d6947dd9d"
     private const val INSTALLER_SHA256 = "4d0bbde794c725d97af7ffcd12dee8fab5573dbfe8ce15b3ee5c9fc6f4b66f2d"
-    private const val INSTALLER_URL = "https://content.runescape.com/downloads/windows/RuneScape-Setup.exe"
+    private const val INSTALLER_URL =
+        "https://archive.rsprox.net/native-clients/runescape/objects/$INSTALLER_SHA256/RuneScape-Setup.exe"
 
     @Synchronized
     fun load(

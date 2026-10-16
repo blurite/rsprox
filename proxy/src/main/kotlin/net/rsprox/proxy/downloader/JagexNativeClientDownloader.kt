@@ -7,15 +7,12 @@ import net.rsprox.proxy.downloader.cpp.Repository
 import net.rsprox.proxy.downloader.cpp.RepositoryDownloader
 import net.rsprox.proxy.rs3.Rs3LaunchProgress
 import net.rsprox.proxy.rs3.config.Rs3JavConfig
-import org.tukaani.xz.LZMAInputStream
-import java.io.ByteArrayOutputStream
 import java.net.URI
 import java.net.URL
 import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Base64
-import java.util.zip.CRC32
 import java.util.zip.GZIPInputStream
 import kotlin.io.path.exists
 import kotlin.io.path.readText
@@ -41,7 +38,12 @@ public data object JagexNativeClientDownloader {
         onProgress: (Rs3LaunchProgress) -> Unit = {},
     ): Path {
         if (type == NativeClientType.RS3_WIN) {
-            return downloadRs3(rs3JavConfigUrl, onProgress)
+            return RSProxArchiveRs3ClientDownloader.live(
+                Rs3JavConfig(URL(rs3JavConfigUrl)),
+                rs3BinaryType(rs3JavConfigUrl),
+                URI(rs3JavConfigUrl).path.endsWith("/jav_config_beta.ws"),
+                onProgress,
+            )
         }
 
         val repository = buildRepositoryInfo(type.systemShortName)
@@ -114,86 +116,6 @@ public data object JagexNativeClientDownloader {
         return CLIENTS_DIRECTORY.resolve(osclient.name)
     }
 
-    @Synchronized
-    private fun downloadRs3(
-        upstreamJavConfigUrl: String,
-        onProgress: (Rs3LaunchProgress) -> Unit,
-    ): Path {
-        val binaryType = rs3BinaryType(upstreamJavConfigUrl)
-
-        val config = Rs3JavConfig(URL(upstreamJavConfigUrl))
-        require(config.getServerVersion() == 950) {
-            "RS3 client downloading/patching is currently verified for revision 950 only"
-        }
-        val codebase = config.getCodebase()
-        val downloadName =
-            config.getDownloadName(0)
-                ?: error("RS3 jav_config has no download_name_0")
-        val expectedCrc =
-            config.getDownloadCrc(0)
-                ?: error("RS3 jav_config has no download_crc_0")
-
-        // Both distributions advertise rs2client.exe; keep them isolated on disk.
-        val suffix = rs3CacheSuffix(upstreamJavConfigUrl)
-        val clientPath = CLIENTS_DIRECTORY.resolve("rs2client$suffix.exe")
-        val cacheCrcFile = CLIENTS_DIRECTORY.resolve("rs3-win$suffix-cached-crc.txt")
-
-        if (cacheCrcFile.exists() && clientPath.exists()) {
-            val cachedCrc = cacheCrcFile.readText(Charsets.UTF_8).trim().toLongOrNull()
-            if (cachedCrc == expectedCrc) {
-                logger.debug { "Cached RS3 native client up to date (CRC: $expectedCrc)." }
-                return clientPath
-            }
-        }
-
-        logger.debug { "Downloading RS3 native client ($downloadName, CRC: $expectedCrc)" }
-        val downloadUrl =
-            buildString {
-                append(codebase)
-                if (!codebase.endsWith("/")) append("/")
-                append("client?binaryType=$binaryType&fileName=$downloadName&crc=$expectedCrc")
-            }
-
-        onProgress(Rs3LaunchProgress("Downloading client"))
-        val download = URI(downloadUrl).toURL().openConnection()
-        download.connectTimeout = 10_000
-        download.readTimeout = 30_000
-        val compressedBytes =
-            download.getInputStream().use { input ->
-                val total = download.contentLengthLong.coerceAtLeast(0)
-                val output = ByteArrayOutputStream()
-                val chunk = ByteArray(64 * 1024)
-                while (true) {
-                    val count = input.read(chunk)
-                    if (count == -1) break
-                    output.write(chunk, 0, count)
-                    onProgress(Rs3LaunchProgress("Downloading client", output.size().toLong(), total))
-                }
-                output.toByteArray()
-            }
-        onProgress(Rs3LaunchProgress("Unpacking and verifying client"))
-        val decompressedBytes =
-            try {
-                LZMAInputStream(compressedBytes.inputStream()).use { it.readAllBytes() }
-            } catch (e: Exception) {
-                throw IllegalStateException("Failed to LZMA-decompress RS3 client from $downloadUrl", e)
-            }
-
-        val actualCrc = CRC32().apply { update(decompressedBytes) }.value
-        if (actualCrc != expectedCrc) {
-            throw IllegalStateException(
-                "Decompressed rs2client.exe CRC32 mismatch: expected $expectedCrc, got $actualCrc",
-            )
-        }
-
-        Files.createDirectories(clientPath.parent)
-        Files.write(clientPath, decompressedBytes)
-        cacheCrcFile.toFile().writeText(expectedCrc.toString())
-
-        logger.debug { "Saved RS3 native client to $clientPath" }
-        return clientPath
-    }
-
     internal fun rs3BinaryType(javConfigUrl: String): Int {
         val values =
             URI(javConfigUrl)
@@ -207,11 +129,6 @@ public data object JagexNativeClientDownloader {
             "RS3 javconfig must specify one binaryType: 2 (Windows OpenGL) or 10 (Windows Vulkan)"
         }
         return binaryType
-    }
-
-    internal fun rs3CacheSuffix(javConfigUrl: String): String {
-        val beta = URI(javConfigUrl).path.endsWith("/jav_config_beta.ws")
-        return (if (beta) "-beta" else "") + (if (rs3BinaryType(javConfigUrl) == 10) "-vulkan" else "")
     }
 
     private fun buildRepositoryInfo(systemShortName: String): Repository {

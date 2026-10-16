@@ -2,7 +2,6 @@ package net.rsprox.gui
 
 import net.rsprox.cache.resolver.HistoricCacheResolver
 import net.rsprox.proxy.ProxyService
-import net.rsprox.proxy.binary.isRuneScape3
 import net.rsprox.proxy.binary.readBinaryHeader
 import net.rsprox.proxy.cache.CachedCaches
 import net.rsprox.proxy.cli.TranscribeCommand
@@ -44,21 +43,16 @@ public class FileDropHandler(
         }
         if (binaryFiles.size == 1) {
             val file = binaryFiles.single()
-            val rs3 =
-                try {
-                    readBinaryHeader(file.toPath()).isRuneScape3()
-                } catch (error: Exception) {
-                    JOptionPane.showMessageDialog(
-                        support.component,
-                        "Unable to read binary header: ${error.message}",
-                        "Open Binary Dump",
-                        JOptionPane.ERROR_MESSAGE,
-                    )
-                    return false
-                }
-            if (rs3) {
-                submitTranscription(file)
-                return true
+            try {
+                readBinaryHeader(file.toPath())
+            } catch (error: Exception) {
+                JOptionPane.showMessageDialog(
+                    support.component,
+                    "Unable to read binary header: ${error.message}",
+                    "Open Binary Dump",
+                    JOptionPane.ERROR_MESSAGE,
+                )
+                return false
             }
             val pane = binaryOpenPane(file.name)
             val dialog = pane.createDialog(support.component, "Open Binary Dump")

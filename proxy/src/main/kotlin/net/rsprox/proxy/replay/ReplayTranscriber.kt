@@ -201,7 +201,7 @@ public class ReplayTranscriber(
         return decoderLoader.getDecoder(session.timeline.header.revision, cacheProvider)
     }
 
-    private class TranscriptMonitor(
+    internal class TranscriptMonitor(
         private val formatter: OmitFilteredPropertyTreeFormatter,
     ) : SessionMonitor<BinaryHeader> {
         val entries: MutableList<ReplayTranscriptEntry> = mutableListOf()

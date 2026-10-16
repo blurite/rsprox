@@ -15,16 +15,18 @@ import net.rsprox.cache.Js5MasterIndex
 import net.rsprox.cache.store.LocalReplayDiskCacheStore
 import net.rsprox.cache.store.ReplayCacheMatch
 import net.rsprox.cache.store.ReplayDiskCacheStore
+import net.rsprox.gui.components.SessionTypeCellRenderer
 import net.rsprox.gui.sessions.SessionType
 import net.rsprox.proxy.binary.BinaryHeader
 import net.rsprox.proxy.config.BINARY_PATH
 import net.rsprox.proxy.preferences.ClientPreferencesFile
+import net.rsprox.proxy.replay.ReplayPlaybackSession
 import net.rsprox.proxy.replay.ReplayPlaybackSnapshot
 import net.rsprox.proxy.replay.ReplayPlaybackState
 import net.rsprox.proxy.replay.ReplaySession
 import net.rsprox.proxy.replay.ReplayTranscript
-import net.rsprox.proxy.replay.ReplayTranscriptEntry
 import net.rsprox.proxy.replay.ReplayTranscriptNode
+import net.rsprox.proxy.rs3.replay.Rs3ReplaySession
 import net.rsprox.proxy.target.ProxyTarget
 import net.rsprox.proxy.util.OperatingSystem
 import org.jdesktop.swingx.JXTreeTable
@@ -43,6 +45,7 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.nio.file.Path
 import java.text.DateFormat
+import java.util.ArrayDeque
 import java.util.Date
 import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.FutureTask
@@ -57,6 +60,7 @@ import javax.swing.SpinnerNumberModel
 import javax.swing.SwingUtilities
 import javax.swing.Timer
 import javax.swing.UIManager
+import javax.swing.tree.TreePath
 import kotlin.io.path.exists
 import kotlin.io.path.name
 import kotlin.math.roundToInt
@@ -64,7 +68,7 @@ import kotlin.math.roundToInt
 public class ReplayPanel(
     private val onReplayLoaded: (Path) -> Unit = {},
 ) : JPanel() {
-    private var replaySession: ReplaySession? = null
+    private var replaySession: ReplayPlaybackSession? = null
     private var selectedPath: Path? = null
     private val recentReplayCaches = RecentReplayCaches()
     private val titleLabel = FlatLabel()
@@ -100,7 +104,7 @@ public class ReplayPanel(
     private val replayLaunchTypeDropdown = FlatComboBox<SessionType>()
     private val replayTree = JXTreeTable()
     private val replayTreeModel = DefaultTreeTableModel()
-    private val replayRoot = DefaultMutableTreeTableNode("Root")
+    private var replayRoot = DefaultMutableTreeTableNode("Root")
     private val replayTickNodes = linkedMapOf<Int, TickTreeTableNode>()
     private var replayTranscript: ReplayTranscript? = null
     private var transcriptDisplayMode: TranscriptDisplayMode? = null
@@ -115,6 +119,11 @@ public class ReplayPanel(
     private var replayStatusText = ""
     private var highlightedTick: Int? = null
     private var lastScrolledTick: Int? = null
+    private var requestedTranscriptRender: TranscriptRenderRequest? = null
+    private var preparingTranscript = false
+    private var autoExpandedTick: Int? = null
+    private val expansionQueue = ArrayDeque<AbstractMutableTreeTableNode>()
+    private val expansionTimer = Timer(10) { expandPendingTranscriptNodes() }
 
     init {
         layout = BorderLayout()
@@ -182,7 +191,7 @@ public class ReplayPanel(
             refreshControls()
         }
         ForkJoinPool.commonPool().submit {
-            var session: ReplaySession? = null
+            var session: ReplayPlaybackSession? = null
             try {
                 val loadedSession =
                     App.service.loadReplaySession(path, ::selectManualReplayCache)
@@ -439,10 +448,11 @@ public class ReplayPanel(
             add(
                 replayLaunchTypeDropdown.apply {
                     model = replayLaunchTypeModel
+                    renderer = SessionTypeCellRenderer()
                     selectedItem = SessionType.RuneLite
                     toolTipText = "Replay Client Type"
                 },
-                "w 120!",
+                "w 210:pref",
             )
             add(
                 launchButton.apply {
@@ -828,11 +838,29 @@ public class ReplayPanel(
         ForkJoinPool.commonPool().submit {
             try {
                 val port = 40000 + ProxyTarget.REPLAY_WORLD_ID
-                when (type) {
-                    SessionType.Native -> App.service.launchReplayNativeClient(session, port)
-                    SessionType.RuneLite -> App.service.launchReplayRuneLiteClient(session, null, port)
-                    SessionType.Java -> error("Unsupported replay client type: $type")
-                    SessionType.RS3, SessionType.RS3_VULKAN -> error("Unsupported replay client type: $type")
+                when (session) {
+                    is Rs3ReplaySession ->
+                        App.service.launchRs3ReplayClient(
+                            session,
+                            vulkan = type == SessionType.RS3_VULKAN,
+                            onProgress = { progress ->
+                                SwingUtilities.invokeLater {
+                                    if (generation == loadGeneration && replaySession === session) {
+                                        replayStatusText = progress.stage
+                                        refreshControls()
+                                    }
+                                }
+                            },
+                            onFailure = { error -> logger.error(error) { "RS3 replay failed" } },
+                            isCancelled = { session.isClosed },
+                        )
+                    is ReplaySession ->
+                        when (type) {
+                            SessionType.Native -> App.service.launchReplayNativeClient(session, port)
+                            SessionType.RuneLite -> App.service.launchReplayRuneLiteClient(session, null, port)
+                            else -> error("Unsupported replay client type: $type")
+                        }
+                    else -> error("Unsupported replay session")
                 }
                 SwingUtilities.invokeLater {
                     if (generation != loadGeneration || replaySession !== session) {
@@ -929,6 +957,18 @@ public class ReplayPanel(
         loadingProgress.isVisible = false
         val session = replaySession ?: return
         val metadata = session.timeline.metadata
+        replayLaunchTypeModel.removeAllElements()
+        val launchTypes =
+            if (session is Rs3ReplaySession) {
+                arrayOf(SessionType.RS3, SessionType.RS3_VULKAN)
+            } else {
+                replayLaunchTypes
+            }
+        launchTypes.forEach(replayLaunchTypeModel::addElement)
+        if (session is Rs3ReplaySession) {
+            replayLaunchTypeModel.selectedItem =
+                if (metadata.clientName.contains("Vulkan", true)) SessionType.RS3_VULKAN else SessionType.RS3
+        }
         val path = selectedPath
         val date = DateFormat.getDateTimeInstance().format(Date(metadata.timestamp))
         titleLabel.text = path?.name ?: "Replay loaded"
@@ -958,104 +998,160 @@ public class ReplayPanel(
         currentTick: Int,
         force: Boolean,
     ) {
-        if (!followTranscriptButton.isSelected) {
-            val centerTick = retainedTranscriptWindowTick(currentTick)
-            if (force ||
-                transcriptDisplayMode != TranscriptDisplayMode.WINDOW ||
-                liveTranscriptCenterTick != centerTick
-            ) {
-                renderTranscriptWindow(transcript, centerTick)
-            }
-            syncReplayTreeToTick(currentTick)
+        val follow = followTranscriptButton.isSelected
+        val mode = if (follow) TranscriptDisplayMode.LIVE else TranscriptDisplayMode.WINDOW
+        val centerTick = if (follow) transcriptDisplayTick(currentTick) else retainedTranscriptWindowTick(currentTick)
+        requestTranscriptRender(transcript, centerTick, mode, force)
+        syncReplayTreeToTick(if (follow) centerTick else currentTick)
+    }
+
+    private fun requestTranscriptRender(
+        transcript: ReplayTranscript,
+        centerTick: Int,
+        mode: TranscriptDisplayMode,
+        force: Boolean,
+    ) {
+        val session = replaySession ?: return
+        val previous = requestedTranscriptRender
+        val offsetSeconds = transcriptOffsetSeconds()
+        if (!force &&
+            previous?.transcript === transcript &&
+            previous.centerTick == centerTick &&
+            previous.mode == mode &&
+            previous.offsetSeconds == offsetSeconds
+        ) {
             return
         }
-        val centerTick = transcriptDisplayTick(currentTick)
-        if (force || transcriptDisplayMode != TranscriptDisplayMode.LIVE || liveTranscriptCenterTick != centerTick) {
-            renderLiveTranscript(transcript, centerTick)
-        }
-        syncReplayTreeToTick(centerTick)
+        requestedTranscriptRender =
+            TranscriptRenderRequest(
+                transcript,
+                session.timeline.header,
+                session.timeline.totalTicks,
+                centerTick,
+                mode,
+                offsetSeconds,
+            )
+        startTranscriptPreparation()
     }
 
-    private fun renderTranscriptWindow(
-        transcript: ReplayTranscript,
-        centerTick: Int,
-    ) {
-        clearReplayTree()
-        val session = replaySession ?: return
-        val streamNode = StreamTreeTableNode(session.timeline.header)
-        addNodeAndExpand(streamNode, replayRoot, replayRoot.childCount)
-        val startTick = (centerTick - TRANSCRIPT_WINDOW_RADIUS_TICKS).coerceAtLeast(0)
-        val endTick = (centerTick + TRANSCRIPT_WINDOW_RADIUS_TICKS).coerceAtMost(session.timeline.totalTicks)
-        val entries =
-            transcript.entries
-                .asSequence()
-                .filter { it.tick in startTick..endTick }
-                .groupBy { it.tick }
-        val visibleMessageCount = renderTranscriptTicks(streamNode, entries, startTick, endTick)
-        replayTree.expandAll()
-        val messageCount = transcript.entries.size
-        val visibleTickCount = endTick - startTick + 1
-        frameLabel.text =
-            "$visibleMessageCount of $messageCount messages | ticks $startTick-$endTick ($visibleTickCount ticks)"
-        if (transcript.failures > 0) {
-            frameLabel.text += " | ${transcript.failures} decode failures"
-        }
-        transcriptDisplayMode = TranscriptDisplayMode.WINDOW
-        liveTranscriptCenterTick = centerTick
-    }
-
-    private fun renderTranscriptTicks(
-        streamNode: AbstractMutableTreeTableNode,
-        entries: Map<Int, List<ReplayTranscriptEntry>>,
-        startTick: Int,
-        endTick: Int,
-    ): Int {
-        var messageCount = 0
-        for (tick in startTick..endTick) {
-            val tickNode = TickTreeTableNode(tick)
-            replayTickNodes[tick] = tickNode
-            addNodeAndExpand(tickNode, streamNode, streamNode.childCount)
-            val tickEntries = entries[tick].orEmpty()
-            messageCount += tickEntries.size
-            tickEntries.forEach { entry ->
-                createMessageNode(tickNode, entry.node)
+    private fun startTranscriptPreparation() {
+        if (preparingTranscript) return
+        val request = requestedTranscriptRender ?: return
+        preparingTranscript = true
+        ForkJoinPool.commonPool().submit {
+            try {
+                val prepared = prepareTranscriptTree(request)
+                SwingUtilities.invokeLater {
+                    preparingTranscript = false
+                    if (requestedTranscriptRender === request) {
+                        installTranscriptTree(request, prepared)
+                    } else {
+                        startTranscriptPreparation()
+                    }
+                }
+            } catch (error: Exception) {
+                logger.error(error) { "Unable to prepare replay transcript" }
+                SwingUtilities.invokeLater {
+                    preparingTranscript = false
+                    if (requestedTranscriptRender === request) {
+                        requestedTranscriptRender = null
+                    } else {
+                        startTranscriptPreparation()
+                    }
+                }
             }
         }
-        return messageCount
     }
 
-    private fun renderLiveTranscript(
-        transcript: ReplayTranscript,
-        centerTick: Int,
-    ) {
-        clearReplayTree()
-        val session = replaySession ?: return
-        val streamNode = StreamTreeTableNode(session.timeline.header)
-        addNodeAndExpand(streamNode, replayRoot, replayRoot.childCount)
-        val startTick = (centerTick - LIVE_TRANSCRIPT_RADIUS_TICKS).coerceAtLeast(0)
-        val endTick = (centerTick + LIVE_TRANSCRIPT_RADIUS_TICKS).coerceAtMost(session.timeline.totalTicks)
-        val entries =
-            transcript.entries
-                .asSequence()
-                .filter { it.tick in startTick..endTick }
-                .groupBy { it.tick }
-        val visibleMessageCount = renderTranscriptTicks(streamNode, entries, startTick, endTick)
-        replayTree.expandAll()
-        val offsetSeconds = transcriptOffsetSeconds()
-        val offsetText =
-            when {
-                offsetSeconds > 0 -> " +${offsetSeconds}s"
-                offsetSeconds < 0 -> " ${offsetSeconds}s"
-                else -> ""
+    private fun prepareTranscriptTree(request: TranscriptRenderRequest): PreparedTranscriptTree {
+        val root = DefaultMutableTreeTableNode("Root")
+        val stream = StreamTreeTableNode(request.header)
+        root.insert(stream, 0)
+        val ticks = linkedMapOf<Int, TickTreeTableNode>()
+        val radius =
+            if (request.mode == TranscriptDisplayMode.LIVE) {
+                LIVE_TRANSCRIPT_RADIUS_TICKS
+            } else {
+                TRANSCRIPT_WINDOW_RADIUS_TICKS
             }
-        val visibleTickCount = endTick - startTick + 1
-        frameLabel.text =
-            "Follow tick $centerTick$offsetText | $visibleMessageCount messages in $visibleTickCount ticks"
-        if (transcript.failures > 0) {
-            frameLabel.text += " | ${transcript.failures} decode failures"
+        val start = (request.centerTick - radius).coerceAtLeast(0)
+        val end = (request.centerTick + radius).coerceAtMost(request.totalTicks)
+        val entries =
+            request.transcript.entries
+                .asSequence()
+                .filter { it.tick in start..end }
+                .groupBy { it.tick }
+        var count = 0
+        for (tick in start..end) {
+            val node = TickTreeTableNode(tick)
+            ticks[tick] = node
+            stream.insert(node, stream.childCount)
+            for (entry in entries[tick].orEmpty()) {
+                createMessageNode(node, entry.node)
+                count++
+            }
         }
-        transcriptDisplayMode = TranscriptDisplayMode.LIVE
-        liveTranscriptCenterTick = centerTick
+        val tickCount = end - start + 1
+        val label =
+            if (request.mode == TranscriptDisplayMode.WINDOW) {
+                "$count of ${request.transcript.entries.size} messages | ticks $start-$end ($tickCount ticks)"
+            } else {
+                val offset = request.offsetSeconds
+                val offsetText =
+                    if (offset > 0) {
+                        " +${offset}s"
+                    } else if (offset < 0) {
+                        " ${offset}s"
+                    } else {
+                        ""
+                    }
+                "Follow tick ${request.centerTick}$offsetText | $count messages in $tickCount ticks"
+            }
+        val failures = request.transcript.failures
+        val failureText = if (failures > 0) " | $failures decode failures" else ""
+        return PreparedTranscriptTree(root, stream, ticks, label + failureText)
+    }
+
+    private fun installTranscriptTree(
+        request: TranscriptRenderRequest,
+        prepared: PreparedTranscriptTree,
+    ) {
+        stopTranscriptExpansion()
+        replayRoot = prepared.root
+        replayTickNodes.clear()
+        replayTickNodes.putAll(prepared.ticks)
+        highlightedTick = null
+        lastScrolledTick = null
+        autoExpandedTick = null
+        replayTreeModel.setRoot(replayRoot)
+        replayTree.expandPath(TreePath(replayTreeModel.getPathToRoot(prepared.stream)))
+        frameLabel.text = prepared.label
+        transcriptDisplayMode = request.mode
+        liveTranscriptCenterTick = request.centerTick
+        if (request.mode == TranscriptDisplayMode.LIVE) {
+            expansionQueue.addAll(prepared.ticks.values)
+            expansionTimer.start()
+        }
+        syncReplayTreeToTick(request.centerTick)
+    }
+
+    private fun stopTranscriptExpansion() {
+        expansionTimer.stop()
+        expansionQueue.clear()
+    }
+
+    private fun expandPendingTranscriptNodes() {
+        val deadline = System.nanoTime() + 8_000_000
+        var count = 0
+        while (expansionQueue.isNotEmpty() && count++ < 100 && System.nanoTime() < deadline) {
+            val node = expansionQueue.removeFirst()
+            if (node.childCount == 0) continue
+            replayTree.expandPath(TreePath(replayTreeModel.getPathToRoot(node)))
+            for (index in 0 until node.childCount) {
+                expansionQueue.addLast(node.getChildAt(index) as AbstractMutableTreeTableNode)
+            }
+        }
+        if (expansionQueue.isEmpty()) expansionTimer.stop()
     }
 
     private fun transcriptDisplayTick(currentTick: Int): Int {
@@ -1085,13 +1181,14 @@ public class ReplayPanel(
     }
 
     private fun clearReplayTree() {
+        requestedTranscriptRender = null
+        stopTranscriptExpansion()
+        autoExpandedTick = null
         replayTickNodes.clear()
         highlightedTick = null
         lastScrolledTick = null
-        for (i in replayRoot.childCount - 1 downTo 0) {
-            val child = replayRoot.getChildAt(i) as AbstractMutableTreeTableNode
-            replayTreeModel.removeNodeFromParent(child)
-        }
+        replayRoot = DefaultMutableTreeTableNode("Root")
+        replayTreeModel.setRoot(replayRoot)
         frameLabel.text = "0 messages"
     }
 
@@ -1100,7 +1197,7 @@ public class ReplayPanel(
         node: ReplayTranscriptNode,
     ) {
         val rootNode = MessageTreeTableNode(node.content.orEmpty(), node.protocol)
-        addNodeAndExpand(rootNode, tickNode, tickNode.childCount)
+        tickNode.insert(rootNode, tickNode.childCount)
         addChildNodes(rootNode, node)
     }
 
@@ -1110,18 +1207,9 @@ public class ReplayPanel(
     ) {
         for (child in node.children) {
             val childNode = MessageTreeTableNode(child.content.orEmpty(), child.protocol)
-            addNodeAndExpand(childNode, parentNode, parentNode.childCount)
+            parentNode.insert(childNode, parentNode.childCount)
             addChildNodes(childNode, child)
         }
-    }
-
-    private fun addNodeAndExpand(
-        newChild: AbstractMutableTreeTableNode,
-        parent: AbstractMutableTreeTableNode,
-        index: Int,
-    ) {
-        replayTreeModel.insertNodeInto(newChild, parent, index)
-        replayTree.expandRow(replayTree.rowCount - 1)
     }
 
     private fun getOddRowColor(): Color {
@@ -1162,21 +1250,22 @@ public class ReplayPanel(
             replayTickNodes.keys.firstOrNull { it >= tick }
                 ?: replayTickNodes.keys.lastOrNull()
                 ?: return
-        val row = findRowForNode(replayTickNodes[visibleTick] ?: return) ?: return
+        val node = replayTickNodes[visibleTick] ?: return
+        if (transcriptDisplayMode == TranscriptDisplayMode.WINDOW && autoExpandedTick != visibleTick) {
+            stopTranscriptExpansion()
+            replayTickNodes[autoExpandedTick]?.let {
+                replayTree.collapsePath(TreePath(replayTreeModel.getPathToRoot(it)))
+            }
+            autoExpandedTick = visibleTick
+            expansionQueue.add(node)
+            expansionTimer.start()
+        }
+        val row = replayTree.getRowForPath(TreePath(replayTreeModel.getPathToRoot(node)))
+        if (row < 0) return
         lastScrolledTick = tick
         val cellRect = replayTree.getCellRect(row, 0, true)
         val viewportHeight = replayTree.visibleRect.height.coerceAtLeast(cellRect.height)
         replayTree.scrollRectToVisible(Rectangle(0, cellRect.y, 1, viewportHeight))
-    }
-
-    private fun findRowForNode(node: AbstractMutableTreeTableNode): Int? {
-        for (row in 0 until replayTree.rowCount) {
-            val path = replayTree.getPathForRow(row) ?: continue
-            if (path.lastPathComponent === node) {
-                return row
-            }
-        }
-        return null
     }
 
     private fun mixColors(
@@ -1261,8 +1350,10 @@ public class ReplayPanel(
         updatingTickSpinner = false
         tickLabel.text =
             "Tick $displayTick / ${currentSnapshot.totalTicks}     Frame ${currentSnapshot.nextFrameIndex} / ${currentSnapshot.totalFrames}"
-        replayTranscript?.let { transcript ->
-            renderTranscript(transcript, displayTick, force = false)
+        if (!rebuilding) {
+            replayTranscript?.let { transcript ->
+                renderTranscript(transcript, displayTick, force = false)
+            }
         }
         selectedSpeed = currentSnapshot.speed
         speedButtons.forEach { (speed, button) -> button.isSelected = speed == selectedSpeed }
@@ -1273,6 +1364,8 @@ public class ReplayPanel(
         playButton.toolTipText = if (active) "Pause" else "Play"
         statusLabel.text =
             when {
+                session.failureMessage != null -> session.failureMessage
+                launchingReplayClient -> replayStatusText
                 transcriptBusy -> "Transcribing replay"
                 currentSnapshot.state == ReplayPlaybackState.SEEKING || rebuilding -> "Rebuilding replay state"
                 currentSnapshot.state == ReplayPlaybackState.WAITING_FOR_MAP_BUILD_COMPLETE -> "Waiting for map load"
@@ -1284,7 +1377,7 @@ public class ReplayPanel(
     }
 
     private fun replayDisplayTick(
-        session: ReplaySession,
+        session: ReplayPlaybackSession,
         snapshot: ReplayPlaybackSnapshot,
     ): Int {
         val previousFrameIndex = snapshot.nextFrameIndex - 1
@@ -1304,6 +1397,22 @@ public class ReplayPanel(
 
     private companion object {
         private val logger = InlineLogger()
+
+        private class TranscriptRenderRequest(
+            val transcript: ReplayTranscript,
+            val header: BinaryHeader,
+            val totalTicks: Int,
+            val centerTick: Int,
+            val mode: TranscriptDisplayMode,
+            val offsetSeconds: Int,
+        )
+
+        private class PreparedTranscriptTree(
+            val root: DefaultMutableTreeTableNode,
+            val stream: StreamTreeTableNode,
+            val ticks: Map<Int, TickTreeTableNode>,
+            val label: String,
+        )
 
         private enum class TranscriptDisplayMode {
             WINDOW,

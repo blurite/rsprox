@@ -43,6 +43,7 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
 import net.rsprox.proxy.connection.ClientTypeDictionary
 import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.downloader.JagexNativeClientDownloader
+import net.rsprox.proxy.downloader.RSProxArchiveRs3ClientDownloader
 import net.rsprox.proxy.downloader.LostCityNativeClientDownloader
 import net.rsprox.proxy.exceptions.MissingLibraryException
 import net.rsprox.proxy.filters.DefaultPropertyFilterSetStore
@@ -52,6 +53,7 @@ import net.rsprox.proxy.http.REPLAY_WORLDLIST_ENDPOINT
 import net.rsprox.proxy.huffman.HuffmanProvider
 import net.rsprox.proxy.plugin.DecoderLoader
 import net.rsprox.proxy.replay.ReplayCacheProvider
+import net.rsprox.proxy.replay.ReplayPlaybackSession
 import net.rsprox.proxy.replay.ReplaySession
 import net.rsprox.proxy.replay.ReplayTimeline
 import net.rsprox.proxy.replay.ReplayTranscriber
@@ -69,6 +71,10 @@ import net.rsprox.proxy.rs3.relay.Rs3Endpoint
 import net.rsprox.proxy.rs3.relay.Rs3RelayPorts
 import net.rsprox.proxy.rs3.relay.Rs3RelayServer
 import net.rsprox.proxy.rs3.relay.Rs3RoutingNamespace
+import net.rsprox.proxy.rs3.replay.Rs3ReplayClient
+import net.rsprox.proxy.rs3.replay.Rs3ReplayRecording
+import net.rsprox.proxy.rs3.replay.Rs3ReplaySession
+import net.rsprox.proxy.rs3.replay.Rs3ReplayTranscriber
 import net.rsprox.proxy.rsa.Rs3ProxyRsaKeyProvider
 import net.rsprox.proxy.rsa.publicKey
 import net.rsprox.proxy.rsa.readOrGenerateRsaKey
@@ -749,7 +755,7 @@ public class ProxyService(
         )
     }
 
-    public fun loadReplaySession(path: Path): ReplaySession =
+    public fun loadReplaySession(path: Path): ReplayPlaybackSession =
         checkNotNull(
             loadReplaySession(path) {
                 error("A local disk cache is required for this replay.")
@@ -759,11 +765,9 @@ public class ProxyService(
     public fun loadReplaySession(
         path: Path,
         manualCacheSelector: (Js5MasterIndex) -> ReplayDiskCacheStore?,
-    ): ReplaySession? {
+    ): ReplayPlaybackSession? {
         val binary = BinaryBlob.decode(path, filterSetStore, settingsStore)
-        require(
-            !binary.header.isRuneScape3(),
-        ) { "RS3 binary recording is supported; RS3 replay is not implemented yet." }
+        if (binary.header.isRuneScape3()) return Rs3ReplaySession(Rs3ReplayRecording.read(binary))
         val masterIndex =
             Js5MasterIndex.trimmed(
                 binary.header.revision,
@@ -790,8 +794,17 @@ public class ProxyService(
         return ReplaySession(timeline, decoder, cacheStore)
     }
 
-    public fun transcribeReplaySession(replaySession: ReplaySession): ReplayTranscript {
-        return ReplayTranscriber(decoderLoader, filterSetStore, settingsStore).transcribe(replaySession)
+    public fun transcribeReplaySession(replaySession: ReplayPlaybackSession): ReplayTranscript {
+        return when (replaySession) {
+            is Rs3ReplaySession -> Rs3ReplayTranscriber.transcribe(replaySession, filterSetStore, settingsStore)
+            is ReplaySession ->
+                ReplayTranscriber(
+                    decoderLoader,
+                    filterSetStore,
+                    settingsStore,
+                ).transcribe(replaySession)
+            else -> error("Unsupported replay session")
+        }
     }
 
     public fun launchReplayRuneLiteClient(
@@ -1000,13 +1013,22 @@ public class ProxyService(
         val proxyKey = Rs3ProxyRsaKeyProvider.readOrGenerate()
         val modulusHex = Rs3ProxyRsaKeyProvider.publicModulusHex(proxyKey)
 
+        // Keep current lobby selection and JS5 tokens, but fetch executable bytes from RuneArchive.
+        progress.update(Rs3LaunchProgress("Loading server configuration"))
+        val upstreamConfig = Rs3JavConfig(URL(upstreamJavConfigUrl))
+        val targets = upstreamConfig.captureUpstreamTargets()
+        require(targets.revision == protocolRevision.wireRevision) {
+            "RS3 configuration revision does not match the selected protocol"
+        }
+
         val patchedGameBinaryPath =
             synchronized(JagexNativeClientDownloader) {
                 progress.update(Rs3LaunchProgress("Checking client download"))
                 val downloaded =
-                    JagexNativeClientDownloader.download(
-                        NativeClientType.RS3_WIN,
-                        upstreamJavConfigUrl,
+                    RSProxArchiveRs3ClientDownloader.live(
+                        upstreamConfig,
+                        JagexNativeClientDownloader.rs3BinaryType(upstreamJavConfigUrl),
+                        beta,
                         progress::update,
                     )
                 if (beta) {
@@ -1046,12 +1068,6 @@ public class ProxyService(
                 "Failed to capture original RS3 modulus from game client"
             }
 
-        progress.update(Rs3LaunchProgress("Loading server configuration"))
-        val upstreamConfig = Rs3JavConfig(URL(upstreamJavConfigUrl))
-        val targets = upstreamConfig.captureUpstreamTargets()
-        require(targets.revision == protocolRevision.wireRevision) {
-            "RS3 configuration revision does not match the selected protocol"
-        }
         // Bootstrap on the launch worker, before relay event loops see any game packets.
         val cacheResolver = Rs3LiveCacheResolver(upstreamConfig.captureJs5ConnectionInfo())
         progress.update(Rs3LaunchProgress("Connecting to the JS5 definition service"))
@@ -1125,7 +1141,7 @@ public class ProxyService(
                         patchedGameBinaryPath,
                         rewritten,
                         host,
-                        progress::update,
+                        onProgress = progress::update,
                     )
                 } else {
                     null
@@ -1172,6 +1188,75 @@ public class ProxyService(
 
         progress.complete()
         return checkNotNull(handle)
+    }
+
+    public fun launchRs3ReplayClient(
+        session: Rs3ReplaySession,
+        vulkan: Boolean =
+            session.recording.header.clientName
+                .contains("Vulkan", ignoreCase = true),
+        onProgress: (Rs3LaunchProgress) -> Unit = {},
+        onFailure: (Throwable) -> Unit = {},
+        isCancelled: () -> Boolean = { false },
+    ): Rs3ReplayClient {
+        session.reserveLaunch()
+        try {
+            require(operatingSystem == OperatingSystem.WINDOWS) { "RS3 replay currently requires Windows" }
+            val recording = session.recording
+            val revision = Rs3ProtocolRevision(recording.header.revision)
+            val archived = RSProxArchiveRs3ClientDownloader.replay(revision, if (vulkan) 10 else 2, onProgress)
+            val config = archived.configuration
+            val source = archived.executable
+            if (revision.obfuscationVersion != 0) {
+                check(Rs3BetaClientBuild.verify(source, if (vulkan) 10 else 2) == revision)
+            }
+            check(!isCancelled()) { "Replay launch cancelled" }
+            val port = allocatePorts(2)
+            val client =
+                Rs3ReplayClient.prepare(
+                    recording,
+                    source,
+                    config,
+                    CONFIGURATION_PATH.resolve("rs3-replays"),
+                    Rs3RelayPorts(port, port + 1),
+                    Rs3ProxyRsaKeyProvider.readOrGenerate(),
+                    onProgress,
+                    { error ->
+                        session.failed(error)
+                        onFailure(error)
+                    },
+                )
+            try {
+                session.attach(client)
+                check(!isCancelled()) { "Replay launch cancelled" }
+                createProcess(
+                    command = listOf(client.executable.toAbsolutePath().toString()) + client.arguments,
+                    directory = client.executable.parent.toFile(),
+                    path = client.executable,
+                    port = port,
+                    character = null,
+                    operatingSystem = operatingSystem,
+                    clientType = ClientType.Native,
+                    useStoredCredentials = false,
+                    useFakeJagexAccount = true,
+                    onProcessExit = {
+                        client.close()
+                        processes.remove(port)
+                    },
+                    onProcessStart = {
+                        parent ->
+                        client.attach(parent) { child -> processes[port] = listOf(child, parent) }
+                    },
+                )
+                return client
+            } catch (error: Throwable) {
+                client.close()
+                throw error
+            }
+        } catch (error: Throwable) {
+            session.failed(error)
+            throw error
+        }
     }
 
     private fun Rs3JavConfig.toClientArgs(): List<String> {

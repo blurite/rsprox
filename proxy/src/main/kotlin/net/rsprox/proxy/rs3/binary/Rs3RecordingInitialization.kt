@@ -6,6 +6,7 @@ import net.rsprox.proxy.binary.BinaryHeader
 /** Validates the recording-only preamble; native packet decoders never receive these records. */
 internal class Rs3RecordingInitialization(
     private val header: BinaryHeader,
+    private val onBlock: (world: Boolean, block: Int, bytes: ByteArray) -> Unit = { _, _, _ -> },
 ) {
     private var lobbyReady = false
     private var gameStarted = false
@@ -67,6 +68,7 @@ internal class Rs3RecordingInitialization(
             require(blockBytes[0].toInt() in 0..1)
             variablesComplete = blockBytes[0] == 1.toByte()
         }
+        onBlock(world, block, blockBytes.copyOf())
         expectedBlock++
         currentBlock = -1
         blockBytes = ByteArray(0)

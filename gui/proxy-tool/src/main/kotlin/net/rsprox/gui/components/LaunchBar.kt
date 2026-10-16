@@ -374,21 +374,6 @@ public class LaunchBar(
         dialog.isVisible = true
     }
 
-    private class SessionTypeCellRenderer : DefaultListCellRenderer() {
-        override fun getListCellRendererComponent(
-            list: JList<*>?,
-            value: Any?,
-            index: Int,
-            isSelected: Boolean,
-            cellHasFocus: Boolean,
-        ) = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus).apply {
-            if (value is SessionType) {
-                icon = value.icon
-                text = value.displayName
-            }
-        }
-    }
-
     private class ProxyTargetCellRenderer(
         private val displayNameOverride: String? = null,
     ) : DefaultListCellRenderer() {

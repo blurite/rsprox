@@ -35,12 +35,13 @@ internal class Rs3LauncherSlot private constructor(
             configuration: Path,
             cacheRoot: Path,
             cacheVariantSuffix: String = "",
+            singleInstance: Boolean = false,
         ): Rs3LauncherSlot {
             require(cacheVariantSuffix.isEmpty() || cacheVariantSuffix.matches(Regex("[A-Za-z0-9_-]{1,32}")))
             val owner = configuration.toAbsolutePath().normalize().toString()
             val namespace = Rs3LauncherDistribution.sha256(owner.toByteArray()).take(5)
             Files.createDirectories(cacheRoot)
-            for (slot in 0 until 128) {
+            for (slot in 0 until (if (singleInstance) 1 else 128)) {
                 val name = "r$namespace${slot.toString(16).padStart(2, '0')}"
                 val directory = cacheRoot.resolve(name)
                 Files.createDirectories(directory)
@@ -90,7 +91,13 @@ internal class Rs3LauncherSlot private constructor(
                 }
                 channel.close()
             }
-            error("No free RuneScape launcher slots")
+            error(
+                if (singleInstance) {
+                    "An RS3 replay is already running. Close it before launching another replay."
+                } else {
+                    "No free RuneScape launcher slots"
+                },
+            )
         }
     }
 }

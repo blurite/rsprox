@@ -71,6 +71,10 @@ public class ReplayPlaybackController(
     private val scheduler: ReplayScheduler,
     private val onFinished: () -> Unit = {},
     private val fastForwardSink: ((List<ReplayFrame>) -> Unit)? = null,
+    private val skipRedundantFastForwardFrames: Boolean = true,
+    private val fastForwardBatchSize: Int = Int.MAX_VALUE,
+    private val waitForIntermediateMapBuilds: Boolean = true,
+    private val onReconnect: ((ReplayFrame) -> Unit)? = null,
     private val sink: (ReplayFrame) -> Unit,
 ) {
     private var state: ReplayPlaybackState = ReplayPlaybackState.STOPPED
@@ -81,6 +85,7 @@ public class ReplayPlaybackController(
     private var pendingMapBuildCompleteTick: Int? = null
     private var resumeAfterMapBuildComplete: Boolean = false
     private var pendingFastForward: PendingFastForward? = null
+    private var pendingReconnect: PendingReconnect? = null
 
     @Synchronized
     public fun snapshot(): ReplayPlaybackSnapshot {
@@ -96,6 +101,7 @@ public class ReplayPlaybackController(
 
     @Synchronized
     public fun play() {
+        if (pendingReconnect != null) return
         if (state == ReplayPlaybackState.PLAYING || state == ReplayPlaybackState.WAITING_FOR_MAP_BUILD_COMPLETE) {
             return
         }
@@ -113,6 +119,11 @@ public class ReplayPlaybackController(
 
     @Synchronized
     public fun pause() {
+        pendingReconnect?.let {
+            pendingReconnect = it.copy(resumeAfter = false)
+            pendingFastForward = pendingFastForward?.copy(resumeAfter = false)
+            return
+        }
         if (state != ReplayPlaybackState.PLAYING && state != ReplayPlaybackState.WAITING_FOR_MAP_BUILD_COMPLETE) {
             return
         }
@@ -132,6 +143,7 @@ public class ReplayPlaybackController(
         pendingMapBuildCompleteTick = null
         resumeAfterMapBuildComplete = false
         pendingFastForward = null
+        pendingReconnect = null
         state = ReplayPlaybackState.STOPPED
     }
 
@@ -141,6 +153,7 @@ public class ReplayPlaybackController(
         pendingMapBuildCompleteTick = null
         resumeAfterMapBuildComplete = false
         pendingFastForward = null
+        pendingReconnect = null
         if (state != ReplayPlaybackState.FINISHED) {
             state = ReplayPlaybackState.SEEKING
         }
@@ -153,6 +166,7 @@ public class ReplayPlaybackController(
         pendingMapBuildCompleteTick = null
         resumeAfterMapBuildComplete = false
         pendingFastForward = null
+        pendingReconnect = null
         if (state == ReplayPlaybackState.FINISHED ||
             state == ReplayPlaybackState.WAITING_FOR_MAP_BUILD_COMPLETE ||
             state == ReplayPlaybackState.SEEKING
@@ -169,17 +183,25 @@ public class ReplayPlaybackController(
         tick: Int,
         resumeAfter: Boolean,
     ): Int {
+        check(pendingReconnect == null) { "Replay is waiting for its reconnect" }
         cancelScheduledLocked()
         pendingMapBuildCompleteTick = null
         resumeAfterMapBuildComplete = false
-        pendingFastForward = PendingFastForward(tick, resumeAfter)
+        val targetFrameIndex = timeline.firstFrameIndexAtOrAfterTick(tick)
+        pendingFastForward =
+            PendingFastForward(
+                tick,
+                resumeAfter,
+                targetFrameIndex,
+                latestMapRebuildIndexBeforeLocked(targetFrameIndex),
+            )
         return continueFastForwardLocked()
     }
 
     private fun continueFastForwardLocked(): Int {
         val fastForward = pendingFastForward ?: return currentTick()
-        val targetFrameIndex = timeline.firstFrameIndexAtOrAfterTick(fastForward.targetTick)
-        val latestMapRebuildIndex = latestMapRebuildIndexBeforeLocked(targetFrameIndex)
+        val targetFrameIndex = fastForward.targetFrameIndex
+        val latestMapRebuildIndex = fastForward.finalRebuildFrameIndex
         val frames = mutableListOf<ReplayFrame>()
         while (nextFrameIndex < targetFrameIndex) {
             if (shouldWaitForMapBuildCompleteLocked()) {
@@ -188,6 +210,14 @@ public class ReplayPlaybackController(
                 return currentTick()
             }
             val frame = timeline.frames[nextFrameIndex]
+            if (onReconnect != null &&
+                frame.prot.isReplayReconnect() &&
+                frame.direction == StreamDirection.SERVER_TO_CLIENT
+            ) {
+                flushFastForwardFramesLocked(frames)
+                suspendForReconnectLocked(frame, fastForward.resumeAfter)
+                return currentTick()
+            }
             if (frame.prot.isActiveWorldV1()) {
                 val buf = Unpooled.wrappedBuffer(frame.payload).toJagByteBuf()
                 val type = buf.g1()
@@ -198,7 +228,8 @@ public class ReplayPlaybackController(
                 val index = buf.g2s()
                 this.activeWorld = if (index <= 0) -1 else index
             }
-            if (shouldSkipRedundantFastForwardFrameLocked(
+            if (skipRedundantFastForwardFrames &&
+                shouldSkipRedundantFastForwardFrameLocked(
                     nextFrameIndex,
                     latestMapRebuildIndex,
                     fastForward.targetTick,
@@ -210,6 +241,12 @@ public class ReplayPlaybackController(
             frames += frame
             markMapBuildBarrierIfNeededLocked(frame)
             nextFrameIndex++
+            if (frames.size >= fastForwardBatchSize && nextFrameIndex < targetFrameIndex) {
+                flushFastForwardFramesLocked(frames)
+                state = ReplayPlaybackState.SEEKING
+                scheduledTask = scheduler.schedule(0) { continueFastForward() }
+                return currentTick()
+            }
         }
         flushFastForwardFramesLocked(frames)
         if (shouldWaitForMapBuildCompleteLocked()) {
@@ -245,6 +282,11 @@ public class ReplayPlaybackController(
     }
 
     @Synchronized
+    private fun continueFastForward() {
+        if (state == ReplayPlaybackState.SEEKING) continueFastForwardLocked()
+    }
+
+    @Synchronized
     public fun prepareReconnectBootstrapFromCurrent(extract: (ReplayFrame) -> ReplayReconnectBootstrap?): ByteArray? {
         while (timeline.frames.getOrNull(nextFrameIndex)?.direction == StreamDirection.CLIENT_TO_SERVER) {
             nextFrameIndex++
@@ -264,6 +306,7 @@ public class ReplayPlaybackController(
 
     @Synchronized
     public fun stepForwardTick(): Int {
+        if (pendingReconnect != null) return currentTick()
         cancelScheduledLocked()
         if (timeline.frames.isEmpty() || nextFrameIndex >= timeline.frames.size) {
             finishLocked()
@@ -273,6 +316,7 @@ public class ReplayPlaybackController(
         var emitted = 0
         while (nextFrameIndex < timeline.frames.size && timeline.frames[nextFrameIndex].tick == tick) {
             val frame = timeline.frames[nextFrameIndex]
+            if (suspendForReconnectLocked(frame, resumeAfter = false, stepTick = tick)) return currentTick()
             sink(frame)
             markMapBuildBarrierIfNeededLocked(frame)
             nextFrameIndex++
@@ -310,6 +354,7 @@ public class ReplayPlaybackController(
 
     @Synchronized
     public fun mapBuildComplete() {
+        if (pendingReconnect != null) return
         if (pendingMapBuildCompleteTick == null) {
             return
         }
@@ -355,11 +400,52 @@ public class ReplayPlaybackController(
             return
         }
         val frame = timeline.frames[nextFrameIndex]
+        if (suspendForReconnectLocked(frame, resumeAfter = true)) return
         sink(frame)
         markMapBuildBarrierIfNeededLocked(frame)
         nextFrameIndex++
         scheduleNextLocked()
     }
+
+    private fun suspendForReconnectLocked(
+        frame: ReplayFrame,
+        resumeAfter: Boolean,
+        stepTick: Int? = null,
+    ): Boolean {
+        val callback = onReconnect ?: return false
+        if (frame.direction != StreamDirection.SERVER_TO_CLIENT || !frame.prot.isReplayReconnect()) return false
+        cancelScheduledLocked()
+        nextFrameIndex++
+        pendingMapBuildCompleteTick = null
+        resumeAfterMapBuildComplete = false
+        pendingReconnect = PendingReconnect(resumeAfter, stepTick)
+        state = ReplayPlaybackState.SEEKING
+        callback(frame)
+        return true
+    }
+
+    @Synchronized
+    public fun resumeAfterReconnect() {
+        val reconnect = checkNotNull(pendingReconnect) { "Replay has no pending reconnect" }
+        pendingReconnect = null
+        if (pendingFastForward != null) {
+            continueFastForwardLocked()
+        } else if (reconnect.stepTick != null &&
+            timeline.frames.getOrNull(nextFrameIndex)?.tick == reconnect.stepTick
+        ) {
+            stepForwardTick()
+        } else if (nextFrameIndex >= timeline.frames.size) {
+            finishLocked()
+        } else {
+            state = ReplayPlaybackState.PAUSED
+            if (reconnect.resumeAfter) play()
+        }
+    }
+
+    private data class PendingReconnect(
+        val resumeAfter: Boolean,
+        val stepTick: Int?,
+    )
 
     private fun currentTick(): Int {
         if (timeline.frames.isEmpty()) return 0
@@ -382,11 +468,19 @@ public class ReplayPlaybackController(
 
     private fun shouldWaitForMapBuildCompleteLocked(): Boolean {
         val rebuildTick = pendingMapBuildCompleteTick ?: return false
-        val nextTick = timeline.frames.getOrNull(nextFrameIndex)?.tick ?: return false
+        // A seek to the end must still finish its final scene before reporting FINISHED.
+        val nextTick = timeline.frames.getOrNull(nextFrameIndex)?.tick ?: return pendingFastForward != null
         return nextTick > rebuildTick
     }
 
     private fun markMapBuildBarrierIfNeededLocked(frame: ReplayFrame) {
+        val fastForward = pendingFastForward
+        if (fastForward != null &&
+            !waitForIntermediateMapBuilds &&
+            nextFrameIndex != fastForward.finalRebuildFrameIndex
+        ) {
+            return
+        }
         if (frame.direction != StreamDirection.SERVER_TO_CLIENT || !frame.prot.isReplayMapRebuild()) {
             return
         }
@@ -401,6 +495,8 @@ public class ReplayPlaybackController(
     private data class PendingFastForward(
         val targetTick: Int,
         val resumeAfter: Boolean,
+        val targetFrameIndex: Int,
+        val finalRebuildFrameIndex: Int?,
     )
 
     private fun latestMapRebuildIndexBeforeLocked(targetFrameIndex: Int): Int? {

@@ -774,9 +774,20 @@ internal class PlayerInfoClient(
                         val womanHead = if (slotFlag and 0x8 != 0) buffer.g4() else -1
                         customisation[i] =
                             ObjTypeCustomisation(
-                                -1, -1, -1, -1, -1, -1,
-                                manWear, womanWear, manHead, womanHead,
-                                recolours, retextures, overrideColour, colour,
+                                -1,
+                                -1,
+                                -1,
+                                -1,
+                                -1,
+                                -1,
+                                manWear,
+                                womanWear,
+                                manHead,
+                                womanHead,
+                                recolours,
+                                retextures,
+                                overrideColour,
+                                colour,
                             )
                     }
                 }

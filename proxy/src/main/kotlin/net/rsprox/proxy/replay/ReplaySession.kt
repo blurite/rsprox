@@ -13,11 +13,11 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 public class ReplaySession(
-    public val timeline: ReplayTimeline,
+    override val timeline: ReplayTimeline,
     public val revisionDecoder: RevisionDecoder,
     public val cacheStore: GroupStore,
     private val scheduler: ReplayScheduler = ExecutorReplayScheduler(),
-) : AutoCloseable {
+) : ReplayPlaybackSession {
     private val clientChannel: AtomicReference<Channel?> = AtomicReference(null)
     private val unixSocketConnection: AtomicReference<UnixSocketConnection?> = AtomicReference(null)
     private val decodedMessages: Array<List<IncomingMessage>?> = arrayOfNulls(timeline.frames.size)
@@ -101,19 +101,19 @@ public class ReplaySession(
         cancelPausedKeepalive()
     }
 
-    public fun hasClientLaunchStarted(): Boolean {
+    override fun hasClientLaunchStarted(): Boolean {
         return clientLaunchStarted.get()
     }
 
-    public fun hasClientDisconnected(): Boolean {
+    override fun hasClientDisconnected(): Boolean {
         return clientDisconnected.get()
     }
 
-    public fun hasActiveClient(): Boolean {
+    override fun hasActiveClient(): Boolean {
         return clientChannel.get()?.isActive == true
     }
 
-    public fun isRebuildInProgress(): Boolean {
+    override fun isRebuildInProgress(): Boolean {
         return rebuildInProgress.get()
     }
 
@@ -195,18 +195,18 @@ public class ReplaySession(
         refreshPausedKeepalive()
     }
 
-    public fun play() {
+    override fun play() {
         cancelPausedKeepalive()
         controller.play()
         refreshPausedKeepalive()
     }
 
-    public fun pause() {
+    override fun pause() {
         controller.pause()
         refreshPausedKeepalive()
     }
 
-    public fun stop() {
+    override fun stop() {
         cancelPausedKeepalive()
         val channel = clientChannel.get()
         if (channel != null && channel.isActive) {
@@ -218,7 +218,7 @@ public class ReplaySession(
         }
     }
 
-    public fun seekToTick(tick: Int) {
+    override fun seekToTick(tick: Int) {
         val snapshot = controller.snapshot()
         val targetTick = tick.coerceIn(0, snapshot.totalTicks)
         if (targetTick == snapshot.currentTick) {
@@ -239,19 +239,19 @@ public class ReplaySession(
         refreshPausedKeepalive()
     }
 
-    public fun stepForwardTick(): Int {
+    override fun stepForwardTick(): Int {
         return controller.stepForwardTick().also {
             refreshPausedKeepalive()
         }
     }
 
-    public fun stepBackTick(): Int {
+    override fun stepBackTick(): Int {
         val target = maxOf(0, controller.snapshot().currentTick - 1)
         seekToTick(target)
         return controller.snapshot().currentTick
     }
 
-    public fun setSpeed(multiplier: Double) {
+    override fun setSpeed(multiplier: Double) {
         controller.setSpeed(multiplier)
     }
 
@@ -260,7 +260,7 @@ public class ReplaySession(
         refreshPausedKeepalive()
     }
 
-    public fun snapshot(): ReplayPlaybackSnapshot {
+    override fun snapshot(): ReplayPlaybackSnapshot {
         return controller.snapshot()
     }
 
