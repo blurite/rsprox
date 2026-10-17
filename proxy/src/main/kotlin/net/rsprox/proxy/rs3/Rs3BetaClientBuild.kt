@@ -11,9 +11,13 @@ internal object Rs3BetaClientBuild {
         setOf(
             "e2f471f0dfca8f584f7edd4ea0321bbedb40c95331791312e19c19aa1fb8054f",
             "15e711390ed2ec98efa8d203ede71c58a62e52b0a842f2feef09257ca9828163",
+            "3c9697b75862bf46e80d788733c59ed673458d4b9f4c6cec09604b893c815841",
         )
     private val windowsVulkan950Beta1 =
-        setOf("81c68f8f1659958916a4661569b7d30a9c7dcbbc39d509fad801a69ffae1c7db")
+        setOf(
+            "81c68f8f1659958916a4661569b7d30a9c7dcbbc39d509fad801a69ffae1c7db",
+            "99e2f95377a274b964574d1e8b90ffb7290cf74debb2df1c2bcf6c553bd63758",
+        )
 
     fun verify(
         path: Path,

@@ -24,12 +24,11 @@ public data object JagexNativeClientDownloader {
     public const val VULKAN_RS3_JAV_CONFIG_URL: String =
         "https://world5.runescape.com/jav_config.ws?binaryType=10"
 
-    // Match the official rs-launch:// beta link. HTTPS changes the resource URL parameters,
-    // causing resource downloads to use TLS on a beta host whose certificate does not cover it.
+    // Use the current beta world. Keep HTTP so resource URLs do not require beta-host TLS support.
     public const val BETA_RS3_JAV_CONFIG_URL: String =
-        "http://world204.runescape.com/jav_config_beta.ws?binaryType=2"
+        "http://world205.runescape.com/jav_config_beta.ws?binaryType=2"
     public const val BETA_VULKAN_RS3_JAV_CONFIG_URL: String =
-        "http://world204.runescape.com/jav_config_beta.ws?binaryType=10"
+        "http://world205.runescape.com/jav_config_beta.ws?binaryType=10"
 
     @OptIn(ExperimentalStdlibApi::class)
     public fun download(
