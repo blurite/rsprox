@@ -16,7 +16,11 @@ import net.rsprox.proxy.rs3.Rs3SessionMonitor
 import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
 import net.rsprox.shared.SessionMonitor
 import net.rsprox.shared.account.JagexCharacter
-import net.rsprox.shared.property.*
+import net.rsprox.shared.property.OmitFilteredPropertyTreeFormatter
+import net.rsprox.shared.property.Property
+import net.rsprox.shared.property.PropertyFormatterCollection
+import net.rsprox.shared.property.RootProperty
+import net.rsprox.shared.property.isExcluded
 import net.rsprox.shared.property.regular.GroupProperty
 import net.rsprox.shared.property.regular.ListProperty
 import net.rsprox.shared.symbols.SymbolDictionaryProvider
@@ -31,14 +35,12 @@ import org.jdesktop.swingx.treetable.DefaultTreeTableModel
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.FlowLayout
-import java.awt.event.ComponentAdapter
-import java.awt.event.ComponentEvent
 import java.text.SimpleDateFormat
 import java.util.concurrent.ForkJoinPool
 import javax.swing.BorderFactory
 import javax.swing.JPanel
-import javax.swing.JScrollBar
 import javax.swing.SwingUtilities
+import javax.swing.tree.TreePath
 import kotlin.time.measureTime
 
 public class SessionPanel(
@@ -50,16 +52,19 @@ public class SessionPanel(
     private val treeTable = JXTreeTable()
     private val tableModel = DefaultTreeTableModel()
     private val root = DefaultMutableTreeTableNode("Root")
+    private val history = LiveTranscriptHistory(tableModel, root)
+    private val transcriptUpdates = LiveTranscriptUpdates()
     private val scrollPane: FlatScrollPane
+    private val transcriptViewport: LiveTranscriptViewport
     public var metrics: SessionMetrics = SessionMetrics()
+
+    @Volatile
     private var paused = false
     private var streamNode: StreamTreeTableNode? = null
     private var rs3Connected = false
     public val isActive: Boolean
         get() = if (type.isRs3) rs3Connected else streamNode != null
     private var portNumber: Int = -1
-    private var jumpToBottom: Boolean = true
-    private var scrollbarMax: Int = -1
     private val launchProgress = if (type.isRs3) Rs3LaunchProgressPanel() else null
 
     private var rs3ClientScripts = ClientScriptDefinitionProvider.EMPTY
@@ -96,16 +101,6 @@ public class SessionPanel(
         val highlighter = ColorHighlighter(HighlightPredicate.ODD, getOddRowColor(), null)
         treeTable.addHighlighter(highlighter)
 
-        treeTable.addComponentListener(
-            object : ComponentAdapter() {
-                override fun componentResized(e: ComponentEvent) {
-                    if (jumpToBottom) {
-                        treeTable.scrollRectToVisible(treeTable.getCellRect(treeTable.getRowCount() - 1, 0, true))
-                    }
-                }
-            },
-        )
-
         treeTable.addPropertyChangeListener { evt ->
             if ("UI" == evt.propertyName) {
                 highlighter.background = getOddRowColor()
@@ -121,19 +116,7 @@ public class SessionPanel(
                 verticalScrollBar.unitIncrement = 16
                 setViewportView(treeTable)
             }
-        scrollPane.verticalScrollBar.addAdjustmentListener { event ->
-            val scrollBar = event.adjustable as JScrollBar
-            val maximum = scrollBar.model.maximum
-            if (scrollbarMax == -1 || scrollbarMax != maximum) {
-                scrollbarMax = maximum
-                return@addAdjustmentListener
-            }
-            if (event.valueIsAdjusting) {
-                return@addAdjustmentListener
-            }
-            val extent = scrollBar.model.extent
-            jumpToBottom = extent + event.value == maximum
-        }
+        transcriptViewport = LiveTranscriptViewport(treeTable, scrollPane)
         add(scrollPane, BorderLayout.CENTER)
         launchProgress?.let { add(it, BorderLayout.NORTH) }
 
@@ -151,6 +134,7 @@ public class SessionPanel(
         pauseButton.toolTipText = if (paused) "Resume" else "Pause"
         pauseButton.addActionListener {
             paused = !paused
+            transcriptUpdates.discardPending()
             pauseButton.isSelected = paused
             pauseButton.toolTipText = if (paused) "Resume" else "Pause"
         }
@@ -161,27 +145,14 @@ public class SessionPanel(
         clearAllButton.icon = AppIcons.Delete
         clearAllButton.toolTipText = "Clear all"
         clearAllButton.addActionListener {
-            scrollbarMax = -1
-            jumpToBottom = true
-            val model = treeTable.treeTableModel as DefaultTreeTableModel
-            val root = model.root as DefaultMutableTreeTableNode
+            transcriptUpdates.discardPending()
+            transcriptViewport.followTail()
             val streamNode = this@SessionPanel.streamNode
-
-            // Clear the root node (always <= 1 entry - the streamNode)
-            for (i in root.childCount - 1 downTo 0) {
-                val node = root.getChildAt(i) as AbstractMutableTreeTableNode
-                model.removeNodeFromParent(node)
-            }
-
+            history.clear(streamNode)
             if (streamNode != null) {
-
                 // Retain the node identity used by this recording's delayed callbacks.
-                for (i in streamNode.childCount - 1 downTo 0) {
-                    streamNode.remove(i)
-                }
                 streamNode.tickNode = null
-                addNodeAndExpand(streamNode, root, root.childCount)
-                this@SessionPanel.streamNode = streamNode
+                treeTable.expandPath(TreePath(tableModel.getPathToRoot(streamNode)))
             }
         }
         // make all buttons centered
@@ -263,14 +234,14 @@ public class SessionPanel(
                                 }
                                 rs3SessionMonitor.listener = { cycle, property ->
                                     if (!paused) {
-                                        SwingUtilities.invokeLater {
-                                            if (this@SessionPanel.streamNode == null) {
+                                        transcriptUpdates.submit(property) update@{
+                                            if (paused) return@update
+                                            if (this@SessionPanel.streamNode?.parent !== root) {
                                                 val newStreamNode = StreamTreeTableNode("RS3 Session")
                                                 addNodeAndExpand(newStreamNode, root, root.childCount)
                                                 this@SessionPanel.streamNode = newStreamNode
                                             }
-                                            val tickNode = findOrCreateTickNode(cycle)
-                                            createMessageNode(tickNode, cycle, property, rs3Formatter)
+                                            createMessageNode(checkNotNull(streamNode), cycle, property, rs3Formatter)
                                         }
                                     }
                                 }
@@ -325,15 +296,19 @@ public class SessionPanel(
     }
 
     private fun createMessageNode(
-        tickNode: AbstractMutableTreeTableNode,
+        owner: StreamTreeTableNode,
         cycle: Int,
         property: RootProperty,
         formatter: OmitFilteredPropertyTreeFormatter,
     ) {
         val previewText = getPreviewText(property, formatter)
         val rootNode = MessageTreeTableNode(previewText, property.prot)
-        addNodeAndExpand(rootNode, tickNode, tickNode.childCount)
+        // Build off-model, then notify Swing once instead of once per extended-info row.
         createMessageChildNodes(cycle, rootNode, property, formatter)
+        if (!history.canRetainPacket(rootNode)) return
+        val tickNode = findOrCreateTickNode(cycle, owner)
+        addNodeAndExpand(rootNode, tickNode, tickNode.childCount)
+        history.trim(streamNode)
     }
 
     private fun getPreviewText(
@@ -379,14 +354,14 @@ public class SessionPanel(
                 is GroupProperty -> {
                     val previewText = getPreviewText(child, formatter, indent)
                     val groupNode = MessageTreeTableNode(previewText, child.propertyName)
-                    addNodeAndExpand(groupNode, parentNode, parentNode.childCount)
+                    parentNode.insert(groupNode, parentNode.childCount)
                     createMessageChildNodes(cycle, groupNode, rootProperty, formatter, child, indent + 1)
                 }
 
                 is ListProperty -> {
                     val previewText = getPreviewText(child, formatter, indent)
                     val groupNode = MessageTreeTableNode(previewText, child.propertyName)
-                    addNodeAndExpand(groupNode, parentNode, parentNode.childCount)
+                    parentNode.insert(groupNode, parentNode.childCount)
                 }
 
                 else -> {
@@ -421,6 +396,7 @@ public class SessionPanel(
                 addNodeAndExpand(streamNode, root, root.childCount)
                 sessionStreamNode = streamNode
                 this@SessionPanel.streamNode = streamNode
+                history.trim(streamNode)
                 notifyMetricsChanged()
             }
         }
@@ -470,12 +446,12 @@ public class SessionPanel(
             property: RootProperty,
         ) {
             if (paused) return
-            SwingUtilities.invokeLater {
-                val owner = sessionStreamNode ?: return@invokeLater
-                // Only discard rows when the user explicitly cleared their recording.
-                if (owner.parent !== root) return@invokeLater
-                val tickNode = findOrCreateTickNode(cycle, owner)
-                createMessageNode(tickNode, cycle, property, formatter)
+            transcriptUpdates.submit(property) update@{
+                if (paused) return@update
+                val owner = sessionStreamNode ?: return@update
+                // The recording may have been cleared or aged out of the live display.
+                if (owner.parent !== root) return@update
+                createMessageNode(owner, cycle, property, formatter)
             }
         }
     }
@@ -485,7 +461,7 @@ public class SessionPanel(
         streamNode: StreamTreeTableNode = checkNotNull(this.streamNode),
     ): AbstractMutableTreeTableNode {
         var tickNode = streamNode.tickNode
-        if (tickNode == null || streamNode.lastCycle != tickNumber) {
+        if (tickNode == null || tickNode.parent !== streamNode || streamNode.lastCycle != tickNumber) {
             streamNode.lastCycle = tickNumber
             tickNode = TickTreeTableNode(tickNumber)
             streamNode.tickNode = tickNode
@@ -499,11 +475,24 @@ public class SessionPanel(
         parent: AbstractMutableTreeTableNode,
         index: Int,
     ) {
-        tableModel.insertNodeInto(newChild, parent, index)
-        treeTable.expandRow(treeTable.rowCount - 1)
+        check(index == parent.childCount)
+        transcriptViewport.beforeUpdate()
+        history.insert(newChild, parent)
+        treeTable.expandPath(TreePath(tableModel.getPathToRoot(parent)))
+        expandNode(newChild)
+    }
+
+    private fun expandNode(node: AbstractMutableTreeTableNode) {
+        if (node.childCount == 0) return
+        treeTable.expandPath(TreePath(tableModel.getPathToRoot(node)))
+        for (i in 0 until node.childCount) {
+            expandNode(node.getChildAt(i) as AbstractMutableTreeTableNode)
+        }
     }
 
     public fun kill() {
+        paused = true
+        transcriptUpdates.discardPending()
         if (portNumber == -1) return
         App.service.killAliveProcess(portNumber)
     }
