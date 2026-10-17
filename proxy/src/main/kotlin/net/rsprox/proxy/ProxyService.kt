@@ -925,6 +925,7 @@ public class ProxyService(
                 GamePackProvider(replayConfig.runeliteGamepackUrl),
                 sessionId,
                 rewriteJagexAuth = true,
+                replayWorldFlags = header.worldFlags,
             )
         target.load(properties, bootstrapFactory)
         return target

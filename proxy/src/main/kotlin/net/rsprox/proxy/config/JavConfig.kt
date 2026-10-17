@@ -1,5 +1,6 @@
 package net.rsprox.proxy.config
 
+import net.rsprox.proxy.worlds.WorldFlag
 import java.net.URL
 
 @JvmInline
@@ -63,6 +64,13 @@ public value class JavConfig(
             .build()
     }
 
+    public fun replaceWorldProperties(properties: Int): JavConfig {
+        return toBuilder()
+            .replaceParam(MEMBERS_PARAM, properties and WorldFlag.MEMBERS.bitflag != 0)
+            .replaceParam(WORLD_PROPERTIES_PARAM, properties)
+            .build()
+    }
+
     private fun toBuilder(): JavConfigBuilder {
         return JavConfigBuilder(this)
     }
@@ -78,6 +86,8 @@ public value class JavConfig(
     }
 
     private companion object {
+        private const val MEMBERS_PARAM: Int = 3
+        private const val WORLD_PROPERTIES_PARAM: Int = 5
         private const val REVISION_PARAM: Int = 25
         private const val INITIAL_WORLD_PARAM: Int = 12
         private const val WORLD_LIST_PARAM: Int = 17

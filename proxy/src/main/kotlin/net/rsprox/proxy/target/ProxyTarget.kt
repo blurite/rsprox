@@ -22,6 +22,7 @@ import net.rsprox.proxy.http.REPLAY_WORLDLIST_ENDPOINT
 import net.rsprox.proxy.worlds.DynamicWorldListProvider
 import net.rsprox.proxy.worlds.StaticWorldListProvider
 import net.rsprox.proxy.worlds.World
+import net.rsprox.proxy.worlds.WorldFlag
 import net.rsprox.proxy.worlds.WorldList
 import net.rsprox.proxy.worlds.WorldListProvider
 import java.net.URL
@@ -36,6 +37,7 @@ public class ProxyTarget(
     public val gamePackProvider: GamePackProvider,
     public val sessionId: Int,
     private val rewriteJagexAuth: Boolean = false,
+    private val replayWorldFlags: Int? = null,
 ) {
     public val httpPort: Int
         get() = HTTP_SERVER_PORT + sessionId
@@ -134,11 +136,14 @@ public class ProxyTarget(
     }
 
     private fun loadReplayWorldListProvider(): WorldListProvider {
+        val recordedFlags = checkNotNull(replayWorldFlags) { "Replay world flags must come from the recording" }
+        // Replays serve the recorded cache; beta cache loading must not be enabled.
+        val worldFlags = recordedFlags and WorldFlag.BETA_WORLD.bitflag.inv()
         val world =
             World(
                 proxyTargetConfig = config,
                 id = REPLAY_WORLD_ID,
-                properties = 0,
+                properties = worldFlags,
                 population = 0,
                 location = 0,
                 host = REPLAY_WORLD_HOST,
@@ -186,6 +191,7 @@ public class ProxyTarget(
             updated =
                 updated
                     .replaceInitialWorld(REPLAY_WORLD_ID)
+                    .replaceWorldProperties(replacementWorld.properties)
                     .replaceJagexAuthUrl(changedAuth)
                     .replaceRuneScapeAuthUrl(changedAuth)
                     .replaceModeWhat(MODEWHAT_LOCAL)
