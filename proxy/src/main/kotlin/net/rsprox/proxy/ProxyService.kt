@@ -65,7 +65,6 @@ import net.rsprox.proxy.rs3.Rs3LaunchTracker
 import net.rsprox.proxy.rs3.Rs3ProtocolRevision
 import net.rsprox.proxy.rs3.Rs3SessionMonitor
 import net.rsprox.proxy.rs3.config.Rs3JavConfig
-import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
 import net.rsprox.proxy.rs3.launcher.Rs3OfficialLauncher
 import net.rsprox.proxy.rs3.relay.Rs3Endpoint
 import net.rsprox.proxy.rs3.relay.Rs3RelayPorts
@@ -194,7 +193,6 @@ public class ProxyService(
         this.proxyTargets = loadProxyTargetConfigs(rspsJavConfigUrl)
         val jobs = mutableListOf<Callable<Boolean>>()
         jobs += createJob(progressCallback) { HuffmanProvider.load() }
-        jobs += createJob(progressCallback) { Rs3GamevalLookup.start() }
         jobs += createJob(progressCallback) { this.rsa = loadRsa() }
         jobs +=
             createJob(progressCallback) { this.jagexAccountStore = DefaultJagexAccountStore.load(JAGEX_ACCOUNTS_FILE) }
@@ -998,8 +996,6 @@ public class ProxyService(
         require(URI(upstreamJavConfigUrl).path.endsWith("/jav_config_beta.ws") == beta) {
             "RS3 client channel and javconfig must match"
         }
-        val protocolRevision =
-            Rs3ProtocolRevision.of(950, if (beta) 1 else 0)
         val renderer =
             when (JagexNativeClientDownloader.rs3BinaryType(upstreamJavConfigUrl)) {
                 2 -> "OpenGL"
@@ -1018,9 +1014,8 @@ public class ProxyService(
         progress.update(Rs3LaunchProgress("Loading server configuration"))
         val upstreamConfig = Rs3JavConfig(URL(upstreamJavConfigUrl))
         val targets = upstreamConfig.captureUpstreamTargets()
-        require(targets.revision == protocolRevision.wireRevision) {
-            "RS3 configuration revision does not match the selected protocol"
-        }
+        val protocolRevision =
+            Rs3ProtocolRevision.supported(Rs3ProtocolRevision.of(targets.revision, if (beta) 1 else 0).value)
 
         val patchedGameBinaryPath =
             synchronized(JagexNativeClientDownloader) {
@@ -1057,7 +1052,7 @@ public class ProxyService(
             NativePatchCriteria
                 .Builder(NativeClientType.RS3_WIN)
                 .rsaModulus(modulusHex)
-                .rs3LoginPorts(localPorts.primary, localPorts.alternate, beta)
+                .rs3LoginPorts(localPorts.primary, localPorts.alternate, protocolRevision.value)
                 .rs3WindowTitle()
                 .build()
         val gameClientPatchResult = patcher.patch(patchedGameBinaryPath, gameCriteria)

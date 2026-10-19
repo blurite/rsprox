@@ -45,20 +45,24 @@ public data class NativePatchCriteria(
             return this
         }
 
-        /** Revision-950 Windows lobby/world endpoint construction; never patch arbitrary HTTPS constants. */
+        /** Windows lobby/world endpoint construction; never patch arbitrary HTTPS constants. */
         public fun rs3LoginPorts(
             primary: Int,
             alternate: Int,
-            beta: Boolean = false,
+            revision: Int = 950,
         ): Builder {
             require(type == NativeClientType.RS3_WIN)
             require(primary in 1024..65535 && alternate in 1024..65535 && primary != alternate)
             require(primary != DEFAULT_PORT && alternate != DEFAULT_PORT)
             val first = intToHexStringLE(primary)
             val second = intToHexStringLE(alternate)
-            val modeOffset = if (beta) "909A0100" else "709A0100"
-            // Note: live 950 OpenGL/Vulkan use 0x19A70; the verified beta-1 builds use 0x19A90.
-            // Beta callers must identify the supported executable before choosing these instruction windows.
+            val modeOffset =
+                when (revision) {
+                    950 -> "709A0100"
+                    950 or (1 shl 16), 951 -> "909A0100"
+                    else -> error("Unsupported RS3 port patch revision: $revision")
+                }
+            // Note(revision): Verify the mode offset and all three instruction windows in each new client.
             // Each guarded instruction window must occur exactly once. Only the two mov immediates change.
             // Later lobby selection, world selection, and the second world selection entry point respectively.
             val sites =

@@ -5,6 +5,8 @@ import io.netty.buffer.Unpooled
 import net.rsprox.cache.CACHES_DIRECTORY
 import net.rsprox.cache.api.rs3.Rs3AppearanceItem
 import net.rsprox.cache.api.rs3.Rs3GameLogEventDefinition
+import net.rsprox.cache.api.rs3.Rs3Gameval
+import net.rsprox.cache.api.rs3.Rs3Gamevals
 import net.rsprox.cache.api.rs3.Rs3NpcDefinition
 import net.rsprox.cache.api.rs3.Rs3PacketDefinitions
 import net.rsprox.cache.api.rs3.Rs3QuickChatPhrase
@@ -35,7 +37,7 @@ public class Rs3LiveCacheResolver(
         private set
 
     public fun loadPacketDefinitions(onProgress: (String, Int, Int) -> Unit = { _, _, _ -> }): Rs3PacketDefinitions {
-        require(info.revision == 950) { "RS3 definition decoding is currently verified for revision 950 only" }
+        require(info.revision in 950..951) { "Unsupported RS3 cache revision: ${info.revision}" }
         Rs3Js5Connection(info).use { connection ->
             onProgress("Loading cache indexes", 0, 0)
             val master = unpack(connection.get(255, 255))
@@ -82,7 +84,7 @@ public class Rs3LiveCacheResolver(
             masterIndex: ByteArray,
             directory: Path = CACHES_DIRECTORY.resolve("rs3-live"),
         ): Rs3PacketDefinitions {
-            require(revision == 950) { "Unsupported recorded RS3 revision: $revision" }
+            require(revision in 950..951) { "Unsupported recorded RS3 revision: $revision" }
             return loadSnapshot(masterIndex) { archive, group, version, crc ->
                 readGroup(directory, archive, group, version, crc) {
                     logger.debug { "Downloading recorded RS3 cache group $archive:$group (version $version) from OpenRS2" }
@@ -238,12 +240,39 @@ public class Rs3LiveCacheResolver(
                     onProgress("Loading NPC definitions", ++npcPosition, npcIndex.size)
                 }
             }
+            val gamevals =
+                try {
+                    val archive = Rs3GamevalDecoder.ARCHIVE
+                    val metadata = archives.getOrNull(archive)
+                    if (metadata == null || metadata == (0 to 0)) {
+                        Rs3Gamevals.EMPTY
+                    } else {
+                        val gamevalIndex = index(archive)
+                        val groups =
+                            Rs3Gameval.entries.filter { it.group >= 0 }.mapNotNull { type ->
+                                gamevalIndex[type.group]?.let { type to it }
+                            }
+                        val packs = mutableMapOf<Rs3Gameval, ByteArray>()
+                        onProgress("Loading gamevals", 0, groups.size)
+                        for (batch in groups.chunked(PREFETCH_BATCH_SIZE)) {
+                            prefetch(archive, batch.map { it.second })
+                            for ((type, group) in batch) {
+                                packs[type] = unpack(readGroup(archive, group.id, group.version, group.checksum))
+                                onProgress("Loading gamevals", packs.size, groups.size)
+                            }
+                        }
+                        Rs3GamevalDecoder.decode(packs)
+                    }
+                } catch (exception: Exception) {
+                    logger.warn(exception) { "Unable to load RS3 gamevals; displaying numeric IDs for this cache" }
+                    Rs3Gamevals.EMPTY
+                }
             logger.info {
                 "RS3 packet cache ready: ${slots.size} slots, ${items.size} items, " +
                     "${npcs.size} NPCs, ${phrases.size} phrases, " +
                     "${(System.nanoTime() - started) / 1_000_000} ms"
             }
-            return Snapshot(slots, items, phrases, variables, npcs, varbits, gameLogEvents)
+            return Snapshot(slots, items, phrases, variables, npcs, varbits, gameLogEvents, gamevals)
         }
 
         private class Snapshot(
@@ -254,6 +283,7 @@ public class Rs3LiveCacheResolver(
             private val npcs: Map<Int, ByteArray>,
             private val varbits: Map<Int, Rs3VarbitDefinition>,
             private val gameLogEvents: Map<Int, ByteArray>,
+            override val gamevals: Rs3Gamevals,
         ) : Rs3PacketDefinitions {
             private val decodedNpcs = ConcurrentHashMap<Int, Rs3NpcDefinition>()
             private val decodedGameLogEvents = ConcurrentHashMap<Int, Rs3GameLogEventDefinition>()

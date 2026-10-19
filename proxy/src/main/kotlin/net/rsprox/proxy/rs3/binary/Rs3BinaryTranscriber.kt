@@ -55,6 +55,7 @@ internal object Rs3BinaryTranscriber {
         val decoder = Rs3DecoderLoader.load(header.revision, HuffmanProvider.get()) { NopStreamCipher }
         val definitions =
             Rs3LiveCacheResolver.loadRecordedPacketDefinitions(protocolRevision.wireRevision, header.js5MasterIndex)
+        val gamevals = Rs3GamevalLookup(definitions.gamevals)
         val clientScripts =
             RSProxArchiveClientScriptIndex
                 .forRuneScape(protocolRevision.wireRevision, header.js5MasterIndex)
@@ -80,8 +81,8 @@ internal object Rs3BinaryTranscriber {
                 writer.appendLine("-------------------")
                 val consumer = TranscribeCommand.createBufferedWriterConsumer(writer)
                 val container = TextMessageConsumerContainer(listOf(consumer))
-                val formatter = Rs3PropertyFormatter.create(settings, Rs3GamevalLookup, clientScripts)
-                val provider = TextRs3TranscriberProvider(Rs3GamevalLookup)
+                val formatter = Rs3PropertyFormatter.create(settings, gamevals, clientScripts)
+                val provider = TextRs3TranscriberProvider(gamevals)
                 var transcriber = provider.provide(container, filters, settings, clientScripts, isLobby = true)
 
                 fun session(index: Int): Session =

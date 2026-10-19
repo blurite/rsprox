@@ -7,15 +7,15 @@ import net.rsprot.crypto.cipher.StreamCipher
 import net.rsprox.proxy.rs3.Rs3ProtocolRevision
 import java.util.zip.CRC32
 
-/** Revision-950 privacy policy for recording and GUI copies, after payload ISAAC normalization. */
+/** Privacy policy for recording and GUI copies, after payload ISAAC normalization. */
 internal class Rs3PacketSanitizer(
     private val huffman: HuffmanCodec,
     val revision: Int = Rs3ProtocolRevision.LIVE_950,
 ) {
-    private val beta =
+    private val nameBeforeIgnoreNote =
         when (revision) {
             Rs3ProtocolRevision.LIVE_950 -> false
-            Rs3ProtocolRevision.BETA_950_1 -> true
+            Rs3ProtocolRevision.BETA_950_1, Rs3ProtocolRevision.LIVE_951 -> true
             else -> error("No RS3 privacy policy for protocol revision key: $revision")
         }
 
@@ -45,8 +45,8 @@ internal class Rs3PacketSanitizer(
         payload: ByteArray,
     ): ByteArray? {
         if (!server && name in OMITTED_CLIENT_PACKETS) return null
-        // Beta's name check is also encrypted with the account-flow keys, not a cleartext name.
-        if (!server && beta && name == "CREATE_CHECK_NAME") return null
+        // Since 950 beta the name check is encrypted with the account-flow keys, not a cleartext name.
+        if (!server && revision != Rs3ProtocolRevision.LIVE_950 && name == "CREATE_CHECK_NAME") return null
         if (name !in (if (server) SERVER_PACKETS else CLIENT_PACKETS)) return payload
 
         // Never mutate transport buffers, live-decoder inputs, or the caller's original packet.
@@ -140,8 +140,8 @@ internal class Rs3PacketSanitizer(
                         input.string(mask = true)
                     }
                     "IGNORE_SETNOTES" -> {
-                        input.string(mask = !beta)
-                        input.string(mask = beta)
+                        input.string(mask = !nameBeforeIgnoreNote)
+                        input.string(mask = nameBeforeIgnoreNote)
                     }
                 }
             }
@@ -165,13 +165,29 @@ internal class Rs3PacketSanitizer(
             val combinedId =
                 if (name == "RESUME_PAUSEBUTTON") {
                     require(payload.size == 6)
-                    val combinedId = input.g4()
-                    if (beta) input.g2Alt1() else input.g2Alt2()
-                    combinedId
+                    when (revision) {
+                        Rs3ProtocolRevision.LIVE_951 -> {
+                            input.g2Alt2()
+                            input.g4()
+                        }
+                        else -> {
+                            val combinedId = input.g4()
+                            if (revision == Rs3ProtocolRevision.BETA_950_1) input.g2Alt1() else input.g2Alt2()
+                            combinedId
+                        }
+                    }
                 } else {
                     require(payload.size == 9)
-                    if (beta) input.g3Alt1() else input.g3() // Object id.
-                    input.g4Alt3().also { input.g2() } // Component id and slot.
+                    when (revision) {
+                        Rs3ProtocolRevision.LIVE_951 -> {
+                            input.g3Alt3() // Object id.
+                            input.g4().also { input.g2Alt2() } // Component id and slot.
+                        }
+                        else -> {
+                            if (revision == Rs3ProtocolRevision.BETA_950_1) input.g3Alt1() else input.g3()
+                            input.g4Alt3().also { input.g2() }
+                        }
+                    }
                 }
             // Digits are encoded by component identity. Cover every component/op, including
             // cancel/help, so shuffled or newly added buttons cannot bypass the policy.

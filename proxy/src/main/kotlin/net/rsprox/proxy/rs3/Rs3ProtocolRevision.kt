@@ -25,7 +25,15 @@ public value class Rs3ProtocolRevision(
 
     public companion object {
         public const val LIVE_950: Int = 950
+        public const val LIVE_951: Int = 951
         public const val BETA_950_1: Int = 950 or (1 shl 16)
+
+        public fun supported(value: Int): Rs3ProtocolRevision {
+            require(value == LIVE_950 || value == LIVE_951 || value == BETA_950_1) {
+                "Unsupported RS3 protocol revision key: $value"
+            }
+            return Rs3ProtocolRevision(value)
+        }
 
         public fun of(
             wireRevision: Int,
