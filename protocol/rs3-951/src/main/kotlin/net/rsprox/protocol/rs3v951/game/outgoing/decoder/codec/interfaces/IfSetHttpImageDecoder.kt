@@ -14,8 +14,8 @@ internal class IfSetHttpImageDecoder : ProxyMessageDecoder<IfSetHttpImage> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetHttpImage {
-        val imageId = buffer.g4Alt1()
-        val componentHash = buffer.g4Alt2().toLong() and 0xFFFF_FFFFL
+        val componentHash = buffer.g4Alt3().toLong() and 0xFFFF_FFFFL
+        val imageId = buffer.g4Alt2()
         return IfSetHttpImage(
             componentHash,
             imageId,

@@ -13,7 +13,7 @@ internal class ClickWorldMapDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): ClickWorldMap {
-        val packedCoordinate = buffer.g4Alt1()
+        val packedCoordinate = buffer.g4()
         return ClickWorldMap(
             packedCoordinate,
         )

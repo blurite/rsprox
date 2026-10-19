@@ -14,10 +14,10 @@ internal class IfSetPlayerHeadIgnoreWornDecoder : ProxyMessageDecoder<IfSetPlaye
         buffer: JagByteBuf,
         session: Session,
     ): IfSetPlayerHeadIgnoreWorn {
-        val kitExtra = buffer.g2Alt2()
-        val kitHigh = buffer.g2Alt1()
-        val kitLow = buffer.g2Alt2()
-        val componentHash = buffer.g4Alt1().toLong() and 0xFFFF_FFFFL
+        val componentHash = buffer.g4Alt2().toLong() and 0xFFFF_FFFFL
+        val kitLow = buffer.g2()
+        val kitExtra = buffer.g2Alt3()
+        val kitHigh = buffer.g2Alt3()
         return IfSetPlayerHeadIgnoreWorn(
             kitLow,
             kitExtra,

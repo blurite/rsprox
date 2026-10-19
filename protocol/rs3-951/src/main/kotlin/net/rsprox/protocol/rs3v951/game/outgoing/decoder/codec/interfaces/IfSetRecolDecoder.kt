@@ -14,10 +14,10 @@ internal class IfSetRecolDecoder : ProxyMessageDecoder<IfSetRecol> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetRecol {
-        val source = buffer.g2Alt2()
-        val componentHash = buffer.g4Alt2().toLong() and 0xFFFF_FFFFL
         val index = buffer.g1Alt3()
-        val destination = buffer.g2Alt1()
+        val source = buffer.g2Alt3()
+        val componentHash = buffer.g4Alt2().toLong() and 0xFFFF_FFFFL
+        val destination = buffer.g2Alt3()
         return IfSetRecol(index, componentHash, destination, source)
     }
 }

@@ -15,7 +15,7 @@ internal class PointLightEnabledDecoder : ProxyMessageDecoder<PointLightEnabled>
         session: Session,
     ): PointLightEnabled {
         val encodedControl = buffer.g1()
-        val id = buffer.g2Alt2().toShort().toInt()
+        val id = buffer.g2().toShort().toInt()
         return PointLightEnabled(encodedControl, id, encodedControl and 0xF, encodedControl and 0x10 != 0)
     }
 }

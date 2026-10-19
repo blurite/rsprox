@@ -14,8 +14,8 @@ internal class MoveGameClickDecoder(
         session: Session,
     ): MoveGameClick {
         val x = buffer.g2Alt3()
+        val y = buffer.g2()
         val run = (buffer.g1Alt2() and 1) != 0
-        val y = buffer.g2Alt1()
         return MoveGameClick(x, y, run)
     }
 }

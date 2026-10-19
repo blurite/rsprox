@@ -14,10 +14,10 @@ internal class VarcLongDecoder : ProxyMessageDecoder<VarcLong> {
         buffer: JagByteBuf,
         session: Session,
     ): VarcLong {
-        val high = buffer.g4Alt2().toLong() and 0xFFFF_FFFFL
-        val low = buffer.g4Alt2().toLong() and 0xFFFF_FFFFL
+        val id = buffer.g2()
+        val high = buffer.g4().toLong() and 0xFFFF_FFFFL
+        val low = buffer.g4().toLong() and 0xFFFF_FFFFL
         val value = (high shl 32) or low
-        val id = buffer.g2Alt3()
         return VarcLong(
             id,
             value,

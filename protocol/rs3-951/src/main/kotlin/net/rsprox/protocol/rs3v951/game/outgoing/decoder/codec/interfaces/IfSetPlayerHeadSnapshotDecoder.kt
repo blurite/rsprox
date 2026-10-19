@@ -14,8 +14,8 @@ internal class IfSetPlayerHeadSnapshotDecoder : ProxyMessageDecoder<IfSetPlayerH
         buffer: JagByteBuf,
         session: Session,
     ): IfSetPlayerHeadSnapshot {
-        val componentHash = buffer.g4().toLong() and 0xFFFF_FFFFL
         val snapshotSlot = buffer.g1Alt1()
+        val componentHash = buffer.g4Alt1().toLong() and 0xFFFF_FFFFL
         return IfSetPlayerHeadSnapshot(
             componentHash,
             snapshotSlot,

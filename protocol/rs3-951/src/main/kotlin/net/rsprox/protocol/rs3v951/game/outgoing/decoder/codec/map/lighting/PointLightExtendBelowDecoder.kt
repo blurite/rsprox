@@ -14,8 +14,8 @@ internal class PointLightExtendBelowDecoder : ProxyMessageDecoder<PointLightExte
         buffer: JagByteBuf,
         session: Session,
     ): PointLightExtendBelow {
-        val mode = buffer.g1Alt1()
-        val id = buffer.g2().toShort().toInt()
+        val id = buffer.g2Alt2().toShort().toInt()
+        val mode = buffer.g1Alt2()
         return PointLightExtendBelow(id, mode)
     }
 }

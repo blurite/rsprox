@@ -13,9 +13,9 @@ internal class MoveScriptedDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): MoveScripted {
-        val z = buffer.g2Alt2()
-        val mode = buffer.g1()
-        val x = buffer.g2Alt1()
+        val x = buffer.g2Alt3()
+        val z = buffer.g2()
+        val mode = buffer.g1Alt3()
         return MoveScripted(
             z,
             x,

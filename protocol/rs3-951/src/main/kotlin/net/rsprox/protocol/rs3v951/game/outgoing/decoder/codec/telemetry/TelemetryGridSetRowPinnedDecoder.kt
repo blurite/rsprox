@@ -14,9 +14,9 @@ internal class TelemetryGridSetRowPinnedDecoder : ProxyMessageDecoder<TelemetryG
         buffer: JagByteBuf,
         session: Session,
     ): TelemetryGridSetRowPinned {
-        val group = buffer.g1Alt2()
-        val row = buffer.g1()
-        val enabled = buffer.g1Alt2() == 1
+        val row = buffer.g1Alt1()
+        val enabled = buffer.g1() == 1
+        val group = buffer.g1()
         return TelemetryGridSetRowPinned(
             group,
             row,

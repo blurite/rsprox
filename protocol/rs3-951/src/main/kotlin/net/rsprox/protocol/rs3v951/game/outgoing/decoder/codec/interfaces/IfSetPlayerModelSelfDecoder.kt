@@ -14,7 +14,7 @@ internal class IfSetPlayerModelSelfDecoder : ProxyMessageDecoder<IfSetPlayerMode
         buffer: JagByteBuf,
         session: Session,
     ): IfSetPlayerModelSelf {
-        val componentHash = buffer.g4Alt1().toLong() and 0xFFFF_FFFFL
+        val componentHash = buffer.g4Alt2().toLong() and 0xFFFF_FFFFL
         return IfSetPlayerModelSelf(
             componentHash,
         )

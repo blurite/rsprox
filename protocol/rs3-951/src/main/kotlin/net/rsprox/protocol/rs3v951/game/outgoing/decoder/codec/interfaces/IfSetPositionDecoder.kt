@@ -14,8 +14,8 @@ internal class IfSetPositionDecoder : ProxyMessageDecoder<IfSetPosition> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetPosition {
-        val x = buffer.g2s()
-        val componentHash = buffer.g4Alt3().toLong() and 0xFFFF_FFFFL
+        val x = buffer.g2sAlt3()
+        val componentHash = buffer.g4().toLong() and 0xFFFF_FFFFL
         val y = buffer.g2sAlt3()
         return IfSetPosition(
             componentHash,

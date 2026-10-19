@@ -13,8 +13,8 @@ internal class EventCameraPositionDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): EventCameraPosition {
-        val yaw = buffer.g2Alt3()
-        val pitch = buffer.g2Alt1()
+        val pitch = buffer.g2Alt2()
+        val yaw = buffer.g2Alt1()
         return EventCameraPosition(
             yaw,
             pitch,

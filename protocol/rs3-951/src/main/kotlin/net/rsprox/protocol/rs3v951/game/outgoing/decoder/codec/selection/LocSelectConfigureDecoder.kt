@@ -15,10 +15,10 @@ internal class LocSelectConfigureDecoder : ProxyMessageDecoder<LocSelectConfigur
         session: Session,
     ): LocSelectConfigure {
         val to = buffer.g4Alt2()
-        val enabled = buffer.g1Alt2() == 1
-        val id = buffer.g4Alt1()
         val from = buffer.g4Alt3()
         val count = buffer.g1Alt1()
+        val enabled = buffer.g1Alt3() == 1
+        val id = buffer.g4Alt3()
         return LocSelectConfigure(
             id,
             enabled,

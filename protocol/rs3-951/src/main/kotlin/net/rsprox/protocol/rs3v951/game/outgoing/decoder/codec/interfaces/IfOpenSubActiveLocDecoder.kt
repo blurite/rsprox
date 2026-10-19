@@ -14,18 +14,18 @@ internal class IfOpenSubActiveLocDecoder : ProxyMessageDecoder<IfOpenSubActiveLo
         buffer: JagByteBuf,
         session: Session,
     ): IfOpenSubActiveLoc {
-        val reserved0 = List(4) { buffer.g1() }
-        val coord = buffer.g4Alt1()
-        val reserved1 = List(8) { buffer.g1() }
-        val layer = buffer.g1Alt2()
-        val locId = buffer.g4Alt1()
-        val componentHash = buffer.g4Alt1().toLong() and 0xFFFF_FFFFL
-        val rawShapeRot = buffer.g1Alt3()
-        require(rawShapeRot and 0x80 == 0) { "Extended location transforms do not fit the fixed beta packet" }
+        val childId = buffer.g2Alt1()
+        val componentHash = buffer.g4Alt3().toLong() and 0xFFFF_FFFFL
+        val reserved0 = List(8) { buffer.g1() }
+        val rawShapeRot = buffer.g1Alt2()
+        require(rawShapeRot and 0x80 == 0) { "Extended location transforms do not fit the fixed packet" }
         val shape = (rawShapeRot ushr 2) and 0x1F
         val rotation = rawShapeRot and 0x3
+        val coord = buffer.g4()
+        val reserved1 = List(4) { buffer.g1() }
+        val locId = buffer.g4Alt3()
+        val layer = buffer.g1()
         val reserved2 = List(4) { buffer.g1() }
-        val childId = buffer.g2()
         return IfOpenSubActiveLoc(
             componentHash = componentHash,
             locId = locId,

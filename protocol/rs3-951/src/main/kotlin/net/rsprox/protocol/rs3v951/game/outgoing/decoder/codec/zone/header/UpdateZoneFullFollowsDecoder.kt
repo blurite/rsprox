@@ -15,7 +15,7 @@ internal class UpdateZoneFullFollowsDecoder : ProxyMessageDecoder<UpdateZoneFull
         session: Session,
     ): UpdateZoneFullFollows {
         val zoneZ = buffer.g1Alt2().toByte().toInt()
-        val zoneX = buffer.g1Alt1().toByte().toInt()
+        val zoneX = buffer.g1Alt3().toByte().toInt()
         val level = buffer.g1Alt2()
         return UpdateZoneFullFollows(level, zoneX, zoneZ)
     }

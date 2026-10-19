@@ -20,11 +20,11 @@ internal class RebuildRegionDecoder : ProxyMessageDecoder<RebuildRegion> {
     ): RebuildRegion {
         val init = session.readPlayerInfoInit(buffer)
         val unused = buffer.g1()
-        val npcCoordinateBits = buffer.g1Alt3()
-        val mode = buffer.g1Alt2()
         val baseChunkX = buffer.g2Alt3()
-        val baseChunkZ = buffer.g2Alt2()
-        val format = buffer.g1Alt3()
+        val baseChunkZ = buffer.g2Alt1()
+        val mode = buffer.g1Alt3()
+        val format = buffer.g1Alt1()
+        val npcCoordinateBits = buffer.g1Alt1()
         require(format == 5 && mode in 1..4) { "Unsupported region format/mode $format/$mode" }
         val regionOriginX = buffer.g2()
         val regionOriginZ = buffer.g2()

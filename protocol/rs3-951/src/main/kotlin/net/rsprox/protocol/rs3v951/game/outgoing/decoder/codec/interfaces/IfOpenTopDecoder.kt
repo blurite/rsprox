@@ -15,8 +15,9 @@ internal class IfOpenTopDecoder : ProxyMessageDecoder<IfOpenTop> {
         session: Session,
     ): IfOpenTop {
         // The native handler skips these fixed spans; preserve bytes without inventing XTEA transforms.
-        val interfaceId = buffer.g2Alt3()
-        val reserved = List(17) { buffer.g1() }
-        return IfOpenTop(interfaceId = interfaceId, reserved = reserved)
+        val reserved0 = List(5) { buffer.g1() }
+        val interfaceId = buffer.g2Alt2()
+        val reserved1 = List(12) { buffer.g1() }
+        return IfOpenTop(interfaceId = interfaceId, reserved = reserved0 + reserved1)
     }
 }

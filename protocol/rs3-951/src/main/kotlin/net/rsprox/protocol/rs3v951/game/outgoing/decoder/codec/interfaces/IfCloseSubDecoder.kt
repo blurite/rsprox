@@ -14,7 +14,7 @@ internal class IfCloseSubDecoder : ProxyMessageDecoder<IfCloseSub> {
         buffer: JagByteBuf,
         session: Session,
     ): IfCloseSub {
-        val parentComponentHash = buffer.g4Alt3().toLong() and 0xFFFFFFFFL
+        val parentComponentHash = buffer.g4Alt1().toLong() and 0xFFFFFFFFL
         return IfCloseSub(parentComponentHash)
     }
 }

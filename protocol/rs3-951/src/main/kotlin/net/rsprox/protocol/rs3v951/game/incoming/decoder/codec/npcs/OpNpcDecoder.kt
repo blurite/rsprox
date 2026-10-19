@@ -15,8 +15,8 @@ internal class OpNpcDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): OpNpc {
-        val run = (buffer.g1() and 1) != 0
-        val index = buffer.g2Alt2()
+        val index = buffer.g2Alt3()
+        val run = (buffer.g1Alt1() and 1) != 0
         return OpNpc(
             index,
             op,

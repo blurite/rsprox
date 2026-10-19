@@ -14,8 +14,8 @@ internal class IfSetTextFontDecoder : ProxyMessageDecoder<IfSetTextFont> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetTextFont {
+        val fontId = buffer.g4()
         val componentHash = buffer.g4().toLong() and 0xFFFF_FFFFL
-        val fontId = buffer.g4Alt2()
         return IfSetTextFont(
             componentHash,
             fontId,

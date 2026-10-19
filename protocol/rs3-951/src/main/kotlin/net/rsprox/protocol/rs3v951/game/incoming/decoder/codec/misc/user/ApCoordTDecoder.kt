@@ -14,10 +14,10 @@ internal class ApCoordTDecoder(
         session: Session,
     ): ApCoordT {
         val selectedObj = buffer.g3Alt3()
-        val x = buffer.g2Alt2()
         val z = buffer.g2Alt1()
-        val selectedSub = buffer.g2()
-        val selectedCombinedId = buffer.g4Alt2()
+        val x = buffer.g2Alt2()
+        val selectedCombinedId = buffer.g4()
+        val selectedSub = buffer.g2Alt3()
         return ApCoordT(
             selectedSub,
             selectedObj,

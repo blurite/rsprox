@@ -14,9 +14,9 @@ internal class IfTextChangeDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): IfTextChange {
-        val combinedId = buffer.g4Alt3()
-        val text = buffer.readNativeString()
+        val combinedId = buffer.g4Alt1()
         val sub = buffer.g2()
+        val text = buffer.readNativeString()
         return IfTextChange(
             combinedId,
             sub,

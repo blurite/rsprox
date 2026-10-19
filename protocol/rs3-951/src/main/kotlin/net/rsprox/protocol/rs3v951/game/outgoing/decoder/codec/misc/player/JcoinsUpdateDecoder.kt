@@ -14,7 +14,7 @@ internal class JcoinsUpdateDecoder : ProxyMessageDecoder<JcoinsUpdate> {
         buffer: JagByteBuf,
         session: Session,
     ): JcoinsUpdate {
-        val jcoins = buffer.g4()
+        val jcoins = buffer.g4Alt3()
         return JcoinsUpdate(jcoins)
     }
 }

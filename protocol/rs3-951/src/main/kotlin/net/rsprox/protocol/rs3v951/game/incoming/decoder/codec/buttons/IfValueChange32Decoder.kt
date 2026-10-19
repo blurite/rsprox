@@ -13,9 +13,9 @@ internal class IfValueChange32Decoder(
         buffer: JagByteBuf,
         session: Session,
     ): IfValueChange32 {
-        val flags = buffer.g1()
-        val combinedId = buffer.g4Alt3()
-        val value = buffer.g4Alt2()
+        val combinedId = buffer.g4Alt2()
+        val flags = buffer.g1Alt2()
+        val value = buffer.g4()
         val sub = buffer.g2Alt2()
         return IfValueChange32(
             value,

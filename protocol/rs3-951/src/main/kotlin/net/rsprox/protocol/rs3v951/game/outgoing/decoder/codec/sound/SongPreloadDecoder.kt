@@ -14,7 +14,7 @@ internal class SongPreloadDecoder : ProxyMessageDecoder<SongPreload> {
         buffer: JagByteBuf,
         session: Session,
     ): SongPreload {
-        val id = buffer.g4Alt3()
+        val id = buffer.g4Alt2()
         return SongPreload(
             id = id,
         )

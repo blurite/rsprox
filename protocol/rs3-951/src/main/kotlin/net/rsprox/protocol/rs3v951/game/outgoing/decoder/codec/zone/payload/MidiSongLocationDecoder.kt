@@ -14,11 +14,11 @@ internal class MidiSongLocationDecoder : ProxyMessageDecoder<MidiSongLocation> {
         buffer: JagByteBuf,
         session: Session,
     ): MidiSongLocation {
-        val volume = buffer.g1Alt2()
-        val id = buffer.g4Alt3()
-        val range = buffer.g1Alt2()
-        val coordinate = buffer.g4Alt3()
-        val radius = buffer.g1Alt1()
+        val radius = buffer.g1()
+        val volume = buffer.g1Alt1()
+        val range = buffer.g1()
+        val id = buffer.g4Alt2()
+        val coordinate = buffer.g4()
         return MidiSongLocation(
             volume = volume,
             id = id,

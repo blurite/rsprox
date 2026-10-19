@@ -14,10 +14,10 @@ internal class NpcSaySpecificDecoder : ProxyMessageDecoder<NpcSaySpecific> {
         buffer: JagByteBuf,
         session: Session,
     ): NpcSaySpecific {
-        val colour = buffer.g1Alt1()
         val effect = buffer.g1Alt3()
-        val npcIndex = buffer.g2Alt1()
+        val npcIndex = buffer.g2Alt2()
         val text = buffer.gjstr()
+        val colour = buffer.g1Alt2()
         return NpcSaySpecific(text, colour, npcIndex, effect)
     }
 }

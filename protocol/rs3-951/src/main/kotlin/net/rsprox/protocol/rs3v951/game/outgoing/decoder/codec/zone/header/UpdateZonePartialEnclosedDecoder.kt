@@ -36,15 +36,15 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
         session: Session,
     ): UpdateZonePartialEnclosed {
         val zoneX = buffer.g1Alt2().toByte().toInt()
-        val zoneZ = buffer.g1Alt1().toByte().toInt()
-        val level = buffer.g1Alt1()
+        val level = buffer.g1Alt2()
+        val zoneZ = buffer.g1().toByte().toInt()
         val packets =
             buildList {
                 while (buffer.isReadable) {
                     val selector = buffer.g1()
                     val decoder =
                         requireNotNull(decoders[selector]) {
-                            "Unverified or invalid revision 950-beta zone selector $selector at byte ${buffer.buffer.readerIndex() - 1}"
+                            "Unverified or invalid revision 951 zone selector $selector at byte ${buffer.buffer.readerIndex() - 1}"
                         }
                     add(decoder.decode(buffer, session) as IncomingServerGameMessage)
                 }
@@ -53,30 +53,30 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
     }
 
     private companion object {
-        // Add only beta-verified routes; never fall back to live-950 selector ordering.
+        // Selectors come from the revision 951 native dispatcher.
         val decoders: Map<Int, ProxyMessageDecoder<*>> =
             mapOf(
-                0 to LocAnimDecoder(),
-                1 to MapProjAnimV2Decoder(),
-                2 to MapProjAnimDecoder(),
-                3 to LocPrefetchDecoder(),
-                4 to ObjDelDecoder(),
-                5 to ObjAddV3Decoder(),
-                6 to MapProjAnimHalfsqV2Decoder(),
-                7 to MapAnimV1Decoder(),
-                8 to SoundAreaV1Decoder(),
-                9 to SoundAreaV2Decoder(),
-                10 to LocCustomiseDecoder(),
+                0 to LocAddChangeDecoder(),
+                1 to MapAnimV2Decoder(),
+                2 to ObjDelDecoder(),
+                3 to ObjRevealDecoder(),
+                4 to ObjRevealV3Decoder(),
+                5 to MapAnimV1Decoder(),
+                6 to MapProjAnimDecoder(),
+                7 to SoundAreaV1Decoder(),
+                8 to SoundAreaV2Decoder(),
+                9 to ObjAddV3Decoder(),
+                10 to LocAnimDecoder(),
                 11 to ObjCountV2Decoder(),
                 12 to ObjCountV3Decoder(),
-                13 to LocDelDecoder(),
-                14 to ObjRevealDecoder(),
-                15 to LocPrefetchDecoder(),
-                16 to ObjRevealV3Decoder(),
-                17 to LocAddChangeDecoder(),
-                18 to MapProjAnimHalfsqDecoder(),
-                19 to MapAnimV2Decoder(),
-                20 to ObjAddV2Decoder(),
+                13 to ObjAddV2Decoder(),
+                14 to LocPrefetchDecoder(),
+                15 to MapProjAnimV2Decoder(),
+                16 to LocDelDecoder(),
+                17 to MapProjAnimHalfsqDecoder(),
+                18 to LocCustomiseDecoder(),
+                19 to MapProjAnimHalfsqV2Decoder(),
+                20 to LocPrefetchDecoder(),
             )
     }
 }

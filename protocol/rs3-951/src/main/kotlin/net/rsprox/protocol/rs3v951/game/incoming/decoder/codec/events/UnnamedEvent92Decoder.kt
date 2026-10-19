@@ -14,11 +14,11 @@ internal class UnnamedEvent92Decoder(
         session: Session,
     ): UnnamedEvent92 {
         require(buffer.readableBytes() == 14) { "Invalid plugin event length" }
-        val field0 = buffer.g1Alt2()
-        val field4 = buffer.g1Alt3()
-        val field1 = buffer.g4Alt2()
-        val field3 = buffer.g4()
         val field2 = buffer.g4()
+        val field0 = buffer.g1Alt3()
+        val field1 = buffer.g4Alt2()
+        val field3 = buffer.g4Alt3()
+        val field4 = buffer.g1Alt3()
         return UnnamedEvent92(field0, field1, field2, field3, field4)
     }
 }

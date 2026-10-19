@@ -8,36 +8,36 @@ import net.rsprox.protocol.rs3.game.outgoing.model.info.playerinfo.extendedinfo.
 import net.rsprox.protocol.rs3v951.buffer.readNativeString
 import net.rsprox.protocol.rs3v951.game.outgoing.decoder.codec.info.readSpotanimRemovals
 
-/** Revision-950 beta native mask order and getter selectors. */
+/** Revision-951 native mask order and getter selectors. */
 internal object PlayerExtendedInfoDecoder {
     private val order =
         intArrayOf(
-            18,
-            13,
-            25,
-            27,
-            14,
-            21,
-            19,
-            7,
             5,
-            1,
             2,
-            24,
-            23,
-            12,
-            15,
-            26,
-            17,
-            16,
-            10,
-            9,
-            3,
-            0,
-            6,
+            25,
+            20,
             22,
+            10,
+            13,
+            1,
+            26,
+            27,
+            3,
+            23,
+            11,
+            16,
+            8,
+            19,
+            14,
+            15,
+            17,
+            4,
+            0,
+            21,
+            24,
+            6,
         )
-    private val continuationBits = intArrayOf(4, 8, 20)
+    private val continuationBits = intArrayOf(7, 12, 18)
     private val knownBits = (order.toList() + continuationBits.toList()).fold(0) { mask, bit -> mask or (1 shl bit) }
 
     fun decode(
@@ -64,71 +64,71 @@ internal object PlayerExtendedInfoDecoder {
         definitions: Rs3AppearanceDefinitions?,
     ): PlayerExtendedInfo =
         when (bit) {
-            26 -> {
+            27 -> {
                 val removals = buffer.readSpotanimRemovals()
                 val additions =
                     List(buffer.g1()) {
                         PlayerExtendedInfo.Spotanim(
-                            buffer.g1Alt3(),
+                            buffer.g1Alt1(),
                             buffer.g2Alt3(),
-                            buffer.g4(),
-                            buffer.g1Alt2(),
-                            buffer.g3Alt3(),
+                            buffer.g4Alt3(),
+                            buffer.g1(),
+                            buffer.g3(),
                         )
                     }
                 PlayerExtendedInfo.Spotanims(removals, additions)
             }
-            // Note(revision): beta reads/discards these fields. Their bit numbers are not live-950 identities.
-            9 -> PlayerExtendedInfo.UnusedFields(bit, listOf(buffer.g1Alt2(), buffer.g1Alt2(), buffer.g2()))
-            10 -> PlayerExtendedInfo.UnusedFields(bit, listOf(buffer.g2(), buffer.g4Alt3(), buffer.g1()))
-            12 -> PlayerExtendedInfo.UnusedFields(bit, listOf(buffer.g2Alt2(), buffer.g4Alt3(), buffer.g1Alt1()))
-            13 -> PlayerExtendedInfo.UnusedFields(bit, listOf(buffer.g2(), buffer.g4(), buffer.g1()))
-            15 -> PlayerExtendedInfo.UnusedFields(bit, listOf(buffer.g2Alt3(), buffer.g4(), buffer.g1()))
-            16 -> PlayerExtendedInfo.UnusedFields(bit, listOf(buffer.g2(), buffer.g4Alt2(), buffer.g1Alt1()))
-            2 ->
+            // Note(revision): the client reads/discards these fields; their bit numbers are revision-specific.
+            8 -> PlayerExtendedInfo.UnusedFields(bit, listOf(buffer.g1Alt2(), buffer.g1Alt2(), buffer.g2()))
+            24 -> PlayerExtendedInfo.UnusedFields(bit, listOf(buffer.g2Alt3(), buffer.g4Alt1(), buffer.g1Alt3()))
+            3 -> PlayerExtendedInfo.UnusedFields(bit, listOf(buffer.g2Alt2(), buffer.g4Alt3(), buffer.g1Alt3()))
+            10 -> PlayerExtendedInfo.UnusedFields(bit, listOf(buffer.g2Alt3(), buffer.g4Alt1(), buffer.g1Alt3()))
+            14 -> PlayerExtendedInfo.UnusedFields(bit, listOf(buffer.g2Alt1(), buffer.g4Alt3(), buffer.g1Alt2()))
+            17 -> PlayerExtendedInfo.UnusedFields(bit, listOf(buffer.g2Alt2(), buffer.g4Alt2(), buffer.g1Alt1()))
+            19 ->
                 PlayerExtendedInfo.UnusedFields(
                     bit,
-                    listOf(buffer.g1(), buffer.g2(), buffer.g2Alt3(), buffer.g2Alt1()),
+                    listOf(buffer.g1Alt1(), buffer.g2Alt1(), buffer.g2Alt1(), buffer.g2Alt2()),
                 )
-            18 -> PlayerExtendedInfo.Sequence(List(4) { buffer.readNullableSmart() }, buffer.g1Alt1())
-            6 -> PlayerExtendedInfo.ClanMember(buffer.g1Alt2() == 1)
-            3 -> PlayerExtendedInfo.FaceEntity(buffer.g3Alt1())
-            25 -> PlayerVariableMaskDecoder.decode(buffer, full = false)
+            0 -> PlayerExtendedInfo.Sequence(List(4) { buffer.readNullableSmart() }, buffer.g1Alt2())
+            20 -> PlayerExtendedInfo.ClanMember(buffer.g1() == 1)
+            1 -> PlayerExtendedInfo.FaceEntity(buffer.g3Alt2())
+            23 -> PlayerVariableMaskDecoder.decode(buffer, full = false)
             5 -> PlayerHitMaskDecoder.decode(buffer, wide = false)
-            1 -> decodeHeadIcons(buffer)
-            19 -> PlayerExtendedInfo.SayV2(buffer.readNativeString(), buffer.g1() and 1 != 0)
-            14 ->
+            13 -> decodeHeadIcons(buffer)
+            22 -> PlayerExtendedInfo.SayV2(buffer.readNativeString(), buffer.g1() and 1 != 0)
+            6 ->
                 PlayerExtendedInfo.ExactMove(
                     deltaX1 = buffer.g1().toByte().toInt(),
-                    deltaZ1 = buffer.g1Alt3().toByte().toInt(),
+                    deltaZ1 = buffer.g1Alt2().toByte().toInt(),
                     deltaX2 = buffer.g1Alt2().toByte().toInt(),
-                    deltaZ2 = buffer.g1Alt3().toByte().toInt(),
-                    deltaLevel1 = buffer.g1().toByte().toInt(),
-                    deltaLevel2 = buffer.g1Alt2().toByte().toInt(),
-                    delay1 = buffer.g2Alt1(),
-                    delay2 = buffer.g2Alt1(),
-                    angle = buffer.g2Alt2(),
+                    deltaZ2 = buffer.g1Alt1().toByte().toInt(),
+                    deltaLevel1 = buffer.g1Alt1().toByte().toInt(),
+                    deltaLevel2 = buffer.g1Alt3().toByte().toInt(),
+                    delay1 = buffer.g2Alt3(),
+                    delay2 = buffer.g2(),
+                    angle = buffer.g2Alt1(),
                 )
-            22 ->
+            21 ->
                 PlayerExtendedInfo.Tinting(
                     hue = buffer.g1Alt3(),
-                    saturation = buffer.g1Alt1(),
-                    lightness = buffer.g1Alt1(),
-                    weight = buffer.g1Alt3(),
-                    start = buffer.g2Alt1(),
-                    end = buffer.g2Alt3(),
+                    saturation = buffer.g1Alt3(),
+                    lightness = buffer.g1(),
+                    weight = buffer.g1Alt2(),
+                    start = buffer.g2Alt3(),
+                    end = buffer.g2(),
                 )
-            21 -> PlayerVariableMaskDecoder.decode(buffer, full = true)
-            24 -> PlayerHitMaskDecoder.decode(buffer, wide = true)
-            23 -> PlayerAttachmentMaskDecoder.decode(buffer)
-            7 -> PlayerExtendedInfo.PlayerStatus(buffer.g1Alt2())
-            27 -> PlayerExtendedInfo.SayV1(buffer.readNativeString())
-            0 -> PlayerExtendedInfo.FaceAngle(buffer.g2Alt2())
-            17 -> {
+            16 -> PlayerVariableMaskDecoder.decode(buffer, full = true)
+            26 -> PlayerHitMaskDecoder.decode(buffer, wide = true)
+            25 -> PlayerAttachmentMaskDecoder.decode(buffer)
+            11 -> PlayerExtendedInfo.PlayerStatus(buffer.g1Alt2())
+            15 -> PlayerExtendedInfo.SayV1(buffer.readNativeString())
+            4 -> PlayerExtendedInfo.FaceAngle(buffer.g2())
+            2 -> {
                 val length = buffer.g1Alt3()
                 require(length <= buffer.readableBytes()) { "Truncated player appearance: $length bytes required" }
                 val payload = ByteArray(length)
-                for (index in payload.indices.reversed()) payload[index] = buffer.g1().toByte()
+                for (index in payload.indices) payload[index] = buffer.g1().toByte()
                 if (definitions == null) {
                     PlayerExtendedInfo.UndecodedAppearance(payload)
                 } else {
@@ -148,12 +148,12 @@ internal object PlayerExtendedInfoDecoder {
         }
 
     private fun decodeHeadIcons(buffer: JagByteBuf): PlayerExtendedInfo.HeadIcons {
-        val length = buffer.g1Alt1()
+        val length = buffer.g1Alt2()
         require(length <= buffer.readableBytes()) { "Truncated player head-icon envelope" }
         // The native mask skips the embedded decoder entirely for a zero-length envelope.
         if (length == 0) return PlayerExtendedInfo.HeadIcons(update = false, slots = emptyList())
         val bytes = ByteArray(length)
-        for (index in bytes.indices) bytes[index] = buffer.g1Alt1().toByte()
+        for (index in bytes.indices.reversed()) bytes[index] = buffer.g1().toByte()
         val storage = Unpooled.wrappedBuffer(bytes)
         try {
             val inner = storage.toJagByteBuf()

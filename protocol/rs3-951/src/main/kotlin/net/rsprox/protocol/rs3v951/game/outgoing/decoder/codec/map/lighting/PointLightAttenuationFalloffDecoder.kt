@@ -15,7 +15,7 @@ internal class PointLightAttenuationFalloffDecoder : ProxyMessageDecoder<PointLi
         session: Session,
     ): PointLightAttenuationFalloff {
         val falloff = buffer.g2()
-        val id = buffer.g2Alt2().toShort().toInt()
+        val id = buffer.g2Alt3().toShort().toInt()
         return PointLightAttenuationFalloff(falloff, id)
     }
 }

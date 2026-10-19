@@ -15,8 +15,8 @@ internal class VarbitSmallDecoder : ProxyMessageDecoder<VarbitSmall> {
         buffer: JagByteBuf,
         session: Session,
     ): VarbitSmall {
-        val value = buffer.g1Alt2()
-        val id = buffer.g2Alt3()
+        val id = buffer.g2Alt2()
+        val value = buffer.g1Alt3()
         session.updateNpcMorphVarbit(id, value)
         return VarbitSmall(
             id,

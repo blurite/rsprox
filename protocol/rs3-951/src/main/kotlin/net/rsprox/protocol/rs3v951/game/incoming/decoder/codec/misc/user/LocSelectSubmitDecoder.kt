@@ -13,7 +13,7 @@ internal class LocSelectSubmitDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): LocSelectSubmit {
-        val packedCoordinate = buffer.g4()
+        val packedCoordinate = buffer.g4Alt2()
         val cursorStyle = buffer.g1Alt1()
         return LocSelectSubmit(
             cursorStyle,

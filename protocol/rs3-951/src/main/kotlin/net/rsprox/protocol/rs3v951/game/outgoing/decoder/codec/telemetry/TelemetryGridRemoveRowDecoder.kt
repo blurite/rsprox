@@ -15,7 +15,7 @@ internal class TelemetryGridRemoveRowDecoder : ProxyMessageDecoder<TelemetryGrid
         session: Session,
     ): TelemetryGridRemoveRow {
         val row = buffer.g1()
-        val group = buffer.g1Alt2()
+        val group = buffer.g1Alt3()
         return TelemetryGridRemoveRow(
             group,
             row,

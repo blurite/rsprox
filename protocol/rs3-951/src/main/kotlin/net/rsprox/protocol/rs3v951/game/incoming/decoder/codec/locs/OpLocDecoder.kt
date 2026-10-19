@@ -15,10 +15,10 @@ internal class OpLocDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): OpLoc {
-        val run = (buffer.g1Alt3() and 1) != 0
-        val locId = buffer.g4Alt2()
-        val y = buffer.g2Alt3()
-        val x = buffer.g2Alt2()
+        val x = buffer.g2Alt1()
+        val y = buffer.g2Alt1()
+        val run = (buffer.g1() and 1) != 0
+        val locId = buffer.g4()
         return OpLoc(locId, x, y, op, run)
     }
 
