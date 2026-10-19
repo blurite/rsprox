@@ -24,6 +24,7 @@ import io.netty.util.concurrent.Future
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.crypto.cipher.NopStreamCipher
 import net.rsprot.crypto.cipher.StreamCipherPair
+import net.rsprox.cache.api.rs3.Rs3Gamevals
 import net.rsprox.cache.api.rs3.Rs3PacketDefinitions
 import net.rsprox.cache.api.type.ClientScriptDefinitionProvider
 import net.rsprox.protocol.rs3.cache.rs3PacketDefinitions
@@ -339,7 +340,7 @@ public class Rs3RelayServer(
                 sessionMonitor,
             )
         val transcriberSession: Rs3TranscriberSession =
-            TextRs3TranscriberProvider(Rs3GamevalLookup).provide(
+            TextRs3TranscriberProvider(Rs3GamevalLookup(packetDefinitions?.gamevals ?: Rs3Gamevals.EMPTY)).provide(
                 container = monitoredContainer,
                 filters = filterSetStore,
                 settings = settingSetStore,

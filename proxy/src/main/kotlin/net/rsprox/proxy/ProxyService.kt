@@ -65,7 +65,6 @@ import net.rsprox.proxy.rs3.Rs3LaunchTracker
 import net.rsprox.proxy.rs3.Rs3ProtocolRevision
 import net.rsprox.proxy.rs3.Rs3SessionMonitor
 import net.rsprox.proxy.rs3.config.Rs3JavConfig
-import net.rsprox.proxy.rs3.gameval.Rs3GamevalLookup
 import net.rsprox.proxy.rs3.launcher.Rs3OfficialLauncher
 import net.rsprox.proxy.rs3.relay.Rs3Endpoint
 import net.rsprox.proxy.rs3.relay.Rs3RelayPorts
@@ -194,7 +193,6 @@ public class ProxyService(
         this.proxyTargets = loadProxyTargetConfigs(rspsJavConfigUrl)
         val jobs = mutableListOf<Callable<Boolean>>()
         jobs += createJob(progressCallback) { HuffmanProvider.load() }
-        jobs += createJob(progressCallback) { Rs3GamevalLookup.start() }
         jobs += createJob(progressCallback) { this.rsa = loadRsa() }
         jobs +=
             createJob(progressCallback) { this.jagexAccountStore = DefaultJagexAccountStore.load(JAGEX_ACCOUNTS_FILE) }

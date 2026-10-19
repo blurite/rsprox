@@ -7,6 +7,7 @@ import com.formdev.flatlaf.extras.components.FlatToolBar
 import com.formdev.flatlaf.util.ColorFunctions
 import com.github.michaelbull.logging.InlineLogger
 import net.rsprox.cache.api.CacheProvider
+import net.rsprox.cache.api.rs3.Rs3Gamevals
 import net.rsprox.cache.api.type.ClientScriptDefinitionProvider
 import net.rsprox.gui.App
 import net.rsprox.gui.AppIcons
@@ -68,8 +69,9 @@ public class SessionPanel(
     private val launchProgress = if (type.isRs3) Rs3LaunchProgressPanel() else null
 
     private var rs3ClientScripts = ClientScriptDefinitionProvider.EMPTY
-    private val rs3Formatter =
-        Rs3PropertyFormatter.create(App.service.settingsStore, Rs3GamevalLookup) { id ->
+    private var rs3Gamevals = Rs3Gamevals.EMPTY
+    private var rs3Formatter =
+        Rs3PropertyFormatter.create(App.service.settingsStore, Rs3GamevalLookup(rs3Gamevals)) { id ->
             rs3ClientScripts.getClientScriptDefinition(id)
         }
 
@@ -198,6 +200,17 @@ public class SessionPanel(
                                 rs3SessionMonitor.stateListener = { state ->
                                     SwingUtilities.invokeLater {
                                         rs3ClientScripts = state.clientScripts
+                                        val gamevals = state.packetDefinitions?.gamevals ?: Rs3Gamevals.EMPTY
+                                        if (rs3Gamevals !== gamevals) {
+                                            rs3Gamevals = gamevals
+                                            rs3Formatter =
+                                                Rs3PropertyFormatter.create(
+                                                    App.service.settingsStore,
+                                                    Rs3GamevalLookup(gamevals),
+                                                ) { id ->
+                                                    rs3ClientScripts.getClientScriptDefinition(id)
+                                                }
+                                        }
                                         val status = state.status
                                         val name = status?.name.orEmpty()
                                         val identityChanged =

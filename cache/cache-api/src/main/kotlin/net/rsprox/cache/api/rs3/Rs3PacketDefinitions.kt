@@ -2,6 +2,9 @@ package net.rsprox.cache.api.rs3
 
 /** Immutable metadata snapshot. Implementations must not perform I/O on packet-decoder threads. */
 public interface Rs3PacketDefinitions : Rs3AppearanceDefinitions {
+    public val gamevals: Rs3Gamevals
+        get() = Rs3Gamevals.EMPTY
+
     public fun getNpc(id: Int): Rs3NpcDefinition
 
     public fun getVarbit(id: Int): Rs3VarbitDefinition

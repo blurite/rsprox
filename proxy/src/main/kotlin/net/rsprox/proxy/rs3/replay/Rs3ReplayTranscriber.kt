@@ -36,10 +36,11 @@ internal object Rs3ReplayTranscriber {
         val header = recording.header
         val revision = Rs3ProtocolRevision(header.revision).wireRevision
         val definitions = Rs3LiveCacheResolver.loadRecordedPacketDefinitions(revision, header.js5MasterIndex)
+        val gamevals = Rs3GamevalLookup(definitions.gamevals)
         val scripts = RSProxArchiveClientScriptIndex.forRuneScape(revision, header.js5MasterIndex).also { it.preload() }
         val monitor =
             ReplayTranscriber.TranscriptMonitor(
-                Rs3PropertyFormatter.create(settings, Rs3GamevalLookup, scripts),
+                Rs3PropertyFormatter.create(settings, gamevals, scripts),
             )
         var tick = 0
         val consumer =
@@ -55,7 +56,7 @@ internal object Rs3ReplayTranscriber {
                 override fun close() = Unit
             }
         val transcriber =
-            TextRs3TranscriberProvider(Rs3GamevalLookup)
+            TextRs3TranscriberProvider(gamevals)
                 .provide(TextMessageConsumerContainer(listOf(consumer)), filters, settings, scripts, isLobby = false)
         transcriber.sessionState.localPlayerIndex = header.localPlayerIndex
 
