@@ -115,9 +115,7 @@ public class Rs3RelayServer(
         RSAKeyParameters(false, BigInteger(realServerModulusHex, 16), Rsa.PUBLIC_EXPONENT)
 
     init {
-        require(revision == Rs3ProtocolRevision.LIVE_950 || revision == Rs3ProtocolRevision.BETA_950_1) {
-            "Unsupported RS3 relay protocol revision key: $revision"
-        }
+        Rs3ProtocolRevision.supported(revision)
     }
 
     private val bossGroup = NioEventLoopGroup(1)

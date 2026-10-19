@@ -82,7 +82,7 @@ public class Rs3ReplayClient private constructor(
                     NativePatchCriteria
                         .Builder(NativeClientType.RS3_WIN)
                         .rsaModulus(key.modulus.toString(16))
-                        .rs3LoginPorts(ports.primary, ports.alternate, recording.header.revision != 950)
+                        .rs3LoginPorts(ports.primary, ports.alternate, recording.header.revision)
                         .rs3WindowTitle()
                         .build()
                 check(

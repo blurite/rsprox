@@ -32,7 +32,7 @@ internal object RSProxArchiveRs3ClientDownloader {
         beta: Boolean,
         onProgress: (Rs3LaunchProgress) -> Unit,
     ): Path {
-        require(config.getServerVersion() == 950) { "RS3 patching is currently verified for revision 950 only" }
+        Rs3ProtocolRevision.supported(Rs3ProtocolRevision.of(config.getServerVersion(), if (beta) 1 else 0).value)
         val crc = checkNotNull(config.getDownloadCrc(0)) { "Missing RS3 client CRC" } and 0xffffffffL
         val name = checkNotNull(config.getDownloadName(0)) { "Missing RS3 client filename" }
         val signature =
@@ -91,7 +91,7 @@ internal object RSProxArchiveRs3ClientDownloader {
         return ArchivedReplayClient(client(entry, onProgress), configuration)
     }
 
-    // Note(revision): These live builds are verified with the 950 protocol/patches. A matching
+    // Note(revision): These live builds are verified with their revision's protocol/patches. A matching
     // revision alone does not prove compatibility. Beta obfuscation identities share their capture guard.
     internal fun supportsReplay(
         revision: Rs3ProtocolRevision,
@@ -106,6 +106,12 @@ internal object RSProxArchiveRs3ClientDownloader {
                     else -> false
                 }
             Rs3ProtocolRevision.BETA_950_1 -> Rs3BetaClientBuild.supports(hash, binaryType)
+            Rs3ProtocolRevision.LIVE_951 ->
+                when (binaryType) {
+                    2 -> hash == "f01543b9f7af2a8f4f978abdb2587864ecedb039ab8c406759249be1883d957a"
+                    10 -> hash == "e8f49ff0c394b76c939a3b1b1edfcb7bad5139dfee59287a0a28cabdae673538"
+                    else -> false
+                }
             else -> false
         }
 

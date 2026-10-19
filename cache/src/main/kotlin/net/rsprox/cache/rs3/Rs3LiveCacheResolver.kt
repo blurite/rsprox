@@ -35,7 +35,7 @@ public class Rs3LiveCacheResolver(
         private set
 
     public fun loadPacketDefinitions(onProgress: (String, Int, Int) -> Unit = { _, _, _ -> }): Rs3PacketDefinitions {
-        require(info.revision == 950) { "RS3 definition decoding is currently verified for revision 950 only" }
+        require(info.revision in 950..951) { "Unsupported RS3 cache revision: ${info.revision}" }
         Rs3Js5Connection(info).use { connection ->
             onProgress("Loading cache indexes", 0, 0)
             val master = unpack(connection.get(255, 255))
@@ -82,7 +82,7 @@ public class Rs3LiveCacheResolver(
             masterIndex: ByteArray,
             directory: Path = CACHES_DIRECTORY.resolve("rs3-live"),
         ): Rs3PacketDefinitions {
-            require(revision == 950) { "Unsupported recorded RS3 revision: $revision" }
+            require(revision in 950..951) { "Unsupported recorded RS3 revision: $revision" }
             return loadSnapshot(masterIndex) { archive, group, version, crc ->
                 readGroup(directory, archive, group, version, crc) {
                     logger.debug { "Downloading recorded RS3 cache group $archive:$group (version $version) from OpenRS2" }
