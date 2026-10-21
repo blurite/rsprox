@@ -24,6 +24,7 @@ include(
     "shared",
     "launcher",
     "runelite",
+    "mcp",
 )
 
 includeSubprojects(":protocol")
