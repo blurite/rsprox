@@ -7,6 +7,8 @@ import net.rsprox.cache.util.downloadOpenRs2Group
 import org.openrs2.buffer.use
 import org.openrs2.cache.Js5Compression
 import org.openrs2.cache.Js5Index
+import java.net.SocketException
+import java.net.SocketTimeoutException
 import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.nio.file.Path
@@ -14,9 +16,11 @@ import java.nio.file.StandardCopyOption
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Semaphore
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 import java.util.zip.CRC32
 
 /** Exact recorded groups, fetched lazily. No complete-cache download or live-cache fallback. */
@@ -42,13 +46,16 @@ public class Rs3ReplayGroupStore(
     private val indexes = ConcurrentHashMap<Int, Js5Index>()
     private val pending = ConcurrentHashMap<Request, CompletableFuture<ByteArray>>()
     private val closed = AtomicBoolean()
+    private val downloadedGroups = AtomicLong()
+    public val downloadedGroupCount: Long get() = downloadedGroups.get()
+    private val downloadMemory = Semaphore(64 * 1024 * 1024)
     private val workers =
         ThreadPoolExecutor(
-            4,
-            4,
+            MAX_CONCURRENT_DOWNLOADS,
+            MAX_CONCURRENT_DOWNLOADS,
             0,
             TimeUnit.MILLISECONDS,
-            ArrayBlockingQueue(256),
+            ArrayBlockingQueue(1024),
             { task -> Thread(task, "rs3-replay-cache").apply { isDaemon = true } },
             ThreadPoolExecutor.AbortPolicy(),
         )
@@ -67,6 +74,20 @@ public class Rs3ReplayGroupStore(
             }
     }
 
+    /** Conservative container bound for the socket's outstanding-response budget. Never loads an index. */
+    public fun maximumGroupSize(
+        archive: Int,
+        group: Int,
+    ): Int {
+        val index = indexes[archive] ?: return MAX_CONTAINER_SIZE
+        val metadata = index[group] ?: return MAX_CONTAINER_SIZE
+        return if (index.hasLengths && metadata.length >= 0) {
+            (metadata.length.toLong() + 9).coerceAtMost(MAX_CONTAINER_SIZE.toLong()).toInt()
+        } else {
+            MAX_CONTAINER_SIZE
+        }
+    }
+
     /** Returns a JS5 container, without the disk-store version trailer. Never blocks the caller. */
     public fun get(
         archive: Int,
@@ -79,6 +100,7 @@ public class Rs3ReplayGroupStore(
         pending.putIfAbsent(request, future)?.let { return it.thenApply(ByteArray::copyOf) }
         try {
             workers.execute {
+                var reserved = 0
                 try {
                     val bytes =
                         if (archive == 255 && group == 255) {
@@ -98,12 +120,18 @@ public class Rs3ReplayGroupStore(
                                     val metadata = index[group] ?: error("Unknown recorded group $archive:$group")
                                     Entry(metadata.version, metadata.checksum)
                                 }
-                            readGroup(archive, group, entry)
+                            val limit = maximumGroupSize(archive, group)
+                            downloadMemory.acquire(limit)
+                            reserved = limit
+                            readGroup(archive, group, entry).also {
+                                require(it.size <= limit) { "Recorded group exceeds index length: $archive:$group" }
+                            }
                         }
                     future.complete(bytes)
                 } catch (error: Exception) {
                     future.completeExceptionally(error)
                 } finally {
+                    if (reserved != 0) downloadMemory.release(reserved)
                     pending.remove(request, future)
                 }
             }
@@ -137,7 +165,7 @@ public class Rs3ReplayGroupStore(
             val bytes = Files.readAllBytes(path)
             if (valid(bytes, entry)) return bytes
         }
-        val bytes = download(archive, group, entry.version, entry.checksum)
+        val bytes = downloadGroup(archive, group, entry)
         require(valid(bytes, entry)) { "Invalid recorded RS3 group $archive:$group (version ${entry.version})" }
         Files.createDirectories(path.parent)
         val temporary = Files.createTempFile(path.parent, "replay-", ".tmp")
@@ -147,7 +175,26 @@ public class Rs3ReplayGroupStore(
         } finally {
             Files.deleteIfExists(temporary)
         }
+        downloadedGroups.incrementAndGet()
         return bytes
+    }
+
+    private fun downloadGroup(
+        archive: Int,
+        group: Int,
+        entry: Entry,
+    ): ByteArray {
+        for (attempt in 0..2) {
+            check(!closed.get()) { "Replay cache is closed" }
+            try {
+                return download(archive, group, entry.version, entry.checksum)
+            } catch (error: Exception) {
+                // Retry transport failures only, never missing groups, bad metadata or CRC failures.
+                if (attempt == 2 || (error !is SocketTimeoutException && error !is SocketException)) throw error
+                Thread.sleep(250L * (attempt + 1))
+            }
+        }
+        error("Unreachable")
     }
 
     private fun valid(
@@ -174,7 +221,9 @@ public class Rs3ReplayGroupStore(
     private fun failed(error: Exception): CompletableFuture<ByteArray> =
         CompletableFuture<ByteArray>().also { it.completeExceptionally(error) }
 
-    private companion object {
-        const val MAX_CONTAINER_SIZE = 32 * 1024 * 1024 + 9
+    public companion object {
+        public const val MAX_CONCURRENT_REQUESTS: Int = 200
+        private const val MAX_CONCURRENT_DOWNLOADS = 64
+        private const val MAX_CONTAINER_SIZE = 32 * 1024 * 1024 + 9
     }
 }

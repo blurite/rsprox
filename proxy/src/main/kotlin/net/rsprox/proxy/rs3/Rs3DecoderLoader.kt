@@ -14,6 +14,10 @@ import net.rsprox.protocol.rs3v951.ClientPacketDecoderServiceRs3V951
 import net.rsprox.protocol.rs3v951.GameClientProtProviderRs3V951
 import net.rsprox.protocol.rs3v951.GameServerProtProviderRs3V951
 import net.rsprox.protocol.rs3v951.ServerPacketDecoderServiceRs3V951
+import net.rsprox.protocol.rs3v951beta.ClientPacketDecoderServiceRs3V951Beta
+import net.rsprox.protocol.rs3v951beta.GameClientProtProviderRs3V951Beta
+import net.rsprox.protocol.rs3v951beta.GameServerProtProviderRs3V951Beta
+import net.rsprox.protocol.rs3v951beta.ServerPacketDecoderServiceRs3V951Beta
 import net.rsprox.proxy.rs3.protocol.Rs3ProtDecoder
 import net.rsprox.protocol.rs3v950.game.incoming.decoder.prot.GameClientProt as GameClientProt950
 import net.rsprox.protocol.rs3v950.game.outgoing.decoder.prot.GameServerProt as GameServerProt950
@@ -21,6 +25,8 @@ import net.rsprox.protocol.rs3v950beta.game.incoming.decoder.prot.GameClientProt
 import net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.prot.GameServerProt as GameServerProt950Beta
 import net.rsprox.protocol.rs3v951.game.incoming.decoder.prot.GameClientProt as GameClientProt951
 import net.rsprox.protocol.rs3v951.game.outgoing.decoder.prot.GameServerProt as GameServerProt951
+import net.rsprox.protocol.rs3v951beta.game.incoming.decoder.prot.GameClientProt as GameClientProt951Beta
+import net.rsprox.protocol.rs3v951beta.game.outgoing.decoder.prot.GameServerProt as GameServerProt951Beta
 
 public object Rs3DecoderLoader {
     public fun load(
@@ -74,6 +80,22 @@ public object Rs3DecoderLoader {
                         },
                     serverProtTable =
                         GameServerProt951.entries.filter { it != GameServerProt951.RECONNECT }.associate {
+                            it.opcode to Rs3ProtDecoder.ProtEntry(it.size, it.name)
+                        },
+                )
+            Rs3ProtocolRevision.BETA_951_1 ->
+                Rs3RevisionDecoder(
+                    revision = revision,
+                    clientPacketDecoder = ClientPacketDecoderServiceRs3V951Beta(huffmanCodec),
+                    serverPacketDecoder = ServerPacketDecoderServiceRs3V951Beta(huffmanCodec, serverCipher),
+                    gameClientProtProvider = GameClientProtProviderRs3V951Beta,
+                    gameServerProtProvider = GameServerProtProviderRs3V951Beta,
+                    clientProtTable =
+                        GameClientProt951Beta.entries.associate {
+                            it.opcode to Rs3ProtDecoder.ProtEntry(it.size, it.name)
+                        },
+                    serverProtTable =
+                        GameServerProt951Beta.entries.filter { it != GameServerProt951Beta.RECONNECT }.associate {
                             it.opcode to Rs3ProtDecoder.ProtEntry(it.size, it.name)
                         },
                 )

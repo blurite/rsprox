@@ -14,6 +14,7 @@ internal class Rs3ReplayJs5Handler(
         val archive: Int,
         val group: Int,
         val urgent: Boolean,
+        val maximumSize: Int = 0,
     )
 
     private data class Response(
@@ -25,6 +26,7 @@ internal class Rs3ReplayJs5Handler(
     private val pending = HashSet<Pair<Int, Int>>()
     private val ready = ArrayDeque<Response>()
     private var inFlight = 0
+    private var inFlightBytes = 0L
     private var writing = false
     private var key = 0
     private var resumeWrite: (() -> Unit)? = null
@@ -64,9 +66,13 @@ internal class Rs3ReplayJs5Handler(
 
     private fun drain(ctx: ChannelHandlerContext) {
         if (!ctx.channel().isActive || !ctx.channel().isWritable) return
-        while (inFlight < 4) {
-            val request = urgent.pollFirst() ?: break
+        while (inFlight < Rs3ReplayGroupStore.MAX_CONCURRENT_REQUESTS) {
+            val next = urgent.peekFirst() ?: break
+            val maximumSize = store.maximumGroupSize(next.archive, next.group)
+            if (inFlightBytes + maximumSize > MAX_IN_FLIGHT_BYTES) break
+            val request = urgent.removeFirst().copy(maximumSize = maximumSize)
             inFlight++
+            inFlightBytes += maximumSize
             store.get(request.archive, request.group).whenComplete { bytes, error ->
                 ctx.executor().execute {
                     if (!ctx.channel().isActive) return@execute
@@ -125,6 +131,7 @@ internal class Rs3ReplayJs5Handler(
             } else {
                 pending.remove(request.archive to request.group)
                 inFlight--
+                inFlightBytes -= request.maximumSize
                 writing = false
                 drain(ctx)
             }
@@ -152,5 +159,7 @@ internal class Rs3ReplayJs5Handler(
 
     private companion object {
         const val BLOCK_SIZE = 100 * 1024 - 5
+        // Bound downloaded responses as well as request count; large/unknown groups stay conservative.
+        const val MAX_IN_FLIGHT_BYTES = 64L * 1024 * 1024
     }
 }

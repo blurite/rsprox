@@ -14,7 +14,7 @@ internal class Rs3PacketSanitizer(
 ) {
     private val nameBeforeIgnoreNote =
         when (revision) {
-            Rs3ProtocolRevision.LIVE_950 -> false
+            Rs3ProtocolRevision.LIVE_950, Rs3ProtocolRevision.BETA_951_1 -> false
             Rs3ProtocolRevision.BETA_950_1, Rs3ProtocolRevision.LIVE_951 -> true
             else -> error("No RS3 privacy policy for protocol revision key: $revision")
         }
@@ -166,6 +166,7 @@ internal class Rs3PacketSanitizer(
                 if (name == "RESUME_PAUSEBUTTON") {
                     require(payload.size == 6)
                     when (revision) {
+                        Rs3ProtocolRevision.BETA_951_1 -> input.g4().also { input.g2Alt1() }
                         Rs3ProtocolRevision.LIVE_951 -> {
                             input.g2Alt2()
                             input.g4()
@@ -179,6 +180,12 @@ internal class Rs3PacketSanitizer(
                 } else {
                     require(payload.size == 9)
                     when (revision) {
+                        Rs3ProtocolRevision.BETA_951_1 -> {
+                            val combinedId = input.g4Alt2()
+                            input.g2Alt2()
+                            input.g3()
+                            combinedId
+                        }
                         Rs3ProtocolRevision.LIVE_951 -> {
                             input.g3Alt3() // Object id.
                             input.g4().also { input.g2Alt2() } // Component id and slot.

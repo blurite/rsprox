@@ -64,6 +64,7 @@ internal object RSProxArchiveRs3ClientDownloader {
     fun replay(
         revision: Rs3ProtocolRevision,
         binaryType: Int,
+        worldId: Int,
         onProgress: (Rs3LaunchProgress) -> Unit,
     ): ArchivedReplayClient {
         onProgress(Rs3LaunchProgress("Finding archived replay client"))
@@ -75,9 +76,12 @@ internal object RSProxArchiveRs3ClientDownloader {
                         it.binaryType == binaryType &&
                         it.environment == if (revision.obfuscationVersion == 0) "live" else "beta"
                 }.filter { entry ->
-                    entry.files.any { it.slot == 0 && supportsReplay(revision, binaryType, it.file.sha256) }
+                    entry.files.any {
+                        it.slot == 0 && supportsReplay(revision, binaryType, it.file.sha256) &&
+                            (revision.obfuscationVersion == 0 || Rs3BetaClientBuild.supportsReplayWorld(it.file.sha256, worldId))
+                    }
                 }.maxByOrNull { Instant.parse(it.observedAt) }
-                ?: error("No verified archived RS3 client for revision ${revision.value}, binary type $binaryType")
+                ?: error("No verified archived RS3 client for revision ${revision.value}, binary type $binaryType, world $worldId")
         val configuration =
             Rs3JavConfig(Files.readString(artifact(entry.configuration, onProgress), Charsets.ISO_8859_1))
         val executable = entry.files.single { it.slot == 0 }
@@ -105,7 +109,8 @@ internal object RSProxArchiveRs3ClientDownloader {
                     10 -> hash == "f0dc2a07a8850daa110ea1a7417a540d897551f966f52e64baec1e74a8e2d568"
                     else -> false
                 }
-            Rs3ProtocolRevision.BETA_950_1 -> Rs3BetaClientBuild.supports(hash, binaryType)
+            Rs3ProtocolRevision.BETA_950_1, Rs3ProtocolRevision.BETA_951_1 ->
+                Rs3BetaClientBuild.supports(hash, binaryType, revision)
             Rs3ProtocolRevision.LIVE_951 ->
                 when (binaryType) {
                     2 -> hash == "f01543b9f7af2a8f4f978abdb2587864ecedb039ab8c406759249be1883d957a"

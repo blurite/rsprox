@@ -1200,7 +1200,13 @@ public class ProxyService(
             require(operatingSystem == OperatingSystem.WINDOWS) { "RS3 replay currently requires Windows" }
             val recording = session.recording
             val revision = Rs3ProtocolRevision(recording.header.revision)
-            val archived = RSProxArchiveRs3ClientDownloader.replay(revision, if (vulkan) 10 else 2, onProgress)
+            val archived =
+                RSProxArchiveRs3ClientDownloader.replay(
+                    revision,
+                    if (vulkan) 10 else 2,
+                    recording.header.worldId,
+                    onProgress,
+                )
             val config = archived.configuration
             val source = archived.executable
             if (revision.obfuscationVersion != 0) {

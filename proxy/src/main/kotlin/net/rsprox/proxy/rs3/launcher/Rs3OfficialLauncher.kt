@@ -15,6 +15,7 @@ internal class Rs3OfficialLauncher private constructor(
     private val slot: Rs3LauncherSlot,
     private val config: Rs3LauncherConfigServer,
     private val onProgress: (Rs3LaunchProgress) -> Unit,
+    private val initializationProgress: () -> Rs3LaunchProgress?,
 ) : AutoCloseable {
     private val closed = AtomicBoolean()
 
@@ -86,9 +87,21 @@ internal class Rs3OfficialLauncher private constructor(
                 }
             }
             onProgress(Rs3LaunchProgress("Initializing RuneScape client"))
-            val initializationDeadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(300)
+            var initializationDeadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(300)
+            var lastProgress: Rs3LaunchProgress? = null
+            var nextProgressCheck = System.nanoTime()
             while (Rs3ClientWindow.find(child.pid()) == null) {
                 check(!closed.get() && process.isAlive && child.isAlive) { "RuneScape client exited during startup" }
+                if (System.nanoTime() >= nextProgressCheck) {
+                    val progress = initializationProgress()
+                    if (progress != null && progress != lastProgress) {
+                        lastProgress = progress
+                        onProgress(progress)
+                        // A cold replay can need thousands of groups. Time out inactivity, not active downloads.
+                        initializationDeadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(300)
+                    }
+                    nextProgressCheck = System.nanoTime() + TimeUnit.SECONDS.toNanos(1)
+                }
                 check(System.nanoTime() < initializationDeadline) { "RuneScape client initialization timed out" }
                 Thread.sleep(50)
             }
@@ -127,6 +140,7 @@ internal class Rs3OfficialLauncher private constructor(
             host: String,
             singleInstance: Boolean = false,
             onProgress: (Rs3LaunchProgress) -> Unit,
+            initializationProgress: () -> Rs3LaunchProgress? = { null },
         ): Rs3OfficialLauncher {
             val source = Rs3LauncherDistribution.load(directory, onProgress)
             val cacheRoot = Path.of(Shell32Util.getFolderPath(ShlObj.CSIDL_COMMON_APPDATA), "Jagex")
@@ -141,7 +155,7 @@ internal class Rs3OfficialLauncher private constructor(
                 val config = Rs3LauncherConfigServer(host)
                 server = config
                 config.start(patch.configuration(javConfig, bytes, config.codebase))
-                return Rs3OfficialLauncher(slot, config, onProgress)
+                return Rs3OfficialLauncher(slot, config, onProgress, initializationProgress)
             } catch (e: Throwable) {
                 try {
                     server?.close()
