@@ -7,8 +7,8 @@ internal enum class GameZoneProt(
     override val opcode: Int,
     override val size: Int,
 ) : ClientProt {
-    OBJ_REVEAL(3, 8),
-    OBJ_REVEAL_V3(4, Prot.VAR_BYTE),
-    SOUND_AREA_V2(8, 11),
-    OBJ_ADD_V2(13, 6),
+    OBJ_REVEAL(0, 8),
+    SOUND_AREA_V2(3, 11),
+    OBJ_ADD_V2(4, 6),
+    OBJ_REVEAL_V3(9, Prot.VAR_BYTE),
 }

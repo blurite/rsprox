@@ -13,11 +13,11 @@ internal class OpPlayerTDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): OpPlayerT {
+        val selectedCombinedId = buffer.g4Alt1()
+        val selectedSub = buffer.g2Alt1()
         val controlKey = buffer.g1Alt2()
-        val selectedSub = buffer.g2Alt2()
-        val index = buffer.g2Alt3()
-        val selectedCombinedId = buffer.g4Alt2()
-        val selectedObj = buffer.g3()
+        val selectedObj = buffer.g3Alt3()
+        val index = buffer.g2()
         return OpPlayerT(
             controlKey,
             index,

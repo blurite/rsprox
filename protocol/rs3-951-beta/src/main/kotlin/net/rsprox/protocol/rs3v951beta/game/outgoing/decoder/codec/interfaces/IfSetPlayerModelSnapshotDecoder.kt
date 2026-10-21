@@ -14,8 +14,8 @@ internal class IfSetPlayerModelSnapshotDecoder : ProxyMessageDecoder<IfSetPlayer
         buffer: JagByteBuf,
         session: Session,
     ): IfSetPlayerModelSnapshot {
+        val snapshotSlot = buffer.g1Alt3()
         val componentHash = buffer.g4Alt2().toLong() and 0xFFFF_FFFFL
-        val snapshotSlot = buffer.g1Alt2()
         return IfSetPlayerModelSnapshot(
             componentHash,
             snapshotSlot,

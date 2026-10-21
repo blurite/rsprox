@@ -14,8 +14,8 @@ internal class TelemetryGridRemoveColumnDecoder : ProxyMessageDecoder<TelemetryG
         buffer: JagByteBuf,
         session: Session,
     ): TelemetryGridRemoveColumn {
-        val column = buffer.g1Alt3()
-        val group = buffer.g1()
+        val column = buffer.g1()
+        val group = buffer.g1Alt1()
         return TelemetryGridRemoveColumn(
             column,
             group,

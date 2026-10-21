@@ -15,23 +15,23 @@ internal class ProjAnimSpecificV2Decoder : ProxyMessageDecoder<ProjAnimSpecificV
         buffer: JagByteBuf,
         session: Session,
     ): ProjAnimSpecificV2 {
-        val startHeight = buffer.g2s()
-        val deltaX = buffer.g1Alt3().toByte().toInt()
-        val deltaZ = buffer.g1Alt3().toByte().toInt()
-        val level = buffer.g1Alt1()
-        val id = buffer.g2Alt1()
-        val endTime = buffer.g2Alt1()
-        val endOffset = buffer.g3Alt3()
-        val source = buffer.g3()
-        val flags = buffer.g1()
-        val endHeight = buffer.g2s()
-        val startOffset = buffer.g3Alt3()
-        val progress = buffer.g2Alt2()
-        val angle = buffer.g1().let { if (it == 255) -1 else it }
-        val target = buffer.g3Alt2()
-        val startTime = buffer.g2Alt3()
-        val startX = buffer.g2Alt2()
-        val startZ = buffer.g2Alt3()
+        val startHeight = buffer.g2sAlt1()
+        val id = buffer.g2()
+        val level = buffer.g1()
+        val startZ = buffer.g2()
+        val angle = buffer.g1Alt1().let { if (it == 255) -1 else it }
+        val startX = buffer.g2()
+        val endOffset = buffer.g3Alt2()
+        val startTime = buffer.g2Alt1()
+        val deltaX = buffer.g1Alt1().toByte().toInt()
+        val startOffset = buffer.g3Alt2()
+        val source = buffer.g3Alt1()
+        val flags = buffer.g1Alt2()
+        val deltaZ = buffer.g1Alt2().toByte().toInt()
+        val endHeight = buffer.g2sAlt1()
+        val endTime = buffer.g2Alt3()
+        val target = buffer.g3Alt3()
+        val progress = buffer.g2Alt3()
         return ProjAnimSpecificV2(
             endTime = endTime,
             deltaZ = deltaZ,

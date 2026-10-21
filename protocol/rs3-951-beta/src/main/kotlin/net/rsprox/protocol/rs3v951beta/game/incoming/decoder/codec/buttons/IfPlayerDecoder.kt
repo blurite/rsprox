@@ -14,11 +14,11 @@ internal class IfPlayerDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): IfPlayer {
-        val operation = buffer.g1Alt1()
-        val combinedId = buffer.g4Alt1()
-        val crmType = buffer.g1Alt1()
+        val sub = buffer.g2Alt3()
         val crmName = buffer.readNativeString()
-        val sub = buffer.g2Alt1()
+        val crmType = buffer.g1Alt3()
+        val combinedId = buffer.g4Alt2()
+        val operation = buffer.g1Alt1()
         return IfPlayer(
             crmName,
             combinedId,

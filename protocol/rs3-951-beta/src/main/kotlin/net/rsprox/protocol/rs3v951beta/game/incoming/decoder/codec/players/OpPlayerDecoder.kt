@@ -15,8 +15,8 @@ internal class OpPlayerDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): OpPlayer {
-        val index = buffer.g2Alt1()
-        val run = (buffer.g1() and 1) != 0
+        val index = buffer.g2Alt2()
+        val run = (buffer.g1Alt1() and 1) != 0
         return OpPlayer(
             index,
             op,

@@ -13,11 +13,11 @@ internal class ApCoordTDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): ApCoordT {
-        val selectedObj = buffer.g3Alt3()
-        val z = buffer.g2Alt1()
+        val selectedSub = buffer.g2Alt1()
         val x = buffer.g2Alt2()
         val selectedCombinedId = buffer.g4()
-        val selectedSub = buffer.g2Alt3()
+        val z = buffer.g2Alt1()
+        val selectedObj = buffer.g3Alt2()
         return ApCoordT(
             selectedSub,
             selectedObj,

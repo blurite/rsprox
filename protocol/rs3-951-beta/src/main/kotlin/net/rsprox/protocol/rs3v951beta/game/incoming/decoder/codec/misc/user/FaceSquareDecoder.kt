@@ -13,8 +13,8 @@ internal class FaceSquareDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): FaceSquare {
-        val z = buffer.g2Alt1()
-        val x = buffer.g2()
+        val x = buffer.g2Alt1()
+        val z = buffer.g2Alt3()
         return FaceSquare(
             x,
             z,

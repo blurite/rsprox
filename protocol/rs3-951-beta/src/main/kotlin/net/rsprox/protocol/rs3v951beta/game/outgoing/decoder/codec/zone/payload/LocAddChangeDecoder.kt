@@ -14,9 +14,9 @@ internal class LocAddChangeDecoder : ProxyMessageDecoder<LocAddChange> {
         buffer: JagByteBuf,
         session: Session,
     ): LocAddChange {
-        val packedCoord = buffer.g1()
-        val shapeRotationByte = buffer.g1()
-        val locId = buffer.g4Alt1()
+        val shapeRotationByte = buffer.g1Alt3()
+        val packedCoord = buffer.g1Alt1()
+        val locId = buffer.g4Alt2()
         val zInZone = packedCoord and 0x7
         val xInZone = (packedCoord ushr 4) and 0x7
         val shape = (shapeRotationByte ushr 2) and 0x1F

@@ -15,7 +15,7 @@ internal class LocSelectAddDecoder : ProxyMessageDecoder<LocSelectAdd> {
         session: Session,
     ): LocSelectAdd {
         val id = buffer.g4Alt3()
-        val shapeRotation = buffer.g1()
+        val shapeRotation = buffer.g1Alt2()
         val coordinate = buffer.g2Alt3()
         val transform =
             if (shapeRotation and 0x80 != 0) {

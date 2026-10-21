@@ -14,7 +14,7 @@ internal class IfSetColourDecoder : ProxyMessageDecoder<IfSetColour> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetColour {
-        val packedColor = buffer.g2Alt1()
+        val packedColor = buffer.g2()
         val componentHash = buffer.g4Alt3().toLong() and 0xFFFF_FFFFL
         return IfSetColour(
             componentHash,

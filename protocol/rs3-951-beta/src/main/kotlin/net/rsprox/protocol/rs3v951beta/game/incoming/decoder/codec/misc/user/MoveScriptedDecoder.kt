@@ -14,7 +14,7 @@ internal class MoveScriptedDecoder(
         session: Session,
     ): MoveScripted {
         val x = buffer.g2Alt3()
-        val z = buffer.g2()
+        val z = buffer.g2Alt3()
         val mode = buffer.g1Alt3()
         return MoveScripted(
             z,

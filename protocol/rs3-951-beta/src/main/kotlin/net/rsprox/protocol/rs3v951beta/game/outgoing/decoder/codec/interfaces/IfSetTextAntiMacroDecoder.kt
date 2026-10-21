@@ -14,8 +14,8 @@ internal class IfSetTextAntiMacroDecoder : ProxyMessageDecoder<IfSetTextAntiMacr
         buffer: JagByteBuf,
         session: Session,
     ): IfSetTextAntiMacro {
+        val componentHash = buffer.g4Alt2().toLong() and 0xFFFF_FFFFL
         val enabled = buffer.g1Alt3() == 1
-        val componentHash = buffer.g4().toLong() and 0xFFFF_FFFFL
         return IfSetTextAntiMacro(
             componentHash,
             enabled,

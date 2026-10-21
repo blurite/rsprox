@@ -14,10 +14,10 @@ internal class SetPlayerOpDecoder : ProxyMessageDecoder<SetPlayerOp> {
         buffer: JagByteBuf,
         session: Session,
     ): SetPlayerOp {
-        val priority = buffer.g1() == 0x80
-        val slot = buffer.g1() - 1
-        val text = buffer.gjstr()
         val rawCursor = buffer.g2Alt2()
+        val priority = buffer.g1Alt1() == 0
+        val text = buffer.gjstr()
+        val slot = buffer.g1Alt1() - 1
         val cursor = if (rawCursor == 0xFFFF) -1 else rawCursor
         return SetPlayerOp(
             slot,

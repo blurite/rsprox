@@ -14,10 +14,10 @@ internal class ObjRevealDecoder : ProxyMessageDecoder<ObjReveal> {
         buffer: JagByteBuf,
         session: Session,
     ): ObjReveal {
-        val excludedPlayerIndex = buffer.g2()
+        val count = buffer.g2Alt1()
+        val excludedPlayerIndex = buffer.g2Alt2()
         val objId = buffer.g3Alt1()
-        val packedCoord = buffer.g1Alt2()
-        val count = buffer.g2Alt3()
+        val packedCoord = buffer.g1Alt3()
         val xInZone = (packedCoord ushr 4) and 0x7
         val zInZone = packedCoord and 0x7
         return ObjReveal(true, objId, count, excludedPlayerIndex, xInZone, zInZone)

@@ -15,6 +15,10 @@ internal class StandaloneObjAddV2Decoder : ProxyMessageDecoder<ObjAdd> {
         buffer: JagByteBuf,
         session: Session,
     ): ObjAdd {
-        return payload.decode(buffer, session)
+        val message = payload.decode(buffer, session)
+        // The standalone descriptor includes one byte which the native callback never reads.
+        // Enclosed-zone OBJ_ADD_V2 has no such byte.
+        buffer.g1()
+        return message
     }
 }

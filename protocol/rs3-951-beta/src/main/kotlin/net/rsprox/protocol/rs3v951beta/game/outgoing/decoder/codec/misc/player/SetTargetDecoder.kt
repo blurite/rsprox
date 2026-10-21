@@ -14,7 +14,7 @@ internal class SetTargetDecoder : ProxyMessageDecoder<SetTarget> {
         buffer: JagByteBuf,
         session: Session,
     ): SetTarget {
-        val target = buffer.g3()
+        val target = buffer.g3Alt2()
         return SetTarget(
             target,
         )

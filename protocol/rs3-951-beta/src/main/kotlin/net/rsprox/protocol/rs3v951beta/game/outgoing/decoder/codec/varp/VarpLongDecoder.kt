@@ -15,8 +15,8 @@ internal class VarpLongDecoder : ProxyMessageDecoder<VarpLong> {
         session: Session,
     ): VarpLong {
         val id = buffer.g2Alt3()
-        val high = buffer.g4().toLong() and 0xFFFF_FFFFL
-        val low = buffer.g4().toLong() and 0xFFFF_FFFFL
+        val high = buffer.g4Alt2().toLong() and 0xFFFF_FFFFL
+        val low = buffer.g4Alt2().toLong() and 0xFFFF_FFFFL
         val value = (high shl 32) or low
         return VarpLong(
             id,

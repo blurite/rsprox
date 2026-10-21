@@ -14,8 +14,8 @@ internal class PingStatisticsDecoder(
         session: Session,
     ): PingStatistics {
         val reserved = buffer.g1()
+        val latency = buffer.g2Alt1()
         val fps = buffer.g1Alt2()
-        val latency = buffer.g2Alt3()
         return PingStatistics(
             latency,
             reserved,

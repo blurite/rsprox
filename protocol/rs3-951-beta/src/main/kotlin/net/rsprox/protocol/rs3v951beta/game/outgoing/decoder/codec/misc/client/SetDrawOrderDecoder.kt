@@ -14,7 +14,7 @@ internal class SetDrawOrderDecoder : ProxyMessageDecoder<SetDrawOrder> {
         buffer: JagByteBuf,
         session: Session,
     ): SetDrawOrder {
-        val order = buffer.g1Alt3()
+        val order = buffer.g1Alt2()
         return SetDrawOrder(
             order,
         )

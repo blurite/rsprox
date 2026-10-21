@@ -19,11 +19,11 @@ internal class RebuildNormalDecoder : ProxyMessageDecoder<RebuildNormal> {
     ): RebuildNormal {
         val init = session.readPlayerInfoInit(buffer)
         val unused0 = buffer.g1()
-        val format = buffer.g1Alt2()
-        val npcCoordinateBits = buffer.g1Alt3()
-        val baseChunkZ = buffer.g2Alt3()
-        val baseChunkX = buffer.g2Alt1()
         val unused1 = buffer.g1()
+        val format = buffer.g1Alt3()
+        val baseChunkZ = buffer.g2()
+        val npcCoordinateBits = buffer.g1Alt3()
+        val baseChunkX = buffer.g2Alt2()
         val message =
             RebuildNormal(
                 baseChunkZ = baseChunkZ,

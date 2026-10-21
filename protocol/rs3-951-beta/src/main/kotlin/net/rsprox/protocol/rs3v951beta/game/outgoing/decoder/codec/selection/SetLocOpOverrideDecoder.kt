@@ -15,10 +15,10 @@ internal class SetLocOpOverrideDecoder : ProxyMessageDecoder<SetLocOpOverride> {
         session: Session,
     ): SetLocOpOverride {
         val overrideEnd = buffer.g4Alt2()
+        val operation = buffer.g1Alt2()
         val label = buffer.gjstr()
-        val overrideStart = buffer.g4()
-        val operation = buffer.g1Alt3()
         val rawCursor = buffer.g2Alt1()
+        val overrideStart = buffer.g4()
         val cursor = if (rawCursor == 65535) -1 else rawCursor
         return SetLocOpOverride(overrideStart, operation, label, cursor, overrideEnd)
     }

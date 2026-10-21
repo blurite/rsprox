@@ -13,9 +13,9 @@ internal class EventNativeMouseClickDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): EventNativeMouseClick {
+        val code = buffer.g1Alt3()
         val packedPosition = buffer.g4Alt3()
-        val lastTransmittedMouseClick = buffer.g2Alt3()
-        val code = buffer.g1()
+        val lastTransmittedMouseClick = buffer.g2Alt1()
         val x = packedPosition and 0xFFFF
         val y = packedPosition ushr 16
         return EventNativeMouseClick(

@@ -16,7 +16,7 @@ internal class UpdateInvStopTransmitDecoder : ProxyMessageDecoder<UpdateInvStopT
     ): UpdateInvStopTransmit {
         // Only bit zero is consumed natively; all byte variants agree on that bit.
         val flags = buffer.g1()
-        val inventoryId = buffer.g2()
+        val inventoryId = buffer.g2Alt3()
         return UpdateInvStopTransmit(
             inventoryId,
             flags,

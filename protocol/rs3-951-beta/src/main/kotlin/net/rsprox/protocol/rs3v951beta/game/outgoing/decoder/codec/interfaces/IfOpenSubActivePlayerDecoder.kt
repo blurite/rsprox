@@ -15,12 +15,13 @@ internal class IfOpenSubActivePlayerDecoder : ProxyMessageDecoder<IfOpenSubActiv
         session: Session,
     ): IfOpenSubActivePlayer {
         // The native handler skips these fixed spans; preserve bytes without inventing XTEA transforms.
+        val playerIndex = buffer.g2Alt3()
         val reserved0 = List(4) { buffer.g1() }
-        val childId = buffer.g2()
-        val reserved1 = List(12) { buffer.g1() }
-        val playerIndex = buffer.g2Alt2()
-        val layer = buffer.g1Alt3()
-        val componentHash = buffer.g4().toLong() and 0xFFFF_FFFFL
+        val layer = buffer.g1()
+        val reserved1 = List(8) { buffer.g1() }
+        val componentHash = buffer.g4Alt1().toLong() and 0xFFFF_FFFFL
+        val reserved2 = List(4) { buffer.g1() }
+        val childId = buffer.g2Alt2()
         return IfOpenSubActivePlayer(
             legacyWord0 = null,
             legacyWord1 = null,
@@ -30,7 +31,7 @@ internal class IfOpenSubActivePlayerDecoder : ProxyMessageDecoder<IfOpenSubActiv
             legacyWord3 = null,
             childId = childId,
             layer = layer,
-            reserved = reserved0 + reserved1,
+            reserved = reserved0 + reserved1 + reserved2,
         )
     }
 }

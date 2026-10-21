@@ -13,13 +13,13 @@ internal class OpObjTDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): OpObjT {
-        val selectedObj = buffer.g3Alt1()
-        val z = buffer.g2Alt1()
+        val id = buffer.g3Alt3()
         val x = buffer.g2Alt3()
-        val id = buffer.g3Alt2()
-        val flags = buffer.g1Alt2()
+        val selectedObj = buffer.g3Alt3()
+        val flags = buffer.g1Alt1()
+        val selectedCombinedId = buffer.g4Alt3()
         val selectedSub = buffer.g2Alt2()
-        val selectedCombinedId = buffer.g4()
+        val z = buffer.g2Alt3()
         return OpObjT(
             x,
             flags,

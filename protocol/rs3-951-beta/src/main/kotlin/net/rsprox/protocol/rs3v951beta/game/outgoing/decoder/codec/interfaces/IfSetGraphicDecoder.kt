@@ -14,8 +14,8 @@ internal class IfSetGraphicDecoder : ProxyMessageDecoder<IfSetGraphic> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetGraphic {
+        val componentHash = buffer.g4Alt3().toLong() and 0xFFFF_FFFFL
         val graphicId = buffer.g4Alt1()
-        val componentHash = buffer.g4().toLong() and 0xFFFF_FFFFL
         return IfSetGraphic(
             componentHash,
             graphicId,

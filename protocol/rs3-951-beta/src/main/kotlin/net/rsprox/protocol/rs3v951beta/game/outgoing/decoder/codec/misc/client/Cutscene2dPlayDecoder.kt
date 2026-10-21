@@ -14,7 +14,7 @@ internal class Cutscene2dPlayDecoder : ProxyMessageDecoder<Cutscene2dPlay> {
         buffer: JagByteBuf,
         session: Session,
     ): Cutscene2dPlay {
-        val id = buffer.g2Alt3()
+        val id = buffer.g2Alt2()
         return Cutscene2dPlay(id)
     }
 }

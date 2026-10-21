@@ -13,9 +13,9 @@ internal class SendPingReplyDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): SendPingReply {
-        val fps = buffer.g1Alt3()
-        val challengeB = buffer.g4Alt3()
-        val challengeA = buffer.g4Alt1()
+        val challengeB = buffer.g4()
+        val fps = buffer.g1()
+        val challengeA = buffer.g4()
         return SendPingReply(
             fps,
             challengeA,

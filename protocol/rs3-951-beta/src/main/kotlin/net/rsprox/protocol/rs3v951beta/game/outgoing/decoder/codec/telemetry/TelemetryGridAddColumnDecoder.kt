@@ -14,8 +14,8 @@ internal class TelemetryGridAddColumnDecoder : ProxyMessageDecoder<TelemetryGrid
         buffer: JagByteBuf,
         session: Session,
     ): TelemetryGridAddColumn {
-        val id = buffer.g4Alt3()
-        val group = buffer.g1Alt1()
+        val id = buffer.g4()
+        val group = buffer.g1Alt2()
         val index = buffer.g1Alt2()
         return TelemetryGridAddColumn(
             group,

@@ -14,7 +14,7 @@ internal class SetPlayerAttackPriorityDecoder : ProxyMessageDecoder<SetPlayerAtt
         buffer: JagByteBuf,
         session: Session,
     ): SetPlayerAttackPriority {
-        val priority = buffer.g1Alt2()
+        val priority = buffer.g1Alt3()
         return SetPlayerAttackPriority(
             priority,
         )

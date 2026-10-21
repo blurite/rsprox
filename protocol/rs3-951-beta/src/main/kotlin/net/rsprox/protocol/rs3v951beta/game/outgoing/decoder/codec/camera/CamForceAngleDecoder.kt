@@ -14,7 +14,7 @@ internal class CamForceAngleDecoder : ProxyMessageDecoder<CamForceAngle> {
         buffer: JagByteBuf,
         session: Session,
     ): CamForceAngle {
-        val angle0 = buffer.g2Alt3()
+        val angle0 = buffer.g2Alt1()
         val angle1 = buffer.g2()
         return CamForceAngle(
             angle0,

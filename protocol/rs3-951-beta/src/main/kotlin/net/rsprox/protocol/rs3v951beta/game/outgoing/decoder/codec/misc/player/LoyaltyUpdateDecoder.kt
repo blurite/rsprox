@@ -14,7 +14,7 @@ internal class LoyaltyUpdateDecoder : ProxyMessageDecoder<LoyaltyUpdate> {
         buffer: JagByteBuf,
         session: Session,
     ): LoyaltyUpdate {
-        val loyaltyPoints = buffer.g4Alt3()
+        val loyaltyPoints = buffer.g4Alt1()
         return LoyaltyUpdate(
             loyaltyPoints,
         )

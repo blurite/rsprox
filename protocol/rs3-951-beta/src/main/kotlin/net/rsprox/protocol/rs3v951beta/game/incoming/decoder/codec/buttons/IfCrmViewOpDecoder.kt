@@ -13,12 +13,12 @@ internal class IfCrmViewOpDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): IfCrmViewOp {
-        val crmValue1 = buffer.g4()
-        val combinedId = buffer.g4Alt1()
-        val sub = buffer.g2Alt3()
-        val selectedCrmEntry = buffer.g4()
+        val combinedId = buffer.g4Alt2()
         val crmValue2 = buffer.g4()
-        val crmValue0 = buffer.g4Alt3()
+        val sub = buffer.g2()
+        val crmValue1 = buffer.g4Alt2()
+        val selectedCrmEntry = buffer.g4Alt3()
+        val crmValue0 = buffer.g4()
         return IfCrmViewOp(
             sub,
             crmValue0,

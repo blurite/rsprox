@@ -120,12 +120,12 @@ internal class NpcInfoState {
                     val index = bits.read(16)
                     if (index == 65535) break
                     require(index !in next) { "Duplicate NPC index $index" }
-                    val direction = bits.read(3)
-                    val id = bits.read(16)
                     val level = bits.read(2)
+                    val id = bits.read(16)
                     val z = bits.signed(coordinateBits)
-                    val hasMask = bits.read(1) != 0
                     val x = bits.signed(coordinateBits)
+                    val direction = bits.read(3)
+                    val hasMask = bits.read(1) != 0
                     val teleport = bits.read(1) != 0
                     val coord = CoordGrid(level, base.x + x, base.z + z)
                     next[index] = Npc(id, coord)

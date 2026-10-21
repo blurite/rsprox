@@ -14,10 +14,10 @@ internal class IfSetRetexDecoder : ProxyMessageDecoder<IfSetRetex> {
         buffer: JagByteBuf,
         session: Session,
     ): IfSetRetex {
+        val destination = buffer.g2()
         val source = buffer.g2()
-        val index = buffer.g1Alt3()
-        val destination = buffer.g2Alt2()
-        val componentHash = buffer.g4().toLong() and 0xFFFF_FFFFL
+        val componentHash = buffer.g4Alt1().toLong() and 0xFFFF_FFFFL
+        val index = buffer.g1()
         return IfSetRetex(destination, index, source, componentHash)
     }
 }

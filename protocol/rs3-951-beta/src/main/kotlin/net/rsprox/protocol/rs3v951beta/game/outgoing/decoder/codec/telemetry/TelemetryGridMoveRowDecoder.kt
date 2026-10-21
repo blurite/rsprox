@@ -14,9 +14,9 @@ internal class TelemetryGridMoveRowDecoder : ProxyMessageDecoder<TelemetryGridMo
         buffer: JagByteBuf,
         session: Session,
     ): TelemetryGridMoveRow {
-        val group = buffer.g1Alt2()
-        val destination = buffer.g1Alt1()
-        val source = buffer.g1Alt2()
+        val source = buffer.g1Alt3()
+        val destination = buffer.g1Alt3()
+        val group = buffer.g1Alt1()
         return TelemetryGridMoveRow(
             group,
             source,

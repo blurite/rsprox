@@ -14,9 +14,9 @@ internal class ObjAddV2Decoder : ProxyMessageDecoder<ObjAdd> {
         buffer: JagByteBuf,
         session: Session,
     ): ObjAdd {
+        val objId = buffer.g3Alt3()
+        val packedCoord = buffer.g1Alt1()
         val count = buffer.g2Alt2()
-        val packedCoord = buffer.g1Alt3()
-        val objId = buffer.g3Alt1()
         val xInZone = (packedCoord ushr 4) and 0x7
         val zInZone = packedCoord and 0x7
         return ObjAdd(true, objId, count, xInZone, zInZone, coordinateFlags = packedCoord ushr 7)

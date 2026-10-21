@@ -15,13 +15,13 @@ internal class IfOpenSubActiveNpcDecoder : ProxyMessageDecoder<IfOpenSubActiveNp
         session: Session,
     ): IfOpenSubActiveNpc {
         // The native handler skips these fixed spans; preserve bytes without inventing XTEA transforms.
-        val childId = buffer.g2Alt3()
+        val layer = buffer.g1Alt3()
+        val npcIndex = buffer.g2Alt2()
+        val childId = buffer.g2Alt1()
         val reserved0 = List(8) { buffer.g1() }
-        val componentHash = buffer.g4().toLong() and 0xFFFF_FFFFL
+        val componentHash = buffer.g4Alt1().toLong() and 0xFFFF_FFFFL
         val reserved1 = List(4) { buffer.g1() }
-        val npcIndex = buffer.g2Alt3()
         val reserved2 = List(4) { buffer.g1() }
-        val layer = buffer.g1Alt1()
         return IfOpenSubActiveNpc(
             legacyWord0 = null,
             npcIndex = npcIndex,

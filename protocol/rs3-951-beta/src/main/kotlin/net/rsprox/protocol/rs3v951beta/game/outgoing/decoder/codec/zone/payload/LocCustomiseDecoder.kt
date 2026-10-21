@@ -14,10 +14,10 @@ internal class LocCustomiseDecoder : ProxyMessageDecoder<LocCustomise> {
         buffer: JagByteBuf,
         session: Session,
     ): LocCustomise {
-        val flagsByte = buffer.g1()
+        val coordByte = buffer.g1Alt3()
         val locId = buffer.g4()
-        val coordByte = buffer.g1Alt1()
-        val shapeRotationByte = buffer.g1()
+        val flagsByte = buffer.g1Alt1()
+        val shapeRotationByte = buffer.g1Alt2()
         val zInZone = coordByte and 0x7
         val xInZone = (coordByte ushr 4) and 0x7
         val shape = (shapeRotationByte ushr 2) and 0x1F

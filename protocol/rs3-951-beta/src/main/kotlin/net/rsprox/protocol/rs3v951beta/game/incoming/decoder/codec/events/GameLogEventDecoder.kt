@@ -17,9 +17,9 @@ internal class GameLogEventDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): GameLogEvent {
-        val script = buffer.g4Alt2()
-        val value16 = buffer.g2()
-        val id = buffer.g2Alt3()
+        val value16 = buffer.g2Alt2()
+        val id = buffer.g2Alt2()
+        val script = buffer.g4()
         val definition =
             checkNotNull(session.rs3PacketDefinitions) { "RS3 packet cache is not initialized" }
                 .getGameLogEvent(id)

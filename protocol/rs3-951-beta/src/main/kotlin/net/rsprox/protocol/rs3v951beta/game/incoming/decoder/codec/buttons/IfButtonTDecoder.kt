@@ -13,12 +13,12 @@ internal class IfButtonTDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): IfButtonT {
-        val targetObj = buffer.g3Alt3()
-        val selectedCombinedId = buffer.g4Alt2()
-        val selectedObj = buffer.g3()
+        val targetObj = buffer.g3Alt1()
+        val targetCombinedId = buffer.g4()
         val selectedSub = buffer.g2Alt1()
-        val targetSub = buffer.g2Alt3()
-        val targetCombinedId = buffer.g4Alt2()
+        val targetSub = buffer.g2Alt1()
+        val selectedCombinedId = buffer.g4()
+        val selectedObj = buffer.g3()
         return IfButtonT(
             selectedSub,
             selectedObj,

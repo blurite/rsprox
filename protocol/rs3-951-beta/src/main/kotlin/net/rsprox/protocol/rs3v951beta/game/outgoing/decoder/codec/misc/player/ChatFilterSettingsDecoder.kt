@@ -14,7 +14,7 @@ internal class ChatFilterSettingsDecoder : ProxyMessageDecoder<ChatFilterSetting
         buffer: JagByteBuf,
         session: Session,
     ): ChatFilterSettings {
-        val filterSlot0 = buffer.g1Alt3()
+        val filterSlot0 = buffer.g1Alt1()
         val filterSlot1 = buffer.g1Alt2()
         return ChatFilterSettings(
             filterSlot1,

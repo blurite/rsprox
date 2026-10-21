@@ -16,11 +16,11 @@ internal class IfOpenSubDecoder : ProxyMessageDecoder<IfOpenSub> {
     ): IfOpenSub {
         // The native handler skips these fixed spans; preserve bytes without inventing XTEA transforms.
         val reserved0 = List(4) { buffer.g1() }
-        val componentHash = buffer.g4().toLong() and 0xFFFF_FFFFL
+        val layer = buffer.g1Alt2()
+        val componentHash = buffer.g4Alt2().toLong() and 0xFFFF_FFFFL
         val reserved1 = List(4) { buffer.g1() }
-        val childId = buffer.g2Alt1()
+        val childId = buffer.g2()
         val reserved2 = List(4) { buffer.g1() }
-        val layer = buffer.g1()
         val reserved3 = List(4) { buffer.g1() }
         return IfOpenSub(componentHash, childId, layer, reserved = reserved0 + reserved1 + reserved2 + reserved3)
     }

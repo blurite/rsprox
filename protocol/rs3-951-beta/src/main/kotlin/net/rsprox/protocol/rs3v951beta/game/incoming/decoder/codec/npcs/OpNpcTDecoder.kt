@@ -13,11 +13,11 @@ internal class OpNpcTDecoder(
         buffer: JagByteBuf,
         session: Session,
     ): OpNpcT {
-        val selectedCombinedId = buffer.g4Alt3()
+        val selectedCombinedId = buffer.g4Alt1()
+        val selectedSub = buffer.g2Alt3()
+        val selectedObj = buffer.g3()
         val controlKey = buffer.g1()
-        val index = buffer.g2Alt3()
-        val selectedSub = buffer.g2Alt1()
-        val selectedObj = buffer.g3Alt1()
+        val index = buffer.g2Alt2()
         return OpNpcT(
             index,
             selectedObj,
