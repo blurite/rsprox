@@ -3,18 +3,18 @@ package net.rsprox.protocol.v234.game.incoming.decoder.codec.locs
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprox.protocol.ProxyMessageDecoder
-import net.rsprox.protocol.game.incoming.model.locs.OpLoc6
+import net.rsprox.protocol.game.incoming.model.locs.OpLoc6V1
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v234.game.incoming.decoder.prot.GameClientProt
 
-public class OpLoc6Decoder : ProxyMessageDecoder<OpLoc6> {
-    override val prot: ClientProt = GameClientProt.OPLOC6
+public class OpLoc6Decoder : ProxyMessageDecoder<OpLoc6V1> {
+    override val prot: ClientProt = GameClientProt.OPLOC6_V1
 
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
-    ): OpLoc6 {
+    ): OpLoc6V1 {
         val id = buffer.g2Alt1()
-        return OpLoc6(id)
+        return OpLoc6V1(id)
     }
 }

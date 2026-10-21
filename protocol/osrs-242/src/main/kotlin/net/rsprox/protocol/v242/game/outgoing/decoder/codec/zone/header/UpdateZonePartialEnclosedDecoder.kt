@@ -7,6 +7,7 @@ import net.rsprox.protocol.game.outgoing.model.IncomingZoneProt
 import net.rsprox.protocol.game.outgoing.model.zone.header.UpdateZonePartialEnclosed
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v242.game.outgoing.decoder.codec.zone.payload.LocAddChangeV2Decoder
+import net.rsprox.protocol.v242.game.outgoing.decoder.codec.zone.payload.LocAddChangeV3Decoder
 import net.rsprox.protocol.v242.game.outgoing.decoder.codec.zone.payload.LocAnimDecoder
 import net.rsprox.protocol.v242.game.outgoing.decoder.codec.zone.payload.LocDelDecoder
 import net.rsprox.protocol.v242.game.outgoing.decoder.codec.zone.payload.LocMergeDecoder
@@ -30,8 +31,8 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
         buffer: JagByteBuf,
         session: Session,
     ): UpdateZonePartialEnclosed {
-        val zoneZ = buffer.g1()
-        val zoneX = buffer.g1()
+        val zoneZ = buffer.g1Alt2()
+        val zoneX = buffer.g1Alt2()
         val level = buffer.g1Alt3()
         val packets =
             buildList {
@@ -52,20 +53,21 @@ internal class UpdateZonePartialEnclosedDecoder : ProxyMessageDecoder<UpdateZone
     private enum class IndexedZoneProtDecoder(
         val decoder: ProxyMessageDecoder<*>,
     ) {
+        SOUND_AREA(SoundAreaDecoder()),
         MAP_ANIM(MapAnimDecoder()),
-        MAP_PROJANIM_V2(MapProjAnimV2Decoder()),
-        OBJ_COUNT(ObjCountDecoder()),
-        LOC_DEL(LocDelDecoder()),
-        OBJ_ENABLED_OPS(ObjEnabledOpsDecoder()),
-        OBJ_DEL(ObjDelDecoder()),
+        LOC_MERGE(LocMergeDecoder()),
         LOC_ANIM(LocAnimDecoder()),
-        OBJ_CUSTOMISE(ObjCustomiseDecoder()),
+        LOC_ADD_CHANGE_V3(LocAddChangeV3Decoder()),
+        MAP_PROJANIM_V2(MapProjAnimV2Decoder()),
         OBJ_UNCUSTOMISE(ObjUncustomiseDecoder()),
         OBJ_ADD(ObjAddDecoder()),
+        OBJ_COUNT(ObjCountDecoder()),
+        LOC_DEL(LocDelDecoder()),
+        OBJ_CUSTOMISE(ObjCustomiseDecoder()),
+        OBJ_ENABLED_OPS(ObjEnabledOpsDecoder()),
+        OBJ_DEL(ObjDelDecoder()),
+        SCRIPTEDPROJ_ADD(ScriptedProjAddDecoder()),
         SCRIPTEDPROJ_CHANGE(ScriptedProjChangeDecoder()),
         LOC_ADD_CHANGE_V2(LocAddChangeV2Decoder()),
-        LOC_MERGE(LocMergeDecoder()),
-        SCRIPTEDPROJ_ADD(ScriptedProjAddDecoder()),
-        SOUND_AREA(SoundAreaDecoder()),
     }
 }

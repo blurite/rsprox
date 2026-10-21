@@ -7,7 +7,7 @@ import net.rsprot.protocol.util.CombinedId
 import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
 
 /**
- * OpLocT messages are fired whenever an interface component is targeted
+ * OpLocTV1 messages are fired whenever an interface component is targeted
  * on a loc, which, as of revision 204, includes using items from
  * the player's inventory on locs - the OpLocU message was deprecated.
  * @property id the base(non-multi-transformed) id of the loc the component was used on
@@ -21,7 +21,7 @@ import net.rsprox.protocol.game.incoming.model.GameClientProtCategory
  * @property selectedObj the obj on the selected subcomponent, or -1 if none exists
  */
 @Suppress("DuplicatedCode", "MemberVisibilityCanBePrivate")
-public class OpLocT private constructor(
+public class OpLocTV1 private constructor(
     private val _id: UShort,
     private val _x: UShort,
     private val _z: UShort,
@@ -71,7 +71,7 @@ public class OpLocT private constructor(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as OpLocT
+        other as OpLocTV1
 
         if (_id != other._id) return false
         if (controlKey != other.controlKey) return false
@@ -92,7 +92,7 @@ public class OpLocT private constructor(
     }
 
     override fun toString(): String =
-        "OpLocT(" +
+        "OpLocTV1(" +
             "id=$id, " +
             "x=$x, " +
             "z=$z, " +

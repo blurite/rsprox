@@ -298,24 +298,40 @@ internal class PlayerInfoClient(
         flags: Int,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        if (flags and UNUSED_FLAGS != 0) {
-            throw IllegalStateException("Unused flags used!")
+        if (flags and EXACT_MOVE != 0) {
+            decodeExactMove(buffer, blocks)
         }
-
-        if (flags and SAY != 0) {
-            decodeSay(buffer, blocks)
-        }
-        if (flags and MOVE_SPEED != 0) {
-            decodeMoveSpeed(buffer, blocks)
-        }
-        if (flags and FACE != 0) {
-            decodeFacing(buffer, blocks)
+        if (flags and 0x20 != 0) {
+            buffer.g4() // Legacy chat header, discarded by the client.
+            val length = buffer.g1Alt3()
+            buffer.skipRead(length)
         }
         if (flags and NAME_EXTRAS != 0) {
             decodeNameExtras(buffer, blocks)
         }
+        if (flags and TINTING != 0) {
+            decodeTinting(buffer, blocks)
+        }
+        if (flags and PLAYER_FREEZE != 0) {
+            decodeFreeze(buffer, blocks)
+        }
+        if (flags and PLAYER_RESET != 0) {
+            decodePlayerReset(buffer, blocks)
+        }
+        if (flags and MOVE_SPEED != 0) {
+            decodeMoveSpeed(buffer, blocks)
+        }
+        if (flags and SEQUENCE != 0) {
+            decodeSequence(buffer, blocks)
+        }
+        if (flags and HITMARKS != 0) {
+            decodeHitmark(buffer, blocks)
+        }
         if (flags and SPOTANIM != 0) {
             decodeSpotanims(buffer, blocks)
+        }
+        if (flags and 0x20000 != 0) {
+            buffer.g1() // Unused byte.
         }
         if (flags and HEADBARS != 0) {
             decodeHeadbar(buffer, blocks)
@@ -323,35 +339,23 @@ internal class PlayerInfoClient(
         if (flags and APPEARANCE != 0) {
             val len = buffer.g1Alt2()
             val data = ByteArray(len)
-            buffer.gdataAlt1(data)
+            buffer.gdata(data)
             decodeAppearance(Unpooled.wrappedBuffer(data).toJagByteBuf(), blocks)
-        }
-        if (flags and TEMP_MOVE_SPEED != 0) {
-            decodeTemporaryMoveSpeed(buffer, blocks)
-        }
-        if (flags and CHAT != 0) {
-            decodeChat(buffer, blocks)
-        }
-        if (flags and HITMARKS != 0) {
-            decodeHitmark(buffer, blocks)
-        }
-        if (flags and TINTING != 0) {
-            decodeTinting(buffer, blocks)
-        }
-        if (flags and SEQUENCE != 0) {
-            decodeSequence(buffer, blocks)
-        }
-        if (flags and EXACT_MOVE != 0) {
-            decodeExactMove(buffer, blocks)
         }
         if (flags and PLAYER_TRANSPARENCY != 0) {
             decodeTransparency(buffer, blocks)
         }
-        if (flags and PLAYER_RESET != 0) {
-            decodePlayerReset(buffer, blocks)
+        if (flags and CHAT != 0) {
+            decodeChat(buffer, blocks)
         }
-        if (flags and PLAYER_FREEZE != 0) {
-            decodeFreeze(buffer, blocks)
+        if (flags and SAY != 0) {
+            decodeSay(buffer, blocks)
+        }
+        if (flags and FACE != 0) {
+            decodeFacing(buffer, blocks)
+        }
+        if (flags and TEMP_MOVE_SPEED != 0) {
+            decodeTemporaryMoveSpeed(buffer, blocks)
         }
     }
 
@@ -359,22 +363,22 @@ internal class PlayerInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        blocks += MoveSpeedExtendedInfo(buffer.g1sAlt1())
+        blocks += MoveSpeedExtendedInfo(buffer.g1sAlt3())
     }
 
     private fun decodeTemporaryMoveSpeed(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        blocks += TemporaryMoveSpeedExtendedInfo(buffer.g1sAlt1())
+        blocks += TemporaryMoveSpeedExtendedInfo(buffer.g1sAlt3())
     }
 
     private fun decodeSequence(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val id = buffer.g2Alt2()
-        val delay = buffer.g1Alt1()
+        val id = buffer.g2()
+        val delay = buffer.g1Alt3()
         blocks += SequenceExtendedInfo(id, delay)
     }
 
@@ -485,12 +489,12 @@ internal class PlayerInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val colourAndEffectsPacked = buffer.g2Alt1()
-        val modIcon = buffer.g1Alt1()
-        val autotyper = buffer.g1Alt2() == 1
-        val huffmanLength = buffer.g1Alt1()
+        val colourAndEffectsPacked = buffer.g2()
+        val modIcon = buffer.g1Alt2()
+        val autotyper = buffer.g1() == 1
+        val huffmanLength = buffer.g1Alt2()
         val data = ByteArray(huffmanLength)
-        buffer.gdataAlt1(data)
+        buffer.gdataAlt3(data)
         val text = huffmanCodec.decode(Unpooled.wrappedBuffer(data))
         val colour = colourAndEffectsPacked ushr 8
         val effects = colourAndEffectsPacked and 0xFF
@@ -499,7 +503,7 @@ internal class PlayerInfoClient(
             if (patternLength in 1..8) {
                 val array = ByteArray(patternLength)
                 for (i in 0..<patternLength) {
-                    array[i] = buffer.g1Alt3().toByte()
+                    array[i] = buffer.g1().toByte()
                 }
                 array
             } else {
@@ -520,13 +524,13 @@ internal class PlayerInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val deltaX1 = buffer.g1sAlt1()
-        val deltaZ1 = buffer.g1s()
-        val deltaX2 = buffer.g1sAlt1()
+        val deltaX1 = buffer.g1s()
+        val deltaZ1 = buffer.g1sAlt3()
+        val deltaX2 = buffer.g1sAlt3()
         val deltaZ2 = buffer.g1sAlt3()
         val delay1 = buffer.g2Alt1()
         val delay2 = buffer.g2Alt2()
-        val direction = buffer.g2Alt2()
+        val direction = buffer.g2Alt3()
         blocks +=
             ExactMoveExtendedInfo(
                 deltaX1,
@@ -561,11 +565,11 @@ internal class PlayerInfoClient(
         blocks: MutableList<ExtendedInfo>,
     ) {
         val spotanims = mutableMapOf<Int, Spotanim>()
-        val count = buffer.g1Alt2()
+        val count = buffer.g1()
         for (i in 0..<count) {
-            val slot = buffer.g1Alt2()
-            val id = buffer.g2Alt2()
-            val heightAndDelay = buffer.g4()
+            val slot = buffer.g1Alt1()
+            val id = buffer.g2Alt3()
+            val heightAndDelay = buffer.g4Alt3()
             val loop = buffer.g1()
             val height = heightAndDelay ushr 16
             val delay = heightAndDelay and 0xFFFF
@@ -602,7 +606,7 @@ internal class PlayerInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val headbarCount = buffer.g1()
+        val headbarCount = buffer.g1Alt2()
         val headbars = ArrayList<Headbar>(headbarCount)
         for (i in 0..<headbarCount) {
             val type = buffer.gSmart1or2()
@@ -622,7 +626,7 @@ internal class PlayerInfoClient(
             val startFill = buffer.g1Alt3()
             val endFill =
                 if (endTime > 0) {
-                    buffer.g1Alt1()
+                    buffer.g1Alt2()
                 } else {
                     startFill
                 }
@@ -649,9 +653,9 @@ internal class PlayerInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val delay = buffer.g2Alt1()
-        val duration = buffer.g2Alt1()
-        val cancelSequence = buffer.g1Alt3() == 1
+        val delay = buffer.g2Alt2()
+        val duration = buffer.g2Alt2()
+        val cancelSequence = buffer.g1Alt1() == 1
         blocks += FreezeExtendedInfo(delay, duration, cancelSequence)
     }
 
@@ -660,10 +664,10 @@ internal class PlayerInfoClient(
         blocks: MutableList<ExtendedInfo>,
     ) {
         val start = buffer.g2sAlt3()
-        val end = buffer.g2sAlt3()
+        val end = buffer.g2s()
         val startTransparency = buffer.g1sAlt1()
-        val endTransparency = buffer.g1sAlt1()
-        val useStartTransparency = buffer.g1Alt3() == 1
+        val endTransparency = buffer.g1sAlt3()
+        val useStartTransparency = buffer.g1Alt1() == 1
         blocks +=
             TransparencyExtendedInfo(
                 start,
@@ -678,12 +682,12 @@ internal class PlayerInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val start = buffer.g2()
-        val end = buffer.g2Alt1()
-        val hue = buffer.g1sAlt2()
-        val saturation = buffer.g1s()
-        val lightness = buffer.g1sAlt2()
-        val weight = buffer.g1Alt3()
+        val start = buffer.g2Alt1()
+        val end = buffer.g2Alt3()
+        val hue = buffer.g1sAlt1()
+        val saturation = buffer.g1sAlt1()
+        val lightness = buffer.g1sAlt3()
+        val weight = buffer.g1Alt2()
         blocks +=
             TintingExtendedInfo(
                 start,
@@ -1117,27 +1121,26 @@ internal class PlayerInfoClient(
         private const val CUR_CYCLE_INACTIVE = 0x1
         private const val NEXT_CYCLE_INACTIVE = 0x2
 
-        private const val EXTENDED_SHORT = 0x80
-        private const val EXTENDED_MEDIUM = 0x2000
+        private const val EXTENDED_SHORT = 0x4
+        private const val EXTENDED_MEDIUM = 0x1000
 
-        private const val SEQUENCE = 0x40
-        private const val APPEARANCE = 0x2
-        private const val FACE = 0x20
-        private const val SAY = 0x10
-        private const val CHAT = 0x400
-        private const val NAME_EXTRAS = 0x8000
-        private const val MOVE_SPEED = 0x100
-        private const val TINTING = 0x1000
-        private const val EXACT_MOVE = 0x800
+        private const val SEQUENCE = 0x10
+        private const val APPEARANCE = 0x40
+        private const val FACE = 0x1
+        private const val SAY = 0x80
+        private const val CHAT = 0x800
+        private const val NAME_EXTRAS = 0x4000
+        private const val MOVE_SPEED = 0x200
+        private const val TINTING = 0x8000
+        private const val EXACT_MOVE = 0x2000
         private const val PLAYER_TRANSPARENCY = 0x10000
-        private const val TEMP_MOVE_SPEED = 0x4000
-        private const val SPOTANIM = 0x4
+        private const val TEMP_MOVE_SPEED = 0x100
+        private const val SPOTANIM = 0x8
         private const val HEADBARS = 0x80000
-        private const val HITMARKS = 0x20000
+        private const val HITMARKS = 0x100000
 
-        private const val PLAYER_FREEZE = 0x40_000
-        private const val PLAYER_RESET = 0x8
-        private const val UNUSED_FLAGS = 0x1
+        private const val PLAYER_FREEZE = 0x40000
+        private const val PLAYER_RESET = 0x2
 
         private class Player {
             var queuedMove: Boolean = false

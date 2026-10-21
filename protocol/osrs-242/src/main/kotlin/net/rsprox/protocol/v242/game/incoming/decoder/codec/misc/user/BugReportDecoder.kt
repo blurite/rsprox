@@ -14,9 +14,9 @@ public class BugReportDecoder : ProxyMessageDecoder<BugReport> {
         buffer: JagByteBuf,
         session: Session,
     ): BugReport {
-        val instructions = buffer.gjstr()
-        val type = buffer.g1Alt2()
         val description = buffer.gjstr()
+        val type = buffer.g1Alt2()
+        val instructions = buffer.gjstr()
         check(description.length <= 500) {
             "Bug report description length cannot exceed 500 characters."
         }

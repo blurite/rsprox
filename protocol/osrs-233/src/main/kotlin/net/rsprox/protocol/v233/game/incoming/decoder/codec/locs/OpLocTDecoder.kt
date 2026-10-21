@@ -4,17 +4,17 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.util.gCombinedId
 import net.rsprox.protocol.ProxyMessageDecoder
-import net.rsprox.protocol.game.incoming.model.locs.OpLocT
+import net.rsprox.protocol.game.incoming.model.locs.OpLocTV1
 import net.rsprox.protocol.session.Session
 import net.rsprox.protocol.v233.game.incoming.decoder.prot.GameClientProt
 
-public class OpLocTDecoder : ProxyMessageDecoder<OpLocT> {
-    override val prot: ClientProt = GameClientProt.OPLOCT
+public class OpLocTDecoder : ProxyMessageDecoder<OpLocTV1> {
+    override val prot: ClientProt = GameClientProt.OPLOCT_V1
 
     override fun decode(
         buffer: JagByteBuf,
         session: Session,
-    ): OpLocT {
+    ): OpLocTV1 {
         val selectedSub = buffer.g2()
         val controlKey = buffer.g1() == 1
         val selectedObj = buffer.g2()
@@ -22,7 +22,7 @@ public class OpLocTDecoder : ProxyMessageDecoder<OpLocT> {
         val x = buffer.g2Alt2()
         val z = buffer.g2Alt2()
         val id = buffer.g2()
-        return OpLocT(
+        return OpLocTV1(
             id,
             x,
             z,

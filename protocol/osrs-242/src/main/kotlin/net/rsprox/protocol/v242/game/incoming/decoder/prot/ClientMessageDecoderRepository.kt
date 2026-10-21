@@ -15,12 +15,19 @@ import net.rsprox.protocol.v242.game.incoming.decoder.codec.friendchat.FriendCha
 import net.rsprox.protocol.v242.game.incoming.decoder.codec.friendchat.FriendChatKickDecoder
 import net.rsprox.protocol.v242.game.incoming.decoder.codec.friendchat.FriendChatSetRankDecoder
 import net.rsprox.protocol.v242.game.incoming.decoder.codec.locs.OpLoc1V2Decoder
+import net.rsprox.protocol.v242.game.incoming.decoder.codec.locs.OpLoc1V3Decoder
 import net.rsprox.protocol.v242.game.incoming.decoder.codec.locs.OpLoc2V2Decoder
+import net.rsprox.protocol.v242.game.incoming.decoder.codec.locs.OpLoc2V3Decoder
 import net.rsprox.protocol.v242.game.incoming.decoder.codec.locs.OpLoc3V2Decoder
+import net.rsprox.protocol.v242.game.incoming.decoder.codec.locs.OpLoc3V3Decoder
 import net.rsprox.protocol.v242.game.incoming.decoder.codec.locs.OpLoc4V2Decoder
+import net.rsprox.protocol.v242.game.incoming.decoder.codec.locs.OpLoc4V3Decoder
 import net.rsprox.protocol.v242.game.incoming.decoder.codec.locs.OpLoc5V2Decoder
+import net.rsprox.protocol.v242.game.incoming.decoder.codec.locs.OpLoc5V3Decoder
 import net.rsprox.protocol.v242.game.incoming.decoder.codec.locs.OpLoc6Decoder
+import net.rsprox.protocol.v242.game.incoming.decoder.codec.locs.OpLoc6V2Decoder
 import net.rsprox.protocol.v242.game.incoming.decoder.codec.locs.OpLocTDecoder
+import net.rsprox.protocol.v242.game.incoming.decoder.codec.locs.OpLocTV2Decoder
 import net.rsprox.protocol.v242.game.incoming.decoder.codec.messaging.MessagePrivateDecoder
 import net.rsprox.protocol.v242.game.incoming.decoder.codec.messaging.MessagePublicDecoder
 import net.rsprox.protocol.v242.game.incoming.decoder.codec.misc.client.*
@@ -101,12 +108,19 @@ internal object ClientMessageDecoderRepository {
                 bind(OpNpcTDecoder())
 
                 bind(OpLoc1V2Decoder())
+                bind(OpLoc1V3Decoder())
                 bind(OpLoc2V2Decoder())
+                bind(OpLoc2V3Decoder())
                 bind(OpLoc3V2Decoder())
+                bind(OpLoc3V3Decoder())
                 bind(OpLoc4V2Decoder())
+                bind(OpLoc4V3Decoder())
                 bind(OpLoc5V2Decoder())
+                bind(OpLoc5V3Decoder())
                 bind(OpLoc6Decoder())
+                bind(OpLoc6V2Decoder())
                 bind(OpLocTDecoder())
+                bind(OpLocTV2Decoder())
 
                 bind(OpObj1V2Decoder())
                 bind(OpObj2V2Decoder())
@@ -132,7 +146,7 @@ internal object ClientMessageDecoderRepository {
                 bind(OpWorldEntity4Decoder())
                 bind(OpWorldEntity5Decoder())
                 bind(OpWorldEntity6Decoder())
-                // TODO(241): Native world-entity menus have no selected-target branch; OPWORLDENTITYT remains unbound.
+                // TODO(242): Native world-entity menus have no selected-target branch; OPWORLDENTITYT remains unbound.
 
                 bind(EventAppletFocusDecoder())
                 bind(EventCameraPositionDecoder())

@@ -53,7 +53,7 @@ internal object GameClientProtId {
     const val OPPLAYER3 = 49
     const val DETECT_MODIFIED_CLIENT = 50
     const val OPLOC4 = 51
-    const val OPLOCT = 52
+    const val OPLOCT_V1 = 52
     const val OPPLAYER5 = 53
     const val RESUME_PAUSEBUTTON = 54
     const val EVENT_MOUSE_CLICK_V1 = 55
@@ -79,7 +79,7 @@ internal object GameClientProtId {
     const val IF_BUTTON4 = 75
     const val HISCORE_REQUEST = 76
     const val FRIENDCHAT_SETRANK = 77
-    const val OPLOC6 = 78
+    const val OPLOC6_V1 = 78
     const val IF_BUTTON9 = 79
     const val OPOBJ4 = 80
     const val MESSAGE_PUBLIC = 81

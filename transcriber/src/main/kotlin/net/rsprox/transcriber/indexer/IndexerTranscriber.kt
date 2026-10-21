@@ -14,10 +14,13 @@ import net.rsprox.protocol.game.incoming.model.events.*
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatJoinLeave
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatKick
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatSetRank
-import net.rsprox.protocol.game.incoming.model.locs.OpLoc6
-import net.rsprox.protocol.game.incoming.model.locs.OpLocT
+import net.rsprox.protocol.game.incoming.model.locs.OpLoc6V1
+import net.rsprox.protocol.game.incoming.model.locs.OpLoc6V2
+import net.rsprox.protocol.game.incoming.model.locs.OpLocTV1
+import net.rsprox.protocol.game.incoming.model.locs.OpLocTV2
 import net.rsprox.protocol.game.incoming.model.locs.OpLocV1
 import net.rsprox.protocol.game.incoming.model.locs.OpLocV2
+import net.rsprox.protocol.game.incoming.model.locs.OpLocV3
 import net.rsprox.protocol.game.incoming.model.messaging.MessagePrivate
 import net.rsprox.protocol.game.incoming.model.messaging.MessagePublic
 import net.rsprox.protocol.game.incoming.model.misc.client.*
@@ -297,11 +300,23 @@ public class IndexerTranscriber(
         binaryIndex.increment(IndexedType.LOC, message.id)
     }
 
-    override fun opLoc6(message: OpLoc6) {
+    override fun opLocV3(message: OpLocV3) {
         binaryIndex.increment(IndexedType.LOC, message.id)
     }
 
-    override fun opLocT(message: OpLocT) {
+    override fun opLoc6V1(message: OpLoc6V1) {
+        binaryIndex.increment(IndexedType.LOC, message.id)
+    }
+
+    override fun opLoc6V2(message: OpLoc6V2) {
+        binaryIndex.increment(IndexedType.LOC, message.id)
+    }
+
+    override fun opLocTV1(message: OpLocTV1) {
+        binaryIndex.increment(IndexedType.LOC, message.id)
+    }
+
+    override fun opLocTV2(message: OpLocTV2) {
         binaryIndex.increment(IndexedType.LOC, message.id)
     }
 
@@ -994,6 +1009,9 @@ public class IndexerTranscriber(
     override fun siteSettings(message: SiteSettings) {
     }
 
+    override fun displayNameSessionToken(message: DisplayNameSessionToken) {
+    }
+
     override fun updateRebootTimerV1(message: UpdateRebootTimerV1) {
     }
 
@@ -1318,6 +1336,10 @@ public class IndexerTranscriber(
     }
 
     override fun locAddChangeV2(message: LocAddChangeV2) {
+        binaryIndex.increment(IndexedType.LOC, message.id)
+    }
+
+    override fun locAddChangeV3(message: LocAddChangeV3) {
         binaryIndex.increment(IndexedType.LOC, message.id)
     }
 

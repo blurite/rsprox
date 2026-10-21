@@ -57,7 +57,7 @@ internal object GameClientProtId {
     const val OPOBJ4_V2 = 65
     const val FRIENDCHAT_SETRANK = 66
     const val FRIENDLIST_ADD = 67
-    const val OPLOCT = 68
+    const val OPLOCT_V1 = 68
     const val OPLOC4_V2 = 69
     const val RESUME_P_NAMEDIALOG = 70
     const val EXIT_FREECAM = 71
@@ -91,7 +91,7 @@ internal object GameClientProtId {
     const val OPNPC6 = 101
     const val MOVE_GAMECLICK = 102
     const val DETECT_MODIFIED_CLIENT = 103
-    const val OPLOC6 = 105
+    const val OPLOC6_V1 = 105
     const val OPNPCU = 107
     const val MESSAGE_PRIVATE = 108
     const val SET_HEADING = 109

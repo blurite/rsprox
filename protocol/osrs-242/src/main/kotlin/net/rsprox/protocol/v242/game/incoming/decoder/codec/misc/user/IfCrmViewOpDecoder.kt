@@ -2,7 +2,7 @@ package net.rsprox.protocol.v242.game.incoming.decoder.codec.misc.user
 
 import net.rsprot.buffer.JagByteBuf
 import net.rsprot.protocol.ClientProt
-import net.rsprot.protocol.util.gCombinedId
+import net.rsprot.protocol.util.gCombinedIdAlt1
 import net.rsprox.protocol.ProxyMessageDecoder
 import net.rsprox.protocol.game.incoming.model.misc.user.IfCrmViewOp
 import net.rsprox.protocol.session.Session
@@ -15,12 +15,12 @@ public class IfCrmViewOpDecoder : ProxyMessageDecoder<IfCrmViewOp> {
         buffer: JagByteBuf,
         session: Session,
     ): IfCrmViewOp {
-        val serverTarget = buffer.g4Alt1()
-        val sub = buffer.g2Alt1()
-        val behaviour1 = buffer.g4Alt2()
-        val behaviour2 = buffer.g4()
         val behaviour3 = buffer.g4()
-        val combinedId = buffer.gCombinedId()
+        val behaviour2 = buffer.g4Alt3()
+        val sub = buffer.g2()
+        val behaviour1 = buffer.g4Alt2()
+        val combinedId = buffer.gCombinedIdAlt1()
+        val serverTarget = buffer.g4Alt2()
         return IfCrmViewOp(
             serverTarget,
             combinedId,

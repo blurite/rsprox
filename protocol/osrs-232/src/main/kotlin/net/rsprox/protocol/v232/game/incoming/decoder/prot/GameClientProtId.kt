@@ -7,7 +7,7 @@ internal object GameClientProtId {
     const val OPNPC6 = 3
     const val RESUME_P_COUNTDIALOG = 4
     const val MESSAGE_PRIVATE = 5
-    const val OPLOCT = 6
+    const val OPLOCT_V1 = 6
     const val SOUND_JINGLEEND = 7
     const val OPPLAYER1 = 8
     const val RESUME_P_STRINGDIALOG = 9
@@ -33,7 +33,7 @@ internal object GameClientProtId {
     const val OPLOC2 = 29
     const val CLANCHANNEL_KICKUSER = 30
     const val OPOBJ2 = 31
-    const val OPLOC6 = 32
+    const val OPLOC6_V1 = 32
     const val EVENT_NATIVE_MOUSE_CLICK = 33
     const val OPPLAYER4 = 34
     const val OPPLAYER2 = 35

@@ -19,6 +19,7 @@ internal class UpdateStockMarketSlotV1Decoder : ProxyMessageDecoder<UpdateStockM
         val slot = buffer.g1()
         return when (val status = buffer.g1()) {
             0 -> {
+                buffer.skipRead(18) // Fixed-size reset padding.
                 UpdateStockMarketSlotV1(
                     slot,
                     UpdateStockMarketSlotV1.ResetStockMarketSlot,

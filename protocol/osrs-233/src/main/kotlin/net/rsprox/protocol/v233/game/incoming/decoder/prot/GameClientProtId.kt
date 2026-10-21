@@ -2,7 +2,7 @@ package net.rsprox.protocol.v233.game.incoming.decoder.prot
 
 internal object GameClientProtId {
     const val OPLOC3 = 0
-    const val OPLOCT = 1
+    const val OPLOCT_V1 = 1
     const val OPWORLDENTITY3 = 2
     const val OPOBJ4 = 3
     const val EVENT_MOUSE_MOVE = 4
@@ -90,7 +90,7 @@ internal object GameClientProtId {
     const val OPWORLDENTITY4 = 86
     const val RESUME_P_COUNTDIALOG = 87
     const val OPWORLDENTITY6 = 88
-    const val OPLOC6 = 89
+    const val OPLOC6_V1 = 89
     const val MOVE_GAMECLICK = 90
     const val OPPLAYER6 = 91
     const val EVENT_MOUSE_CLICK_V2 = 92

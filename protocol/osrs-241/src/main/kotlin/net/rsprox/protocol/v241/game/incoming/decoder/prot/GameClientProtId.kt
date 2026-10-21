@@ -9,7 +9,7 @@ internal object GameClientProtId {
     const val OPWORLDENTITY6 = 5
     const val OPWORLDENTITY5 = 6
     const val EVENT_MOUSE_CLICK_V1 = 7
-    const val OPLOCT = 8
+    const val OPLOCT_V1 = 8
     const val OPOBJ5_V2 = 9
     const val RESUME_P_LONGDIALOG = 10
     const val SEND_PING_REPLY = 11
@@ -40,7 +40,7 @@ internal object GameClientProtId {
     const val HISCORE_REQUEST = 36
     const val OPNPCU = 37
     const val IF_BUTTONX = 38
-    const val OPLOC6 = 39
+    const val OPLOC6_V1 = 39
     const val OPPLAYER8 = 40
     const val CLOSE_MODAL = 41
     const val OPPLAYERU = 42

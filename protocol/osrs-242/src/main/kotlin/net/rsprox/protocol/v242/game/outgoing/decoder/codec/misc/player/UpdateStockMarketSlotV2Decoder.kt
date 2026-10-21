@@ -18,6 +18,11 @@ internal class UpdateStockMarketSlotV2Decoder : ProxyMessageDecoder<UpdateStockM
     ): UpdateStockMarketSlotV2 {
         val slot = buffer.g1()
         val firstState = buffer.g1()
+        if (firstState == 0) {
+            // The client discards 26 bytes, then ignores the last six bytes of this fixed-size packet.
+            buffer.skipRead(32)
+            return UpdateStockMarketSlotV2(slot, 2, 0, 0, 0L, 0, 0, 0L, emptyList())
+        }
         val escaped = firstState and 7 == 7
         val version = if (escaped) buffer.g1() else 1
         val status = if (escaped) buffer.g1() else firstState
@@ -29,6 +34,9 @@ internal class UpdateStockMarketSlotV2Decoder : ProxyMessageDecoder<UpdateStockM
         val extensionLength = if (version >= 2) buffer.g4() else 0
         require(extensionLength in 0..buffer.readableBytes()) { "Invalid offer extension length: $extensionLength" }
         val extension = List(extensionLength) { buffer.g1() }
+        if (version < 2) {
+            buffer.skipRead(14) // Legacy offer inside the 34-byte V2 packet.
+        }
         return UpdateStockMarketSlotV2(
             slot,
             version,

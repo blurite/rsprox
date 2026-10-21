@@ -51,13 +51,13 @@ internal object GameClientProtId {
     const val EXIT_FREECAM = 47
     const val IGNORELIST_DEL = 48
     const val OPWORLDENTITY5 = 49
-    const val OPLOCT = 50
+    const val OPLOCT_V1 = 50
     const val TELEPORT = 51
     const val OPWORLDENTITYU = 52
     const val OPNPCT = 53
     const val MOVE_GAMECLICK = 54
     const val IF_BUTTONT = 55
-    const val OPLOC6 = 56
+    const val OPLOC6_V1 = 56
     const val IF_BUTTON = 57
     const val OPPLAYERU = 58
     const val MAP_BUILD_COMPLETE = 59

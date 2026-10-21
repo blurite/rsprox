@@ -51,7 +51,7 @@ internal object GameClientProtId {
     const val SET_CHATFILTERSETTINGS = 47
     const val OPPLAYER8 = 48
     const val EVENT_CAMERA_POSITION = 49
-    const val OPLOC6 = 50
+    const val OPLOC6_V1 = 50
     const val OPWORLDENTITY1 = 51
     const val OPPLAYERU = 52
     const val REFLECTION_CHECK_REPLY = 53
@@ -62,7 +62,7 @@ internal object GameClientProtId {
     const val MESSAGE_PUBLIC = 58
     const val OPNPC4 = 59
     const val OPPLAYERT = 60
-    const val OPLOCT = 61
+    const val OPLOCT_V1 = 61
     const val IGNORELIST_DEL = 62
     const val OPWORLDENTITYT = 63
     const val OPWORLDENTITY3 = 64

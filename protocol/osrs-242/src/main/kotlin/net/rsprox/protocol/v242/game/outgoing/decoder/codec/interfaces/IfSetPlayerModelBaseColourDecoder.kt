@@ -15,9 +15,9 @@ internal class IfSetPlayerModelBaseColourDecoder : ProxyMessageDecoder<IfSetPlay
         buffer: JagByteBuf,
         session: Session,
     ): IfSetPlayerModelBaseColour {
-        val combinedId = buffer.gCombinedIdAlt3()
         val index = buffer.g1Alt3()
-        val colour = buffer.g1Alt3()
+        val colour = buffer.g1()
+        val combinedId = buffer.gCombinedIdAlt3()
         return IfSetPlayerModelBaseColour(
             combinedId.interfaceId,
             combinedId.componentId,

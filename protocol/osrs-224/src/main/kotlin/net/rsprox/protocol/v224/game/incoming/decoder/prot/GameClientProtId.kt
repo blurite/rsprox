@@ -53,14 +53,14 @@ internal object GameClientProtId {
     const val DETECT_MODIFIED_CLIENT = 49
     const val EVENT_APPLET_FOCUS = 50
     const val EXIT_FREECAM = 51
-    const val OPLOC6 = 52
+    const val OPLOC6_V1 = 52
     const val OPOBJT = 53
     const val RESUME_PAUSEBUTTON = 54
     const val OPOBJ1 = 55
     const val AFFINEDCLANSETTINGS_ADDBANNED_FROMCHANNEL = 56
     const val BUG_REPORT = 57
     const val RESUME_P_NAMEDIALOG = 58
-    const val OPLOCT = 59
+    const val OPLOCT_V1 = 59
     const val IF_BUTTONT = 60
     const val OPNPCT = 61
     const val OPOBJ5 = 62
