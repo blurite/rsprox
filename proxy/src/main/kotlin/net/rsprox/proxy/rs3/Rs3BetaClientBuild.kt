@@ -33,20 +33,47 @@ internal object Rs3BetaClientBuild {
             }
         }
         val hash = digest.digest().joinToString("") { "%02x".format(it.toInt() and 255) }
-        require(supports(hash, binaryType)) {
+        return requireNotNull(revision(hash, binaryType)) {
             "Unverified RuneScape 3 beta build (SHA-256 $hash). " +
                 "Its protocol must be checked before capture; no client was launched."
         }
-        return Rs3ProtocolRevision(Rs3ProtocolRevision.BETA_950_1)
     }
 
     fun supports(
         hash: String,
         binaryType: Int,
+        revision: Rs3ProtocolRevision,
     ): Boolean =
-        when (binaryType) {
-            2 -> hash in windowsOpenGl950Beta1
-            10 -> hash in windowsVulkan950Beta1
-            else -> false
+        revision(hash, binaryType) == revision
+
+    fun supportsReplayWorld(hash: String, worldId: Int): Boolean =
+        // Note(revision): Beta executables can restrict world IDs even when the protocol is unchanged.
+        // The October 19 builds replaced world 204 with 203/205. Keep the earlier builds for 204 replays.
+        when (hash) {
+            "3c9697b75862bf46e80d788733c59ed673458d4b9f4c6cec09604b893c815841",
+            "99e2f95377a274b964574d1e8b90ffb7290cf74debb2df1c2bcf6c553bd63758",
+            -> worldId == 203 || worldId == 205
+            "e2f471f0dfca8f584f7edd4ea0321bbedb40c95331791312e19c19aa1fb8054f",
+            "15e711390ed2ec98efa8d203ede71c58a62e52b0a842f2feef09257ca9828163",
+            "81c68f8f1659958916a4661569b7d30a9c7dcbbc39d509fad801a69ffae1c7db",
+            -> worldId == 204
+            else -> true
         }
+
+    private fun revision(hash: String, binaryType: Int): Rs3ProtocolRevision? =
+        when (binaryType) {
+            2 -> when {
+                hash in windowsOpenGl950Beta1 -> Rs3ProtocolRevision.BETA_950_1
+                hash == "1d785afb7fcbb5fa7786ecd2ef077d008a93970af0b63414df8c55f54c931006" ->
+                    Rs3ProtocolRevision.BETA_951_1
+                else -> null
+            }
+            10 -> when {
+                hash in windowsVulkan950Beta1 -> Rs3ProtocolRevision.BETA_950_1
+                hash == "0a4a45d063d58c2fea2a64bb4abbc78cfa45f74266b5c4b6b265686a17b8fd24" ->
+                    Rs3ProtocolRevision.BETA_951_1
+                else -> null
+            }
+            else -> null
+        }?.let(::Rs3ProtocolRevision)
 }

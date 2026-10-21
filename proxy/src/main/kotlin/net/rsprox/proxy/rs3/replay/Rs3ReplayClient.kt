@@ -92,7 +92,11 @@ public class Rs3ReplayClient private constructor(
                 server.start()
                 resources.start()
                 // 37 is the JS5 socket hostname; 49 is the HTTP resource hostname (port 80).
-                val params = mutableMapOf(3 to host, 37 to host, 49 to host)
+                // Archived configs may retain another world's ID. Beta clients validate this during startup.
+                // The native cache suffix is separate from the launcher's executable-directory suffix.
+                // Keep it stable across live/beta recordings and renderers, isolated from actual live play.
+                val params =
+                    mutableMapOf(3 to host, 27 to recording.header.worldId.toString(), 33 to "replay", 37 to host, 49 to host)
                 for (id in 41..48) params[id] = (if (id % 2 == 1) ports.primary else ports.alternate).toString()
                 // Reuse native assets across recordings, separately from live play. The single launcher
                 // slot below keeps the shared cache and preferences exclusive until the client exits.
@@ -131,6 +135,10 @@ public class Rs3ReplayClient private constructor(
                         host,
                         singleInstance = true,
                         onProgress = onProgress,
+                        initializationProgress = {
+                            val count = cache.downloadedGroupCount
+                            if (count == 0L) null else Rs3LaunchProgress("Loading replay resources: $count groups downloaded")
+                        },
                     )
                 launcher = prepared
                 return Rs3ReplayClient(server, resources, prepared, patched)

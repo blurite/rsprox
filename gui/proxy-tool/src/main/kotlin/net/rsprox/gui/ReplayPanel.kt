@@ -26,6 +26,7 @@ import net.rsprox.proxy.replay.ReplayPlaybackState
 import net.rsprox.proxy.replay.ReplaySession
 import net.rsprox.proxy.replay.ReplayTranscript
 import net.rsprox.proxy.replay.ReplayTranscriptNode
+import net.rsprox.proxy.rs3.Rs3ProtocolRevision
 import net.rsprox.proxy.rs3.replay.Rs3ReplaySession
 import net.rsprox.proxy.target.ProxyTarget
 import net.rsprox.proxy.util.OperatingSystem
@@ -972,8 +973,14 @@ public class ReplayPanel(
         val path = selectedPath
         val date = DateFormat.getDateTimeInstance().format(Date(metadata.timestamp))
         titleLabel.text = path?.name ?: "Replay loaded"
+        val revision =
+            if (session is Rs3ReplaySession) {
+                Rs3ProtocolRevision(metadata.revision).display(metadata.subRevision)
+            } else {
+                "${metadata.revision}.${metadata.subRevision}"
+            }
         detailsLabel.text =
-            "Rev ${metadata.revision}.${metadata.subRevision} | World ${metadata.worldId} | " +
+            "Rev $revision | World ${metadata.worldId} | " +
             "Player ${metadata.localPlayerIndex} | $date"
         replayStatusText = ""
         statusLabel.text = replayStatusText

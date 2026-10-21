@@ -59,7 +59,7 @@ public data class NativePatchCriteria(
             val modeOffset =
                 when (revision) {
                     950 -> "709A0100"
-                    950 or (1 shl 16), 951 -> "909A0100"
+                    950 or (1 shl 16), 951, 951 or (1 shl 16) -> "909A0100"
                     else -> error("Unsupported RS3 port patch revision: $revision")
                 }
             // Note(revision): Verify the mode offset and all three instruction windows in each new client.
