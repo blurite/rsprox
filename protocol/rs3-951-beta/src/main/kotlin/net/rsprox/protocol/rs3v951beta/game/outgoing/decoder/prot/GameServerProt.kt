@@ -3,6 +3,7 @@ package net.rsprox.protocol.rs3v951beta.game.outgoing.decoder.prot
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.Prot
 
+// Note(revision): Inactive native handlers still need entries here for transport framing and forwarding.
 public enum class GameServerProt(
     override val opcode: Int,
     override val size: Int,
@@ -165,11 +166,13 @@ public enum class GameServerProt(
     IF_SETPLAYERMODEL_SNAPSHOT(GameServerProtId.IF_SETPLAYERMODEL_SNAPSHOT, 5),
     CREATE_SUGGEST_NAME_REPLY(GameServerProtId.CREATE_SUGGEST_NAME_REPLY, Prot.VAR_BYTE),
     TELEMETRY_GRID_FULL(GameServerProtId.TELEMETRY_GRID_FULL, Prot.VAR_SHORT),
+    CUTSCENE(GameServerProtId.CUTSCENE, Prot.VAR_SHORT),
     SONG_PRELOAD(GameServerProtId.SONG_PRELOAD, 4),
     PROJANIM_SPECIFIC_V2(GameServerProtId.PROJANIM_SPECIFIC_V2, 33),
     TELEMETRY_GRID_SET_ROW_PINNED(GameServerProtId.TELEMETRY_GRID_SET_ROW_PINNED, 3),
     PLAYER_SNAPSHOT(GameServerProtId.PLAYER_SNAPSHOT, Prot.VAR_SHORT),
     NPC_HEADICON_SPECIFIC(GameServerProtId.NPC_HEADICON_SPECIFIC, 9),
+    VORBIS_PRELOAD_SOUND_GROUP(GameServerProtId.VORBIS_PRELOAD_SOUND_GROUP, 2),
     SET_TARGET(GameServerProtId.SET_TARGET, 3),
     SOUND_STOP(GameServerProtId.SOUND_STOP, 6),
     UNNAMED_2(GameServerProtId.UNNAMED_2, Prot.VAR_SHORT),

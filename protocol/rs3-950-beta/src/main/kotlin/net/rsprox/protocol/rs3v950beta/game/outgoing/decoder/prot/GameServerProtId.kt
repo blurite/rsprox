@@ -141,6 +141,7 @@ internal object GameServerProtId {
     const val TELEMETRY_GRID_REMOVE_COLUMN: Int = 136
     const val SHOW_FACE_HERE: Int = 137
     const val SOUND_MIXBUSS_ADD: Int = 138
+    const val CUTSCENE: Int = 139
     const val PROJANIM_SPECIFIC_V2: Int = 140
     const val IF_SETRECOL: Int = 141
     const val PLAYER_GROUP_VARPS: Int = 142
@@ -202,6 +203,7 @@ internal object GameServerProtId {
     const val STORE_RESET: Int = 200
     const val ENVIRONMENT_OVERRIDE: Int = 201
     const val MESSAGE_QUICKCHAT_PLAYER_GROUP: Int = 202
+    const val VORBIS_PRELOAD_SOUND_GROUP: Int = 203
     const val SOCIAL_NETWORK_LOGOUT: Int = 204
     const val MAP_ANIM_V2: Int = 205
     const val DBFILTER_DEBUG: Int = 206

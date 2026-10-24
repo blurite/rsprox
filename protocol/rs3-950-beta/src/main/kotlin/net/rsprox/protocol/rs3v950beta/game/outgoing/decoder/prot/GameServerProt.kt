@@ -3,6 +3,7 @@ package net.rsprox.protocol.rs3v950beta.game.outgoing.decoder.prot
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.Prot
 
+// Note(revision): Inactive native handlers still need entries here for transport framing and forwarding.
 public enum class GameServerProt(
     override val opcode: Int,
     override val size: Int,
@@ -145,6 +146,7 @@ public enum class GameServerProt(
     TELEMETRY_GRID_REMOVE_COLUMN(GameServerProtId.TELEMETRY_GRID_REMOVE_COLUMN, 2),
     SHOW_FACE_HERE(GameServerProtId.SHOW_FACE_HERE, 1),
     SOUND_MIXBUSS_ADD(GameServerProtId.SOUND_MIXBUSS_ADD, 6),
+    CUTSCENE(GameServerProtId.CUTSCENE, Prot.VAR_SHORT),
     PROJANIM_SPECIFIC_V2(GameServerProtId.PROJANIM_SPECIFIC_V2, 33),
     IF_SETRECOL(GameServerProtId.IF_SETRECOL, 9),
     PLAYER_GROUP_VARPS(GameServerProtId.PLAYER_GROUP_VARPS, Prot.VAR_SHORT),
@@ -206,6 +208,7 @@ public enum class GameServerProt(
     STORE_RESET(GameServerProtId.STORE_RESET, 0),
     ENVIRONMENT_OVERRIDE(GameServerProtId.ENVIRONMENT_OVERRIDE, Prot.VAR_BYTE),
     MESSAGE_QUICKCHAT_PLAYER_GROUP(GameServerProtId.MESSAGE_QUICKCHAT_PLAYER_GROUP, Prot.VAR_BYTE),
+    VORBIS_PRELOAD_SOUND_GROUP(GameServerProtId.VORBIS_PRELOAD_SOUND_GROUP, 2),
     SOCIAL_NETWORK_LOGOUT(GameServerProtId.SOCIAL_NETWORK_LOGOUT, Prot.VAR_SHORT),
     MAP_ANIM_V2(GameServerProtId.MAP_ANIM_V2, 14),
     DBFILTER_DEBUG(GameServerProtId.DBFILTER_DEBUG, Prot.VAR_SHORT),

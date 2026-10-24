@@ -3,6 +3,7 @@ package net.rsprox.protocol.rs3v950.game.outgoing.decoder.prot
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.Prot
 
+// Note(revision): Inactive native handlers still need entries here for transport framing and forwarding.
 public enum class GameServerProt(
     override val opcode: Int,
     override val size: Int,

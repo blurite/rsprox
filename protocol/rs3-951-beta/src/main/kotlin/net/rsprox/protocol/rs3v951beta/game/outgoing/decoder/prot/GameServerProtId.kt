@@ -159,11 +159,13 @@ internal object GameServerProtId {
     const val IF_SETPLAYERMODEL_SNAPSHOT: Int = 157
     const val CREATE_SUGGEST_NAME_REPLY: Int = 158
     const val TELEMETRY_GRID_FULL: Int = 159
+    const val CUTSCENE: Int = 160
     const val SONG_PRELOAD: Int = 161
     const val PROJANIM_SPECIFIC_V2: Int = 162
     const val TELEMETRY_GRID_SET_ROW_PINNED: Int = 163
     const val PLAYER_SNAPSHOT: Int = 164
     const val NPC_HEADICON_SPECIFIC: Int = 165
+    const val VORBIS_PRELOAD_SOUND_GROUP: Int = 166
     const val SET_TARGET: Int = 167
     const val SOUND_STOP: Int = 168
     const val UNNAMED_2: Int = 169

@@ -128,6 +128,7 @@ internal object GameServerProtId {
     const val NPC_ANIM_SPECIFIC: Int = 125
     const val PROJANIM_SPECIFIC: Int = 126
     const val VARCLAN_ENABLE: Int = 127
+    const val VORBIS_PRELOAD_SOUND_GROUP: Int = 128
     const val UNNAMED_2: Int = 129
     const val PLAYER_ANIM_SPECIFIC: Int = 130
     const val SOUND_MIXBUSS_SETLEVEL: Int = 131
@@ -144,6 +145,7 @@ internal object GameServerProtId {
     const val IF_SETOBJECT_LONG_V2: Int = 142
     const val IF_SETRECOL: Int = 143
     const val MAP_PROJANIM_HALFSQ_V2: Int = 144
+    const val CUTSCENE: Int = 145
     const val SOCIAL_NETWORK_LOGOUT: Int = 146
     const val STORE_RESET: Int = 147
     const val CREATE_CHECK_EMAIL_REPLY: Int = 148

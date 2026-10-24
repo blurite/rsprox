@@ -3,6 +3,7 @@ package net.rsprox.protocol.rs3v951.game.outgoing.decoder.prot
 import net.rsprot.protocol.ClientProt
 import net.rsprot.protocol.Prot
 
+// Note(revision): Inactive native handlers still need entries here for transport framing and forwarding.
 public enum class GameServerProt(
     override val opcode: Int,
     override val size: Int,
@@ -134,6 +135,7 @@ public enum class GameServerProt(
     NPC_ANIM_SPECIFIC(GameServerProtId.NPC_ANIM_SPECIFIC, 19),
     PROJANIM_SPECIFIC(GameServerProtId.PROJANIM_SPECIFIC, 25),
     VARCLAN_ENABLE(GameServerProtId.VARCLAN_ENABLE, 0),
+    VORBIS_PRELOAD_SOUND_GROUP(GameServerProtId.VORBIS_PRELOAD_SOUND_GROUP, 2),
     UNNAMED_2(GameServerProtId.UNNAMED_2, Prot.VAR_SHORT),
     PLAYER_ANIM_SPECIFIC(GameServerProtId.PLAYER_ANIM_SPECIFIC, 17),
     SOUND_MIXBUSS_SETLEVEL(GameServerProtId.SOUND_MIXBUSS_SETLEVEL, 4),
@@ -150,6 +152,7 @@ public enum class GameServerProt(
     IF_SETOBJECT_LONG_V2(GameServerProtId.IF_SETOBJECT_LONG_V2, 15),
     IF_SETRECOL(GameServerProtId.IF_SETRECOL, 9),
     MAP_PROJANIM_HALFSQ_V2(GameServerProtId.MAP_PROJANIM_HALFSQ_V2, 29),
+    CUTSCENE(GameServerProtId.CUTSCENE, Prot.VAR_SHORT),
     SOCIAL_NETWORK_LOGOUT(GameServerProtId.SOCIAL_NETWORK_LOGOUT, Prot.VAR_SHORT),
     STORE_RESET(GameServerProtId.STORE_RESET, 0),
     CREATE_CHECK_EMAIL_REPLY(GameServerProtId.CREATE_CHECK_EMAIL_REPLY, 1),
