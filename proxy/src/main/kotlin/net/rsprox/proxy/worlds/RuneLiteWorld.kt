@@ -7,6 +7,6 @@ public data class RuneLiteWorld(
     public val types: EnumSet<RuneLiteWorldType>,
     public val address: String,
     public val activity: String,
-    public val location: Int,
+    public val region: RuneLiteWorldRegion,
     public val players: Int,
 )

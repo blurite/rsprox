@@ -68,7 +68,7 @@ public data class WorldList(
                             RuneLiteWorldType.fromMask(world.properties),
                             world.localHostAddress.toString(),
                             world.activity,
-                            world.location,
+                            RuneLiteWorldRegion.fromLocationId(world.location),
                             world.population,
                         ),
                     )
