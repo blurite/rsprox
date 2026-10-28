@@ -11,6 +11,7 @@ import net.rsprox.gui.dialogs.AboutDialog
 import net.rsprox.gui.sessions.SessionsPanel
 import net.rsprox.gui.sidebar.SideBar
 import net.rsprox.proxy.ProxyService
+import net.rsprox.proxy.StartedExtensions
 import net.rsprox.proxy.config.BINARY_PATH
 import net.rsprox.proxy.config.ERROR_LOGS_PATH
 import java.awt.CardLayout
@@ -24,6 +25,7 @@ import java.awt.event.WindowEvent
 import java.net.URI
 import java.util.prefs.Preferences
 import javax.swing.BorderFactory
+import javax.swing.JCheckBoxMenuItem
 import javax.swing.JFrame
 import javax.swing.JMenu
 import javax.swing.JMenuItem
@@ -33,7 +35,9 @@ import javax.swing.KeyStroke
 import javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE
 import kotlin.system.exitProcess
 
-public class App {
+public class App(
+    private val extensions: StartedExtensions,
+) {
     private val frame: JFrame = JFrame()
     private val sessionsPanel: SessionsPanel = SessionsPanel(this)
     private val launchBar: LaunchBar = LaunchBar(sessionsPanel)
@@ -169,6 +173,20 @@ public class App {
 
                 addSeparator()
 
+                val serveMcpEndpoint =
+                    JCheckBoxMenuItem(
+                        "Serve MCP Endpoint",
+                        isMcpEndpointServed(service.getMcpEnabled(), extensions::serve),
+                    )
+                serveMcpEndpoint.mnemonic = 'M'.code
+                serveMcpEndpoint.toolTipText = MCP_ENDPOINT_TOOLTIP
+                serveMcpEndpoint.addActionListener {
+                    this@App.switchMcpEndpoint(serveMcpEndpoint)
+                }
+                add(serveMcpEndpoint)
+
+                addSeparator()
+
                 val exitItem = JMenuItem("Exit")
                 exitItem.mnemonic = 'X'.code
                 exitItem.accelerator = KeyStroke.getKeyStroke("alt F4")
@@ -281,6 +299,19 @@ public class App {
     private fun recordRecentReplayDump(path: java.nio.file.Path) {
         RecentReplayDumps.record(path)
         homePanel.refreshRecentDumps()
+    }
+
+    private fun switchMcpEndpoint(item: JCheckBoxMenuItem) {
+        val switch =
+            switchMcpEndpoint(item.isSelected, extensions::serve, extensions::stopServing, service::setMcpEnabled)
+        item.isSelected = switch.served
+        val failure = switch.failure ?: return
+        JOptionPane.showMessageDialog(
+            frame,
+            failure,
+            "MCP Endpoint",
+            JOptionPane.ERROR_MESSAGE,
+        )
     }
 
     private fun openBinaryLogsFolder() {
