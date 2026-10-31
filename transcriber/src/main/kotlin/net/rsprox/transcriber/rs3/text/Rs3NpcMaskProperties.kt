@@ -177,7 +177,7 @@ private fun Property.appendCustomisation(mask: NpcMask.Customisation) {
             appendAxes("rotation", model.rotation)
             appendAxes("translation", model.translation)
             appendModelReplacements("RECOLOUR", model.recolours, ScriptVarType.INT)
-            appendModelReplacements("RETEXTURE", model.retextures, ScriptVarType.TEXTURE)
+            appendModelReplacements("RETEXTURE", model.retextures, ScriptVarType.MATERIAL)
         }
     }
     require(mask.recolours.size == mask.recolourSlots.size)
@@ -192,7 +192,7 @@ private fun Property.appendCustomisation(mask: NpcMask.Customisation) {
     if (mask.retextures.isNotEmpty()) {
         group("RETEXTURE") {
             mask.retextures.forEachIndexed { index, texture ->
-                scriptVarType("retex${mask.retextureSlots[index] + 1}d", ScriptVarType.TEXTURE, texture)
+                scriptVarType("retex${mask.retextureSlots[index] + 1}d", ScriptVarType.MATERIAL, texture)
             }
         }
     }
