@@ -232,7 +232,7 @@ public enum class GameServerProt : Prot {
     // Misc. client packets
     URL_OPEN,
     SITE_SETTINGS,
-    DISPLAYNAME_SESSION_TOKEN,
+    SET_WEBSITE_TOKEN,
     UPDATE_UID192,
     REFLECTION_CHECKER,
     SEND_PING,

@@ -208,7 +208,7 @@ public enum class GameServerProt(
     // Misc. client packets
     URL_OPEN(GameServerProtId.URL_OPEN, Prot.VAR_SHORT),
     SITE_SETTINGS(GameServerProtId.SITE_SETTINGS, Prot.VAR_BYTE),
-    DISPLAYNAME_SESSION_TOKEN(GameServerProtId.DISPLAYNAME_SESSION_TOKEN, Prot.VAR_SHORT),
+    SET_WEBSITE_TOKEN(GameServerProtId.SET_WEBSITE_TOKEN, Prot.VAR_SHORT),
     UPDATE_UID192(GameServerProtId.UPDATE_UID192, 28),
     REFLECTION_CHECKER(GameServerProtId.REFLECTION_CHECKER, Prot.VAR_SHORT),
     SEND_PING(GameServerProtId.SEND_PING, 8),

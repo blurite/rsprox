@@ -236,7 +236,7 @@ public class TranscriberPlugin(
             GameServerProt.PACKET_GROUP_START -> pass(message, Transcriber::packetGroupStart)
             GameServerProt.PACKET_GROUP_END -> pass(message, Transcriber::packetGroupEnd)
             GameServerProt.SITE_SETTINGS -> pass(message, Transcriber::siteSettings)
-            GameServerProt.DISPLAYNAME_SESSION_TOKEN -> pass(message, Transcriber::displayNameSessionToken)
+            GameServerProt.SET_WEBSITE_TOKEN -> pass(message, Transcriber::setWebsiteToken)
             GameServerProt.UPDATE_UID192 -> pass(message, Transcriber::updateUid192)
             GameServerProt.REFLECTION_CHECKER -> pass(message, Transcriber::reflectionChecker)
             GameServerProt.SEND_PING -> pass(message, Transcriber::sendPing)

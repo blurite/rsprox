@@ -1009,7 +1009,7 @@ public class IndexerTranscriber(
     override fun siteSettings(message: SiteSettings) {
     }
 
-    override fun displayNameSessionToken(message: DisplayNameSessionToken) {
+    override fun setWebsiteToken(message: SetWebsiteToken) {
     }
 
     override fun updateRebootTimerV1(message: UpdateRebootTimerV1) {

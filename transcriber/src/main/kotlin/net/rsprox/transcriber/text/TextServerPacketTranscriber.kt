@@ -40,7 +40,6 @@ import net.rsprox.protocol.game.outgoing.model.logout.LogoutTransfer
 import net.rsprox.protocol.game.outgoing.model.logout.LogoutWithReason
 import net.rsprox.protocol.game.outgoing.model.map.*
 import net.rsprox.protocol.game.outgoing.model.map.util.BuildArea
-import net.rsprox.protocol.game.outgoing.model.misc.client.DisplayNameSessionToken
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideLocOps
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideNpcOps
 import net.rsprox.protocol.game.outgoing.model.misc.client.HideObjOps
@@ -54,6 +53,7 @@ import net.rsprox.protocol.game.outgoing.model.misc.client.PacketGroupStart
 import net.rsprox.protocol.game.outgoing.model.misc.client.ReflectionChecker
 import net.rsprox.protocol.game.outgoing.model.misc.client.ResetAnims
 import net.rsprox.protocol.game.outgoing.model.misc.client.ResetInteractionMode
+import net.rsprox.protocol.game.outgoing.model.misc.client.SetWebsiteToken
 import net.rsprox.protocol.game.outgoing.model.misc.client.SendPing
 import net.rsprox.protocol.game.outgoing.model.misc.client.ServerTickEnd
 import net.rsprox.protocol.game.outgoing.model.misc.client.SetHeatmapEnabled
@@ -2275,8 +2275,8 @@ public class TextServerPacketTranscriber(
         root.string("settings", message.settings)
     }
 
-    override fun displayNameSessionToken(message: DisplayNameSessionToken) {
-        if (!filters[PropertyFilter.DISPLAYNAME_SESSION_TOKEN]) return omit()
+    override fun setWebsiteToken(message: SetWebsiteToken) {
+        if (!filters[PropertyFilter.SET_WEBSITE_TOKEN]) return omit()
         root.string("token", message.token)
     }
 

@@ -299,7 +299,7 @@ public interface ServerPacketTranscriber {
 
     public fun siteSettings(message: SiteSettings)
 
-    public fun displayNameSessionToken(message: DisplayNameSessionToken)
+    public fun setWebsiteToken(message: SetWebsiteToken)
 
     public fun updateRebootTimerV1(message: UpdateRebootTimerV1)
 

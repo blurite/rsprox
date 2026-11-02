@@ -15,7 +15,7 @@ internal class SoundAreaDecoder : ProxyMessageDecoder<SoundArea> {
         buffer: JagByteBuf,
         session: Session,
     ): SoundArea {
-        val radius = buffer.g1()
+        val radius = buffer.g1Alt1()
         val coordInZone = CoordInZone(buffer.g1())
         val loops = buffer.g1Alt1()
         val size = buffer.g1Alt3()

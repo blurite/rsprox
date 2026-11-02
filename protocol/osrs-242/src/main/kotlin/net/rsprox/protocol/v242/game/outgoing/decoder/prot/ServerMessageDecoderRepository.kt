@@ -76,7 +76,6 @@ import net.rsprox.protocol.v242.game.outgoing.decoder.codec.map.RebuildRegionV2D
 import net.rsprox.protocol.v242.game.outgoing.decoder.codec.map.RebuildWorldEntityV4Decoder
 import net.rsprox.protocol.v242.game.outgoing.decoder.codec.map.ReconnectDecoder
 import net.rsprox.protocol.v242.game.outgoing.decoder.codec.map.StaticRebuildV2Decoder
-import net.rsprox.protocol.v242.game.outgoing.decoder.codec.misc.client.DisplayNameSessionTokenDecoder
 import net.rsprox.protocol.v242.game.outgoing.decoder.codec.misc.client.HideLocOpsDecoder
 import net.rsprox.protocol.v242.game.outgoing.decoder.codec.misc.client.HideNpcOpsDecoder
 import net.rsprox.protocol.v242.game.outgoing.decoder.codec.misc.client.HideObjOpsDecoder
@@ -87,12 +86,14 @@ import net.rsprox.protocol.v242.game.outgoing.decoder.codec.misc.client.ObjUnloc
 import net.rsprox.protocol.v242.game.outgoing.decoder.codec.misc.client.ObjUnlockUpdateDecoder
 import net.rsprox.protocol.v242.game.outgoing.decoder.codec.misc.client.PacketGroupEndDecoder
 import net.rsprox.protocol.v242.game.outgoing.decoder.codec.misc.client.PacketGroupStartDecoder
+import net.rsprox.protocol.v242.game.outgoing.decoder.codec.misc.client.ReflectionCheckerDecoder
 import net.rsprox.protocol.v242.game.outgoing.decoder.codec.misc.client.ResetAnimsDecoder
 import net.rsprox.protocol.v242.game.outgoing.decoder.codec.misc.client.ResetInteractionModeDecoder
 import net.rsprox.protocol.v242.game.outgoing.decoder.codec.misc.client.SendPingDecoder
 import net.rsprox.protocol.v242.game.outgoing.decoder.codec.misc.client.ServerTickEndDecoder
 import net.rsprox.protocol.v242.game.outgoing.decoder.codec.misc.client.SetHeatmapEnabledDecoder
 import net.rsprox.protocol.v242.game.outgoing.decoder.codec.misc.client.SetInteractionModeDecoder
+import net.rsprox.protocol.v242.game.outgoing.decoder.codec.misc.client.SetWebsiteTokenDecoder
 import net.rsprox.protocol.v242.game.outgoing.decoder.codec.misc.client.SiteSettingsDecoder
 import net.rsprox.protocol.v242.game.outgoing.decoder.codec.misc.client.UpdateRebootTimerV2Decoder
 import net.rsprox.protocol.v242.game.outgoing.decoder.codec.misc.client.UpdateUid192Decoder
@@ -254,13 +255,13 @@ internal object ServerMessageDecoderRepository {
                 bind(HintArrowDecoder())
                 bind(HiscoreReplyDecoder())
                 bind(MinimapToggleDecoder())
-                // TODO(242): Resolve REFLECTION_CHECKER's opcode (76 or 137); its @Consistent layout is unchanged.
+                bind(ReflectionCheckerDecoder())
                 bind(ResetAnimsDecoder())
                 bind(SendPingDecoder())
                 bind(ServerTickEndDecoder())
                 bind(UpdateRebootTimerV2Decoder())
                 bind(SiteSettingsDecoder())
-                bind(DisplayNameSessionTokenDecoder())
+                bind(SetWebsiteTokenDecoder())
                 bind(UpdateUid192Decoder())
                 bind(UrlOpenDecoder())
                 bind(PacketGroupStartDecoder())

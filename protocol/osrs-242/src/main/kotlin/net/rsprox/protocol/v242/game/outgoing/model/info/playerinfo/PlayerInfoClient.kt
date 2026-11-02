@@ -646,7 +646,7 @@ internal class PlayerInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        blocks += PlayerResetExtendedInfo(buffer.g1())
+        blocks += PlayerResetExtendedInfo(buffer.g1Alt3())
     }
 
     private fun decodeFreeze(
@@ -655,7 +655,7 @@ internal class PlayerInfoClient(
     ) {
         val delay = buffer.g2Alt2()
         val duration = buffer.g2Alt2()
-        val cancelSequence = buffer.g1Alt1() == 1
+        val cancelSequence = buffer.g1Alt3() == 1
         blocks += FreezeExtendedInfo(delay, duration, cancelSequence)
     }
 

@@ -77,6 +77,7 @@ internal object GameServerProtId {
     const val MINIMAP_TOGGLE = 73
     const val REBUILD_REGION_V2 = 74
     const val SET_PLAYER_OP = 75
+    const val REFLECTION_CHECKER = 76
     const val CAM_SMOOTHRESET = 77
     const val IF_SETPLAYERHEAD = 78
     const val OCULUS_SYNC = 79
@@ -137,6 +138,7 @@ internal object GameServerProtId {
     const val GROUP_VAR = 134
     const val GROUP_VAR_INT = 135
     const val GROUP_FULL = 136
+    const val UNHANDLED = 137
     const val CAM_ROTATETO_COORDINATE_V3 = 138
     const val OBJ_CUSTOMISE_SPECIFIC_V2 = 139
     const val AMBIENTSOUND_START = 140
@@ -151,7 +153,5 @@ internal object GameServerProtId {
     const val NPC_INFO_SMALL_V6 = 149
     const val OBJUNLOCK_RESET = 150
     const val OBJUNLOCK_UPDATE = 151
-    const val DISPLAYNAME_SESSION_TOKEN = 152
-    const val REFLECTION_CHECKER = -1
-    const val UNHANDLED = -1
+    const val SET_WEBSITE_TOKEN = 152
 }

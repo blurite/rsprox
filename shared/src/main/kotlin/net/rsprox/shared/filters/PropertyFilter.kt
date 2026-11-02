@@ -1330,12 +1330,12 @@ public enum class PropertyFilter(
         false,
         searchTerms = "site,settings,uid192,random,data,authentication,linking",
     ),
-    DISPLAYNAME_SESSION_TOKEN(
+    SET_WEBSITE_TOKEN(
         SERVER_TO_CLIENT,
         OTHER,
-        "Display Name Session Token",
+        "Set Website Token",
         false,
-        searchTerms = "displayname,session,token,authentication",
+        searchTerms = "website,displayname,session,token,authentication",
     ),
     UPDATE_UID192(
         SERVER_TO_CLIENT,

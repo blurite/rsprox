@@ -17,7 +17,7 @@ internal class CamRotateToCoordinateV3Decoder : ProxyMessageDecoder<CamRotateToC
         val x = buffer.g2Alt3()
         val easing = buffer.g1Alt3()
         val z = buffer.g2Alt1()
-        val heightRelative = buffer.g1() == 1
+        val heightRelative = buffer.g1Alt2() == 1
         val height = buffer.g2sAlt1()
         val cycles = buffer.g2Alt3()
         val trackTarget = buffer.g1() == 1

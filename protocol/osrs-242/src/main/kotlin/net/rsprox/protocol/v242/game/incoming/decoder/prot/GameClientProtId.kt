@@ -15,7 +15,10 @@ internal object GameClientProtId {
     const val OPLOC6_V1 = 12
     const val OPWORLDENTITY1 = 13
     const val IF_SCRIPT_TRIGGER = 14
+    const val OPWORLDENTITYT = 15
     const val BUG_REPORT = 16
+    const val OPNPCU = 17
+    const val OPWORLDENTITYU = 18
     const val IF_BUTTOND = 19
     const val OPNPCT = 20
     const val EVENT_MOUSE_SCROLL = 21
@@ -34,6 +37,7 @@ internal object GameClientProtId {
     const val OPNPC4_V2 = 34
     const val MAP_BUILD_COMPLETE = 35
     const val EVENT_MOUSE_CLICK_V1 = 36
+    const val OPLOCU_V1 = 37
     const val OPWORLDENTITY2 = 38
     const val RESUME_P_STRINGDIALOG = 39
     const val CLANCHANNEL_FULL_REQUEST = 40
@@ -96,6 +100,7 @@ internal object GameClientProtId {
     const val OPLOC3_V2 = 97
     const val OPOBJ1_V2 = 98
     const val RESUME_PAUSEBUTTON = 99
+    const val OPPLAYERU = 100
     const val OPOBJ5_V2 = 101
     const val CONNECTION_TELEMETRY = 102
     const val CLOSE_MODAL = 103
@@ -103,10 +108,6 @@ internal object GameClientProtId {
     const val OPLOC3_V3 = 105
     const val OPPLAYERT = 106
     const val OPLOC5_V3 = 107
-    const val OPLOCU = -1
-    const val OPNPCU = -1
-    const val OPOBJU = -1
-    const val OPPLAYERU = -1
-    const val OPWORLDENTITYT = -1
-    const val OPWORLDENTITYU = -1
+    const val OPLOCU_V2 = 108
+    const val OPOBJU = 109
 }

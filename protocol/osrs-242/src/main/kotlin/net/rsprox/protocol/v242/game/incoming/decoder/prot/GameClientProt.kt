@@ -49,10 +49,17 @@ public enum class GameClientProt(
 
     @Deprecated(
         "Deprecated since inventory rework in revision 204, " +
-            "all usagesgo through OPLOCT_V1 now.",
+            "all usages go through OPLOCT_V1 now.",
         replaceWith = ReplaceWith("OPLOCT_V1"),
     )
-    OPLOCU(GameClientProtId.OPLOCU, 15),
+    OPLOCU_V1(GameClientProtId.OPLOCU_V1, 15),
+
+    @Deprecated(
+        "Deprecated since inventory rework in revision 204, " +
+            "all usages go through OPLOCT_V2 now.",
+        replaceWith = ReplaceWith("OPLOCT_V2"),
+    )
+    OPLOCU_V2(GameClientProtId.OPLOCU_V2, 16),
 
     // Op obj
     OPOBJ1_V2(GameClientProtId.OPOBJ1_V2, 8),

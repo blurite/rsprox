@@ -392,7 +392,7 @@ internal class NpcInfoClient(
         val end = buffer.g2sAlt2()
         val startTransparency = buffer.g1sAlt1()
         val endTransparency = buffer.g1sAlt1()
-        val useStartTransparency = buffer.g1() == 1
+        val useStartTransparency = buffer.g1Alt2() == 1
         blocks +=
             TransparencyExtendedInfo(
                 start,
@@ -446,7 +446,7 @@ internal class NpcInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val flag = buffer.g1()
+        val flag = buffer.g1Alt1()
         if (flag and 0x1 != 0) {
             blocks += BodyCustomisationExtendedInfo(ResetCustomisation)
             return
