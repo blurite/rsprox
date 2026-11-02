@@ -51,7 +51,7 @@ internal object GameClientProtId {
     const val OPPLAYER8 = 47
     const val WINDOW_STATUS = 48
     const val EVENT_MOUSE_SCROLL = 49
-    const val OPLOCU = 50
+    const val OPLOCU_V1 = 50
     const val OPLOC3 = 51
     const val FRIENDCHAT_JOIN_LEAVE = 52
     const val FRIENDCHAT_KICK = 53

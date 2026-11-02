@@ -16,7 +16,7 @@ internal object GameClientProtId {
     const val WINDOW_STATUS = 12
     const val OPPLAYER7 = 13
     const val IF_BUTTOND = 14
-    const val OPLOCU = 15
+    const val OPLOCU_V1 = 15
     const val OPOBJ3 = 16
     const val OPNPC6 = 17
     const val IF_BUTTON = 18

@@ -44,7 +44,7 @@ internal object GameClientProtId {
     const val IF_BUTTOND = 48
     const val TELEPORT = 50
     const val IF_BUTTON = 51
-    const val OPLOCU = 52
+    const val OPLOCU_V1 = 52
     const val OPPLAYER8 = 53
     const val EVENT_KEYBOARD = 54
     const val FRIENDCHAT_SETRANK = 55

@@ -22,7 +22,7 @@ internal object GameClientProtId {
     const val OPPLAYER7 = 18
     const val IF_BUTTONT = 19
     const val SOUND_JINGLEEND = 20
-    const val OPLOCU = 21
+    const val OPLOCU_V1 = 21
     const val OPOBJ3 = 22
     const val CLANSETTINGS_FULL_REQUEST = 23
     const val EVENT_NATIVE_MOUSE_CLICK = 24

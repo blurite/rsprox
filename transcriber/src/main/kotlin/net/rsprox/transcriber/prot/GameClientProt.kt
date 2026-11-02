@@ -54,7 +54,8 @@ public enum class GameClientProt : Prot {
     OPLOC6_V2,
     OPLOCT_V1,
     OPLOCT_V2,
-    OPLOCU,
+    OPLOCU_V1,
+    OPLOCU_V2,
 
     // Op obj
     OPOBJ1_V1,

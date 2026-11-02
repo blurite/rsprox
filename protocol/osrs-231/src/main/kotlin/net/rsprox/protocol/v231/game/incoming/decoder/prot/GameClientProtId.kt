@@ -98,7 +98,7 @@ internal object GameClientProtId {
     const val OPOBJT = 94
     const val EVENT_KEYBOARD = 95
     const val DETECT_MODIFIED_CLIENT = 96
-    const val OPLOCU = 97
+    const val OPLOCU_V1 = 97
     const val CONNECTION_TELEMETRY = 98
     const val OPOBJ1 = 99
     const val OPPLAYER4 = 100

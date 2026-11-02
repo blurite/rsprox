@@ -51,7 +51,7 @@ internal object GameClientProtId {
     const val IF_CRMVIEW_OP = 47
     const val IF_BUTTON4 = 48
     const val CLIENT_CHEAT = 49
-    const val OPLOCU = 50
+    const val OPLOCU_V1 = 50
     const val OPPLAYER8 = 51
     const val OPPLAYER2 = 52
     const val IGNORELIST_DEL = 53

@@ -86,7 +86,7 @@ internal object GameClientProtId {
     const val SEND_PING_REPLY = 82
     const val EXIT_FREECAM = 83
     const val OPNPC4 = 84
-    const val OPLOCU = 85
+    const val OPLOCU_V1 = 85
     const val EVENT_CAMERA_POSITION = 86
     const val FRIENDCHAT_JOIN_LEAVE = 87
     const val OPNPCU = 88

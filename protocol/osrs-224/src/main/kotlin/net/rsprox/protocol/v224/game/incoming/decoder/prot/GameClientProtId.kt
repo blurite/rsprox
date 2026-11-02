@@ -40,7 +40,7 @@ internal object GameClientProtId {
     const val OPPLAYERU = 36
     const val OPNPCU = 37
     const val OPLOC1 = 38
-    const val OPLOCU = 39
+    const val OPLOCU_V1 = 39
     const val EVENT_NATIVE_MOUSE_MOVE = 40
     const val OPOBJ3 = 41
     const val OPLOC5 = 42

@@ -61,7 +61,7 @@ internal object GameClientProtId {
     const val IF_BUTTON3 = 57
     const val FRIENDCHAT_KICK = 58
     const val CLANSETTINGS_FULL_REQUEST = 59
-    const val OPLOCU = 60
+    const val OPLOCU_V1 = 60
     const val OPNPC1 = 61
     const val IDLE = 62
     const val MESSAGE_PRIVATE = 63

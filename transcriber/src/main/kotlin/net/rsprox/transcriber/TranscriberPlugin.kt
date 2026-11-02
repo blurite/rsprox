@@ -314,7 +314,9 @@ public class TranscriberPlugin(
             GameClientProt.OPLOC6_V2 -> pass(message, Transcriber::opLoc6V2)
             GameClientProt.OPLOCT_V1 -> pass(message, Transcriber::opLocTV1)
             GameClientProt.OPLOCT_V2 -> pass(message, Transcriber::opLocTV2)
-            GameClientProt.OPLOCU -> throw IllegalArgumentException("Unimplemented packet: $message")
+            GameClientProt.OPLOCU_V1,
+            GameClientProt.OPLOCU_V2,
+            -> throw IllegalArgumentException("Unimplemented packet: $message")
             GameClientProt.OPOBJ1_V1 -> pass(message, Transcriber::opObjV1)
             GameClientProt.OPOBJ2_V1 -> pass(message, Transcriber::opObjV1)
             GameClientProt.OPOBJ3_V1 -> pass(message, Transcriber::opObjV1)

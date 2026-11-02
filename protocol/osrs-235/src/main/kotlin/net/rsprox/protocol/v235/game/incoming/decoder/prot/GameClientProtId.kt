@@ -9,7 +9,7 @@ internal object GameClientProtId {
     const val SOUND_JINGLEEND = 5
     const val OPPLAYER2 = 6
     const val EVENT_APPLET_FOCUS = 7
-    const val OPLOCU = 8
+    const val OPLOCU_V1 = 8
     const val IF_BUTTON = 9
     const val SEND_SNAPSHOT = 10
     const val OPPLAYER4 = 11

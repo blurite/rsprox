@@ -17,7 +17,7 @@ internal object GameClientProtId {
     const val CLANCHANNEL_KICKUSER = 13
     const val FRIENDCHAT_KICK = 14
     const val EVENT_APPLET_FOCUS = 15
-    const val OPLOCU = 16
+    const val OPLOCU_V1 = 16
     const val RESUME_P_OBJDIALOG = 17
     const val EVENT_MOUSE_SCROLL = 18
     const val EVENT_MOUSE_CLICK_V1 = 19

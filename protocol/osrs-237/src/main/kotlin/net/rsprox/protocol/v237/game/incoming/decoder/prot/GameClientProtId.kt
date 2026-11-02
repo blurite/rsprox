@@ -17,7 +17,7 @@ internal object GameClientProtId {
     const val OPNPC2_V1 = 13
     const val EVENT_NATIVE_MOUSE_CLICK_V2 = 14
     const val OPLOC5_V2 = 15
-    const val OPLOCU = 16
+    const val OPLOCU_V1 = 16
     const val CLANCHANNEL_FULL_REQUEST = 17
     const val CONNECTION_TELEMETRY = 18
     const val EVENT_CAMERA_POSITION = 19

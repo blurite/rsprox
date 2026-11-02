@@ -78,7 +78,7 @@ internal object GameClientProtId {
     const val IF_CRMVIEW_OP = 74
     const val OPOBJ5 = 75
     const val HISCORE_REQUEST = 76
-    const val OPLOCU = 77
+    const val OPLOCU_V1 = 77
     const val OPLOC2 = 78
     const val EVENT_NATIVE_MOUSE_CLICK = 79
     const val MESSAGE_PUBLIC = 80

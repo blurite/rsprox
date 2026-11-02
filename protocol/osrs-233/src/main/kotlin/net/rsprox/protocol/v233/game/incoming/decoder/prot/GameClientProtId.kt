@@ -74,7 +74,7 @@ internal object GameClientProtId {
     const val HISCORE_REQUEST = 70
     const val EXIT_FREECAM = 71
     const val MEMBERSHIP_PROMOTION_ELIGIBILITY = 72
-    const val OPLOCU = 73
+    const val OPLOCU_V1 = 73
     const val OPPLAYER4 = 74
     const val IF_BUTTON = 75
     const val SEND_PING_REPLY = 76

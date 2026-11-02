@@ -23,7 +23,7 @@ internal object GameClientProtId {
     const val SET_CHATFILTERSETTINGS = 19
     const val CONNECTION_TELEMETRY = 20
     const val OPWORLDENTITY4 = 21
-    const val OPLOCU = 22
+    const val OPLOCU_V1 = 22
     const val EVENT_MOUSE_SCROLL = 23
     const val OPLOC5_V2 = 24
     const val FRIENDCHAT_JOIN_LEAVE = 25

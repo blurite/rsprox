@@ -101,5 +101,5 @@ internal object GameClientProtId {
     const val OPOBJ2_V2 = 113
     const val EVENT_MOUSE_MOVE = 114
     const val FRIENDLIST_DEL = 115
-    const val OPLOCU = 116
+    const val OPLOCU_V1 = 116
 }

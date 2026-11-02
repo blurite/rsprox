@@ -20,7 +20,7 @@ internal object GameClientProtId {
     const val OPPLAYER7 = 16
     const val SEND_PING_REPLY = 17
     const val OPPLAYERT = 18
-    const val OPLOCU = 19
+    const val OPLOCU_V1 = 19
     const val REFLECTION_CHECK_REPLY = 20
     const val EVENT_NATIVE_MOUSE_CLICK = 21
     const val OPOBJ1 = 22

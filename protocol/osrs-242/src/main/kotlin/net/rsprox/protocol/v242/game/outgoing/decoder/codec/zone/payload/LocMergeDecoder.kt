@@ -14,7 +14,7 @@ internal class LocMergeDecoder : ProxyMessageDecoder<LocMerge> {
         buffer: JagByteBuf,
         session: Session,
     ): LocMerge {
-        // TODO(242): The native client discards 14 bytes; wait for the Java layout.
+        // TODO(242): The client discards 14 bytes.
         throw UnsupportedOperationException("LOC_MERGE has no verified active 242 layout")
     }
 }

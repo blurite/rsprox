@@ -92,7 +92,7 @@ internal object GameClientProtId {
     const val OPWORLDENTITY1 = 102
     const val OPOBJ5_V2 = 103
     const val CLANSETTINGS_FULL_REQUEST = 105
-    const val OPLOCU = 106
+    const val OPLOCU_V1 = 106
     const val OPNPC1_V2 = 107
     const val OPWORLDENTITY3 = 108
     const val IF_BUTTONT = 109
