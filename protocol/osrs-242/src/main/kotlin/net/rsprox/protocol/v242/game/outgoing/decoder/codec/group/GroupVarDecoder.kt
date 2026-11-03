@@ -30,7 +30,7 @@ internal class GroupVarDecoder : ProxyMessageDecoder<GroupVar> {
                             GroupVarUpdate.LONG_BASE_VAR_TYPE -> GroupVariable.LongGroupVariable(buffer.g8())
                             GroupVarUpdate.STRING_BASE_VAR_TYPE -> GroupVariable.StringGroupVariable(buffer.gjstr())
                             else -> {
-                                // Type 3 has no value on the wire; the next update follows immediately.
+                                // No buffer reads
                                 GroupVariable.UnknownGroupVariable(baseVarType, ByteArray(0))
                             }
                         }

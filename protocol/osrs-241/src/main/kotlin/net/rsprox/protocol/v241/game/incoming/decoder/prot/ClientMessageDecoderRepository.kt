@@ -76,6 +76,7 @@ import net.rsprox.protocol.v241.game.incoming.decoder.codec.worldentities.OpWorl
 import net.rsprox.protocol.v241.game.incoming.decoder.codec.worldentities.OpWorldEntity4Decoder
 import net.rsprox.protocol.v241.game.incoming.decoder.codec.worldentities.OpWorldEntity5Decoder
 import net.rsprox.protocol.v241.game.incoming.decoder.codec.worldentities.OpWorldEntity6Decoder
+import net.rsprox.protocol.v241.game.incoming.decoder.codec.worldentities.OpWorldEntityTDecoder
 
 internal object ClientMessageDecoderRepository {
     @ExperimentalStdlibApi
@@ -132,7 +133,7 @@ internal object ClientMessageDecoderRepository {
                 bind(OpWorldEntity4Decoder())
                 bind(OpWorldEntity5Decoder())
                 bind(OpWorldEntity6Decoder())
-                // TODO(241): Native world-entity menus have no selected-target branch; OPWORLDENTITYT remains unbound.
+                bind(OpWorldEntityTDecoder())
 
                 bind(EventAppletFocusDecoder())
                 bind(EventCameraPositionDecoder())

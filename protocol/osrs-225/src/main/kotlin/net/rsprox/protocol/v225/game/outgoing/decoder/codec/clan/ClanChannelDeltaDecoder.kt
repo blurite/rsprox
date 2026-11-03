@@ -25,11 +25,16 @@ internal class ClanChannelDeltaDecoder : ProxyMessageDecoder<ClanChannelDelta> {
                     when (val opcode = buffer.g1()) {
                         0 -> break
                         1 -> {
-                            buffer.skipRead(1)
+                            if (buffer.buffer.getUnsignedByte(buffer.readerIndex()) == 255.toShort()) {
+                                buffer.g1()
+                            } else {
+                                buffer.g8()
+                            }
                             // TODO: Should name be nullable?
                             val name = buffer.gjstrnull() ?: ""
                             val world = buffer.g2()
                             val rank = buffer.g1()
+                            buffer.g8() // Unused join timestamp
                             add(
                                 ClanChannelDelta.ClanChannelDeltaAddUserEvent(
                                     name,
@@ -55,8 +60,12 @@ internal class ClanChannelDeltaDecoder : ProxyMessageDecoder<ClanChannelDelta> {
                         }
                         3 -> {
                             val index = buffer.g2()
-                            buffer.skipRead(1)
-                            buffer.skipRead(1)
+                            buffer.g1() // Unused
+                            if (buffer.buffer.getUnsignedByte(buffer.readerIndex()) == 255.toShort()) {
+                                buffer.g1()
+                            } else {
+                                buffer.g8()
+                            }
                             add(
                                 ClanChannelDelta.ClanChannelDeltaDeleteUserEvent(
                                     index,

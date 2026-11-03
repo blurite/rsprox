@@ -30,9 +30,8 @@ internal class GroupVarDecoder : ProxyMessageDecoder<GroupVar> {
                             GroupVarUpdate.LONG_BASE_VAR_TYPE -> GroupVariable.LongGroupVariable(buffer.g8())
                             GroupVarUpdate.STRING_BASE_VAR_TYPE -> GroupVariable.StringGroupVariable(buffer.gjstr())
                             else -> {
-                                val data = ByteArray(buffer.readableBytes())
-                                buffer.gdata(data)
-                                GroupVariable.UnknownGroupVariable(baseVarType, data)
+                                // No buffer reads
+                                GroupVariable.UnknownGroupVariable(baseVarType, ByteArray(0))
                             }
                         }
                     add(GroupVarUpdate(index, packedGroupVar, variable))

@@ -27,15 +27,15 @@ internal class UpdateStockMarketSlotV2Decoder : ProxyMessageDecoder<UpdateStockM
         val version = if (escaped) buffer.g1() else 1
         val status = if (escaped) buffer.g1() else firstState
         val obj = buffer.g2()
-        val price = if (version >= 2) buffer.g8() else buffer.g4().toLong() and 0xFFFFFFFFL
+        val price = if (version >= 2) buffer.g8() else buffer.g4().toLong()
         val count = buffer.g4()
         val completedCount = buffer.g4()
-        val completedGold = if (version >= 2) buffer.g8() else buffer.g4().toLong() and 0xFFFFFFFFL
+        val completedGold = if (version >= 2) buffer.g8() else buffer.g4().toLong()
         val extensionLength = if (version >= 2) buffer.g4() else 0
         require(extensionLength in 0..buffer.readableBytes()) { "Invalid offer extension length: $extensionLength" }
         val extension = List(extensionLength) { buffer.g1() }
         if (version < 2) {
-            buffer.skipRead(14) // Legacy offer inside the 34-byte V2 packet.
+            buffer.skipRead(if (escaped) 12 else 14) // Legacy offers use either a three-byte or a one-byte header.
         }
         return UpdateStockMarketSlotV2(
             slot,
