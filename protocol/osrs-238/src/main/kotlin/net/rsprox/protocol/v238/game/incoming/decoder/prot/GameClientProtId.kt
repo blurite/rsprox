@@ -49,7 +49,7 @@ internal object GameClientProtId {
     const val UPDATE_PLAYER_MODEL_V2 = 53
     const val OPOBJ4_V2 = 54
     const val FRIENDCHAT_SETRANK = 55
-    const val OPLOC6 = 57
+    const val OPLOC6_V1 = 57
     const val CLIENT_CHEAT = 58
     const val OPNPC4_V2 = 59
     const val IGNORELIST_ADD = 60
@@ -85,14 +85,14 @@ internal object GameClientProtId {
     const val RSEVEN_STATUS = 95
     const val OPWORLDENTITY4 = 96
     const val IF_SUBOP = 97
-    const val OPLOCT = 98
+    const val OPLOCT_V1 = 98
     const val OPWORLDENTITYT = 99
     const val SET_HEADING = 100
     const val SEND_SNAPSHOT = 101
     const val OPWORLDENTITY1 = 102
     const val OPOBJ5_V2 = 103
     const val CLANSETTINGS_FULL_REQUEST = 105
-    const val OPLOCU = 106
+    const val OPLOCU_V1 = 106
     const val OPNPC1_V2 = 107
     const val OPWORLDENTITY3 = 108
     const val IF_BUTTONT = 109

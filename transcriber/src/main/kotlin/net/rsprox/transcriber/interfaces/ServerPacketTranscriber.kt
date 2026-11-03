@@ -299,6 +299,8 @@ public interface ServerPacketTranscriber {
 
     public fun siteSettings(message: SiteSettings)
 
+    public fun setWebsiteToken(message: SetWebsiteToken)
+
     public fun updateRebootTimerV1(message: UpdateRebootTimerV1)
 
     public fun updateRebootTimerV2(message: UpdateRebootTimerV2)
@@ -426,6 +428,7 @@ public interface ServerPacketTranscriber {
     public fun locAddChangeV1(message: LocAddChangeV1)
 
     public fun locAddChangeV2(message: LocAddChangeV2)
+    public fun locAddChangeV3(message: LocAddChangeV3)
 
     public fun locAnim(message: LocAnim)
 

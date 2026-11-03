@@ -36,7 +36,7 @@ internal object GameClientProtId {
     const val OPNPC1 = 32
     const val IF_BUTTON10 = 33
     const val OPNPC3 = 34
-    const val OPLOCT = 35
+    const val OPLOCT_V1 = 35
     const val OPNPC5 = 36
     const val CLANCHANNEL_FULL_REQUEST = 37
     const val OPLOC1 = 38
@@ -49,7 +49,7 @@ internal object GameClientProtId {
     const val OPPLAYER2 = 45
     const val OPPLAYER4 = 46
     const val OPOBJ4 = 47
-    const val OPLOC6 = 48
+    const val OPLOC6_V1 = 48
     const val BUG_REPORT = 49
     const val OPPLAYER7 = 50
     const val EVENT_NATIVE_MOUSE_MOVE = 51
@@ -86,7 +86,7 @@ internal object GameClientProtId {
     const val SEND_PING_REPLY = 82
     const val EXIT_FREECAM = 83
     const val OPNPC4 = 84
-    const val OPLOCU = 85
+    const val OPLOCU_V1 = 85
     const val EVENT_CAMERA_POSITION = 86
     const val FRIENDCHAT_JOIN_LEAVE = 87
     const val OPNPCU = 88

@@ -37,15 +37,15 @@ public enum class GameClientProt(
     OPLOC3_V2(GameClientProtId.OPLOC3_V2, 8),
     OPLOC4_V2(GameClientProtId.OPLOC4_V2, 8),
     OPLOC5_V2(GameClientProtId.OPLOC5_V2, 8),
-    OPLOC6(GameClientProtId.OPLOC6, 2),
-    OPLOCT(GameClientProtId.OPLOCT, 15),
+    OPLOC6_V1(GameClientProtId.OPLOC6_V1, 2),
+    OPLOCT_V1(GameClientProtId.OPLOCT_V1, 15),
 
     @Deprecated(
         "Deprecated since inventory rework in revision 204, " +
-            "all usagesgo through OPLOCT now.",
-        replaceWith = ReplaceWith("OPLOCT"),
+            "all usages go through OPLOCT_V1 now.",
+        replaceWith = ReplaceWith("OPLOCT_V1"),
     )
-    OPLOCU(GameClientProtId.OPLOCU, 15),
+    OPLOCU_V1(GameClientProtId.OPLOCU_V1, 15),
 
     // Op obj
     OPOBJ1_V2(GameClientProtId.OPOBJ1_V2, 8),

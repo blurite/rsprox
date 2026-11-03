@@ -5,7 +5,7 @@ internal object GameClientProtId {
     const val FRIENDCHAT_SETRANK = 1
     const val RESUME_P_COUNTDIALOG = 2
     const val OPNPC6 = 3
-    const val OPLOC6 = 4
+    const val OPLOC6_V1 = 4
     const val CLANCHANNEL_KICKUSER = 5
     const val EVENT_NATIVE_MOUSE_MOVE = 6
     const val EVENT_APPLET_FOCUS = 7
@@ -61,7 +61,7 @@ internal object GameClientProtId {
     const val IF_BUTTON3 = 57
     const val FRIENDCHAT_KICK = 58
     const val CLANSETTINGS_FULL_REQUEST = 59
-    const val OPLOCU = 60
+    const val OPLOCU_V1 = 60
     const val OPNPC1 = 61
     const val IDLE = 62
     const val MESSAGE_PRIVATE = 63
@@ -82,7 +82,7 @@ internal object GameClientProtId {
     const val FRIENDLIST_ADD = 78
     const val NO_TIMEOUT = 79
     const val OPOBJ5 = 80
-    const val OPLOCT = 81
+    const val OPLOCT_V1 = 81
     const val FRIENDLIST_DEL = 82
     const val SEND_PING_REPLY = 83
     const val OPPLAYER8 = 84

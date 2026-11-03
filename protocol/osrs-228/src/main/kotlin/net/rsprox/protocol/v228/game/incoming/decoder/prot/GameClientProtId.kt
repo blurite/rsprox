@@ -18,7 +18,7 @@ internal object GameClientProtId {
     const val IGNORELIST_ADD = 14
     const val IF_BUTTON6 = 15
     const val SET_CHATFILTERSETTINGS = 16
-    const val OPLOC6 = 17
+    const val OPLOC6_V1 = 17
     const val FRIENDCHAT_JOIN_LEAVE = 18
     const val RESUME_PAUSEBUTTON = 19
     const val MOVE_MINIMAPCLICK = 20
@@ -78,7 +78,7 @@ internal object GameClientProtId {
     const val IF_CRMVIEW_OP = 74
     const val OPOBJ5 = 75
     const val HISCORE_REQUEST = 76
-    const val OPLOCU = 77
+    const val OPLOCU_V1 = 77
     const val OPLOC2 = 78
     const val EVENT_NATIVE_MOUSE_CLICK = 79
     const val MESSAGE_PUBLIC = 80
@@ -89,7 +89,7 @@ internal object GameClientProtId {
     const val OPPLAYER2 = 85
     const val OPOBJT = 86
     const val FRIENDLIST_DEL = 87
-    const val OPLOCT = 88
+    const val OPLOCT_V1 = 88
     const val NO_TIMEOUT = 89
     const val RESUME_P_STRINGDIALOG = 90
     const val AFFINEDCLANSETTINGS_ADDBANNED_FROMCHANNEL = 91

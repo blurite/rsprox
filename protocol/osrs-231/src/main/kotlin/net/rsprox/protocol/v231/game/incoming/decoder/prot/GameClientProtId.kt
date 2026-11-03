@@ -1,7 +1,7 @@
 package net.rsprox.protocol.v231.game.incoming.decoder.prot
 
 internal object GameClientProtId {
-    const val OPLOCT = 0
+    const val OPLOCT_V1 = 0
     const val OPPLAYER6 = 1
     const val SEND_PING_REPLY = 2
     const val FRIENDLIST_DEL = 3
@@ -46,7 +46,7 @@ internal object GameClientProtId {
     const val EVENT_NATIVE_MOUSE_CLICK = 42
     const val CLICKWORLDMAP = 43
     const val WINDOW_STATUS = 44
-    const val OPLOC6 = 45
+    const val OPLOC6_V1 = 45
     const val CLANSETTINGS_FULL_REQUEST = 46
     const val AFFINEDCLANSETTINGS_ADDBANNED_FROMCHANNEL = 47
     const val OPPLAYER5 = 48
@@ -98,7 +98,7 @@ internal object GameClientProtId {
     const val OPOBJT = 94
     const val EVENT_KEYBOARD = 95
     const val DETECT_MODIFIED_CLIENT = 96
-    const val OPLOCU = 97
+    const val OPLOCU_V1 = 97
     const val CONNECTION_TELEMETRY = 98
     const val OPOBJ1 = 99
     const val OPPLAYER4 = 100

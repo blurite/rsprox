@@ -244,6 +244,11 @@ public class ServerGameHandler(
                         interfaceId = buf.g2Alt2()
                         buf.skipRead(1)
                     }
+                    242 -> {
+                        targetComponent = buf.gCombinedIdAlt2()
+                        interfaceId = buf.g2Alt2()
+                        buf.skipRead(1)
+                    }
 
                     else -> {
                         error("Unsupported revision: $revision")
@@ -273,7 +278,7 @@ public class ServerGameHandler(
                 buffer.p4(crc)
                 msg.replacePayload(buffer)
             }
-            "SITE_SETTINGS" -> {
+            "SITE_SETTINGS", "SET_WEBSITE_TOKEN" -> {
                 val old = msg.payload.gjstr()
                 // Similarly to update uid192, since both of them are linked, this can be followed
                 // back to account recovery system.

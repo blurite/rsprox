@@ -10,10 +10,13 @@ import net.rsprox.protocol.game.incoming.model.events.*
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatJoinLeave
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatKick
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatSetRank
-import net.rsprox.protocol.game.incoming.model.locs.OpLoc6
-import net.rsprox.protocol.game.incoming.model.locs.OpLocT
+import net.rsprox.protocol.game.incoming.model.locs.OpLoc6V1
+import net.rsprox.protocol.game.incoming.model.locs.OpLoc6V2
+import net.rsprox.protocol.game.incoming.model.locs.OpLocTV1
+import net.rsprox.protocol.game.incoming.model.locs.OpLocTV2
 import net.rsprox.protocol.game.incoming.model.locs.OpLocV1
 import net.rsprox.protocol.game.incoming.model.locs.OpLocV2
+import net.rsprox.protocol.game.incoming.model.locs.OpLocV3
 import net.rsprox.protocol.game.incoming.model.messaging.MessagePrivate
 import net.rsprox.protocol.game.incoming.model.messaging.MessagePublic
 import net.rsprox.protocol.game.incoming.model.misc.client.*
@@ -107,10 +110,13 @@ public interface ClientPacketTranscriber {
     public fun opLocV1(message: OpLocV1)
 
     public fun opLocV2(message: OpLocV2)
+    public fun opLocV3(message: OpLocV3)
 
-    public fun opLoc6(message: OpLoc6)
+    public fun opLoc6V1(message: OpLoc6V1)
+    public fun opLoc6V2(message: OpLoc6V2)
 
-    public fun opLocT(message: OpLocT)
+    public fun opLocTV1(message: OpLocTV1)
+    public fun opLocTV2(message: OpLocTV2)
 
     public fun messagePrivateClient(message: MessagePrivate)
 

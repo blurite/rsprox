@@ -47,6 +47,7 @@ public enum class GameServerProt : Prot {
     // Zone payload packets
     LOC_ADD_CHANGE_V1,
     LOC_ADD_CHANGE_V2,
+    LOC_ADD_CHANGE_V3,
     LOC_DEL,
     LOC_ANIM,
     LOC_MERGE,
@@ -231,6 +232,7 @@ public enum class GameServerProt : Prot {
     // Misc. client packets
     URL_OPEN,
     SITE_SETTINGS,
+    SET_WEBSITE_TOKEN,
     UPDATE_UID192,
     REFLECTION_CHECKER,
     SEND_PING,

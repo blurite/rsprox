@@ -16,7 +16,7 @@ internal object GameClientProtId {
     const val WINDOW_STATUS = 12
     const val OPPLAYER7 = 13
     const val IF_BUTTOND = 14
-    const val OPLOCU = 15
+    const val OPLOCU_V1 = 15
     const val OPOBJ3 = 16
     const val OPNPC6 = 17
     const val IF_BUTTON = 18
@@ -60,7 +60,7 @@ internal object GameClientProtId {
     const val OPPLAYER1 = 56
     const val BUG_REPORT = 57
     const val SOUND_JINGLEEND = 58
-    const val OPLOCT = 59
+    const val OPLOCT_V1 = 59
     const val FRIENDCHAT_KICK = 60
     const val MESSAGE_PUBLIC = 61
     const val IF_BUTTON10 = 62
@@ -100,5 +100,5 @@ internal object GameClientProtId {
     const val MOVE_MINIMAPCLICK = 96
     const val EVENT_NATIVE_MOUSE_CLICK = 97
     const val AFFINEDCLANSETTINGS_ADDBANNED_FROMCHANNEL = 98
-    const val OPLOC6 = 99
+    const val OPLOC6_V1 = 99
 }

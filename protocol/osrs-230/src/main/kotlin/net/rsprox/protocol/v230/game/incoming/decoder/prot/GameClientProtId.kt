@@ -20,7 +20,7 @@ internal object GameClientProtId {
     const val OPPLAYER7 = 16
     const val SEND_PING_REPLY = 17
     const val OPPLAYERT = 18
-    const val OPLOCU = 19
+    const val OPLOCU_V1 = 19
     const val REFLECTION_CHECK_REPLY = 20
     const val EVENT_NATIVE_MOUSE_CLICK = 21
     const val OPOBJ1 = 22
@@ -28,7 +28,7 @@ internal object GameClientProtId {
     const val IF_BUTTON9 = 24
     const val IF_BUTTON6 = 25
     const val IF_BUTTON10 = 26
-    const val OPLOC6 = 27
+    const val OPLOC6_V1 = 27
     const val IF_BUTTONT = 28
     const val IF_BUTTON5 = 29
     const val CLANSETTINGS_FULL_REQUEST = 30
@@ -89,7 +89,7 @@ internal object GameClientProtId {
     const val OPLOC2 = 85
     const val MOVE_GAMECLICK = 86
     const val IF_BUTTON3 = 87
-    const val OPLOCT = 88
+    const val OPLOCT_V1 = 88
     const val IF_BUTTON8 = 89
     const val IF_CRMVIEW_OP = 90
     const val OPNPC6 = 91

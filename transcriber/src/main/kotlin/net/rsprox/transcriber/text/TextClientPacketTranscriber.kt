@@ -12,10 +12,13 @@ import net.rsprox.protocol.game.incoming.model.events.*
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatJoinLeave
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatKick
 import net.rsprox.protocol.game.incoming.model.friendchat.FriendChatSetRank
-import net.rsprox.protocol.game.incoming.model.locs.OpLoc6
-import net.rsprox.protocol.game.incoming.model.locs.OpLocT
+import net.rsprox.protocol.game.incoming.model.locs.OpLoc6V1
+import net.rsprox.protocol.game.incoming.model.locs.OpLoc6V2
+import net.rsprox.protocol.game.incoming.model.locs.OpLocTV1
+import net.rsprox.protocol.game.incoming.model.locs.OpLocTV2
 import net.rsprox.protocol.game.incoming.model.locs.OpLocV1
 import net.rsprox.protocol.game.incoming.model.locs.OpLocV2
+import net.rsprox.protocol.game.incoming.model.locs.OpLocV3
 import net.rsprox.protocol.game.incoming.model.messaging.MessagePrivate
 import net.rsprox.protocol.game.incoming.model.messaging.MessagePublic
 import net.rsprox.protocol.game.incoming.model.misc.client.*
@@ -428,12 +431,35 @@ public open class TextClientPacketTranscriber(
         root.filteredInt("subop", message.subop, 0)
     }
 
-    override fun opLoc6(message: OpLoc6) {
+    override fun opLocV3(message: OpLocV3) {
+        if (!filters[PropertyFilter.OPLOC]) return omit()
+        root.scriptVarType("id", ScriptVarType.LOC, message.id)
+        root.coordGrid(sessionState.level(), message.x, message.z)
+        root.filteredBoolean("ctrl", message.controlKey)
+        root.filteredInt("subop", message.subop, 0)
+    }
+
+    override fun opLoc6V1(message: OpLoc6V1) {
         if (!filters[PropertyFilter.OPLOC]) return omit()
         root.scriptVarType("id", ScriptVarType.LOC, message.id)
     }
 
-    override fun opLocT(message: OpLocT) {
+    override fun opLoc6V2(message: OpLoc6V2) {
+        if (!filters[PropertyFilter.OPLOC]) return omit()
+        root.scriptVarType("id", ScriptVarType.LOC, message.id)
+    }
+
+    override fun opLocTV1(message: OpLocTV1) {
+        if (!filters[PropertyFilter.OPLOCT]) return omit()
+        root.scriptVarType("id", ScriptVarType.LOC, message.id)
+        root.coordGrid(sessionState.level(), message.x, message.z)
+        root.filteredBoolean("ctrl", message.controlKey)
+        root.com(message.selectedInterfaceId, message.selectedComponentId)
+        root.filteredInt("sub", message.selectedSub, -1)
+        root.filteredScriptVarType("obj", ScriptVarType.OBJ, message.selectedObj, -1)
+    }
+
+    override fun opLocTV2(message: OpLocTV2) {
         if (!filters[PropertyFilter.OPLOCT]) return omit()
         root.scriptVarType("id", ScriptVarType.LOC, message.id)
         root.coordGrid(sessionState.level(), message.x, message.z)

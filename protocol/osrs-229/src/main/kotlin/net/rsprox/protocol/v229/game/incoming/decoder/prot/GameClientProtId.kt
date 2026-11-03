@@ -15,7 +15,7 @@ internal object GameClientProtId {
     const val MESSAGE_PRIVATE = 11
     const val REFLECTION_CHECK_REPLY = 12
     const val FRIENDCHAT_JOIN_LEAVE = 13
-    const val OPLOCT = 14
+    const val OPLOCT_V1 = 14
     const val OPNPC1 = 15
     const val IF_BUTTON = 16
     const val TELEPORT = 17
@@ -51,7 +51,7 @@ internal object GameClientProtId {
     const val IF_CRMVIEW_OP = 47
     const val IF_BUTTON4 = 48
     const val CLIENT_CHEAT = 49
-    const val OPLOCU = 50
+    const val OPLOCU_V1 = 50
     const val OPPLAYER8 = 51
     const val OPPLAYER2 = 52
     const val IGNORELIST_DEL = 53
@@ -69,7 +69,7 @@ internal object GameClientProtId {
     const val OPNPC4 = 65
     const val OPNPCT = 66
     const val MOVE_GAMECLICK = 67
-    const val OPLOC6 = 68
+    const val OPLOC6_V1 = 68
     const val IF_BUTTON8 = 69
     const val OPOBJ5 = 70
     const val MOVE_MINIMAPCLICK = 71

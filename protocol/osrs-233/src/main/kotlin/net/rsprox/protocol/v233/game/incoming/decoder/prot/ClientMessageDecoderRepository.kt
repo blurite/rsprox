@@ -19,8 +19,8 @@ import net.rsprox.protocol.v233.game.incoming.decoder.codec.locs.OpLoc2Decoder
 import net.rsprox.protocol.v233.game.incoming.decoder.codec.locs.OpLoc3Decoder
 import net.rsprox.protocol.v233.game.incoming.decoder.codec.locs.OpLoc4Decoder
 import net.rsprox.protocol.v233.game.incoming.decoder.codec.locs.OpLoc5Decoder
-import net.rsprox.protocol.v233.game.incoming.decoder.codec.locs.OpLoc6Decoder
-import net.rsprox.protocol.v233.game.incoming.decoder.codec.locs.OpLocTDecoder
+import net.rsprox.protocol.v233.game.incoming.decoder.codec.locs.OpLoc6V1Decoder
+import net.rsprox.protocol.v233.game.incoming.decoder.codec.locs.OpLocTV1Decoder
 import net.rsprox.protocol.v233.game.incoming.decoder.codec.messaging.MessagePrivateDecoder
 import net.rsprox.protocol.v233.game.incoming.decoder.codec.messaging.MessagePublicDecoder
 import net.rsprox.protocol.v233.game.incoming.decoder.codec.misc.client.*
@@ -106,8 +106,8 @@ internal object ClientMessageDecoderRepository {
                 bind(OpLoc3Decoder())
                 bind(OpLoc4Decoder())
                 bind(OpLoc5Decoder())
-                bind(OpLoc6Decoder())
-                bind(OpLocTDecoder())
+                bind(OpLoc6V1Decoder())
+                bind(OpLocTV1Decoder())
 
                 bind(OpObj1Decoder())
                 bind(OpObj2Decoder())

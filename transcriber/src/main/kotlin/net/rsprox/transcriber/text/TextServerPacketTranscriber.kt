@@ -53,6 +53,7 @@ import net.rsprox.protocol.game.outgoing.model.misc.client.PacketGroupStart
 import net.rsprox.protocol.game.outgoing.model.misc.client.ReflectionChecker
 import net.rsprox.protocol.game.outgoing.model.misc.client.ResetAnims
 import net.rsprox.protocol.game.outgoing.model.misc.client.ResetInteractionMode
+import net.rsprox.protocol.game.outgoing.model.misc.client.SetWebsiteToken
 import net.rsprox.protocol.game.outgoing.model.misc.client.SendPing
 import net.rsprox.protocol.game.outgoing.model.misc.client.ServerTickEnd
 import net.rsprox.protocol.game.outgoing.model.misc.client.SetHeatmapEnabled
@@ -2274,6 +2275,11 @@ public class TextServerPacketTranscriber(
         root.string("settings", message.settings)
     }
 
+    override fun setWebsiteToken(message: SetWebsiteToken) {
+        if (!filters[PropertyFilter.SET_WEBSITE_TOKEN]) return omit()
+        root.string("token", message.token)
+    }
+
     override fun updateRebootTimerV1(message: UpdateRebootTimerV1) {
         if (!filters[PropertyFilter.UPDATE_REBOOT_TIMER]) return omit()
         root.formattedInt("gamecycles", message.gameCycles)
@@ -3257,6 +3263,11 @@ public class TextServerPacketTranscriber(
                     val root = sessionState.createFakeServerRoot("LOC_ADD_CHANGE_V2")
                     root.buildLocAddChangeV2(event)
                 }
+                is LocAddChangeV3 -> {
+                    if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
+                    val root = sessionState.createFakeServerRoot("LOC_ADD_CHANGE_V2")
+                    root.buildLocAddChangeV3(event)
+                }
                 is LocAnim -> {
                     if (!filters[PropertyFilter.LOC_ANIM]) continue
                     val root = sessionState.createFakeServerRoot("LOC_ANIM")
@@ -3353,6 +3364,12 @@ public class TextServerPacketTranscriber(
                         if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
                         group("LOC_ADD_CHANGE_V2") {
                             buildLocAddChangeV2(event)
+                        }
+                    }
+                    is LocAddChangeV3 -> {
+                        if (!filters[PropertyFilter.LOC_ADD_CHANGE]) continue
+                        group("LOC_ADD_CHANGE_V2") {
+                            buildLocAddChangeV3(event)
                         }
                     }
                     is LocAnim -> {
@@ -3465,6 +3482,11 @@ public class TextServerPacketTranscriber(
         root.buildLocAddChangeV2(message)
     }
 
+    override fun locAddChangeV3(message: LocAddChangeV3) {
+        if (!filters[PropertyFilter.LOC_ADD_CHANGE]) return omit()
+        root.buildLocAddChangeV3(message)
+    }
+
     override fun locAnim(message: LocAnim) {
         if (!filters[PropertyFilter.LOC_ANIM]) return omit()
         root.buildLocAnim(message)
@@ -3546,6 +3568,20 @@ public class TextServerPacketTranscriber(
     }
 
     private fun Property.buildLocAddChangeV2(message: LocAddChangeV2) {
+        scriptVarType("id", ScriptVarType.LOC, message.id)
+        coordGrid(coordInZone(message.xInZone, message.zInZone))
+        scriptVarType("shape", ScriptVarType.LOC_SHAPE, message.shape)
+        int("rotation", message.rotation)
+        filteredAny("opflags", "0b" + message.opFlags.value.toString(2), "0b11111")
+        val ops = message.ops
+        if (ops != null) {
+            for ((k, v) in ops) {
+                string("op${k.inc()}", v)
+            }
+        }
+    }
+
+    private fun Property.buildLocAddChangeV3(message: LocAddChangeV3) {
         scriptVarType("id", ScriptVarType.LOC, message.id)
         coordGrid(coordInZone(message.xInZone, message.zInZone))
         scriptVarType("shape", ScriptVarType.LOC_SHAPE, message.shape)

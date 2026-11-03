@@ -16,13 +16,13 @@ internal object GameClientProtId {
     const val REFLECTION_CHECK_REPLY = 12
     const val EVENT_NATIVE_MOUSE_MOVE = 13
     const val EVENT_CAMERA_POSITION = 14
-    const val OPLOC6 = 15
+    const val OPLOC6_V1 = 15
     const val OPNPC1 = 16
     const val OPLOC4 = 17
     const val OPPLAYER7 = 18
     const val IF_BUTTONT = 19
     const val SOUND_JINGLEEND = 20
-    const val OPLOCU = 21
+    const val OPLOCU_V1 = 21
     const val OPOBJ3 = 22
     const val CLANSETTINGS_FULL_REQUEST = 23
     const val EVENT_NATIVE_MOUSE_CLICK = 24
@@ -59,7 +59,7 @@ internal object GameClientProtId {
     const val FRIENDCHAT_SETRANK = 55
     const val CLANCHANNEL_KICKUSER = 56
     const val FRIENDLIST_DEL = 57
-    const val OPLOCT = 58
+    const val OPLOCT_V1 = 58
     const val OPWORLDENTITY4 = 59
     const val RSEVEN_STATUS = 60
     const val OPPLAYER4 = 61

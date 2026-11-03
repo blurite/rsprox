@@ -17,7 +17,7 @@ internal object GameClientProtId {
     const val OPNPC2_V1 = 13
     const val EVENT_NATIVE_MOUSE_CLICK_V2 = 14
     const val OPLOC5_V2 = 15
-    const val OPLOCU = 16
+    const val OPLOCU_V1 = 16
     const val CLANCHANNEL_FULL_REQUEST = 17
     const val CONNECTION_TELEMETRY = 18
     const val EVENT_CAMERA_POSITION = 19
@@ -71,7 +71,7 @@ internal object GameClientProtId {
     const val OPLOC4_V2 = 67
     const val CLIENT_CHEAT = 68
     const val OPWORLDENTITY2 = 69
-    const val OPLOC6 = 70
+    const val OPLOC6_V1 = 70
     const val EXIT_FREECAM = 71
     const val OPPLAYERT = 72
     const val AFFINEDCLANSETTINGS_ADDBANNED_FROMCHANNEL = 73
@@ -100,7 +100,7 @@ internal object GameClientProtId {
     const val OPLOC1_V2 = 96
     const val OPWORLDENTITY5 = 97
     const val EVENT_APPLET_FOCUS = 98
-    const val OPLOCT = 99
+    const val OPLOCT_V1 = 99
     const val OPWORLDENTITYT = 100
     const val OPOBJ4_V2 = 101
     const val IF_CRMVIEW_OP = 102

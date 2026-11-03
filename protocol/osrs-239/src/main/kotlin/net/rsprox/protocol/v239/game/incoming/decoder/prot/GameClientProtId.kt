@@ -44,7 +44,7 @@ internal object GameClientProtId {
     const val IF_BUTTOND = 48
     const val TELEPORT = 50
     const val IF_BUTTON = 51
-    const val OPLOCU = 52
+    const val OPLOCU_V1 = 52
     const val OPPLAYER8 = 53
     const val EVENT_KEYBOARD = 54
     const val FRIENDCHAT_SETRANK = 55
@@ -54,7 +54,7 @@ internal object GameClientProtId {
     const val SET_CHATFILTERSETTINGS = 59
     const val SEND_SNAPSHOT = 60
     const val MEMBERSHIP_PROMOTION_ELIGIBILITY = 61
-    const val OPLOCT = 62
+    const val OPLOCT_V1 = 62
     const val RESUME_P_LONGDIALOG = 63
     const val RESUME_P_STRINGDIALOG = 64
     const val FRIENDLIST_DEL = 65
@@ -68,7 +68,7 @@ internal object GameClientProtId {
     const val RESUME_P_COUNTDIALOG = 75
     const val OPOBJT = 76
     const val UPDATE_PLAYER_MODEL_V2 = 77
-    const val OPLOC6 = 78
+    const val OPLOC6_V1 = 78
     const val OPPLAYERT = 79
     const val OPWORLDENTITY2 = 80
     const val IGNORELIST_ADD = 82
