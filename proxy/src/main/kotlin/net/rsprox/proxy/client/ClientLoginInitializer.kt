@@ -16,6 +16,7 @@ import net.rsprox.proxy.client.prot.LoginClientProtProvider
 import net.rsprox.proxy.connection.ClientTypeDictionary
 import net.rsprox.proxy.connection.ProxyConnectionContainer
 import net.rsprox.proxy.plugin.DecoderLoader
+import net.rsprox.proxy.socks.SocksRelayDestinations
 import net.rsprox.proxy.target.ProxyTarget
 import net.rsprox.proxy.util.ChannelConnectionHandler
 import net.rsprox.proxy.worlds.LocalHostAddress
@@ -120,7 +121,8 @@ public class ClientLoginInitializer(
         private val logger = InlineLogger()
 
         private fun getLocalHostAddress(channel: Channel): LocalHostAddress {
-            val remoteAddress = channel.localAddress()
+            val relayed = (channel.remoteAddress() as? InetSocketAddress)?.let { SocksRelayDestinations[it.port] }
+            val remoteAddress = relayed ?: channel.localAddress()
             if (remoteAddress !is InetSocketAddress) {
                 throw IllegalArgumentException("Channel is not InetSocketAddress")
             }

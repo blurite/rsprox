@@ -81,6 +81,7 @@ import net.rsprox.proxy.runelite.RSProxArchiveBootstrap
 import net.rsprox.proxy.runelite.RSProxArchiveBootstrapDictionary
 import net.rsprox.proxy.runelite.RuneliteLauncher
 import net.rsprox.proxy.settings.DefaultSettingSetStore
+import net.rsprox.proxy.socks.SocksRelayServer
 import net.rsprox.proxy.target.ALT_PROXY_TARGETS_FILE
 import net.rsprox.proxy.target.PROXY_TARGETS_FILE
 import net.rsprox.proxy.target.ProxyTarget
@@ -132,6 +133,7 @@ public class ProxyService(
     private lateinit var replayServerChannel: Channel
     public lateinit var operatingSystem: OperatingSystem
         private set
+    private val socksRelay: SocksRelayServer by lazy { SocksRelayServer() }
     private lateinit var rsa: RSAPrivateCrtKeyParameters
     public lateinit var jagexAccountStore: JagexAccountStore
         private set
@@ -1388,6 +1390,16 @@ public class ProxyService(
         )
     }
 
+    private fun socksJvmArgs(operatingSystem: OperatingSystem): List<String> {
+        if (operatingSystem != OperatingSystem.MAC) return emptyList()
+        return listOf(
+            "-DsocksProxyHost=127.0.0.1",
+            "-DsocksProxyPort=${socksRelay.port}",
+            // Any non-empty value keeps the JDK's built-in exclusion of 127.* and localhost.
+            "-DsocksNonProxyHosts=",
+        )
+    }
+
     private fun launchJavaProcess(
         port: Int,
         operatingSystem: OperatingSystem,
@@ -1407,7 +1419,7 @@ public class ProxyService(
         try {
             val javConfigEndpoint = properties.getProperty(JAV_CONFIG_ENDPOINT)
             val launcher = RuneliteLauncher()
-            val clientJvmArgs =
+            val replayJvmArgs =
                 if (useFakeJagexAccount) {
                     val replayAuthTrustStore =
                         checkNotNull(target.replayAuthTrustStore) {
@@ -1424,6 +1436,7 @@ public class ProxyService(
                 } else {
                     emptyList()
                 }
+            val clientJvmArgs = replayJvmArgs + socksJvmArgs(operatingSystem)
             val args =
                 launcher.getLaunchArgs(
                     port,
