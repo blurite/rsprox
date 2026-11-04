@@ -14,8 +14,7 @@ public class RSProxArchiveDiskCacheProvider(
     public fun get(masterIndex: Js5MasterIndex): RSProxArchiveDiskCacheStore? {
         val entry = dictionary.find(masterIndex) ?: return null
         logger.info {
-            "Matched replay cache revision ${masterIndex.revision} to RSProx Archive " +
-                "variant ${entry.variant}"
+            "Matched replay client ${masterIndex.revision} to RSProx Archive cache ${entry.revision} variant ${entry.variant}"
         }
         return RSProxArchiveDiskCacheStore(
             path = root.resolve(entry.masterIndexSha256.lowercase()),

@@ -7,6 +7,9 @@ public class Js5MasterIndex(
     public val revision: Int,
     public val data: ByteArray,
 ) {
+    internal val replayCacheRevisions: IntProgression
+        get() = revision downTo (revision - 1)
+
     @OptIn(ExperimentalStdlibApi::class)
     public fun sha256(): String {
         val messageDigest = MessageDigest.getInstance("SHA-256")

@@ -31,7 +31,8 @@ public class ReplayDiskCacheProvider {
             }
         } else {
             logger.info {
-                "Replay cache revision ${masterIndex.revision} is not present in RSProx Archive; " +
+                "No matching RSProx Archive cache for replay client ${masterIndex.revision} " +
+                    "(checked revisions ${masterIndex.replayCacheRevisions.joinToString()}); " +
                     "falling back to OpenRS2"
             }
         }

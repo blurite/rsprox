@@ -21,24 +21,24 @@ public class OpenRs2DiskCacheProvider(
 
     private fun identify(masterIndex: Js5MasterIndex): Int? {
         val scope = CacheScope.RuneScape
-        val entries =
-            dictionary.list(
-                scope,
-                CacheGame.OldSchool,
-                CacheLanguage.English,
-                masterIndex.revision,
-            )
-        for (entry in entries) {
-            val data =
-                try {
-                    downloadOpenRs2Group(scope, entry.id, MASTER_INDEX, MASTER_INDEX)
-                } catch (e: Exception) {
-                    logger.debug(e) { "Unable to read OpenRS2 master index for cache ${entry.id}" }
-                    continue
+        val checked = mutableSetOf<Int>()
+        for (revision in masterIndex.replayCacheRevisions) {
+            val entries = dictionary.list(scope, CacheGame.OldSchool, CacheLanguage.English, revision)
+            for (entry in entries) {
+                if (!checked.add(entry.id)) continue
+                val data =
+                    try {
+                        downloadOpenRs2Group(scope, entry.id, MASTER_INDEX, MASTER_INDEX)
+                    } catch (e: Exception) {
+                        logger.debug(e) { "Unable to read OpenRS2 master index for cache ${entry.id}" }
+                        continue
+                    }
+                if (masterIndex.data contentEquals data) {
+                    logger.info {
+                        "Matched replay client ${masterIndex.revision} to OpenRS2 cache ${entry.id} (revision $revision)"
+                    }
+                    return entry.id
                 }
-            if (masterIndex.data contentEquals data) {
-                logger.info { "Matched replay cache revision ${masterIndex.revision} to OpenRS2 disk cache ${entry.id}" }
-                return entry.id
             }
         }
         return null
