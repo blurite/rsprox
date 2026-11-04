@@ -1,5 +1,6 @@
 package net.rsprox.transcriber.rs3.text
 
+import net.rsprox.cache.api.rs3.Rs3PacketDefinitions
 import net.rsprox.cache.api.type.ClientScriptDefinitionProvider
 import net.rsprox.shared.filters.PropertyFilterSetStore
 import net.rsprox.shared.property.SymbolDictionary
@@ -12,6 +13,7 @@ import net.rsprox.transcriber.rs3.state.Rs3SessionTracker
 
 public class TextRs3TranscriberProvider(
     private val symbols: SymbolDictionary,
+    private val packetDefinitions: Rs3PacketDefinitions?,
 ) {
     public fun provide(
         container: MessageConsumerContainer,
@@ -21,7 +23,7 @@ public class TextRs3TranscriberProvider(
         isLobby: Boolean = false,
     ): Rs3TranscriberSession {
         val formatter = Rs3PropertyFormatter.create(settings, symbols, clientScripts)
-        val sessionState = Rs3SessionState(clientScripts, isLobby)
+        val sessionState = Rs3SessionState(clientScripts, isLobby, packetDefinitions)
         val sessionTracker = Rs3SessionTracker(sessionState)
         val plugin =
             Rs3TranscriberPlugin(

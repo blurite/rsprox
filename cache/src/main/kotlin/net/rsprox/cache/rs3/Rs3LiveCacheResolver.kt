@@ -306,10 +306,10 @@ public class Rs3LiveCacheResolver(
             override fun getQuickChatPhrase(id: Int): Rs3QuickChatPhrase =
                 checkNotNull(phrases[id]) { "Missing RS3 quickchat phrase $id" }
 
-            override fun getVariable(
+            override fun getVariableOrNull(
                 domain: Rs3VariableDomain,
                 id: Int,
-            ): Rs3VariableDefinition = checkNotNull(variables[domain]?.get(id)) { "Missing RS3 $domain variable $id" }
+            ): Rs3VariableDefinition? = variables[domain]?.get(id)
 
             private val decoded = ConcurrentHashMap<Int, Rs3AppearanceItem>()
 

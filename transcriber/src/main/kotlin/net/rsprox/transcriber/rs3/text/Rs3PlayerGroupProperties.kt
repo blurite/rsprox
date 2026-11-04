@@ -9,6 +9,7 @@ import net.rsprox.shared.property.group
 import net.rsprox.shared.property.int
 import net.rsprox.shared.property.long
 import net.rsprox.shared.property.string
+import net.rsprox.shared.property.varbit
 
 internal fun Property.appendPlayerGroup(value: PlayerGroupFull.Group) {
     long("key", value.groupKey)
@@ -86,7 +87,7 @@ internal fun Property.appendPlayerGroupRecords(records: List<PlayerGroupDelta.Re
                 PlayerGroupDelta.NoVariable -> group("NO_VARIABLE") {}
                 is PlayerGroupDelta.Varbit ->
                     group("VARBIT") {
-                        int("id", record.id)
+                        varbit("id", record.id)
                         record.value?.let { int("value", it) }
                     }
                 is PlayerGroupDelta.MemberByte3c ->

@@ -1,5 +1,6 @@
 package net.rsprox.transcriber.rs3.text
 
+import net.rsprox.cache.api.rs3.Rs3VariableDomain
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.rs3.game.outgoing.model.info.playerinfo.PlayerInfo
 import net.rsprox.protocol.rs3.game.outgoing.model.info.playerinfo.PlayerUpdateType
@@ -215,7 +216,8 @@ public class TextRs3PlayerInfoTranscriber(
                         group {
                             varp("varp", entry.id)
                             when (val value = entry.value) {
-                                is PlayerExtendedInfo.VariableValue.IntegerValue -> int("value", value.value)
+                                is PlayerExtendedInfo.VariableValue.IntegerValue ->
+                                    appendVariableInt(sessionState.packetDefinitions, Rs3VariableDomain.PLAYER, entry.id, value.value)
                                 is PlayerExtendedInfo.VariableValue.LongValue -> long("value", value.value)
                                 is PlayerExtendedInfo.VariableValue.StringValue -> string("value", value.value)
                                 is PlayerExtendedInfo.VariableValue.Coordinate ->

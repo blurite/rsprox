@@ -82,7 +82,7 @@ internal object Rs3BinaryTranscriber {
                 val consumer = TranscribeCommand.createBufferedWriterConsumer(writer)
                 val container = TextMessageConsumerContainer(listOf(consumer))
                 val formatter = Rs3PropertyFormatter.create(settings, gamevals, clientScripts)
-                val provider = TextRs3TranscriberProvider(gamevals)
+                val provider = TextRs3TranscriberProvider(gamevals, definitions)
                 var transcriber = provider.provide(container, filters, settings, clientScripts, isLobby = true)
 
                 fun session(index: Int): Session =

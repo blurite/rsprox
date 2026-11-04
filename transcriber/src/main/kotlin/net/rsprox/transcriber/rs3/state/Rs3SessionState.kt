@@ -1,5 +1,6 @@
 package net.rsprox.transcriber.rs3.state
 
+import net.rsprox.cache.api.rs3.Rs3PacketDefinitions
 import net.rsprox.cache.api.type.ClientScriptDefinitionProvider
 import net.rsprox.shared.property.ChildProperty
 import net.rsprox.shared.property.RootProperty
@@ -7,6 +8,7 @@ import net.rsprox.shared.property.RootProperty
 public class Rs3SessionState(
     public val clientScripts: ClientScriptDefinitionProvider = ClientScriptDefinitionProvider.EMPTY,
     public val isLobby: Boolean = false,
+    public val packetDefinitions: Rs3PacketDefinitions? = null,
 ) {
     public var cycle: Int = 0
         private set

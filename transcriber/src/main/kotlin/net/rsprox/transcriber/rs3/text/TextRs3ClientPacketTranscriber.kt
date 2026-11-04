@@ -500,7 +500,7 @@ public class TextRs3ClientPacketTranscriber(
             for (argument in message.arguments) {
                 group {
                     int("scripttype", argument.scriptType)
-                    appendVariableValue(argument.value)
+                    appendVariableValue(argument.scriptType, argument.value)
                 }
             }
         }
@@ -638,7 +638,7 @@ public class TextRs3ClientPacketTranscriber(
     override fun ifTextChange(message: IfTextChange) {
         if (!filters[PropertyFilter.IF_TEXT_CHANGE]) return omit()
         root.component("com", message.combinedId)
-        root.int("sub", message.sub)
+        root.int("sub", if (message.sub == 65535) -1 else message.sub)
         root.string("text", message.text)
     }
 

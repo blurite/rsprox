@@ -1,5 +1,6 @@
 package net.rsprox.shared.property
 
+import net.rsprox.cache.api.rs3.Rs3Gameval
 import net.rsprox.shared.ScriptVarType
 
 public interface SymbolDictionary {
@@ -9,6 +10,8 @@ public interface SymbolDictionary {
     ): String?
 
     public fun getVarpName(id: Int): String?
+
+    public fun getRs3GamevalName(id: Int, type: Rs3Gameval): String? = null
 
     public fun getVarcName(id: Int): String? = null
 

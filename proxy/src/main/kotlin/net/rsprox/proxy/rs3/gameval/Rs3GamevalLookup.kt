@@ -37,15 +37,18 @@ public class Rs3GamevalLookup(
             ScriptVarType.HEADBAR -> gamevals[Rs3Gameval.HEADBAR, id]
             ScriptVarType.HITMARK -> gamevals[Rs3Gameval.HITMARK, id]
             ScriptVarType.MATERIAL -> gamevals[Rs3Gameval.MATERIAL, id]
-            ScriptVarType.INV -> gamevals[Rs3Gameval.INV, id]
+            ScriptVarType.INV, ScriptVarType.WRITEINV -> gamevals[Rs3Gameval.INV, id]
             ScriptVarType.MIDI -> gamevals[Rs3Gameval.MIDI, id]
             ScriptVarType.SYNTH -> gamevals[Rs3Gameval.SOUND, id]
-            ScriptVarType.INTERFACE -> gamevals[Rs3Gameval.INTERFACE, id]
+            ScriptVarType.INTERFACE, ScriptVarType.TOPLEVELINTERFACE,
+            ScriptVarType.OVERLAYINTERFACE, ScriptVarType.CLIENTINTERFACE -> gamevals[Rs3Gameval.INTERFACE, id]
             ScriptVarType.COMPONENT -> gamevals[Rs3Gameval.COMPONENT, id]
             else -> null
         }
 
     override fun getVarpName(id: Int): String? = gamevals[Rs3Gameval.VARP, id]
+
+    override fun getRs3GamevalName(id: Int, type: Rs3Gameval): String? = gamevals[type, id]
 
     override fun getVarcName(id: Int): String? = gamevals[Rs3Gameval.VARC, id]
 

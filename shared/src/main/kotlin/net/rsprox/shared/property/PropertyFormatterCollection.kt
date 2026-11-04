@@ -122,6 +122,10 @@ public class PropertyFormatterCollection private constructor(
                     symbol
                 }
             }
+            builder.add<Rs3GamevalProperty> {
+                val symbol = dictionary().getRs3GamevalName(it.value, it.gameval) ?: return@add "${it.value}"
+                if (settings[Setting.SHOW_IDS_AFTER_SYMBOLS]) "$symbol (${it.value})" else symbol
+            }
             builder.add<VarpProperty> {
                 val symbol = dictionary().getVarpName(it.value) ?: return@add "${it.value}"
                 if (settings[Setting.SHOW_IDS_AFTER_SYMBOLS]) {

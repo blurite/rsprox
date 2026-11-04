@@ -118,7 +118,7 @@ internal fun Property.appendNpcMask(
                 mask.variables.forEach { variable ->
                     group {
                         varnpc("varnpc", variable.id)
-                        appendVariableValue(variable.value)
+                        appendVariableValue(variable.scriptType, variable.value)
                     }
                 }
             }

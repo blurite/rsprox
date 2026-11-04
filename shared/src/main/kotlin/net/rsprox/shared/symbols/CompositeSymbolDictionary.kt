@@ -1,5 +1,6 @@
 package net.rsprox.shared.symbols
 
+import net.rsprox.cache.api.rs3.Rs3Gameval
 import net.rsprox.shared.ScriptVarType
 import net.rsprox.shared.property.SymbolDictionary
 
@@ -22,6 +23,9 @@ public class CompositeSymbolDictionary(
             dictionary.getVarpName(id)
         }
     }
+
+    override fun getRs3GamevalName(id: Int, type: Rs3Gameval): String? =
+        dictionaries.firstNotNullOfOrNull { it.getRs3GamevalName(id, type) }
 
     override fun getVarbitName(id: Int): String? {
         return dictionaries.firstNotNullOfOrNull { dictionary ->

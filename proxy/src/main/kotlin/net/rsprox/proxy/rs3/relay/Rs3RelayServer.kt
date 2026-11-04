@@ -340,7 +340,10 @@ public class Rs3RelayServer(
                 sessionMonitor,
             )
         val transcriberSession: Rs3TranscriberSession =
-            TextRs3TranscriberProvider(Rs3GamevalLookup(packetDefinitions?.gamevals ?: Rs3Gamevals.EMPTY)).provide(
+            TextRs3TranscriberProvider(
+                Rs3GamevalLookup(packetDefinitions?.gamevals ?: Rs3Gamevals.EMPTY),
+                packetDefinitions,
+            ).provide(
                 container = monitoredContainer,
                 filters = filterSetStore,
                 settings = settingSetStore,

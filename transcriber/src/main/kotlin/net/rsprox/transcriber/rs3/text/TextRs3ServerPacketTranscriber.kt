@@ -1,5 +1,6 @@
 package net.rsprox.transcriber.rs3.text
 
+import net.rsprox.cache.api.rs3.Rs3Gameval
 import net.rsprox.cache.api.rs3.Rs3VariableDomain
 import net.rsprox.protocol.common.CoordGrid
 import net.rsprox.protocol.game.outgoing.model.IncomingServerGameMessage
@@ -311,7 +312,7 @@ public class TextRs3ServerPacketTranscriber(
 
     override fun varclan(message: Varclan) {
         if (!filters[PropertyFilter.VARCLAN]) return omit()
-        root.appendVariable(message.variable)
+        root.appendVariable(message.variable, Rs3VariableDomain.CLAN)
     }
 
     override fun lobbyAppearance(message: LobbyAppearance) {
@@ -475,7 +476,7 @@ public class TextRs3ServerPacketTranscriber(
 
     override fun varcBit(message: VarcBit) {
         if (!filters[PropertyFilter.VARC]) return omit()
-        root.int("varcbit", message.id)
+        root.varbit("varcbit", message.id)
         root.int("value", message.value)
     }
 
@@ -498,13 +499,13 @@ public class TextRs3ServerPacketTranscriber(
     override fun varpSmall(message: VarpSmall) {
         if (!filters[PropertyFilter.VARP]) return omit()
         root.varp("varp", message.id)
-        root.int("value", message.value)
+        root.appendVariableInt(sessionState.packetDefinitions, Rs3VariableDomain.PLAYER, message.id, message.value)
     }
 
     override fun varpLarge(message: VarpLarge) {
         if (!filters[PropertyFilter.VARP]) return omit()
         root.varp("varp", message.id)
-        root.int("value", message.value)
+        root.appendVariableInt(sessionState.packetDefinitions, Rs3VariableDomain.PLAYER, message.id, message.value)
     }
 
     override fun varpLong(message: VarpLong) {
@@ -716,7 +717,12 @@ public class TextRs3ServerPacketTranscriber(
 
     override fun messageGame(message: MessageGame) {
         if (!filters[PropertyFilter.MESSAGE_GAME]) return omit()
-        root.int("type", message.type)
+        val type = Rs3ChatType.fromId(message.type)
+        if (type != null) {
+            root.namedEnum("type", type)
+        } else {
+            root.int("type", message.type)
+        }
         root.int("channel", message.channel)
         root.int("flags", message.flags)
         message.sender?.let { root.string("sender", it) }
@@ -842,7 +848,7 @@ public class TextRs3ServerPacketTranscriber(
                 retextures.forEachIndexed { slot, texture ->
                     group {
                         int("slot", slot)
-                        scriptVarType("texture", ScriptVarType.TEXTURE, texture)
+                        scriptVarType("texture", ScriptVarType.MATERIAL, texture)
                     }
                 }
             }
@@ -1472,24 +1478,24 @@ public class TextRs3ServerPacketTranscriber(
     override fun varcSmall(message: VarcSmall) {
         if (!filters[PropertyFilter.VARC]) return omit()
         root.varc("varc", message.id)
-        root.int("value", message.value)
+        root.appendVariableInt(sessionState.packetDefinitions, Rs3VariableDomain.CLIENT, message.id, message.value)
     }
 
     override fun varcLarge(message: VarcLarge) {
         if (!filters[PropertyFilter.VARC]) return omit()
         root.varc("varc", message.id)
-        root.int("value", message.value)
+        root.appendVariableInt(sessionState.packetDefinitions, Rs3VariableDomain.CLIENT, message.id, message.value)
     }
 
     override fun varcBitSmall(message: VarcBitSmall) {
         if (!filters[PropertyFilter.VARC]) return omit()
-        root.int("varcbit", message.id)
+        root.varbit("varcbit", message.id)
         root.int("value", message.value)
     }
 
     override fun varcBitLarge(message: VarcBitLarge) {
         if (!filters[PropertyFilter.VARC]) return omit()
-        root.int("varcbit", message.id)
+        root.varbit("varcbit", message.id)
         root.int("value", message.value)
     }
 
@@ -1590,7 +1596,7 @@ public class TextRs3ServerPacketTranscriber(
     override fun ifSetTargetParam(message: IfSetTargetParam) {
         if (!filters[PropertyFilter.IF_SETEVENTS]) return omit()
         root.component("com", message.componentHash)
-        root.int("targetparam", message.targetParam)
+        root.gameval("targetparam", Rs3Gameval.PARAM, message.targetParam)
         root.int("fromslot", if (message.fromSlot == 65535) -1 else message.fromSlot)
         root.int("toslot", if (message.toSlot == 65535) -1 else message.toSlot)
     }
@@ -1689,13 +1695,13 @@ public class TextRs3ServerPacketTranscriber(
     override fun ifSetTextFont(message: IfSetTextFont) {
         if (!filters[PropertyFilter.IF_SETTEXTFONT]) return omit()
         root.component("com", message.componentHash)
-        root.int("font", message.fontId)
+        root.scriptVarType("font", ScriptVarType.FONTMETRICS, message.fontId)
     }
 
     override fun ifSetGraphic(message: IfSetGraphic) {
         if (!filters[PropertyFilter.IF_SETGRAPHIC]) return omit()
         root.component("com", message.componentHash)
-        root.int("graphic", message.graphicId)
+        root.scriptVarType("graphic", ScriptVarType.GRAPHIC, message.graphicId)
     }
 
     override fun ifSetRecol(message: IfSetRecol) {
@@ -1710,8 +1716,8 @@ public class TextRs3ServerPacketTranscriber(
         if (!filters[PropertyFilter.IF_SETRETEX]) return omit()
         root.component("com", message.componentHash)
         root.int("index", message.index)
-        root.int("source", message.source)
-        root.int("destination", message.destination)
+        root.scriptVarType("source", ScriptVarType.MATERIAL, message.source)
+        root.scriptVarType("destination", ScriptVarType.MATERIAL, message.destination)
     }
 
     override fun ifMoveSub(message: IfMoveSub) {
@@ -1999,7 +2005,7 @@ public class TextRs3ServerPacketTranscriber(
             root.string("op", message.text)
         }
         root.filteredBoolean("priority", message.priority)
-        root.any("cursor", message.cursor.takeUnless { it == -1 })
+        root.cursor(message.cursor)
     }
 
     override fun ifSetPlayerModelSnapshot(message: IfSetPlayerModelSnapshot) {
@@ -2372,7 +2378,7 @@ public class TextRs3ServerPacketTranscriber(
     override fun setMoveAction(message: SetMoveAction) {
         if (!filters[PropertyFilter.SET_MOVE_ACTION]) return omit()
         message.action?.let { root.string("action", it) }
-        root.any("cursor", message.cursor.takeUnless { it == -1 })
+        root.cursor(message.cursor)
     }
 
     override fun createSuggestNameReply(message: CreateSuggestNameReply) {
@@ -2415,7 +2421,7 @@ public class TextRs3ServerPacketTranscriber(
         root.int("overridestart", message.overrideStart)
         root.int("operation", message.operation)
         root.string("label", message.label)
-        root.any("cursor", message.cursor.takeUnless { it == -1 })
+        root.cursor(message.cursor)
         root.int("overrideend", message.overrideEnd)
     }
 
@@ -2443,7 +2449,7 @@ public class TextRs3ServerPacketTranscriber(
 
     override fun debugServerTriggers(message: DebugServerTriggers) {
         if (!filters[PropertyFilter.DEBUG_SERVER_TRIGGERS]) return omit()
-        root.int("interfaceid", message.interfaceId)
+        root.scriptVarType("interfaceid", ScriptVarType.INTERFACE, message.interfaceId)
         root.int("start", message.start)
         root.int("endexclusive", message.endExclusive)
         root.children += AnyProperty("records", message.records, List::class.java)
@@ -2774,7 +2780,7 @@ public class TextRs3ServerPacketTranscriber(
         root.group("SETTINGS") {
             for (parameter in details.parameters) {
                 group {
-                    int("id", parameter.key)
+                    gameval("id", Rs3Gameval.VAR_CLAN_SETTING, parameter.key)
                     when (parameter) {
                         is ClanSettingsFull.IntParameter -> int("int", parameter.value)
                         is ClanSettingsFull.LongParameter -> long("long", parameter.value)
@@ -2836,22 +2842,22 @@ public class TextRs3ServerPacketTranscriber(
                         }
                     is ClanSettingsDelta.IntParameter ->
                         group("SET_INT_SETTING") {
-                            int("id", record.key)
+                            gameval("id", Rs3Gameval.VAR_CLAN_SETTING, record.key)
                             int("value", record.value)
                         }
                     is ClanSettingsDelta.LongParameter ->
                         group("SET_LONG_SETTING") {
-                            int("id", record.key)
+                            gameval("id", Rs3Gameval.VAR_CLAN_SETTING, record.key)
                             long("value", record.value)
                         }
                     is ClanSettingsDelta.StringParameter ->
                         group("SET_STRING_SETTING") {
-                            int("id", record.key)
+                            gameval("id", Rs3Gameval.VAR_CLAN_SETTING, record.key)
                             string("value", record.value)
                         }
                     is ClanSettingsDelta.IntBits ->
                         group("SET_VARBIT_SETTING") {
-                            int("id", record.key)
+                            gameval("id", Rs3Gameval.VAR_CLAN_SETTING, record.key)
                             int("value", record.value)
                             int("startbit", record.start)
                             int("endbit", record.end)

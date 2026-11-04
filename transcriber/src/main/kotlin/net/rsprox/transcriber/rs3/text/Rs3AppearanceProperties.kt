@@ -110,13 +110,14 @@ private fun Property.modelPairs(
 private fun Property.palette(
     name: String,
     replacements: List<PlayerExtendedInfo.PaletteReplacement>,
+    type: ScriptVarType,
 ) {
     if (replacements.isEmpty()) return
     group(name) {
         for (replacement in replacements) {
             group {
                 int("index", replacement.index)
-                int("value", replacement.value)
+                scriptVarType("value", type, replacement.value)
             }
         }
     }
@@ -183,8 +184,8 @@ private fun Property.appendAppearanceBodyDetails(
                     filteredInt("flags", entry.flags, 0)
                     modelPairs("BODY_MODELS", entry.bodyModels)
                     modelPairs("HEAD_MODELS", entry.headModels)
-                    palette("RECOLOURS", entry.recolours)
-                    palette("RETEXTURES", entry.retextures)
+                    palette("RECOLOURS", entry.recolours, ScriptVarType.INT)
+                    palette("RETEXTURES", entry.retextures, ScriptVarType.MATERIAL)
                 }
             }
         }

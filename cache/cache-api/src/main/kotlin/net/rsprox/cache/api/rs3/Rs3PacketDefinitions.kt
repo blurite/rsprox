@@ -16,7 +16,9 @@ public interface Rs3PacketDefinitions : Rs3AppearanceDefinitions {
     public fun getVariable(
         domain: Rs3VariableDomain,
         id: Int,
-    ): Rs3VariableDefinition
+    ): Rs3VariableDefinition = checkNotNull(getVariableOrNull(domain, id)) { "Missing RS3 $domain variable $id" }
+
+    public fun getVariableOrNull(domain: Rs3VariableDomain, id: Int): Rs3VariableDefinition?
 }
 
 public enum class Rs3VariableDomain(

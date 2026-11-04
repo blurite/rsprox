@@ -56,7 +56,7 @@ internal object Rs3ReplayTranscriber {
                 override fun close() = Unit
             }
         val transcriber =
-            TextRs3TranscriberProvider(gamevals)
+            TextRs3TranscriberProvider(gamevals, definitions)
                 .provide(TextMessageConsumerContainer(listOf(consumer)), filters, settings, scripts, isLobby = false)
         transcriber.sessionState.localPlayerIndex = header.localPlayerIndex
 
