@@ -21,6 +21,18 @@ public class CacheSymbolDictionary(
         type: ScriptVarType,
     ): String? {
         return when (type) {
+            ScriptVarType.SYNTH -> {
+                gameValTypes?.get(GameVal.SFX_TYPE)?.get(id)?.getParentOrNull()
+            }
+            ScriptVarType.MIDI -> {
+                gameValTypes?.get(GameVal.MIDI_TYPE)?.get(id)?.getParentOrNull()
+            }
+            ScriptVarType.JINGLE -> {
+                gameValTypes?.get(GameVal.JINGLE_TYPE)?.get(id)?.getParentOrNull()
+            }
+            ScriptVarType.AMBIENCE -> {
+                gameValTypes?.get(GameVal.AMBIENTSOUND_TYPE)?.get(id)?.getParentOrNull()
+            }
             ScriptVarType.INTERFACE -> {
                 gameValTypes?.get(GameVal.IF_TYPE)?.get(id)?.getParentOrNull()
             }

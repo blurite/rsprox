@@ -128,8 +128,9 @@ public class OldSchoolCache(
             val gameValMap = mutableMapOf<GameVal, Map<Int, GameValType>>()
             this.gameVals = gameValMap
             val bulkRequests =
-                GameVal.entries.map {
-                    CacheGroupRequest(GAMEVAL_ARCHIVE, getGameValGroupId(masterIndex.revision, it))
+                GameVal.entries.mapNotNull {
+                    val group = getGameValGroupId(masterIndex.revision, it) ?: return@mapNotNull null
+                    CacheGroupRequest(GAMEVAL_ARCHIVE, group)
                 }
             val totalTime =
                 measureTime {
@@ -173,8 +174,12 @@ public class OldSchoolCache(
     private fun getGameValGroupId(
         revision: Int,
         gameVal: GameVal,
-    ): Int {
+    ): Int? {
         return when (gameVal) {
+            GameVal.SFX_TYPE -> if (revision >= 242) GAMEVAL_SFX_TYPES else null
+            GameVal.MIDI_TYPE -> if (revision >= 242) GAMEVAL_MIDI_TYPES else null
+            GameVal.JINGLE_TYPE -> if (revision >= 242) GAMEVAL_JINGLE_TYPES else null
+            GameVal.AMBIENTSOUND_TYPE -> if (revision >= 242) GAMEVAL_AMBIENTSOUND_TYPES else null
             GameVal.IF_TYPE -> if (revision >= 232) GAMEVAL_IF_TYPES else GAMEVAL_OLD_IF_TYPES
             GameVal.INV_TYPE -> GAMEVAL_INV_TYPES
             GameVal.LOC_TYPE -> GAMEVAL_LOC_TYPES
@@ -191,6 +196,10 @@ public class OldSchoolCache(
 
     private fun getGameValGroup(groupId: Int): GameVal {
         return when (groupId) {
+            GAMEVAL_SFX_TYPES -> GameVal.SFX_TYPE
+            GAMEVAL_MIDI_TYPES -> GameVal.MIDI_TYPE
+            GAMEVAL_JINGLE_TYPES -> GameVal.JINGLE_TYPE
+            GAMEVAL_AMBIENTSOUND_TYPES -> GameVal.AMBIENTSOUND_TYPE
             GAMEVAL_OLD_IF_TYPES -> GameVal.IF_TYPE
             GAMEVAL_IF_TYPES -> GameVal.IF_TYPE
             GAMEVAL_INV_TYPES -> GameVal.INV_TYPE
@@ -348,6 +357,10 @@ public class OldSchoolCache(
         private const val GAMEVAL_OLD_IF_TYPES: Int = 13
         private const val GAMEVAL_IF_TYPES: Int = 14
         private const val GAMEVAL_VARC_TYPES: Int = 15
+        private const val GAMEVAL_SFX_TYPES: Int = 16
+        private const val GAMEVAL_MIDI_TYPES: Int = 17
+        private const val GAMEVAL_JINGLE_TYPES: Int = 18
+        private const val GAMEVAL_AMBIENTSOUND_TYPES: Int = 19
 
         // Sound types unusable as jingles and midis are mixed with randomized ids in them
         @Suppress("unused")
