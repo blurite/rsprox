@@ -81,6 +81,7 @@ public class LocalReplayDiskCacheStore(
         group: Int,
     ): ByteBuf? {
         return try {
+            if (!store.exists(archive, group)) return null
             val buffer = store.read(archive, group)
             if (archive != Store.ARCHIVESET) {
                 VersionTrailer.strip(buffer)

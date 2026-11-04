@@ -134,30 +134,23 @@ public class OldSchoolCache(
                 }
             val totalTime =
                 measureTime {
-                    val bulkResponses = getFilesBulk(bulkRequests)
-                    for ((request, buffers) in bulkResponses) {
+                    forEachFileGroup(bulkRequests) { request, buffers ->
                         val gameVal = getGameValGroup(request.group)
                         if (buffers == null) {
                             logger.warn { "Unable to decode $gameVal" }
-                            continue
+                            return@forEachFileGroup
                         }
                         logger.debug { "Decoding ${buffers.size} gameval types." }
                         val time =
                             measureTime {
                                 gameValMap[gameVal] =
                                     buffers.entries.associate { (id, buffer) ->
-                                        val decoded =
-                                            try {
-                                                OldSchoolGameValType.get(
-                                                    masterIndex.revision,
-                                                    gameVal,
-                                                    id,
-                                                    buffer.toJagByteBuf(),
-                                                )
-                                            } finally {
-                                                buffer.release()
-                                            }
-                                        id to decoded
+                                        id to OldSchoolGameValType.get(
+                                            masterIndex.revision,
+                                            gameVal,
+                                            id,
+                                            buffer.toJagByteBuf(),
+                                        )
                                     }
                             }
                         logger.debug { "Decoded $gameVal in $time" }
@@ -265,58 +258,35 @@ public class OldSchoolCache(
         }
     }
 
-    @Suppress("SameParameterValue")
-    private fun getFilesBulk(requests: List<CacheGroupRequest>): Map<CacheGroupRequest, Map<Int, ByteBuf>?> {
-        val bulkIndexRequests = mutableListOf<CacheGroupRequest>()
-        val distinctIndexes = requests.mapTo(HashSet()) { it.archive }
-        bulkIndexRequests += distinctIndexes.map { CacheGroupRequest(MASTER_INDEX, it) }
-        val bulkResponses =
-            resolver.getBulk(
-                masterIndex,
-                bulkIndexRequests + requests,
-            )
-        val responses =
-            requests.associateWith {
-                val indexBuf = bulkResponses.find(MASTER_INDEX, it.archive).retainedDuplicate()
-                val groupBuf = bulkResponses.findOrNull(it.archive, it.group) ?: return@associateWith null
-                try {
-                    Js5Compression.uncompress(indexBuf).use { uncompressedIndex ->
-                        Js5Compression.uncompress(groupBuf).use { uncompressedGroup ->
-                            Group.unpack(uncompressedGroup, checkNotNull(Js5Index.read(uncompressedIndex)[it.group]))
-                        }
+    private fun forEachFileGroup(
+        requests: List<CacheGroupRequest>,
+        consume: (CacheGroupRequest, Map<Int, ByteBuf>?) -> Unit,
+    ) {
+        val indexRequests = requests.map { CacheGroupRequest(MASTER_INDEX, it.archive) }.distinct()
+        val responses = resolver.getBulk(masterIndex, indexRequests + requests)
+        try {
+            val indexes = indexRequests.associate { request ->
+                val compressed = responses.getValue(request)
+                request.group to Js5Compression.uncompress(compressed).use { Js5Index.read(it) }
+            }
+            for (request in requests) {
+                val compressed = responses[request]
+                if (compressed == null) {
+                    consume(request, null)
+                    continue
+                }
+                Js5Compression.uncompress(compressed).use { group ->
+                    val files = Group.unpack(group, checkNotNull(indexes.getValue(request.archive)[request.group]))
+                    try {
+                        consume(request, files)
+                    } finally {
+                        files.values.forEach { it.release() }
                     }
-                } finally {
-                    indexBuf.release()
-                    groupBuf.release()
                 }
             }
-        for ((_, result) in bulkResponses) {
-            if (result.refCnt() > 0) {
-                result.release(result.refCnt())
-            }
+        } finally {
+            responses.values.forEach { it.release() }
         }
-        return responses
-    }
-
-    private fun Map<CacheGroupRequest, ByteBuf>.find(
-        archive: Int,
-        group: Int,
-    ): ByteBuf {
-        return checkNotNull(findOrNull(archive, group)) {
-            "Request $archive:$group cannot be null"
-        }
-    }
-
-    private fun Map<CacheGroupRequest, ByteBuf>.findOrNull(
-        archive: Int,
-        group: Int,
-    ): ByteBuf? {
-        for ((request, result) in this) {
-            if (request.archive == archive && request.group == group) {
-                return result
-            }
-        }
-        return null
     }
 
     override fun equals(other: Any?): Boolean {
