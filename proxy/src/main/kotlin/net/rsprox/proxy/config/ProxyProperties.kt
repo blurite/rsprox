@@ -6,6 +6,9 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.APP_WIDTH
 import net.rsprox.proxy.config.ProxyProperty.Companion.BINARY_WRITE_INTERVAL_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
+import net.rsprox.proxy.config.ProxyProperty.Companion.MCP_ENABLED
+import net.rsprox.proxy.config.ProxyProperty.Companion.MCP_PLUGIN
+import net.rsprox.proxy.config.ProxyProperty.Companion.MCP_PORT
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
 import net.rsprox.proxy.config.ProxyProperty.Companion.RUNELITE_RSPROX_CONNECTION
 import net.rsprox.proxy.config.ProxyProperty.Companion.WORLDLIST_ENDPOINT
@@ -93,6 +96,10 @@ public value class ProxyProperties private constructor(
             properties.setValue(APP_THEME, "RuneLite")
             properties.setValue(APP_WIDTH, 800)
             properties.setValue(APP_HEIGHT, 600)
+            // mcp
+            properties.setValue(MCP_ENABLED, false)
+            properties.setValue(MCP_PORT, DEFAULT_MCP_PORT)
+            properties.setValue(MCP_PLUGIN, true)
             // other
             properties.setValue(RUNELITE_RSPROX_CONNECTION, false)
             return properties

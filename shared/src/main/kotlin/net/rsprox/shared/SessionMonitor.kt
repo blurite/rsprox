@@ -7,6 +7,9 @@ public interface SessionMonitor<T> {
     /** Bind delayed callbacks to one recording rather than the latest active login. */
     public fun forSession(header: T): SessionMonitor<T> = this
 
+    /** Called on the transcriber worker before the properties of each packet are published. */
+    public fun onPacketDirection(direction: StreamDirection) {}
+
     public fun onLogin(header: T)
 
     public fun onLogout(header: T)
