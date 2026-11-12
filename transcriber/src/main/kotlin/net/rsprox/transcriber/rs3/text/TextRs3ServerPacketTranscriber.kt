@@ -194,6 +194,7 @@ public class TextRs3ServerPacketTranscriber(
 ) : Rs3ServerPacketTranscriber {
     private val coordinates = Rs3CoordinateProperties(sessionState, settingSetStore)
     private val entities = Rs3EntityProperties(sessionState, settingSetStore)
+    private val telemetry = Rs3TelemetryProperties(sessionState, settingSetStore)
 
     private fun Property.coordGrid(
         name: String,
@@ -2195,67 +2196,67 @@ public class TextRs3ServerPacketTranscriber(
 
     override fun telemetryGridAddColumn(message: TelemetryGridAddColumn) {
         if (!filters[PropertyFilter.TELEMETRY_GRID]) return omit()
-        root.int("group", message.group)
-        root.int("id", message.id)
+        telemetry.group(root, message.group)
+        telemetry.columnId(root, "id", message.id)
         root.int("index", message.index)
     }
 
     override fun telemetryGridRemoveRow(message: TelemetryGridRemoveRow) {
         if (!filters[PropertyFilter.TELEMETRY_GRID]) return omit()
-        root.int("group", message.group)
-        root.int("row", message.row)
+        telemetry.group(root, message.group)
+        telemetry.row(root, message.group, message.row)
     }
 
     override fun telemetryGridSetRowPinned(message: TelemetryGridSetRowPinned) {
         if (!filters[PropertyFilter.TELEMETRY_GRID]) return omit()
-        root.int("group", message.group)
-        root.int("row", message.row)
+        telemetry.group(root, message.group)
+        telemetry.row(root, message.group, message.row)
         root.boolean("enabled", message.enabled)
     }
 
     override fun telemetryGridMoveColumn(message: TelemetryGridMoveColumn) {
         if (!filters[PropertyFilter.TELEMETRY_GRID]) return omit()
-        root.int("source", message.source)
-        root.int("group", message.group)
+        telemetry.group(root, message.group)
+        telemetry.column(root, message.group, message.source, "source")
         root.int("destination", message.destination)
     }
 
     override fun telemetryGridAddGroup(message: TelemetryGridAddGroup) {
         if (!filters[PropertyFilter.TELEMETRY_GRID]) return omit()
-        root.int("id", message.id)
+        telemetry.groupId(root, "id", message.id)
         root.int("index", message.index)
     }
 
     override fun telemetryGridMoveRow(message: TelemetryGridMoveRow) {
         if (!filters[PropertyFilter.TELEMETRY_GRID]) return omit()
-        root.int("group", message.group)
-        root.int("source", message.source)
+        telemetry.group(root, message.group)
+        telemetry.row(root, message.group, message.source, "source")
         root.int("destination", message.destination)
     }
 
     override fun telemetryGridAddRow(message: TelemetryGridAddRow) {
         if (!filters[PropertyFilter.TELEMETRY_GRID]) return omit()
-        root.int("group", message.group)
-        root.int("id", message.id)
+        telemetry.group(root, message.group)
+        telemetry.rowId(root, "id", sessionState.telemetry.groupId(message.group), message.id)
         root.int("index", message.index)
     }
 
     override fun telemetryClearGridValue(message: TelemetryClearGridValue) {
         if (!filters[PropertyFilter.TELEMETRY_GRID]) return omit()
-        root.int("group", message.group)
-        root.int("column", message.column)
-        root.int("row", message.row)
+        telemetry.group(root, message.group)
+        telemetry.row(root, message.group, message.row)
+        telemetry.column(root, message.group, message.column)
     }
 
     override fun telemetryGridRemoveGroup(message: TelemetryGridRemoveGroup) {
         if (!filters[PropertyFilter.TELEMETRY_GRID]) return omit()
-        root.int("group", message.group)
+        telemetry.group(root, message.group)
     }
 
     override fun telemetryGridRemoveColumn(message: TelemetryGridRemoveColumn) {
         if (!filters[PropertyFilter.TELEMETRY_GRID]) return omit()
-        root.int("column", message.column)
-        root.int("group", message.group)
+        telemetry.group(root, message.group)
+        telemetry.column(root, message.group, message.column)
     }
 
     override fun sendPing(message: SendPing) {
@@ -2545,15 +2546,16 @@ public class TextRs3ServerPacketTranscriber(
             for (entry in message.groups) {
                 group("GROUP") {
                     int("index", entry.index)
+                    sessionState.telemetry.groupId(entry.index)?.let { telemetry.groupId(this, "id", it) }
                     group("ROWS") {
                         for (row in entry.rows) {
                             group("ROW") {
-                                int("index", row.index)
+                                telemetry.row(this, entry.index, row.index, "index")
                                 group("CELLS") {
                                     for (cell in row.cells) {
                                         group("CELL") {
-                                            int("column", cell.column)
-                                            int("value", cell.value)
+                                            telemetry.column(this, entry.index, cell.column)
+                                            telemetry.value(this, cell.value)
                                         }
                                     }
                                 }
@@ -2570,21 +2572,21 @@ public class TextRs3ServerPacketTranscriber(
         root.group("GROUPS") {
             for (entry in message.groups) {
                 group("GROUP") {
-                    int("id", entry.id)
+                    telemetry.groupId(this, "id", entry.id)
                     list("columns") {
-                        for (id in entry.columnIds) int("", id)
+                        for (id in entry.columnIds) telemetry.columnId(this, "", id)
                     }
                     group("ROWS") {
                         entry.rows.forEachIndexed { index, row ->
                             group("ROW") {
-                                int("id", entry.rowIds[index])
+                                telemetry.rowId(this, "id", entry.id, entry.rowIds[index])
                                 int("pin", row.pin)
                                 group("CELLS") {
                                     row.cells.forEachIndexed { column, cell ->
                                         group("CELL") {
-                                            int("column", entry.columnIds[column])
+                                            telemetry.columnId(this, "column", entry.columnIds[column])
                                             val value = cell.value
-                                            if (value == null) any("value", "null") else int("value", value)
+                                            telemetry.value(this, value)
                                             filteredInt("present", cell.present, if (value == null) 0 else 1)
                                         }
                                     }

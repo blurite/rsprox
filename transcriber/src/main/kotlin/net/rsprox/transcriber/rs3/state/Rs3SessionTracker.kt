@@ -130,6 +130,7 @@ public class Rs3SessionTracker(
     }
 
     public fun afterTranscribe(message: IncomingMessage) {
+        sessionState.telemetry.update(message)
         when (message) {
             is PlayerInfo -> {
                 for ((index, update) in message.updates) {

@@ -17,6 +17,8 @@ public class Rs3SessionState(
     public var toplevelInterface: Int = -1
     private val openInterfaces: MutableMap<Long, Int> = mutableMapOf()
 
+    internal val telemetry: Rs3TelemetryGrid = Rs3TelemetryGrid()
+
     private var activeWorldId: Int = ROOT_WORLD_ID
 
     private val worlds: MutableMap<Int, Rs3World> = mutableMapOf()
