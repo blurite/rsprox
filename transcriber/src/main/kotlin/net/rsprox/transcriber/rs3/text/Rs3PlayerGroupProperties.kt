@@ -41,7 +41,7 @@ internal fun Property.appendPlayerGroupMember(member: PlayerGroupMember) {
     group("skills") {
         member.experience.forEachIndexed { index, value ->
             group {
-                int("skill", index)
+                skill("skill", index)
                 int("xp", value)
             }
         }

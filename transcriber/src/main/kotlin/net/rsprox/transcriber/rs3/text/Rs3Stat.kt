@@ -1,6 +1,9 @@
 package net.rsprox.transcriber.rs3.text
 
 import net.rsprox.shared.property.NamedEnum
+import net.rsprox.shared.property.Property
+import net.rsprox.shared.property.int
+import net.rsprox.shared.property.namedEnum
 
 /** The wire skill ID is the ordinal; RS3's skills differ from OSRS. */
 internal enum class Rs3Stat : NamedEnum {
@@ -37,4 +40,9 @@ internal enum class Rs3Stat : NamedEnum {
 
     override val prettyName: String
         get() = name.lowercase()
+}
+
+internal fun Property.skill(name: String, id: Int) {
+    val skill = Rs3Stat.entries.getOrNull(id)
+    if (skill != null) namedEnum(name, skill) else int(name, id)
 }

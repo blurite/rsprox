@@ -1897,12 +1897,7 @@ public class TextRs3ServerPacketTranscriber(
     override fun updateStat(message: UpdateStat) {
         if (!filters[PropertyFilter.UPDATE_STAT]) return omit()
         val gained = sessionState.getExperience(message.skillId)?.let { message.xp - it }
-        val skill = Rs3Stat.entries.getOrNull(message.skillId)
-        if (skill != null) {
-            root.namedEnum("skill", skill)
-        } else {
-            root.int("skill", message.skillId)
-        }
+        root.skill("skill", message.skillId)
         root.int("level", message.level)
         root.int("xp", message.xp)
         if (gained != null) {
@@ -2063,7 +2058,7 @@ public class TextRs3ServerPacketTranscriber(
                             else -> error("Unsupported clientscript parameter type: ${value.javaClass.name}")
                         }
                     enum("type", type)
-                    scriptVarType("value", type, value)
+                    if (type == ScriptVarType.STAT && value is Int) skill("value", value) else scriptVarType("value", type, value)
                 }
             }
         }
@@ -2606,7 +2601,8 @@ public class TextRs3ServerPacketTranscriber(
         if (!filters[PropertyFilter.LOC_SELECTION]) return omit()
         root.int("coordinate", message.coordinate)
         root.int("id", message.id)
-        root.int("shaperotation", message.shapeRotation)
+        root.scriptVarType("shape", ScriptVarType.LOC_SHAPE, (message.shapeRotation ushr 2) and 0x1F)
+        root.int("rotation", message.shapeRotation and 3)
         message.transform?.let {
             root.children += AnyProperty("transform", it, LocSelectAdd.Transform::class.java)
         }
@@ -2647,7 +2643,7 @@ public class TextRs3ServerPacketTranscriber(
         if (!filters[PropertyFilter.UPDATE_STOCKMARKET_SLOT]) return omit()
         root.int("group", message.group)
         root.int("slot", message.slot)
-        root.int("state", message.state)
+        root.offerState(message)
         message.offer?.let { offer ->
             root.scriptVarType("id", ScriptVarType.OBJ, offer.objectId)
             root.formattedLong("price", offer.price)
@@ -2655,7 +2651,6 @@ public class TextRs3ServerPacketTranscriber(
             root.formattedInt("completedcount", offer.completedQuantity)
             root.formattedLong("completedgold", offer.total)
             offer.version?.let { root.int("version", it) }
-            offer.updatedState?.let { root.int("updatedstate", it) }
             offer.extensionLength?.let { root.int("extensionlength", it) }
             root.list("extension") {
                 for (value in offer.extension) int("", value)

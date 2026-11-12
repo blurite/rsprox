@@ -499,7 +499,7 @@ public class TextRs3ClientPacketTranscriber(
         root.group("arguments") {
             for (argument in message.arguments) {
                 group {
-                    int("scripttype", argument.scriptType)
+                    valueType("scripttype", argument.scriptType)
                     appendVariableValue(argument.scriptType, argument.value)
                 }
             }

@@ -17,6 +17,7 @@ public class Rs3GamevalLookup(
         type: ScriptVarType,
     ): String? =
         when (type) {
+            ScriptVarType.LOC_SHAPE -> LOC_SHAPE_NAMES.getOrNull(id)
             ScriptVarType.NPC_STAT -> NPC_STAT_NAMES.getOrNull(id)
             ScriptVarType.OBJ, ScriptVarType.NAMEDOBJ -> gamevals[Rs3Gameval.OBJ, id]
             ScriptVarType.LOC -> gamevals[Rs3Gameval.LOC, id]
@@ -63,5 +64,14 @@ public class Rs3GamevalLookup(
 
     private companion object {
         val NPC_STAT_NAMES = listOf("attack", "defence", "strength", "hitpoints", "ranged", "magic", "necromancy")
+        val LOC_SHAPE_NAMES = listOf(
+            "wall_straight", "wall_diagonalcorner", "wall_l", "wall_squarecorner",
+            "walldecor_straight_nooffset", "walldecor_straight_offset",
+            "walldecor_diagonal_offset", "walldecor_diagonal_nooffset", "walldecor_diagonal_both",
+            "wall_diagonal", "centrepiece_straight", "centrepiece_diagonal",
+            "roof_straight", "roof_diagonal_with_roofedge", "roof_diagonal", "roof_l_concave",
+            "roof_l_convex", "roof_flat", "roofedge_straight", "roofedge_diagonalcorner",
+            "roofedge_l", "roofedge_squarecorner", "grounddecor", "wall_l_alt", "walldecor_diagonal_both_alt",
+        )
     }
 }
