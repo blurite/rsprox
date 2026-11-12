@@ -1,5 +1,6 @@
 package net.rsprox.cache
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import java.security.MessageDigest
 
 @Suppress("MemberVisibilityCanBePrivate")
@@ -7,6 +8,7 @@ public class Js5MasterIndex(
     public val revision: Int,
     public val data: ByteArray,
 ) {
+    @get:JsonIgnore
     internal val replayCacheRevisions: IntProgression
         get() = revision downTo (revision - 1)
 
