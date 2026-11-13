@@ -8,6 +8,7 @@ import io.netty.buffer.ByteBufAllocator
 import net.miginfocom.swing.MigLayout
 import net.rsprox.gui.components.LaunchBar
 import net.rsprox.gui.dialogs.AboutDialog
+import net.rsprox.gui.dialogs.SponsorshipDialog
 import net.rsprox.gui.sessions.SessionsPanel
 import net.rsprox.gui.sidebar.SideBar
 import net.rsprox.proxy.ProxyService
@@ -30,6 +31,7 @@ import javax.swing.JMenuItem
 import javax.swing.JOptionPane
 import javax.swing.JPanel
 import javax.swing.KeyStroke
+import javax.swing.SwingUtilities
 import javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE
 import kotlin.system.exitProcess
 
@@ -138,6 +140,19 @@ public class App {
 
     public fun start() {
         frame.isVisible = true
+        SwingUtilities.invokeLater {
+            if (frame.isShowing && !service.hasSeenSponsorshipMessage()) {
+                val dialog = SponsorshipDialog(frame)
+                dialog.addWindowListener(
+                    object : WindowAdapter() {
+                        override fun windowOpened(e: WindowEvent) {
+                            service.markSponsorshipMessageShown()
+                        }
+                    },
+                )
+                dialog.isVisible = true
+            }
+        }
     }
 
     private fun setupMenuBar() {

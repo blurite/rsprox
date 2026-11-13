@@ -28,6 +28,7 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.APP_HEIGHT
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_MAXIMIZED
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_POSITION_X
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_POSITION_Y
+import net.rsprox.proxy.config.ProxyProperty.Companion.APP_SPONSORSHIP_SHOWN
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_THEME
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_WIDTH
 import net.rsprox.proxy.config.ProxyProperty.Companion.BINARY_WRITE_INTERVAL_SECONDS
@@ -484,6 +485,15 @@ public class ProxyService(
 
     public fun getAppTheme(): String {
         return properties.getPropertyOrNull(APP_THEME) ?: "RuneLite"
+    }
+
+    public fun hasSeenSponsorshipMessage(): Boolean {
+        return properties.getPropertyOrNull(APP_SPONSORSHIP_SHOWN) ?: false
+    }
+
+    public fun markSponsorshipMessageShown() {
+        properties.setProperty(APP_SPONSORSHIP_SHOWN, true)
+        properties.saveProperties(PROPERTIES_FILE)
     }
 
     public fun getAppWidth(): Int {

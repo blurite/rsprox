@@ -1,12 +1,11 @@
 package net.rsprox.gui
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.formdev.flatlaf.FlatClientProperties
 import com.formdev.flatlaf.extras.components.FlatLabel
 import com.formdev.flatlaf.extras.components.FlatSeparator
 import net.miginfocom.swing.MigLayout
 import net.rsprox.gui.components.LaunchBar
+import net.rsprox.gui.components.SponsorButton
 import java.awt.Component
 import java.awt.Cursor
 import java.awt.Desktop
@@ -14,15 +13,9 @@ import java.awt.Dimension
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 import java.nio.file.Files
 import java.nio.file.Path
 import java.text.DateFormat
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.Date
 import javax.swing.BorderFactory
 import javax.swing.JPanel
@@ -137,7 +130,7 @@ public class HomePanel(
                     isOpaque = false
                     minimumSize = Dimension(0, 0)
                     add(createLaunchSection(), "growx, top, wrap")
-                    add(createUpdateLogSection(), "growx, top")
+                    add(createSponsorSection(), "growx, top, hmin 156")
                 },
                 "w 500!, growx, top",
             )
@@ -172,19 +165,16 @@ public class HomePanel(
         }
     }
 
-    private fun createUpdateLogSection(): JPanel {
-        return createPanel("Update Log", "Latest RSProx updates.").apply {
-            val releasesPanel =
-                JPanel(MigLayout("ins 0, gapy 4, fillx", "[fill, grow]", "[]")).apply {
-                    isOpaque = false
-                    minimumSize = Dimension(0, 0)
-                    add(createStatusRow("Loading releases..."), "growx")
-                }
+    private fun createSponsorSection(): JPanel {
+        return createPanel(
+            "Help keep RSProx free",
+            "<html>Your sponsorship helps make continued development sustainable.<br>" +
+                "If RSProx is part of your toolkit, please consider supporting it.</html>",
+        ).apply {
             add(
-                releasesPanel,
-                "growx, gaptop 12",
+                SponsorButton { openUrl(SPONSORS_URI) },
+                "alignx left, growx 0, gaptop 4, pad 0 -8 0 -8",
             )
-            loadReleaseRows(releasesPanel)
         }
     }
 
@@ -267,20 +257,6 @@ public class HomePanel(
         rowsPanel.repaint()
     }
 
-    private fun createUpdateRow(
-        title: String,
-        body: String,
-        tag: String,
-        action: (() -> Unit)?,
-    ): JPanel {
-        return createInteractiveRow(
-            title = title,
-            subtitle = body,
-            trailing = tag,
-            action = action,
-        )
-    }
-
     private fun createLinkRow(
         title: String,
         subtitle: String,
@@ -334,19 +310,6 @@ public class HomePanel(
         }
     }
 
-    private fun createStatusRow(text: String): JPanel {
-        return JPanel(MigLayout("ins 8 0 8 0, fillx", "[fill, grow]", "[]")).apply {
-            isOpaque = false
-            add(
-                FlatLabel().apply {
-                    this.text = text
-                    useStyleClass(STYLE_MUTED_LABEL)
-                },
-                "growx",
-            )
-        }
-    }
-
     private fun installHoverAction(
         panel: JPanel,
         normalStyleClass: String,
@@ -397,87 +360,6 @@ public class HomePanel(
         }
     }
 
-    private fun loadReleaseRows(rowsPanel: JPanel) {
-        Thread {
-            val result = runCatching { fetchReleases() }
-            SwingUtilities.invokeLater {
-                rowsPanel.removeAll()
-                result
-                    .getOrNull()
-                    ?.takeIf { it.isNotEmpty() }
-                    ?.forEachIndexed { index, release ->
-                        if (index > 0) {
-                            rowsPanel.add(FlatSeparator(), "growx, wrap")
-                        }
-                        rowsPanel.add(
-                            createUpdateRow(
-                                title = release.title,
-                                body = release.summary,
-                                tag = release.publishedText,
-                                action = { openUrl(release.url) },
-                            ),
-                            "growx, wrap",
-                        )
-                    }
-                    ?: rowsPanel.add(createStatusRow("Unable to load releases right now."), "growx")
-                rowsPanel.revalidate()
-                rowsPanel.repaint()
-            }
-        }.apply {
-            name = "rsprox-release-fetch"
-            isDaemon = true
-            start()
-        }
-    }
-
-    private fun fetchReleases(): List<ReleaseSummary> {
-        val request =
-            HttpRequest
-                .newBuilder(RELEASES_URI)
-                .header("Accept", "application/vnd.github+json")
-                .header("User-Agent", "RSProx")
-                .GET()
-                .build()
-        val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-        if (response.statusCode() !in 200..299) {
-            error("GitHub releases request failed with HTTP ${response.statusCode()}")
-        }
-        val releases = jsonMapper.readTree(response.body())
-        if (!releases.isArray) {
-            return emptyList()
-        }
-        return releases.mapNotNull(::parseRelease)
-    }
-
-    private fun parseRelease(node: JsonNode): ReleaseSummary? {
-        val url = node.path("html_url").asText(null) ?: return null
-        val tag = node.path("tag_name").asText("")
-        val name = node.path("name").asText("").ifBlank { tag.ifBlank { "Release" } }
-        val body = node.path("body").asText("")
-        val publishedAt = node.path("published_at").asText("")
-        return ReleaseSummary(
-            title = name,
-            summary = summarizeReleaseBody(body),
-            publishedText = formatReleaseDate(publishedAt),
-            url = URI(url),
-        )
-    }
-
-    private fun summarizeReleaseBody(body: String): String {
-        return body
-            .lineSequence()
-            .map { it.trim().trimStart('-', '*').trim() }
-            .firstOrNull { it.isNotEmpty() }
-            ?.take(140)
-            ?: "View release notes."
-    }
-
-    private fun formatReleaseDate(value: String): String {
-        return runCatching {
-            RELEASE_DATE_FORMAT.format(Instant.parse(value))
-        }.getOrDefault("release")
-    }
-
     private fun openUrl(uri: URI) {
         if (!Desktop.isDesktopSupported()) {
             return
@@ -510,19 +392,8 @@ public class HomePanel(
                 ?: path.parent?.toString().orEmpty()
     }
 
-    private data class ReleaseSummary(
-        val title: String,
-        val summary: String,
-        val publishedText: String,
-        val url: URI,
-    )
-
     private companion object {
-        private val RELEASES_URI: URI = URI("https://api.github.com/repos/blurite/rsprox/releases?per_page=3")
-        private val RELEASE_DATE_FORMAT: DateTimeFormatter =
-            DateTimeFormatter.ofPattern("MMM d, yyyy").withZone(ZoneId.systemDefault())
-        private val httpClient: HttpClient = HttpClient.newHttpClient()
-        private val jsonMapper = jacksonObjectMapper()
+        private val SPONSORS_URI: URI = URI("https://github.com/sponsors/blurite")
         private const val STYLE_HOME_CARD = "rsproxHomeCard"
         private const val STYLE_HOME_CARD_HOVER = "rsproxHomeCardHover"
         private const val STYLE_HOME_ROW = "rsproxHomeRow"

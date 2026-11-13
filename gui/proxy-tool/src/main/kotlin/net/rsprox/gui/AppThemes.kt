@@ -90,6 +90,14 @@ public object AppThemes {
             "background: ${ref}Button.focusedBorderColor; hoverBackground: tint(${ref}Button.focusedBorderColor,12%); pressedBackground: shade(${ref}Button.focusedBorderColor,12%); foreground: contrast(${ref}Button.focusedBorderColor,#1f1f1f,#fff); borderColor: ${ref}Button.focusedBorderColor; focusedBorderColor: ${ref}Button.focusedBorderColor; focusWidth: 1; innerFocusWidth: 0",
         )
         UIManager.put(
+            "[style]Button.rsproxSponsor",
+            "arc: 12; minimumHeight: 32; margin: 5,13,5,13; borderColor: mix(${ref}Panel.background,${ref}Label.foreground,75%); hoverBorderColor: #b85488; pressedBorderColor: #b85488; focusedBorderColor: #b85488; focusColor: #db61a2; hoverBackground: mix(${ref}Button.background,#db61a2,90%); focusWidth: 1; innerFocusWidth: 0",
+        )
+        UIManager.put(
+            "[style]Button.rsproxSponsorDialog",
+            "background: mix(${ref}Button.background,#db61a2,85%); borderColor: #80516b",
+        )
+        UIManager.put(
             "[style]Button.rsproxTargetImport",
             "foreground: ${ref}Button.focusedBorderColor; minimumWidth: 30; minimumHeight: 30; margin: 0,0,0,0; focusWidth: 1; innerFocusWidth: 0",
         )

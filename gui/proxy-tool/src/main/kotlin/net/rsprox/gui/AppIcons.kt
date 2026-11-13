@@ -12,6 +12,7 @@ public object AppIcons {
     public val Delete: FlatSVGIcon = loadSvgIcon("delete")
     public val Expand: FlatSVGIcon = loadSvgIcon("expand")
     public val Filter: FlatSVGIcon = loadSvgIcon("filter")
+    public val Heart: FlatSVGIcon = loadSvgIcon("heart")
     public val Java: ImageIcon = loadIcon("java")
     public val Native: ImageIcon = loadIcon("native")
     public val Pause: FlatSVGIcon = loadSvgIcon("pause")

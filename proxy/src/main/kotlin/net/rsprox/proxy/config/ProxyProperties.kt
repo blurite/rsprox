@@ -39,7 +39,9 @@ public value class ProxyProperties private constructor(
     }
 
     public fun saveProperties(path: Path) {
-        properties.store(path.toFile().bufferedWriter(DEFAULT_PROPERTIES_CHARSET), null)
+        path.toFile().bufferedWriter(DEFAULT_PROPERTIES_CHARSET).use { writer ->
+            properties.store(writer, null)
+        }
     }
 
     public fun entryPairList(): List<Pair<Any, Any>> {
@@ -63,11 +65,13 @@ public value class ProxyProperties private constructor(
             path: Path,
             properties: Properties,
         ) {
-            properties.store(
-                path.toFile().bufferedWriter(DEFAULT_PROPERTIES_CHARSET),
-                "This properties file was automatically generated\r\n" +
-                    "to show all the possible configuration options.",
-            )
+            path.toFile().bufferedWriter(DEFAULT_PROPERTIES_CHARSET).use { writer ->
+                properties.store(
+                    writer,
+                    "This properties file was automatically generated\r\n" +
+                        "to show all the possible configuration options.",
+                )
+            }
         }
 
         private fun loadProperties(text: String): Properties {
