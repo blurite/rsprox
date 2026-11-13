@@ -1,0 +1,507 @@
+package net.rsprox.mcp.session
+
+import com.fasterxml.jackson.annotation.JsonInclude
+import net.rsprox.mcp.bridge.Access
+import net.rsprox.mcp.bridge.BridgeLink
+import net.rsprox.mcp.packets.Origin
+import net.rsprox.mcp.packets.PacketLog
+import net.rsprox.mcp.server.ToolError
+import net.rsprox.proxy.binary.BinaryHeader
+import net.rsprox.proxy.target.ProxyTargetConfig
+import java.net.URI
+import java.net.URISyntaxException
+import java.time.Instant
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
+
+/**
+ * What the MCP server may do with a client of the target. A client of the official game is only read.
+ * That is target 0, and also any target that takes its jav_config from Jagex, since such a client plays
+ * the live game whatever its id. Target 0 with an overridden jav_config is read-only too, which errs on
+ * the safe side.
+ */
+internal val ProxyTargetConfig.access: Access
+    get() = if (id == 0 || isJagexHost(javConfigUrl)) Access.READ else Access.DRIVE
+
+/** Determine if the URL is served from a domain of Jagex, which only the official game is configured from. */
+private fun isJagexHost(url: String): Boolean {
+    val host =
+        try {
+            URI(url).host?.lowercase() ?: return false
+        } catch (e: URISyntaxException) {
+            return false
+        }
+
+    return JAGEX_DOMAINS.any { host == it || host.endsWith(".$it") }
+}
+
+/** The domains that the official game's jav_config is served from. */
+private val JAGEX_DOMAINS = setOf("runescape.com", "jagex.com")
+
+/** The sentence that tells an agent what works on a read-only session, for the refusal of a tool that does not. */
+internal const val READ_TOOLS: String =
+    "Use the tools that read: client_state, client_screenshot, client_widgets, client_vars, client_entities, " +
+        "client_camera without yaw, pitch or look_at, and packets_read."
+
+/** Stable for the life of the MCP process. Survives client restarts. Never a port. */
+@JvmInline
+public value class SessionId(
+    /** The id as callers write it, such as `s1`. */
+    public val value: String,
+) {
+    /** Get the id as callers write it. */
+    override fun toString(): String = value
+}
+
+/** One client process generation of a session. A restart makes a new launch on new ports. */
+public data class Launch(
+    /** The number of this launch within its session, starting at 1. */
+    val generation: Int,
+    /** The port the client reaches the proxy on. */
+    val proxyPort: Int,
+    /** The identity the in-client bridge reports when it connects. */
+    val httpPort: Int,
+)
+
+/** Whether a launched session has a client, and how far that client has come. */
+public sealed interface ClientState {
+    /** The launch of the client, or null when the state has no client. */
+    public val launch: Launch?
+
+    /** The session has no client. */
+    public data class Stopped(
+        /** The reason the session has no client. */
+        val reason: String,
+    ) : ClientState {
+        /** Null, since the session has no client. */
+        override val launch: Launch? get() = null
+    }
+
+    /** The client was launched and its plugin has not said hello yet. */
+    public data class Launching(
+        /** The launch whose client has not connected yet. */
+        override val launch: Launch,
+    ) : ClientState
+
+    /** The client was launched without the bridge plugin, so only its packets are read. */
+    public data class Unbridged(
+        /** The launch of the client. */
+        override val launch: Launch,
+    ) : ClientState
+
+    /** The plugin in the client is connected, so the client can be driven. */
+    public data class Connected(
+        /** The launch that the client belongs to. */
+        override val launch: Launch,
+        /** The link to the plugin in the client. */
+        val link: BridgeLink,
+        /** The process id of the client. */
+        val pid: Long,
+    ) : ClientState
+}
+
+/** One login of a session, as the proxy reports it. A value that is not known yet is left out of the JSON. */
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public data class LoginInfo(
+    /** The number of this login within its session, starting at 1. */
+    val epoch: Int,
+    /** The game revision of the client. */
+    val revision: Int,
+    /** The world that was logged in to. */
+    val world: Int,
+    /** The host of that world. */
+    val host: String,
+    /** The index of the local player in that world. */
+    val localPlayerIndex: Int,
+    /** The moment the server accepted the login, in ISO-8601. */
+    val connectedAt: String,
+    /**
+     * The file the login is recorded to, relative to the `binary` directory of rsprox. The proxy first
+     * writes it at its write interval or at the logout. Null for a target that is not recorded.
+     */
+    val captureFile: String?,
+    /** The display name of the player, or null until the proxy reports it. */
+    val name: String?,
+    /** Whether the login is still in the game. */
+    val online: Boolean,
+    /**
+     * Whether a packet of this login has been decoded.
+     * False while online means no decoder was hooked for this login, so its packets never reach the log.
+     */
+    val transcribing: Boolean,
+    /** The newest server tick that a packet was decoded in, or null before the first packet. */
+    val tick: Int?,
+) {
+    internal companion object {
+        /** Build the login of the given epoch from what the proxy knows the moment the server accepts it. */
+        internal fun of(
+            epoch: Int,
+            header: BinaryHeader,
+            captureFile: String?,
+        ): LoginInfo =
+            LoginInfo(
+                epoch = epoch,
+                revision = header.revision,
+                world = header.worldId,
+                host = header.worldHost,
+                localPlayerIndex = header.localPlayerIndex,
+                connectedAt = Instant.ofEpochMilli(header.timestamp).toString(),
+                captureFile = captureFile,
+                name = null,
+                online = true,
+                transcribing = false,
+                tick = null,
+            )
+    }
+}
+
+/** The newest login of a session. Updates from an older login are ignored. */
+internal class LoginRegistry {
+    /** The epoch handed to the newest login. */
+    private var epoch = 0
+
+    /** The newest login, or null before the first one. */
+    private var info: LoginInfo? = null
+
+    /** Get the epoch for a login that is about to begin. */
+    @Synchronized
+    fun nextEpoch(): Int = ++epoch
+
+    /** Get the newest login, or null before the first one. */
+    @Synchronized
+    fun current(): LoginInfo? = info
+
+    /**
+     * Register that the login is in the game, unless a newer login is known.
+     * A login that is known already, which the proxy reports again when it reconnects, only goes back online.
+     */
+    @Synchronized
+    fun login(login: LoginInfo) {
+        val current = info
+        if (current != null && current.epoch > login.epoch) return
+
+        info = if (current != null && current.epoch == login.epoch) current.copy(online = true) else login
+    }
+
+    /** Apply the change to the newest login when it is the one of the given epoch. */
+    @Synchronized
+    fun update(
+        epoch: Int,
+        change: (LoginInfo) -> LoginInfo,
+    ) {
+        val current = info ?: return
+        if (current.epoch == epoch) info = change(current)
+    }
+}
+
+/** What the session tools return. A value that does not apply, or is not known yet, is left out of the JSON. */
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public data class SessionSnapshot(
+    /** The id of the session. */
+    val session: String,
+    /** Who owns the client: `launched` when the MCP server started it, `attached` when the rsprox GUI did. */
+    val kind: String,
+    /** The name of the proxy target the session belongs to. */
+    val target: String,
+    /** `drive` when the client tools that send input may be used on the session, `read` when only those that read. */
+    val access: String,
+    /** The state: `stopped`, `launching` or `connected` when launched, `attached` or `ended` when attached. */
+    val state: String,
+    /** The reason the session has no client, or null while it has one. */
+    val reason: String?,
+    /** The number of the current launch, or null while stopped and for an attached session. */
+    val generation: Int?,
+    /** The proxy port of the client, or null while a launched session is stopped. */
+    val proxyPort: Int?,
+    /** The HTTP port of the current launch, or null while stopped and for an attached session. */
+    val httpPort: Int?,
+    /** The process id of the client, or null unless a launched session is connected. */
+    val pid: Long?,
+    /** The newest login, or null before the first one. */
+    val login: LoginInfo?,
+    /** The packet cursor of the newest record in the session's log. */
+    val cursor: Long,
+)
+
+/**
+ * One client of a proxy target, with its packet log and its logins.
+ * A session is either launched, and its client is the MCP server's to drive and to stop, or attached
+ * to a client that the rsprox GUI launched, which the MCP server only reads the packets of.
+ */
+public sealed class Session(
+    /** The id that callers name the session by. */
+    public val id: SessionId,
+    /** The proxy target that the client of the session is for. */
+    public val target: ProxyTargetConfig,
+) {
+    /** The packet log. Owned by the session, not a launch, so a restart keeps the records and the cursor space. */
+    public val packets: PacketLog = PacketLog()
+
+    /** The logins of the session. */
+    internal val logins = LoginRegistry()
+
+    /** The most that the client tools may do with the client of the session. */
+    public abstract val access: Access
+
+    /**
+     * Get the link to the plugin in the client, for the client tool named [tool], which needs [access].
+     * Throws a [ToolError] that says why the tool may not, or cannot, reach the client.
+     */
+    internal abstract fun link(
+        tool: String,
+        access: Access,
+    ): BridgeLink
+
+    /** Get what the session tools report of the session at this moment. */
+    public abstract fun snapshot(): SessionSnapshot
+
+    /** Append a lifecycle marker to the packet log. */
+    protected fun mark(
+        prot: String,
+        text: String,
+    ) {
+        packets.append(logins.current()?.epoch ?: 0, 0, Origin.PROXY, prot, text)
+    }
+}
+
+/** A session whose client the MCP server launched, across every launch of that client. */
+public class LaunchedSession internal constructor(
+    id: SessionId,
+    target: ProxyTargetConfig,
+) : Session(id, target) {
+    /** The lock that makes each state transition and its marker one step. */
+    private val lock = ReentrantLock()
+
+    /** The condition that wakes the callers that wait for the client to connect. */
+    private val changed = lock.newCondition()
+
+    /** The number of launches so far. */
+    private var generations = 0
+
+    /** What the target allows: a client of the official game is only read. */
+    override val access: Access = target.access
+
+    /** The state of the client, which only [transition] changes. */
+    @Volatile
+    public var client: ClientState = ClientState.Stopped("not started")
+        private set
+
+    /** Get the generation number for a launch that is about to begin. */
+    internal fun nextGeneration(): Int = lock.withLock { ++generations }
+
+    /**
+     * Move to the state that [next] makes of the current one, and determine if that changed it.
+     * [next] returns the state it is given when what happened is stale or does not apply.
+     * The only writer of [client]. Every real transition leaves a marker in the packet log.
+     */
+    private fun transition(next: (ClientState) -> ClientState): Boolean =
+        lock.withLock {
+            val before = client
+            val after = next(before)
+
+            if (after !== before) {
+                client = after
+                mark(after)
+                changed.signalAll()
+            }
+
+            after !== before
+        }
+
+    /**
+     * Register that [launch] of the client began, unless the session has a client already. A client
+     * launched with the plugin is launching until its hello; one launched without it is unbridged.
+     */
+    internal fun launched(
+        launch: Launch,
+        bridged: Boolean,
+    ) {
+        val next = if (bridged) ClientState.Launching(launch) else ClientState.Unbridged(launch)
+
+        transition { if (it is ClientState.Stopped) next else it }
+    }
+
+    /**
+     * Connect the session to the plugin that said hello, when the session is launching and [httpPort] is
+     * the one of its launch. Determines if the session is connected through [link] afterwards.
+     */
+    internal fun hello(
+        httpPort: Int,
+        link: BridgeLink,
+        pid: Long,
+    ): Boolean =
+        lock.withLock {
+            transition {
+                if (it is ClientState.Launching && it.launch.httpPort == httpPort) {
+                    ClientState.Connected(it.launch, link, pid)
+                } else {
+                    it
+                }
+            }
+
+            (client as? ClientState.Connected)?.link === link
+        }
+
+    /** Stop the session when [link] is the link of its connected client, and determine if that stopped it. */
+    internal fun linkClosed(link: BridgeLink): Boolean =
+        transition { if (it is ClientState.Connected && it.link === link) ClientState.Stopped("client exited") else it }
+
+    /** Stop the session for [reason], unless it is stopped already. */
+    internal fun stop(reason: String) {
+        transition { if (it is ClientState.Stopped) it else ClientState.Stopped(reason) }
+    }
+
+    /**
+     * Stop the session for [reason] when it still waits for the client of [launch], and determine if
+     * that stopped it.
+     */
+    internal fun neverConnected(
+        launch: Launch,
+        reason: String,
+    ): Boolean =
+        transition { if (it is ClientState.Launching && it.launch == launch) ClientState.Stopped(reason) else it }
+
+    /** Block while the client is launching, for at most [waitMs]. Never throws on timeout. */
+    internal fun awaitConnected(waitMs: Long) {
+        lock.withLock {
+            var remaining = TimeUnit.MILLISECONDS.toNanos(waitMs)
+            while (client is ClientState.Launching && remaining > 0) {
+                remaining = changed.awaitNanos(remaining)
+            }
+        }
+    }
+
+    /**
+     * Get the link of the connected client. Throws a [ToolError] that says why a tool that sends input
+     * is refused on the official game, or else what to do about the absence of a client.
+     */
+    override fun link(
+        tool: String,
+        access: Access,
+    ): BridgeLink {
+        if (access > this.access) {
+            throw ToolError(
+                "$tool sends input to the client, which is refused for session $id: its target '${target.name}' " +
+                    "is the official game, so the session is read-only. $READ_TOOLS",
+            )
+        }
+
+        return when (val state = client) {
+            is ClientState.Connected -> state.link
+            is ClientState.Launching ->
+                throw ToolError("session $id is still launching; call session_start with this session to wait for it")
+            is ClientState.Unbridged ->
+                throw ToolError(
+                    "$tool is not available for session $id: its client was launched without the bridge plugin, " +
+                        "which mcp.plugin in proxy.properties, or --no-plugin, turns off, so only its packets " +
+                        "can be read",
+                )
+            is ClientState.Stopped ->
+                throw ToolError("session $id has no connected client: ${state.reason}")
+        }
+    }
+
+    /** Get what the session tools report of the session at this moment. */
+    override fun snapshot(): SessionSnapshot {
+        val state = client
+        val launch = state.launch
+
+        return SessionSnapshot(
+            session = id.value,
+            kind = "launched",
+            target = target.name,
+            access = access.wire,
+            state =
+                when (state) {
+                    is ClientState.Stopped -> "stopped"
+                    is ClientState.Launching -> "launching"
+                    is ClientState.Unbridged -> "unbridged"
+                    is ClientState.Connected -> "connected"
+                },
+            reason = (state as? ClientState.Stopped)?.reason,
+            generation = launch?.generation,
+            proxyPort = launch?.proxyPort,
+            httpPort = launch?.httpPort,
+            pid = (state as? ClientState.Connected)?.pid,
+            login = logins.current(),
+            cursor = packets.head().seq,
+        )
+    }
+
+    /** Append the lifecycle marker of the state to the packet log. */
+    private fun mark(state: ClientState) {
+        when (state) {
+            is ClientState.Launching -> mark("CLIENT_LAUNCHED", describe(state.launch))
+            is ClientState.Unbridged -> mark("CLIENT_LAUNCHED", "${describe(state.launch)} plugin=none")
+            is ClientState.Connected -> mark("CLIENT_CONNECTED", "pid=${state.pid}")
+            is ClientState.Stopped -> mark("CLIENT_EXITED", state.reason)
+        }
+    }
+
+    /** Describe the launch for its marker. */
+    private fun describe(launch: Launch): String =
+        "generation=${launch.generation} proxyPort=${launch.proxyPort} httpPort=${launch.httpPort}"
+}
+
+/**
+ * A session of a client that the rsprox GUI launched. The client belongs to whoever runs the GUI, so
+ * the MCP server reads its packets and never stops or drives it.
+ */
+public class AttachedSession internal constructor(
+    id: SessionId,
+    target: ProxyTargetConfig,
+    /** The port the client reaches the proxy on. */
+    public val proxyPort: Int,
+) : Session(id, target) {
+    /** The reason the session ended, or null while the client runs. */
+    @Volatile
+    private var ended: String? = null
+
+    /** Read only, since the client belongs to the person at the keyboard. */
+    override val access: Access = Access.READ
+
+    init {
+        mark("CLIENT_ATTACHED", "proxyPort=$proxyPort")
+    }
+
+    /** End the session for [reason], since its client is gone. Its packets stay readable. Idempotent. */
+    @Synchronized
+    internal fun end(reason: String) {
+        if (ended != null) return
+
+        ended = reason
+        mark("CLIENT_EXITED", reason)
+    }
+
+    /** Refuse the tool, since no client tool reaches the client of an attached session yet. */
+    override fun link(
+        tool: String,
+        access: Access,
+    ): BridgeLink = throw ToolError(notAvailable(tool))
+
+    /** Build the refusal of a tool that acts on the client, for the error of that tool. */
+    internal fun notAvailable(tool: String): String =
+        "$tool is not available for an attached session: session $id belongs to a client that was " +
+            "launched from the rsprox GUI, so only its packets can be read"
+
+    /** Get what the session tools report of the session at this moment. */
+    override fun snapshot(): SessionSnapshot {
+        val reason = ended
+
+        return SessionSnapshot(
+            session = id.value,
+            kind = "attached",
+            target = target.name,
+            access = access.wire,
+            state = if (reason == null) "attached" else "ended",
+            reason = reason,
+            generation = null,
+            proxyPort = proxyPort,
+            httpPort = null,
+            pid = null,
+            login = logins.current(),
+            cursor = packets.head().seq,
+        )
+    }
+}
