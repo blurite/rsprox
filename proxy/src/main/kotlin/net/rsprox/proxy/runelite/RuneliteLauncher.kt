@@ -104,7 +104,7 @@ public class RuneliteLauncher {
                 add("--developer-mode")
                 add("--disable-telemetry")
                 add("--noupdate")
-                if (clientJvmArgs.isNotEmpty()) {
+                if (target.rewriteJagexAuth) {
                     add("--profile=rsprox")
                 }
             }
