@@ -110,6 +110,10 @@ public object AppThemes {
             "foreground: ${ref}Button.foreground; background: ${ref}Button.background; hoverBackground: ${ref}Button.hoverBackground; selectedBackground: ${ref}Button.focusedBorderColor; selectedForeground: contrast(${ref}Button.focusedBorderColor,#1f1f1f,#fff); borderColor: ${ref}Button.borderColor; focusedBorderColor: ${ref}Button.borderColor; minimumWidth: 82; minimumHeight: 28; focusWidth: 0; innerFocusWidth: 0",
         )
         UIManager.put(
+            "[style]ToggleButton.rsproxFavourite",
+            "minimumWidth: 0; minimumHeight: 26; margin: 2,7,2,7; arc: 0; selectedBackground: mix(${ref}Panel.background,${ref}Button.focusedBorderColor,90%); selectedForeground: ${ref}Button.focusedBorderColor; selectedBorderColor: ${ref}Button.focusedBorderColor; focusedSelectedBorderColor: ${ref}Button.focusedBorderColor; hoverSelectedBorderColor: ${ref}Button.focusedBorderColor; pressedSelectedBorderColor: ${ref}Button.focusedBorderColor; focusWidth: 1; innerFocusWidth: 0",
+        )
+        UIManager.put(
             "[style]ComboBox.rsproxLaunch",
             "focusWidth: 1; innerFocusWidth: 0",
         )

@@ -24,6 +24,7 @@ public class ProxyProperty<T>(
         val APP_POSITION_Y = ProxyProperty("app.position.y", IntProperty)
         val FILTERS_STATUS = ProxyProperty("filters.status", IntProperty)
         val SELECTED_CLIENT = ProxyProperty("app.client", IntProperty)
+        val FAVOURITE_CHARACTERS = ProxyProperty("app.characters.favourites", StringProperty)
         val SELECTED_RS3_BETA = ProxyProperty("app.rs3.beta", BooleanProperty)
         val SELECTED_PROXY_TARGET = ProxyProperty("app.target", IntProperty)
 

@@ -4,6 +4,7 @@ import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.extras.FlatSVGUtils
 import javax.imageio.ImageIO
 import javax.swing.ImageIcon
+import javax.swing.UIManager
 
 public object AppIcons {
     public val Add: FlatSVGIcon = loadSvgIcon("add")
@@ -23,6 +24,8 @@ public object AppIcons {
     public val RuneLite: ImageIcon = loadIcon("runelite")
     public val RuneScape3: ImageIcon = loadIcon("runescape3")
     public val Settings: FlatSVGIcon = loadSvgIcon("settings")
+    public val Star: FlatSVGIcon = loadStarIcon("star")
+    public val StarFilled: FlatSVGIcon = loadStarIcon("star-filled")
     public val StepBack: FlatSVGIcon = loadSvgIcon("step-back")
     public val StepForward: FlatSVGIcon = loadSvgIcon("step-forward")
     public val Stop: FlatSVGIcon = loadSvgIcon("stop")
@@ -40,5 +43,11 @@ public object AppIcons {
 
     private fun loadSvgIcon(name: String): FlatSVGIcon {
         return FlatSVGIcon(javaClass.getResource("/icons/$name.svg"))
+    }
+
+    private fun loadStarIcon(name: String): FlatSVGIcon {
+        return loadSvgIcon(name).apply {
+            colorFilter = FlatSVGIcon.ColorFilter { color -> UIManager.getColor("Button.focusedBorderColor") ?: color }
+        }
     }
 }

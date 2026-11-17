@@ -33,6 +33,7 @@ import net.rsprox.proxy.config.ProxyProperty.Companion.APP_THEME
 import net.rsprox.proxy.config.ProxyProperty.Companion.APP_WIDTH
 import net.rsprox.proxy.config.ProxyProperty.Companion.BINARY_WRITE_INTERVAL_SECONDS
 import net.rsprox.proxy.config.ProxyProperty.Companion.BIND_TIMEOUT_SECONDS
+import net.rsprox.proxy.config.ProxyProperty.Companion.FAVOURITE_CHARACTERS
 import net.rsprox.proxy.config.ProxyProperty.Companion.FILTERS_STATUS
 import net.rsprox.proxy.config.ProxyProperty.Companion.JAV_CONFIG_ENDPOINT
 import net.rsprox.proxy.config.ProxyProperty.Companion.PROXY_PORT_MIN
@@ -529,6 +530,23 @@ public class ProxyService(
 
     public fun getSelectedClient(): Int {
         return properties.getPropertyOrNull(SELECTED_CLIENT) ?: 0
+    }
+
+    public fun getFavouriteCharacterIds(): List<Int> {
+        return properties
+            .getPropertyOrNull(FAVOURITE_CHARACTERS)
+            ?.split(',')
+            ?.mapNotNull { it.trim().toIntOrNull() }
+            ?.filter { it >= 0 }
+            ?.distinct()
+            ?.take(3)
+            .orEmpty()
+    }
+
+    public fun setFavouriteCharacterIds(ids: List<Int>) {
+        require(ids.size <= 3 && ids.distinct().size == ids.size && ids.all { it >= 0 })
+        properties.setProperty(FAVOURITE_CHARACTERS, ids.joinToString(","))
+        properties.saveProperties(PROPERTIES_FILE)
     }
 
     public fun setSelectedRs3Beta(selected: Boolean) {

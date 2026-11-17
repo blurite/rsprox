@@ -30,6 +30,7 @@ import javax.swing.JMenuItem
 import javax.swing.JOptionPane
 import javax.swing.JPanel
 import javax.swing.JScrollPane
+import javax.swing.JToggleButton
 import javax.swing.MenuElement
 import javax.swing.MenuSelectionManager
 import javax.swing.ScrollPaneConstants
@@ -64,12 +65,36 @@ public class LaunchBar(
     private val jagexAuthenticator = JagexAuthenticator()
     private val sessionTypesModel = DefaultComboBoxModel(sessionTypes)
     private val charactersModel = DefaultComboBoxModel<JagexCharacter>()
+    private var refreshingCharacters = false
+    private val favouriteCharacterButtons = linkedMapOf<Int, JToggleButton>()
+    private val favouriteCharactersPanel =
+        JPanel(MigLayout("ins 0, gap 6!, alignx left", "[128!, fill][128!, fill][128!, fill]", "[]")).apply {
+            isOpaque = false
+        }
+    private val favouritesHint =
+        JLabel("Use the star to add favourites").apply {
+            isEnabled = false
+        }
+    private val favouriteButton =
+        FlatButton().apply {
+            icon = AppIcons.Star.derive(18, 18)
+            buttonType = FlatButton.ButtonType.square
+            putClientProperty(FlatClientProperties.STYLE_CLASS, STYLE_IMPORT_BUTTON)
+            addActionListener { toggleFavouriteCharacter() }
+        }
     private val rs3BetaToggle =
         JCheckBox("Beta").apply {
             isOpaque = false
             isSelected = App.service.getSelectedRs3Beta()
             toolTipText = "Use the RuneScape 3 beta client and servers"
             addActionListener { App.service.setSelectedRs3Beta(isSelected) }
+        }
+    private val favouritesRow =
+        JPanel(MigLayout("ins 0, gap 12, fillx, hidemode 3", "[fill, grow][]", "[26!, center]")).apply {
+            isOpaque = false
+            add(favouriteCharactersPanel, "cell 0 0, growx, wmin 0")
+            add(favouritesHint, "cell 0 0, aligny center")
+            add(rs3BetaToggle, "cell 1 0, alignx right, aligny center")
         }
 
     public lateinit var clientTypeDropdown: FlatComboBox<SessionType>
@@ -92,6 +117,7 @@ public class LaunchBar(
                 selectedIndex = App.service.getSelectedProxyTarget()
                 configureComboBox()
             }
+
         proxyTargetDropdown.addActionListener {
             App.service.setSelectedProxyTarget(proxyTargetDropdown.selectedIndex)
         }
@@ -109,6 +135,14 @@ public class LaunchBar(
                 configureComboBox()
             }
 
+        characterDropdown.addActionListener {
+            if (!refreshingCharacters) {
+                val character = charactersModel.selectedItem as? JagexCharacter
+                App.service.jagexAccountStore.selectedCharacterId =
+                    character?.takeUnless { it == DEFAULT_CHARACTER }?.accountId
+                refreshFavouriteSelection()
+            }
+        }
         characterDropdown.addPopupMenuListener(
             object : PopupMenuListener {
                 override fun popupMenuWillBecomeVisible(e: PopupMenuEvent?) {
@@ -119,7 +153,6 @@ public class LaunchBar(
                             JMenuItem("Default").apply {
                                 addActionListener {
                                     characterDropdown.selectedItem = DEFAULT_CHARACTER
-                                    App.service.jagexAccountStore.selectedCharacterId = null
                                 }
                             }
 
@@ -134,7 +167,6 @@ public class LaunchBar(
                                     JMenuItem(character.safeDisplayName).apply {
                                         addActionListener {
                                             characterDropdown.selectedItem = character
-                                            App.service.jagexAccountStore.selectedCharacterId = character.accountId
                                         }
                                     },
                                 )
@@ -159,7 +191,6 @@ public class LaunchBar(
                 }
             },
         )
-        add(characterDropdown, "growx")
 
         clientTypeDropdown =
             FlatComboBox<SessionType>().apply {
@@ -201,9 +232,16 @@ public class LaunchBar(
 
         add(createFieldLabel("Account"))
         add(createFieldLabel("Client Type"), "wrap")
-        add(characterDropdown, "growx, h $CONTROL_HEIGHT!")
-        add(clientTypeDropdown, "growx, h $CONTROL_HEIGHT!, wrap")
-        add(rs3BetaToggle, "spanx 2, hidemode 3, wrap")
+        add(
+            JPanel(MigLayout("ins 0, gap 5, fillx", "[fill, grow][]", "[$CONTROL_HEIGHT!, center]")).apply {
+                isOpaque = false
+                add(characterDropdown, "growx, wmin 0, h $CONTROL_HEIGHT!")
+                add(favouriteButton, "w $CONTROL_HEIGHT!, h $CONTROL_HEIGHT!")
+            },
+            "growx, wmin 0, h $CONTROL_HEIGHT!, aligny center",
+        )
+        add(clientTypeDropdown, "growx, h $CONTROL_HEIGHT!, aligny center, wrap")
+        add(favouritesRow, "spanx 2, growx, h 26!, wrap")
         add(proxyTargetLabel, "spanx 2, growx, gaptop 4, wrap")
         add(proxyTargetDropdown, "growx, h $CONTROL_HEIGHT!, spanx 2, split 2")
         add(importTargetsButton, "w $CONTROL_HEIGHT!, h $CONTROL_HEIGHT!, wrap")
@@ -214,23 +252,100 @@ public class LaunchBar(
     }
 
     public fun refreshCharacters() {
-        charactersModel.removeAllElements()
-
-        charactersModel.addElement(DEFAULT_CHARACTER)
-
-        App.service.jagexAccountStore.accounts
-            .flatMap { it.characters }
-            .forEach { charactersModel.addElement(it) }
-
-        val selectedCharacterId = App.service.jagexAccountStore.selectedCharacterId
-        if (selectedCharacterId == null) {
-            charactersModel.selectedItem = DEFAULT_CHARACTER
-        } else {
-            charactersModel.selectedItem =
-                App.service.jagexAccountStore.accounts
-                    .flatMap { it.characters }
-                    .find { it.accountId == selectedCharacterId }
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater { refreshCharacters() }
+            return
         }
+        refreshingCharacters = true
+        try {
+            charactersModel.removeAllElements()
+
+            charactersModel.addElement(DEFAULT_CHARACTER)
+
+            App.service.jagexAccountStore.accounts
+                .flatMap { it.characters }
+                .forEach { charactersModel.addElement(it) }
+
+            val selectedCharacterId = App.service.jagexAccountStore.selectedCharacterId
+            charactersModel.selectedItem =
+                (0 until charactersModel.size)
+                    .map { charactersModel.getElementAt(it) }
+                    .find { it.accountId == selectedCharacterId } ?: DEFAULT_CHARACTER
+        } finally {
+            refreshingCharacters = false
+        }
+        refreshFavouriteCharacters()
+    }
+
+    private fun refreshFavouriteSelection() {
+        val favourites = App.service.getFavouriteCharacterIds()
+        val selected = charactersModel.selectedItem as? JagexCharacter
+        val isFavourite = selected?.accountId in favourites
+        favouriteButton.icon = (if (isFavourite) AppIcons.StarFilled else AppIcons.Star).derive(18, 18)
+        favouriteButton.isEnabled = selected != null && selected != DEFAULT_CHARACTER
+        favouriteButton.toolTipText = if (isFavourite) "Remove from favourites" else "Add to favourites"
+        favouriteButton.accessibleContext.accessibleName = favouriteButton.toolTipText
+        for ((id, button) in favouriteCharacterButtons) {
+            button.isSelected = selected?.accountId == id
+        }
+    }
+
+    private fun refreshFavouriteCharacters() {
+        val favourites = App.service.getFavouriteCharacterIds()
+        val characters = App.service.jagexAccountStore.accounts.flatMap { it.characters }.associateBy { it.accountId }
+        favouriteCharactersPanel.removeAll()
+        favouriteCharacterButtons.clear()
+        for (id in favourites) {
+            val character = characters[id] ?: continue
+            favouriteCharactersPanel.add(
+                JToggleButton(character.safeDisplayName).apply {
+                    icon = AppIcons.StarFilled.derive(12, 12)
+                    iconTextGap = 4
+                    favouriteCharacterButtons[id] = this
+                    toolTipText = character.safeDisplayName
+                    putClientProperty(FlatClientProperties.STYLE_CLASS, "rsproxFavourite")
+                    addActionListener {
+                        charactersModel.selectedItem = character
+                        refreshFavouriteSelection()
+                    }
+                },
+                "growx, wmin 0, h 26!",
+            )
+        }
+        favouriteCharactersPanel.isVisible = favouriteCharactersPanel.componentCount > 0
+        favouritesHint.isVisible = !favouriteCharactersPanel.isVisible
+        refreshFavouriteSelection()
+        revalidate()
+        repaint()
+    }
+
+    private fun toggleFavouriteCharacter() {
+        val character = charactersModel.selectedItem as? JagexCharacter ?: return
+        if (character == DEFAULT_CHARACTER) return
+        val favourites = App.service.getFavouriteCharacterIds().toMutableList()
+        if (!favourites.remove(character.accountId)) {
+            if (favourites.size < 3) {
+                favourites += character.accountId
+            } else {
+                val characters = App.service.jagexAccountStore.accounts.flatMap { it.characters }.associateBy { it.accountId }
+                val options = favourites.map { characters[it]?.safeDisplayName ?: "Unavailable character ($it)" } + "Cancel"
+                val choice =
+                    JOptionPane.showOptionDialog(
+                        this,
+                        "Choose a favourite to replace with ${character.safeDisplayName}.",
+                        "Replace Favourite",
+                        JOptionPane.DEFAULT_OPTION,
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        options.toTypedArray(),
+                        options.last(),
+                    )
+                if (choice !in favourites.indices) return
+                favourites[choice] = character.accountId
+            }
+        }
+        App.service.setFavouriteCharacterIds(favourites)
+        refreshFavouriteCharacters()
     }
 
     public fun launchConfiguration() {
