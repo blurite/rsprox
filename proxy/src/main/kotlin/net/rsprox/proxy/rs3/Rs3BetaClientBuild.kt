@@ -18,6 +18,16 @@ internal object Rs3BetaClientBuild {
             "81c68f8f1659958916a4661569b7d30a9c7dcbbc39d509fad801a69ffae1c7db",
             "99e2f95377a274b964574d1e8b90ffb7290cf74debb2df1c2bcf6c553bd63758",
         )
+    private val windowsOpenGl951Beta1 =
+        setOf(
+            "1d785afb7fcbb5fa7786ecd2ef077d008a93970af0b63414df8c55f54c931006",
+            "36e41e630167e4446d1eca701be262dfb9be77cacb2b7b89eb472742cf678c66",
+        )
+    private val windowsVulkan951Beta1 =
+        setOf(
+            "0a4a45d063d58c2fea2a64bb4abbc78cfa45f74266b5c4b6b265686a17b8fd24",
+            "1d7a78e9cbbc5c8b614e9ff016891b40b79c7cb2ee5a08b8ea634d8ced8b6db6",
+        )
 
     fun verify(
         path: Path,
@@ -43,10 +53,12 @@ internal object Rs3BetaClientBuild {
         hash: String,
         binaryType: Int,
         revision: Rs3ProtocolRevision,
-    ): Boolean =
-        revision(hash, binaryType) == revision
+    ): Boolean = revision(hash, binaryType) == revision
 
-    fun supportsReplayWorld(hash: String, worldId: Int): Boolean =
+    fun supportsReplayWorld(
+        hash: String,
+        worldId: Int,
+    ): Boolean =
         // Note(revision): Beta executables can restrict world IDs even when the protocol is unchanged.
         // The October 19 builds replaced world 204 with 203/205. Keep the earlier builds for 204 replays.
         when (hash) {
@@ -60,20 +72,23 @@ internal object Rs3BetaClientBuild {
             else -> true
         }
 
-    private fun revision(hash: String, binaryType: Int): Rs3ProtocolRevision? =
+    private fun revision(
+        hash: String,
+        binaryType: Int,
+    ): Rs3ProtocolRevision? =
         when (binaryType) {
-            2 -> when {
-                hash in windowsOpenGl950Beta1 -> Rs3ProtocolRevision.BETA_950_1
-                hash == "1d785afb7fcbb5fa7786ecd2ef077d008a93970af0b63414df8c55f54c931006" ->
-                    Rs3ProtocolRevision.BETA_951_1
-                else -> null
-            }
-            10 -> when {
-                hash in windowsVulkan950Beta1 -> Rs3ProtocolRevision.BETA_950_1
-                hash == "0a4a45d063d58c2fea2a64bb4abbc78cfa45f74266b5c4b6b265686a17b8fd24" ->
-                    Rs3ProtocolRevision.BETA_951_1
-                else -> null
-            }
+            2 ->
+                when (hash) {
+                    in windowsOpenGl950Beta1 -> Rs3ProtocolRevision.BETA_950_1
+                    in windowsOpenGl951Beta1 -> Rs3ProtocolRevision.BETA_951_1
+                    else -> null
+                }
+            10 ->
+                when (hash) {
+                    in windowsVulkan950Beta1 -> Rs3ProtocolRevision.BETA_950_1
+                    in windowsVulkan951Beta1 -> Rs3ProtocolRevision.BETA_951_1
+                    else -> null
+                }
             else -> null
         }?.let(::Rs3ProtocolRevision)
 }
