@@ -113,8 +113,12 @@ internal object RSProxArchiveRs3ClientDownloader {
                 Rs3BetaClientBuild.supports(hash, binaryType, revision)
             Rs3ProtocolRevision.LIVE_951 ->
                 when (binaryType) {
-                    2 -> hash == "f01543b9f7af2a8f4f978abdb2587864ecedb039ab8c406759249be1883d957a"
-                    10 -> hash == "e8f49ff0c394b76c939a3b1b1edfcb7bad5139dfee59287a0a28cabdae673538"
+                    2 ->
+                        hash == "f01543b9f7af2a8f4f978abdb2587864ecedb039ab8c406759249be1883d957a" ||
+                            hash == "b0094eed5448b5bb805d9a9a6a13d4e685c341231071c2f5da07ee83118c80f9"
+                    10 ->
+                        hash == "e8f49ff0c394b76c939a3b1b1edfcb7bad5139dfee59287a0a28cabdae673538" ||
+                            hash == "05df430ae11317a29bc7bd0552e67a5781818b75578b642ba6fc8aa9967b9602"
                     else -> false
                 }
             else -> false
