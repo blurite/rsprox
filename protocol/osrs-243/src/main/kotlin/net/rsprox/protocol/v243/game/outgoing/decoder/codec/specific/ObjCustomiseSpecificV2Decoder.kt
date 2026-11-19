@@ -15,28 +15,28 @@ internal class ObjCustomiseSpecificV2Decoder : ProxyMessageDecoder<ObjCustomiseS
         buffer: JagByteBuf,
         session: Session,
     ): ObjCustomiseSpecificV2 {
-        val retextureCount = buffer.g1()
-        val retextures =
-            List(retextureCount) {
-                val index = buffer.g1()
+        val id = buffer.g2Alt2()
+        val packedCoord = buffer.g4()
+        val coord = CoordGrid(packedCoord)
+        val recolourCount = buffer.g1()
+        val recolours =
+            List(recolourCount) {
+                val index = buffer.g1Alt1()
                 val value = buffer.g2()
                 ObjCustomiseSpecificV2.Replacement(index, value)
             }
-        val id = buffer.g2Alt1()
-        val recolourCount = buffer.g1Alt1()
-        val recolours =
-            List(recolourCount) {
-                val index = buffer.g1Alt3()
-                val value = buffer.g2Alt2()
-                ObjCustomiseSpecificV2.Replacement(index, value)
-            }
-        val hasColour = buffer.g1Alt1() == 1
-        val colour = if (hasColour) buffer.g2() else null
-        val quantity = buffer.g4Alt3()
-        val packedCoord = buffer.g4Alt3()
-        val coord = CoordGrid(packedCoord)
+        val hasColour = buffer.g1() == 1
+        val colour = if (hasColour) buffer.g2Alt1() else null
         val modelId = buffer.g2Alt3()
         val model = if (modelId == 65535) -1 else modelId
+        val quantity = buffer.g4()
+        val retextureCount = buffer.g1()
+        val retextures =
+            List(retextureCount) {
+                val index = buffer.g1Alt3()
+                val value = buffer.g2()
+                ObjCustomiseSpecificV2.Replacement(index, value)
+            }
         return ObjCustomiseSpecificV2(id, quantity, model, recolours, retextures, colour, coord)
     }
 }

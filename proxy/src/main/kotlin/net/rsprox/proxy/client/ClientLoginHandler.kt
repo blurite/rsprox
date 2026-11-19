@@ -72,7 +72,7 @@ public class ClientLoginHandler(
                     "Init JS5 remote connection"
                 }
                 switchClientToRelay(ctx)
-                switchServerToJs5LoginDecoding(ctx)
+                switchServerToJs5LoginDecoding(ctx, msg.payload.getInt(msg.start))
             }
             LoginClientProt.GAMELOGIN -> {
                 logger.debug {
@@ -446,10 +446,13 @@ public class ClientLoginHandler(
         clientPipeline.replace<ClientLoginHandler>(ClientRelayHandler(serverChannel))
     }
 
-    private fun switchServerToJs5LoginDecoding(ctx: ChannelHandlerContext) {
+    private fun switchServerToJs5LoginDecoding(
+        ctx: ChannelHandlerContext,
+        revision: Int,
+    ) {
         val pipeline = serverChannel.pipeline()
         pipeline.addLastWithName(ServerGenericDecoder(NopStreamCipher, LoginServerProtProvider))
-        pipeline.addLastWithName(ServerJs5LoginHandler(ctx.channel()))
+        pipeline.addLastWithName(ServerJs5LoginHandler(ctx.channel(), revision))
         pipeline.addLastWithName(ChannelConnectionHandler(serverChannel, connections))
     }
 

@@ -15,9 +15,9 @@ internal class ObjDelSpecificDecoder : ProxyMessageDecoder<ObjDelSpecific> {
         buffer: JagByteBuf,
         session: Session,
     ): ObjDelSpecific {
-        val quantity = buffer.g4()
-        val coordGrid = CoordGrid(buffer.g4())
-        val id = buffer.g2()
+        val id = buffer.g2Alt1()
+        val coordGrid = CoordGrid(buffer.g4Alt1())
+        val quantity = buffer.g4Alt3()
         return ObjDelSpecific(
             id,
             quantity,

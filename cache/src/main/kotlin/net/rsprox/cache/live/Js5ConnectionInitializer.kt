@@ -11,7 +11,13 @@ internal class Js5ConnectionInitializer(
 ) : ChannelInitializer<Channel>() {
     override fun initChannel(channel: Channel) {
         logger.debug { "JS5 connection initialized to $channel" }
-        channel.pipeline().addLast(Js5Decoder(downloader))
+        channel.pipeline().addLast(
+            Js5Decoder(
+                downloader.framing,
+                downloader::resumeConnection,
+                downloader::groupResponse,
+            ),
+        )
         channel.pipeline().addLast(
             IdleStateHandler(
                 true,

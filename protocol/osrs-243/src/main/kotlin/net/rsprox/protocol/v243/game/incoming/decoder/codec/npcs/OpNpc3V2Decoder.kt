@@ -15,8 +15,8 @@ public class OpNpc3V2Decoder : ProxyMessageDecoder<OpNpcV2> {
         session: Session,
     ): OpNpcV2 {
         val controlKey = buffer.g1Alt1() == 1
-        val index = buffer.g2()
-        val subop = buffer.g1Alt1()
+        val subop = buffer.g1Alt3()
+        val index = buffer.g2Alt3()
         return OpNpcV2(
             index,
             controlKey,

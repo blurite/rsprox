@@ -15,11 +15,11 @@ internal class CamLookAtV3Decoder : ProxyMessageDecoder<CamLookAtV3> {
         session: Session,
     ): CamLookAtV3 {
         val z = buffer.g2()
+        val x = buffer.g2()
+        val height = buffer.g2s()
+        val rate2 = buffer.g1()
         val rate = buffer.g1Alt1()
-        val height = buffer.g2sAlt2()
-        val heightRelative = buffer.g1() == 1
-        val x = buffer.g2Alt3()
-        val rate2 = buffer.g1Alt3()
+        val heightRelative = buffer.g1Alt1() != 0
         return CamLookAtV3(
             x,
             z,

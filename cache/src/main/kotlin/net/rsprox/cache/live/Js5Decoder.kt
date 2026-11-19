@@ -5,12 +5,14 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ByteToMessageDecoder
 import io.netty.handler.codec.DecoderException
 import net.rsprot.buffer.extensions.g1
-import net.rsprot.buffer.extensions.g2
 import net.rsprot.buffer.extensions.g4
+import net.rsprox.cache.OldSchoolJs5Framing
 import kotlin.math.min
 
 internal class Js5Decoder(
-    private val downloader: Js5GroupDownloader,
+    private val framing: OldSchoolJs5Framing,
+    private val connected: (Boolean) -> Unit,
+    private val groupResponse: (Int, Int, ByteBuf) -> Unit,
 ) : ByteToMessageDecoder() {
     private enum class State {
         CONNECTING,
@@ -32,18 +34,18 @@ internal class Js5Decoder(
     ) {
         if (state == State.CONNECTING) {
             val response = input.g1()
-            downloader.resumeConnection(response == 0)
+            connected(response == 0)
             if (response != 0) {
                 throw DecoderException("JS5 connection failed; received $response, expected 0.")
             }
             this.state = State.RESPONSE_HEADER
         }
         if (this.state == State.RESPONSE_HEADER) {
-            if (!input.isReadable(8)) {
+            if (!input.isReadable(framing.headerSize)) {
                 return
             }
             this.archive = input.g1()
-            this.group = input.g2()
+            this.group = framing.readGroup(input)
             this.compression = input.g1()
             this.size = input.g4()
 
@@ -64,13 +66,10 @@ internal class Js5Decoder(
             this.state = State.RESPONSE_PAYLOAD
         }
         if (this.state == State.RESPONSE_PAYLOAD) {
-            if (!input.isReadable) {
-                return
-            }
             while (this.response.isWritable) {
                 val blockLen =
                     min(
-                        511 - ((this.response.readableBytes() + 2) % 511),
+                        framing.remainingInBlock(this.response.readableBytes()),
                         this.response.writableBytes(),
                     )
                 val last = this.response.writableBytes() <= blockLen
@@ -92,7 +91,7 @@ internal class Js5Decoder(
                     throw DecoderException("Invalid block trailer")
                 }
             }
-            this.downloader.groupResponse(this.archive, this.group, this.response)
+            groupResponse(this.archive, this.group, this.response)
             this.state = State.RESPONSE_HEADER
         }
     }

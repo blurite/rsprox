@@ -14,8 +14,8 @@ internal class AmbientSoundStartDecoder : ProxyMessageDecoder<AmbientSoundStart>
         buffer: JagByteBuf,
         session: Session,
     ): AmbientSoundStart {
-        val fade = buffer.g1Alt2() == 1
-        val id = buffer.g2Alt2()
+        val id = buffer.g2Alt1()
+        val fade = buffer.g1() != 0
         return AmbientSoundStart(
             id,
             fade,

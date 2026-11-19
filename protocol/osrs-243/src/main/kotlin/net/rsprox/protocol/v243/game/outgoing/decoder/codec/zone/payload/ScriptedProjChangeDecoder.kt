@@ -15,14 +15,14 @@ internal class ScriptedProjChangeDecoder : ProxyMessageDecoder<ScriptedProjChang
         buffer: JagByteBuf,
         session: Session,
     ): ScriptedProjChange {
-        val targetIndex = buffer.g3sAlt3()
-        val deleteOnFreezeEnd = buffer.g1() == 1
-        val targetCoord = CoordGrid(buffer.g4Alt3())
-        val targetOffsetX = buffer.g2sAlt1()
-        val targetOffsetZ = buffer.g2sAlt2()
-        val freezeDuration = buffer.g2Alt1()
-        val targetHeight = buffer.g2s()
         val slot = buffer.g2Alt3()
+        val targetOffsetZ = buffer.g2sAlt2()
+        val targetOffsetX = buffer.g2s()
+        val targetIndex = buffer.g3sAlt1()
+        val targetHeight = buffer.g2sAlt2()
+        val deleteOnFreezeEnd = buffer.g1Alt3() == 1
+        val targetCoord = CoordGrid(buffer.g4Alt2())
+        val freezeDuration = buffer.g2Alt3()
         return ScriptedProjChange(
             slot,
             targetCoord,

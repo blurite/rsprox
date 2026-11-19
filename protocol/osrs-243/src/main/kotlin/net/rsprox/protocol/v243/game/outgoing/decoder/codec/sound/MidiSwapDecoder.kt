@@ -15,9 +15,9 @@ internal class MidiSwapDecoder : ProxyMessageDecoder<MidiSwap> {
         session: Session,
     ): MidiSwap {
         val fadeOutDelay = buffer.g2Alt1()
-        val fadeInSpeed = buffer.g2()
-        val fadeInDelay = buffer.g2Alt1()
         val fadeOutSpeed = buffer.g2()
+        val fadeInDelay = buffer.g2Alt3()
+        val fadeInSpeed = buffer.g2Alt1()
         return MidiSwap(
             fadeOutDelay,
             fadeOutSpeed,
