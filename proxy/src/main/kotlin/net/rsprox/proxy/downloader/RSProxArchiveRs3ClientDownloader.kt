@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import net.rsprox.proxy.config.CLIENTS_DIRECTORY
-import net.rsprox.proxy.rs3.Rs3BetaClientBuild
 import net.rsprox.proxy.rs3.Rs3LaunchProgress
 import net.rsprox.proxy.rs3.Rs3ProtocolRevision
 import net.rsprox.proxy.rs3.config.Rs3JavConfig
@@ -22,6 +21,7 @@ import java.util.zip.CRC32
 internal object RSProxArchiveRs3ClientDownloader {
     private const val BASE_URL = "https://archive.rsprox.net/"
     private const val INDEX_PATH = "native-clients/runescape/index.json"
+    private val beta950WorldChange = Instant.parse("2026-10-19T00:00:00Z")
     private val directory = CLIENTS_DIRECTORY.resolve("rs3-archive")
     private val mapper = jacksonObjectMapper()
 
@@ -65,23 +65,34 @@ internal object RSProxArchiveRs3ClientDownloader {
         revision: Rs3ProtocolRevision,
         binaryType: Int,
         worldId: Int,
+        recordedAt: Instant,
         onProgress: (Rs3LaunchProgress) -> Unit,
     ): ArchivedReplayClient {
+        Rs3ProtocolRevision.supported(revision.value)
         onProgress(Rs3LaunchProgress("Finding archived replay client"))
-        val entry =
+        val environment = if (revision.obfuscationVersion == 0) "live" else "beta"
+        val candidates =
             loadIndex()
                 .clients
                 .filter {
                     it.revision == revision.wireRevision &&
                         it.binaryType == binaryType &&
-                        it.environment == if (revision.obfuscationVersion == 0) "live" else "beta"
-                }.filter { entry ->
-                    entry.files.any {
-                        it.slot == 0 && supportsReplay(revision, binaryType, it.file.sha256) &&
-                            (revision.obfuscationVersion == 0 || Rs3BetaClientBuild.supportsReplayWorld(it.file.sha256, worldId))
+                        it.environment == environment &&
+                        it.files.any { file -> file.slot == 0 && file.name == "rs2client.exe" }
+                }.map { Instant.parse(it.observedAt) to it }
+                .filter { (observedAt, _) ->
+                    // On October 19 the 950 beta switched from world 204 to worlds 203/205.
+                    when {
+                        revision.value != Rs3ProtocolRevision.BETA_950_1 -> true
+                        worldId == 204 -> observedAt < beta950WorldChange
+                        worldId == 203 || worldId == 205 -> observedAt >= beta950WorldChange
+                        else -> true
                     }
-                }.maxByOrNull { Instant.parse(it.observedAt) }
-                ?: error("No verified archived RS3 client for revision ${revision.value}, binary type $binaryType, world $worldId")
+                }.sortedBy { it.first }
+        // Recordings can predate RuneArchive's first observation of a client.
+        val entry =
+            (candidates.lastOrNull { it.first <= recordedAt } ?: candidates.firstOrNull())?.second
+                ?: error("No archived RS3 $environment client for revision ${revision.wireRevision}, binary type $binaryType, world $worldId")
         val configuration =
             Rs3JavConfig(Files.readString(artifact(entry.configuration, onProgress), Charsets.ISO_8859_1))
         val executable = entry.files.single { it.slot == 0 }
@@ -94,35 +105,6 @@ internal object RSProxArchiveRs3ClientDownloader {
         }
         return ArchivedReplayClient(client(entry, onProgress), configuration)
     }
-
-    // Note(revision): These live builds are verified with their revision's protocol/patches. A matching
-    // revision alone does not prove compatibility. Beta obfuscation identities share their capture guard.
-    internal fun supportsReplay(
-        revision: Rs3ProtocolRevision,
-        binaryType: Int,
-        hash: String,
-    ): Boolean =
-        when (revision.value) {
-            Rs3ProtocolRevision.LIVE_950 ->
-                when (binaryType) {
-                    2 -> hash == "fc7492548627a4068e88a7a45ba4f0be93004adf246bb4b174b24ae588768b36"
-                    10 -> hash == "f0dc2a07a8850daa110ea1a7417a540d897551f966f52e64baec1e74a8e2d568"
-                    else -> false
-                }
-            Rs3ProtocolRevision.BETA_950_1, Rs3ProtocolRevision.BETA_951_1 ->
-                Rs3BetaClientBuild.supports(hash, binaryType, revision)
-            Rs3ProtocolRevision.LIVE_951 ->
-                when (binaryType) {
-                    2 ->
-                        hash == "f01543b9f7af2a8f4f978abdb2587864ecedb039ab8c406759249be1883d957a" ||
-                            hash == "b0094eed5448b5bb805d9a9a6a13d4e685c341231071c2f5da07ee83118c80f9"
-                    10 ->
-                        hash == "e8f49ff0c394b76c939a3b1b1edfcb7bad5139dfee59287a0a28cabdae673538" ||
-                            hash == "05df430ae11317a29bc7bd0552e67a5781818b75578b642ba6fc8aa9967b9602"
-                    else -> false
-                }
-            else -> false
-        }
 
     private fun client(
         entry: Client,

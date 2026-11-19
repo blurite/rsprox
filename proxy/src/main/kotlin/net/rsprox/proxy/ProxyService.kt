@@ -60,7 +60,6 @@ import net.rsprox.proxy.replay.ReplaySession
 import net.rsprox.proxy.replay.ReplayTimeline
 import net.rsprox.proxy.replay.ReplayTranscriber
 import net.rsprox.proxy.replay.ReplayTranscript
-import net.rsprox.proxy.rs3.Rs3BetaClientBuild
 import net.rsprox.proxy.rs3.Rs3ClientHandle
 import net.rsprox.proxy.rs3.Rs3LaunchProgress
 import net.rsprox.proxy.rs3.Rs3LaunchTracker
@@ -1056,15 +1055,6 @@ public class ProxyService(
                         beta,
                         progress::update,
                     )
-                if (beta) {
-                    progress.update(Rs3LaunchProgress("Verifying beta client build"))
-                    check(
-                        Rs3BetaClientBuild.verify(
-                            downloaded,
-                            JagexNativeClientDownloader.rs3BinaryType(upstreamJavConfigUrl),
-                        ) == protocolRevision,
-                    )
-                }
                 val extension = if (downloaded.extension.isNotEmpty()) ".${downloaded.extension}" else ""
                 val stamp = System.currentTimeMillis()
                 val path =
@@ -1234,13 +1224,11 @@ public class ProxyService(
                     revision,
                     if (vulkan) 10 else 2,
                     recording.header.worldId,
+                    Instant.ofEpochMilli(recording.header.timestamp),
                     onProgress,
                 )
             val config = archived.configuration
             val source = archived.executable
-            if (revision.obfuscationVersion != 0) {
-                check(Rs3BetaClientBuild.verify(source, if (vulkan) 10 else 2) == revision)
-            }
             check(!isCancelled()) { "Replay launch cancelled" }
             val port = allocatePorts(2)
             val client =
