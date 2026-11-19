@@ -36,7 +36,7 @@ public class ProxyTarget(
     public val config: ProxyTargetConfig,
     public val gamePackProvider: GamePackProvider,
     public val sessionId: Int,
-    private val rewriteJagexAuth: Boolean = false,
+    public val rewriteJagexAuth: Boolean = false,
     private val replayWorldFlags: Int? = null,
 ) {
     public val httpPort: Int
