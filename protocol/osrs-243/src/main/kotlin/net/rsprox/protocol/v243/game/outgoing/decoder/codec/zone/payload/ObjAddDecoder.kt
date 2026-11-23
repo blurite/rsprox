@@ -19,7 +19,7 @@ internal class ObjAddDecoder : ProxyMessageDecoder<ObjAdd> {
         val id = buffer.g2Alt2()
         val timeUntilPublic = buffer.g2Alt3()
         val quantity = buffer.g4Alt1()
-        val coordInZone = CoordInZone(buffer.g1Alt2())
+        val coordInZone = CoordInZone(buffer.g1Alt3())
         val timeUntilDespawn = buffer.g2()
         val opFlags = OpFlags(buffer.g1Alt3())
         val ownershipType = buffer.g1Alt1()

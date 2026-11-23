@@ -17,7 +17,7 @@ internal class CamMoveToArcV3Decoder : ProxyMessageDecoder<CamMoveToArcV3> {
         val cycles = buffer.g2Alt3()
         val height = buffer.g2s()
         val centerZ = buffer.g2()
-        val heightRelative = buffer.g1Alt1() != 0
+        val heightRelative = buffer.g1Alt3() == 1
         val centerX = buffer.g2()
         val easing = buffer.g1()
         val destinationX = buffer.g2Alt3()

@@ -17,7 +17,7 @@ internal class CamLookAtCyclesDecoder : ProxyMessageDecoder<CamLookAtCycles> {
         val easing = buffer.g1()
         val cycles = buffer.g2Alt3()
         val z = buffer.g2Alt3()
-        val heightRelative = buffer.g1() != 0
+        val heightRelative = buffer.g1Alt2() == 1
         val x = buffer.g2Alt3()
         val height = buffer.g2sAlt2()
         return CamLookAtCycles(

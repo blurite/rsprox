@@ -16,7 +16,7 @@ internal class CamMoveToV3Decoder : ProxyMessageDecoder<CamMoveToV3> {
     ): CamMoveToV3 {
         val rate = buffer.g1Alt2()
         val rate2 = buffer.g1Alt2()
-        val heightRelative = buffer.g1Alt1() != 0
+        val heightRelative = buffer.g1Alt1() == 1
         val x = buffer.g2Alt1()
         val height = buffer.g2sAlt1()
         val z = buffer.g2Alt2()

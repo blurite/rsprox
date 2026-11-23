@@ -24,7 +24,7 @@ internal class ScriptedProjAddDecoder : ProxyMessageDecoder<ScriptedProjAdd> {
         val startTime = buffer.g2()
         val targetOffsetZ = buffer.g2sAlt1()
         val curveScriptT = buffer.g2Alt3()
-        val coordInZone = CoordInZone(buffer.g1Alt2())
+        val coordInZone = CoordInZone(buffer.g1Alt3())
         val endTime = buffer.g2Alt2()
         val curveScriptH = buffer.g2Alt1()
         val id = buffer.g2Alt2()

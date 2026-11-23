@@ -18,7 +18,7 @@ internal class LocAddChangeV3Decoder : ProxyMessageDecoder<LocAddChangeV3> {
         session: Session,
     ): LocAddChangeV3 {
         val locProperties = LocProperties(buffer.g1Alt1())
-        val coordInZone = CoordInZone(buffer.g1Alt2())
+        val coordInZone = CoordInZone(buffer.g1Alt3())
         val opOverrideCount = buffer.g1Alt2()
         val opOverrides: Map<Byte, String>? =
             if (opOverrideCount > 0) {

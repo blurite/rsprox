@@ -16,7 +16,7 @@ internal class CamMoveToCyclesV3Decoder : ProxyMessageDecoder<CamMoveToCyclesV3>
     ): CamMoveToCyclesV3 {
         val height = buffer.g2sAlt2()
         val cycles = buffer.g2Alt3()
-        val heightRelative = buffer.g1() != 0
+        val heightRelative = buffer.g1() == 1
         val easing = buffer.g1()
         val x = buffer.g2Alt3()
         val z = buffer.g2Alt2()

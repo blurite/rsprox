@@ -667,7 +667,7 @@ internal class NpcInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        val flag = buffer.g1()
+        val flag = buffer.g1Alt1()
         if (flag and 0x1 != 0) {
             blocks += BodyCustomisationExtendedInfo(ResetCustomisation)
             return
@@ -983,6 +983,7 @@ internal class NpcInfoClient(
                     if (version == 6) {
                         val idBitCount = buffer.gBits(2)
                         npc.id = buffer.gBits(typeBitcodes[idBitCount])
+
                         jump = buffer.gBits(1)
                         val extendedInfo = buffer.gBits(1)
                         val angle = NPC_TURN_ANGLES[buffer.gBits(3)]
@@ -992,6 +993,7 @@ internal class NpcInfoClient(
                             val index = buffer.gBits(2)
                             npc.spawnCycle = buffer.gBits(spawnClockBitcodes[index])
                         }
+
                         deltaZ = decodeDelta(large, buffer)
                         if (isNew) {
                             npc.turnAngle = angle

@@ -565,8 +565,8 @@ public class WorldEntityInfoClient : WorldEntityInfoDecoder {
             val index = buffer.g2()
             // Note: If serverVersion < 237, add +1 to index
             this.transmittedWorldEntity[this.transmittedWorldEntityCount++] = index
-            val extendedInfoFlags = buffer.g1()
-            val priority = buffer.g1Alt3()
+            val priority = buffer.g1()
+            val extendedInfoFlags = buffer.g1Alt3()
             val id = buffer.g2s()
             val packedSize = buffer.g1Alt3()
 

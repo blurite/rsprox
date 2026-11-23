@@ -646,7 +646,7 @@ internal class PlayerInfoClient(
         buffer: JagByteBuf,
         blocks: MutableList<ExtendedInfo>,
     ) {
-        blocks += PlayerResetExtendedInfo(buffer.g1Alt3())
+        blocks += PlayerResetExtendedInfo(buffer.g1Alt2())
     }
 
     private fun decodeFreeze(

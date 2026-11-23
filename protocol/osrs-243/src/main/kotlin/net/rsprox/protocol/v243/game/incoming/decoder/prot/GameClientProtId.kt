@@ -17,7 +17,7 @@ internal object GameClientProtId {
     const val SET_HEADING = 13
     const val IF_BUTTOND = 14
     const val IF_CRMVIEW_OP = 15
-    const val OPWORLDENTITYT = 16
+    const val OPWORLDENTITYU = 16
     const val EVENT_MOUSE_CLICK_V2 = 17
     const val OPLOC5_V3 = 18
     const val EVENT_MOUSE_MOVE = 19
@@ -80,13 +80,13 @@ internal object GameClientProtId {
     const val OPLOCU_V2 = 76
     const val OPOBJ3_V2 = 77
     const val OPWORLDENTITY1 = 78
-    const val OPNPCU = 79
+    const val OPWORLDENTITYT = 79
     const val OPWORLDENTITY3 = 80
     const val WINDOW_STATUS = 81
     const val IF_SUBOP = 82
     const val OPNPCT = 83
-    const val OPWORLDENTITYU = 84
-    const val OPPLAYERU = 85
+    const val OPPLAYERU = 84
+    const val OPNPCU = 85
     const val OPPLAYER3 = 86
     const val SEND_PING_REPLY = 87
     const val FRIENDLIST_ADD = 88

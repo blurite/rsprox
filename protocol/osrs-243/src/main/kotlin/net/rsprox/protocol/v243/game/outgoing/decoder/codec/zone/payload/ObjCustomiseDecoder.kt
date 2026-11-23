@@ -22,7 +22,7 @@ internal class ObjCustomiseDecoder : ProxyMessageDecoder<ObjCustomise> {
         val retexIndex = buffer.g2sAlt2()
         val retex = buffer.g2sAlt1()
         val quantity = buffer.g4Alt1()
-        val coordInZone = CoordInZone(buffer.g1Alt2())
+        val coordInZone = CoordInZone(buffer.g1Alt3())
         return ObjCustomise(
             id,
             quantity,
