@@ -35,6 +35,18 @@ public enum class OldSchoolJs5Framing(
     }
 
     public companion object {
+        public fun forMasterIndex(revision: Int, wireData: ByteArray): OldSchoolJs5Framing {
+            // Archive 255, group 255 starts FF 00 FF on legacy connections and FF 00 00 FF on wide ones.
+            if (wireData.size >= 3 &&
+                wireData[0] == 0xFF.toByte() &&
+                wireData[1] == 0.toByte() &&
+                wireData[2] == 0xFF.toByte()
+            ) {
+                return LEGACY
+            }
+            return forRevision(revision)
+        }
+
         public fun forRevision(revision: Int): OldSchoolJs5Framing = if (revision >= 243) WIDE else LEGACY
     }
 }

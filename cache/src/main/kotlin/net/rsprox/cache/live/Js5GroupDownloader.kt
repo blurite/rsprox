@@ -11,7 +11,6 @@ import net.rsprot.buffer.JagByteBuf
 import net.rsprot.buffer.extensions.toByteArray
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprox.cache.Js5MasterIndex
-import net.rsprox.cache.OldSchoolJs5Framing
 import net.rsprox.cache.util.CacheGroupRequest
 
 /**
@@ -24,7 +23,7 @@ public class Js5GroupDownloader internal constructor(
     private val bootstrapFactory: Js5BootstrapFactory,
     private val info: LiveConnectionInfo,
 ) {
-    internal val framing = OldSchoolJs5Framing.forRevision(info.revision)
+    internal val framing = info.framing
     private lateinit var bootstrap: Bootstrap
     private lateinit var channel: Channel
     private var connectionStatus: Int = CONNECTION_STATUS_UNINITIALIZED

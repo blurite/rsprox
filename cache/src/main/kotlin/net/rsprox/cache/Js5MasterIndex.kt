@@ -57,7 +57,7 @@ public class Js5MasterIndex(
             data: ByteArray,
         ): Js5MasterIndex {
             if (data.isEmpty()) return Js5MasterIndex(revision, data)
-            val prefixSize = OldSchoolJs5Framing.forRevision(revision).prefixSize
+            val prefixSize = OldSchoolJs5Framing.forMasterIndex(revision, data).prefixSize
             return Js5MasterIndex(revision, data.copyOfRange(prefixSize, data.size))
         }
     }

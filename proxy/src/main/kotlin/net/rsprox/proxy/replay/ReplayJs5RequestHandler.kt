@@ -17,7 +17,7 @@ public class ReplayJs5RequestHandler(
     private val masterIndex: ByteArray,
     private val cacheStore: GroupStore,
 ) : ByteToMessageDecoder() {
-    private val framing = OldSchoolJs5Framing.forRevision(revision)
+    private val framing = OldSchoolJs5Framing.forMasterIndex(revision, masterIndex)
     private var xorKey: Int = 0
 
     override fun decode(

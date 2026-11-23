@@ -72,7 +72,7 @@ public class ClientLoginHandler(
                     "Init JS5 remote connection"
                 }
                 switchClientToRelay(ctx)
-                switchServerToJs5LoginDecoding(ctx, msg.payload.getInt(msg.start))
+                switchServerToJs5LoginDecoding(ctx, target.js5Revision(msg.payload.getInt(msg.start)))
             }
             LoginClientProt.GAMELOGIN -> {
                 logger.debug {
@@ -147,6 +147,7 @@ public class ClientLoginHandler(
             // In order to get around it, we just tell the client that the server requested a reload
             // This just reboots the client and forces it to open a JS5 connection to the server,
             // which gets us the JS5 file that we need for our log.
+            logger.warn { "Requesting client reload: missing JS5 master index for world ${world.id} on port $port" }
             val forcedReloadBuffer = Unpooled.buffer()
             forcedReloadBuffer.p1(LoginServerProtId.OUT_OF_DATE_RELOAD)
             ctx.channel().writeAndFlush(forcedReloadBuffer)
