@@ -49,6 +49,7 @@ public class ProxyTarget(
         private set
     private val name: String
         get() = config.name
+    private var servedJavConfig: JavConfig? = null
     private lateinit var httpServerBootstrap: ServerBootstrap
     private lateinit var replayAuthServerBootstrap: ServerBootstrap
     private var replayAuthCertificate: SelfSignedCertificate? = null
@@ -75,8 +76,11 @@ public class ProxyTarget(
         return javConfigVersion()
     }
 
+    // A 243 client advertises 243 in the handshake even when jav_config selects legacy JS5.
+    public fun js5Revision(clientRevision: Int): Int = minOf(clientRevision, javConfigVersion())
+
     public fun javConfigVersion(): Int {
-        return loadJavConfig(config.javConfigUrl).getRevision()
+        return (servedJavConfig ?: loadJavConfig(config.javConfigUrl)).getRevision()
     }
 
     public fun load(
@@ -97,6 +101,7 @@ public class ProxyTarget(
                 findCodebaseReplacementWorld(javConfig, worldListProvider)
             }
         val updatedJavConfig = rebuildJavConfig(javConfig, replacementWorld)
+        servedJavConfig = updatedJavConfig
         launchHttpServer(
             properties,
             bootstrapFactory,

@@ -161,6 +161,7 @@ public data class NativePatchCriteria(
             constString(
                 listOf(
                     DEFAULT_WORLDLIST_URL_PRE_231,
+                    DEFAULT_WORLDLIST_URL_231,
                     DEFAULT_WORLDLIST_URL,
                 ),
                 url,
@@ -351,7 +352,8 @@ public data class NativePatchCriteria(
         private const val DEFAULT_JAVCONFIG_URL_PRE_231: String = "http://oldschool.runescape.com/jav_config.ws?m=0"
         private const val DEFAULT_JAVCONFIG_URL: String = "https://oldschool.config.runescape.com/jav_config.ws?m=0"
         private const val DEFAULT_WORLDLIST_URL_PRE_231: String = "https://oldschool.runescape.com/slr.ws?order=LPWM"
-        private const val DEFAULT_WORLDLIST_URL: String = "https://oldschool.config.runescape.com/slr.ws?order=LPWM"
+        private const val DEFAULT_WORLDLIST_URL_231: String = "https://oldschool.config.runescape.com/slr.ws?order=LPWM"
+        private const val DEFAULT_WORLDLIST_URL: String = "http://www.runescape.com/g=oldscape/slr.ws?order=LPWM"
 
         private fun createStringCapturedPattern(string: String): Regex {
             return Regex("""(\00[a-zA-Z0-9./\-_!?:;* ]*)$string([a-zA-Z0-9./\-_!?:;* ]*\00)""")

@@ -9,6 +9,7 @@ import net.rsprox.proxy.server.prot.LoginServerProt
 
 public class ServerJs5LoginHandler(
     private val clientChannel: Channel,
+    private val revision: Int,
 ) : SimpleChannelInboundHandler<ServerPacket<LoginServerProt>>() {
     override fun channelRead0(
         ctx: ChannelHandlerContext,
@@ -24,7 +25,7 @@ public class ServerJs5LoginHandler(
         logger.debug { "Js5 login successful, switching to response decoding" }
         clientChannel.writeAndFlush(msg.encode(ctx.alloc()))
         val pipeline = ctx.channel().pipeline()
-        pipeline.replace<ServerGenericDecoder<*>>(ServerJs5ResponseDecoder(clientChannel))
+        pipeline.replace<ServerGenericDecoder<*>>(ServerJs5ResponseDecoder(clientChannel, revision))
         pipeline.replace<ServerJs5LoginHandler>(ServerRelayHandler(clientChannel))
     }
 

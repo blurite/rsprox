@@ -23,6 +23,7 @@ public class Js5GroupDownloader internal constructor(
     private val bootstrapFactory: Js5BootstrapFactory,
     private val info: LiveConnectionInfo,
 ) {
+    internal val framing = info.framing
     private lateinit var bootstrap: Bootstrap
     private lateinit var channel: Channel
     private var connectionStatus: Int = CONNECTION_STATUS_UNINITIALIZED
@@ -125,11 +126,7 @@ public class Js5GroupDownloader internal constructor(
     ): ByteBuf {
         invalidateConnection()
         this.responses.clear()
-        val buffer = Unpooled.buffer(4).toJagByteBuf()
-        buffer.p1(if (urgent) 1 else 0)
-        buffer.p1(archive)
-        buffer.p2(group)
-        writeAndFlush(buffer)
+        writeAndFlush(groupRequest(archive, group, urgent))
         await()
         // Return the response, while also skipping the archive id & group id header
         return this.responses.getValue(pack(archive, group))
@@ -139,16 +136,24 @@ public class Js5GroupDownloader internal constructor(
         invalidateConnection()
         this.responses.clear()
         for (request in requests) {
-            val buffer = Unpooled.buffer(4).toJagByteBuf()
-            buffer.p1(if (request.urgent) 1 else 0)
-            buffer.p1(request.archive)
-            buffer.p2(request.group)
-            write(buffer)
+            write(groupRequest(request.archive, request.group, request.urgent))
         }
         flush()
         awaitBulk(requests.size)
         // Return the responses, while also skipping the archive id & group id header
         return requests.associateWith { this.responses.getValue(pack(it.archive, it.group)) }
+    }
+
+    private fun groupRequest(
+        archive: Int,
+        group: Int,
+        urgent: Boolean,
+    ): JagByteBuf {
+        val buffer = Unpooled.buffer(1 + framing.prefixSize)
+        buffer.writeByte(if (urgent) 1 else 0)
+        buffer.writeByte(archive)
+        framing.writeGroup(buffer, group)
+        return buffer.toJagByteBuf()
     }
 
     private fun pack(

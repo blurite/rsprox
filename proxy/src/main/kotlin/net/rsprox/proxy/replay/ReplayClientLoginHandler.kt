@@ -61,7 +61,7 @@ public class ReplayClientLoginHandler(
         val pipeline = ctx.pipeline()
         pipeline.remove<ClientGenericDecoder<*>>()
         pipeline.remove<ReplayClientLoginHandler>()
-        pipeline.addLast(ReplayJs5RequestHandler(replaySession))
+        pipeline.addLast(ReplayJs5RequestHandler(revision, replaySession.timeline.header.js5MasterIndex, replaySession.cacheStore))
     }
 
     private fun acceptLogin(

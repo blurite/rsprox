@@ -369,6 +369,7 @@ public class ProxyService(
             239 -> "c95f866eaa693da187bf986cdf9c8f23b555ed4c"
             240 -> "c8f9b14be8bd3fae44fa830381795cdfd32aa95f"
             241 -> "1e634e64717418713898b06061a189ec1cdf948d"
+            242 -> "44526f62e56303fbdff98438ef680537bc943c13"
             else -> null
         }
     }
@@ -1316,8 +1317,8 @@ public class ProxyService(
         val targetRev = target.config.revision
         val binary =
             if (targetRev == null || targetRev == "latest_supported") {
-                // JagexNativeClientDownloader.download(nativeClientType)
-                getHistoricNativeClient("242.3", nativeClientType)
+                JagexNativeClientDownloader.download(nativeClientType)
+                // getHistoricNativeClient("242.3", nativeClientType)
             } else {
                 getHistoricNativeClient(targetRev, nativeClientType)
             }

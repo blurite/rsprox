@@ -9,6 +9,7 @@ import io.netty.channel.Channel
 import net.rsprot.buffer.extensions.toJagByteBuf
 import net.rsprot.crypto.xtea.XteaKey
 import net.rsprox.cache.Js5MasterIndex
+import net.rsprox.cache.OldSchoolJs5Framing
 import net.rsprox.cache.OldSchoolCache
 import net.rsprox.cache.api.CacheProvider
 import net.rsprox.cache.live.LiveConnectionInfo
@@ -295,6 +296,7 @@ public data class BinaryBlob(
                     header.revision,
                     key,
                     masterIndex,
+                    OldSchoolJs5Framing.forMasterIndex(header.revision, header.js5MasterIndex),
                 )
             val cache = OldSchoolCache(LiveCacheResolver(info), masterIndex)
             val provider =
