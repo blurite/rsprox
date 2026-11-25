@@ -71,6 +71,7 @@ subprojects {
 dependencies {
     runtimeOnly(projects.gui.proxyTool)
     runtimeOnly(projects.proxy)
+    runtimeOnly(projects.mcp)
 }
 
 buildscript {
